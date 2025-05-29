@@ -6,14 +6,18 @@ import {
     collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc
 } from 'firebase/firestore';
 
-// Firebase Config
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-    apiKey: "YOUR_API_KEY", 
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAYCYGOEU2Ki79sJHGF5LLOVzQeuF7Rz3E",
+  authDomain: "chastityandflr.firebaseapp.com",
+  projectId: "chastityandflr",
+  storageBucket: "chastityandflr.firebasestorage.app",
+  messagingSenderId: "662922033586",
+  appId: "1:662922033586:web:70c6a7e537d1b30c444cab",
+  measurementId: "G-QKERPT0S65"
+  appId: "1:662922033586:web:70c6a7e537d1b30c444cab",
+  measurementId: "G-QKERPT0S65"
 };
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chastity-app';
 
