@@ -6,20 +6,29 @@ import {
     collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc
 } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase Config - using environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyAYCYGOEU2Ki79sJHGF5LLOVzQeuF7Rz3E",
-  authDomain: "chastityandflr.firebaseapp.com",
-  projectId: "chastityandflr",
-  storageBucket: "chastityandflr.firebasestorage.app",
-  messagingSenderId: "662922033586",
-  appId: "1:662922033586:web:70c6a7e537d1b30c444cab",
-  measurementId: "G-QKERPT0S65"
-  appId: "1:662922033586:web:70c6a7e537d1b30c444cab",
-  measurementId: "G-QKERPT0S65"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // Optional
 };
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chastity-app';
+
+// It's good practice to ensure critical config values are present
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    console.error(
+        "Firebase configuration is missing or incomplete. " +
+        "Make sure your .env file in the project root is set up correctly with variables prefixed with VITE_ " +
+        "(e.g., VITE_FIREBASE_API_KEY='your_key') and that you have restarted your dev server."
+    );
+    // You might want to display an error message to the user or halt initialization in a real app
+    // For now, this console error will alert during development.
+}
+
+const appId = firebaseConfig.appId || 'default-chastity-app'; // Use appId from config or a default
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
