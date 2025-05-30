@@ -85,7 +85,6 @@ const TrackerPage = (props) => {
         isAuthReady, 
         isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
         handleToggleCage, showReasonModal, setShowReasonModal, reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
-        // Pause feature props
         isPaused: isPausedProp, 
         handleInitiatePause, 
         handleResumeSession,
@@ -97,7 +96,12 @@ const TrackerPage = (props) => {
         accumulatedPauseTimeThisSession,
         pauseStartTime,
         livePauseDuration,
-        pauseCooldownMessage 
+        pauseCooldownMessage,
+        // Restore session prompt props
+        showRestoreSessionPrompt,
+        handleConfirmRestoreSession,
+        handleDiscardAndStartNew,
+        loadedSessionData
     } = props;
 
     const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false; 
@@ -106,6 +110,29 @@ const TrackerPage = (props) => {
 
     return (
         <>
+          {/* Restore Session Prompt Modal */}
+          {showRestoreSessionPrompt && loadedSessionData && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-700 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-blue-500">
+                <h3 className="text-lg md:text-xl font-bold mb-4 text-blue-300">Restore Previous Session?</h3>
+                <p className="text-sm text-gray-300 mb-2">An active chastity session was found:</p>
+                <ul className="text-xs text-left text-gray-400 mb-6 list-disc list-inside pl-4">
+                    <li>Started: {formatTime(loadedSessionData.cageOnTime, true)}</li>
+                    <li>
+                        Currently: {loadedSessionData.isPaused 
+                            ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})` 
+                            : `Active (for ${formatElapsedTime(loadedSessionData.timeInChastity - (loadedSessionData.accumulatedPauseTimeThisSession || 0))})`}
+                    </li>
+                </ul>
+                <p className="text-sm text-gray-300 mb-4">Would you like to resume this session or start a new one?</p>
+                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button type="button" onClick={handleConfirmRestoreSession} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Resume Previous Session</button>
+                  <button type="button" onClick={handleDiscardAndStartNew} className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">Start New Session</button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {pauseCooldownMessage && ( 
             <div className="mb-4 p-3 bg-yellow-600/30 border border-yellow-500 rounded-lg text-sm text-yellow-200">
                 {pauseCooldownMessage}
@@ -138,7 +165,7 @@ const TrackerPage = (props) => {
             <button 
                 type="button"
                 onClick={handleToggleCage} 
-                disabled={!isAuthReady || isPaused} 
+                disabled={!isAuthReady || isPaused || showRestoreSessionPrompt} 
                 className={`flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 ${isCageOn ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-400'}`}
             >
                 {isCageOn ? 'Cage Off / End Session' : 'Cage On / Start Session'}
@@ -147,11 +174,11 @@ const TrackerPage = (props) => {
           {isCageOn && (
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6 md:mb-8 justify-center">
                 {!isPaused ? (
-                    <button type="button" onClick={handleInitiatePause} disabled={!isAuthReady} className="flex-grow bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
+                    <button type="button" onClick={handleInitiatePause} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
                         Pause Session
                     </button>
                 ) : (
-                    <button type="button" onClick={handleResumeSession} disabled={!isAuthReady} className="flex-grow bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
+                    <button type="button" onClick={handleResumeSession} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
                         Resume Session
                     </button>
                 )}
@@ -579,6 +606,11 @@ const App = () => {
   const pauseDisplayTimerRef = useRef(null);
   const [lastPauseEndTime, setLastPauseEndTime] = useState(null); 
   const [pauseCooldownMessage, setPauseCooldownMessage] = useState('');
+  
+  // Restore Session Prompt State
+  const [showRestoreSessionPrompt, setShowRestoreSessionPrompt] = useState(false);
+  const [loadedSessionData, setLoadedSessionData] = useState(null);
+  const [hasSessionEverBeenActive, setHasSessionEverBeenActive] = useState(false);
 
 
   const timerInChastityRef = useRef(null);
@@ -655,31 +687,19 @@ const App = () => {
     }
     const loadTrackerData = async () => {
       setIsLoading(true); 
+      console.log("App.js: loadTrackerData - Attempting to load data for userId:", userId);
       const docRef = getDocRef();
-      if (!docRef) { setIsLoading(false); return; }
+      if (!docRef) { 
+          console.log("App.js: loadTrackerData - No docRef, setting default initial state (isLoading false).");
+          setIsLoading(false); 
+          setHasSessionEverBeenActive(false);
+          return; 
+      }
       try {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          console.log("App.js: loadTrackerData - Data loaded from Firestore:", data); 
-          
-          let loadedIsCageOn = data.isCageOn || false;
-          let loadedCageOnTime = data.cageOnTime?.toDate();
-
-          if (loadedIsCageOn && (!loadedCageOnTime || isNaN(loadedCageOnTime.getTime()))) {
-              console.warn("App.js: loadTrackerData - Inconsistent state: isCageOn is true, but cageOnTime is invalid. Resetting to Cage Off.", data.cageOnTime);
-              loadedIsCageOn = false;
-              loadedCageOnTime = null;
-              setTimeInChastity(0); 
-              setAccumulatedPauseTimeThisSession(0);
-              setCurrentSessionPauseEvents([]);
-              setIsPaused(false); // Ensure isPaused is also reset
-              setPauseStartTime(null); // Ensure pauseStartTime is reset
-          }
-          
-          setCageOnTime(loadedCageOnTime);
-          setIsCageOn(loadedIsCageOn);
-          setTimeInChastity(data.timeInChastity || 0); 
+          console.log("App.js: loadTrackerData - Raw data from Firestore:", JSON.stringify(data, null, 2)); 
           
           const loadedHistory = (data.chastityHistory || []).map(item => {
             const startTime = item.startTime?.toDate();
@@ -701,60 +721,81 @@ const App = () => {
             };
           });
           setChastityHistory(loadedHistory);
-          
           setTotalTimeCageOff(data.totalTimeCageOff || 0); 
-
           const currentName = data.submissivesName || data.userAlias || '';
           setSavedSubmissivesName(currentName); 
           setSubmissivesNameInput(currentName); 
-
-          // Only set pause states if the session is genuinely on
-          if (loadedIsCageOn) {
-            setIsPaused(data.isPaused || false);
-            console.log("App.js: loadTrackerData - Loaded isPaused from Firestore:", data.isPaused, "Setting state to:", data.isPaused || false);
-            const loadedPauseStartTime = data.pauseStartTime?.toDate();
-            setPauseStartTime(loadedPauseStartTime && !isNaN(loadedPauseStartTime.getTime()) ? loadedPauseStartTime : null);
-            setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0);
-            setCurrentSessionPauseEvents((data.currentSessionPauseEvents || []).map(p => ({
-                ...p,
-                startTime: p.startTime?.toDate() && !isNaN(p.startTime.toDate().getTime()) ? p.startTime.toDate() : null,
-                endTime: p.endTime?.toDate() && !isNaN(p.endTime.toDate().getTime()) ? p.endTime.toDate() : null,
-            })));
-          } else { // If cage is not on, reset pause states
-            setIsPaused(false);
-            setPauseStartTime(null);
-            setAccumulatedPauseTimeThisSession(0);
-            setCurrentSessionPauseEvents([]);
-          }
-
           const loadedLastPauseEndTime = data.lastPauseEndTime?.toDate();
           setLastPauseEndTime(loadedLastPauseEndTime && !isNaN(loadedLastPauseEndTime.getTime()) ? loadedLastPauseEndTime : null);
-          console.log("App.js: loadTrackerData - Loaded lastPauseEndTime from Firestore:", loadedLastPauseEndTime);
-          
-          if (!loadedIsCageOn && isAuthReady) { 
-            const currentHist = data.chastityHistory || []; 
-            if (currentHist.length > 0) {
-                const lastPeriod = currentHist[currentHist.length - 1];
-                const lastEndTime = lastPeriod.endTime?.toDate(); 
-                if (lastEndTime && !isNaN(lastEndTime.getTime())) {
-                    const now = new Date();
-                    const elapsedSeconds = Math.floor((now.getTime() - lastEndTime.getTime()) / 1000);
-                    setTimeCageOff(elapsedSeconds > 0 ? elapsedSeconds : 0);
-                } else { setTimeCageOff(0); }
-            } else { setTimeCageOff(data.timeCageOff || 0); } 
-          } else {
-            setTimeCageOff(0); 
-          }
 
+          const activeSessionIsCageOn = data.isCageOn || false;
+          const activeSessionCageOnTime = data.cageOnTime?.toDate();
+
+          if (activeSessionIsCageOn && activeSessionCageOnTime && !isNaN(activeSessionCageOnTime.getTime())) {
+            console.log("App.js: loadTrackerData - Active session detected from Firestore. Preparing restore prompt.");
+            const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate();
+            setLoadedSessionData({ 
+                isCageOn: true,
+                cageOnTime: activeSessionCageOnTime,
+                timeInChastity: data.timeInChastity || 0,
+                isPaused: data.isPaused || false, 
+                pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null,
+                accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0,
+                currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({
+                    ...p,
+                    startTime: p.startTime?.toDate(),
+                    endTime: p.endTime?.toDate()
+                })),
+            });
+            
+            // Set UI to a paused neutral state while prompt is shown
+            setIsCageOn(true); // Reflect that a session *could* be active
+            setCageOnTime(activeSessionCageOnTime); 
+            setTimeInChastity(data.timeInChastity || 0); 
+            setIsPaused(true); // Force UI pause
+            setPauseStartTime(new Date()); 
+            setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0);
+            setCurrentSessionPauseEvents(data.currentSessionPauseEvents || []);
+            
+            setShowRestoreSessionPrompt(true);
+            setHasSessionEverBeenActive(true); // A session was active
+            console.log("App.js: loadTrackerData - Showing restore prompt. App is in a 'paused neutral state'.");
+          } else {
+            if (activeSessionIsCageOn && (!activeSessionCageOnTime || isNaN(activeSessionCageOnTime.getTime()))) {
+                console.warn("App.js: loadTrackerData - Inconsistent state from Firestore: isCageOn is true, but cageOnTime is invalid. Forcing Cage Off.");
+            } else {
+                console.log("App.js: loadTrackerData - No active/valid session in Firestore. Initializing to Cage Off.");
+            }
+            setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0);
+            setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
+            if (loadedHistory.length > 0) {
+                const lastPeriod = loadedHistory[loadedHistory.length - 1];
+                const lastSessionEndTime = lastPeriod.endTime; 
+                setTimeCageOff(Math.max(0, Math.floor((new Date().getTime() - (lastSessionEndTime ? lastSessionEndTime.getTime() : new Date().getTime())) / 1000)));
+                setHasSessionEverBeenActive(true); // History exists, so sessions have been active
+            } else { 
+                setTimeCageOff(0); 
+                setHasSessionEverBeenActive(false); // No history, truly fresh start potentially
+            }
+          }
         } else { 
-           console.log("App.js: loadTrackerData - No document found, initializing default state.");
-           setTimeInChastity(0); setTimeCageOff(0); setIsCageOn(false);
-           setChastityHistory([]); setTotalChastityTime(0); setTotalTimeCageOff(0);
-           setSavedSubmissivesName(''); setSubmissivesNameInput('');
+           console.log("App.js: loadTrackerData - No document found, initializing all to default 'off' state.");
+           setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
            setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
-           setLastPauseEndTime(null); setOverallTotalPauseTime(0);
+           setLastPauseEndTime(null); setChastityHistory([]); setSavedSubmissivesName(''); setSubmissivesNameInput('');
+           setTotalChastityTime(0); setTotalTimeCageOff(0); setOverallTotalPauseTime(0);
+           setPauseCooldownMessage(''); setLivePauseDuration(0);
+           setHasSessionEverBeenActive(false);
         }
-      } catch (error) { console.error("Error loading tracker data:", error); } 
+      } catch (error) { 
+          console.error("Error loading tracker data:", error); 
+          setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
+          setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
+          setLastPauseEndTime(null); setChastityHistory([]); setSavedSubmissivesName(''); setSubmissivesNameInput('');
+          setTotalChastityTime(0); setTotalTimeCageOff(0); setOverallTotalPauseTime(0);
+          setPauseCooldownMessage(''); setLivePauseDuration(0);
+          setHasSessionEverBeenActive(false);
+      } 
       finally { setIsLoading(false); }
     };
     loadTrackerData();
@@ -846,7 +887,7 @@ const App = () => {
       if (typeof firestoreReadyData.submissivesName === 'undefined') firestoreReadyData.submissivesName = savedSubmissivesName; 
       if (firestoreReadyData.hasOwnProperty('userAlias')) delete firestoreReadyData.userAlias;
       
-      console.log("App.js: saveDataToFirestore: Attempting to set document with data:", firestoreReadyData);
+      console.log("App.js: saveDataToFirestore: Attempting to set document with data:", JSON.stringify(firestoreReadyData, null, 2));
       await setDoc(docRef, firestoreReadyData, { merge: true });
       console.log("App.js: saveDataToFirestore: Data saved successfully.");
     } catch (error) { console.error("Error saving main data to Firestore:", error); }
@@ -866,7 +907,7 @@ const App = () => {
       console.log("Timer Effect (timeInChastity): Starting setInterval. Current timeInChastity value before interval starts:", timeInChastity);
       timerInChastityRef.current = setInterval(() => {
         setTimeInChastity(prevTime => {
-            console.log("Timer Tick (timeInChastity): prevTime =", prevTime, "newTime =", prevTime + 1, "isPaused in App scope:", isPaused); 
+            // console.log("Timer Tick (timeInChastity): prevTime =", prevTime, "newTime =", prevTime + 1, "isPaused in App scope:", isPaused); 
             return prevTime + 1;
         });
       }, 1000);
@@ -885,13 +926,13 @@ const App = () => {
   }, [isCageOn, isPaused, cageOnTime, isAuthReady, timeInChastity, tempStartTime]); 
 
   useEffect(() => { 
-    console.log("Timer Effect (timeCageOff): isCageOn =", isCageOn, "isAuthReady =", isAuthReady);
-    if (!isCageOn && isAuthReady) { 
+    console.log("Timer Effect (timeCageOff): isCageOn =", isCageOn, "isAuthReady =", isAuthReady, "hasSessionEverBeenActive=", hasSessionEverBeenActive);
+    if (!isCageOn && isAuthReady && hasSessionEverBeenActive) { 
       console.log("Timer Effect (timeCageOff): Starting setInterval. Current timeCageOff value before interval starts:", timeCageOff);
       timerCageOffRef.current = setInterval(() => setTimeCageOff(prev => prev + 1), 1000);
     } else { 
       if (timerCageOffRef.current) {
-        console.log("Timer Effect (timeCageOff): Clearing interval because isCageOn is true or isAuthReady is false");
+        console.log("Timer Effect (timeCageOff): Clearing interval because isCageOn is", isCageOn, "or isAuthReady is", isAuthReady, "or hasSessionEverBeenActive is", hasSessionEverBeenActive);
         clearInterval(timerCageOffRef.current);
       }
     }
@@ -901,7 +942,7 @@ const App = () => {
         clearInterval(timerCageOffRef.current);
       }
     };
-  }, [isCageOn, isAuthReady, timeCageOff]); 
+  }, [isCageOn, isAuthReady, hasSessionEverBeenActive]); // Removed timeCageOff from deps
 
   // Effect for live pause duration display
   useEffect(() => {
@@ -910,7 +951,7 @@ const App = () => {
         setLivePauseDuration(Math.floor((new Date().getTime() - pauseStartTime.getTime()) / 1000)); 
         pauseDisplayTimerRef.current = setInterval(() => {
             setLivePauseDuration(prev => {
-                 console.log("Timer Tick (livePauseDuration): prev =", prev, "new =", prev + 1); 
+                 // console.log("Timer Tick (livePauseDuration): prev =", prev, "new =", prev + 1); 
                  return prev + 1;
             });
         }, 1000);
@@ -1056,7 +1097,7 @@ const App = () => {
       const newTotalOff = totalTimeCageOff + timeCageOff; 
       setTotalTimeCageOff(newTotalOff); 
       setCageOnTime(currentTime); 
-      console.log("App.js: handleToggleCage - Setting cageOnTime to:", currentTime); // ADDED LOG
+      console.log("App.js: handleToggleCage - Setting cageOnTime to:", currentTime); 
       setIsCageOn(true);
       setTimeInChastity(0); 
       setTimeCageOff(0);
@@ -1065,7 +1106,8 @@ const App = () => {
       setPauseStartTime(null);
       setIsPaused(false); 
       setLastPauseEndTime(null); 
-      console.log("App.js: handleToggleCage - Setting lastPauseEndTime to null for new session."); // ADDED LOG
+      console.log("App.js: handleToggleCage - Setting lastPauseEndTime to null for new session."); 
+      setHasSessionEverBeenActive(true); // Mark that a session has now been active
       const dataToSave = { 
           isCageOn: true, cageOnTime: currentTime, totalTimeCageOff: newTotalOff, 
           timeInChastity: 0, 
@@ -1082,17 +1124,15 @@ const App = () => {
     } else { 
       console.log("App.js: handleToggleCage - Cage is ON, attempting to turn OFF. Showing modal. Current cageOnTime:", cageOnTime);
       setTempEndTime(currentTime); 
-      setTempStartTime(cageOnTime); // This is where tempStartTime is set
-      console.log("App.js: handleToggleCage - Setting tempStartTime to:", cageOnTime); // ADDED LOG
+      setTempStartTime(cageOnTime); 
+      console.log("App.js: handleToggleCage - Setting tempStartTime to:", cageOnTime); 
       setShowReasonModal(true); 
       console.log("App.js: handleToggleCage - ShowReasonModal set to true for removal.");
     }
-  }, [isAuthReady, isCageOn, totalTimeCageOff, timeCageOff, cageOnTime, confirmReset, saveDataToFirestore, chastityHistory, totalChastityTime, savedSubmissivesName, resetTimeoutRef, isPaused, setNameMessage]);
+  }, [isAuthReady, isCageOn, totalTimeCageOff, timeCageOff, cageOnTime, confirmReset, saveDataToFirestore, chastityHistory, totalChastityTime, savedSubmissivesName, resetTimeoutRef, isPaused, setNameMessage, setHasSessionEverBeenActive]);
 
   const handleConfirmRemoval = useCallback(() => { 
-    console.log("App.js: handleConfirmRemoval - Called. isAuthReady:", isAuthReady); 
-    console.log("App.js: handleConfirmRemoval - Current values: tempStartTime=", tempStartTime, "tempEndTime=", tempEndTime, "isPaused=", isPaused, "pauseStartTime=", pauseStartTime, "accumulatedPauseTimeThisSession=", accumulatedPauseTimeThisSession);
-
+    console.log("App.js: handleConfirmRemoval - Called. State before changes: isCageOn=", isCageOn, "isPaused=", isPaused, "accumulatedPauseTimeThisSession=", accumulatedPauseTimeThisSession); 
     if (!isAuthReady) {
         console.warn("App.js: handleConfirmRemoval - Auth not ready.");
         return;
@@ -1141,7 +1181,7 @@ const App = () => {
       setPauseStartTime(null);
       setAccumulatedPauseTimeThisSession(0);
       setCurrentSessionPauseEvents([]);
-      // lastPauseEndTime is NOT reset here. It's reset when a new session starts or on full data reset.
+      setHasSessionEverBeenActive(true); // A session just ended, so timers are allowed if conditions meet
 
       const dataToSave = { 
           isCageOn: false, cageOnTime: null, timeInChastity: 0,
@@ -1160,7 +1200,7 @@ const App = () => {
     setTempStartTime(null); 
     setShowReasonModal(false);
     console.log("App.js: handleConfirmRemoval - Modal should be closed now."); 
-  }, [isAuthReady, tempStartTime, tempEndTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, isPaused, pauseStartTime]);
+  }, [isAuthReady, tempStartTime, tempEndTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, isPaused, pauseStartTime, setHasSessionEverBeenActive]);
 
   const handleCancelRemoval = useCallback(() => { 
     console.log("App.js: handleCancelRemoval called."); 
@@ -1199,6 +1239,7 @@ const App = () => {
             setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); 
             setLastPauseEndTime(null); 
             setPauseCooldownMessage('');
+            setHasSessionEverBeenActive(false); // Reset this flag
             
             setConfirmReset(false); setShowReasonModal(false); 
             saveDataToFirestore({ 
@@ -1335,12 +1376,87 @@ const App = () => {
   const handleExportEventLogCSV = useCallback(() => { /* ... */ }, [isAuthReady, sexualEventsLog, savedSubmissivesName]);
   const handleExportTextReport = useCallback(() => { /* ... */ }, [isAuthReady, savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, overallTotalPauseTime]);
 
+  // --- Restore Session Handlers ---
+  const handleConfirmRestoreSession = useCallback(async () => {
+    console.log("App.js: handleConfirmRestoreSession called. Loaded data:", loadedSessionData);
+    if (loadedSessionData) {
+        const loadedCageOnTime = loadedSessionData.cageOnTime instanceof Timestamp 
+            ? loadedSessionData.cageOnTime.toDate() 
+            : (typeof loadedSessionData.cageOnTime === 'string' ? new Date(loadedSessionData.cageOnTime) : loadedSessionData.cageOnTime);
+        
+        const loadedPauseStartTime = loadedSessionData.pauseStartTime instanceof Timestamp 
+            ? loadedSessionData.pauseStartTime.toDate() 
+            : (typeof loadedSessionData.pauseStartTime === 'string' ? new Date(loadedSessionData.pauseStartTime) : loadedSessionData.pauseStartTime);
+
+        setIsCageOn(loadedSessionData.isCageOn);
+        setCageOnTime(loadedCageOnTime);
+        setTimeInChastity(loadedSessionData.timeInChastity || 0);
+        setIsPaused(loadedSessionData.isPaused || false); 
+        setPauseStartTime( (loadedSessionData.isPaused && loadedPauseStartTime && !isNaN(loadedPauseStartTime.getTime())) ? loadedPauseStartTime : null); 
+        setAccumulatedPauseTimeThisSession(loadedSessionData.accumulatedPauseTimeThisSession || 0);
+        setCurrentSessionPauseEvents(loadedSessionData.currentSessionPauseEvents || []);
+        setHasSessionEverBeenActive(true);
+
+        await saveDataToFirestore({
+            isCageOn: loadedSessionData.isCageOn,
+            cageOnTime: loadedCageOnTime,
+            timeInChastity: loadedSessionData.timeInChastity || 0,
+            isPaused: loadedSessionData.isPaused || false, 
+            pauseStartTime: (loadedSessionData.isPaused && loadedPauseStartTime && !isNaN(loadedPauseStartTime.getTime())) ? loadedPauseStartTime : null,
+            accumulatedPauseTimeThisSession: loadedSessionData.accumulatedPauseTimeThisSession || 0,
+            currentSessionPauseEvents: loadedSessionData.currentSessionPauseEvents || [],
+            lastPauseEndTime, 
+            submissivesName: savedSubmissivesName,
+            totalTimeCageOff 
+        });
+        console.log("App.js: Session restored. isPaused is now:", loadedSessionData.isPaused || false);
+    }
+    setShowRestoreSessionPrompt(false);
+    setLoadedSessionData(null);
+  }, [loadedSessionData, saveDataToFirestore, lastPauseEndTime, savedSubmissivesName, totalTimeCageOff, setHasSessionEverBeenActive]);
+
+  const handleDiscardAndStartNew = useCallback(async () => {
+    console.log("App.js: handleDiscardAndStartNew called.");
+    setIsCageOn(false);
+    setCageOnTime(null);
+    setTimeInChastity(0);
+    setIsPaused(false);
+    setPauseStartTime(null);
+    setAccumulatedPauseTimeThisSession(0);
+    setCurrentSessionPauseEvents([]);
+    setTimeCageOff(0); // Start with 0 cage off time
+    setHasSessionEverBeenActive(false); // No active session until user clicks "Cage On"
+    
+    // lastPauseEndTime is preserved as it relates to cooldown across different potential sessions.
+    // It gets reset only when a genuinely new session starts via handleToggleCage.
+
+    await saveDataToFirestore({
+        isCageOn: false,
+        cageOnTime: null,
+        timeInChastity: 0,
+        isPaused: false,
+        pauseStartTime: null,
+        accumulatedPauseTimeThisSession: 0,
+        currentSessionPauseEvents: [],
+        // Keep historical data as is
+        chastityHistory, 
+        totalChastityTime, 
+        totalTimeCageOff, // This would be from before the discard
+        submissivesName: savedSubmissivesName,
+        lastPauseEndTime 
+    });
+
+    setShowRestoreSessionPrompt(false);
+    setLoadedSessionData(null);
+    console.log("App.js: Discarded old session, starting fresh in Cage Off state. No timers running.");
+  }, [saveDataToFirestore, chastityHistory, totalChastityTime, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive]);
+
 
   // Main Render
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
-        {console.log("App.js rendering. isAuthReady:", isAuthReady, "isLoading:", isLoading, "isPaused:", isPaused, "userId:", userId)}
+        {/* {console.log("App.js rendering. isAuthReady:", isAuthReady, "isLoading:", isLoading, "isPaused:", isPaused, "userId:", userId, "showRestorePrompt:", showRestoreSessionPrompt)} */}
         <h1 className="text-2xl md:text-3xl font-bold text-purple-300 mb-2">Chastity Time Tracking</h1>
         {savedSubmissivesName && <p className="text-lg text-purple-200 mb-4">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
 
@@ -1383,6 +1499,11 @@ const App = () => {
                 pauseStartTime={pauseStartTime}
                 livePauseDuration={livePauseDuration} 
                 pauseCooldownMessage={pauseCooldownMessage}
+                // Restore session prompt props
+                showRestoreSessionPrompt={showRestoreSessionPrompt}
+                handleConfirmRestoreSession={handleConfirmRestoreSession}
+                handleDiscardAndStartNew={handleDiscardAndStartNew}
+                loadedSessionData={loadedSessionData}
             />
         )}
 
