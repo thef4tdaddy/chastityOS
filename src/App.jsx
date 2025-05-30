@@ -693,6 +693,10 @@ const App = () => {
           console.log("App.js: loadTrackerData - No docRef, setting default initial state (isLoading false).");
           setIsLoading(false); 
           setHasSessionEverBeenActive(false);
+          setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
+          setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
+          setLastPauseEndTime(null); setChastityHistory([]); setSavedSubmissivesName(''); setSubmissivesNameInput('');
+          setTotalChastityTime(0); setTotalTimeCageOff(0); setOverallTotalPauseTime(0);
           return; 
       }
       try {
@@ -727,16 +731,17 @@ const App = () => {
           setSubmissivesNameInput(currentName); 
           const loadedLastPauseEndTime = data.lastPauseEndTime?.toDate();
           setLastPauseEndTime(loadedLastPauseEndTime && !isNaN(loadedLastPauseEndTime.getTime()) ? loadedLastPauseEndTime : null);
+          console.log("App.js: loadTrackerData - Loaded lastPauseEndTime from Firestore:", loadedLastPauseEndTime);
 
-          const activeSessionIsCageOn = data.isCageOn || false;
-          const activeSessionCageOnTime = data.cageOnTime?.toDate();
+          const activeSessionIsCageOnLoaded = data.isCageOn || false;
+          const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate();
 
-          if (activeSessionIsCageOn && activeSessionCageOnTime && !isNaN(activeSessionCageOnTime.getTime())) {
-            console.log("App.js: loadTrackerData - Active session detected from Firestore. Preparing restore prompt.");
+          if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
+            console.log("App.js: loadTrackerData - Active session found in Firestore. Preparing restore prompt.");
             const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate();
             setLoadedSessionData({ 
                 isCageOn: true,
-                cageOnTime: activeSessionCageOnTime,
+                cageOnTime: activeSessionCageOnTimeLoaded,
                 timeInChastity: data.timeInChastity || 0,
                 isPaused: data.isPaused || false, 
                 pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null,
@@ -749,33 +754,35 @@ const App = () => {
             });
             
             // Set UI to a paused neutral state while prompt is shown
-            setIsCageOn(true); // Reflect that a session *could* be active
-            setCageOnTime(activeSessionCageOnTime); 
+            setIsCageOn(true); 
+            setCageOnTime(activeSessionCageOnTimeLoaded); 
             setTimeInChastity(data.timeInChastity || 0); 
-            setIsPaused(true); // Force UI pause
+            setIsPaused(true); 
             setPauseStartTime(new Date()); 
             setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0);
             setCurrentSessionPauseEvents(data.currentSessionPauseEvents || []);
-            
-            setShowRestoreSessionPrompt(true);
             setHasSessionEverBeenActive(true); // A session was active
+            setShowRestoreSessionPrompt(true);
             console.log("App.js: loadTrackerData - Showing restore prompt. App is in a 'paused neutral state'.");
           } else {
-            if (activeSessionIsCageOn && (!activeSessionCageOnTime || isNaN(activeSessionCageOnTime.getTime()))) {
-                console.warn("App.js: loadTrackerData - Inconsistent state from Firestore: isCageOn is true, but cageOnTime is invalid. Forcing Cage Off.");
+            if (activeSessionIsCageOnLoaded && (!activeSessionCageOnTimeLoaded || isNaN(activeSessionCageOnTimeLoaded.getTime()))) {
+                console.warn("App.js: loadTrackerData - Inconsistent state from Firestore (isCageOn true, but cageOnTime invalid). Forcing Cage Off.");
             } else {
-                console.log("App.js: loadTrackerData - No active/valid session in Firestore. Initializing to Cage Off.");
+                console.log("App.js: loadTrackerData - No active/valid session in Firestore. Initializing to Cage Off. hasSessionEverBeenActive will depend on history.");
             }
             setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0);
             setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
+            setLivePauseDuration(0);
             if (loadedHistory.length > 0) {
                 const lastPeriod = loadedHistory[loadedHistory.length - 1];
                 const lastSessionEndTime = lastPeriod.endTime; 
-                setTimeCageOff(Math.max(0, Math.floor((new Date().getTime() - (lastSessionEndTime ? lastSessionEndTime.getTime() : new Date().getTime())) / 1000)));
-                setHasSessionEverBeenActive(true); // History exists, so sessions have been active
+                if (lastSessionEndTime && !isNaN(lastSessionEndTime.getTime())) {
+                    setTimeCageOff(Math.max(0, Math.floor((new Date().getTime() - lastSessionEndTime.getTime()) / 1000)));
+                } else { setTimeCageOff(0); }
+                setHasSessionEverBeenActive(true);
             } else { 
                 setTimeCageOff(0); 
-                setHasSessionEverBeenActive(false); // No history, truly fresh start potentially
+                setHasSessionEverBeenActive(false);
             }
           }
         } else { 
@@ -887,24 +894,24 @@ const App = () => {
       if (typeof firestoreReadyData.submissivesName === 'undefined') firestoreReadyData.submissivesName = savedSubmissivesName; 
       if (firestoreReadyData.hasOwnProperty('userAlias')) delete firestoreReadyData.userAlias;
       
-      console.log("App.js: saveDataToFirestore: Attempting to set document with data:", JSON.stringify(firestoreReadyData, null, 2));
+      // console.log("App.js: saveDataToFirestore: Attempting to set document with data:", JSON.stringify(firestoreReadyData, null, 2));
       await setDoc(docRef, firestoreReadyData, { merge: true });
-      console.log("App.js: saveDataToFirestore: Data saved successfully.");
+      // console.log("App.js: saveDataToFirestore: Data saved successfully.");
     } catch (error) { console.error("Error saving main data to Firestore:", error); }
   }, [userId, getDocRef, isAuthReady, savedSubmissivesName]); 
   
   useEffect(() => { 
-    console.log("Timer Effect (timeInChastity): isCageOn =", isCageOn, "isPaused =", isPaused, "(type:", typeof isPaused + ")", "cageOnTime =", cageOnTime, "isAuthReady =", isAuthReady);
+    // console.log("Timer Effect (timeInChastity): isCageOn =", isCageOn, "isPaused =", isPaused, "(type:", typeof isPaused + ")", "cageOnTime =", cageOnTime, "isAuthReady =", isAuthReady);
     if (isCageOn && isPaused === false && isAuthReady) { 
       if (cageOnTime && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime())) {
           const now = new Date();
           const initialElapsed = Math.max(0, Math.floor((now.getTime() - cageOnTime.getTime()) / 1000));
           if (timeInChastity === 0 || (cageOnTime && cageOnTime.getTime() !== (tempStartTime?.getTime() || 0))) { 
-            console.log("Timer Effect (timeInChastity): Setting initialElapsed =", initialElapsed);
+            // console.log("Timer Effect (timeInChastity): Setting initialElapsed =", initialElapsed);
             setTimeInChastity(initialElapsed);
           }
       }
-      console.log("Timer Effect (timeInChastity): Starting setInterval. Current timeInChastity value before interval starts:", timeInChastity);
+      // console.log("Timer Effect (timeInChastity): Starting setInterval. Current timeInChastity value before interval starts:", timeInChastity);
       timerInChastityRef.current = setInterval(() => {
         setTimeInChastity(prevTime => {
             // console.log("Timer Tick (timeInChastity): prevTime =", prevTime, "newTime =", prevTime + 1, "isPaused in App scope:", isPaused); 
@@ -913,41 +920,41 @@ const App = () => {
       }, 1000);
     } else {
       if (timerInChastityRef.current) {
-        console.log("Timer Effect (timeInChastity): Clearing interval because isCageOn is", isCageOn, "or isPaused is", isPaused, "or isAuthReady is", isAuthReady);
+        // console.log("Timer Effect (timeInChastity): Clearing interval because isCageOn is", isCageOn, "or isPaused is", isPaused, "or isAuthReady is", isAuthReady);
         clearInterval(timerInChastityRef.current);
       }
     }
     return () => { 
       if (timerInChastityRef.current) {
-        console.log("Timer Effect Cleanup (timeInChastity): Clearing interval");
+        // console.log("Timer Effect Cleanup (timeInChastity): Clearing interval");
         clearInterval(timerInChastityRef.current);
       }
     };
   }, [isCageOn, isPaused, cageOnTime, isAuthReady, timeInChastity, tempStartTime]); 
 
   useEffect(() => { 
-    console.log("Timer Effect (timeCageOff): isCageOn =", isCageOn, "isAuthReady =", isAuthReady, "hasSessionEverBeenActive=", hasSessionEverBeenActive);
+    // console.log("Timer Effect (timeCageOff): isCageOn =", isCageOn, "isAuthReady =", isAuthReady, "hasSessionEverBeenActive=", hasSessionEverBeenActive);
     if (!isCageOn && isAuthReady && hasSessionEverBeenActive) { 
-      console.log("Timer Effect (timeCageOff): Starting setInterval. Current timeCageOff value before interval starts:", timeCageOff);
+      // console.log("Timer Effect (timeCageOff): Starting setInterval. Current timeCageOff value before interval starts:", timeCageOff);
       timerCageOffRef.current = setInterval(() => setTimeCageOff(prev => prev + 1), 1000);
     } else { 
       if (timerCageOffRef.current) {
-        console.log("Timer Effect (timeCageOff): Clearing interval because isCageOn is", isCageOn, "or isAuthReady is", isAuthReady, "or hasSessionEverBeenActive is", hasSessionEverBeenActive);
+        // console.log("Timer Effect (timeCageOff): Clearing interval because isCageOn is", isCageOn, "or isAuthReady is", isAuthReady, "or hasSessionEverBeenActive is", hasSessionEverBeenActive);
         clearInterval(timerCageOffRef.current);
       }
     }
     return () => { 
       if (timerCageOffRef.current) {
-        console.log("Timer Effect Cleanup (timeCageOff): Clearing interval");
+        // console.log("Timer Effect Cleanup (timeCageOff): Clearing interval");
         clearInterval(timerCageOffRef.current);
       }
     };
-  }, [isCageOn, isAuthReady, hasSessionEverBeenActive]); // Removed timeCageOff from deps
+  }, [isCageOn, isAuthReady, hasSessionEverBeenActive]); 
 
   // Effect for live pause duration display
   useEffect(() => {
     if (isPaused && pauseStartTime) {
-        console.log("App.js: Starting livePauseDuration interval. Pause Start Time:", pauseStartTime);
+        // console.log("App.js: Starting livePauseDuration interval. Pause Start Time:", pauseStartTime);
         setLivePauseDuration(Math.floor((new Date().getTime() - pauseStartTime.getTime()) / 1000)); 
         pauseDisplayTimerRef.current = setInterval(() => {
             setLivePauseDuration(prev => {
@@ -957,14 +964,14 @@ const App = () => {
         }, 1000);
     } else {
         if (pauseDisplayTimerRef.current) {
-            console.log("App.js: Clearing livePauseDuration interval.");
+            // console.log("App.js: Clearing livePauseDuration interval.");
             clearInterval(pauseDisplayTimerRef.current);
         }
         setLivePauseDuration(0); 
     }
     return () => {
         if (pauseDisplayTimerRef.current) {
-            console.log("App.js: Cleanup - Clearing livePauseDuration interval.");
+            // console.log("App.js: Cleanup - Clearing livePauseDuration interval.");
             clearInterval(pauseDisplayTimerRef.current);
         }
     };
@@ -1024,7 +1031,7 @@ const App = () => {
         currentSessionPauseEvents: [...currentSessionPauseEvents, newPauseEvent],
         lastPauseEndTime 
     };
-    console.log("App.js: handleConfirmPause - Data to save:", dataToSave);
+    // console.log("App.js: handleConfirmPause - Data to save:", dataToSave);
     await saveDataToFirestore(dataToSave);
     console.log("App.js: handleConfirmPause - Session paused. Firestore updated.");
   }, [isCageOn, reasonForPauseInput, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore, lastPauseEndTime]);
@@ -1069,7 +1076,7 @@ const App = () => {
         currentSessionPauseEvents: updatedSessionPauses,
         lastPauseEndTime: endTime 
     };
-    console.log("App.js: handleResumeSession - Data to save:", dataToSave);
+    // console.log("App.js: handleResumeSession - Data to save:", dataToSave);
     await saveDataToFirestore(dataToSave);
     console.log("App.js: handleResumeSession - Session resumed. Firestore updated.");
   }, [isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore]);
@@ -1106,8 +1113,8 @@ const App = () => {
       setPauseStartTime(null);
       setIsPaused(false); 
       setLastPauseEndTime(null); 
-      console.log("App.js: handleToggleCage - Setting lastPauseEndTime to null for new session."); 
-      setHasSessionEverBeenActive(true); // Mark that a session has now been active
+      setHasSessionEverBeenActive(true);
+      console.log("App.js: handleToggleCage - Setting lastPauseEndTime to null & hasSessionEverBeenActive to true for new session."); 
       const dataToSave = { 
           isCageOn: true, cageOnTime: currentTime, totalTimeCageOff: newTotalOff, 
           timeInChastity: 0, 
@@ -1115,7 +1122,7 @@ const App = () => {
           isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [],
           lastPauseEndTime: null 
       };
-      console.log("App.js: handleToggleCage - Data to save for Cage ON:", dataToSave);
+      // console.log("App.js: handleToggleCage - Data to save for Cage ON:", dataToSave);
       saveDataToFirestore(dataToSave).then(() => {
           console.log("App.js: handleToggleCage - saveDataToFirestore for Cage ON successful.");
       }).catch(err => {
@@ -1181,7 +1188,7 @@ const App = () => {
       setPauseStartTime(null);
       setAccumulatedPauseTimeThisSession(0);
       setCurrentSessionPauseEvents([]);
-      setHasSessionEverBeenActive(true); // A session just ended, so timers are allowed if conditions meet
+      setHasSessionEverBeenActive(true); // A session just ended
 
       const dataToSave = { 
           isCageOn: false, cageOnTime: null, timeInChastity: 0,
@@ -1239,7 +1246,7 @@ const App = () => {
             setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); 
             setLastPauseEndTime(null); 
             setPauseCooldownMessage('');
-            setHasSessionEverBeenActive(false); // Reset this flag
+            setHasSessionEverBeenActive(false);
             
             setConfirmReset(false); setShowReasonModal(false); 
             saveDataToFirestore({ 
@@ -1395,7 +1402,7 @@ const App = () => {
         setPauseStartTime( (loadedSessionData.isPaused && loadedPauseStartTime && !isNaN(loadedPauseStartTime.getTime())) ? loadedPauseStartTime : null); 
         setAccumulatedPauseTimeThisSession(loadedSessionData.accumulatedPauseTimeThisSession || 0);
         setCurrentSessionPauseEvents(loadedSessionData.currentSessionPauseEvents || []);
-        setHasSessionEverBeenActive(true);
+        setHasSessionEverBeenActive(true); // User chose to engage with a session
 
         await saveDataToFirestore({
             isCageOn: loadedSessionData.isCageOn,
@@ -1424,12 +1431,9 @@ const App = () => {
     setPauseStartTime(null);
     setAccumulatedPauseTimeThisSession(0);
     setCurrentSessionPauseEvents([]);
-    setTimeCageOff(0); // Start with 0 cage off time
-    setHasSessionEverBeenActive(false); // No active session until user clicks "Cage On"
+    setTimeCageOff(0); 
+    setHasSessionEverBeenActive(false); 
     
-    // lastPauseEndTime is preserved as it relates to cooldown across different potential sessions.
-    // It gets reset only when a genuinely new session starts via handleToggleCage.
-
     await saveDataToFirestore({
         isCageOn: false,
         cageOnTime: null,
@@ -1438,10 +1442,9 @@ const App = () => {
         pauseStartTime: null,
         accumulatedPauseTimeThisSession: 0,
         currentSessionPauseEvents: [],
-        // Keep historical data as is
         chastityHistory, 
         totalChastityTime, 
-        totalTimeCageOff, // This would be from before the discard
+        totalTimeCageOff, 
         submissivesName: savedSubmissivesName,
         lastPauseEndTime 
     });
