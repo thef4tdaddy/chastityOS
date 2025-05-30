@@ -1,31 +1,36 @@
-@import 'tailwindcss';
+/* src/index.css */
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+@import "tailwindcss"; /* This should be the very first line */
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+/* Basic resets and full height setup */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+*,
+::before,
+::after {
+  box-sizing: inherit;
+}
+
+/* You can keep basic font settings here if you like,
+   or let Tailwind's base styles handle it.
+   Tailwind will apply its own default font stack unless you customize it. */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Text color and background color for the page should ideally be handled
+     by Tailwind utilities on your App's main wrapper or body if necessary,
+     to allow Tailwind's dark mode to work seamlessly. */
+  /* For example, your App.jsx's outermost div has bg-gray-900. */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -33,56 +38,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+/* IMPORTANT: 
+  Remove any other global styles for elements like <h1>, <a>, or especially <button> 
+  from this file if you want Tailwind CSS utility classes to take full control 
+  of their styling. 
+  
+  The global 'button' styles you had before, especially 'background-color', 
+  were causing the button color issue.
+*/
