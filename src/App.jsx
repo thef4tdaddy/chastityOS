@@ -196,11 +196,9 @@ const App = () => {
     return () => unsubscribe();
   }, []); 
 
-  // Effect to calculate overall totals when chastityHistory changes
   useEffect(() => {
     let totalEffectiveChastity = 0;
     let totalOverallPaused = 0;
-
     chastityHistory.forEach(period => {
         const effectiveDuration = (period.duration || 0) - (period.totalPauseDurationSeconds || 0);
         totalEffectiveChastity += Math.max(0, effectiveDuration);
@@ -208,7 +206,6 @@ const App = () => {
     });
     setTotalChastityTime(totalEffectiveChastity);
     setOverallTotalPauseTime(totalOverallPaused);
-
   }, [chastityHistory]);
 
   const applyLoadedData = useCallback((data, isRestoringFromOtherUser = false) => {
@@ -267,7 +264,6 @@ const App = () => {
             setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0);
             setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
             setLivePauseDuration(0);
-            // setHasSessionEverBeenActive is already set from data.hasSessionEverBeenActive or default false
             if (!(data.hasSessionEverBeenActive || false) && loadedHist.length > 0) {
                  setHasSessionEverBeenActive(true);
             }
@@ -565,7 +561,21 @@ const App = () => {
 
   const handleCancelRemoval = useCallback(() => { setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, []);
   
-  const clearAllEvents = useCallback(async () => { /* ... */ }, [isAuthReady, userId, getEventsCollectionRef]); 
+  const clearAllEvents = useCallback(async () => { 
+    if (!isAuthReady || !userId) return;
+    const eventsColRef = getEventsCollectionRef();
+    if (!eventsColRef) return;
+    try {
+        const q = query(eventsColRef); 
+        const querySnapshot = await getDocs(q);
+        const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, eventsColRef.path, docSnapshot.id)));
+        await Promise.all(deletePromises);
+        setSexualEventsLog([]); 
+    } catch (error) { 
+        console.error("App.js: clearAllEvents - Error clearing sexual events:", error); 
+    }
+  }, [isAuthReady, userId, getEventsCollectionRef]); 
+
   const handleResetAllData = useCallback(() => { 
     if (!isAuthReady) return;
       if (confirmReset) {
@@ -590,14 +600,258 @@ const App = () => {
   }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive]);
   
   const handleSubmissivesNameInputChange = useCallback((event) => { setSubmissivesNameInput(event.target.value); }, []);
-  const handleSetSubmissivesName = useCallback(async () => { /* ... */ }, [isAuthReady, userId, savedSubmissivesName, submissivesNameInput, saveDataToFirestore, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime, hasSessionEverBeenActive]);
+  const handleSetSubmissivesName = useCallback(async () => { 
+    if (!isAuthReady || !userId) { setNameMessage("Cannot set name: User not authenticated."); setTimeout(() => setNameMessage(''), 3000); return; }
+    if (savedSubmissivesName) { setNameMessage("Name is already set. Perform a 'Reset All Data' in Settings to change it."); setTimeout(() => setNameMessage(''), 4000); return; }
+    const trimmedName = submissivesNameInput.trim();
+    if (!trimmedName) { setNameMessage("Name cannot be empty."); setTimeout(() => setNameMessage(''), 3000); return; }
+    setSavedSubmissivesName(trimmedName);
+    await saveDataToFirestore({ submissivesName: trimmedName, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime, hasSessionEverBeenActive });
+    setNameMessage("Submissive's Name set successfully!"); setTimeout(() => setNameMessage(''), 3000);
+  }, [isAuthReady, userId, savedSubmissivesName, submissivesNameInput, saveDataToFirestore, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime, hasSessionEverBeenActive]);
+  
   const handleToggleUserIdVisibility = useCallback(() => { setShowUserIdInSettings(prev => !prev); }, []);
   const handleEventTypeChange = useCallback((type) => { setSelectedEventTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]); }, []);
   const handleOtherEventTypeCheckChange = useCallback((e) => { setOtherEventTypeChecked(e.target.checked); if (!e.target.checked) { setOtherEventTypeDetail(''); } }, []);
-  const handleLogNewEvent = useCallback(async (e) => { /* ... */ }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents, setEventLogMessage, setNewEventDate, setNewEventTime, setSelectedEventTypes, setOtherEventTypeChecked, setOtherEventTypeDetail, setNewEventNotes, setNewEventDurationHours, setNewEventDurationMinutes, setNewEventSelfOrgasmAmount, setNewEventPartnerOrgasmAmount ]);
-  const handleExportTrackerCSV = useCallback(() => { /* ... */ }, [isAuthReady, chastityHistory, totalChastityTime, totalTimeCageOff]);
-  const handleExportEventLogCSV = useCallback(() => { /* ... */ }, [isAuthReady, sexualEventsLog, savedSubmissivesName]);
-  const handleExportTextReport = useCallback(() => { /* ... */ }, [isAuthReady, savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, overallTotalPauseTime]);
+  const handleLogNewEvent = useCallback(async (e) => { 
+    e.preventDefault();
+    if (!isAuthReady || !userId) { 
+        setEventLogMessage("Authentication required or User ID missing.");
+        setTimeout(() => setEventLogMessage(''), 3000); 
+        return; 
+    }
+    const finalEventTypes = [...selectedEventTypes];
+    let finalOtherDetail = null;
+    if (otherEventTypeChecked && otherEventTypeDetail.trim()) {
+        finalOtherDetail = otherEventTypeDetail.trim();
+    }
+    if (finalEventTypes.length === 0 && !finalOtherDetail) {
+        setEventLogMessage("Please select at least one event type or specify 'Other'.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+    const eventsColRef = getEventsCollectionRef(); 
+    if (!eventsColRef) {
+        setEventLogMessage("Error: Event log reference could not be created. Check console.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+    const dateTimeString = `${newEventDate}T${newEventTime}`;
+    const eventTimestamp = new Date(dateTimeString);
+    if (isNaN(eventTimestamp.getTime())) { 
+        setEventLogMessage("Invalid date/time.");
+        setTimeout(() => setEventLogMessage(''), 3000); 
+        return; 
+    }
+    const durationHours = parseInt(newEventDurationHours, 10) || 0;
+    const durationMinutes = parseInt(newEventDurationMinutes, 10) || 0;
+    const durationSeconds = (durationHours * 3600) + (durationMinutes * 60);
+    const selfOrgasmAmount = selectedEventTypes.includes("Orgasm (Self)") && newEventSelfOrgasmAmount ? parseInt(newEventSelfOrgasmAmount, 10) || null : null;
+    const partnerOrgasmAmount = selectedEventTypes.includes("Orgasm (Partner)") && newEventPartnerOrgasmAmount ? parseInt(newEventPartnerOrgasmAmount, 10) || null : null;
+    const newEventData = { 
+        eventTimestamp: Timestamp.fromDate(eventTimestamp), 
+        loggedAt: serverTimestamp(), 
+        types: finalEventTypes, 
+        otherTypeDetail: finalOtherDetail, 
+        notes: newEventNotes.trim(),
+        durationSeconds: durationSeconds > 0 ? durationSeconds : null,
+        selfOrgasmAmount: selfOrgasmAmount,
+        partnerOrgasmAmount: partnerOrgasmAmount
+    };
+    try {
+        await addDoc(eventsColRef, newEventData); 
+        setEventLogMessage("Event logged successfully!");
+        setNewEventDate(new Date().toISOString().slice(0, 10)); 
+        setNewEventTime(new Date().toTimeString().slice(0,5));
+        setSelectedEventTypes([]); 
+        setOtherEventTypeChecked(false);
+        setOtherEventTypeDetail('');
+        setNewEventNotes('');
+        setNewEventDurationHours('');
+        setNewEventDurationMinutes('');
+        setNewEventSelfOrgasmAmount(''); 
+        setNewEventPartnerOrgasmAmount(''); 
+        fetchEvents(); 
+    } catch (error) { 
+        console.error("App.js: handleLogNewEvent - Error logging event to Firestore:", error); 
+        setEventLogMessage("Failed to log event. Check console for details."); 
+    }
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents, setEventLogMessage, setNewEventDate, setNewEventTime, setSelectedEventTypes, setOtherEventTypeChecked, setOtherEventTypeDetail, setNewEventNotes, setNewEventDurationHours, setNewEventDurationMinutes, setNewEventSelfOrgasmAmount, setNewEventPartnerOrgasmAmount ]);
+  
+  const handleExportTrackerCSV = useCallback(() => { 
+    if (!isAuthReady || chastityHistory.length === 0) {
+        setEventLogMessage("No tracker history to export.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Period #,Start Time,End Time,Raw Duration (HH:MM:SS),Total Pause Duration (HH:MM:SS),Effective Chastity Duration (HH:MM:SS),Reason for Removal,Pause Events\n";
+
+    chastityHistory.forEach(p => {
+        const rawDurationFormatted = formatElapsedTime(p.duration);
+        const pauseDurationFormatted = formatElapsedTime(p.totalPauseDurationSeconds || 0);
+        const effectiveDuration = Math.max(0, p.duration - (p.totalPauseDurationSeconds || 0));
+        const effectiveDurationFormatted = formatElapsedTime(effectiveDuration);
+        
+        let pauseEventsString = "";
+        if (p.pauseEvents && p.pauseEvents.length > 0) {
+            pauseEventsString = p.pauseEvents.map(pe => 
+                `[Paused: ${formatTime(pe.startTime, true, true)} to ${formatTime(pe.endTime, true, true)} (${formatElapsedTime(pe.duration || 0)}) Reason: ${pe.reason || 'N/A'}]`
+            ).join('; ');
+        }
+        
+        const row = [
+            p.periodNumber,
+            formatTime(p.startTime, true, true), 
+            formatTime(p.endTime, true, true),   
+            rawDurationFormatted,
+            pauseDurationFormatted,
+            effectiveDurationFormatted,
+            `"${(p.reasonForRemoval || '').replace(/"/g, '""')}"`, 
+            `"${pauseEventsString.replace(/"/g, '""')}"` 
+        ].join(",");
+        csvContent += row + "\r\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "chastity_tracker_history.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setEventLogMessage("Tracker history exported successfully!");
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, chastityHistory]);
+
+  const handleExportEventLogCSV = useCallback(() => { 
+    if (!isAuthReady || sexualEventsLog.length === 0) {
+        setEventLogMessage("No events to export.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date & Time,Type(s),Other Detail,Duration (HH:MM:SS),Orgasm (Self) Count,Orgasm (Partner) Count,Notes\n";
+
+    sexualEventsLog.slice().reverse().forEach(event => { 
+        const typesString = (event.types || []).join('; ');
+        const durationFormatted = event.durationSeconds ? formatElapsedTime(event.durationSeconds) : '';
+        const row = [
+            formatTime(event.eventTimestamp, true, true), 
+            `"${typesString.replace(/"/g, '""')}"`,
+            `"${(event.otherTypeDetail || '').replace(/"/g, '""')}"`,
+            durationFormatted,
+            event.selfOrgasmAmount || '',
+            event.partnerOrgasmAmount || '',
+            `"${(event.notes || '').replace(/"/g, '""')}"`
+        ].join(",");
+        csvContent += row + "\r\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "sexual_events_log.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setEventLogMessage("Event log exported successfully!");
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, sexualEventsLog]);
+
+  const handleExportTextReport = useCallback(() => {
+    if (!isAuthReady) {
+        setEventLogMessage("Authentication not ready.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+
+    let reportContent = `ChastityOS Report\n`;
+    reportContent += `Generated: ${formatTime(new Date(), true, true)}\n`;
+    reportContent += `Submissive's Name: ${savedSubmissivesName || '(Not Set)'}\n`;
+    reportContent += `User ID: ${userId || 'N/A'}\n`;
+    reportContent += `--------------------------------------\n\n`;
+
+    reportContent += `CURRENT STATUS:\n`;
+    reportContent += `Cage Status: ${isCageOn ? (isPaused ? 'ON (Paused)' : 'ON') : 'OFF'}\n`;
+    if (isCageOn && cageOnTime) {
+        reportContent += `Current Cage On Since: ${formatTime(cageOnTime, true, true)}\n`;
+        const effectiveSessionTime = timeInChastity - accumulatedPauseTimeThisSession;
+        reportContent += `Effective Session In Chastity: ${formatElapsedTime(effectiveSessionTime)}\n`;
+        if (isPaused && pauseStartTime) {
+            reportContent += `Currently Paused For: ${formatElapsedTime(livePauseDuration)}\n`;
+        }
+        if(accumulatedPauseTimeThisSession > 0) {
+            reportContent += `Total Time Paused This Session: ${formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession)}\n`;
+        }
+    } else {
+        reportContent += `Current Session Cage Off: ${formatElapsedTime(timeCageOff)}\n`;
+    }
+    reportContent += `\nTOTALS:\n`;
+    reportContent += `Total Time In Chastity (Effective): ${formatElapsedTime(totalChastityTime)}\n`;
+    reportContent += `Total Time Cage Off: ${formatElapsedTime(totalTimeCageOff)}\n`;
+    reportContent += `Overall Total Paused Time (All Sessions): ${formatElapsedTime(overallTotalPauseTime)}\n`;
+    reportContent += `--------------------------------------\n\n`;
+
+    reportContent += `CHASTITY HISTORY (Most Recent First):\n`;
+    if (chastityHistory.length > 0) {
+        chastityHistory.slice().reverse().forEach(p => {
+            const effectiveDuration = p.duration - (p.totalPauseDurationSeconds || 0);
+            reportContent += `Period #${p.periodNumber}:\n`;
+            reportContent += `  Start Time: ${formatTime(p.startTime, true, true)}\n`;
+            reportContent += `  End Time:   ${formatTime(p.endTime, true, true)}\n`;
+            reportContent += `  Raw Duration: ${formatElapsedTime(p.duration)}\n`;
+            reportContent += `  Total Pause Duration: ${formatElapsedTime(p.totalPauseDurationSeconds || 0)}\n`;
+            reportContent += `  Effective Chastity Duration: ${formatElapsedTime(effectiveDuration)}\n`;
+            reportContent += `  Reason for Removal: ${p.reasonForRemoval || 'N/A'}\n`;
+            if (p.pauseEvents && p.pauseEvents.length > 0) {
+                reportContent += `  Pause Events:\n`;
+                p.pauseEvents.forEach(pe => {
+                    reportContent += `    - Paused: ${formatTime(pe.startTime, true, true)} to ${formatTime(pe.endTime, true, true)} (${formatElapsedTime(pe.duration || 0)}) Reason: ${pe.reason || 'N/A'}\n`;
+                });
+            }
+            reportContent += `\n`;
+        });
+    } else {
+        reportContent += `No chastity history.\n\n`;
+    }
+    reportContent += `--------------------------------------\n\n`;
+
+    reportContent += `SEXUAL EVENTS LOG (Most Recent First):\n`;
+    if (sexualEventsLog.length > 0) {
+        sexualEventsLog.forEach(event => { 
+            const typesString = (event.types || []).map(type => type === "Orgasm (Self)" && savedSubmissivesName ? `Orgasm (${savedSubmissivesName})` : type).join(', ');
+            const otherDetailString = event.otherTypeDetail ? `, Other: ${event.otherTypeDetail}` : '';
+            const fullTypeString = `${typesString}${otherDetailString}` || 'N/A';
+            
+            let orgasmCounts = [];
+            if (event.selfOrgasmAmount) orgasmCounts.push(`Self: ${event.selfOrgasmAmount}`);
+            if (event.partnerOrgasmAmount) orgasmCounts.push(`Partner: ${event.partnerOrgasmAmount}`);
+            const orgasmString = orgasmCounts.length > 0 ? orgasmCounts.join(', ') : 'N/A';
+
+            reportContent += `Date & Time: ${formatTime(event.eventTimestamp, true, true)}\n`;
+            reportContent += `  Type(s): ${fullTypeString}\n`;
+            reportContent += `  Duration: ${event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}\n`;
+            reportContent += `  Orgasm Count(s): ${orgasmString}\n`;
+            reportContent += `  Notes: ${event.notes || 'N/A'}\n\n`;
+        });
+    } else {
+        reportContent += `No sexual events logged.\n`;
+    }
+    reportContent += `--------------------------------------\nEnd of Report`;
+
+    const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `ChastityOS_Report_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+
+    setEventLogMessage("Text report exported successfully!");
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, overallTotalPauseTime, isPaused, accumulatedPauseTimeThisSession, livePauseDuration, pauseStartTime]);
 
   // --- Restore Data from User ID Handlers ---
   const handleRestoreUserIdInputChange = (event) => {
@@ -620,7 +874,12 @@ const App = () => {
 
   const handleConfirmRestoreFromId = async () => {
     console.log("App.js: handleConfirmRestoreFromId - Attempting to restore from User ID:", restoreUserIdInput);
-    if (!restoreUserIdInput.trim()) return;
+    if (!restoreUserIdInput.trim() || !userId) { 
+        setRestoreFromIdMessage("Invalid input or current user not identified.");
+        setTimeout(() => setRestoreFromIdMessage(''), 3000);
+        setShowRestoreFromIdPrompt(false);
+        return;
+    }
 
     const targetDocRef = doc(db, "artifacts", appIdForFirestore, "users", restoreUserIdInput.trim());
     try {
@@ -743,121 +1002,29 @@ const App = () => {
             ))}
         </nav>
         
-        {/* Page Titles Rendered Here */}
         {currentPage === 'tracker' && !showRestoreSessionPrompt && <h2 className="text-2xl font-bold text-purple-300 mb-4">Chastity Tracker</h2>}
         {currentPage === 'fullReport' && <h2 className="text-2xl font-bold text-purple-300 mb-4 text-center">Full Report</h2>}
         {currentPage === 'logEvent' && <h2 className="text-2xl font-bold text-purple-300 mb-4">Sexual Event Log</h2>}
         {currentPage === 'settings' && <h2 className="text-2xl font-bold text-purple-300 mb-6">Settings</h2>}
 
-
         <Suspense fallback={<div className="text-center p-8 text-purple-300">Loading page...</div>}>
             {currentPage === 'tracker' && (
                 <TrackerPage
-                    isAuthReady={isAuthReady}
-                    isCageOn={isCageOn}
-                    cageOnTime={cageOnTime}
-                    timeInChastity={timeInChastity}
-                    timeCageOff={timeCageOff}
-                    totalChastityTime={totalChastityTime}
-                    totalTimeCageOff={totalTimeCageOff}
-                    chastityHistory={chastityHistory}
-                    handleToggleCage={handleToggleCage}
-                    showReasonModal={showReasonModal}
-                    setShowReasonModal={setShowReasonModal}
-                    reasonForRemoval={reasonForRemoval}
-                    setReasonForRemoval={setReasonForRemoval}
-                    handleConfirmRemoval={handleConfirmRemoval}
-                    handleCancelRemoval={handleCancelRemoval}
-                    isPaused={isPaused}
-                    handleInitiatePause={handleInitiatePause}
-                    handleResumeSession={handleResumeSession}
-                    showPauseReasonModal={showPauseReasonModal}
-                    handleCancelPauseModal={handleCancelPauseModal}
-                    reasonForPauseInput={reasonForPauseInput}
-                    setReasonForPauseInput={setReasonForPauseInput}
-                    handleConfirmPause={handleConfirmPause}
-                    accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession}
-                    pauseStartTime={pauseStartTime}
-                    livePauseDuration={livePauseDuration} 
-                    pauseCooldownMessage={pauseCooldownMessage}
-                    showRestoreSessionPrompt={showRestoreSessionPrompt}
-                    handleConfirmRestoreSession={handleConfirmRestoreSession}
-                    handleDiscardAndStartNew={handleDiscardAndStartNew}
-                    loadedSessionData={loadedSessionData}
+                    isAuthReady={isAuthReady} isCageOn={isCageOn} cageOnTime={cageOnTime} timeInChastity={timeInChastity} timeCageOff={timeCageOff}
+                    totalChastityTime={totalChastityTime} totalTimeCageOff={totalTimeCageOff} chastityHistory={chastityHistory}
+                    handleToggleCage={handleToggleCage} showReasonModal={showReasonModal} setShowReasonModal={setShowReasonModal}
+                    reasonForRemoval={reasonForRemoval} setReasonForRemoval={setReasonForRemoval} handleConfirmRemoval={handleConfirmRemoval} handleCancelRemoval={handleCancelRemoval}
+                    isPaused={isPaused} handleInitiatePause={handleInitiatePause} handleResumeSession={handleResumeSession}
+                    showPauseReasonModal={showPauseReasonModal} handleCancelPauseModal={handleCancelPauseModal} reasonForPauseInput={reasonForPauseInput} setReasonForPauseInput={setReasonForPauseInput}
+                    handleConfirmPause={handleConfirmPause} accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession} pauseStartTime={pauseStartTime}
+                    livePauseDuration={livePauseDuration} pauseCooldownMessage={pauseCooldownMessage}
+                    showRestoreSessionPrompt={showRestoreSessionPrompt} handleConfirmRestoreSession={handleConfirmRestoreSession}
+                    handleDiscardAndStartNew={handleDiscardAndStartNew} loadedSessionData={loadedSessionData}
                 />
             )}
-
-            {currentPage === 'fullReport' && (
-                <FullReportPage
-                    savedSubmissivesName={savedSubmissivesName}
-                    userId={userId}
-                    isCageOn={isCageOn}
-                    cageOnTime={cageOnTime}
-                    timeInChastity={timeInChastity}
-                    timeCageOff={timeCageOff}
-                    totalChastityTime={totalChastityTime}
-                    totalTimeCageOff={totalTimeCageOff}
-                    chastityHistory={chastityHistory}
-                    sexualEventsLog={sexualEventsLog}
-                    isLoadingEvents={isLoadingEvents}
-                    isPaused={isPaused} 
-                    accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession} 
-                    overallTotalPauseTime={overallTotalPauseTime}
-                />
-            )}
-
-            {currentPage === 'logEvent' && (
-                <LogEventPage
-                    isAuthReady={isAuthReady}
-                    newEventDate={newEventDate} setNewEventDate={setNewEventDate}
-                    newEventTime={newEventTime} setNewEventTime={setNewEventTime}
-                    
-                    selectedEventTypes={selectedEventTypes} handleEventTypeChange={handleEventTypeChange}
-                    otherEventTypeChecked={otherEventTypeChecked} handleOtherEventTypeCheckChange={handleOtherEventTypeCheckChange}
-                    otherEventTypeDetail={otherEventTypeDetail} setOtherEventTypeDetail={setOtherEventTypeDetail}
-
-                    newEventNotes={newEventNotes} setNewEventNotes={setNewEventNotes}
-                    newEventDurationHours={newEventDurationHours} setNewEventDurationHours={setNewEventDurationHours}
-                    newEventDurationMinutes={newEventDurationMinutes} setNewEventDurationMinutes={setNewEventDurationMinutes}
-                    newEventSelfOrgasmAmount={newEventSelfOrgasmAmount} setNewEventSelfOrgasmAmount={setNewEventSelfOrgasmAmount}
-                    newEventPartnerOrgasmAmount={newEventPartnerOrgasmAmount} setNewEventPartnerOrgasmAmount={setNewEventPartnerOrgasmAmount}
-                    handleLogNewEvent={handleLogNewEvent}
-                    eventLogMessage={eventLogMessage}
-                    isLoadingEvents={isLoadingEvents}
-                    sexualEventsLog={sexualEventsLog}
-                    savedSubmissivesName={savedSubmissivesName} 
-                />
-            )}
-
-            {currentPage === 'settings' && (
-                <SettingsPage
-                    isAuthReady={isAuthReady}
-                    eventLogMessage={eventLogMessage} 
-                    handleExportTrackerCSV={handleExportTrackerCSV}
-                    chastityHistory={chastityHistory}
-                    handleExportEventLogCSV={handleExportEventLogCSV}
-                    sexualEventsLog={sexualEventsLog} 
-                    handleResetAllData={handleResetAllData}
-                    confirmReset={confirmReset}
-                    nameMessage={nameMessage}
-                    handleExportTextReport={handleExportTextReport}
-                    userId={userId} 
-                    showUserIdInSettings={showUserIdInSettings} 
-                    handleToggleUserIdVisibility={handleToggleUserIdVisibility} 
-                    savedSubmissivesName={savedSubmissivesName}
-                    submissivesNameInput={submissivesNameInput}
-                    handleSubmissivesNameInputChange={handleSubmissivesNameInputChange}
-                    handleSetSubmissivesName={handleSetSubmissivesName}
-                    // Restore from User ID props
-                    restoreUserIdInput={restoreUserIdInput}
-                    handleRestoreUserIdInputChange={handleRestoreUserIdInputChange} 
-                    handleInitiateRestoreFromId={handleInitiateRestoreFromId}
-                    showRestoreFromIdPrompt={showRestoreFromIdPrompt}
-                    handleConfirmRestoreFromId={handleConfirmRestoreFromId}
-                    handleCancelRestoreFromId={handleCancelRestoreFromId}
-                    restoreFromIdMessage={restoreFromIdMessage}
-                />
-            )}
+            {currentPage === 'fullReport' && ( <FullReportPage {...{ savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession, overallTotalPauseTime }} /> )}
+            {currentPage === 'logEvent' && ( <LogEventPage {...{ isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange, otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes, newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount, handleLogNewEvent, eventLogMessage, isLoadingEvents, sexualEventsLog, savedSubmissivesName }} /> )}
+            {currentPage === 'settings' && ( <SettingsPage {...{ isAuthReady, eventLogMessage, handleExportTrackerCSV, chastityHistory, handleExportEventLogCSV, sexualEventsLog, handleResetAllData, confirmReset, nameMessage, handleExportTextReport, userId, showUserIdInSettings, handleToggleUserIdVisibility, savedSubmissivesName, submissivesNameInput, handleSubmissivesNameInputChange, handleSetSubmissivesName, restoreUserIdInput, handleRestoreUserIdInputChange, handleInitiateRestoreFromId, showRestoreFromIdPrompt, handleConfirmRestoreFromId, handleCancelRestoreFromId, restoreFromIdMessage }} /> )}
         </Suspense>
       </div>
       <footer className="mt-8 text-center text-xs text-gray-500">
