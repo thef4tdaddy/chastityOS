@@ -36,6 +36,9 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 setLogLevel('debug'); 
 
+// --- Google Analytics Measurement ID ---
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+
 // --- Lazy Load Page Components ---
 const TrackerPage = lazy(() => import('./pages/TrackerPage')); 
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -112,6 +115,38 @@ const App = () => {
 
   const timerInChastityRef = useRef(null);
   const timerCageOffRef = useRef(null);
+
+  // --- Google Analytics Initialization ---
+  useEffect(() => {
+    if (GA_MEASUREMENT_ID) {
+      if (typeof window.gtag === 'function') {
+        window.gtag('config', GA_MEASUREMENT_ID, {
+          send_page_view: false // We'll send page_view events manually for SPA
+        });
+        console.log("Google Analytics configured with ID:", GA_MEASUREMENT_ID);
+      } else {
+        console.warn("gtag.js not found. Ensure it's loaded in index.html before the app script.");
+      }
+    } else {
+      console.warn("Google Analytics Measurement ID (VITE_GA_MEASUREMENT_ID) is not set in .env file.");
+    }
+  }, []); // Runs once on component mount
+
+  // --- Google Analytics Page View Tracking ---
+  useEffect(() => {
+    if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) { 
+      const pagePath = `/${currentPage}`;
+      const pageTitle = currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim(); 
+      
+      console.log(`GA: Tracking page_view for ${pageTitle} (${pagePath})`);
+      window.gtag('event', 'page_view', {
+        page_title: pageTitle,
+        page_path: pagePath,
+        user_id: userId 
+      });
+    }
+  }, [currentPage, isAuthReady, userId]); 
+
 
   const getDocRef = useCallback((targetUserId = userId) => { 
     if (!targetUserId) return null;
