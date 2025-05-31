@@ -132,7 +132,3 @@ To run this project locally:
 * Notifications or reminders.
 * Connect account to Google or Apple account (for more robust authentication/recovery).
 * (Restore data from a known User ID is now implemented in v3.4)
-
----
-
-This README provides a good starting point. Feel free to modify and expand it as your project evolves!
