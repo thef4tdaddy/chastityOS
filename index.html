@@ -2,18 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" /> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChastityOS</title> <script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR_MEASUREMENT_ID"></script>
+    <title>ChastityOS</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
-      // Configure with your Measurement ID (this will be done dynamically in App.jsx if preferred,
-      // but having a base config here is also common. For SPA, dynamic config in App.jsx is better)
-      // For now, let's assume App.jsx will handle the config.
-      // gtag('config', 'G-YOUR_MEASUREMENT_ID'); // We will handle this in App.jsx
+      // The main config call is handled in App.jsx to ensure it runs after the Measurement ID is loaded from .env
+      // If you were not doing it in App.jsx, you would uncomment the line below and replace the placeholder.
+      // gtag('config', '%VITE_GA_MEASUREMENT_ID%'); 
     </script>
     </head>
   <body>
