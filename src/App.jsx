@@ -8,6 +8,8 @@ import {
 
 // Import utility functions
 import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils'; 
+// Import the logo
+import appLogo from './assets/logo.png'; // Ensure this path is correct
 
 // Firebase Config - using environment variables
 const firebaseConfig = {
@@ -49,7 +51,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const App = () => {
   const [userId, setUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); 
+  // const [isLoading, setIsLoading] = useState(true); // Removed as it's not used to gate UI
   const [currentPage, setCurrentPage] = useState('tracker'); 
   const [showUserIdInSettings, setShowUserIdInSettings] = useState(false); 
 
@@ -121,7 +123,7 @@ const App = () => {
     if (GA_MEASUREMENT_ID) {
       if (typeof window.gtag === 'function') {
         window.gtag('config', GA_MEASUREMENT_ID, {
-          send_page_view: false // We'll send page_view events manually for SPA
+          send_page_view: false 
         });
         console.log("Google Analytics configured with ID:", GA_MEASUREMENT_ID);
       } else {
@@ -168,6 +170,7 @@ const App = () => {
   }, [userId]); 
   
   useEffect(() => { 
+    /* global __initial_auth_token */ 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
@@ -184,7 +187,6 @@ const App = () => {
                 console.error("App.js: Initial sign-in error:", error);
                 setIsAuthReady(false); 
                 setUserId(null);
-                setIsLoading(false); 
             }
         } else {
             if (userId) console.log("App.js: User signed out or auth state changed to no user.");
@@ -194,6 +196,7 @@ const App = () => {
       }
     });
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
   useEffect(() => {
@@ -209,6 +212,7 @@ const App = () => {
   }, [chastityHistory]);
 
   const applyLoadedData = useCallback((data, isRestoringFromOtherUser = false) => {
+    console.log("App.js: applyLoadedData called. isRestoringFromOtherUser:", isRestoringFromOtherUser, "Data:", data);
     const loadedHist = (data.chastityHistory || []).map(item => {
         const startTime = item.startTime?.toDate();
         const endTime = item.endTime?.toDate();
@@ -227,9 +231,19 @@ const App = () => {
       setSubmissivesNameInput(cName); 
       const lPauseEndTime = data.lastPauseEndTime?.toDate();
       setLastPauseEndTime(lPauseEndTime && !isNaN(lPauseEndTime.getTime()) ? lPauseEndTime : null);
-      setHasSessionEverBeenActive(data.hasSessionEverBeenActive || false); 
+      
+      let newHasActive = data.hasSessionEverBeenActive || false;
+      if (isRestoringFromOtherUser) {
+          newHasActive = true; 
+      } else if (!newHasActive && loadedHist.length > 0) {
+          newHasActive = true; 
+      }
+      setHasSessionEverBeenActive(newHasActive);
+      console.log("App.js: applyLoadedData - Setting hasSessionEverBeenActive to:", newHasActive);
+
 
     if (isRestoringFromOtherUser) { 
+        console.log("App.js: applyLoadedData - Restoring from other user's data.");
         const loadedCageOn = data.isCageOn || false;
         const loadedCageOnTime = data.cageOnTime?.toDate();
         const loadedPauseStart = data.pauseStartTime?.toDate();
@@ -240,12 +254,12 @@ const App = () => {
         setPauseStartTime(loadedCageOn && (data.isPaused || false) && loadedPauseStart && !isNaN(loadedPauseStart.getTime()) ? loadedPauseStart : null);
         setAccumulatedPauseTimeThisSession(loadedCageOn ? (data.accumulatedPauseTimeThisSession || 0) : 0);
         setCurrentSessionPauseEvents(loadedCageOn ? (data.currentSessionPauseEvents || []) : []);
-        setHasSessionEverBeenActive(true); 
     } else {
         const activeSessionIsCageOnLoaded = data.isCageOn || false;
         const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate();
 
         if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
+            console.log("App.js: applyLoadedData - Active session found for current user. Preparing restore prompt.");
             const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate();
             setLoadedSessionData({ 
                 isCageOn: true, cageOnTime: activeSessionCageOnTimeLoaded, timeInChastity: data.timeInChastity || 0,
@@ -258,23 +272,21 @@ const App = () => {
             setIsPaused(true); setPauseStartTime(new Date()); 
             setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0);
             setCurrentSessionPauseEvents(data.currentSessionPauseEvents || []);
-            setHasSessionEverBeenActive(true); 
             setShowRestoreSessionPrompt(true);
         } else {
+            console.log("App.js: applyLoadedData - No active session for current user. Setting to neutral off state.");
             setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0);
             setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
             setLivePauseDuration(0);
-            if (!(data.hasSessionEverBeenActive || false) && loadedHist.length > 0) {
-                 setHasSessionEverBeenActive(true);
-            }
-            if (hasSessionEverBeenActive) { 
+            
+            if (newHasActive) { 
                 if (loadedHist.length > 0) {
                     const lastPeriod = loadedHist[loadedHist.length - 1];
                     const lastSessionEndTime = lastPeriod.endTime; 
                     setTimeCageOff(Math.max(0, Math.floor((new Date().getTime() - (lastSessionEndTime ? lastSessionEndTime.getTime() : new Date().getTime())) / 1000)));
                 } else { setTimeCageOff(0); }
             } else {
-                 setTimeCageOff(0);
+                 setTimeCageOff(0); 
             }
         }
     }
@@ -282,16 +294,13 @@ const App = () => {
 
   useEffect(() => { 
     if (!isAuthReady || !userId) {
-      if(isLoading && !isAuthReady && !auth.currentUser) setIsLoading(false); 
       return;
     }
     const loadInitialData = async () => {
-      setIsLoading(true); 
       console.log("App.js: loadInitialData - Attempting to load data for userId:", userId);
       const docRef = getDocRef(); 
       if (!docRef) { 
-          console.log("App.js: loadInitialData - No docRef, setting default initial state (isLoading false).");
-          setIsLoading(false); 
+          console.log("App.js: loadInitialData - No docRef, setting default initial state.");
           setHasSessionEverBeenActive(false);
           setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
           setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
@@ -321,7 +330,6 @@ const App = () => {
           setPauseCooldownMessage(''); setLivePauseDuration(0);
           setHasSessionEverBeenActive(false);
       } 
-      finally { setIsLoading(false); }
     };
     loadInitialData();
   }, [isAuthReady, userId, getDocRef, applyLoadedData]); 
@@ -410,7 +418,7 @@ const App = () => {
       }
       
       if (typeof firestoreReadyData.submissivesName === 'undefined') firestoreReadyData.submissivesName = savedSubmissivesName; 
-      if (firestoreReadyData.hasOwnProperty('userAlias')) delete firestoreReadyData.userAlias;
+      if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'userAlias')) delete firestoreReadyData.userAlias;
       
       await setDoc(docRef, firestoreReadyData, { merge: true });
     } catch (error) { console.error("Error saving main data to Firestore:", error); }
@@ -842,8 +850,8 @@ const App = () => {
 
     const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `ChastityOS_Report_${new Date().toISOString().slice(0,10)}.txt`;
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", `ChastityOS_Report_${new Date().toISOString().slice(0,10)}.txt`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -888,7 +896,7 @@ const App = () => {
             const dataToRestore = docSnap.data();
             console.log("App.js: handleConfirmRestoreFromId - Data found for target User ID:", dataToRestore);
             
-            applyLoadedData(dataToRestore, true); 
+            applyLoadedData(dataToRestore, true); // Use applyLoadedData here
             
             const dataForCurrentUser = { ...dataToRestore, hasSessionEverBeenActive: true };
             await saveDataToFirestore(dataForCurrentUser); 
@@ -990,7 +998,14 @@ const App = () => {
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
-        <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
+        <div className="flex items-center justify-center mb-4">
+          <img src={appLogo} alt="ChastityOS Logo" className="h-12 w-auto mr-4" />
+          <div className="flex flex-col items-start">
+            <h1 className="text-2xl font-bold text-purple-400 tracking-wider">ChastityOS</h1>
+            <p className="text-sm text-purple-200">Your personal chastity and FLR tracking web app</p>
+          </div>
+        </div>
+        
         {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
 
         <nav className="mb-6 flex justify-center space-x-1 sm:space-x-2">
@@ -1028,7 +1043,7 @@ const App = () => {
         </Suspense>
       </div>
       <footer className="mt-8 text-center text-xs text-gray-500">
-        Copyright 2025 F4tDaddy Productions v3.4 Nightly
+        Copyright 2025 F4tDaddy Productions v3.4.1
       </footer>
     </div>
   );
