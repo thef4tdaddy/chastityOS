@@ -1043,7 +1043,7 @@ const App = () => {
         </Suspense>
       </div>
       <footer className="mt-8 text-center text-xs text-gray-500">
-        Copyright 2025 F4tDaddy Productions v3.4.1
+        Copyright 2025 F4tDaddy Productions v3.4.2
       </footer>
     </div>
   );
