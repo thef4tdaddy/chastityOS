@@ -1,8 +1,7 @@
+
 import React from 'react';
 
 const SettingsPage = (props) => { 
-    // console.log("SettingsPage props:", props); // Debugging log removed/commented
-
     const {
         isAuthReady, 
         eventLogMessage, 
@@ -16,7 +15,6 @@ const SettingsPage = (props) => {
         submissivesNameInput, 
         handleSubmissivesNameInputChange, 
         handleSetSubmissivesName,
-        // Props for Restore from User ID
         restoreUserIdInput,
         handleRestoreUserIdInputChange, 
         handleInitiateRestoreFromId,
@@ -25,13 +23,20 @@ const SettingsPage = (props) => {
         handleCancelRestoreFromId,
         restoreFromIdMessage
     } = props; 
-    
+
+    const handleExportClick = (type) => {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'export_click', export_type: type });
+
+        if (type === 'text') handleExportTextReport();
+        else if (type === 'tracker') handleExportTrackerCSV();
+        else if (type === 'eventlog') handleExportEventLogCSV();
+    };
+
     return (
         <div className="p-0 md:p-4">
-           {/* Page title is now rendered in App.jsx for consistency */}
             <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-purple-300 mb-4">Profile Information</h3>
-                {/* Submissive's Name Setting */}
                 {!savedSubmissivesName && isAuthReady && (
                     <div className="mb-4">
                         <label htmlFor="settingsSubmissivesName" className="block text-sm font-medium text-purple-300 mb-1 text-left">
@@ -48,17 +53,14 @@ const SettingsPage = (props) => {
                         </div>
                     </div>
                 )}
-                 {savedSubmissivesName && (
-                     <div className="mb-4 text-left">
+                {savedSubmissivesName && (
+                    <div className="mb-4 text-left">
                         <p className="text-sm font-medium text-purple-300">Submissive's Name:</p>
                         <p className="text-lg text-purple-100">{savedSubmissivesName}</p>
-                        <p className="text-xs text-purple-400">(To change, use "Reset All Application Data" below.)</p>
+                        <p className="text-xs text-purple-400">(To change, use \"Reset All Application Data\" below.)</p>
                     </div>
                 )}
-                 {nameMessage && <p className={`text-xs mt-2 mb-3 text-left ${nameMessage.includes('successfully') || nameMessage.includes('set') ? 'text-green-400' : 'text-yellow-400'}`}>{nameMessage}</p>}
-
-
-                {/* User ID Display */}
+                {nameMessage && <p className={`text-xs mt-2 mb-3 text-left ${nameMessage.includes('successfully') || nameMessage.includes('set') ? 'text-green-400' : 'text-yellow-400'}`}>{nameMessage}</p>}
                 <div>
                     <h4 className="text-lg font-medium text-purple-200 mb-2 text-left">Account ID</h4>
                     <button 
@@ -83,10 +85,9 @@ const SettingsPage = (props) => {
                         <p className="text-sm text-yellow-400 bg-gray-700 p-2 rounded text-left">User ID not available yet. Please wait for authentication to complete.</p>
                     )}
                 </div>
-                 <p className="text-xs text-purple-500 mt-4 text-left"><em>Future: Keyholder/Partner customization options will appear here.</em></p>
+                <p className="text-xs text-purple-500 mt-4 text-left"><em>Future: Keyholder/Partner customization options will appear here.</em></p>
             </div>
 
-            {/* Restore Data from User ID Section */}
             <div className="mb-8 p-4 bg-gray-800 border border-sky-700 rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-sky-300 mb-4">Restore Data from User ID</h3>
                 <p className="text-sm text-purple-200 mb-3">
@@ -111,7 +112,6 @@ const SettingsPage = (props) => {
                 {restoreFromIdMessage && <p className={`text-xs mt-2 ${restoreFromIdMessage.includes('successfully') || restoreFromIdMessage.includes('found') ? 'text-green-400' : 'text-red-500'}`}>{restoreFromIdMessage}</p>}
             </div>
 
-            {/* Restore from ID Confirmation Modal */}
             {showRestoreFromIdPrompt && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
                   <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-red-700">
@@ -130,22 +130,19 @@ const SettingsPage = (props) => {
                 </div>
             )}
 
-
             <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-purple-300 mb-4">Data Management</h3>
                 <p className="text-sm text-purple-400 mb-4">Note: JSON Backup/Restore is a planned feature.</p>
-                
                 <hr className="my-4 border-purple-600"/>
-                
                 <h4 className="text-lg font-medium text-purple-200 mb-2">Export Data Options</h4>
                  <div className="flex flex-col space-y-3">
-                    <button type="button" onClick={handleExportTextReport} disabled={!isAuthReady} className="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
+                    <button type="button" onClick={() => handleExportClick('text')} disabled={!isAuthReady} className="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
                         Export Verbose Text Report (.txt)
                     </button>
-                    <button type="button" onClick={handleExportTrackerCSV} disabled={!isAuthReady || (chastityHistory && chastityHistory.length === 0)} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
+                    <button type="button" onClick={() => handleExportClick('tracker')} disabled={!isAuthReady || (chastityHistory && chastityHistory.length === 0)} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
                         Export Tracker History CSV
                     </button>
-                    <button type="button" onClick={handleExportEventLogCSV} disabled={!isAuthReady || (sexualEventsLog && sexualEventsLog.length === 0)} className="w-full bg-teal-500 hover:bg-teal-600 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
+                    <button type="button" onClick={() => handleExportClick('eventlog')} disabled={!isAuthReady || (sexualEventsLog && sexualEventsLog.length === 0)} className="w-full bg-teal-500 hover:bg-teal-600 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
                         Export Event Log CSV
                     </button>
                 </div>
