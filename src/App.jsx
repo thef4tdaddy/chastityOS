@@ -12,7 +12,16 @@ window.addEventListener('error', function(event) {
     console.error('Global error caught:', event.error);
 });
 
-const App = ({ isAuthReady, userId, GA_MEASUREMENT_ID }) => {
+const App = ({
+  isAuthReady = false,
+  userId = '',
+  GA_MEASUREMENT_ID = '',
+  isCageOn = false,
+  cageOnTime = null,
+  chastityHistory = [],
+  chastityDuration = 0,
+  cageDuration = 0
+}) => {
   const [currentPage, setCurrentPage] = useState('tracker');
 
   useEffect(() => {
@@ -78,7 +87,15 @@ const App = ({ isAuthReady, userId, GA_MEASUREMENT_ID }) => {
           </nav>
         )}
         <Suspense fallback={<div className="text-center p-8 text-purple-300">Loading page...</div>}>
-          {currentPage === 'tracker' && <TrackerPage />}
+          {currentPage === 'tracker' && (
+            <TrackerPage
+              isCageOn={isCageOn}
+              cageOnTime={cageOnTime}
+              chastityHistory={chastityHistory}
+              chastityDuration={chastityDuration}
+              cageDuration={cageDuration}
+            />
+          )}
           {currentPage === 'fullReport' && <FullReportPage />}
           {currentPage === 'logEvent' && <LogEventPage />}
           {currentPage === 'settings' && <SettingsPage onViewPrivacyPage={() => setCurrentPage('privacy')} />}
