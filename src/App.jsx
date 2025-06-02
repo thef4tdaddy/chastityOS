@@ -7,28 +7,37 @@ const LogEventPage = lazy(() => import('./pages/LogEventPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
 
+// Global error listener
+window.addEventListener('error', function(event) {
+    console.error('Global error caught:', event.error);
+});
+
 const App = ({ isAuthReady, userId, GA_MEASUREMENT_ID }) => {
   const [currentPage, setCurrentPage] = useState('tracker');
 
   useEffect(() => {
-    if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) {
-      const pagePath = `/${currentPage}`;
-      const pageTitle = currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim();
+    try {
+      if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) {
+        const pagePath = `/${currentPage}`;
+        const pageTitle = currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim();
 
-      console.log(`GA: Tracking page_view for ${pageTitle} (${pagePath})`);
-      window.gtag('event', 'page_view', {
-        page_title: pageTitle,
-        page_path: pagePath,
-        user_id: userId
-      });
+        console.log(`GA: Tracking page_view for ${pageTitle} (${pagePath})`);
+        window.gtag('event', 'page_view', {
+          page_title: pageTitle,
+          page_path: pagePath,
+          user_id: userId
+        });
 
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'page_view',
-        page_title: pageTitle,
-        page_path: pagePath,
-        user_id: userId
-      });
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'page_view',
+          page_title: pageTitle,
+          page_path: pagePath,
+          user_id: userId
+        });
+      }
+    } catch (error) {
+      console.error('Error in analytics tracking:', error);
     }
   }, [currentPage, isAuthReady, userId, GA_MEASUREMENT_ID]);
 
