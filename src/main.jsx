@@ -48,16 +48,15 @@ export const Main = () => {
   // --- Authentication State ---
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [userId, setUserId] = useState(null);
-  // const [user, setUser] = useState(null); // ESLint: 'user' is assigned a value but never used. For now, we'll rely on userId. If full user object is needed later, uncomment and use.
 
   // --- Application State ---
   const [isCageOn, setIsCageOn] = useState(false);
-  const [cageOnTime, setCageOnTime] = useState(null); // Firestore Timestamp (when set) or JS Date (when read)
+  const [cageOnTime, setCageOnTime] = useState(null); // JS Date, set from Firestore Timestamp
   const [chastityHistory, setChastityHistory] = useState([]);
-  const [currentChastitySession, setCurrentChastitySession] = useState(null); 
+  const [currentChastitySession, setCurrentChastitySession] = useState(null); // Holds current session details from Firestore
 
   // Durations and totals (in seconds)
-  const [cageDuration, setCageDuration] = useState(0); // Live raw duration for current cage-on time
+  // const [cageDuration, setCageDuration] = useState(0); // REMOVED - Live raw duration for current cage-on time was unused
   const [sexualEventsLog, setSexualEventsLog] = useState([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [savedSubmissivesName, setSavedSubmissivesName] = useState('');
@@ -70,18 +69,20 @@ export const Main = () => {
   const [accumulatedPauseTimeThisSession, setAccumulatedPauseTimeThisSession] = useState(0);
   const [overallTotalPauseTime, setOverallTotalPauseTime] = useState(0);
 
+  // State for TrackerPage's unlock reason prompt
+  const [unlockReasonInput, setUnlockReasonInput] = useState("");
+  const [showUnlockReasonPrompt, setShowUnlockReasonPrompt] = useState(false);
+
 
   // --- Firebase Auth Listener ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      // setUser(currentUser); // Set the full user object if needed elsewhere
       if (currentUser) {
         setUserId(currentUser.uid);
         console.log("User signed in:", currentUser.uid);
       } else {
         try {
           const userCredential = await signInAnonymously(auth);
-          // setUser(userCredential.user); // Set the full user object if needed
           setUserId(userCredential.user.uid);
           console.log("Signed in anonymously:", userCredential.user.uid);
         } catch (error) {
@@ -113,24 +114,22 @@ export const Main = () => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setIsCageOn(data.isCageOn || false);
-        // cageOnTime from status is used to initialize currentChastitySession's startTime
-        // setCageOnTime(data.cageOnTime ? data.cageOnTime.toDate() : null); // This state might be redundant if currentChastitySession holds the start time
         setIsPaused(data.isPaused || false);
         setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0);
         
         if (data.isCageOn && data.cageOnTime) {
-            setCurrentChastitySession({
-                startTime: data.cageOnTime, // Firestore Timestamp
+            setCurrentChastitySession({ 
+                startTime: data.cageOnTime, 
                 isPaused: data.isPaused || false,
-                pauseStartTime: data.pauseStartTime || null, // Firestore Timestamp
+                pauseStartTime: data.pauseStartTime || null, 
                 accumulatedPauseTime: data.accumulatedPauseTimeThisSession || 0,
             });
-            setCageOnTime(data.cageOnTime.toDate()); // Keep a JS Date version for convenience if needed by other logic directly
+            setCageOnTime(data.cageOnTime.toDate()); 
         } else {
             setCurrentChastitySession(null);
             setCageOnTime(null);
         }
-      } else {
+      } else { 
         setIsCageOn(false);
         setCageOnTime(null);
         setIsPaused(false);
@@ -144,10 +143,10 @@ export const Main = () => {
     const qHistory = query(chastityHistoryCollRef, orderBy("startTime", "asc")); 
     const unsubscribeHistory = onSnapshot(qHistory, (querySnapshot) => {
       const history = [];
-      let calculatedTotalChastityTime = 0; // Effective chastity time
+      let calculatedTotalChastityTime = 0; 
       let calculatedOverallPauseTime = 0;
       let calculatedTotalTimeCageOff = 0;
-      let lastEndTime = null;
+      let lastPeriodEndTime = null;
 
       querySnapshot.forEach((docSnap) => {
         const entry = { id: docSnap.id, ...docSnap.data() };
@@ -156,15 +155,15 @@ export const Main = () => {
         
         history.push(entry);
 
-        const sessionDuration = entry.duration || 0;
+        const sessionDuration = entry.duration || 0; 
         const sessionPause = entry.totalPauseDurationSeconds || 0;
-        calculatedTotalChastityTime += (sessionDuration - sessionPause);
+        calculatedTotalChastityTime += (sessionDuration - sessionPause); 
         calculatedOverallPauseTime += sessionPause;
 
-        if(lastEndTime && entry.startTime) {
-            calculatedTotalTimeCageOff += Math.floor((entry.startTime - lastEndTime) / 1000);
+        if(lastPeriodEndTime && entry.startTime) { 
+            calculatedTotalTimeCageOff += Math.floor((entry.startTime.getTime() - lastPeriodEndTime.getTime()) / 1000);
         }
-        lastEndTime = entry.endTime;
+        lastPeriodEndTime = entry.endTime;
       });
 
       setChastityHistory(history);
@@ -207,49 +206,42 @@ export const Main = () => {
         if (isCageOn && currentChastitySession && currentChastitySession.startTime) {
             intervalId = setInterval(() => {
                 const now = new Date();
-                // Ensure currentChastitySession.startTime is a Firestore Timestamp before calling toDate()
-                const startTimeDate = currentChastitySession.startTime.toDate ? 
-                                      currentChastitySession.startTime.toDate() : 
-                                      new Date(currentChastitySession.startTime); // Fallback if it's already a Date or string
+                const startTimeDate = currentChastitySession.startTime.toDate(); 
                 
-                let currentRawSessionSeconds = Math.floor((now - startTimeDate) / 1000);
-                
+                let currentRawSessionSeconds = Math.floor((now.getTime() - startTimeDate.getTime()) / 1000);
                 let effectiveDurationSeconds = currentRawSessionSeconds;
-                let currentPauseDuration = 0;
-
+                
                 if (currentChastitySession.isPaused && currentChastitySession.pauseStartTime) {
-                    const pauseStartTimeDate = currentChastitySession.pauseStartTime.toDate ?
-                                               currentChastitySession.pauseStartTime.toDate() :
-                                               new Date(currentChastitySession.pauseStartTime);
-                    currentPauseDuration = Math.floor((now - pauseStartTimeDate) / 1000);
+                    const pauseStartTimeDate = currentChastitySession.pauseStartTime.toDate(); 
+                    const currentPauseDuration = Math.floor((now.getTime() - pauseStartTimeDate.getTime()) / 1000);
                     effectiveDurationSeconds -= (currentChastitySession.accumulatedPauseTime + currentPauseDuration);
                 } else {
                     effectiveDurationSeconds -= currentChastitySession.accumulatedPauseTime;
                 }
 
                 setTimeInChastity(Math.max(0, effectiveDurationSeconds)); 
-                setCageDuration(Math.max(0, currentRawSessionSeconds)); 
+                // setCageDuration(Math.max(0, currentRawSessionSeconds)); // REMOVED - setCageDuration call
                 setTimeCageOff(0);
             }, 1000);
-        } else if (!isCageOn) {
+        } else if (!isCageOn) { 
             const lastSession = chastityHistory.length > 0 ? chastityHistory[chastityHistory.length - 1] : null;
-            if (lastSession && lastSession.endTime) {
+            if (lastSession && lastSession.endTime) { 
                  intervalId = setInterval(() => {
                     const now = new Date();
                     const endTimeDate = lastSession.endTime; 
-                    setTimeCageOff(Math.floor((now - endTimeDate) / 1000));
+                    setTimeCageOff(Math.floor((now.getTime() - endTimeDate.getTime()) / 1000));
                     setTimeInChastity(0); 
-                    setCageDuration(0); 
+                    // setCageDuration(0); // REMOVED - setCageDuration call
                 }, 1000);
-            } else if (chastityHistory.length === 0) { // No history, cage is off (initial state)
-                 setTimeCageOff(0); // Or could be time since app load if desired
+            } else { 
+                 setTimeCageOff(0); 
                  setTimeInChastity(0);
-                 setCageDuration(0);
+                 // setCageDuration(0); // REMOVED - setCageDuration call
             }
-        } else {
+        } else { 
             setTimeInChastity(0);
             setTimeCageOff(0);
-            setCageDuration(0);
+            // setCageDuration(0); // REMOVED - setCageDuration call
         }
     }
     return () => clearInterval(intervalId);
@@ -257,14 +249,14 @@ export const Main = () => {
 
 
   // --- Action Handlers ---
-  const handleToggleCage = async (reasonForRemoval = "") => {
+  const handleToggleCage = async (reason = "") => { 
     if (!userId) return;
     const newCageStatus = !isCageOn;
     const nowTimestamp = Timestamp.now(); 
     const statusDocRef = doc(db, `users/${userId}/status`, 'chastity');
     
     try {
-        if (newCageStatus) { // Turning cage ON
+        if (newCageStatus) { 
             await setDoc(statusDocRef, { 
                 isCageOn: true, 
                 cageOnTime: nowTimestamp,
@@ -272,8 +264,8 @@ export const Main = () => {
                 pauseStartTime: null,
                 accumulatedPauseTimeThisSession: 0 
             }, { merge: true });
-             // setCurrentChastitySession will be updated by the onSnapshot listener for statusDocRef
-        } else { // Turning cage OFF
+            setShowUnlockReasonPrompt(false); 
+        } else { 
             const currentStatusSnap = await getDoc(statusDocRef);
             let sessionStartTime = null;
             let sessionAccumulatedPause = 0;
@@ -282,27 +274,26 @@ export const Main = () => {
 
             if (currentStatusSnap.exists()) {
                 const currentData = currentStatusSnap.data();
-                sessionStartTime = currentData.cageOnTime; // Firestore Timestamp
+                sessionStartTime = currentData.cageOnTime; 
                 sessionAccumulatedPause = currentData.accumulatedPauseTimeThisSession || 0;
                 sessionIsPaused = currentData.isPaused || false;
-                sessionPauseStartTime = currentData.pauseStartTime; // Firestore Timestamp
+                sessionPauseStartTime = currentData.pauseStartTime; 
             }
             
             let currentSessionRawDuration = 0;
             if (sessionStartTime) {
-                currentSessionRawDuration = Math.floor((nowTimestamp.toDate() - sessionStartTime.toDate()) / 1000);
+                currentSessionRawDuration = Math.floor((nowTimestamp.toDate().getTime() - sessionStartTime.toDate().getTime()) / 1000);
             }
 
             if (sessionIsPaused && sessionPauseStartTime) {
-                // If it was paused when unlocked, add the final pause duration to accumulated
-                sessionAccumulatedPause += Math.floor((nowTimestamp.toDate() - sessionPauseStartTime.toDate()) / 1000);
+                sessionAccumulatedPause += Math.floor((nowTimestamp.toDate().getTime() - sessionPauseStartTime.toDate().getTime()) / 1000);
             }
             
             const historyEntry = {
-                startTime: sessionStartTime, // Firestore Timestamp
-                endTime: nowTimestamp,       // Firestore Timestamp
+                startTime: sessionStartTime, 
+                endTime: nowTimestamp,       
                 duration: currentSessionRawDuration, 
-                reasonForRemoval: reasonForRemoval || "N/A",
+                reasonForRemoval: reason || "N/A", 
                 totalPauseDurationSeconds: sessionAccumulatedPause,
                 periodNumber: chastityHistory.length + 1 
             };
@@ -316,7 +307,8 @@ export const Main = () => {
                 pauseStartTime: null,
                 accumulatedPauseTimeThisSession: 0
             }, { merge: true });
-            // setCurrentChastitySession will be set to null by the onSnapshot listener
+            setShowUnlockReasonPrompt(false); 
+            setUnlockReasonInput(""); 
         }
     } catch (error) {
         console.error("Error toggling cage status:", error);
@@ -368,31 +360,37 @@ export const Main = () => {
     isAuthReady,
     userId,
     GA_MEASUREMENT_ID: gaMeasurementId,
-    // TrackerPage props
+    
+    // Props for TrackerPage
     isCageOn,
-    cageOnTime, // JS Date from state, originally from Firestore Timestamp
+    cageOnTime, 
     chastityHistory,
-    chastityDuration: timeInChastity, // Live effective duration for current session
-    cageDuration: cageDuration,      // Live raw duration for current session
+    currentSessionInChastitySeconds: timeInChastity, 
+    currentSessionCageOffSeconds: timeCageOff,       
+    overallTotalChastitySeconds: totalChastityTime,  
+    overallTotalCageOffSeconds: totalTimeCageOff,    
     handleToggleCage, 
-    currentChastitySession, 
-    // LogEventPage props
+    unlockReasonInput,
+    setUnlockReasonInput,
+    showUnlockReasonPrompt,
+    setShowUnlockReasonPrompt,
+    
+    // Props for LogEventPage 
     sexualEventsLog,
     isLoadingEvents,
     handleLogNewEvent, 
     savedSubmissivesName,
-    // FullReportPage props
+    
+    // Props for FullReportPage
     timeInChastity, 
-    timeCageOff,    
-    totalChastityTime, // Overall total effective chastity time
-    totalTimeCageOff,  // Overall total time cage was off
-    overallTotalPauseTime,
     isPaused,
     accumulatedPauseTimeThisSession,
-    // SettingsPage props
+    overallTotalPauseTime,
+    
+    // Props for SettingsPage
     handleSetSubmissivesName,
     
-    // Placeholder for props that are not yet fully managed here
+    // Placeholder props 
     eventLogMessage: "Sample event log message", 
     handleExportTrackerCSV: () => console.log("Export Tracker CSV clicked"),
     handleExportEventLogCSV: () => console.log("Export Event Log CSV clicked"),
@@ -407,14 +405,14 @@ export const Main = () => {
     restoreUserIdInput: "",
     handleRestoreUserIdInputChange: () => console.log("Restore User ID Input Change"), 
     handleInitiateRestoreFromId: () => console.log("Initiate Restore From ID clicked"),
-    showRestoreFromIdPrompt: false,
+    showRestoreFromIdPrompt: false, 
     handleConfirmRestoreFromId: () => console.log("Confirm Restore From ID clicked"),
     handleCancelRestoreFromId: () => console.log("Cancel Restore From ID clicked"),
     restoreFromIdMessage: "Sample restore message",
 
-    // Props for LogEventPage form (can be managed locally in LogEventPage or here)
+    // Props for LogEventPage form (these should ideally be managed locally in LogEventPage)
     newEventDate: new Date().toISOString().split('T')[0],
-    setNewEventDate: () => {}, // These would be part of local state in LogEventPage ideally
+    setNewEventDate: () => {}, 
     newEventTime: new Date().toTimeString().split(' ')[0].substring(0,5),
     setNewEventTime: () => {},
     selectedEventTypes: [],
@@ -442,8 +440,4 @@ export const Main = () => {
   );
 };
 
-// The ESLint warning "Fast refresh only works when a file has exports" for `Main`
-// is acceptable here as `Main` is the root component for this entry file.
-// If this becomes an issue or for stricter linting, `Main` could be moved,
-// but exporting it here should satisfy the linter.
 createRoot(document.getElementById('root')).render(<Main />);
