@@ -27,20 +27,24 @@ const App = (props) => {
     
     // Props for TrackerPage
     isCageOn,
-    cageOnTime, // JS Date from main.jsx state
+    cageOnTime, 
     chastityHistory,
-    chastityDuration, // This is the live effective duration for the current session (timeInChastity from main.jsx)
-    cageDuration,     // This is the live raw duration for the current session
+    currentSessionInChastitySeconds, 
+    currentSessionCageOffSeconds,    
+    overallTotalChastitySeconds,     
+    overallTotalCageOffSeconds,      
     handleToggleCage,
-    currentChastitySession,
+    unlockReasonInput,      
+    setUnlockReasonInput,   
+    showUnlockReasonPrompt, // This is for TrackerPage unlock prompt
+    setShowUnlockReasonPrompt, 
     
     // Props for LogEventPage
     sexualEventsLog,
     isLoadingEvents,
     handleLogNewEvent,
-    savedSubmissivesName, // Also used by other pages
-    eventLogMessage, // Placeholder prop
-    // LogEventPage form state and handlers (passed as placeholders from main.jsx, could be managed locally in LogEventPage)
+    savedSubmissivesName, 
+    eventLogMessage, 
     newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, 
     handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange,
     otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, 
@@ -50,16 +54,15 @@ const App = (props) => {
 
     // Props for FullReportPage
     timeInChastity, 
-    timeCageOff,    
+    timeCageOff,            // ADDED for destructuring
     totalChastityTime, 
-    totalTimeCageOff,  
-    overallTotalPauseTime,
+    totalTimeCageOff,       // ADDED for destructuring
     isPaused,
     accumulatedPauseTimeThisSession,
+    overallTotalPauseTime,
     
     // Props for SettingsPage
     handleSetSubmissivesName,
-    // Placeholder props for SettingsPage (to be fully implemented in main.jsx or locally)
     handleExportTrackerCSV, 
     handleExportEventLogCSV, 
     handleResetAllData, 
@@ -73,15 +76,14 @@ const App = (props) => {
     restoreUserIdInput,
     handleRestoreUserIdInputChange, 
     handleInitiateRestoreFromId,
-    showRestoreFromIdPrompt,
+    showRestoreFromIdPrompt: settingsShowRestoreFromIdPrompt, // Renamed to avoid conflict if TrackerPage also used a similar prop name (it does: showUnlockReasonPrompt)
     handleConfirmRestoreFromId,
     handleCancelRestoreFromId,
     restoreFromIdMessage
   } = props;
 
-  const [currentPage, setCurrentPage] = useState('tracker'); // Default page
+  const [currentPage, setCurrentPage] = useState('tracker'); 
 
-  // Effect for Google Analytics page views and configuration
   useEffect(() => {
     if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) {
       const pagePath = `/${currentPage}`;
@@ -90,30 +92,29 @@ const App = (props) => {
       window.gtag('event', 'page_view', { page_title: pageTitle, page_path: pagePath, user_id: userId });
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: 'custom_page_view', page_title: pageTitle, page_path: pagePath, user_id: userId });
-      console.log(`GA Event: page_view - Title: ${pageTitle}, Path: ${pagePath}, UserID: ${userId}`);
-      console.log(`GA Configured with ID: ${GA_MEASUREMENT_ID}`);
+      // console.log(`GA Event: page_view - Title: ${pageTitle}, Path: ${pagePath}, UserID: ${userId}`);
+      // console.log(`GA Configured with ID: ${GA_MEASUREMENT_ID}`);
     }
   }, [currentPage, isAuthReady, userId, GA_MEASUREMENT_ID]);
 
   // Consolidate props for each page component
   const trackerPageProps = {
     isCageOn,
-    cageOnTime, // JS Date
-    chastityHistory,
-    chastityDuration, // Live effective duration
-    cageDuration,     // Live raw duration
+    cageLastOnTime: cageOnTime, 
+    currentSessionInChastitySeconds, 
+    currentSessionCageOffSeconds,    
+    overallTotalChastitySeconds,     
+    overallTotalCageOffSeconds,      
+    chastityHistory, 
     handleToggleCage,
-    currentChastitySession
+    unlockReasonInput,
+    setUnlockReasonInput,
+    showUnlockReasonPrompt,
+    setShowUnlockReasonPrompt
   };
   
   const logEventPageProps = {
-    isAuthReady,
-    sexualEventsLog,
-    isLoadingEvents,
-    handleLogNewEvent,
-    savedSubmissivesName,
-    eventLogMessage,
-    // Form state and handlers
+    isAuthReady, sexualEventsLog, isLoadingEvents, handleLogNewEvent, savedSubmissivesName, eventLogMessage,
     newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, 
     handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange,
     otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, 
@@ -123,48 +124,29 @@ const App = (props) => {
   };
 
   const fullReportPageProps = {
-    savedSubmissivesName,
-    userId,
-    isCageOn,
-    cageOnTime, // JS Date
-    timeInChastity, 
-    timeCageOff,    
+    savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, 
+    timeCageOff, // Now correctly available
     totalChastityTime, 
-    totalTimeCageOff,  
+    totalTimeCageOff, // Now correctly available
     chastityHistory,
-    sexualEventsLog,
-    isLoadingEvents,
-    isPaused,
-    accumulatedPauseTimeThisSession,
+    sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession,
     overallTotalPauseTime
   };
   
   const settingsPageProps = {
-    isAuthReady, 
-    eventLogMessage, 
-    handleExportTrackerCSV, chastityHistory,
+    isAuthReady, eventLogMessage, handleExportTrackerCSV, chastityHistory,
     handleExportEventLogCSV, sexualEventsLog, handleResetAllData, confirmReset, nameMessage,
-    handleExportTextReport,
-    userId, 
-    showUserIdInSettings, 
-    handleToggleUserIdVisibility,
-    savedSubmissivesName, 
-    submissivesNameInput, 
-    handleSubmissivesNameInputChange, 
-    handleSetSubmissivesName,
-    restoreUserIdInput,
-    handleRestoreUserIdInputChange, 
-    handleInitiateRestoreFromId,
-    showRestoreFromIdPrompt,
-    handleConfirmRestoreFromId,
-    handleCancelRestoreFromId,
-    restoreFromIdMessage
+    handleExportTextReport, userId, showUserIdInSettings, handleToggleUserIdVisibility,
+    savedSubmissivesName, submissivesNameInput, handleSubmissivesNameInputChange, 
+    handleSetSubmissivesName, restoreUserIdInput, handleRestoreUserIdInputChange, 
+    handleInitiateRestoreFromId, 
+    showRestoreFromIdPrompt: settingsShowRestoreFromIdPrompt, // Use the renamed prop
+    handleConfirmRestoreFromId, handleCancelRestoreFromId, restoreFromIdMessage
   };
 
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
-      {/* <HotjarScript isTrackingAllowed={true} /> */}
       <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
         <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         <Suspense fallback={<div className="text-center p-8 text-purple-300">Loading page...</div>}>
