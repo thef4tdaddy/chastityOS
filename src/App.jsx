@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import PrivacyPage from './pages/PrivacyPage';
 import FooterNav from './components/FooterNav';
 import MainNav from './components/MainNav';
-import HotjarScript from './components/HotjarScript'; // Uncommented HotjarScript import
+// import HotjarScript from './components/HotjarScript'; // HotjarScript import commented out
 
 // Lazy load page components
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
@@ -65,7 +65,7 @@ const App = ({ isAuthReady, userId, GA_MEASUREMENT_ID }) => {
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
-      <HotjarScript isTrackingAllowed={true} /> {/* Uncommented Hotjar script usage */}
+      {/* <HotjarScript isTrackingAllowed={true} /> */} {/* Hotjar script usage commented out */}
       <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
         {/* Main navigation component */}
         <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
