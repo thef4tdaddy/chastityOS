@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import PrivacyPage from './pages/PrivacyPage';
 import FooterNav from './components/FooterNav';
 import MainNav from './components/MainNav';
-import HotjarScript from './components/HotjarScript';
+// import HotjarScript from './components/HotjarScript';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -36,7 +36,7 @@ const App = ({ isAuthReady, userId, GA_MEASUREMENT_ID }) => {
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
-      <HotjarScript isTrackingAllowed={true} />
+      {/* <HotjarScript isTrackingAllowed={true} /> */}
       <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
         <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         <Suspense fallback={<div className="text-center p-8 text-purple-300">Loading page...</div>}>
