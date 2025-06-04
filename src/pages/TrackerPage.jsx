@@ -1,147 +1,173 @@
-import React from 'react';
-import { formatTime, formatElapsedTime } from '../utils'; // Ensure this path is correct
+import React, { useEffect } from 'react';
+import { formatTime, formatElapsedTime } from '../utils';
 
-/**
- * TrackerPage component to display chastity tracking information and controls.
- * @param {object} props - The component's props.
- * @param {boolean} props.isCageOn - Current status of the cage.
- * @param {Date|null} props.cageLastOnTime - Timestamp of when the cage was last put on (for current session).
- * @param {number} props.currentSessionInChastitySeconds - Duration of the current chastity session in seconds.
- * @param {number} props.currentSessionCageOffSeconds - Duration since the cage was last taken off.
- * @param {number} props.overallTotalChastitySeconds - Overall total time spent in chastity.
- * @param {number} props.overallTotalCageOffSeconds - Overall total time spent out of chastity.
- * @param {Array} props.chastityHistory - Array of past chastity sessions (currently not directly used in this UI but good to have).
- * @param {function} props.handleToggleCage - Function to toggle the cage status.
- * @param {string|null} props.unlockReasonInput - Current value of the unlock reason input.
- * @param {function} props.setUnlockReasonInput - Function to update the unlock reason input.
- * @param {boolean} props.showUnlockReasonPrompt - Flag to show the unlock reason input field.
- * @param {function} props.setShowUnlockReasonPrompt - Function to toggle the unlock reason input field.
- * @returns {JSX.Element} The rendered TrackerPage component.
- */
-const TrackerPage = ({
-  isCageOn,
-  cageLastOnTime,
-  currentSessionInChastitySeconds,
-  currentSessionCageOffSeconds,
-  overallTotalChastitySeconds,
-  overallTotalCageOffSeconds,
-  // chastityHistory, // Not directly displayed in this specific UI but available
-  handleToggleCage,
-  unlockReasonInput,
-  setUnlockReasonInput,
-  showUnlockReasonPrompt,
-  setShowUnlockReasonPrompt
-}) => {
+const TrackerPage = (props) => {
+    const {
+        isAuthReady,
+        isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
+        handleToggleCage, 
+        showReasonModal, // Keep the boolean value
+        // setShowReasonModal, // REMOVE this prop from destructuring
+        reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
+        isPaused: isPausedProp,
+        handleInitiatePause,
+        handleResumeSession,
+        showPauseReasonModal,
+        handleCancelPauseModal,
+        reasonForPauseInput,
+        setReasonForPauseInput,
+        handleConfirmPause,
+        accumulatedPauseTimeThisSession,
+        pauseStartTime,
+        livePauseDuration,
+        pauseCooldownMessage,
+        showRestoreSessionPrompt,
+        handleConfirmRestoreSession,
+        handleDiscardAndStartNew,
+        loadedSessionData
+    } = props;
 
-  const handlePrimaryButtonClick = () => {
-    if (isCageOn) {
-      setShowUnlockReasonPrompt(true); // Show prompt before unlocking
-    } else {
-      handleToggleCage(""); // Lock immediately, no reason needed
-      setShowUnlockReasonPrompt(false); // Ensure prompt is hidden
+    const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false;
+
+    useEffect(() => {
+        console.log('[TrackerPage Props Update]', {
+            isAuthReady,
+            isCageOn,
+            isPausedFromProp: isPausedProp,
+            isPausedCalculated: isPaused,
+            cageOnTime: cageOnTime ? (cageOnTime instanceof Date ? cageOnTime.toISOString() : cageOnTime) : null,
+            showRestoreSessionPrompt,
+            showReasonModal, // Still log the boolean
+            timeInChastity,
+            accumulatedPauseTimeThisSession,
+            pauseStartTime: pauseStartTime ? (pauseStartTime instanceof Date ? pauseStartTime.toISOString() : pauseStartTime) : null,
+            livePauseDuration
+        });
+    }, [
+        isAuthReady, isCageOn, isPausedProp, isPaused, cageOnTime,
+        showRestoreSessionPrompt, showReasonModal, timeInChastity,
+        accumulatedPauseTimeThisSession, pauseStartTime, livePauseDuration
+    ]);
+
+    const mainChastityDisplayTime = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
+
+    if (showReasonModal) {
+        console.log('[TrackerPage] Reason for Removal Modal should be visible now (showReasonModal is true).');
     }
-  };
-
-  const handleConfirmUnlock = () => {
-    if (unlockReasonInput.trim() === "") {
-      // Optionally, show an error message that reason is required
-      alert("Please provide a reason for unlocking."); // Replace with a modal in production
-      return;
+    if (showPauseReasonModal) {
+        console.log('[TrackerPage] Pause Reason Modal should be visible now (showPauseReasonModal is true).');
     }
-    handleToggleCage(unlockReasonInput);
-    setShowUnlockReasonPrompt(false);
-    setUnlockReasonInput(""); // Clear input after submission
-  };
 
-  const handleCancelUnlock = () => {
-    setShowUnlockReasonPrompt(false);
-    setUnlockReasonInput("");
-  };
+    return (
+        <>
+          {/* Restore Session Prompt Modal */}
+          {showRestoreSessionPrompt && loadedSessionData && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-700 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-blue-500">
+                <h3 className="text-lg md:text-xl font-bold mb-4 text-blue-300">Restore Previous Session?</h3>
+                <p className="text-sm text-gray-300 mb-2">An active chastity session was found:</p>
+                <ul className="text-xs text-left text-gray-400 mb-6 list-disc list-inside pl-4">
+                    <li>Started: {formatTime(loadedSessionData.cageOnTime, true)}</li>
+                    <li>
+                        Currently: {loadedSessionData.isPaused
+                            ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})`
+                            : `Active (for ${formatElapsedTime(loadedSessionData.timeInChastity - (loadedSessionData.accumulatedPauseTimeThisSession || 0))})`}
+                    </li>
+                </ul>
+                <p className="text-sm text-gray-300 mb-4">Would you like to resume this session or start a new one?</p>
+                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button type="button" onClick={handleConfirmRestoreSession} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Resume Previous Session</button>
+                  <button type="button" onClick={handleDiscardAndStartNew} className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">Start New Session</button>
+                </div>
+              </div>
+            </div>
+          )}
 
-  // Determine button text and style based on cage status
-  const buttonText = isCageOn ? "Cage Off / End Session" : "Cage On / Start Session";
-  const buttonClass = isCageOn 
-    ? "bg-red-600 hover:bg-red-700" 
-    : "bg-green-600 hover:bg-green-700";
+          {pauseCooldownMessage && (
+            <div className="mb-4 p-3 bg-yellow-600/30 border border-yellow-500 rounded-lg text-sm text-yellow-200">
+                {pauseCooldownMessage}
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 md:mb-8">
+             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Cage Last On :</p><p className="text-2xl md:text-4xl font-semibold text-purple-400">{formatTime(isCageOn ? cageOnTime : (chastityHistory.length > 0 ? chastityHistory[chastityHistory.length - 1].endTime : null), true)}</p></div>
+            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}>
+                <p className="text-sm md:text-lg text-purple-300">
+                    Current Session In Chastity {isPaused ? '(Paused)' : ''}:
+                </p>
+                <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
+                    {formatElapsedTime(mainChastityDisplayTime)}
+                </p>
+                {isPaused && pauseStartTime && (
+                     <p className="text-xs text-yellow-300 mt-1">Currently paused for: {formatElapsedTime(livePauseDuration)}</p>
+                 )}
+                {isCageOn && accumulatedPauseTimeThisSession > 0 && (
+                    <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
+                )}
+            </div>
+            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}>
+                <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
+                <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
+            </div>
+            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p><p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalChastityTime)}</p></div>
+            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm sm:col-span-2"><p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p><p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalTimeCageOff)}</p></div>
+          </div>
 
-  const StatBox = ({ title, value, valueClass = "text-3xl" }) => (
-    <div className="bg-gray-700 p-4 rounded-lg shadow-md text-center">
-      <h3 className="text-sm font-semibold text-purple-300 mb-1">{title}</h3>
-      <p className={`font-mono text-purple-100 ${valueClass}`}>{value}</p>
-    </div>
-  );
-
-  return (
-    <div className="p-4 text-purple-200">
-      <h2 className="text-2xl font-bold mb-6 text-center">Chastity Tracker</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <StatBox 
-          title="Cage Last On" 
-          value={isCageOn && cageLastOnTime ? formatTime(cageLastOnTime, true) : 'N/A'} 
-          valueClass={isCageOn && cageLastOnTime ? "text-xl md:text-2xl" : "text-3xl"}
-        />
-        <StatBox 
-          title="Current Session In Chastity" 
-          value={isCageOn ? formatElapsedTime(currentSessionInChastitySeconds) : '00:00:00'} 
-        />
-        <StatBox 
-          title="Current Session Cage Off" 
-          value={!isCageOn ? formatElapsedTime(currentSessionCageOffSeconds) : '00:00:00'} 
-        />
-        <StatBox 
-          title="Total Time In Chastity" 
-          value={formatElapsedTime(overallTotalChastitySeconds)} 
-        />
-        <StatBox 
-          title="Total Time Cage Off" 
-          value={formatElapsedTime(overallTotalCageOffSeconds)} 
-        />
-         <div className="md:col-span-2 text-center text-sm text-purple-400">
-            Cage Status: <span className={`font-semibold ${isCageOn ? 'text-green-400' : 'text-red-400'}`}>{isCageOn ? 'Locked' : 'Unlocked'}</span>
-        </div>
-      </div>
-
-      {showUnlockReasonPrompt && isCageOn && (
-        <div className="mb-4 p-4 bg-gray-750 rounded-lg border border-purple-600">
-          <label htmlFor="unlockReason" className="block text-sm font-medium text-purple-300 mb-1">
-            Reason for Unlocking:
-          </label>
-          <input
-            type="text"
-            id="unlockReason"
-            value={unlockReasonInput}
-            onChange={(e) => setUnlockReasonInput(e.target.value)}
-            placeholder="E.g., Hygiene, Playtime, End of Lockup"
-            className="w-full px-3 py-2 rounded-md border border-purple-500 bg-gray-800 text-gray-50 focus:ring-purple-500 focus:border-purple-500"
-          />
-          <div className="mt-3 flex justify-end space-x-3">
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-3 justify-center">
             <button
-              onClick={handleCancelUnlock}
-              className="px-4 py-2 rounded-md text-sm bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+                type="button"
+                onClick={handleToggleCage}
+                disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
+                className={`flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 ${isCageOn ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-400'}`}
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmUnlock}
-              className="px-4 py-2 rounded-md text-sm bg-red-600 hover:bg-red-700 text-white transition-colors"
-            >
-              Confirm Unlock
+                {isCageOn ? 'Cage Off / End Session' : 'Cage On / Start Session'}
             </button>
           </div>
-        </div>
-      )}
 
-      {!showUnlockReasonPrompt && (
-        <button
-          onClick={handlePrimaryButtonClick}
-          className={`w-full py-3 px-4 rounded-lg text-white font-semibold shadow-md transition-colors ${buttonClass}`}
-        >
-          {buttonText}
-        </button>
-      )}
-    </div>
-  );
+          {isCageOn && (
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6 md:mb-8 justify-center">
+                {!isPaused ? (
+                    <button type="button" onClick={handleInitiatePause} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
+                        Pause Session
+                    </button>
+                ) : (
+                    <button type="button" onClick={handleResumeSession} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
+                        Resume Session
+                    </button>
+                )}
+            </div>
+          )}
+
+           {/* Reason for Removal Modal */}
+          {showReasonModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-purple-700">
+                <h3 className="text-lg md:text-xl font-bold mb-4 text-purple-300">Reason for Cage Removal:</h3>
+                <textarea value={reasonForRemoval} onChange={(e) => setReasonForRemoval(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
+                  className="w-full p-2 mb-6 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button type="button" onClick={handleConfirmRemoval} className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Removal</button>
+                  <button type="button" onClick={handleCancelRemoval} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Pause Reason Modal */}
+          {showPauseReasonModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-yellow-700">
+                <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">Reason for Pausing Session:</h3>
+                <textarea value={reasonForPauseInput} onChange={(e) => setReasonForPauseInput(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
+                  className="w-full p-2 mb-6 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button type="button" onClick={handleConfirmPause} className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Pause</button>
+                  <button type="button" onClick={handleCancelPauseModal} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+    );
 };
 
 export default TrackerPage;
