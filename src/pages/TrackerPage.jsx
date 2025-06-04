@@ -1,15 +1,18 @@
-import React from 'react';
-import { formatTime, formatElapsedTime } from '../utils'; // Adjust path if your utils.js is elsewhere
+import React, { useEffect } from 'react';
+import { formatTime, formatElapsedTime } from '../utils';
 
-const TrackerPage = (props) => { 
+const TrackerPage = (props) => {
     const {
-        isAuthReady, 
+        isAuthReady,
         isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
-        handleToggleCage, showReasonModal, setShowReasonModal, reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
-        isPaused: isPausedProp, 
-        handleInitiatePause, 
+        handleToggleCage, 
+        showReasonModal, // Keep the boolean value
+        // setShowReasonModal, // REMOVE this prop from destructuring
+        reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
+        isPaused: isPausedProp,
+        handleInitiatePause,
         handleResumeSession,
-        showPauseReasonModal, 
+        showPauseReasonModal,
         handleCancelPauseModal,
         reasonForPauseInput,
         setReasonForPauseInput,
@@ -18,22 +21,45 @@ const TrackerPage = (props) => {
         pauseStartTime,
         livePauseDuration,
         pauseCooldownMessage,
-        // Restore session prompt props
         showRestoreSessionPrompt,
         handleConfirmRestoreSession,
         handleDiscardAndStartNew,
         loadedSessionData
     } = props;
 
-    const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false; 
-    
-    const mainChastityDisplayTime = Math.max(0, timeInChastity - accumulatedPauseTimeThisSession);
+    const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false;
+
+    useEffect(() => {
+        console.log('[TrackerPage Props Update]', {
+            isAuthReady,
+            isCageOn,
+            isPausedFromProp: isPausedProp,
+            isPausedCalculated: isPaused,
+            cageOnTime: cageOnTime ? (cageOnTime instanceof Date ? cageOnTime.toISOString() : cageOnTime) : null,
+            showRestoreSessionPrompt,
+            showReasonModal, // Still log the boolean
+            timeInChastity,
+            accumulatedPauseTimeThisSession,
+            pauseStartTime: pauseStartTime ? (pauseStartTime instanceof Date ? pauseStartTime.toISOString() : pauseStartTime) : null,
+            livePauseDuration
+        });
+    }, [
+        isAuthReady, isCageOn, isPausedProp, isPaused, cageOnTime,
+        showRestoreSessionPrompt, showReasonModal, timeInChastity,
+        accumulatedPauseTimeThisSession, pauseStartTime, livePauseDuration
+    ]);
+
+    const mainChastityDisplayTime = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
+
+    if (showReasonModal) {
+        console.log('[TrackerPage] Reason for Removal Modal should be visible now (showReasonModal is true).');
+    }
+    if (showPauseReasonModal) {
+        console.log('[TrackerPage] Pause Reason Modal should be visible now (showPauseReasonModal is true).');
+    }
 
     return (
         <>
-          {/* Page Title - Rendered by App.jsx now, but kept here if you prefer it per-page */}
-          {/* <h2 className="text-2xl font-bold text-purple-300 mb-4">Chastity Tracker</h2> */}
-
           {/* Restore Session Prompt Modal */}
           {showRestoreSessionPrompt && loadedSessionData && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -43,8 +69,8 @@ const TrackerPage = (props) => {
                 <ul className="text-xs text-left text-gray-400 mb-6 list-disc list-inside pl-4">
                     <li>Started: {formatTime(loadedSessionData.cageOnTime, true)}</li>
                     <li>
-                        Currently: {loadedSessionData.isPaused 
-                            ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})` 
+                        Currently: {loadedSessionData.isPaused
+                            ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})`
                             : `Active (for ${formatElapsedTime(loadedSessionData.timeInChastity - (loadedSessionData.accumulatedPauseTimeThisSession || 0))})`}
                     </li>
                 </ul>
@@ -57,44 +83,46 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-          {pauseCooldownMessage && ( 
+          {pauseCooldownMessage && (
             <div className="mb-4 p-3 bg-yellow-600/30 border border-yellow-500 rounded-lg text-sm text-yellow-200">
                 {pauseCooldownMessage}
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 md:mb-8">
-             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Cage Last On :</p><p className="text-2xl md:text-4xl font-semibold text-purple-400">{formatTime(isCageOn ? cageOnTime : (chastityHistory.length > 0 ? chastityHistory[chastityHistory.length - 1].endTime : null))}</p></div>
-            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}> 
+             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Cage Last On :</p><p className="text-2xl md:text-4xl font-semibold text-purple-400">{formatTime(isCageOn ? cageOnTime : (chastityHistory.length > 0 ? chastityHistory[chastityHistory.length - 1].endTime : null), true)}</p></div>
+            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}>
                 <p className="text-sm md:text-lg text-purple-300">
                     Current Session In Chastity {isPaused ? '(Paused)' : ''}:
                 </p>
                 <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
-                    {formatElapsedTime(mainChastityDisplayTime)} 
+                    {formatElapsedTime(mainChastityDisplayTime)}
                 </p>
-                {isPaused && pauseStartTime && ( 
+                {isPaused && pauseStartTime && (
                      <p className="text-xs text-yellow-300 mt-1">Currently paused for: {formatElapsedTime(livePauseDuration)}</p>
                  )}
-                {accumulatedPauseTimeThisSession > 0 && ( 
+                {isCageOn && accumulatedPauseTimeThisSession > 0 && (
                     <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
                 )}
             </div>
-            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}> 
+            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}>
                 <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
                 <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
             </div>
             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p><p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalChastityTime)}</p></div>
             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm sm:col-span-2"><p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p><p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalTimeCageOff)}</p></div>
           </div>
+
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-3 justify-center">
-            <button 
+            <button
                 type="button"
-                onClick={handleToggleCage} 
-                disabled={!isAuthReady || isPaused || showRestoreSessionPrompt} 
+                onClick={handleToggleCage}
+                disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
                 className={`flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 ${isCageOn ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-400'}`}
             >
                 {isCageOn ? 'Cage Off / End Session' : 'Cage On / Start Session'}
             </button>
           </div>
+
           {isCageOn && (
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6 md:mb-8 justify-center">
                 {!isPaused ? (
@@ -123,6 +151,7 @@ const TrackerPage = (props) => {
               </div>
             </div>
           )}
+
           {/* Pause Reason Modal */}
           {showPauseReasonModal && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
