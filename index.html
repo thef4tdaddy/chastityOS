@@ -4,8 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
+    <title>ChastityOS</title> <script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      // Configure with your Measurement ID (this will be done dynamically in App.jsx if preferred,
+      // but having a base config here is also common. For SPA, dynamic config in App.jsx is better)
+      // For now, let's assume App.jsx will handle the config.
+      // gtag('config', 'G-YOUR_MEASUREMENT_ID'); // We will handle this in App.jsx
+    </script>
+    </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

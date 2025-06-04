@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { 
     getFirestore, doc, getDoc, setDoc, Timestamp, setLogLevel,
     collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc
 } from 'firebase/firestore';
+
+// Import utility functions
+import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils'; 
 
 // Firebase Config - using environment variables
 const firebaseConfig = {
@@ -14,10 +17,9 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // Optional
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, 
 };
 
-// It's good practice to ensure critical config values are present
 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
     console.error(
         "Firebase configuration is missing or incomplete. " +
@@ -26,7 +28,7 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
     );
 }
 
-const appIdForFirestore = firebaseConfig.appId || 'default-chastity-app'; 
+const appIdForFirestore = firebaseConfig.appId || 'default-chastity-app-id'; 
 
 // Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
@@ -34,526 +36,20 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 setLogLevel('debug'); 
 
-// --- Utility Functions ---
-const formatTime = (date, includeDate = false, forTextReport = false) => {
-  if (!date) return 'N/A';
-  const dateObj = date instanceof Date ? date : (date.toDate ? date.toDate() : null);
-  if (!dateObj || isNaN(dateObj.getTime())) return 'Invalid Date';
-  
-  if (forTextReport) {
-      const year = dateObj.getFullYear();
-      const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-      const day = dateObj.getDate().toString().padStart(2, '0');
-      const hours = dateObj.getHours().toString().padStart(2, '0');
-      const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-      const seconds = dateObj.getSeconds().toString().padStart(2, '0');
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  }
+// --- Google Analytics Measurement ID ---
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
-  const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-  if (includeDate) {
-      return dateObj.toLocaleString('en-US', { ...timeOptions, year: 'numeric', month: '2-digit', day: '2-digit'});
-  }
-  return dateObj.toLocaleTimeString('en-US', timeOptions);
-};
+// --- Lazy Load Page Components ---
+const TrackerPage = lazy(() => import('./pages/TrackerPage')); 
+const FullReportPage = lazy(() => import('./pages/FullReportPage'));
+const LogEventPage = lazy(() => import('./pages/LogEventPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
-const formatElapsedTime = (seconds) => {
-  if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) return '00:00:00';
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  const pad = (num) => num.toString().padStart(2, '0');
-  return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
-};
-
-const EVENT_TYPES = ["Orgasm (Self)", "Orgasm (Partner)", "Ruined Orgasm", "Edging", "Tease & Denial", "Play Session", "Hygiene", "Medication", "Mood Entry"]; 
-
-// --- ASCII Report Helper ---
-const padString = (str, length, alignRight = false) => {
-    const s = String(str === null || str === undefined ? '' : str);
-    if (s.length >= length) return s.substring(0, length);
-    const padding = ' '.repeat(length - s.length);
-    return alignRight ? padding + s : s + padding;
-};
-
-
-// --- Sub-Components ---
-
-// Tracker Page Component
-const TrackerPage = (props) => { 
-    const {
-        isAuthReady, 
-        isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
-        handleToggleCage, showReasonModal, setShowReasonModal, reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
-        isPaused: isPausedProp, 
-        handleInitiatePause, 
-        handleResumeSession,
-        showPauseReasonModal, 
-        handleCancelPauseModal,
-        reasonForPauseInput,
-        setReasonForPauseInput,
-        handleConfirmPause,
-        accumulatedPauseTimeThisSession,
-        pauseStartTime,
-        livePauseDuration,
-        pauseCooldownMessage,
-        // Restore session prompt props
-        showRestoreSessionPrompt,
-        handleConfirmRestoreSession,
-        handleDiscardAndStartNew,
-        loadedSessionData
-    } = props;
-
-    const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false; 
-    
-    const mainChastityDisplayTime = Math.max(0, timeInChastity - accumulatedPauseTimeThisSession);
-
-    return (
-        <>
-          {/* Restore Session Prompt Modal */}
-          {showRestoreSessionPrompt && loadedSessionData && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-700 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-blue-500">
-                <h3 className="text-lg md:text-xl font-bold mb-4 text-blue-300">Restore Previous Session?</h3>
-                <p className="text-sm text-gray-300 mb-2">An active chastity session was found:</p>
-                <ul className="text-xs text-left text-gray-400 mb-6 list-disc list-inside pl-4">
-                    <li>Started: {formatTime(loadedSessionData.cageOnTime, true)}</li>
-                    <li>
-                        Currently: {loadedSessionData.isPaused 
-                            ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})` 
-                            : `Active (for ${formatElapsedTime(loadedSessionData.timeInChastity - (loadedSessionData.accumulatedPauseTimeThisSession || 0))})`}
-                    </li>
-                </ul>
-                <p className="text-sm text-gray-300 mb-4">Would you like to resume this session or start a new one?</p>
-                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button type="button" onClick={handleConfirmRestoreSession} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Resume Previous Session</button>
-                  <button type="button" onClick={handleDiscardAndStartNew} className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">Start New Session</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {pauseCooldownMessage && ( 
-            <div className="mb-4 p-3 bg-yellow-600/30 border border-yellow-500 rounded-lg text-sm text-yellow-200">
-                {pauseCooldownMessage}
-            </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 md:mb-8">
-             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Cage Last On :</p><p className="text-2xl md:text-4xl font-semibold text-purple-400">{formatTime(isCageOn ? cageOnTime : (chastityHistory.length > 0 ? chastityHistory[chastityHistory.length - 1].endTime : null))}</p></div>
-            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}> 
-                <p className="text-sm md:text-lg text-purple-300">
-                    Current Session In Chastity {isPaused ? '(Paused)' : ''}:
-                </p>
-                <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
-                    {formatElapsedTime(mainChastityDisplayTime)} 
-                </p>
-                {isPaused && pauseStartTime && ( 
-                     <p className="text-xs text-yellow-300 mt-1">Currently paused for: {formatElapsedTime(livePauseDuration)}</p>
-                 )}
-                {accumulatedPauseTimeThisSession > 0 && ( 
-                    <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
-                )}
-            </div>
-            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}> 
-                <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
-                <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
-            </div>
-            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p><p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalChastityTime)}</p></div>
-            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm sm:col-span-2"><p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p><p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalTimeCageOff)}</p></div>
-          </div>
-          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-3 justify-center">
-            <button 
-                type="button"
-                onClick={handleToggleCage} 
-                disabled={!isAuthReady || isPaused || showRestoreSessionPrompt} 
-                className={`flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 ${isCageOn ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-400'}`}
-            >
-                {isCageOn ? 'Cage Off / End Session' : 'Cage On / Start Session'}
-            </button>
-          </div>
-          {isCageOn && (
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6 md:mb-8 justify-center">
-                {!isPaused ? (
-                    <button type="button" onClick={handleInitiatePause} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
-                        Pause Session
-                    </button>
-                ) : (
-                    <button type="button" onClick={handleResumeSession} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
-                        Resume Session
-                    </button>
-                )}
-            </div>
-          )}
-
-           {/* Reason for Removal Modal */}
-          {showReasonModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-purple-700">
-                <h3 className="text-lg md:text-xl font-bold mb-4 text-purple-300">Reason for Cage Removal:</h3>
-                <textarea value={reasonForRemoval} onChange={(e) => setReasonForRemoval(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
-                  className="w-full p-2 mb-6 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
-                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button type="button" onClick={handleConfirmRemoval} className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Removal</button>
-                  <button type="button" onClick={handleCancelRemoval} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
-                </div>
-              </div>
-            </div>
-          )}
-          {/* Pause Reason Modal */}
-          {showPauseReasonModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-yellow-700">
-                <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">Reason for Pausing Session:</h3>
-                <textarea value={reasonForPauseInput} onChange={(e) => setReasonForPauseInput(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
-                  className="w-full p-2 mb-6 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
-                <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button type="button" onClick={handleConfirmPause} className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Pause</button>
-                  <button type="button" onClick={handleCancelPauseModal} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-    );
-};
-
-// Full Report Page Component
-const FullReportPage = ({
-    savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff,
-    totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents,
-    isPaused, accumulatedPauseTimeThisSession,
-    overallTotalPauseTime 
-}) => {
-    const formatEventTypesForDisplay = (types, otherDetail, subName) => {
-        let displayTypes = types && types.length > 0 
-            ? types.map(type => type === "Orgasm (Self)" && subName ? `Orgasm (${subName})` : type).join(', ') 
-            : '';
-        if (otherDetail) {
-            displayTypes += (displayTypes ? ', ' : '') + `Other: ${otherDetail}`;
-        }
-        return displayTypes || 'N/A';
-    };
-    const formatOrgasmCounts = (selfAmount, partnerAmount) => {
-        let parts = [];
-        if (selfAmount) parts.push(`Self: ${selfAmount}`);
-        if (partnerAmount) parts.push(`Partner: ${partnerAmount}`);
-        return parts.length > 0 ? parts.join(', ') : 'N/A';
-    };
-
-
-    return (
-        <div className="text-left text-purple-200 p-4 bg-gray-800 rounded-lg border border-purple-700">
-          <h2 className="text-2xl font-bold text-purple-300 mb-4 text-center">Full Report</h2>
-          <div className="mb-4"><strong>Submissive’s Name:</strong> {savedSubmissivesName || '(Not Set)'}</div>
-          <div className="mb-4"><strong>User ID:</strong> {userId || 'N/A'}</div><hr className="my-3 border-purple-700"/>
-          <h3 className="text-xl font-semibold text-purple-300 mb-2">Current Status</h3>
-          <div className="mb-1"><strong>Cage Status:</strong> {isCageOn ? (isPaused ? 'ON (Paused)' : 'ON') : 'OFF'}</div>
-          {isCageOn && cageOnTime && <div className="mb-1"><strong>Current Cage On Since:</strong> {formatTime(cageOnTime, true)}</div>}
-          <div className={`p-2 my-1 rounded ${isCageOn ? (isPaused ? 'bg-yellow-500/10' : 'bg-green-500/10') : ''}`}>
-                <strong>Effective Session In Chastity:</strong> 
-                <span className={isCageOn ? (isPaused ? 'text-yellow-400 font-semibold' : 'text-green-400 font-semibold') : 'font-semibold'}>
-                    {formatElapsedTime(isCageOn ? timeInChastity - accumulatedPauseTimeThisSession : timeInChastity)}
-                </span>
-                {isPaused && <span className="text-xs text-yellow-400"> (Paused)</span>}
-            </div>
-          <div className={`p-2 my-1 rounded ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/10' : ''}`}><strong>Current Session Cage Off:</strong> <span className={!isCageOn && timeCageOff > 0 ? 'text-red-400 font-semibold' : 'font-semibold'}>{formatElapsedTime(timeCageOff)}</span></div>
-          <hr className="my-3 border-purple-700"/>
-          <h3 className="text-xl font-semibold text-purple-300 mb-2">Totals</h3>
-          <div className="mb-1"><strong>Total Time In Chastity:</strong> {formatElapsedTime(totalChastityTime)}</div>
-          <div className="mb-1"><strong>Total Time Cage Off:</strong> {formatElapsedTime(totalTimeCageOff)}</div>
-          <div className="mb-1"><strong>Overall Total Paused Time:</strong> <span className="text-yellow-300">{formatElapsedTime(overallTotalPauseTime)}</span></div> 
-          <hr className="my-3 border-purple-700"/>
-          <h3 className="text-xl font-semibold text-purple-300 mb-2 text-center">Chastity History</h3>
-          {chastityHistory.length > 0 ? (<div className="overflow-x-auto"><table className="min-w-full divide-y divide-purple-800"><thead className="bg-gray-700"><tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">#</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">Start Time</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">End Time</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">Raw Duration</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">Pause Duration</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">Effective Chastity</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-purple-300 uppercase">Reason</th>
-            </tr></thead><tbody className="bg-gray-800 divide-y divide-purple-700">
-            {chastityHistory.slice().reverse().map(p => {
-                const effectiveDuration = (p.duration || 0) - (p.totalPauseDurationSeconds || 0);
-                return (
-                <tr key={p.id}>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{p.periodNumber}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(p.startTime, true)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(p.endTime, true)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatElapsedTime(p.duration)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-yellow-300">{formatElapsedTime(p.totalPauseDurationSeconds || 0)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-sm text-green-400 font-semibold">{formatElapsedTime(effectiveDuration)}</td>
-                    <td className="px-3 py-2 whitespace-pre-wrap text-sm text-purple-200 break-words max-w-xs">{p.reasonForRemoval}</td>
-                </tr>);
-            })}
-            </tbody></table></div>) : <p className="text-center text-purple-200">No chastity history.</p>}
-          <hr className="my-3 border-purple-700"/>
-          <h3 className="text-xl font-semibold text-purple-300 mt-4 mb-2 text-center">Sexual Events Log</h3>
-            {isLoadingEvents ? <p className="text-purple-200 text-center">Loading events...</p> : 
-             sexualEventsLog.length > 0 ? (
-                <div className="overflow-x-auto bg-gray-800 rounded-lg border border-purple-700">
-                    <table className="min-w-full divide-y divide-purple-700">
-                        <thead className="bg-gray-700"><tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Date & Time</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Type(s)</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Duration</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Orgasm Count(s)</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Notes</th>
-                        </tr></thead>
-                        <tbody className="divide-y divide-purple-700">
-                            {sexualEventsLog.map(event => (
-                                <tr key={event.id} className="hover:bg-purple-900/20">
-                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp, true)}</td>
-                                    <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{formatEventTypesForDisplay(event.types, event.otherTypeDetail, savedSubmissivesName)}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatOrgasmCounts(event.selfOrgasmAmount, event.partnerOrgasmAmount)}</td>
-                                    <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{event.notes}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : <p className="text-purple-200 text-center">No events logged yet.</p>}
-        </div>
-    );
-};
-
-// Log Event Page Component
-const LogEventPage = ({
-    isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime, 
-    selectedEventTypes, handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange,
-    otherEventTypeDetail, setOtherEventTypeDetail,
-    newEventNotes, setNewEventNotes, 
-    newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes,
-    newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount,
-    handleLogNewEvent, eventLogMessage, isLoadingEvents, sexualEventsLog, savedSubmissivesName 
-}) => {
-    const formatEventTypesForDisplay = (types, otherDetail, subName) => {
-        let displayTypes = types && types.length > 0 
-            ? types.map(type => type === "Orgasm (Self)" && subName ? `Orgasm (${subName})` : type).join(', ') 
-            : '';
-        if (otherDetail) {
-            displayTypes += (displayTypes ? ', ' : '') + `Other: ${otherDetail}`;
-        }
-        return displayTypes || 'N/A';
-    };
-     const formatOrgasmCounts = (selfAmount, partnerAmount) => {
-        let parts = [];
-        if (selfAmount) parts.push(`Self: ${selfAmount}`);
-        if (partnerAmount) parts.push(`Partner: ${partnerAmount}`);
-        return parts.length > 0 ? parts.join(', ') : 'N/A';
-    };
-
-    const showSelfOrgasmAmountInput = selectedEventTypes.includes("Orgasm (Self)");
-    const showPartnerOrgasmAmountInput = selectedEventTypes.includes("Orgasm (Partner)");
-
-    return (
-        <div className="p-0 md:p-4">
-            <h2 className="text-2xl font-bold text-purple-300 mb-4">Sexual Event Log</h2>
-            <form onSubmit={handleLogNewEvent} className="mb-8 p-4 bg-gray-800 rounded-lg border border-purple-700 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><label htmlFor="eventDate" className="block text-sm font-medium text-purple-300 text-left">Event Date:</label><input type="date" id="eventDate" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} required className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500"/></div>
-                    <div><label htmlFor="eventTime" className="block text-sm font-medium text-purple-300 text-left">Event Time:</label><input type="time" id="eventTime" value={newEventTime} onChange={e => setNewEventTime(e.target.value)} required className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500"/></div>
-                </div>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="eventDurationHours" className="block text-sm font-medium text-purple-300 text-left">Duration (Hours):</label>
-                        <input type="number" id="eventDurationHours" value={newEventDurationHours} onChange={e => setNewEventDurationHours(e.target.value)} min="0" placeholder="H"
-                               className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500"/>
-                    </div>
-                    <div>
-                        <label htmlFor="eventDurationMinutes" className="block text-sm font-medium text-purple-300 text-left">Duration (Minutes):</label>
-                        <input type="number" id="eventDurationMinutes" value={newEventDurationMinutes} onChange={e => setNewEventDurationMinutes(e.target.value)} min="0" max="59" placeholder="M"
-                               className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500"/>
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-purple-300 text-left mb-1">Event Type(s):</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {EVENT_TYPES.map(type => {
-                            const displayLabel = type === "Orgasm (Self)" && savedSubmissivesName 
-                                               ? `Orgasm (${savedSubmissivesName})` 
-                                               : type;
-                            return (
-                                <label key={type} className="flex items-center space-x-2 text-sm text-purple-200">
-                                    <input type="checkbox" checked={selectedEventTypes.includes(type)} onChange={() => handleEventTypeChange(type)}
-                                        className="form-checkbox h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"/>
-                                    <span>{displayLabel}</span>
-                                </label>
-                            );
-                        })}
-                        <label key="other" className="flex items-center space-x-2 text-sm text-purple-200">
-                            <input type="checkbox" checked={otherEventTypeChecked} onChange={handleOtherEventTypeCheckChange}
-                                   className="form-checkbox h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"/>
-                            <span>Other</span>
-                        </label>
-                    </div>
-                    {otherEventTypeChecked && (
-                        <input type="text" value={otherEventTypeDetail} onChange={e => setOtherEventTypeDetail(e.target.value)} placeholder="Specify other type"
-                               className="mt-2 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500 text-sm"/>
-                    )}
-                </div>
-                {showSelfOrgasmAmountInput && (
-                     <div>
-                        <label htmlFor="selfOrgasmAmount" className="block text-sm font-medium text-purple-300 text-left">
-                            {savedSubmissivesName ? `Orgasm (${savedSubmissivesName}) Count:` : "Orgasm (Self) Count:"}
-                        </label>
-                        <input type="number" id="selfOrgasmAmount" value={newEventSelfOrgasmAmount} onChange={e => setNewEventSelfOrgasmAmount(e.target.value)} min="1" placeholder="Count"
-                               className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500"/>
-                    </div>
-                )}
-                {showPartnerOrgasmAmountInput && (
-                     <div>
-                        <label htmlFor="partnerOrgasmAmount" className="block text-sm font-medium text-purple-300 text-left">Partner Orgasm Count:</label>
-                        <input type="number" id="partnerOrgasmAmount" value={newEventPartnerOrgasmAmount} onChange={e => setNewEventPartnerOrgasmAmount(e.target.value)} min="1" placeholder="Count"
-                               className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500"/>
-                    </div>
-                )}
-                <div><label htmlFor="eventNotes" className="block text-sm font-medium text-purple-300 text-left">Notes:</label><textarea id="eventNotes" value={newEventNotes} onChange={e => setNewEventNotes(e.target.value)} rows="3" className="mt-1 block w-full px-3 py-2 rounded-md border border-purple-600 bg-gray-900 text-gray-50 focus:ring-purple-500 focus:border-purple-500" placeholder="Optional details..."></textarea></div>
-                <button type="submit" disabled={!isAuthReady || isLoadingEvents} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-300 disabled:opacity-50">Log Event</button>
-                {eventLogMessage && <p className={`text-sm mt-2 ${eventLogMessage.includes('success') ? 'text-green-400' : 'text-red-500'}`}>{eventLogMessage}</p>}
-            </form>
-            <h3 className="text-xl font-semibold text-purple-300 mb-3">Logged Events</h3>
-            {isLoadingEvents ? <p className="text-purple-200">Loading events...</p> : sexualEventsLog.length > 0 ? (
-                <div className="overflow-x-auto bg-gray-800 rounded-lg border border-purple-700"><table className="min-w-full divide-y divide-purple-700"><thead className="bg-gray-700"><tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Date & Time</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Type(s)</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Duration</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Orgasm Count(s)</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Notes</th>
-                </tr></thead><tbody className="divide-y divide-purple-700">
-                {sexualEventsLog.map(event => (<tr key={event.id} className="hover:bg-purple-900/20">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp, true)}</td>
-                    <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{formatEventTypesForDisplay(event.types, event.otherTypeDetail, savedSubmissivesName)}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatOrgasmCounts(event.selfOrgasmAmount, event.partnerOrgasmAmount)}</td>
-                    <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{event.notes}</td>
-                </tr>))}</tbody></table></div>) : <p className="text-purple-200">No events logged yet.</p>}
-        </div>
-    );
-};
-
-// Settings Page Component
-const SettingsPage = ({
-    isAuthReady, 
-    eventLogMessage, 
-    handleExportTrackerCSV, chastityHistory,
-    handleExportEventLogCSV, sexualEventsLog, handleResetAllData, confirmReset, nameMessage,
-    handleExportTextReport,
-    userId, 
-    showUserIdInSettings, 
-    handleToggleUserIdVisibility,
-    savedSubmissivesName, 
-    submissivesNameInput, 
-    handleSubmissivesNameInputChange, 
-    handleSetSubmissivesName
-}) => { 
-    return (
-        <div className="p-0 md:p-4">
-            <h2 className="text-2xl font-bold text-purple-300 mb-6">Settings</h2>
-
-            {/* Profile Information Section */}
-            <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-purple-300 mb-4">Profile Information</h3>
-                {/* Submissive's Name Setting */}
-                {!savedSubmissivesName && isAuthReady && (
-                    <div className="mb-4">
-                        <label htmlFor="settingsSubmissivesName" className="block text-sm font-medium text-purple-300 mb-1 text-left">
-                            Submissive’s Name: (Not Set)
-                        </label>
-                        <div className="flex flex-col sm:flex-row items-center sm:space-x-3">
-                            <input type="text" id="settingsSubmissivesName" value={submissivesNameInput || ''} onChange={handleSubmissivesNameInputChange} placeholder="Enter Submissive’s Name"
-                                className="w-full sm:w-auto px-3 py-1.5 rounded-md border border-purple-600 bg-gray-900 text-gray-50 text-sm focus:ring-purple-500 focus:border-purple-500"/>
-                            <button type="button" onClick={handleSetSubmissivesName} 
-                                    disabled={!isAuthReady || !(submissivesNameInput || '').trim()}
-                                className="w-full mt-2 sm:mt-0 sm:w-auto bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5 px-3 rounded-md shadow-sm transition duration-300 disabled:opacity-50">
-                                Set Name
-                            </button>
-                        </div>
-                    </div>
-                )}
-                 {savedSubmissivesName && (
-                     <div className="mb-4 text-left">
-                        <p className="text-sm font-medium text-purple-300">Submissive's Name:</p>
-                        <p className="text-lg text-purple-100">{savedSubmissivesName}</p>
-                        <p className="text-xs text-purple-400">(To change, use "Reset All Application Data" below.)</p>
-                    </div>
-                )}
-                 {nameMessage && <p className={`text-xs mt-2 mb-3 text-left ${nameMessage.includes('successfully') || nameMessage.includes('set') ? 'text-green-400' : 'text-yellow-400'}`}>{nameMessage}</p>}
-
-
-                {/* User ID Display */}
-                <div>
-                    <h4 className="text-lg font-medium text-purple-200 mb-2 text-left">Account ID</h4>
-                    <button 
-                        type="button"
-                        onClick={handleToggleUserIdVisibility} 
-                        disabled={!isAuthReady}
-                        className="w-full sm:w-auto bg-slate-600 hover:bg-slate-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50 mb-3"
-                    >
-                        {showUserIdInSettings ? 'Hide User ID' : 'Show User ID'}
-                    </button>
-                    {showUserIdInSettings && userId && (
-                        <div className="p-3 bg-gray-700 rounded-md text-left">
-                            <p className="text-sm text-purple-300">
-                                Your User ID: <span className="font-mono text-purple-100 select-all">{userId}</span>
-                            </p>
-                            <p className="text-xs text-purple-400 mt-1">
-                                (This ID is used for data storage. Keep it safe if you ever need manual assistance with your data.)
-                            </p>
-                        </div>
-                    )}
-                    {showUserIdInSettings && !userId && isAuthReady && ( 
-                        <p className="text-sm text-yellow-400 bg-gray-700 p-2 rounded text-left">User ID not available yet. Please wait for authentication to complete.</p>
-                    )}
-                </div>
-                 {/* TO-DO: Add customization options for Keyholder/Partner (e.g., name, separate event logging) */}
-                 <p className="text-xs text-purple-500 mt-4 text-left"><em>Future: Keyholder/Partner customization options will appear here.</em></p>
-            </div>
-
-
-            <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-purple-300 mb-4">Data Management</h3>
-                {/* TO-DO: Implement JSON Backup & Restore functionality */}
-                <p className="text-sm text-purple-400 mb-4">Note: JSON Backup/Restore is a planned feature.</p>
-                
-                <hr className="my-4 border-purple-600"/>
-                
-                <h4 className="text-lg font-medium text-purple-200 mb-2">Export Data Options</h4>
-                 <div className="flex flex-col space-y-3">
-                    <button type="button" onClick={handleExportTextReport} disabled={!isAuthReady} className="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
-                        Export Verbose Text Report (.txt)
-                    </button>
-                    <button type="button" onClick={handleExportTrackerCSV} disabled={!isAuthReady || chastityHistory.length === 0} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
-                        Export Tracker History CSV
-                    </button>
-                    <button type="button" onClick={handleExportEventLogCSV} disabled={!isAuthReady || sexualEventsLog.length === 0} className="w-full bg-teal-500 hover:bg-teal-600 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50">
-                        Export Event Log CSV
-                    </button>
-                </div>
-                {eventLogMessage && <p className={`text-xs mt-3 ${eventLogMessage.includes('successfully') || eventLogMessage.includes('restored') ? 'text-green-400' : 'text-yellow-400'}`}>{eventLogMessage}</p>}
-            </div>
-            
-            <div className="p-4 bg-gray-800 border border-red-700 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-red-400 mb-4">Reset All Application Data</h3>
-                <p className="text-sm text-purple-200 mb-3">This action is irreversible. It will delete all chastity history, event logs, and reset the Submissive's Name.</p>
-                <button type="button" onClick={handleResetAllData} disabled={!isAuthReady}
-                  className="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 disabled:opacity-50">
-                  {confirmReset ? 'Confirm Full Reset?' : 'Reset All Data'}
-                </button>
-                {confirmReset && (<p className="text-yellow-400 text-sm mt-3">Click again to permanently delete all data.</p>)}
-                {nameMessage && <p className={`text-xs mt-2 ${nameMessage.includes('reset') ? 'text-green-400' : 'text-yellow-400'}`}>{nameMessage}</p>}
-            </div>
-        </div>
-    );
-};
-
-
-// --- Main App Component (formerly ChastityTracker) ---
+// --- Main App Component ---
 const App = () => {
   const [userId, setUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); 
   const [currentPage, setCurrentPage] = useState('tracker'); 
   const [showUserIdInSettings, setShowUserIdInSettings] = useState(false); 
 
@@ -574,6 +70,10 @@ const App = () => {
   // Settings Page State
   const [confirmReset, setConfirmReset] = useState(false);
   const resetTimeoutRef = useRef(null);
+  const [restoreUserIdInput, setRestoreUserIdInput] = useState('');
+  const [showRestoreFromIdPrompt, setShowRestoreFromIdPrompt] = useState(false);
+  const [restoreFromIdMessage, setRestoreFromIdMessage] = useState('');
+
 
   // Submissive's Name states
   const [submissivesNameInput, setSubmissivesNameInput] = useState('');
@@ -616,18 +116,50 @@ const App = () => {
   const timerInChastityRef = useRef(null);
   const timerCageOffRef = useRef(null);
 
-  const getDocRef = useCallback(() => { 
-    if (!userId) return null;
-    return doc(db, "artifacts", appIdForFirestore, "users", userId); 
+  // --- Google Analytics Initialization ---
+  useEffect(() => {
+    if (GA_MEASUREMENT_ID) {
+      if (typeof window.gtag === 'function') {
+        window.gtag('config', GA_MEASUREMENT_ID, {
+          send_page_view: false 
+        });
+        console.log("Google Analytics configured with ID:", GA_MEASUREMENT_ID);
+      } else {
+        console.warn("gtag.js not found. Ensure it's loaded in index.html before the app script.");
+      }
+    } else {
+      console.warn("Google Analytics Measurement ID (VITE_GA_MEASUREMENT_ID) is not set in .env file.");
+    }
+  }, []); 
+
+  // --- Google Analytics Page View Tracking ---
+  useEffect(() => {
+    if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) { 
+      const pagePath = `/${currentPage}`;
+      const pageTitle = currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim(); 
+      
+      console.log(`GA: Tracking page_view for ${pageTitle} (${pagePath})`);
+      window.gtag('event', 'page_view', {
+        page_title: pageTitle,
+        page_path: pagePath,
+        user_id: userId 
+      });
+    }
+  }, [currentPage, isAuthReady, userId]); 
+
+
+  const getDocRef = useCallback((targetUserId = userId) => { 
+    if (!targetUserId) return null;
+    return doc(db, "artifacts", appIdForFirestore, "users", targetUserId); 
   }, [userId]); 
 
-  const getEventsCollectionRef = useCallback(() => { 
-    if (!userId || !db || !appIdForFirestore || userId.trim() === '' || appIdForFirestore.trim() === '') { 
-        console.error("App.js: getEventsCollectionRef - Returning null due to missing/invalid userId, db, or appIdForFirestore.", { userId, dbExists: !!db, appIdForFirestore });
+  const getEventsCollectionRef = useCallback((targetUserId = userId) => { 
+    if (!targetUserId || !db || !appIdForFirestore || targetUserId.trim() === '' || appIdForFirestore.trim() === '') { 
+        console.error("App.js: getEventsCollectionRef - Returning null due to missing/invalid targetUserId, db, or appIdForFirestore.", { targetUserId, dbExists: !!db, appIdForFirestore });
         return null;
     }
     try {
-        const ref = collection(db, "artifacts", appIdForFirestore, "users", userId, "sexualEventsLog"); 
+        const ref = collection(db, "artifacts", appIdForFirestore, "users", targetUserId, "sexualEventsLog"); 
         return ref;
     } catch (error) {
         console.error("App.js: getEventsCollectionRef - Error creating collection reference:", error);
@@ -664,11 +196,9 @@ const App = () => {
     return () => unsubscribe();
   }, []); 
 
-  // Effect to calculate overall totals when chastityHistory changes
   useEffect(() => {
     let totalEffectiveChastity = 0;
     let totalOverallPaused = 0;
-
     chastityHistory.forEach(period => {
         const effectiveDuration = (period.duration || 0) - (period.totalPauseDurationSeconds || 0);
         totalEffectiveChastity += Math.max(0, effectiveDuration);
@@ -676,21 +206,55 @@ const App = () => {
     });
     setTotalChastityTime(totalEffectiveChastity);
     setOverallTotalPauseTime(totalOverallPaused);
-
   }, [chastityHistory]);
 
+  const applyRestoredDataFromOtherUser = useCallback((data) => {
+    console.log("App.js: applyRestoredDataFromOtherUser called. Data:", data);
+    const loadedHist = (data.chastityHistory || []).map(item => {
+        const startTime = item.startTime?.toDate();
+        const endTime = item.endTime?.toDate();
+        return {
+          ...item,
+          startTime: startTime && !isNaN(startTime.getTime()) ? startTime : null,
+          endTime: endTime && !isNaN(endTime.getTime()) ? endTime : null,
+          totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0, 
+          pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate(), endTime: p.endTime?.toDate() }))
+        };
+      });
+      setChastityHistory(loadedHist);
+      setTotalTimeCageOff(data.totalTimeCageOff || 0); 
+      const cName = data.submissivesName || data.userAlias || '';
+      setSavedSubmissivesName(cName); 
+      setSubmissivesNameInput(cName); 
+      const lPauseEndTime = data.lastPauseEndTime?.toDate();
+      setLastPauseEndTime(lPauseEndTime && !isNaN(lPauseEndTime.getTime()) ? lPauseEndTime : null);
+      
+      const loadedCageOn = data.isCageOn || false;
+      const loadedCageOnTime = data.cageOnTime?.toDate();
+      const loadedPauseStart = data.pauseStartTime?.toDate();
+      setIsCageOn(loadedCageOn);
+      setCageOnTime(loadedCageOn && loadedCageOnTime && !isNaN(loadedCageOnTime.getTime()) ? loadedCageOnTime : null);
+      setTimeInChastity(loadedCageOn ? (data.timeInChastity || 0) : 0);
+      setIsPaused(loadedCageOn ? (data.isPaused || false) : false);
+      setPauseStartTime(loadedCageOn && (data.isPaused || false) && loadedPauseStart && !isNaN(loadedPauseStart.getTime()) ? loadedPauseStart : null);
+      setAccumulatedPauseTimeThisSession(loadedCageOn ? (data.accumulatedPauseTimeThisSession || 0) : 0);
+      setCurrentSessionPauseEvents(loadedCageOn ? (data.currentSessionPauseEvents || []) : []);
+      setHasSessionEverBeenActive(true); 
+      setShowRestoreSessionPrompt(false); 
+      setLoadedSessionData(null); 
+  }, [setHasSessionEverBeenActive]); 
 
   useEffect(() => { 
     if (!isAuthReady || !userId) {
       if(isLoading && !isAuthReady && !auth.currentUser) setIsLoading(false); 
       return;
     }
-    const loadTrackerData = async () => {
+    const loadInitialData = async () => {
       setIsLoading(true); 
-      console.log("App.js: loadTrackerData - Attempting to load data for userId:", userId);
-      const docRef = getDocRef();
+      console.log("App.js: loadInitialData - Attempting to load data for userId:", userId);
+      const docRef = getDocRef(); 
       if (!docRef) { 
-          console.log("App.js: loadTrackerData - No docRef, setting default initial state (isLoading false).");
+          console.log("App.js: loadInitialData - No docRef, setting default initial state (isLoading false).");
           setIsLoading(false); 
           setHasSessionEverBeenActive(false);
           setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
@@ -703,9 +267,10 @@ const App = () => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          console.log("App.js: loadTrackerData - Raw data from Firestore:", JSON.stringify(data, null, 2)); 
+          console.log("App.js: loadInitialData - Raw data from Firestore:", JSON.stringify(data, null, 2)); 
           
-          const loadedHistory = (data.chastityHistory || []).map(item => {
+          // Load historical and persistent settings first
+          const loadedHist = (data.chastityHistory || []).map(item => {
             const startTime = item.startTime?.toDate();
             const endTime = item.endTime?.toDate();
             return {
@@ -713,31 +278,23 @@ const App = () => {
               startTime: startTime && !isNaN(startTime.getTime()) ? startTime : null,
               endTime: endTime && !isNaN(endTime.getTime()) ? endTime : null,
               totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0, 
-              pauseEvents: (item.pauseEvents || []).map(p => { 
-                  const pStartTime = p.startTime?.toDate();
-                  const pEndTime = p.endTime?.toDate();
-                  return {
-                      ...p, 
-                      startTime: pStartTime && !isNaN(pStartTime.getTime()) ? pStartTime : null, 
-                      endTime: pEndTime && !isNaN(pEndTime.getTime()) ? pEndTime : null
-                  };
-              })
+              pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate(), endTime: p.endTime?.toDate() }))
             };
           });
-          setChastityHistory(loadedHistory);
+          setChastityHistory(loadedHist);
           setTotalTimeCageOff(data.totalTimeCageOff || 0); 
           const currentName = data.submissivesName || data.userAlias || '';
           setSavedSubmissivesName(currentName); 
           setSubmissivesNameInput(currentName); 
           const loadedLastPauseEndTime = data.lastPauseEndTime?.toDate();
           setLastPauseEndTime(loadedLastPauseEndTime && !isNaN(loadedLastPauseEndTime.getTime()) ? loadedLastPauseEndTime : null);
-          console.log("App.js: loadTrackerData - Loaded lastPauseEndTime from Firestore:", loadedLastPauseEndTime);
-
+          
+          // Check for active session to prompt restore
           const activeSessionIsCageOnLoaded = data.isCageOn || false;
           const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate();
 
           if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
-            console.log("App.js: loadTrackerData - Active session found in Firestore. Preparing restore prompt.");
+            console.log("App.js: loadInitialData - Active session found in Firestore. Preparing restore prompt.");
             const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate();
             setLoadedSessionData({ 
                 isCageOn: true,
@@ -746,47 +303,35 @@ const App = () => {
                 isPaused: data.isPaused || false, 
                 pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null,
                 accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0,
-                currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({
-                    ...p,
-                    startTime: p.startTime?.toDate(),
-                    endTime: p.endTime?.toDate()
-                })),
+                currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate(), endTime: p.endTime?.toDate() })),
             });
             
             // Set UI to a paused neutral state while prompt is shown
-            setIsCageOn(true); 
+            setIsCageOn(true); // Reflect that a session *could* be active
             setCageOnTime(activeSessionCageOnTimeLoaded); 
             setTimeInChastity(data.timeInChastity || 0); 
-            setIsPaused(true); 
-            setPauseStartTime(new Date()); 
+            setIsPaused(true); // Force UI pause
+            setPauseStartTime(new Date()); // This is a temporary UI pause
             setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0);
             setCurrentSessionPauseEvents(data.currentSessionPauseEvents || []);
-            setHasSessionEverBeenActive(true); // A session was active
+            setHasSessionEverBeenActive(true); // A session was active, so mark it
             setShowRestoreSessionPrompt(true);
-            console.log("App.js: loadTrackerData - Showing restore prompt. App is in a 'paused neutral state'.");
+            console.log("App.js: loadInitialData - Showing restore prompt. App is in a 'paused neutral state'.");
           } else {
+            // No active/valid session in Firestore, or inconsistent data. Initialize to a truly neutral state.
             if (activeSessionIsCageOnLoaded && (!activeSessionCageOnTimeLoaded || isNaN(activeSessionCageOnTimeLoaded.getTime()))) {
-                console.warn("App.js: loadTrackerData - Inconsistent state from Firestore (isCageOn true, but cageOnTime invalid). Forcing Cage Off.");
+                console.warn("App.js: loadInitialData - Inconsistent state from Firestore (isCageOn true, but cageOnTime invalid). Forcing Cage Off and neutral start.");
             } else {
-                console.log("App.js: loadTrackerData - No active/valid session in Firestore. Initializing to Cage Off. hasSessionEverBeenActive will depend on history.");
+                console.log("App.js: loadInitialData - No active/valid session in Firestore. Initializing to neutral state.");
             }
             setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0);
             setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
-            setLivePauseDuration(0);
-            if (loadedHistory.length > 0) {
-                const lastPeriod = loadedHistory[loadedHistory.length - 1];
-                const lastSessionEndTime = lastPeriod.endTime; 
-                if (lastSessionEndTime && !isNaN(lastSessionEndTime.getTime())) {
-                    setTimeCageOff(Math.max(0, Math.floor((new Date().getTime() - lastSessionEndTime.getTime()) / 1000)));
-                } else { setTimeCageOff(0); }
-                setHasSessionEverBeenActive(true);
-            } else { 
-                setTimeCageOff(0); 
-                setHasSessionEverBeenActive(false);
-            }
+            setLivePauseDuration(0); setTimeCageOff(0); 
+            setHasSessionEverBeenActive(data.hasSessionEverBeenActive || false); // Load persisted flag, default to false for this path
+            setShowRestoreSessionPrompt(false); 
           }
         } else { 
-           console.log("App.js: loadTrackerData - No document found, initializing all to default 'off' state.");
+           console.log("App.js: loadInitialData - No document found, initializing all to default 'off' state.");
            setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
            setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
            setLastPauseEndTime(null); setChastityHistory([]); setSavedSubmissivesName(''); setSubmissivesNameInput('');
@@ -795,7 +340,7 @@ const App = () => {
            setHasSessionEverBeenActive(false);
         }
       } catch (error) { 
-          console.error("Error loading tracker data:", error); 
+          console.error("Error loading initial tracker data:", error); 
           setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0);
           setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
           setLastPauseEndTime(null); setChastityHistory([]); setSavedSubmissivesName(''); setSubmissivesNameInput('');
@@ -805,13 +350,13 @@ const App = () => {
       } 
       finally { setIsLoading(false); }
     };
-    loadTrackerData();
-  }, [isAuthReady, userId, getDocRef]); 
+    loadInitialData();
+  }, [isAuthReady, userId, getDocRef, applyRestoredDataFromOtherUser]); // Changed applyLoadedData to applyRestoredDataFromOtherUser
 
-  const fetchEvents = useCallback(async () => { 
-    if (!isAuthReady || !userId) return;
+  const fetchEvents = useCallback(async (targetUserId = userId) => { 
+    if (!isAuthReady || !targetUserId) return;
     setIsLoadingEvents(true);
-    const eventsColRef = getEventsCollectionRef();
+    const eventsColRef = getEventsCollectionRef(targetUserId);
     if (!eventsColRef) { 
         setEventLogMessage("Error: Could not get event log reference.");
         setTimeout(() => setEventLogMessage(''), 3000);
@@ -830,7 +375,7 @@ const App = () => {
                 eventTimestamp: eventTS && !isNaN(eventTS.getTime()) ? eventTS : new Date() 
             };
         });
-        setSexualEventsLog(events);
+        setSexualEventsLog(events); 
     } catch (error) { 
         console.error("App.js: fetchEvents - Error fetching events:", error);
         setEventLogMessage("Failed to load events.");
@@ -852,13 +397,13 @@ const App = () => {
         console.warn("saveDataToFirestore: Auth not ready or no userId. Aborting save.");
         return;
     }
-    const docRef = getDocRef();
+    const docRef = getDocRef(); 
     if (!docRef) {
         console.error("saveDataToFirestore: Could not get document reference. Aborting save.");
         return;
     }
     try {
-      const firestoreReadyData = { ...dataToSave };
+      const firestoreReadyData = { ...dataToSave, hasSessionEverBeenActive }; 
       const toTimestampIfDate = (date) => {
           if (date instanceof Date && !isNaN(date.getTime())) return Timestamp.fromDate(date);
           if (typeof date === 'string') { 
@@ -894,103 +439,79 @@ const App = () => {
       if (typeof firestoreReadyData.submissivesName === 'undefined') firestoreReadyData.submissivesName = savedSubmissivesName; 
       if (firestoreReadyData.hasOwnProperty('userAlias')) delete firestoreReadyData.userAlias;
       
-      // console.log("App.js: saveDataToFirestore: Attempting to set document with data:", JSON.stringify(firestoreReadyData, null, 2));
       await setDoc(docRef, firestoreReadyData, { merge: true });
-      // console.log("App.js: saveDataToFirestore: Data saved successfully.");
     } catch (error) { console.error("Error saving main data to Firestore:", error); }
-  }, [userId, getDocRef, isAuthReady, savedSubmissivesName]); 
+  }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive]); 
   
   useEffect(() => { 
-    // console.log("Timer Effect (timeInChastity): isCageOn =", isCageOn, "isPaused =", isPaused, "(type:", typeof isPaused + ")", "cageOnTime =", cageOnTime, "isAuthReady =", isAuthReady);
     if (isCageOn && isPaused === false && isAuthReady) { 
       if (cageOnTime && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime())) {
           const now = new Date();
           const initialElapsed = Math.max(0, Math.floor((now.getTime() - cageOnTime.getTime()) / 1000));
           if (timeInChastity === 0 || (cageOnTime && cageOnTime.getTime() !== (tempStartTime?.getTime() || 0))) { 
-            // console.log("Timer Effect (timeInChastity): Setting initialElapsed =", initialElapsed);
             setTimeInChastity(initialElapsed);
           }
       }
-      // console.log("Timer Effect (timeInChastity): Starting setInterval. Current timeInChastity value before interval starts:", timeInChastity);
       timerInChastityRef.current = setInterval(() => {
-        setTimeInChastity(prevTime => {
-            // console.log("Timer Tick (timeInChastity): prevTime =", prevTime, "newTime =", prevTime + 1, "isPaused in App scope:", isPaused); 
-            return prevTime + 1;
-        });
+        setTimeInChastity(prevTime => prevTime + 1);
       }, 1000);
     } else {
       if (timerInChastityRef.current) {
-        // console.log("Timer Effect (timeInChastity): Clearing interval because isCageOn is", isCageOn, "or isPaused is", isPaused, "or isAuthReady is", isAuthReady);
         clearInterval(timerInChastityRef.current);
       }
     }
     return () => { 
       if (timerInChastityRef.current) {
-        // console.log("Timer Effect Cleanup (timeInChastity): Clearing interval");
         clearInterval(timerInChastityRef.current);
       }
     };
   }, [isCageOn, isPaused, cageOnTime, isAuthReady, timeInChastity, tempStartTime]); 
 
   useEffect(() => { 
-    // console.log("Timer Effect (timeCageOff): isCageOn =", isCageOn, "isAuthReady =", isAuthReady, "hasSessionEverBeenActive=", hasSessionEverBeenActive);
     if (!isCageOn && isAuthReady && hasSessionEverBeenActive) { 
-      // console.log("Timer Effect (timeCageOff): Starting setInterval. Current timeCageOff value before interval starts:", timeCageOff);
       timerCageOffRef.current = setInterval(() => setTimeCageOff(prev => prev + 1), 1000);
     } else { 
       if (timerCageOffRef.current) {
-        // console.log("Timer Effect (timeCageOff): Clearing interval because isCageOn is", isCageOn, "or isAuthReady is", isAuthReady, "or hasSessionEverBeenActive is", hasSessionEverBeenActive);
         clearInterval(timerCageOffRef.current);
       }
     }
     return () => { 
       if (timerCageOffRef.current) {
-        // console.log("Timer Effect Cleanup (timeCageOff): Clearing interval");
         clearInterval(timerCageOffRef.current);
       }
     };
   }, [isCageOn, isAuthReady, hasSessionEverBeenActive]); 
 
-  // Effect for live pause duration display
   useEffect(() => {
     if (isPaused && pauseStartTime) {
-        // console.log("App.js: Starting livePauseDuration interval. Pause Start Time:", pauseStartTime);
         setLivePauseDuration(Math.floor((new Date().getTime() - pauseStartTime.getTime()) / 1000)); 
         pauseDisplayTimerRef.current = setInterval(() => {
-            setLivePauseDuration(prev => {
-                 // console.log("Timer Tick (livePauseDuration): prev =", prev, "new =", prev + 1); 
-                 return prev + 1;
-            });
+            setLivePauseDuration(prev => prev + 1);
         }, 1000);
     } else {
         if (pauseDisplayTimerRef.current) {
-            // console.log("App.js: Clearing livePauseDuration interval.");
             clearInterval(pauseDisplayTimerRef.current);
         }
         setLivePauseDuration(0); 
     }
     return () => {
         if (pauseDisplayTimerRef.current) {
-            // console.log("App.js: Cleanup - Clearing livePauseDuration interval.");
             clearInterval(pauseDisplayTimerRef.current);
         }
     };
   }, [isPaused, pauseStartTime]);
 
-  // --- Pause Feature Handlers ---
   const handleInitiatePause = useCallback(() => {
-    console.log("App.js: handleInitiatePause called. LastPauseEndTime:", lastPauseEndTime, "Current Time:", new Date());
+    console.log("App.js: handleInitiatePause called. LastPauseEndTime:", lastPauseEndTime);
     setPauseCooldownMessage(''); 
     if (lastPauseEndTime) {
         const twelveHoursInMillis = 12 * 60 * 60 * 1000;
         const timeSinceLastPauseEnd = new Date().getTime() - lastPauseEndTime.getTime();
-        console.log("App.js: handleInitiatePause - Time since last pause end (ms):", timeSinceLastPauseEnd, "Cooldown (ms):", twelveHoursInMillis);
         if (timeSinceLastPauseEnd < twelveHoursInMillis) {
             const remainingTime = twelveHoursInMillis - timeSinceLastPauseEnd;
             const hours = Math.floor(remainingTime / (1000 * 60 * 60));
             const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
             const cooldownMsg = `You can pause again in approximately ${hours}h ${minutes}m.`;
-            console.warn("App.js: handleInitiatePause - Pause cooldown active.", cooldownMsg);
             setPauseCooldownMessage(cooldownMsg); 
             setTimeout(() => setPauseCooldownMessage(''), 5000);
             return;
@@ -1000,223 +521,72 @@ const App = () => {
   }, [lastPauseEndTime]);
 
   const handleConfirmPause = useCallback(async () => {
-    console.log("App.js: handleConfirmPause called. Reason:", reasonForPauseInput);
-    if (!isCageOn) {
-        console.warn("App.js: handleConfirmPause - Cannot pause, cage is not on.");
-        setShowPauseReasonModal(false);
-        setReasonForPauseInput('');
-        return;
-    }
+    if (!isCageOn) { setShowPauseReasonModal(false); setReasonForPauseInput(''); return; }
     const now = new Date();
-    const newPauseEvent = {
-        id: crypto.randomUUID(),
-        startTime: now,
-        reason: reasonForPauseInput.trim() || "No reason provided",
-        endTime: null, 
-        duration: null 
-    };
-
-    console.log("App.js: handleConfirmPause - Setting isPaused to true, pauseStartTime to:", now);
+    const newPauseEvent = { id: crypto.randomUUID(), startTime: now, reason: reasonForPauseInput.trim() || "No reason provided", endTime: null, duration: null };
     setIsPaused(true);
     setPauseStartTime(now);
     setCurrentSessionPauseEvents(prev => [...prev, newPauseEvent]);
-    
-    setShowPauseReasonModal(false);
-    setReasonForPauseInput('');
-
-    const dataToSave = { 
-        isPaused: true, 
-        pauseStartTime: now, 
-        accumulatedPauseTimeThisSession, 
-        currentSessionPauseEvents: [...currentSessionPauseEvents, newPauseEvent],
-        lastPauseEndTime 
-    };
-    // console.log("App.js: handleConfirmPause - Data to save:", dataToSave);
-    await saveDataToFirestore(dataToSave);
-    console.log("App.js: handleConfirmPause - Session paused. Firestore updated.");
+    setShowPauseReasonModal(false); setReasonForPauseInput('');
+    await saveDataToFirestore({ isPaused: true, pauseStartTime: now, accumulatedPauseTimeThisSession, currentSessionPauseEvents: [...currentSessionPauseEvents, newPauseEvent], lastPauseEndTime });
   }, [isCageOn, reasonForPauseInput, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore, lastPauseEndTime]);
 
-  const handleCancelPauseModal = useCallback(() => {
-    console.log("App.js: handleCancelPauseModal called");
-    setShowPauseReasonModal(false);
-    setReasonForPauseInput('');
-  }, []);
+  const handleCancelPauseModal = useCallback(() => { setShowPauseReasonModal(false); setReasonForPauseInput(''); }, []);
 
   const handleResumeSession = useCallback(async () => {
-    console.log("App.js: handleResumeSession called. Current isPaused:", isPaused, "Current pauseStartTime:", pauseStartTime);
-    if (!isPaused || !pauseStartTime) {
-        console.warn("App.js: handleResumeSession - Not paused or no pause start time. Aborting resume.");
-        setIsPaused(false); 
-        setPauseStartTime(null);
-        setLivePauseDuration(0); 
-        return;
-    }
+    if (!isPaused || !pauseStartTime) { setIsPaused(false); setPauseStartTime(null); setLivePauseDuration(0); return; }
     const endTime = new Date();
     const currentPauseDuration = Math.floor((endTime.getTime() - pauseStartTime.getTime()) / 1000);
     const newAccumulatedPauseTime = accumulatedPauseTimeThisSession + currentPauseDuration;
-
-    const updatedSessionPauses = currentSessionPauseEvents.map((event, index) => {
-        if (index === currentSessionPauseEvents.length - 1 && !event.endTime) { 
-            return { ...event, endTime, duration: currentPauseDuration };
-        }
-        return event;
-    });
-    console.log("App.js: handleResumeSession - Setting isPaused to false. New accumulated pause:", newAccumulatedPauseTime);
+    const updatedSessionPauses = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime, duration: currentPauseDuration } : event);
     setAccumulatedPauseTimeThisSession(newAccumulatedPauseTime);
-    setIsPaused(false);
-    setPauseStartTime(null);
-    setCurrentSessionPauseEvents(updatedSessionPauses);
-    setLivePauseDuration(0); 
-    setLastPauseEndTime(endTime); 
-
-    const dataToSave = { 
-        isPaused: false, 
-        pauseStartTime: null, 
-        accumulatedPauseTimeThisSession: newAccumulatedPauseTime,
-        currentSessionPauseEvents: updatedSessionPauses,
-        lastPauseEndTime: endTime 
-    };
-    // console.log("App.js: handleResumeSession - Data to save:", dataToSave);
-    await saveDataToFirestore(dataToSave);
-    console.log("App.js: handleResumeSession - Session resumed. Firestore updated.");
+    setIsPaused(false); setPauseStartTime(null); setCurrentSessionPauseEvents(updatedSessionPauses);
+    setLivePauseDuration(0); setLastPauseEndTime(endTime); 
+    await saveDataToFirestore({ isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: newAccumulatedPauseTime, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime: endTime });
   }, [isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore]);
 
-
-  // --- Original Handlers ---
   const handleToggleCage = useCallback(() => { 
-    console.log("App.js: handleToggleCage called. Current isCageOn:", isCageOn, "isAuthReady:", isAuthReady, "isPaused:", isPaused);
-    if (!isAuthReady) {
-        console.warn("App.js: handleToggleCage - Auth not ready, returning.");
-        return;
-    }
-    if (isPaused) {
-        setNameMessage("Please resume the session before turning the cage off.");
-        setTimeout(() => setNameMessage(''), 3000);
-        console.warn("App.js: handleToggleCage - Attempted to toggle cage while paused.");
-        return;
-    }
-
+    if (!isAuthReady || isPaused) return;
     const currentTime = new Date();
     if (confirmReset) { setConfirmReset(false); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); }
-    
     if (!isCageOn) { 
-      console.log("App.js: handleToggleCage - Cage is OFF, attempting to turn ON.");
       const newTotalOff = totalTimeCageOff + timeCageOff; 
       setTotalTimeCageOff(newTotalOff); 
       setCageOnTime(currentTime); 
-      console.log("App.js: handleToggleCage - Setting cageOnTime to:", currentTime); 
-      setIsCageOn(true);
-      setTimeInChastity(0); 
-      setTimeCageOff(0);
-      setAccumulatedPauseTimeThisSession(0);
-      setCurrentSessionPauseEvents([]);
-      setPauseStartTime(null);
-      setIsPaused(false); 
-      setLastPauseEndTime(null); 
+      setIsCageOn(true); setTimeInChastity(0); setTimeCageOff(0);
+      setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
+      setPauseStartTime(null); setIsPaused(false); setLastPauseEndTime(null); 
       setHasSessionEverBeenActive(true);
-      console.log("App.js: handleToggleCage - Setting lastPauseEndTime to null & hasSessionEverBeenActive to true for new session."); 
-      const dataToSave = { 
-          isCageOn: true, cageOnTime: currentTime, totalTimeCageOff: newTotalOff, 
-          timeInChastity: 0, 
-          chastityHistory, totalChastityTime, submissivesName: savedSubmissivesName,
-          isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [],
-          lastPauseEndTime: null 
-      };
-      // console.log("App.js: handleToggleCage - Data to save for Cage ON:", dataToSave);
-      saveDataToFirestore(dataToSave).then(() => {
-          console.log("App.js: handleToggleCage - saveDataToFirestore for Cage ON successful.");
-      }).catch(err => {
-          console.error("App.js: handleToggleCage - saveDataToFirestore for Cage ON failed:", err);
-      });
+      saveDataToFirestore({ isCageOn: true, cageOnTime: currentTime, totalTimeCageOff: newTotalOff, timeInChastity: 0, chastityHistory, totalChastityTime, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: true });
     } else { 
-      console.log("App.js: handleToggleCage - Cage is ON, attempting to turn OFF. Showing modal. Current cageOnTime:", cageOnTime);
-      setTempEndTime(currentTime); 
-      setTempStartTime(cageOnTime); 
-      console.log("App.js: handleToggleCage - Setting tempStartTime to:", cageOnTime); 
+      setTempEndTime(currentTime); setTempStartTime(cageOnTime); 
       setShowReasonModal(true); 
-      console.log("App.js: handleToggleCage - ShowReasonModal set to true for removal.");
     }
-  }, [isAuthReady, isCageOn, totalTimeCageOff, timeCageOff, cageOnTime, confirmReset, saveDataToFirestore, chastityHistory, totalChastityTime, savedSubmissivesName, resetTimeoutRef, isPaused, setNameMessage, setHasSessionEverBeenActive]);
+  }, [isAuthReady, isCageOn, totalTimeCageOff, timeCageOff, cageOnTime, confirmReset, saveDataToFirestore, chastityHistory, totalChastityTime, savedSubmissivesName, resetTimeoutRef, isPaused, setHasSessionEverBeenActive]);
 
   const handleConfirmRemoval = useCallback(() => { 
-    console.log("App.js: handleConfirmRemoval - Called. State before changes: isCageOn=", isCageOn, "isPaused=", isPaused, "accumulatedPauseTimeThisSession=", accumulatedPauseTimeThisSession); 
-    if (!isAuthReady) {
-        console.warn("App.js: handleConfirmRemoval - Auth not ready.");
-        return;
-    }
+    if (!isAuthReady) return;
     if (tempStartTime && tempEndTime) {
       let currentAccumulatedPause = accumulatedPauseTimeThisSession;
       let finalPauseEvents = currentSessionPauseEvents;
-
       if (isPaused && pauseStartTime) {
-          console.log("App.js: handleConfirmRemoval - Session was paused, finalizing current pause.");
           const currentPauseDuration = Math.floor((tempEndTime.getTime() - pauseStartTime.getTime()) / 1000);
           currentAccumulatedPause += currentPauseDuration;
-          finalPauseEvents = currentSessionPauseEvents.map((event, index) => {
-              if (index === currentSessionPauseEvents.length - 1 && !event.endTime) {
-                  return { ...event, endTime: tempEndTime, duration: currentPauseDuration };
-              }
-              return event;
-          });
-          console.log("App.js: handleConfirmRemoval - Finalized current pause. Duration:", currentPauseDuration, "New accumulated:", currentAccumulatedPause);
+          finalPauseEvents = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime: tempEndTime, duration: currentPauseDuration } : event);
       }
-      
       const rawDurationSeconds = Math.max(0, Math.floor((tempEndTime.getTime() - tempStartTime.getTime()) / 1000));
-      const effectiveDurationSeconds = rawDurationSeconds - currentAccumulatedPause;
-      console.log("App.js: handleConfirmRemoval - Raw duration:", rawDurationSeconds, "Final accumulated pause:", currentAccumulatedPause, "Effective duration:", effectiveDurationSeconds); 
-      
-      const newHistoryEntry = { 
-        id: crypto.randomUUID(), periodNumber: chastityHistory.length + 1, 
-        startTime: tempStartTime, endTime: tempEndTime, 
-        duration: rawDurationSeconds, 
-        reasonForRemoval: reasonForRemoval.trim() || 'No reason provided',
-        totalPauseDurationSeconds: currentAccumulatedPause, 
-        pauseEvents: finalPauseEvents 
-      };
+      const newHistoryEntry = { id: crypto.randomUUID(), periodNumber: chastityHistory.length + 1, startTime: tempStartTime, endTime: tempEndTime, duration: rawDurationSeconds, reasonForRemoval: reasonForRemoval.trim() || 'No reason provided', totalPauseDurationSeconds: currentAccumulatedPause, pauseEvents: finalPauseEvents };
       const updatedHistoryState = [...chastityHistory, newHistoryEntry];
-      
-      console.log("App.js: handleConfirmRemoval - Setting main states: isCageOn=false, isPaused=false, resetting session timers/pauses.");
       setChastityHistory(updatedHistoryState); 
-      
-      setIsCageOn(false); 
-      console.log("App.js: handleConfirmRemoval - setIsCageOn(false) called.");
-      setCageOnTime(null);
-      console.log("App.js: handleConfirmRemoval - setCageOnTime(null) called.");
-      setTimeInChastity(0); 
-      setTimeCageOff(0); 
-      setIsPaused(false);
-      setPauseStartTime(null);
-      setAccumulatedPauseTimeThisSession(0);
-      setCurrentSessionPauseEvents([]);
-      setHasSessionEverBeenActive(true); // A session just ended
-
-      const dataToSave = { 
-          isCageOn: false, cageOnTime: null, timeInChastity: 0,
-          chastityHistory: updatedHistoryState, 
-          totalTimeCageOff, submissivesName: savedSubmissivesName,
-          isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [],
-          lastPauseEndTime 
-      };
-      console.log("App.js: handleConfirmRemoval - Data to save:", dataToSave);
-      saveDataToFirestore(dataToSave);
-    } else {
-        console.warn("App.js: handleConfirmRemoval - tempStartTime or tempEndTime is missing. tempStartTime:", tempStartTime, "tempEndTime:", tempEndTime); 
+      setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setTimeCageOff(0); 
+      setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
+      setHasSessionEverBeenActive(true); 
+      saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, chastityHistory: updatedHistoryState, totalTimeCageOff, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime, hasSessionEverBeenActive: true });
     }
-    setReasonForRemoval(''); 
-    setTempEndTime(null); 
-    setTempStartTime(null); 
-    setShowReasonModal(false);
-    console.log("App.js: handleConfirmRemoval - Modal should be closed now."); 
+    setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false);
   }, [isAuthReady, tempStartTime, tempEndTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, isPaused, pauseStartTime, setHasSessionEverBeenActive]);
 
-  const handleCancelRemoval = useCallback(() => { 
-    console.log("App.js: handleCancelRemoval called."); 
-    setReasonForRemoval(''); 
-    setTempEndTime(null); 
-    setTempStartTime(null); 
-    setShowReasonModal(false);
-    console.log("App.js: handleCancelRemoval - Modal should be closed now."); 
-  }, []);
+  const handleCancelRemoval = useCallback(() => { setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, []);
   
   const clearAllEvents = useCallback(async () => { 
     if (!isAuthReady || !userId) return;
@@ -1234,76 +604,42 @@ const App = () => {
   }, [isAuthReady, userId, getEventsCollectionRef]); 
 
   const handleResetAllData = useCallback(() => { 
-      if (!isAuthReady) return;
+    if (!isAuthReady) return;
       if (confirmReset) {
-        try {
-            if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); 
-            if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); 
-            if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
-            
-            setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]);
-            setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput('');
-            setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); 
-            setLastPauseEndTime(null); 
-            setPauseCooldownMessage('');
-            setHasSessionEverBeenActive(false);
-            
-            setConfirmReset(false); setShowReasonModal(false); 
-            saveDataToFirestore({ 
-                cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], 
-                totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '',
-                isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [],
-                lastPauseEndTime: null 
-            });
-            clearAllEvents(); 
-            setNameMessage("All data reset. Submissive's Name cleared."); 
-            setTimeout(() => setNameMessage(''), 4000);
-            setCurrentPage('tracker'); 
-        } catch (error) {
-            console.error("App.js: handleResetAllData - Error during reset process:", error);
-            setNameMessage("Error during reset. Check console.");
-            setTimeout(() => setNameMessage(''), 4000);
-        }
+        if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); 
+        if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); 
+        if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
+        setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]);
+        setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput('');
+        setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); 
+        setLastPauseEndTime(null); setPauseCooldownMessage('');
+        setHasSessionEverBeenActive(false);
+        setConfirmReset(false); setShowReasonModal(false); 
+        saveDataToFirestore({ cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '', isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false });
+        clearAllEvents(); 
+        setNameMessage("All data reset. Submissive's Name cleared."); 
+        setTimeout(() => setNameMessage(''), 4000);
+        setCurrentPage('tracker'); 
       } else { 
         setConfirmReset(true); 
-        resetTimeoutRef.current = setTimeout(() => {
-            setConfirmReset(false);
-        }, 3000); 
+        resetTimeoutRef.current = setTimeout(() => { setConfirmReset(false); }, 3000); 
       }
-  }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef]);
+  }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive]);
   
-  const handleSubmissivesNameInputChange = useCallback((event) => { 
-    setSubmissivesNameInput(event.target.value); 
-  }, []);
-
-  const handleSetSubmissivesName = useCallback(async () => {
-      if (!isAuthReady || !userId) { setNameMessage("Cannot set name: User not authenticated."); setTimeout(() => setNameMessage(''), 3000); return; }
-      if (savedSubmissivesName) { setNameMessage("Name is already set. Perform a 'Reset All Data' in Settings to change it."); setTimeout(() => setNameMessage(''), 4000); return; }
-      const trimmedName = submissivesNameInput.trim();
-      if (!trimmedName) { setNameMessage("Name cannot be empty."); setTimeout(() => setNameMessage(''), 3000); return; }
-      setSavedSubmissivesName(trimmedName);
-      await saveDataToFirestore({ submissivesName: trimmedName, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime });
-      setNameMessage("Submissive's Name set successfully!"); setTimeout(() => setNameMessage(''), 3000);
-  }, [isAuthReady, userId, savedSubmissivesName, submissivesNameInput, saveDataToFirestore, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime]);
+  const handleSubmissivesNameInputChange = useCallback((event) => { setSubmissivesNameInput(event.target.value); }, []);
+  const handleSetSubmissivesName = useCallback(async () => { 
+    if (!isAuthReady || !userId) { setNameMessage("Cannot set name: User not authenticated."); setTimeout(() => setNameMessage(''), 3000); return; }
+    if (savedSubmissivesName) { setNameMessage("Name is already set. Perform a 'Reset All Data' in Settings to change it."); setTimeout(() => setNameMessage(''), 4000); return; }
+    const trimmedName = submissivesNameInput.trim();
+    if (!trimmedName) { setNameMessage("Name cannot be empty."); setTimeout(() => setNameMessage(''), 3000); return; }
+    setSavedSubmissivesName(trimmedName);
+    await saveDataToFirestore({ submissivesName: trimmedName, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime, hasSessionEverBeenActive });
+    setNameMessage("Submissive's Name set successfully!"); setTimeout(() => setNameMessage(''), 3000);
+  }, [isAuthReady, userId, savedSubmissivesName, submissivesNameInput, saveDataToFirestore, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, lastPauseEndTime, hasSessionEverBeenActive]);
   
-  const handleToggleUserIdVisibility = useCallback(() => { 
-    setShowUserIdInSettings(prev => !prev);
-  }, []);
-
-  // Event Log Handlers
-  const handleEventTypeChange = useCallback((type) => {
-    setSelectedEventTypes(prev => 
-        prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    );
-  }, []);
-
-  const handleOtherEventTypeCheckChange = useCallback((e) => {
-    setOtherEventTypeChecked(e.target.checked);
-    if (!e.target.checked) {
-        setOtherEventTypeDetail(''); 
-    }
-  }, []);
-
+  const handleToggleUserIdVisibility = useCallback(() => { setShowUserIdInSettings(prev => !prev); }, []);
+  const handleEventTypeChange = useCallback((type) => { setSelectedEventTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]); }, []);
+  const handleOtherEventTypeCheckChange = useCallback((e) => { setOtherEventTypeChecked(e.target.checked); if (!e.target.checked) { setOtherEventTypeDetail(''); } }, []);
   const handleLogNewEvent = useCallback(async (e) => { 
     e.preventDefault();
     if (!isAuthReady || !userId) { 
@@ -1311,26 +647,22 @@ const App = () => {
         setTimeout(() => setEventLogMessage(''), 3000); 
         return; 
     }
-    
     const finalEventTypes = [...selectedEventTypes];
     let finalOtherDetail = null;
     if (otherEventTypeChecked && otherEventTypeDetail.trim()) {
         finalOtherDetail = otherEventTypeDetail.trim();
     }
-
     if (finalEventTypes.length === 0 && !finalOtherDetail) {
         setEventLogMessage("Please select at least one event type or specify 'Other'.");
         setTimeout(() => setEventLogMessage(''), 3000);
         return;
     }
-    
     const eventsColRef = getEventsCollectionRef(); 
     if (!eventsColRef) {
         setEventLogMessage("Error: Event log reference could not be created. Check console.");
         setTimeout(() => setEventLogMessage(''), 3000);
         return;
     }
-    
     const dateTimeString = `${newEventDate}T${newEventTime}`;
     const eventTimestamp = new Date(dateTimeString);
     if (isNaN(eventTimestamp.getTime())) { 
@@ -1338,16 +670,11 @@ const App = () => {
         setTimeout(() => setEventLogMessage(''), 3000); 
         return; 
     }
-    
     const durationHours = parseInt(newEventDurationHours, 10) || 0;
     const durationMinutes = parseInt(newEventDurationMinutes, 10) || 0;
     const durationSeconds = (durationHours * 3600) + (durationMinutes * 60);
-    
-    const selfOrgasmAmount = selectedEventTypes.includes("Orgasm (Self)") && newEventSelfOrgasmAmount 
-                             ? parseInt(newEventSelfOrgasmAmount, 10) || null : null;
-    const partnerOrgasmAmount = selectedEventTypes.includes("Orgasm (Partner)") && newEventPartnerOrgasmAmount
-                                ? parseInt(newEventPartnerOrgasmAmount, 10) || null : null;
-
+    const selfOrgasmAmount = selectedEventTypes.includes("Orgasm (Self)") && newEventSelfOrgasmAmount ? parseInt(newEventSelfOrgasmAmount, 10) || null : null;
+    const partnerOrgasmAmount = selectedEventTypes.includes("Orgasm (Partner)") && newEventPartnerOrgasmAmount ? parseInt(newEventPartnerOrgasmAmount, 10) || null : null;
     const newEventData = { 
         eventTimestamp: Timestamp.fromDate(eventTimestamp), 
         loggedAt: serverTimestamp(), 
@@ -1379,11 +706,240 @@ const App = () => {
     setTimeout(() => setEventLogMessage(''), 3000);
   }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents, setEventLogMessage, setNewEventDate, setNewEventTime, setSelectedEventTypes, setOtherEventTypeChecked, setOtherEventTypeDetail, setNewEventNotes, setNewEventDurationHours, setNewEventDurationMinutes, setNewEventSelfOrgasmAmount, setNewEventPartnerOrgasmAmount ]);
   
-  const handleExportTrackerCSV = useCallback(() => { /* ... */ }, [isAuthReady, chastityHistory, totalChastityTime, totalTimeCageOff]);
-  const handleExportEventLogCSV = useCallback(() => { /* ... */ }, [isAuthReady, sexualEventsLog, savedSubmissivesName]);
-  const handleExportTextReport = useCallback(() => { /* ... */ }, [isAuthReady, savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, overallTotalPauseTime]);
+  const handleExportTrackerCSV = useCallback(() => { 
+    if (!isAuthReady || chastityHistory.length === 0) {
+        setEventLogMessage("No tracker history to export.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Period #,Start Time,End Time,Raw Duration (HH:MM:SS),Total Pause Duration (HH:MM:SS),Effective Chastity Duration (HH:MM:SS),Reason for Removal,Pause Events\n";
 
-  // --- Restore Session Handlers ---
+    chastityHistory.forEach(p => {
+        const rawDurationFormatted = formatElapsedTime(p.duration);
+        const pauseDurationFormatted = formatElapsedTime(p.totalPauseDurationSeconds || 0);
+        const effectiveDuration = Math.max(0, p.duration - (p.totalPauseDurationSeconds || 0));
+        const effectiveDurationFormatted = formatElapsedTime(effectiveDuration);
+        
+        let pauseEventsString = "";
+        if (p.pauseEvents && p.pauseEvents.length > 0) {
+            pauseEventsString = p.pauseEvents.map(pe => 
+                `[Paused: ${formatTime(pe.startTime, true, true)} to ${formatTime(pe.endTime, true, true)} (${formatElapsedTime(pe.duration || 0)}) Reason: ${pe.reason || 'N/A'}]`
+            ).join('; ');
+        }
+        
+        const row = [
+            p.periodNumber,
+            formatTime(p.startTime, true, true), 
+            formatTime(p.endTime, true, true),   
+            rawDurationFormatted,
+            pauseDurationFormatted,
+            effectiveDurationFormatted,
+            `"${(p.reasonForRemoval || '').replace(/"/g, '""')}"`, 
+            `"${pauseEventsString.replace(/"/g, '""')}"` 
+        ].join(",");
+        csvContent += row + "\r\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "chastity_tracker_history.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setEventLogMessage("Tracker history exported successfully!");
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, chastityHistory]);
+
+  const handleExportEventLogCSV = useCallback(() => { 
+    if (!isAuthReady || sexualEventsLog.length === 0) {
+        setEventLogMessage("No events to export.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date & Time,Type(s),Other Detail,Duration (HH:MM:SS),Orgasm (Self) Count,Orgasm (Partner) Count,Notes\n";
+
+    sexualEventsLog.slice().reverse().forEach(event => { 
+        const typesString = (event.types || []).join('; ');
+        const durationFormatted = event.durationSeconds ? formatElapsedTime(event.durationSeconds) : '';
+        const row = [
+            formatTime(event.eventTimestamp, true, true), 
+            `"${typesString.replace(/"/g, '""')}"`,
+            `"${(event.otherTypeDetail || '').replace(/"/g, '""')}"`,
+            durationFormatted,
+            event.selfOrgasmAmount || '',
+            event.partnerOrgasmAmount || '',
+            `"${(event.notes || '').replace(/"/g, '""')}"`
+        ].join(",");
+        csvContent += row + "\r\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "sexual_events_log.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setEventLogMessage("Event log exported successfully!");
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, sexualEventsLog]);
+
+  const handleExportTextReport = useCallback(() => {
+    if (!isAuthReady) {
+        setEventLogMessage("Authentication not ready.");
+        setTimeout(() => setEventLogMessage(''), 3000);
+        return;
+    }
+
+    let reportContent = `ChastityOS Report\n`;
+    reportContent += `Generated: ${formatTime(new Date(), true, true)}\n`;
+    reportContent += `Submissive's Name: ${savedSubmissivesName || '(Not Set)'}\n`;
+    reportContent += `User ID: ${userId || 'N/A'}\n`;
+    reportContent += `--------------------------------------\n\n`;
+
+    reportContent += `CURRENT STATUS:\n`;
+    reportContent += `Cage Status: ${isCageOn ? (isPaused ? 'ON (Paused)' : 'ON') : 'OFF'}\n`;
+    if (isCageOn && cageOnTime) {
+        reportContent += `Current Cage On Since: ${formatTime(cageOnTime, true, true)}\n`;
+        const effectiveSessionTime = timeInChastity - accumulatedPauseTimeThisSession;
+        reportContent += `Effective Session In Chastity: ${formatElapsedTime(effectiveSessionTime)}\n`;
+        if (isPaused && pauseStartTime) {
+            reportContent += `Currently Paused For: ${formatElapsedTime(livePauseDuration)}\n`;
+        }
+        if(accumulatedPauseTimeThisSession > 0) {
+            reportContent += `Total Time Paused This Session: ${formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession)}\n`;
+        }
+    } else {
+        reportContent += `Current Session Cage Off: ${formatElapsedTime(timeCageOff)}\n`;
+    }
+    reportContent += `\nTOTALS:\n`;
+    reportContent += `Total Time In Chastity (Effective): ${formatElapsedTime(totalChastityTime)}\n`;
+    reportContent += `Total Time Cage Off: ${formatElapsedTime(totalTimeCageOff)}\n`;
+    reportContent += `Overall Total Paused Time (All Sessions): ${formatElapsedTime(overallTotalPauseTime)}\n`;
+    reportContent += `--------------------------------------\n\n`;
+
+    reportContent += `CHASTITY HISTORY (Most Recent First):\n`;
+    if (chastityHistory.length > 0) {
+        chastityHistory.slice().reverse().forEach(p => {
+            const effectiveDuration = p.duration - (p.totalPauseDurationSeconds || 0);
+            reportContent += `Period #${p.periodNumber}:\n`;
+            reportContent += `  Start Time: ${formatTime(p.startTime, true, true)}\n`;
+            reportContent += `  End Time:   ${formatTime(p.endTime, true, true)}\n`;
+            reportContent += `  Raw Duration: ${formatElapsedTime(p.duration)}\n`;
+            reportContent += `  Total Pause Duration: ${formatElapsedTime(p.totalPauseDurationSeconds || 0)}\n`;
+            reportContent += `  Effective Chastity Duration: ${formatElapsedTime(effectiveDuration)}\n`;
+            reportContent += `  Reason for Removal: ${p.reasonForRemoval || 'N/A'}\n`;
+            if (p.pauseEvents && p.pauseEvents.length > 0) {
+                reportContent += `  Pause Events:\n`;
+                p.pauseEvents.forEach(pe => {
+                    reportContent += `    - Paused: ${formatTime(pe.startTime, true, true)} to ${formatTime(pe.endTime, true, true)} (${formatElapsedTime(pe.duration || 0)}) Reason: ${pe.reason || 'N/A'}\n`;
+                });
+            }
+            reportContent += `\n`;
+        });
+    } else {
+        reportContent += `No chastity history.\n\n`;
+    }
+    reportContent += `--------------------------------------\n\n`;
+
+    reportContent += `SEXUAL EVENTS LOG (Most Recent First):\n`;
+    if (sexualEventsLog.length > 0) {
+        sexualEventsLog.forEach(event => { 
+            const typesString = (event.types || []).map(type => type === "Orgasm (Self)" && savedSubmissivesName ? `Orgasm (${savedSubmissivesName})` : type).join(', ');
+            const otherDetailString = event.otherTypeDetail ? `, Other: ${event.otherTypeDetail}` : '';
+            const fullTypeString = `${typesString}${otherDetailString}` || 'N/A';
+            
+            let orgasmCounts = [];
+            if (event.selfOrgasmAmount) orgasmCounts.push(`Self: ${event.selfOrgasmAmount}`);
+            if (event.partnerOrgasmAmount) orgasmCounts.push(`Partner: ${event.partnerOrgasmAmount}`);
+            const orgasmString = orgasmCounts.length > 0 ? orgasmCounts.join(', ') : 'N/A';
+
+            reportContent += `Date & Time: ${formatTime(event.eventTimestamp, true, true)}\n`;
+            reportContent += `  Type(s): ${fullTypeString}\n`;
+            reportContent += `  Duration: ${event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}\n`;
+            reportContent += `  Orgasm Count(s): ${orgasmString}\n`;
+            reportContent += `  Notes: ${event.notes || 'N/A'}\n\n`;
+        });
+    } else {
+        reportContent += `No sexual events logged.\n`;
+    }
+    reportContent += `--------------------------------------\nEnd of Report`;
+
+    const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `ChastityOS_Report_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+
+    setEventLogMessage("Text report exported successfully!");
+    setTimeout(() => setEventLogMessage(''), 3000);
+  }, [isAuthReady, savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, overallTotalPauseTime, isPaused, accumulatedPauseTimeThisSession, livePauseDuration, pauseStartTime]);
+
+  // --- Restore Data from User ID Handlers ---
+  const handleRestoreUserIdInputChange = (event) => {
+    setRestoreUserIdInput(event.target.value);
+  };
+
+  const handleInitiateRestoreFromId = () => {
+    if (!restoreUserIdInput.trim()) {
+        setRestoreFromIdMessage("Please enter a User ID to restore from.");
+        setTimeout(() => setRestoreFromIdMessage(''), 3000);
+        return;
+    }
+    setShowRestoreFromIdPrompt(true);
+  };
+
+  const handleCancelRestoreFromId = () => {
+    setShowRestoreFromIdPrompt(false);
+    setRestoreFromIdMessage('');
+  };
+
+  const handleConfirmRestoreFromId = async () => {
+    console.log("App.js: handleConfirmRestoreFromId - Attempting to restore from User ID:", restoreUserIdInput);
+    if (!restoreUserIdInput.trim() || !userId) { 
+        setRestoreFromIdMessage("Invalid input or current user not identified.");
+        setTimeout(() => setRestoreFromIdMessage(''), 3000);
+        setShowRestoreFromIdPrompt(false);
+        return;
+    }
+
+    const targetDocRef = doc(db, "artifacts", appIdForFirestore, "users", restoreUserIdInput.trim());
+    try {
+        const docSnap = await getDoc(targetDocRef);
+        if (docSnap.exists()) {
+            const dataToRestore = docSnap.data();
+            console.log("App.js: handleConfirmRestoreFromId - Data found for target User ID:", dataToRestore);
+            
+            applyRestoredDataFromOtherUser(dataToRestore); // Changed from applyLoadedData
+            
+            const dataForCurrentUser = { ...dataToRestore, hasSessionEverBeenActive: true };
+            await saveDataToFirestore(dataForCurrentUser); 
+            
+            setRestoreFromIdMessage("Data successfully restored and saved for the current user.");
+            setRestoreUserIdInput('');
+            setCurrentPage('tracker'); 
+            if (isAuthReady && userId) { 
+                fetchEvents(userId); 
+            }
+
+        } else {
+            console.log("App.js: handleConfirmRestoreFromId - No data found for User ID:", restoreUserIdInput.trim());
+            setRestoreFromIdMessage("No data found for the provided User ID.");
+        }
+    } catch (error) {
+        console.error("Error restoring data from User ID:", error);
+        setRestoreFromIdMessage("Error restoring data. See console.");
+    }
+    setShowRestoreFromIdPrompt(false);
+    setTimeout(() => setRestoreFromIdMessage(''), 4000);
+  };
+
+  // --- Restore Session Prompt Handlers (from app load) ---
   const handleConfirmRestoreSession = useCallback(async () => {
     console.log("App.js: handleConfirmRestoreSession called. Loaded data:", loadedSessionData);
     if (loadedSessionData) {
@@ -1402,7 +958,7 @@ const App = () => {
         setPauseStartTime( (loadedSessionData.isPaused && loadedPauseStartTime && !isNaN(loadedPauseStartTime.getTime())) ? loadedPauseStartTime : null); 
         setAccumulatedPauseTimeThisSession(loadedSessionData.accumulatedPauseTimeThisSession || 0);
         setCurrentSessionPauseEvents(loadedSessionData.currentSessionPauseEvents || []);
-        setHasSessionEverBeenActive(true); // User chose to engage with a session
+        setHasSessionEverBeenActive(true); 
 
         await saveDataToFirestore({
             isCageOn: loadedSessionData.isCageOn,
@@ -1414,7 +970,8 @@ const App = () => {
             currentSessionPauseEvents: loadedSessionData.currentSessionPauseEvents || [],
             lastPauseEndTime, 
             submissivesName: savedSubmissivesName,
-            totalTimeCageOff 
+            totalTimeCageOff,
+            hasSessionEverBeenActive: true
         });
         console.log("App.js: Session restored. isPaused is now:", loadedSessionData.isPaused || false);
     }
@@ -1446,7 +1003,8 @@ const App = () => {
         totalChastityTime, 
         totalTimeCageOff, 
         submissivesName: savedSubmissivesName,
-        lastPauseEndTime 
+        lastPauseEndTime,
+        hasSessionEverBeenActive: false 
     });
 
     setShowRestoreSessionPrompt(false);
@@ -1459,121 +1017,46 @@ const App = () => {
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
-        {/* {console.log("App.js rendering. isAuthReady:", isAuthReady, "isLoading:", isLoading, "isPaused:", isPaused, "userId:", userId, "showRestorePrompt:", showRestoreSessionPrompt)} */}
-        <h1 className="text-2xl md:text-3xl font-bold text-purple-300 mb-2">Chastity Time Tracking</h1>
-        {savedSubmissivesName && <p className="text-lg text-purple-200 mb-4">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
+        <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
+        {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
 
         <nav className="mb-6 flex justify-center space-x-1 sm:space-x-2">
-            {[{id: 'tracker', name: 'Tracker'}, {id: 'fullReport', name: 'Full Report'}, {id: 'logEvent', name: 'Log Event'}, {id: 'settings', name: 'Settings'}].map((page) => (
+            {[{id: 'tracker', name: 'Chastity Tracker'}, {id: 'logEvent', name: 'Log Event'}, {id: 'fullReport', name: 'Full Report'}, {id: 'settings', name: 'Settings'}].map((page) => ( 
             <button type="button" key={page.id} onClick={() => setCurrentPage(page.id)}
                 className={`py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-colors ${currentPage === page.id ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-700 text-purple-300 hover:bg-purple-500 hover:text-white'}`}>
                 {page.name}
             </button>
             ))}
         </nav>
+        
+        {currentPage === 'tracker' && !showRestoreSessionPrompt && <h2 className="text-2xl font-bold text-purple-300 mb-4">Chastity Tracker</h2>}
+        {currentPage === 'fullReport' && <h2 className="text-2xl font-bold text-purple-300 mb-4 text-center">Full Report</h2>}
+        {currentPage === 'logEvent' && <h2 className="text-2xl font-bold text-purple-300 mb-4">Sexual Event Log</h2>}
+        {currentPage === 'settings' && <h2 className="text-2xl font-bold text-purple-300 mb-6">Settings</h2>}
 
-        {currentPage === 'tracker' && (
-            <TrackerPage
-                isAuthReady={isAuthReady}
-                isCageOn={isCageOn}
-                cageOnTime={cageOnTime}
-                timeInChastity={timeInChastity}
-                timeCageOff={timeCageOff}
-                totalChastityTime={totalChastityTime}
-                totalTimeCageOff={totalTimeCageOff}
-                chastityHistory={chastityHistory}
-                handleToggleCage={handleToggleCage}
-                showReasonModal={showReasonModal}
-                setShowReasonModal={setShowReasonModal}
-                reasonForRemoval={reasonForRemoval}
-                setReasonForRemoval={setReasonForRemoval}
-                handleConfirmRemoval={handleConfirmRemoval}
-                handleCancelRemoval={handleCancelRemoval}
-                // Pause feature props
-                isPaused={isPaused}
-                handleInitiatePause={handleInitiatePause}
-                handleResumeSession={handleResumeSession}
-                showPauseReasonModal={showPauseReasonModal}
-                handleCancelPauseModal={handleCancelPauseModal}
-                reasonForPauseInput={reasonForPauseInput}
-                setReasonForPauseInput={setReasonForPauseInput}
-                handleConfirmPause={handleConfirmPause}
-                accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession}
-                pauseStartTime={pauseStartTime}
-                livePauseDuration={livePauseDuration} 
-                pauseCooldownMessage={pauseCooldownMessage}
-                // Restore session prompt props
-                showRestoreSessionPrompt={showRestoreSessionPrompt}
-                handleConfirmRestoreSession={handleConfirmRestoreSession}
-                handleDiscardAndStartNew={handleDiscardAndStartNew}
-                loadedSessionData={loadedSessionData}
-            />
-        )}
-
-        {currentPage === 'fullReport' && (
-            <FullReportPage
-                savedSubmissivesName={savedSubmissivesName}
-                userId={userId}
-                isCageOn={isCageOn}
-                cageOnTime={cageOnTime}
-                timeInChastity={timeInChastity}
-                timeCageOff={timeCageOff}
-                totalChastityTime={totalChastityTime}
-                totalTimeCageOff={totalTimeCageOff}
-                chastityHistory={chastityHistory}
-                sexualEventsLog={sexualEventsLog}
-                isLoadingEvents={isLoadingEvents}
-                isPaused={isPaused} 
-                accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession} 
-                overallTotalPauseTime={overallTotalPauseTime}
-            />
-        )}
-
-        {currentPage === 'logEvent' && (
-            <LogEventPage
-                isAuthReady={isAuthReady}
-                newEventDate={newEventDate} setNewEventDate={setNewEventDate}
-                newEventTime={newEventTime} setNewEventTime={setNewEventTime}
-                
-                selectedEventTypes={selectedEventTypes} handleEventTypeChange={handleEventTypeChange}
-                otherEventTypeChecked={otherEventTypeChecked} handleOtherEventTypeCheckChange={handleOtherEventTypeCheckChange}
-                otherEventTypeDetail={otherEventTypeDetail} setOtherEventTypeDetail={setOtherEventTypeDetail}
-
-                newEventNotes={newEventNotes} setNewEventNotes={setNewEventNotes}
-                newEventDurationHours={newEventDurationHours} setNewEventDurationHours={setNewEventDurationHours}
-                newEventDurationMinutes={newEventDurationMinutes} setNewEventDurationMinutes={setNewEventDurationMinutes}
-                newEventSelfOrgasmAmount={newEventSelfOrgasmAmount} setNewEventSelfOrgasmAmount={setNewEventSelfOrgasmAmount}
-                newEventPartnerOrgasmAmount={newEventPartnerOrgasmAmount} setNewEventPartnerOrgasmAmount={setNewEventPartnerOrgasmAmount}
-                handleLogNewEvent={handleLogNewEvent}
-                eventLogMessage={eventLogMessage}
-                isLoadingEvents={isLoadingEvents}
-                sexualEventsLog={sexualEventsLog}
-                savedSubmissivesName={savedSubmissivesName} 
-            />
-        )}
-
-        {currentPage === 'settings' && (
-            <SettingsPage
-                isAuthReady={isAuthReady}
-                eventLogMessage={eventLogMessage} 
-                handleExportTrackerCSV={handleExportTrackerCSV}
-                chastityHistory={chastityHistory}
-                handleExportEventLogCSV={handleExportEventLogCSV}
-                sexualEventsLog={sexualEventsLog}
-                handleResetAllData={handleResetAllData}
-                confirmReset={confirmReset}
-                nameMessage={nameMessage}
-                handleExportTextReport={handleExportTextReport}
-                userId={userId} 
-                showUserIdInSettings={showUserIdInSettings} 
-                handleToggleUserIdVisibility={handleToggleUserIdVisibility} 
-                savedSubmissivesName={savedSubmissivesName}
-                submissivesNameInput={submissivesNameInput}
-                handleSubmissivesNameInputChange={handleSubmissivesNameInputChange}
-                handleSetSubmissivesName={handleSetSubmissivesName}
-            />
-        )}
+        <Suspense fallback={<div className="text-center p-8 text-purple-300">Loading page...</div>}>
+            {currentPage === 'tracker' && (
+                <TrackerPage
+                    isAuthReady={isAuthReady} isCageOn={isCageOn} cageOnTime={cageOnTime} timeInChastity={timeInChastity} timeCageOff={timeCageOff}
+                    totalChastityTime={totalChastityTime} totalTimeCageOff={totalTimeCageOff} chastityHistory={chastityHistory}
+                    handleToggleCage={handleToggleCage} showReasonModal={showReasonModal} setShowReasonModal={setShowReasonModal}
+                    reasonForRemoval={reasonForRemoval} setReasonForRemoval={setReasonForRemoval} handleConfirmRemoval={handleConfirmRemoval} handleCancelRemoval={handleCancelRemoval}
+                    isPaused={isPaused} handleInitiatePause={handleInitiatePause} handleResumeSession={handleResumeSession}
+                    showPauseReasonModal={showPauseReasonModal} handleCancelPauseModal={handleCancelPauseModal} reasonForPauseInput={reasonForPauseInput} setReasonForPauseInput={setReasonForPauseInput}
+                    handleConfirmPause={handleConfirmPause} accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession} pauseStartTime={pauseStartTime}
+                    livePauseDuration={livePauseDuration} pauseCooldownMessage={pauseCooldownMessage}
+                    showRestoreSessionPrompt={showRestoreSessionPrompt} handleConfirmRestoreSession={handleConfirmRestoreSession}
+                    handleDiscardAndStartNew={handleDiscardAndStartNew} loadedSessionData={loadedSessionData}
+                />
+            )}
+            {currentPage === 'fullReport' && ( <FullReportPage {...{ savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession, overallTotalPauseTime }} /> )}
+            {currentPage === 'logEvent' && ( <LogEventPage {...{ isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange, otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes, newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount, handleLogNewEvent, eventLogMessage, isLoadingEvents, sexualEventsLog, savedSubmissivesName }} /> )}
+            {currentPage === 'settings' && ( <SettingsPage {...{ isAuthReady, eventLogMessage, handleExportTrackerCSV, chastityHistory, handleExportEventLogCSV, sexualEventsLog, handleResetAllData, confirmReset, nameMessage, handleExportTextReport, userId, showUserIdInSettings, handleToggleUserIdVisibility, savedSubmissivesName, submissivesNameInput, handleSubmissivesNameInputChange, handleSetSubmissivesName, restoreUserIdInput, handleRestoreUserIdInputChange, handleInitiateRestoreFromId, showRestoreFromIdPrompt, handleConfirmRestoreFromId, handleCancelRestoreFromId, restoreFromIdMessage }} /> )}
+        </Suspense>
       </div>
+      <footer className="mt-8 text-center text-xs text-gray-500">
+        Copyright 2025 F4tDaddy Productions v3.4.1
+      </footer>
     </div>
   );
 };
