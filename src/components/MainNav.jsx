@@ -25,7 +25,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
         <select
           value={currentPage}
           onChange={(e) => setCurrentPage(e.target.value)}
-          className="w-full p-2 rounded-md bg-gray-700 text-purple-200"
+          className="w-full p-2 rounded-md bg-gray-700 text-purple-200 focus:ring-purple-500 focus:border-purple-500 border-gray-600"
         >
           {navItems.map((page) => (
             <option key={page.id} value={page.id}>
@@ -38,6 +38,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
           {navItems.map((page) => (
             <button
               key={page.id}
+              type="button"
               onClick={() => setCurrentPage(page.id)}
               className={`py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 currentPage === page.id
