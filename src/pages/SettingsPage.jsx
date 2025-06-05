@@ -9,6 +9,8 @@ const SettingsPage = (props) => {
         handleExportTrackerCSV, chastityHistory,
         handleExportEventLogCSV, sexualEventsLog, handleResetAllData, confirmReset, nameMessage,
         handleExportTextReport,
+        handleExportJSON, // New prop for JSON export
+        handleImportJSON, // New prop for JSON import
         userId,
         showUserIdInSettings,
         handleToggleUserIdVisibility,
@@ -138,6 +140,7 @@ const SettingsPage = (props) => {
         if (type === 'text') handleExportTextReport();
         else if (type === 'tracker') handleExportTrackerCSV();
         else if (type === 'eventlog') handleExportEventLogCSV();
+        else if (type === 'json') handleExportJSON();
     };
 
     const onSetKeyholder = async () => {
@@ -365,18 +368,37 @@ const SettingsPage = (props) => {
 
 
             {/* Data Management Section */}
-            {/* ... Same as before ... */}
             <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
                 <h3 className="text-xl font-semibold text-purple-300 mb-4">Data Management</h3>
-                <p className="text-sm text-purple-400 mb-4">Note: JSON Backup/Restore is a planned feature.</p>
+                <p className="text-sm text-purple-400 mb-4">Export your data or import a backup file.</p>
                 <hr className="my-4 border-purple-600"/>
                 <h4 className="text-lg font-medium text-purple-200 mb-2">Export Data Options</h4>
                 <div className="flex flex-col space-y-3">
                     <button type="button" onClick={() => handleExportClick('text')} disabled={!isAuthReady} className="w-full bg-sky-600 hover:bg-sky-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50"> Export Verbose Text Report (.txt) </button>
                     <button type="button" onClick={() => handleExportClick('tracker')} disabled={!isAuthReady || (chastityHistory && chastityHistory.length === 0)} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50"> Export Tracker History CSV </button>
                     <button type="button" onClick={() => handleExportClick('eventlog')} disabled={!isAuthReady || (sexualEventsLog && sexualEventsLog.length === 0)} className="w-full bg-teal-500 hover:bg-teal-600 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50"> Export Event Log CSV </button>
+                    <button type="button" onClick={() => handleExportClick('json')} disabled={!isAuthReady} className="w-full bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50"> Export Full Backup (.json) </button>
                 </div>
-                {eventLogMessage && <p className={`text-xs mt-3 ${eventLogMessage.includes('successfully') || eventLogMessage.includes('restored') ? 'text-green-400' : 'text-yellow-400'}`}>{eventLogMessage}</p>}
+                {eventLogMessage && !eventLogMessage.includes('restored') && <p className={`text-xs mt-3 ${eventLogMessage.includes('successfully') || eventLogMessage.includes('exported') ? 'text-green-400' : 'text-yellow-400'}`}>{eventLogMessage}</p>}
+                
+                <hr className="my-4 border-purple-600"/>
+                <h4 className="text-lg font-medium text-purple-200 mb-2">Import Data</h4>
+                 <div className="p-3 bg-yellow-900/30 border border-yellow-700 rounded-lg mb-4">
+                    <p className="text-sm text-yellow-300 font-bold">Warning:</p>
+                    <p className="text-xs text-yellow-400">Importing a backup will overwrite all existing data.</p>
+                 </div>
+                <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportJSON}
+                    className="block w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-violet-50 file:text-violet-700
+                        hover:file:bg-violet-100"
+                />
+                {eventLogMessage && eventLogMessage.includes('restored') && <p className={`text-xs mt-3 ${eventLogMessage.includes('successfully') || eventLogMessage.includes('restored') ? 'text-green-400' : 'text-yellow-400'}`}>{eventLogMessage}</p>}
             </div>
 
 

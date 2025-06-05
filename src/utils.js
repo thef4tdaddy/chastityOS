@@ -32,17 +32,26 @@ export const formatTime = (date, includeDate = false, forTextReport = false) => 
 };
 
 /**
- * Formats a duration in seconds into HH:MM:SS string.
- * @param {number} seconds - The duration in seconds.
- * @returns {string} Formatted time string (HH:MM:SS).
+ * Formats a duration in seconds into a string including days, hours, minutes, and seconds.
+ * @param {number} totalSeconds - The duration in seconds.
+ * @returns {string} Formatted time string (e.g., "1d 05h 30m 15s" or "12h 00m 00s").
  */
-export const formatElapsedTime = (seconds) => {
-  if (seconds === null || seconds === undefined || isNaN(seconds) || seconds < 0) return '00:00:00';
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
+export const formatElapsedTime = (totalSeconds) => {
+  if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds) || totalSeconds < 0) return '00h 00m 00s'; // Default for invalid or zero input
+
+  const days = Math.floor(totalSeconds / (3600 * 24));
+  const remainingSecondsAfterDays = totalSeconds % (3600 * 24);
+  const hours = Math.floor(remainingSecondsAfterDays / 3600);
+  const remainingSecondsAfterHours = remainingSecondsAfterDays % 3600;
+  const minutes = Math.floor(remainingSecondsAfterHours / 60);
+  const seconds = Math.floor(remainingSecondsAfterHours % 60);
   const pad = (num) => num.toString().padStart(2, '0');
-  return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+
+  if (days > 0) {
+    return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+  } else {
+    return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+  }
 };
 
 /**
