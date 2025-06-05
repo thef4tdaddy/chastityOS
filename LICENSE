@@ -115,14 +115,3 @@
 
 👉 **Because it’s ~6,000+ words, you should download the official full text** here:  
 https://www.gnu.org/licenses/gpl-3.0.txt  
-
-Copy that entire file into your repo as `LICENSE`.  
-
----
-
-### ✅ README Addition  
-Add to your README:  
-```markdown
-## License
-
-This project is licensed under the GNU General Public License v3.0 — see the [LICENSE](LICENSE) file for details.
