@@ -10,6 +10,7 @@ import {
 import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
+import HotjarScript from './components/HotjarScript'; // Import HotjarScript
 
 // --- Hashing Helper ---
 async function generateHash(text) {
@@ -120,6 +121,8 @@ const App = () => {
     const [editSessionTimeInput, setEditSessionTimeInput] = useState('');
     const [editSessionMessage, setEditSessionMessage] = useState('');
 
+    const [isTrackingAllowed, setIsTrackingAllowed] = useState(true); // Added for Hotjar
+
 
     const timerInChastityRef = useRef(null);
     const timerCageOffRef = useRef(null);
@@ -158,7 +161,8 @@ const App = () => {
         setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds || null);
         setIsKeyholderModeUnlocked(false);
         setShowRestoreSessionPrompt(false); setLoadedSessionData(null);
-    }, [setHasSessionEverBeenActive]);
+        setIsTrackingAllowed(data.isTrackingAllowed !== undefined ? data.isTrackingAllowed : true); // Restore tracking preference
+    }, [setHasSessionEverBeenActive, setIsTrackingAllowed]);
 
     useEffect(() => {
         if (!isAuthReady && auth.currentUser === null) { setIsLoading(false); return; }
@@ -218,7 +222,7 @@ const App = () => {
         if (!isAuthReady || !userId) return;
         const docRef = getDocRef(); if (!docRef) return;
         try {
-            const firestoreReadyData = { ...dataToSave, hasSessionEverBeenActive, goalDurationSeconds: dataToSave.goalDurationSeconds !== undefined ? dataToSave.goalDurationSeconds : goalDurationSeconds, keyholderName: dataToSave.keyholderName !== undefined ? dataToSave.keyholderName : keyholderName, keyholderPasswordHash: dataToSave.keyholderPasswordHash !== undefined ? dataToSave.keyholderPasswordHash : keyholderPasswordHash, requiredKeyholderDurationSeconds: dataToSave.requiredKeyholderDurationSeconds !== undefined ? dataToSave.requiredKeyholderDurationSeconds : requiredKeyholderDurationSeconds, };
+            const firestoreReadyData = { ...dataToSave, hasSessionEverBeenActive, goalDurationSeconds: dataToSave.goalDurationSeconds !== undefined ? dataToSave.goalDurationSeconds : goalDurationSeconds, keyholderName: dataToSave.keyholderName !== undefined ? dataToSave.keyholderName : keyholderName, keyholderPasswordHash: dataToSave.keyholderPasswordHash !== undefined ? dataToSave.keyholderPasswordHash : keyholderPasswordHash, requiredKeyholderDurationSeconds: dataToSave.requiredKeyholderDurationSeconds !== undefined ? dataToSave.requiredKeyholderDurationSeconds : requiredKeyholderDurationSeconds, isTrackingAllowed }; // Include isTrackingAllowed
             const toTS = (d) => d instanceof Date && !isNaN(d.getTime()) ? Timestamp.fromDate(d) : (typeof d === 'string' && new Date(d) instanceof Date && !isNaN(new Date(d).getTime()) ? Timestamp.fromDate(new Date(d)) : null);
             firestoreReadyData.cageOnTime = toTS(firestoreReadyData.cageOnTime);
             if (firestoreReadyData.chastityHistory) { firestoreReadyData.chastityHistory = firestoreReadyData.chastityHistory.map(item => ({ ...item, startTime: toTS(item.startTime), endTime: toTS(item.endTime), pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: toTS(p.startTime), endTime: toTS(p.endTime) })) })); }
@@ -229,7 +233,7 @@ const App = () => {
             if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'userAlias')) { delete firestoreReadyData.userAlias; }
             await setDoc(docRef, firestoreReadyData, { merge: true });
         } catch (error) { console.error("Error saving main data to Firestore:", error); }
-    }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds]);
+    }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds, isTrackingAllowed]);
 
     const handleSetKeyholder = useCallback(async (name) => { if (!userId) { setKeyholderMessage("Error: User ID not available."); return null; } const khName = name.trim(); if (!khName) { setKeyholderMessage("Keyholder name cannot be empty."); return null; } const stringToHash = userId + khName; const hash = await generateHash(stringToHash); if (!hash) { setKeyholderMessage("Error generating Keyholder ID."); return null; } setKeyholderName(khName); setKeyholderPasswordHash(hash); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null }); setKeyholderMessage(`Keyholder "${khName}" set. Password preview generated.`); return hash.substring(0, 8).toUpperCase(); }, [userId, saveDataToFirestore, setKeyholderMessage]);
     const handleClearKeyholder = useCallback(async () => { setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); await saveDataToFirestore({ keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null }); setKeyholderMessage("Keyholder data cleared."); }, [saveDataToFirestore, setKeyholderMessage]);
@@ -347,7 +351,7 @@ const App = () => {
     const handleConfirmRemoval = useCallback(async () => { if (!isAuthReady || !(tempStartTime instanceof Date) || !(tempEndTime instanceof Date) || isNaN(tempStartTime.getTime()) || isNaN(tempEndTime.getTime())) { setShowReasonModal(false); return; } let finalAccumulatedPauseTime = accumulatedPauseTimeThisSession; let finalPauseEventsForHistory = currentSessionPauseEvents; if (isPaused && pauseStartTime instanceof Date && !isNaN(pauseStartTime.getTime())) { const finalPauseDuration = Math.max(0, Math.floor((tempEndTime.getTime() - pauseStartTime.getTime()) / 1000)); finalAccumulatedPauseTime += finalPauseDuration; finalPauseEventsForHistory = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime: tempEndTime, duration: finalPauseDuration } : event ); } const rawDurationSeconds = Math.max(0, Math.floor((tempEndTime.getTime() - tempStartTime.getTime()) / 1000)); const newHistoryEntry = { id: crypto.randomUUID(), periodNumber: chastityHistory.length + 1, startTime: tempStartTime, endTime: tempEndTime, duration: rawDurationSeconds, reasonForRemoval: reasonForRemoval.trim() || 'N/A', totalPauseDurationSeconds: finalAccumulatedPauseTime, pauseEvents: finalPauseEventsForHistory }; const updatedHistoryState = [...chastityHistory, newHistoryEntry]; setChastityHistory(updatedHistoryState); setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setHasSessionEverBeenActive(true); saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, chastityHistory: updatedHistoryState, totalTimeCageOff, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime, hasSessionEverBeenActive: true }); setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, [isAuthReady, tempStartTime, tempEndTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, isPaused, pauseStartTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive]);
     const handleCancelRemoval = useCallback(() => { setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, []);
     const clearAllEvents = useCallback(async () => { if (!isAuthReady || !userId) return; const eventsColRef = getEventsCollectionRef(); if (!eventsColRef) { return; } try { const q = query(eventsColRef); const querySnapshot = await getDocs(q); const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, eventsColRef.path, docSnapshot.id))); await Promise.all(deletePromises); setSexualEventsLog([]); } catch (error) { console.error("App.js: clearAllEvents - Error:", error); } }, [isAuthReady, userId, getEventsCollectionRef]);
-    const handleResetAllData = useCallback(() => { if (!isAuthReady) return; if (confirmReset) { if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]); setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput(''); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setLastPauseEndTime(null); setPauseCooldownMessage(''); setHasSessionEverBeenActive(false); setConfirmReset(false); setShowReasonModal(false); setGoalDurationSeconds(null); setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); saveDataToFirestore({ cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '', isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false, goalDurationSeconds: null, keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null }); clearAllEvents(); setNameMessage("All data reset."); setTimeout(() => setNameMessage(''), 4000); setCurrentPage('tracker'); } else { setConfirmReset(true); resetTimeoutRef.current = setTimeout(() => { setConfirmReset(false); }, 3000); } }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive]);
+    const handleResetAllData = useCallback(() => { if (!isAuthReady) return; if (confirmReset) { if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]); setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput(''); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setLastPauseEndTime(null); setPauseCooldownMessage(''); setHasSessionEverBeenActive(false); setConfirmReset(false); setShowReasonModal(false); setGoalDurationSeconds(null); setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); setIsTrackingAllowed(true); /* Reset tracking to allowed */ saveDataToFirestore({ cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '', isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false, goalDurationSeconds: null, keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null, isTrackingAllowed: true }); clearAllEvents(); setNameMessage("All data reset."); setTimeout(() => setNameMessage(''), 4000); setCurrentPage('tracker'); } else { setConfirmReset(true); resetTimeoutRef.current = setTimeout(() => { setConfirmReset(false); }, 3000); } }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive, setIsTrackingAllowed]);
     const handleSubmissivesNameInputChange = useCallback((event) => { setSubmissivesNameInput(event.target.value); }, []);
     const handleSetSubmissivesName = useCallback(async () => { if (!isAuthReady || !userId) { setNameMessage("Auth error."); setTimeout(() => setNameMessage(''), 3000); return; } if (savedSubmissivesName) { setNameMessage("Name set. Reset to change."); setTimeout(() => setNameMessage(''), 4000); return; } const trimmedName = submissivesNameInput.trim(); if (!trimmedName) { setNameMessage("Name empty."); setTimeout(() => setNameMessage(''), 3000); return; } setSavedSubmissivesName(trimmedName); await saveDataToFirestore({ submissivesName: trimmedName, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, hasSessionEverBeenActive }); setNameMessage("Name set!"); setTimeout(() => setNameMessage(''), 3000); }, [isAuthReady, userId, savedSubmissivesName, submissivesNameInput, saveDataToFirestore, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, hasSessionEverBeenActive]);
     const handleToggleUserIdVisibility = useCallback(() => { setShowUserIdInSettings(prev => !prev); }, []);
@@ -381,6 +385,159 @@ const App = () => {
     const handleExportTrackerCSV = useCallback(() => { if (!isAuthReady || chastityHistory.length === 0) { setEventLogMessage("No tracker history."); setTimeout(() => setEventLogMessage(''), 3000); return; } let csvContent = "Period #,Start Time,End Time,Raw Duration,Pause Duration,Effective Duration,Reason,Pause Events\n"; chastityHistory.forEach(p => { const rawF = formatElapsedTime(p.duration); const pauseF = formatElapsedTime(p.totalPauseDurationSeconds||0); const effF = formatElapsedTime(p.duration-(p.totalPauseDurationSeconds||0)); let pausesS = (p.pauseEvents||[]).map(pe=>`[${formatTime(pe.startTime,true,true)} to ${formatTime(pe.endTime,true,true)} (${formatElapsedTime(pe.duration||0)}) R: ${pe.reason||'N/A'}]`).join('; '); csvContent += `${p.periodNumber},${formatTime(p.startTime,true,true)},${formatTime(p.endTime,true,true)},${rawF},${pauseF},${effF},"${(p.reasonForRemoval||'').replace(/"/g,'""')}","${pausesS.replace(/"/g,'""')}"\n`; }); const link = document.createElement("a"); link.href=encodeURI("data:text/csv;charset=utf-8,"+csvContent); link.download="chastity_tracker_history.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); setEventLogMessage("Tracker CSV exported!"); setTimeout(() => setEventLogMessage(''), 3000); }, [isAuthReady, chastityHistory]);
     const handleExportEventLogCSV = useCallback(() => { if (!isAuthReady || sexualEventsLog.length === 0) { setEventLogMessage("No events."); setTimeout(() => setEventLogMessage(''), 3000); return; } let csv = "Date,Type(s),Other,Duration,Orgasm (Self),Orgasm (Partner),Notes\n"; sexualEventsLog.slice().reverse().forEach(ev=>{csv+=`${formatTime(ev.eventTimestamp,true,true)},"${(ev.types||[]).join('; ')}","${ev.otherTypeDetail||''}","${ev.durationSeconds?formatElapsedTime(ev.durationSeconds):''}",${ev.selfOrgasmAmount||''},${ev.partnerOrgasmAmount||''},"${(ev.notes||'').replace(/"/g,'""')}"\n`;}); const link=document.createElement("a");link.href=encodeURI("data:text/csv;charset=utf-8,"+csv);link.download="sexual_events_log.csv";document.body.appendChild(link);link.click();document.body.removeChild(link);setEventLogMessage("Events CSV exported!"); setTimeout(() => setEventLogMessage(''), 3000);}, [isAuthReady, sexualEventsLog]);
     const handleExportTextReport = useCallback(() => { if(!isAuthReady){setEventLogMessage("Auth error.");setTimeout(()=>setEventLogMessage(''),3000);return;}let r=`Report ${formatTime(new Date(),true,true)}\nName: ${savedSubmissivesName||'N/A'}\nUID: ${userId||'N/A'}\nKH: ${keyholderName||'N/A'}\n------------------\nSTATUS:\nCage: ${isCageOn?(isPaused?'ON (Paused)':'ON'):'OFF'}\n`;if(isCageOn&&cageOnTime){r+=`Since: ${formatTime(cageOnTime,true,true)}\nEffective Session: ${formatElapsedTime(timeInChastity-(accumulatedPauseTimeThisSession||0))}\n`;if(isPaused&&pauseStartTime)r+=`Paused For: ${formatElapsedTime(livePauseDuration)}\n`;if((accumulatedPauseTimeThisSession||0)>0)r+=`Total Paused This Session: ${formatElapsedTime(isPaused&&pauseStartTime?(accumulatedPauseTimeThisSession||0)+livePauseDuration:(accumulatedPauseTimeThisSession||0))}\n`;}else r+=`Current Off: ${formatElapsedTime(timeCageOff)}\n`;r+=`\nTOTALS:\nChastity: ${formatElapsedTime(totalChastityTime)}\nOff: ${formatElapsedTime(totalTimeCageOff)}\nPaused: ${formatElapsedTime(overallTotalPauseTime)}\n------------------\n`;if(keyholderName && requiredKeyholderDurationSeconds !== null) {r+=`KH Required Duration: ${formatElapsedTime(requiredKeyholderDurationSeconds)}\n------------------\n`} else if (goalDurationSeconds !== null) {r+=`Personal Goal: ${formatElapsedTime(goalDurationSeconds)}\n------------------\n`} r+=`HISTORY (Recent First):\n`;if(chastityHistory.length>0)chastityHistory.slice().reverse().forEach(p=>{r+=`P#${p.periodNumber}: ${formatTime(p.startTime,true,true)}-${formatTime(p.endTime,true,true)}\n Raw: ${formatElapsedTime(p.duration)} Paused: ${formatElapsedTime(p.totalPauseDurationSeconds||0)} Eff: ${formatElapsedTime(p.duration-(p.totalPauseDurationSeconds||0))}\n R: ${p.reasonForRemoval||'N/A'}\n`;if(p.pauseEvents&&p.pauseEvents.length>0)p.pauseEvents.forEach(pe=>{r+=`  - P: ${formatTime(pe.startTime,true,true)}-${formatTime(pe.endTime,true,true)} (${formatElapsedTime(pe.duration||0)}) R: ${pe.reason||'N/A'}\n`;});r+='\n';});else r+="No history.\n\n";r+=`------------------\nEVENTS (Recent First):\n`;if(sexualEventsLog.length>0)sexualEventsLog.forEach(ev=>{let ts=(ev.types||[]).map(t=>{if(t==="Orgasm (Partner)" && keyholderName) return `Orgasm (${keyholderName})`; if(t==="Orgasm (Self)"&&savedSubmissivesName) return `Orgasm (${savedSubmissivesName})`; return t;}).join(', ');if(ev.otherTypeDetail)ts+=(ts?', ':'')+`Other: ${ev.otherTypeDetail}`;let os=[];if(ev.selfOrgasmAmount)os.push(`Self: ${ev.selfOrgasmAmount}`);if(ev.partnerOrgasmAmount)os.push(`${keyholderName||'Partner'}: ${ev.partnerOrgasmAmount}`);r+=`${formatTime(ev.eventTimestamp,true,true)}\n Types: ${ts||'N/A'}\n Dur: ${ev.durationSeconds?formatElapsedTime(ev.durationSeconds):'N/A'}\n Orgasms: ${os.join(', ')||'N/A'}\n Notes: ${ev.notes||'N/A'}\n\n`;});else r+="No events.\n";r+="------------------\nEnd";const b=new Blob([r],{type:'text/plain;charset=utf-8'});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download=`ChastityOS_Report_${new Date().toISOString().slice(0,10)}.txt`;document.body.appendChild(l);l.click();document.body.removeChild(l);URL.revokeObjectURL(l.href);setEventLogMessage("Report exported!");setTimeout(()=>setEventLogMessage(''),3000);},[isAuthReady,savedSubmissivesName,userId,isCageOn,cageOnTime,timeInChastity,timeCageOff,totalChastityTime,totalTimeCageOff,chastityHistory,sexualEventsLog,overallTotalPauseTime,isPaused,accumulatedPauseTimeThisSession,livePauseDuration,pauseStartTime, keyholderName, requiredKeyholderDurationSeconds, goalDurationSeconds]);
+
+    const handleExportJSON = useCallback(() => {
+        if (!isAuthReady || !userId) {
+            setEventLogMessage("Authentication not ready.");
+            setTimeout(() => setEventLogMessage(''), 3000);
+            return;
+        }
+
+        const dataToExport = {
+            isCageOn,
+            cageOnTime,
+            timeInChastity,
+            timeCageOff,
+            chastityHistory,
+            totalTimeCageOff,
+            savedSubmissivesName,
+            sexualEventsLog,
+            isPaused,
+            pauseStartTime,
+            accumulatedPauseTimeThisSession,
+            currentSessionPauseEvents,
+            lastPauseEndTime,
+            hasSessionEverBeenActive,
+            goalDurationSeconds,
+            keyholderName,
+            keyholderPasswordHash,
+            requiredKeyholderDurationSeconds,
+            isTrackingAllowed,
+        };
+
+        const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+            JSON.stringify(dataToExport, null, 2)
+        )}`;
+        const link = document.createElement("a");
+        link.href = jsonString;
+        link.download = `ChastityOS_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setEventLogMessage("JSON backup exported!");
+        setTimeout(() => setEventLogMessage(''), 3000);
+    }, [
+        isAuthReady, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, chastityHistory,
+        totalTimeCageOff, savedSubmissivesName, sexualEventsLog, isPaused, pauseStartTime,
+        accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, hasSessionEverBeenActive,
+        goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds, isTrackingAllowed
+    ]);
+
+    const handleImportJSON = useCallback(async (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+
+                if (!window.confirm("Are you sure you want to overwrite all current data with this backup? This cannot be undone.")) {
+                    // Reset the file input so the same file can be selected again if needed
+                    if (event.target) {
+                        event.target.value = null;
+                    }
+                    return;
+                }
+
+                if (timerInChastityRef.current) clearInterval(timerInChastityRef.current);
+                if (timerCageOffRef.current) clearInterval(timerCageOffRef.current);
+                
+                setIsCageOn(false);
+                setCageOnTime(null);
+                setTimeInChastity(0);
+                setIsPaused(false);
+                setPauseStartTime(null);
+                setAccumulatedPauseTimeThisSession(0);
+                setCurrentSessionPauseEvents([]);
+
+                applyRestoredData(data);
+                
+                const loadedEvents = (data.sexualEventsLog || []).map(item => ({ 
+                    ...item, 
+                    // Ensure eventTimestamp is a Date object if it exists
+                    eventTimestamp: item.eventTimestamp ? new Date(item.eventTimestamp) : null 
+                }));
+                setSexualEventsLog(loadedEvents); // Update state for UI
+                
+                // Save the main application data (excluding sexualEventsLog, which will be handled separately)
+                // Create a copy of data and remove sexualEventsLog to avoid duplication if applyRestoredData already set some parts
+                const mainDataToSave = { ...data };
+                delete mainDataToSave.sexualEventsLog; 
+
+                await saveDataToFirestore({
+                    ...mainDataToSave,
+                    hasSessionEverBeenActive: data.hasSessionEverBeenActive !== undefined ? data.hasSessionEverBeenActive : true,
+                });
+                
+                // Handle sexualEventsLog separately to preserve IDs
+                const eventsColRef = getEventsCollectionRef();
+                if (eventsColRef && userId) {
+                    // Clear existing events in Firestore for the current user
+                    const q = query(eventsColRef);
+                    const querySnapshot = await getDocs(q);
+                    const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, eventsColRef.path, docSnapshot.id)));
+                    await Promise.all(deletePromises);
+
+                    // Add events from JSON with their original IDs using setDoc
+                    const setEventPromises = loadedEvents.map(eventData => {
+                        const { id, ...restOfEventData } = eventData; // 'id' is now used
+                        if (id) { // Ensure id exists to use as document ID
+                            // Ensure timestamp is correctly converted to Firestore Timestamp
+                            const timestamp = restOfEventData.eventTimestamp instanceof Date && !isNaN(restOfEventData.eventTimestamp)
+                                ? Timestamp.fromDate(restOfEventData.eventTimestamp)
+                                : serverTimestamp(); // Fallback or if null/undefined
+
+                            return setDoc(doc(eventsColRef, id), { 
+                                ...restOfEventData,
+                                eventTimestamp: timestamp,
+                                loggedAt: serverTimestamp() // Add/update loggedAt for consistency
+                            });
+                        } else {
+                            // Fallback: if an event in JSON has no ID, let Firestore generate one
+                            console.warn("Importing an event without an ID, new ID will be generated:", restOfEventData);
+                            const timestamp = restOfEventData.eventTimestamp instanceof Date && !isNaN(restOfEventData.eventTimestamp)
+                                ? Timestamp.fromDate(restOfEventData.eventTimestamp)
+                                : serverTimestamp();
+                            return addDoc(eventsColRef, {
+                                ...restOfEventData,
+                                eventTimestamp: timestamp,
+                                loggedAt: serverTimestamp()
+                            });
+                        }
+                    });
+                    await Promise.all(setEventPromises);
+                }
+
+                setEventLogMessage("Data restored successfully from JSON backup!");
+                setTimeout(() => setEventLogMessage(''), 4000);
+                setCurrentPage('tracker'); // Go to tracker to see the new state
+
+            } catch (error) {
+                console.error("Error importing JSON:", error);
+                setEventLogMessage("Error importing JSON file. See console for details.");
+                setTimeout(() => setEventLogMessage(''), 4000);
+            } finally {
+                 // Reset the file input so the same file can be selected again if needed
+                if (event.target) {
+                    event.target.value = null;
+                }
+            }
+        };
+        reader.readAsText(file);
+    }, [applyRestoredData, saveDataToFirestore, getEventsCollectionRef, setCurrentPage, userId]); // Added userId to dependency array
 
     const handleRestoreUserIdInputChange = (event) => { setRestoreUserIdInput(event.target.value); };
     const handleInitiateRestoreFromId = () => { if (!restoreUserIdInput.trim()) { setRestoreFromIdMessage("Enter User ID."); setTimeout(() => setRestoreFromIdMessage(''), 3000); return; } setShowRestoreFromIdPrompt(true); };
@@ -417,6 +574,7 @@ const App = () => {
 
     return (
         <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+            <HotjarScript isTrackingAllowed={isTrackingAllowed} /> {/* Add HotjarScript here */}
             <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
                 <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
                 {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
@@ -440,11 +598,11 @@ const App = () => {
                             requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
                         />
                     )}
-                    {currentPage === 'fullReport' && ( <FullReportPage {...{ savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession, overallTotalPauseTime, goalDurationSeconds, keyholderName }} /> )}
+                    {currentPage === 'fullReport' && ( <FullReportPage {...{ savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession, overallTotalPauseTime, goalDurationSeconds, keyholderName, livePauseDuration }} /> )}
                     {currentPage === 'logEvent' && ( <LogEventPage {...{ isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange, otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes, newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount, handleLogNewEvent, eventLogMessage, isLoadingEvents, sexualEventsLog, savedSubmissivesName, keyholderName }} /> )}
                     {currentPage === 'settings' && (
                         <SettingsPage
-                            isAuthReady={isAuthReady} eventLogMessage={eventLogMessage} handleExportTrackerCSV={handleExportTrackerCSV} chastityHistory={chastityHistory} handleExportEventLogCSV={handleExportEventLogCSV} sexualEventsLog={sexualEventsLog} handleResetAllData={handleResetAllData} confirmReset={confirmReset} nameMessage={nameMessage} handleExportTextReport={handleExportTextReport} userId={userId} showUserIdInSettings={showUserIdInSettings} handleToggleUserIdVisibility={handleToggleUserIdVisibility} savedSubmissivesName={savedSubmissivesName} submissivesNameInput={submissivesNameInput} handleSubmissivesNameInputChange={handleSubmissivesNameInputChange} handleSetSubmissivesName={handleSetSubmissivesName} restoreUserIdInput={restoreUserIdInput} handleRestoreUserIdInputChange={handleRestoreUserIdInputChange} handleInitiateRestoreFromId={handleInitiateRestoreFromId} showRestoreFromIdPrompt={showRestoreFromIdPrompt} handleConfirmRestoreFromId={handleConfirmRestoreFromId} handleCancelRestoreFromId={handleCancelRestoreFromId} restoreFromIdMessage={restoreFromIdMessage} setCurrentPage={setCurrentPage}
+                            isAuthReady={isAuthReady} eventLogMessage={eventLogMessage} handleExportTrackerCSV={handleExportTrackerCSV} chastityHistory={chastityHistory} handleExportEventLogCSV={handleExportEventLogCSV} sexualEventsLog={sexualEventsLog} handleResetAllData={handleResetAllData} confirmReset={confirmReset} nameMessage={nameMessage} handleExportTextReport={handleExportTextReport} handleExportJSON={handleExportJSON} handleImportJSON={handleImportJSON} userId={userId} showUserIdInSettings={showUserIdInSettings} handleToggleUserIdVisibility={handleToggleUserIdVisibility} savedSubmissivesName={savedSubmissivesName} submissivesNameInput={submissivesNameInput} handleSubmissivesNameInputChange={handleSubmissivesNameInputChange} handleSetSubmissivesName={handleSetSubmissivesName} restoreUserIdInput={restoreUserIdInput} handleRestoreUserIdInputChange={handleRestoreUserIdInputChange} handleInitiateRestoreFromId={handleInitiateRestoreFromId} showRestoreFromIdPrompt={showRestoreFromIdPrompt} handleConfirmRestoreFromId={handleConfirmRestoreFromId} handleCancelRestoreFromId={handleCancelRestoreFromId} restoreFromIdMessage={restoreFromIdMessage} setCurrentPage={setCurrentPage}
                             currentGoalDurationSeconds={goalDurationSeconds}
                             handleSetGoalDuration={handleSetGoalDuration}
                             keyholderName={keyholderName}
@@ -478,4 +636,3 @@ const App = () => {
 };
 
 export default App;
-
