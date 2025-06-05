@@ -10,7 +10,7 @@ import {
 import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
-import HotjarScript from './pages/HotjarScript';
+import HotjarScript from './components/HotjarScript'; // Import HotjarScript
 
 // --- Hashing Helper ---
 async function generateHash(text) {
@@ -121,6 +121,8 @@ const App = () => {
     const [editSessionTimeInput, setEditSessionTimeInput] = useState('');
     const [editSessionMessage, setEditSessionMessage] = useState('');
 
+    const [isTrackingAllowed, setIsTrackingAllowed] = useState(true); // Added for Hotjar
+
 
     const timerInChastityRef = useRef(null);
     const timerCageOffRef = useRef(null);
@@ -159,7 +161,8 @@ const App = () => {
         setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds || null);
         setIsKeyholderModeUnlocked(false);
         setShowRestoreSessionPrompt(false); setLoadedSessionData(null);
-    }, [setHasSessionEverBeenActive]);
+        setIsTrackingAllowed(data.isTrackingAllowed !== undefined ? data.isTrackingAllowed : true); // Restore tracking preference
+    }, [setHasSessionEverBeenActive, setIsTrackingAllowed]);
 
     useEffect(() => {
         if (!isAuthReady && auth.currentUser === null) { setIsLoading(false); return; }
@@ -219,7 +222,7 @@ const App = () => {
         if (!isAuthReady || !userId) return;
         const docRef = getDocRef(); if (!docRef) return;
         try {
-            const firestoreReadyData = { ...dataToSave, hasSessionEverBeenActive, goalDurationSeconds: dataToSave.goalDurationSeconds !== undefined ? dataToSave.goalDurationSeconds : goalDurationSeconds, keyholderName: dataToSave.keyholderName !== undefined ? dataToSave.keyholderName : keyholderName, keyholderPasswordHash: dataToSave.keyholderPasswordHash !== undefined ? dataToSave.keyholderPasswordHash : keyholderPasswordHash, requiredKeyholderDurationSeconds: dataToSave.requiredKeyholderDurationSeconds !== undefined ? dataToSave.requiredKeyholderDurationSeconds : requiredKeyholderDurationSeconds, };
+            const firestoreReadyData = { ...dataToSave, hasSessionEverBeenActive, goalDurationSeconds: dataToSave.goalDurationSeconds !== undefined ? dataToSave.goalDurationSeconds : goalDurationSeconds, keyholderName: dataToSave.keyholderName !== undefined ? dataToSave.keyholderName : keyholderName, keyholderPasswordHash: dataToSave.keyholderPasswordHash !== undefined ? dataToSave.keyholderPasswordHash : keyholderPasswordHash, requiredKeyholderDurationSeconds: dataToSave.requiredKeyholderDurationSeconds !== undefined ? dataToSave.requiredKeyholderDurationSeconds : requiredKeyholderDurationSeconds, isTrackingAllowed }; // Include isTrackingAllowed
             const toTS = (d) => d instanceof Date && !isNaN(d.getTime()) ? Timestamp.fromDate(d) : (typeof d === 'string' && new Date(d) instanceof Date && !isNaN(new Date(d).getTime()) ? Timestamp.fromDate(new Date(d)) : null);
             firestoreReadyData.cageOnTime = toTS(firestoreReadyData.cageOnTime);
             if (firestoreReadyData.chastityHistory) { firestoreReadyData.chastityHistory = firestoreReadyData.chastityHistory.map(item => ({ ...item, startTime: toTS(item.startTime), endTime: toTS(item.endTime), pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: toTS(p.startTime), endTime: toTS(p.endTime) })) })); }
@@ -230,7 +233,7 @@ const App = () => {
             if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'userAlias')) { delete firestoreReadyData.userAlias; }
             await setDoc(docRef, firestoreReadyData, { merge: true });
         } catch (error) { console.error("Error saving main data to Firestore:", error); }
-    }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds]);
+    }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds, isTrackingAllowed]);
 
     const handleSetKeyholder = useCallback(async (name) => { if (!userId) { setKeyholderMessage("Error: User ID not available."); return null; } const khName = name.trim(); if (!khName) { setKeyholderMessage("Keyholder name cannot be empty."); return null; } const stringToHash = userId + khName; const hash = await generateHash(stringToHash); if (!hash) { setKeyholderMessage("Error generating Keyholder ID."); return null; } setKeyholderName(khName); setKeyholderPasswordHash(hash); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null }); setKeyholderMessage(`Keyholder "${khName}" set. Password preview generated.`); return hash.substring(0, 8).toUpperCase(); }, [userId, saveDataToFirestore, setKeyholderMessage]);
     const handleClearKeyholder = useCallback(async () => { setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); await saveDataToFirestore({ keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null }); setKeyholderMessage("Keyholder data cleared."); }, [saveDataToFirestore, setKeyholderMessage]);
@@ -348,7 +351,7 @@ const App = () => {
     const handleConfirmRemoval = useCallback(async () => { if (!isAuthReady || !(tempStartTime instanceof Date) || !(tempEndTime instanceof Date) || isNaN(tempStartTime.getTime()) || isNaN(tempEndTime.getTime())) { setShowReasonModal(false); return; } let finalAccumulatedPauseTime = accumulatedPauseTimeThisSession; let finalPauseEventsForHistory = currentSessionPauseEvents; if (isPaused && pauseStartTime instanceof Date && !isNaN(pauseStartTime.getTime())) { const finalPauseDuration = Math.max(0, Math.floor((tempEndTime.getTime() - pauseStartTime.getTime()) / 1000)); finalAccumulatedPauseTime += finalPauseDuration; finalPauseEventsForHistory = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime: tempEndTime, duration: finalPauseDuration } : event ); } const rawDurationSeconds = Math.max(0, Math.floor((tempEndTime.getTime() - tempStartTime.getTime()) / 1000)); const newHistoryEntry = { id: crypto.randomUUID(), periodNumber: chastityHistory.length + 1, startTime: tempStartTime, endTime: tempEndTime, duration: rawDurationSeconds, reasonForRemoval: reasonForRemoval.trim() || 'N/A', totalPauseDurationSeconds: finalAccumulatedPauseTime, pauseEvents: finalPauseEventsForHistory }; const updatedHistoryState = [...chastityHistory, newHistoryEntry]; setChastityHistory(updatedHistoryState); setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setHasSessionEverBeenActive(true); saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, chastityHistory: updatedHistoryState, totalTimeCageOff, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime, hasSessionEverBeenActive: true }); setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, [isAuthReady, tempStartTime, tempEndTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, isPaused, pauseStartTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive]);
     const handleCancelRemoval = useCallback(() => { setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, []);
     const clearAllEvents = useCallback(async () => { if (!isAuthReady || !userId) return; const eventsColRef = getEventsCollectionRef(); if (!eventsColRef) { return; } try { const q = query(eventsColRef); const querySnapshot = await getDocs(q); const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, eventsColRef.path, docSnapshot.id))); await Promise.all(deletePromises); setSexualEventsLog([]); } catch (error) { console.error("App.js: clearAllEvents - Error:", error); } }, [isAuthReady, userId, getEventsCollectionRef]);
-    const handleResetAllData = useCallback(() => { if (!isAuthReady) return; if (confirmReset) { if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]); setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput(''); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setLastPauseEndTime(null); setPauseCooldownMessage(''); setHasSessionEverBeenActive(false); setConfirmReset(false); setShowReasonModal(false); setGoalDurationSeconds(null); setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); saveDataToFirestore({ cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '', isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false, goalDurationSeconds: null, keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null }); clearAllEvents(); setNameMessage("All data reset."); setTimeout(() => setNameMessage(''), 4000); setCurrentPage('tracker'); } else { setConfirmReset(true); resetTimeoutRef.current = setTimeout(() => { setConfirmReset(false); }, 3000); } }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive]);
+    const handleResetAllData = useCallback(() => { if (!isAuthReady) return; if (confirmReset) { if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]); setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput(''); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setLastPauseEndTime(null); setPauseCooldownMessage(''); setHasSessionEverBeenActive(false); setConfirmReset(false); setShowReasonModal(false); setGoalDurationSeconds(null); setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); setIsTrackingAllowed(true); /* Reset tracking to allowed */ saveDataToFirestore({ cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '', isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false, goalDurationSeconds: null, keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null, isTrackingAllowed: true }); clearAllEvents(); setNameMessage("All data reset."); setTimeout(() => setNameMessage(''), 4000); setCurrentPage('tracker'); } else { setConfirmReset(true); resetTimeoutRef.current = setTimeout(() => { setConfirmReset(false); }, 3000); } }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive, setIsTrackingAllowed]);
     const handleSubmissivesNameInputChange = useCallback((event) => { setSubmissivesNameInput(event.target.value); }, []);
     const handleSetSubmissivesName = useCallback(async () => { if (!isAuthReady || !userId) { setNameMessage("Auth error."); setTimeout(() => setNameMessage(''), 3000); return; } if (savedSubmissivesName) { setNameMessage("Name set. Reset to change."); setTimeout(() => setNameMessage(''), 4000); return; } const trimmedName = submissivesNameInput.trim(); if (!trimmedName) { setNameMessage("Name empty."); setTimeout(() => setNameMessage(''), 3000); return; } setSavedSubmissivesName(trimmedName); await saveDataToFirestore({ submissivesName: trimmedName, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, hasSessionEverBeenActive }); setNameMessage("Name set!"); setTimeout(() => setNameMessage(''), 3000); }, [isAuthReady, userId, savedSubmissivesName, submissivesNameInput, saveDataToFirestore, isCageOn, cageOnTime, timeInChastity, chastityHistory, totalChastityTime, totalTimeCageOff, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, lastPauseEndTime, hasSessionEverBeenActive]);
     const handleToggleUserIdVisibility = useCallback(() => { setShowUserIdInSettings(prev => !prev); }, []);
@@ -418,7 +421,7 @@ const App = () => {
 
     return (
         <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
-                  <HotjarScript isTrackingAllowed={isAuthReady} /> {/* ✅ Hotjar injected */}
+            <HotjarScript isTrackingAllowed={isTrackingAllowed} /> {/* Add HotjarScript here */}
             <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
                 <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
                 {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
@@ -468,6 +471,8 @@ const App = () => {
                             editSessionMessage={editSessionMessage}
                             isCurrentSessionActive={isCageOn}
                             cageOnTime={cageOnTime} // Pass current cageOnTime for display in settings
+                            isTrackingAllowed={isTrackingAllowed} // Pass tracking state
+                            setIsTrackingAllowed={setIsTrackingAllowed} // Pass function to update tracking state
                         />
                     )}
                     {currentPage === 'privacy' && ( <PrivacyPage onBack={() => setCurrentPage('settings')} /> )}
@@ -480,4 +485,3 @@ const App = () => {
 };
 
 export default App;
-
