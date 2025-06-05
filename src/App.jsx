@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 
 import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils';
-import MainNav from './components/MainNav'; // MainNav will be updated separately
+import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 
 // --- Hashing Helper ---
@@ -44,16 +44,15 @@ const appIdForFirestore = firebaseConfig.appId || 'default-chastity-app-id';
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-setLogLevel('debug');
+setLogLevel('debug'); // Consider 'warn' or 'error' for production
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
 const LogEventPage = lazy(() => import('./pages/LogEventPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-// PrivacyPage lazy load removed as it's not directly navigated to from MainNav anymore
-// const PrivacyPage = lazy(() => import('./pages/PrivacyPage')); 
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage')); // For footer modal
 
 
 const App = () => {
@@ -116,17 +115,29 @@ const App = () => {
     const [requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds] = useState(null);
     const [keyholderMessage, setKeyholderMessage] = useState('');
 
+    // NEW state for editing cageOnTime
+    const [editSessionDateInput, setEditSessionDateInput] = useState('');
+    const [editSessionTimeInput, setEditSessionTimeInput] = useState('');
+    const [editSessionMessage, setEditSessionMessage] = useState('');
+
+
     const timerInChastityRef = useRef(null);
     const timerCageOffRef = useRef(null);
 
-    useEffect(() => { /* GA Init */ if (GA_MEASUREMENT_ID) { if (typeof window.gtag === 'function') { window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false }); } else { console.warn("gtag.js not found."); } } else { console.warn("GA_MEASUREMENT_ID not set."); } }, []);
-    useEffect(() => { /* GA Page View */ if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) { const pagePath = `/${currentPage}`; const pageTitle = currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim(); window.gtag('event', 'page_view', { page_title: pageTitle, page_path: pagePath, user_id: userId }); } }, [currentPage, isAuthReady, userId]);
+    useEffect(() => { if (GA_MEASUREMENT_ID) { if (typeof window.gtag === 'function') { window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false }); } else { console.warn("gtag.js not found."); } } else { console.warn("GA_MEASUREMENT_ID not set."); } }, []);
+    useEffect(() => { if (GA_MEASUREMENT_ID && typeof window.gtag === 'function' && isAuthReady) { const pagePath = `/${currentPage}`; const pageTitle = currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim(); window.gtag('event', 'page_view', { page_title: pageTitle, page_path: pagePath, user_id: userId }); } }, [currentPage, isAuthReady, userId]);
 
-    const getDocRef = useCallback((targetUserId = userId) => { if (!targetUserId) return null; return doc(db, "artifacts", appIdForFirestore, "users", targetUserId); }, [userId]);
-    const getEventsCollectionRef = useCallback((targetUserId = userId) => { if (!targetUserId) return null; return collection(db, "artifacts", appIdForFirestore, "users", targetUserId, "sexualEventsLog"); }, [userId]);
+    const getDocRef = useCallback((targetUserId = userId) => { 
+        if (!targetUserId) return null; 
+        return doc(db, "artifacts", appIdForFirestore, "users", targetUserId); 
+    }, [userId]); // Removed appIdForFirestore
+    const getEventsCollectionRef = useCallback((targetUserId = userId) => { 
+        if (!targetUserId) return null; 
+        return collection(db, "artifacts", appIdForFirestore, "users", targetUserId, "sexualEventsLog"); 
+    }, [userId]); // Removed appIdForFirestore
 
-    useEffect(() => { /* Auth Handling */ const unsub = onAuthStateChanged(auth, async u => { if (u) { setUserId(u.uid); setIsAuthReady(true); } else { if (!userId && !isAuthReady) { try { await signInAnonymously(auth); } catch (e) { console.error("Auth error:", e); setIsAuthReady(false); setUserId(null); setIsLoading(false); } } else { if (userId) console.log("User signed out."); setUserId(null); setIsAuthReady(false);}}}); return unsub; }, [userId, isAuthReady, setIsLoading]);
-    useEffect(() => { /* Totals Calculation */ let totalEffectiveChastity = 0; let totalOverallPaused = 0; chastityHistory.forEach(p => { totalEffectiveChastity += Math.max(0, (p.duration || 0) - (p.totalPauseDurationSeconds || 0)); totalOverallPaused += (p.totalPauseDurationSeconds || 0); }); setTotalChastityTime(totalEffectiveChastity); setOverallTotalPauseTime(totalOverallPaused); }, [chastityHistory]);
+    useEffect(() => { const unsub = onAuthStateChanged(auth, async u => { if (u) { setUserId(u.uid); setIsAuthReady(true); } else { if (!userId && !isAuthReady) { try { await signInAnonymously(auth); } catch (e) { console.error("Auth error:", e); setIsAuthReady(false); setUserId(null); setIsLoading(false); } } else { if (userId) console.log("User signed out."); setUserId(null); setIsAuthReady(false);}}}); return unsub; }, [userId, isAuthReady, setIsLoading]);
+    useEffect(() => { let totalEffectiveChastity = 0; let totalOverallPaused = 0; chastityHistory.forEach(p => { totalEffectiveChastity += Math.max(0, (p.duration || 0) - (p.totalPauseDurationSeconds || 0)); totalOverallPaused += (p.totalPauseDurationSeconds || 0); }); setTotalChastityTime(totalEffectiveChastity); setOverallTotalPauseTime(totalOverallPaused); }, [chastityHistory]);
 
     const applyRestoredData = useCallback((data) => {
         const loadedHist = (data.chastityHistory || []).map(item => ({ ...item, startTime: item.startTime?.toDate ? item.startTime.toDate() : null, endTime: item.endTime?.toDate ? item.endTime.toDate() : null, totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0, pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate ? p.startTime.toDate() : null, endTime: p.endTime?.toDate ? p.endTime.toDate() : null })) }));
@@ -149,15 +160,9 @@ const App = () => {
         setShowRestoreSessionPrompt(false); setLoadedSessionData(null);
     }, [setHasSessionEverBeenActive]);
 
-    useEffect(() => { /* Load Initial Data */
-        if (!isAuthReady && auth.currentUser === null) {
-            setIsLoading(false);
-            return;
-        }
-        if (isAuthReady && !userId) {
-            return;
-        }
-
+    useEffect(() => {
+        if (!isAuthReady && auth.currentUser === null) { setIsLoading(false); return; }
+        if (isAuthReady && !userId) { return; }
         if (isAuthReady && userId) {
             const loadInitialDataInternal = async () => {
                 setIsLoading(true);
@@ -166,68 +171,48 @@ const App = () => {
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        console.log("App.js: loadInitialData - Raw data from Firestore:", JSON.stringify(data, null, 2));
                         applyRestoredData(data);
-
                         const activeSessionIsCageOnLoaded = data.isCageOn || false;
                         const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
                         if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
-                            console.log("App.js: loadInitialData - Active session found. Preparing restore prompt.");
                             const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
                             setLoadedSessionData({ isCageOn: true, cageOnTime: activeSessionCageOnTimeLoaded, timeInChastity: data.timeInChastity || 0, isPaused: data.isPaused || false, pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null, accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0, currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate? p.startTime.toDate() : null, endTime: p.endTime?.toDate? p.endTime.toDate() : null })), });
                             setIsCageOn(true); setCageOnTime(activeSessionCageOnTimeLoaded); setTimeInChastity(data.timeInChastity || 0); setIsPaused(true); setPauseStartTime(new Date()); setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0); setCurrentSessionPauseEvents((data.currentSessionPauseEvents || []).map(p => ({...p, startTime: p.startTime?.toDate? p.startTime.toDate() : null, endTime: p.endTime?.toDate? p.endTime.toDate() : null}))); setShowRestoreSessionPrompt(true);
-                            console.log("App.js: loadInitialData - Showing restore prompt. App in 'paused neutral state'.");
-                        } else {
-                            console.log("App.js: loadInitialData - No active/valid session in Firestore. Initializing current session to neutral based on loaded data.");
-                            setShowRestoreSessionPrompt(false);
-                        }
-                    } else {
-                        console.log("App.js: loadInitialData - No document found for user. Initializing all to default 'off' state.");
-                        applyRestoredData({});
-                        setTimeInChastity(0);
-                        setTimeCageOff(0);
-                    }
-                } catch (error) {
-                    console.error("Error loading initial tracker data:", error);
-                    applyRestoredData({});
-                    setTimeInChastity(0);
-                    setTimeCageOff(0);
-                } finally {
-                    setIsLoading(false);
-                }
+                        } else { setShowRestoreSessionPrompt(false); }
+                    } else { applyRestoredData({}); setTimeInChastity(0); setTimeCageOff(0); }
+                } catch (error) { console.error("Error loading initial tracker data:", error); applyRestoredData({}); setTimeInChastity(0); setTimeCageOff(0);
+                } finally { setIsLoading(false); }
             };
             loadInitialDataInternal();
         }
     }, [isAuthReady, userId, getDocRef, setIsLoading, applyRestoredData]);
 
+    useEffect(() => { // Populate edit inputs for cageOnTime when session is active
+        if (isCageOn && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime())) {
+            setEditSessionDateInput(cageOnTime.toISOString().slice(0, 10));
+            setEditSessionTimeInput(cageOnTime.toTimeString().slice(0, 5));
+        } else {
+            setEditSessionDateInput('');
+            setEditSessionTimeInput('');
+            setEditSessionMessage(''); // Clear any previous messages if session ends
+        }
+    }, [isCageOn, cageOnTime]);
+
+
     const fetchEvents = useCallback(async (targetUserId = userId) => {
         if (!isAuthReady || !targetUserId) return;
         setIsLoadingEvents(true);
         const eventsColRef = getEventsCollectionRef(targetUserId);
-        if (!eventsColRef) {
-            setEventLogMessage("Error: Could not get event log reference.");
-            setTimeout(() => setEventLogMessage(''), 3000);
-            setIsLoadingEvents(false);
-            return;
-        }
+        if (!eventsColRef) { setEventLogMessage("Error: Could not get event log reference."); setTimeout(() => setEventLogMessage(''), 3000); setIsLoadingEvents(false); return; }
         try {
             const q = query(eventsColRef, orderBy("eventTimestamp", "desc"));
             const querySnapshot = await getDocs(q);
             setSexualEventsLog(querySnapshot.docs.map(d => ({ id: d.id, ...d.data(), eventTimestamp: d.data().eventTimestamp?.toDate() })));
-        } catch (error) {
-            console.error("Error fetching events:", error);
-            setEventLogMessage("Failed to load events.");
-            setTimeout(() => setEventLogMessage(''), 3000);
-        } finally {
-            setIsLoadingEvents(false);
-        }
+        } catch (error) { console.error("Error fetching events:", error); setEventLogMessage("Failed to load events."); setTimeout(() => setEventLogMessage(''), 3000);
+        } finally { setIsLoadingEvents(false); }
     }, [isAuthReady, userId, getEventsCollectionRef, setIsLoadingEvents, setEventLogMessage]);
 
-    useEffect(() => { /* Fetch Events on page change */
-        if ((currentPage === 'logEvent' || currentPage === 'fullReport' || currentPage === 'feedback') && isAuthReady && userId) {
-            fetchEvents();
-        }
-    }, [currentPage, isAuthReady, userId, fetchEvents]);
+    useEffect(() => { if ((currentPage === 'logEvent' || currentPage === 'fullReport' || currentPage === 'feedback') && isAuthReady && userId) { fetchEvents(); } }, [currentPage, isAuthReady, userId, fetchEvents]);
 
     const saveDataToFirestore = useCallback(async (dataToSave) => {
         if (!isAuthReady || !userId) return;
@@ -253,55 +238,89 @@ const App = () => {
     const handleSetRequiredDuration = useCallback(async (durationInSeconds) => { const newDuration = Number(durationInSeconds); if (!isNaN(newDuration) && newDuration >= 0) { setRequiredKeyholderDurationSeconds(newDuration); await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration }); setKeyholderMessage("Required duration updated."); return true; } setKeyholderMessage("Invalid duration value."); return false; }, [saveDataToFirestore, setKeyholderMessage]);
     const handleSetGoalDuration = useCallback(async (newDurationInSeconds) => {const newDuration = newDurationInSeconds === null ? null : Number(newDurationInSeconds); if (newDuration === null || (!isNaN(newDuration) && newDuration >= 0)) { setGoalDurationSeconds(newDuration); await saveDataToFirestore({ goalDurationSeconds: newDuration }); return true; } return false; }, [saveDataToFirestore, setGoalDurationSeconds]);
 
-    useEffect(() => { // Timer for timeInChastity
-        const timerConditionsMet = isCageOn && !isPaused && isAuthReady && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime());
-        console.log('[App.jsx Timer useEffect Check]', { isCageOn, isPaused, isAuthReady, cageOnTime: cageOnTime ? cageOnTime.toISOString() : null, isValidDate: cageOnTime instanceof Date && !isNaN(cageOnTime.getTime()), timerConditionsMet });
+    const handleUpdateCurrentCageOnTime = async () => {
+        if (!isCageOn || !cageOnTime) {
+            setEditSessionMessage("No active session to edit.");
+            setTimeout(() => setEditSessionMessage(''), 3000);
+            return;
+        }
 
+        const originalCageOnTime = new Date(cageOnTime.getTime()); // Clone original time for logging
+
+        const newDateTimeString = `${editSessionDateInput}T${editSessionTimeInput}`;
+        const newProposedCageOnTime = new Date(newDateTimeString);
+
+        if (isNaN(newProposedCageOnTime.getTime())) {
+            setEditSessionMessage("Invalid date or time format for edit.");
+            setTimeout(() => setEditSessionMessage(''), 3000);
+            return;
+        }
+
+        if (newProposedCageOnTime.getTime() > new Date().getTime()) {
+            setEditSessionMessage("Start time cannot be in the future.");
+            setTimeout(() => setEditSessionMessage(''), 3000);
+            return;
+        }
+        
+        const oldCageOnTimeForLog = formatTime(originalCageOnTime, true, true);
+        const newCageOnTimeForLog = formatTime(newProposedCageOnTime, true, true);
+
+        setCageOnTime(newProposedCageOnTime); // Update state immediately for UI responsiveness
+
+        // Log the "Session Edit" event
+        const eventsColRef = getEventsCollectionRef();
+        if (eventsColRef && userId) {
+            try {
+                await addDoc(eventsColRef, {
+                    eventTimestamp: Timestamp.now(), 
+                    loggedAt: serverTimestamp(),
+                    types: ["Session Edit"],
+                    otherTypeDetail: "",
+                    notes: `Cage start time manually updated.\nOriginal: ${oldCageOnTimeForLog}.\nNew: ${newCageOnTimeForLog}.`,
+                    durationSeconds: null, selfOrgasmAmount: null, partnerOrgasmAmount: null
+                });
+                fetchEvents(); // Refresh event log display
+            } catch (error) {
+                console.error("App.js: Error logging session edit event:", error);
+                setEditSessionMessage("Failed to log edit. See console. Start time reverted.");
+                setTimeout(() => setEditSessionMessage(''), 4000);
+                setCageOnTime(originalCageOnTime); // Revert if logging fails
+                return; 
+            }
+        }
+        
+        // Recalculate timeInChastity based on the new cageOnTime for saving
+        let updatedTimeInChastity = 0;
+        if (newProposedCageOnTime instanceof Date && !isNaN(newProposedCageOnTime.getTime())) {
+             updatedTimeInChastity = Math.max(0, Math.floor((new Date().getTime() - newProposedCageOnTime.getTime()) / 1000));
+        }
+        setTimeInChastity(updatedTimeInChastity); // Explicitly set for saving and UI update
+
+        await saveDataToFirestore({
+            isCageOn, cageOnTime: newProposedCageOnTime, timeInChastity: updatedTimeInChastity,
+            isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents,
+            chastityHistory, totalChastityTime, totalTimeCageOff, submissivesName: savedSubmissivesName,
+            lastPauseEndTime, hasSessionEverBeenActive, goalDurationSeconds, keyholderName,
+            keyholderPasswordHash, requiredKeyholderDurationSeconds,
+        });
+
+        setEditSessionMessage("Session start time updated successfully!");
+        setTimeout(() => setEditSessionMessage(''), 3000);
+    };
+
+
+    useEffect(() => {
+        const timerConditionsMet = isCageOn && !isPaused && isAuthReady && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime());
         if (timerConditionsMet) {
             const initialElapsedTime = Math.max(0, Math.floor((new Date().getTime() - cageOnTime.getTime()) / 1000));
             setTimeInChastity(initialElapsedTime);
-            console.log(`[App.jsx Timer] Started/Resumed. Initial timeInChastity: ${initialElapsedTime}`);
-
-            timerInChastityRef.current = setInterval(() => {
-                setTimeInChastity(prevTime => {
-                    console.log('[App.jsx Timer Interval Tick] Prev timeInChastity:', prevTime, 'New:', prevTime + 1);
-                    return prevTime + 1;
-                });
-            }, 1000);
-        } else if (timerInChastityRef.current) {
-            console.log('[App.jsx Timer] Cleared interval because conditions no longer met.');
-            clearInterval(timerInChastityRef.current);
-        }
-        return () => {
-            if (timerInChastityRef.current) {
-                console.log('[App.jsx Timer] Chastity timer cleanup: Cleared interval.');
-                clearInterval(timerInChastityRef.current);
-            }
-        };
+            timerInChastityRef.current = setInterval(() => { setTimeInChastity(prevTime => prevTime + 1); }, 1000);
+        } else if (timerInChastityRef.current) { clearInterval(timerInChastityRef.current); }
+        return () => { if (timerInChastityRef.current) { clearInterval(timerInChastityRef.current); } };
     }, [isCageOn, isPaused, cageOnTime, isAuthReady]);
 
-    useEffect(() => { /* timeCageOff Timer */
-        if (!isCageOn && isAuthReady && hasSessionEverBeenActive) {
-            console.log('[App.jsx timeCageOff Timer] Starting. Conditions:', { isCageOn, isAuthReady, hasSessionEverBeenActive });
-            timerCageOffRef.current = setInterval(() => {
-                setTimeCageOff(prev => {
-                    console.log('[App.jsx timeCageOff Timer Tick] Prev:', prev, 'New:', prev + 1);
-                    return prev + 1;
-                });
-            }, 1000);
-        } else if (timerCageOffRef.current) {
-            console.log('[App.jsx timeCageOff Timer] Clearing.');
-            clearInterval(timerCageOffRef.current);
-        }
-        return () => {
-            if (timerCageOffRef.current) {
-                console.log('[App.jsx timeCageOff Timer] Cleanup clearing.');
-                clearInterval(timerCageOffRef.current);
-            }
-        };
-    }, [isCageOn, isAuthReady, hasSessionEverBeenActive]);
-
-    useEffect(() => { /* livePauseDuration Timer */ if (isPaused && pauseStartTime instanceof Date && !isNaN(pauseStartTime.getTime())) { setLivePauseDuration(Math.max(0, Math.floor((new Date().getTime() - pauseStartTime.getTime()) / 1000))); pauseDisplayTimerRef.current = setInterval(() => setLivePauseDuration(prev => prev + 1), 1000); } else { if (pauseDisplayTimerRef.current) clearInterval(pauseDisplayTimerRef.current); setLivePauseDuration(0); } return () => { if (pauseDisplayTimerRef.current) clearInterval(pauseDisplayTimerRef.current); }; }, [isPaused, pauseStartTime]);
+    useEffect(() => { if (!isCageOn && isAuthReady && hasSessionEverBeenActive) { timerCageOffRef.current = setInterval(() => { setTimeCageOff(prev => prev + 1); }, 1000); } else if (timerCageOffRef.current) { clearInterval(timerCageOffRef.current); } return () => { if (timerCageOffRef.current) { clearInterval(timerCageOffRef.current); } }; }, [isCageOn, isAuthReady, hasSessionEverBeenActive]);
+    useEffect(() => { if (isPaused && pauseStartTime instanceof Date && !isNaN(pauseStartTime.getTime())) { setLivePauseDuration(Math.max(0, Math.floor((new Date().getTime() - pauseStartTime.getTime()) / 1000))); pauseDisplayTimerRef.current = setInterval(() => setLivePauseDuration(prev => prev + 1), 1000); } else { if (pauseDisplayTimerRef.current) clearInterval(pauseDisplayTimerRef.current); setLivePauseDuration(0); } return () => { if (pauseDisplayTimerRef.current) clearInterval(pauseDisplayTimerRef.current); }; }, [isPaused, pauseStartTime]);
 
     const handleInitiatePause = useCallback(() => { setPauseCooldownMessage(''); if (lastPauseEndTime instanceof Date && !isNaN(lastPauseEndTime.getTime())) { const twelveHoursInMillis = 12 * 3600 * 1000; const timeSinceLastPauseEnd = new Date().getTime() - lastPauseEndTime.getTime(); if (timeSinceLastPauseEnd < twelveHoursInMillis) { const remainingTime = twelveHoursInMillis - timeSinceLastPauseEnd; const hours = Math.floor(remainingTime / 3600000); const minutes = Math.floor((remainingTime % 3600000) / 60000); setPauseCooldownMessage(`You can pause again in approximately ${hours}h ${minutes}m.`); setTimeout(() => setPauseCooldownMessage(''), 5000); return; } } setShowPauseReasonModal(true); }, [lastPauseEndTime]);
     const handleConfirmPause = useCallback(async () => { if (!isCageOn) { setShowPauseReasonModal(false); setReasonForPauseInput(''); return; } const now = new Date(); const newPauseEvent = { id: crypto.randomUUID(), startTime: now, reason: reasonForPauseInput.trim() || "N/A", endTime: null, duration: null }; setIsPaused(true); setPauseStartTime(now); const updatedSessionPauses = [...currentSessionPauseEvents, newPauseEvent]; setCurrentSessionPauseEvents(updatedSessionPauses); setShowPauseReasonModal(false); setReasonForPauseInput(''); await saveDataToFirestore({ isPaused: true, pauseStartTime: now, accumulatedPauseTimeThisSession, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime }); }, [isCageOn, reasonForPauseInput, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore, lastPauseEndTime]);
@@ -309,8 +328,7 @@ const App = () => {
     const handleResumeSession = useCallback(async () => { if (!isPaused || !(pauseStartTime instanceof Date) || isNaN(pauseStartTime.getTime())) { setIsPaused(false); setPauseStartTime(null); setLivePauseDuration(0); return; } const endTime = new Date(); const currentPauseDuration = Math.max(0, Math.floor((endTime.getTime() - pauseStartTime.getTime()) / 1000)); const newAccumulatedPauseTime = accumulatedPauseTimeThisSession + currentPauseDuration; const updatedSessionPauses = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime, duration: currentPauseDuration } : event); setAccumulatedPauseTimeThisSession(newAccumulatedPauseTime); setIsPaused(false); setPauseStartTime(null); setCurrentSessionPauseEvents(updatedSessionPauses); setLivePauseDuration(0); setLastPauseEndTime(endTime); await saveDataToFirestore({ isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: newAccumulatedPauseTime, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime: endTime }); }, [isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore]);
 
     const handleToggleCage = useCallback(() => {
-        console.log('[App.jsx handleToggleCage Called]', { isAuthReady, isPausedCurrent: isPaused, isCageOnCurrent: isCageOn, confirmReset });
-        if (!isAuthReady || isPaused) { console.log('[App.jsx handleToggleCage] Aborted: Auth not ready or session is paused.'); return; }
+        if (!isAuthReady || isPaused) { return; }
         const currentTime = new Date();
         if (confirmReset) { setConfirmReset(false); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); }
         if (!isCageOn) {
@@ -319,17 +337,14 @@ const App = () => {
             setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
             setPauseStartTime(null); setIsPaused(false);
             setHasSessionEverBeenActive(true);
-            console.log('[App.jsx handleToggleCage] Starting new session. CageOnTime:', currentTime.toISOString());
             saveDataToFirestore({ isCageOn: true, cageOnTime: currentTime, totalTimeCageOff: newTotalOffTime, timeInChastity: 0, chastityHistory, totalChastityTime, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime, hasSessionEverBeenActive: true });
         } else {
-            console.log('[App.jsx handleToggleCage] Ending session. Current cageOnTime:', cageOnTime ? cageOnTime.toISOString() : null);
             setTempEndTime(currentTime); setTempStartTime(cageOnTime);
-            console.log('[App.jsx handleToggleCage] Calling setShowReasonModal(true)');
             setShowReasonModal(true);
         }
     }, [isAuthReady, isPaused, confirmReset, isCageOn, totalTimeCageOff, timeCageOff, cageOnTime, saveDataToFirestore, chastityHistory, totalChastityTime, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive, resetTimeoutRef]);
 
-    const handleConfirmRemoval = useCallback(() => { if (!isAuthReady || !(tempStartTime instanceof Date) || !(tempEndTime instanceof Date) || isNaN(tempStartTime.getTime()) || isNaN(tempEndTime.getTime())) { setShowReasonModal(false); return; } let finalAccumulatedPauseTime = accumulatedPauseTimeThisSession; let finalPauseEventsForHistory = currentSessionPauseEvents; if (isPaused && pauseStartTime instanceof Date && !isNaN(pauseStartTime.getTime())) { const finalPauseDuration = Math.max(0, Math.floor((tempEndTime.getTime() - pauseStartTime.getTime()) / 1000)); finalAccumulatedPauseTime += finalPauseDuration; finalPauseEventsForHistory = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime: tempEndTime, duration: finalPauseDuration } : event ); } const rawDurationSeconds = Math.max(0, Math.floor((tempEndTime.getTime() - tempStartTime.getTime()) / 1000)); const newHistoryEntry = { id: crypto.randomUUID(), periodNumber: chastityHistory.length + 1, startTime: tempStartTime, endTime: tempEndTime, duration: rawDurationSeconds, reasonForRemoval: reasonForRemoval.trim() || 'N/A', totalPauseDurationSeconds: finalAccumulatedPauseTime, pauseEvents: finalPauseEventsForHistory }; const updatedHistoryState = [...chastityHistory, newHistoryEntry]; setChastityHistory(updatedHistoryState); setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setHasSessionEverBeenActive(true); saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, chastityHistory: updatedHistoryState, totalTimeCageOff, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime, hasSessionEverBeenActive: true }); setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, [isAuthReady, tempStartTime, tempEndTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, isPaused, pauseStartTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive]);
+    const handleConfirmRemoval = useCallback(async () => { if (!isAuthReady || !(tempStartTime instanceof Date) || !(tempEndTime instanceof Date) || isNaN(tempStartTime.getTime()) || isNaN(tempEndTime.getTime())) { setShowReasonModal(false); return; } let finalAccumulatedPauseTime = accumulatedPauseTimeThisSession; let finalPauseEventsForHistory = currentSessionPauseEvents; if (isPaused && pauseStartTime instanceof Date && !isNaN(pauseStartTime.getTime())) { const finalPauseDuration = Math.max(0, Math.floor((tempEndTime.getTime() - pauseStartTime.getTime()) / 1000)); finalAccumulatedPauseTime += finalPauseDuration; finalPauseEventsForHistory = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime: tempEndTime, duration: finalPauseDuration } : event ); } const rawDurationSeconds = Math.max(0, Math.floor((tempEndTime.getTime() - tempStartTime.getTime()) / 1000)); const newHistoryEntry = { id: crypto.randomUUID(), periodNumber: chastityHistory.length + 1, startTime: tempStartTime, endTime: tempEndTime, duration: rawDurationSeconds, reasonForRemoval: reasonForRemoval.trim() || 'N/A', totalPauseDurationSeconds: finalAccumulatedPauseTime, pauseEvents: finalPauseEventsForHistory }; const updatedHistoryState = [...chastityHistory, newHistoryEntry]; setChastityHistory(updatedHistoryState); setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setHasSessionEverBeenActive(true); saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, chastityHistory: updatedHistoryState, totalTimeCageOff, submissivesName: savedSubmissivesName, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime, hasSessionEverBeenActive: true }); setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, [isAuthReady, tempStartTime, tempEndTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, isPaused, pauseStartTime, chastityHistory, reasonForRemoval, saveDataToFirestore, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive]);
     const handleCancelRemoval = useCallback(() => { setReasonForRemoval(''); setTempEndTime(null); setTempStartTime(null); setShowReasonModal(false); }, []);
     const clearAllEvents = useCallback(async () => { if (!isAuthReady || !userId) return; const eventsColRef = getEventsCollectionRef(); if (!eventsColRef) { return; } try { const q = query(eventsColRef); const querySnapshot = await getDocs(q); const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, eventsColRef.path, docSnapshot.id))); await Promise.all(deletePromises); setSexualEventsLog([]); } catch (error) { console.error("App.js: clearAllEvents - Error:", error); } }, [isAuthReady, userId, getEventsCollectionRef]);
     const handleResetAllData = useCallback(() => { if (!isAuthReady) return; if (confirmReset) { if (timerInChastityRef.current) clearInterval(timerInChastityRef.current); if (timerCageOffRef.current) clearInterval(timerCageOffRef.current); if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current); setCageOnTime(null); setIsCageOn(false); setTimeInChastity(0); setTimeCageOff(0); setChastityHistory([]); setTotalChastityTime(0); setTotalTimeCageOff(0); setSavedSubmissivesName(''); setSubmissivesNameInput(''); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setLastPauseEndTime(null); setPauseCooldownMessage(''); setHasSessionEverBeenActive(false); setConfirmReset(false); setShowReasonModal(false); setGoalDurationSeconds(null); setKeyholderName(''); setKeyholderPasswordHash(null); setRequiredKeyholderDurationSeconds(null); setIsKeyholderModeUnlocked(false); saveDataToFirestore({ cageOnTime: null, isCageOn: false, timeInChastity: 0, chastityHistory: [], totalChastityTime: 0, totalTimeCageOff: 0, submissivesName: '', isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false, goalDurationSeconds: null, keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null }); clearAllEvents(); setNameMessage("All data reset."); setTimeout(() => setNameMessage(''), 4000); setCurrentPage('tracker'); } else { setConfirmReset(true); resetTimeoutRef.current = setTimeout(() => { setConfirmReset(false); }, 3000); } }, [isAuthReady, confirmReset, saveDataToFirestore, clearAllEvents, setCurrentPage, setNameMessage, setConfirmReset, resetTimeoutRef, setHasSessionEverBeenActive]);
@@ -363,7 +378,7 @@ const App = () => {
         setTimeout(() => setEventLogMessage(''), 3000);
     }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents]);
 
-    const handleExportTrackerCSV = useCallback(() => { if (!isAuthReady || chastityHistory.length === 0) { setEventLogMessage("No tracker history."); setTimeout(() => setEventLogMessage(''), 3000); return; } let csvContent = "Period #,Start Time,End Time,Raw Duration,Pause Duration,Effective Duration,Reason,Pause Events\n"; chastityHistory.forEach(p => { const rawF = formatElapsedTime(p.duration); const pauseF = formatElapsedTime(p.totalPauseDurationSeconds||0); const effF = formatElapsedTime(Math.max(0,p.duration-(p.totalPauseDurationSeconds||0))); let pausesS = (p.pauseEvents||[]).map(pe=>`[${formatTime(pe.startTime,true,true)} to ${formatTime(pe.endTime,true,true)} (${formatElapsedTime(pe.duration||0)}) R: ${pe.reason||'N/A'}]`).join('; '); csvContent += `${p.periodNumber},${formatTime(p.startTime,true,true)},${formatTime(p.endTime,true,true)},${rawF},${pauseF},${effF},"${(p.reasonForRemoval||'').replace(/"/g,'""')}","${pausesS.replace(/"/g,'""')}"\n`; }); const link = document.createElement("a"); link.href=encodeURI("data:text/csv;charset=utf-8,"+csvContent); link.download="chastity_tracker_history.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); setEventLogMessage("Tracker CSV exported!"); setTimeout(() => setEventLogMessage(''), 3000); }, [isAuthReady, chastityHistory]);
+    const handleExportTrackerCSV = useCallback(() => { if (!isAuthReady || chastityHistory.length === 0) { setEventLogMessage("No tracker history."); setTimeout(() => setEventLogMessage(''), 3000); return; } let csvContent = "Period #,Start Time,End Time,Raw Duration,Pause Duration,Effective Duration,Reason,Pause Events\n"; chastityHistory.forEach(p => { const rawF = formatElapsedTime(p.duration); const pauseF = formatElapsedTime(p.totalPauseDurationSeconds||0); const effF = formatElapsedTime(p.duration-(p.totalPauseDurationSeconds||0)); let pausesS = (p.pauseEvents||[]).map(pe=>`[${formatTime(pe.startTime,true,true)} to ${formatTime(pe.endTime,true,true)} (${formatElapsedTime(pe.duration||0)}) R: ${pe.reason||'N/A'}]`).join('; '); csvContent += `${p.periodNumber},${formatTime(p.startTime,true,true)},${formatTime(p.endTime,true,true)},${rawF},${pauseF},${effF},"${(p.reasonForRemoval||'').replace(/"/g,'""')}","${pausesS.replace(/"/g,'""')}"\n`; }); const link = document.createElement("a"); link.href=encodeURI("data:text/csv;charset=utf-8,"+csvContent); link.download="chastity_tracker_history.csv"; document.body.appendChild(link); link.click(); document.body.removeChild(link); setEventLogMessage("Tracker CSV exported!"); setTimeout(() => setEventLogMessage(''), 3000); }, [isAuthReady, chastityHistory]);
     const handleExportEventLogCSV = useCallback(() => { if (!isAuthReady || sexualEventsLog.length === 0) { setEventLogMessage("No events."); setTimeout(() => setEventLogMessage(''), 3000); return; } let csv = "Date,Type(s),Other,Duration,Orgasm (Self),Orgasm (Partner),Notes\n"; sexualEventsLog.slice().reverse().forEach(ev=>{csv+=`${formatTime(ev.eventTimestamp,true,true)},"${(ev.types||[]).join('; ')}","${ev.otherTypeDetail||''}","${ev.durationSeconds?formatElapsedTime(ev.durationSeconds):''}",${ev.selfOrgasmAmount||''},${ev.partnerOrgasmAmount||''},"${(ev.notes||'').replace(/"/g,'""')}"\n`;}); const link=document.createElement("a");link.href=encodeURI("data:text/csv;charset=utf-8,"+csv);link.download="sexual_events_log.csv";document.body.appendChild(link);link.click();document.body.removeChild(link);setEventLogMessage("Events CSV exported!"); setTimeout(() => setEventLogMessage(''), 3000);}, [isAuthReady, sexualEventsLog]);
     const handleExportTextReport = useCallback(() => { if(!isAuthReady){setEventLogMessage("Auth error.");setTimeout(()=>setEventLogMessage(''),3000);return;}let r=`Report ${formatTime(new Date(),true,true)}\nName: ${savedSubmissivesName||'N/A'}\nUID: ${userId||'N/A'}\nKH: ${keyholderName||'N/A'}\n------------------\nSTATUS:\nCage: ${isCageOn?(isPaused?'ON (Paused)':'ON'):'OFF'}\n`;if(isCageOn&&cageOnTime){r+=`Since: ${formatTime(cageOnTime,true,true)}\nEffective Session: ${formatElapsedTime(timeInChastity-(accumulatedPauseTimeThisSession||0))}\n`;if(isPaused&&pauseStartTime)r+=`Paused For: ${formatElapsedTime(livePauseDuration)}\n`;if((accumulatedPauseTimeThisSession||0)>0)r+=`Total Paused This Session: ${formatElapsedTime(isPaused&&pauseStartTime?(accumulatedPauseTimeThisSession||0)+livePauseDuration:(accumulatedPauseTimeThisSession||0))}\n`;}else r+=`Current Off: ${formatElapsedTime(timeCageOff)}\n`;r+=`\nTOTALS:\nChastity: ${formatElapsedTime(totalChastityTime)}\nOff: ${formatElapsedTime(totalTimeCageOff)}\nPaused: ${formatElapsedTime(overallTotalPauseTime)}\n------------------\n`;if(keyholderName && requiredKeyholderDurationSeconds !== null) {r+=`KH Required Duration: ${formatElapsedTime(requiredKeyholderDurationSeconds)}\n------------------\n`} else if (goalDurationSeconds !== null) {r+=`Personal Goal: ${formatElapsedTime(goalDurationSeconds)}\n------------------\n`} r+=`HISTORY (Recent First):\n`;if(chastityHistory.length>0)chastityHistory.slice().reverse().forEach(p=>{r+=`P#${p.periodNumber}: ${formatTime(p.startTime,true,true)}-${formatTime(p.endTime,true,true)}\n Raw: ${formatElapsedTime(p.duration)} Paused: ${formatElapsedTime(p.totalPauseDurationSeconds||0)} Eff: ${formatElapsedTime(p.duration-(p.totalPauseDurationSeconds||0))}\n R: ${p.reasonForRemoval||'N/A'}\n`;if(p.pauseEvents&&p.pauseEvents.length>0)p.pauseEvents.forEach(pe=>{r+=`  - P: ${formatTime(pe.startTime,true,true)}-${formatTime(pe.endTime,true,true)} (${formatElapsedTime(pe.duration||0)}) R: ${pe.reason||'N/A'}\n`;});r+='\n';});else r+="No history.\n\n";r+=`------------------\nEVENTS (Recent First):\n`;if(sexualEventsLog.length>0)sexualEventsLog.forEach(ev=>{let ts=(ev.types||[]).map(t=>{if(t==="Orgasm (Partner)" && keyholderName) return `Orgasm (${keyholderName})`; if(t==="Orgasm (Self)"&&savedSubmissivesName) return `Orgasm (${savedSubmissivesName})`; return t;}).join(', ');if(ev.otherTypeDetail)ts+=(ts?', ':'')+`Other: ${ev.otherTypeDetail}`;let os=[];if(ev.selfOrgasmAmount)os.push(`Self: ${ev.selfOrgasmAmount}`);if(ev.partnerOrgasmAmount)os.push(`${keyholderName||'Partner'}: ${ev.partnerOrgasmAmount}`);r+=`${formatTime(ev.eventTimestamp,true,true)}\n Types: ${ts||'N/A'}\n Dur: ${ev.durationSeconds?formatElapsedTime(ev.durationSeconds):'N/A'}\n Orgasms: ${os.join(', ')||'N/A'}\n Notes: ${ev.notes||'N/A'}\n\n`;});else r+="No events.\n";r+="------------------\nEnd";const b=new Blob([r],{type:'text/plain;charset=utf-8'});const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download=`ChastityOS_Report_${new Date().toISOString().slice(0,10)}.txt`;document.body.appendChild(l);l.click();document.body.removeChild(l);URL.revokeObjectURL(l.href);setEventLogMessage("Report exported!");setTimeout(()=>setEventLogMessage(''),3000);},[isAuthReady,savedSubmissivesName,userId,isCageOn,cageOnTime,timeInChastity,timeCageOff,totalChastityTime,totalTimeCageOff,chastityHistory,sexualEventsLog,overallTotalPauseTime,isPaused,accumulatedPauseTimeThisSession,livePauseDuration,pauseStartTime, keyholderName, requiredKeyholderDurationSeconds, goalDurationSeconds]);
 
@@ -371,31 +386,33 @@ const App = () => {
     const handleInitiateRestoreFromId = () => { if (!restoreUserIdInput.trim()) { setRestoreFromIdMessage("Enter User ID."); setTimeout(() => setRestoreFromIdMessage(''), 3000); return; } setShowRestoreFromIdPrompt(true); };
     const handleCancelRestoreFromId = () => { setShowRestoreFromIdPrompt(false); setRestoreFromIdMessage(''); };
     const handleConfirmRestoreFromId = async () => {
-        if (!restoreUserIdInput.trim() || !userId) { setRestoreFromIdMessage("Invalid input/user."); setTimeout(() => setRestoreFromIdMessage(''), 3000); setShowRestoreFromIdPrompt(false); return; }
+        if (!restoreUserIdInput.trim() || !userId) { setRestoreFromIdMessage("Invalid input or current user session not ready."); setTimeout(() => setRestoreFromIdMessage(''), 3000); setShowRestoreFromIdPrompt(false); return; }
         const targetDocRef = doc(db, "artifacts", appIdForFirestore, "users", restoreUserIdInput.trim());
         try {
             const docSnap = await getDoc(targetDocRef);
             if (docSnap.exists()) {
                 const dataToRestore = docSnap.data();
+                if (timerInChastityRef.current) clearInterval(timerInChastityRef.current);
+                if (timerCageOffRef.current) clearInterval(timerCageOffRef.current);
+                setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]);
                 applyRestoredData(dataToRestore);
                 await saveDataToFirestore({ ...dataToRestore, hasSessionEverBeenActive: dataToRestore.hasSessionEverBeenActive !== undefined ? dataToRestore.hasSessionEverBeenActive : true });
-                setRestoreFromIdMessage("Data restored & saved."); setRestoreUserIdInput(''); setCurrentPage('tracker');
+                setRestoreFromIdMessage("Data restored successfully and saved under your User ID.");
+                setRestoreUserIdInput(''); setCurrentPage('tracker');
                 if (isAuthReady && userId) fetchEvents(userId);
-            } else { setRestoreFromIdMessage("No data for User ID."); }
-        } catch (error) { console.error("Error restoring from ID:", error); setRestoreFromIdMessage("Error. See console."); }
-        setShowRestoreFromIdPrompt(false); setTimeout(() => setRestoreFromIdMessage(''), 4000);
+            } else { setRestoreFromIdMessage("No data found for the provided User ID."); }
+        } catch (error) { console.error("Error restoring from ID:", error); setRestoreFromIdMessage("Error during restore. See console for details."); }
+        setShowRestoreFromIdPrompt(false);
+        setTimeout(() => setRestoreFromIdMessage(''), 4000);
     };
 
-    const handleConfirmRestoreSession = useCallback(async () => { if (loadedSessionData) { const cageOnT = loadedSessionData.cageOnTime instanceof Timestamp ? loadedSessionData.cageOnTime.toDate() : new Date(loadedSessionData.cageOnTime); const pauseStartT = loadedSessionData.pauseStartTime instanceof Timestamp ? loadedSessionData.pauseStartTime.toDate() : (loadedSessionData.pauseStartTime ? new Date(loadedSessionData.pauseStartTime) : null); setIsCageOn(loadedSessionData.isCageOn); setCageOnTime(cageOnT && !isNaN(cageOnT.getTime()) ? cageOnT : null); setTimeInChastity(loadedSessionData.timeInChastity||0); setIsPaused(loadedSessionData.isPaused||false); setPauseStartTime(loadedSessionData.isPaused && pauseStartT && !isNaN(pauseStartT.getTime()) ? pauseStartT : null); setAccumulatedPauseTimeThisSession(loadedSessionData.accumulatedPauseTimeThisSession||0); setCurrentSessionPauseEvents((loadedSessionData.currentSessionPauseEvents||[]).map(p => ({...p, startTime: p.startTime?.toDate? p.startTime.toDate():null, endTime: p.endTime?.toDate? p.endTime.toDate():null }))); setHasSessionEverBeenActive(true); await saveDataToFirestore({ isCageOn: loadedSessionData.isCageOn, cageOnTime: cageOnT && !isNaN(cageOnT.getTime()) ? cageOnT : null, timeInChastity: loadedSessionData.timeInChastity || 0, isPaused: loadedSessionData.isPaused || false, pauseStartTime: (loadedSessionData.isPaused && pauseStartT && !isNaN(pauseStartT.getTime())) ? pauseStartT : null, accumulatedPauseTimeThisSession: loadedSessionData.accumulatedPauseTimeThisSession || 0, currentSessionPauseEvents: (loadedSessionData.currentSessionPauseEvents||[]).map(p => ({...p, startTime: p.startTime?.toDate? p.startTime.toDate():null, endTime: p.endTime?.toDate? p.endTime.toDate():null })), lastPauseEndTime, submissivesName: savedSubmissivesName, totalTimeCageOff, chastityHistory, hasSessionEverBeenActive: true }); } setShowRestoreSessionPrompt(false); setLoadedSessionData(null); }, [loadedSessionData, saveDataToFirestore, lastPauseEndTime, savedSubmissivesName, totalTimeCageOff, chastityHistory, setHasSessionEverBeenActive]);
-    const handleDiscardAndStartNew = useCallback(async () => { setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setTimeCageOff(0); const newHasSessionEverBeenActive = chastityHistory.length > 0 || sexualEventsLog.length > 0; setHasSessionEverBeenActive(newHasSessionEverBeenActive); await saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], chastityHistory, totalChastityTime, totalTimeCageOff, submissivesName: savedSubmissivesName, lastPauseEndTime, hasSessionEverBeenActive: newHasSessionEverBeenActive }); setShowRestoreSessionPrompt(false); setLoadedSessionData(null); }, [saveDataToFirestore, chastityHistory, sexualEventsLog, totalChastityTime, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive]);
+    const handleConfirmRestoreSession = useCallback(async () => { if (loadedSessionData) { const cageOnT = loadedSessionData.cageOnTime instanceof Timestamp ? loadedSessionData.cageOnTime.toDate() : new Date(loadedSessionData.cageOnTime); const pauseStartT = loadedSessionData.pauseStartTime instanceof Timestamp ? loadedSessionData.pauseStartTime.toDate() : (loadedSessionData.pauseStartTime ? new Date(loadedSessionData.pauseStartTime) : null); setIsCageOn(loadedSessionData.isCageOn); setCageOnTime(cageOnT && !isNaN(cageOnT.getTime()) ? cageOnT : null); setTimeInChastity(loadedSessionData.timeInChastity||0); setIsPaused(loadedSessionData.isPaused||false); setPauseStartTime(loadedSessionData.isPaused && pauseStartT && !isNaN(pauseStartT.getTime()) ? pauseStartT : null); setAccumulatedPauseTimeThisSession(loadedSessionData.accumulatedPauseTimeThisSession||0); setCurrentSessionPauseEvents((loadedSessionData.currentSessionPauseEvents||[]).map(p => ({...p, startTime: p.startTime?.toDate? p.startTime.toDate():null, endTime: p.endTime?.toDate? p.endTime.toDate():null }))); setHasSessionEverBeenActive(true); await saveDataToFirestore({ isCageOn: loadedSessionData.isCageOn, cageOnTime: cageOnT && !isNaN(cageOnT.getTime()) ? cageOnT : null, timeInChastity: loadedSessionData.timeInChastity || 0, isPaused: loadedSessionData.isPaused || false, pauseStartTime: (loadedSessionData.isPaused && pauseStartT && !isNaN(pauseStartT.getTime())) ? pauseStartT : null, accumulatedPauseTimeThisSession: loadedSessionData.accumulatedPauseTimeThisSession || 0, currentSessionPauseEvents: (loadedSessionData.currentSessionPauseEvents||[]).map(p => ({...p, startTime: p.startTime?.toDate? p.startTime.toDate():null, endTime: p.endTime?.toDate? p.endTime.toDate():null })), lastPauseEndTime, submissivesName: savedSubmissivesName, totalTimeCageOff, chastityHistory, hasSessionEverBeenActive: true, goalDurationSeconds }); } setShowRestoreSessionPrompt(false); setLoadedSessionData(null); }, [loadedSessionData, saveDataToFirestore, lastPauseEndTime, savedSubmissivesName, totalTimeCageOff, chastityHistory, setHasSessionEverBeenActive, goalDurationSeconds]);
+    const handleDiscardAndStartNew = useCallback(async () => { setIsCageOn(false); setCageOnTime(null); setTimeInChastity(0); setIsPaused(false); setPauseStartTime(null); setAccumulatedPauseTimeThisSession(0); setCurrentSessionPauseEvents([]); setTimeCageOff(0); const newHasSessionEverBeenActive = chastityHistory.length > 0 || sexualEventsLog.length > 0; setHasSessionEverBeenActive(newHasSessionEverBeenActive); await saveDataToFirestore({ isCageOn: false, cageOnTime: null, timeInChastity: 0, isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: [], chastityHistory, totalChastityTime, totalTimeCageOff, submissivesName: savedSubmissivesName, lastPauseEndTime, hasSessionEverBeenActive: newHasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds }); setShowRestoreSessionPrompt(false); setLoadedSessionData(null); }, [saveDataToFirestore, chastityHistory, sexualEventsLog, totalChastityTime, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, setHasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds]);
+    
     let pageTitleText = "ChastityOS"; const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" }; if (currentPage === 'tracker' && showRestoreSessionPrompt) { pageTitleText = "Restore Session"; } else if (navItemNames[currentPage]) { pageTitleText = navItemNames[currentPage]; }
 
     if (isLoading) {
-        return (
-            <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
-                <div className="text-purple-300 text-xl">Loading ChastityOS...</div>
-            </div>
-        );
+        return ( <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8"> <div className="text-purple-300 text-xl">Loading ChastityOS...</div> </div> );
     }
 
     return (
@@ -420,11 +437,10 @@ const App = () => {
                             showRestoreSessionPrompt={showRestoreSessionPrompt} handleConfirmRestoreSession={handleConfirmRestoreSession} handleDiscardAndStartNew={handleDiscardAndStartNew} loadedSessionData={loadedSessionData}
                             goalDurationSeconds={goalDurationSeconds}
                             keyholderName={keyholderName}
-                            isKeyholderModeUnlocked={isKeyholderModeUnlocked}
                             requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
                         />
                     )}
-                    {currentPage === 'fullReport' && ( <FullReportPage {...{ savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession, overallTotalPauseTime, keyholderName }} /> )}
+                    {currentPage === 'fullReport' && ( <FullReportPage {...{ savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents, isPaused, accumulatedPauseTimeThisSession, overallTotalPauseTime, goalDurationSeconds, keyholderName }} /> )}
                     {currentPage === 'logEvent' && ( <LogEventPage {...{ isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange, otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes, newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount, handleLogNewEvent, eventLogMessage, isLoadingEvents, sexualEventsLog, savedSubmissivesName, keyholderName }} /> )}
                     {currentPage === 'settings' && (
                         <SettingsPage
@@ -441,6 +457,15 @@ const App = () => {
                             handleSetRequiredDuration={handleSetRequiredDuration}
                             keyholderMessage={keyholderMessage}
                             setKeyholderMessage={setKeyholderMessage}
+                            // Props for editing session start
+                            editSessionDateInput={editSessionDateInput}
+                            setEditSessionDateInput={setEditSessionDateInput}
+                            editSessionTimeInput={editSessionTimeInput}
+                            setEditSessionTimeInput={setEditSessionTimeInput}
+                            handleUpdateCurrentCageOnTime={handleUpdateCurrentCageOnTime}
+                            editSessionMessage={editSessionMessage}
+                            isCurrentSessionActive={isCageOn}
+                            cageOnTime={cageOnTime} // Pass current cageOnTime for display in settings
                         />
                     )}
                     {currentPage === 'privacy' && ( <PrivacyPage onBack={() => setCurrentPage('settings')} /> )}
@@ -453,3 +478,4 @@ const App = () => {
 };
 
 export default App;
+
