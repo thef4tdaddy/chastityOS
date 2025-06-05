@@ -10,6 +10,7 @@ import {
 import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
+import HotjarScript from './pages/HotjarScript';
 
 // --- Hashing Helper ---
 async function generateHash(text) {
@@ -417,6 +418,7 @@ const App = () => {
 
     return (
         <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+                  <HotjarScript isTrackingAllowed={isAuthReady} /> {/* ✅ Hotjar injected */}
             <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
                 <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
                 {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
