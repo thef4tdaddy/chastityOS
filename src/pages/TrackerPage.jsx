@@ -1,12 +1,13 @@
-// src/pages/TrackerPage.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { formatTime, formatElapsedTime } from '../utils';
 
 const TrackerPage = (props) => {
     const {
         isAuthReady,
         isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
-        handleToggleCage, showReasonModal, /* setShowReasonModal removed */ reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
+        handleToggleCage,
+        showReasonModal,
+        reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
         isPaused: isPausedProp,
         handleInitiatePause,
         handleResumeSession,
@@ -23,91 +24,71 @@ const TrackerPage = (props) => {
         handleConfirmRestoreSession,
         handleDiscardAndStartNew,
         loadedSessionData,
-        // Goal related props
         goalDurationSeconds,
-        // Keyholder related props (will be used when keyholder countdown is implemented)
         keyholderName,
-        // isKeyholderModeUnlocked, // Not used yet in this version of TrackerPage for countdown
+        // isKeyholderModeUnlocked, // Removed as it's not used in this component
         requiredKeyholderDurationSeconds
     } = props;
 
     const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false;
+    const [remainingGoalTime, setRemainingGoalTime] = useState(null);
+    const goalTimerRef = useRef(null);
+
+    const effectiveTimeInChastityForGoal = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
 
     useEffect(() => {
-        console.log('[TrackerPage Props Update]', {
-            isAuthReady, isCageOn, isPausedFromProp: isPausedProp, isPausedCalculated: isPaused,
-            cageOnTime: cageOnTime ? (cageOnTime instanceof Date ? cageOnTime.toISOString() : cageOnTime) : null,
-            showRestoreSessionPrompt, showReasonModal, timeInChastity, accumulatedPauseTimeThisSession,
-            pauseStartTime: pauseStartTime ? (pauseStartTime instanceof Date ? pauseStartTime.toISOString() : pauseStartTime) : null,
-            livePauseDuration, goalDurationSeconds, requiredKeyholderDurationSeconds
-        });
-    }, [
-        isAuthReady, isCageOn, isPausedProp, isPaused, cageOnTime,
-        showRestoreSessionPrompt, showReasonModal, timeInChastity,
-        accumulatedPauseTimeThisSession, pauseStartTime, livePauseDuration,
-        goalDurationSeconds, requiredKeyholderDurationSeconds // Added goal props to dependency array
-    ]);
+        if (isCageOn && !isPaused && goalDurationSeconds && goalDurationSeconds > 0) {
+            const calculateRemaining = () => {
+                const currentEffectiveChastity = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
+                const remaining = goalDurationSeconds - currentEffectiveChastity;
+                setRemainingGoalTime(remaining > 0 ? remaining : 0);
+            };
+            calculateRemaining();
+            goalTimerRef.current = setInterval(calculateRemaining, 1000);
+        } else {
+            if (goalTimerRef.current) {
+                clearInterval(goalTimerRef.current);
+            }
+             if (!isCageOn || !goalDurationSeconds || goalDurationSeconds <= 0) {
+                 setRemainingGoalTime(null);
+             } else if (isPaused && goalDurationSeconds && goalDurationSeconds > 0) {
+                const currentEffectiveChastity = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
+                const remaining = goalDurationSeconds - currentEffectiveChastity;
+                setRemainingGoalTime(remaining > 0 ? remaining : 0);
+             }
+        }
+        return () => {
+            if (goalTimerRef.current) {
+                clearInterval(goalTimerRef.current);
+            }
+        };
+    }, [isCageOn, isPaused, timeInChastity, accumulatedPauseTimeThisSession, goalDurationSeconds]);
 
     const mainChastityDisplayTime = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
 
-    const liveTotalChastityTime = (totalChastityTime || 0) + (isCageOn ? mainChastityDisplayTime : 0);
-    const liveTotalTimeCageOff = (totalTimeCageOff || 0) + (!isCageOn && timeCageOff > 0 ? timeCageOff : 0);
+    // Determine the label and time for the top box
+    let topBoxLabel = "Cage Status Time";
+    let topBoxTime = null;
 
-    // --- Goal Countdown Logic ---
-    let goalDisplay = null;
-    const activeGoalSeconds = requiredKeyholderDurationSeconds !== null && requiredKeyholderDurationSeconds > 0 && keyholderName
-                              ? requiredKeyholderDurationSeconds
-                              : (goalDurationSeconds !== null && goalDurationSeconds > 0 ? goalDurationSeconds : null);
-    const goalType = requiredKeyholderDurationSeconds !== null && requiredKeyholderDurationSeconds > 0 && keyholderName
-                     ? "Required"
-                     : "Personal";
-
-
-    if (activeGoalSeconds !== null) {
-        const timeRemainingSeconds = activeGoalSeconds - mainChastityDisplayTime;
-        if (isCageOn && !isPaused) {
-            if (timeRemainingSeconds <= 0) {
-                goalDisplay = (
-                    <div className="p-3 md:p-4 bg-green-700 border border-green-500 rounded-lg shadow-md text-center sm:col-span-2">
-                        <p className="text-lg md:text-xl font-bold text-white">{goalType} Goal Met! 🎉</p>
-                        <p className="text-sm text-green-200">Original Goal: {formatElapsedTime(activeGoalSeconds)}</p>
-                    </div>
-                );
-            } else {
-                goalDisplay = (
-                    <div className="p-3 md:p-4 bg-blue-800/60 border border-blue-600 rounded-lg shadow-md text-center sm:col-span-2">
-                        <p className="text-sm md:text-lg text-blue-200">{goalType} Goal: {formatElapsedTime(activeGoalSeconds)}</p>
-                        <p className="text-lg md:text-2xl font-semibold text-blue-300">
-                            Time Remaining: {formatElapsedTime(timeRemainingSeconds)}
-                        </p>
-                    </div>
-                );
-            }
-        } else if (isCageOn && isPaused) {
-             goalDisplay = (
-                <div className="p-3 md:p-4 bg-yellow-800/60 border border-yellow-600 rounded-lg shadow-md text-center sm:col-span-2">
-                    <p className="text-sm md:text-lg text-yellow-200">{goalType} Goal: {formatElapsedTime(activeGoalSeconds)} (Paused)</p>
-                    <p className="text-lg md:text-2xl font-semibold text-yellow-300">
-                        Time Remaining: {formatElapsedTime(timeRemainingSeconds > 0 ? timeRemainingSeconds : 0)}
-                    </p>
-                </div>
-            );
-        } else { // Cage is off or no active session
-            goalDisplay = (
-                <div className="p-3 md:p-4 bg-gray-700/80 border border-gray-600 rounded-lg shadow-md text-center sm:col-span-2">
-                    <p className="text-sm md:text-lg text-gray-300">{goalType} Goal Set: {formatElapsedTime(activeGoalSeconds)}</p>
-                    <p className="text-xs text-gray-400">Start a chastity session to begin countdown.</p>
-                </div>
-            );
+    if (isCageOn) {
+        topBoxLabel = "Cage On Since:";
+        topBoxTime = cageOnTime;
+    } else {
+        topBoxLabel = "Cage Off Since:";
+        if (chastityHistory.length > 0) {
+            // Get the endTime of the most recent session in history
+            topBoxTime = chastityHistory[chastityHistory.length - 1].endTime;
+        } else {
+            // If no history and cage is off, it implies it was never on or data was reset
+            topBoxTime = null; // Or a placeholder like 'N/A' could be handled by formatTime
         }
     }
 
 
     return (
         <>
-          {/* Restore Session Prompt Modal */}
           {showRestoreSessionPrompt && loadedSessionData && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-700 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-blue-500">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-blue-300">Restore Previous Session?</h3>
                 <p className="text-sm text-gray-300 mb-2">An active chastity session was found:</p>
@@ -134,42 +115,81 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-          {/* Goal Display - Placed before the main stats grid */}
-          {goalDisplay && (
-            <div className="mb-6 md:mb-8">
-                {goalDisplay}
-            </div>
-          )}
+          {isCageOn && goalDurationSeconds && goalDurationSeconds > 0 && remainingGoalTime !== null && (
+                <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border ${remainingGoalTime <= 0 ? 'bg-green-700 border-green-500' : 'bg-blue-800 border-blue-600'}`}>
+                    <p className={`text-lg font-semibold ${remainingGoalTime <=0 ? 'text-green-200' : 'text-blue-200'}`}>
+                        {remainingGoalTime <= 0 ? "Goal Reached!" : "Time Remaining on Goal:"}
+                    </p>
+                    {remainingGoalTime > 0 && (
+                        <p className="text-3xl font-bold text-blue-100">{formatElapsedTime(remainingGoalTime)}</p>
+                    )}
+                </div>
+            )}
+            {keyholderName && requiredKeyholderDurationSeconds !== null && requiredKeyholderDurationSeconds > 0 && (
+                <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border ${
+                    isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds ? 'bg-pink-700 border-pink-500' : 'bg-purple-800 border-purple-600'
+                }`}>
+                    <p className={`text-sm font-semibold ${
+                        isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds ? 'text-pink-200' : 'text-purple-200'
+                    }`}>
+                        {keyholderName}'s Required Duration: {formatElapsedTime(requiredKeyholderDurationSeconds)}
+                    </p>
+                    {isCageOn && effectiveTimeInChastityForGoal < requiredKeyholderDurationSeconds && (
+                        <p className="text-lg font-bold text-purple-100">
+                            Time left for KH: {formatElapsedTime(requiredKeyholderDurationSeconds - effectiveTimeInChastityForGoal)}
+                        </p>
+                    )}
+                    {isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds && (
+                         <p className="text-lg font-bold text-pink-100">KH Duration Met!</p>
+                    )}
+                </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 md:mb-8">
-             <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm"><p className="text-sm md:text-lg text-purple-300">Cage Last On :</p><p className="text-2xl md:text-4xl font-semibold text-purple-400">{formatTime(isCageOn ? cageOnTime : (chastityHistory.length > 0 ? chastityHistory[chastityHistory.length - 1].endTime : null), true)}</p></div>
-            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}>
-                <p className="text-sm md:text-lg text-purple-300">
-                    Current Session In Chastity {isPaused ? '(Paused)' : ''}:
+          {/* Stats Display Area */}
+          <div className="space-y-4 mb-6 md:mb-8">
+            {/* Row 1 - Large Box for Cage Last On / Cage Off Since */}
+            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm text-center">
+                <p className="text-sm md:text-lg text-purple-300">{topBoxLabel}</p>
+                <p className="text-2xl md:text-4xl font-semibold text-purple-400">
+                    {formatTime(topBoxTime, true)}
                 </p>
-                <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
-                    {formatElapsedTime(mainChastityDisplayTime)}
-                </p>
-                {isPaused && pauseStartTime && (
-                     <p className="text-xs text-yellow-300 mt-1">Currently paused for: {formatElapsedTime(livePauseDuration)}</p>
-                 )}
-                {isCageOn && accumulatedPauseTimeThisSession > 0 && (
-                    <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
-                )}
             </div>
-            <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}>
-                <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
-                <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
+
+            {/* Row 2 - Two Smaller Boxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}>
+                    <p className="text-sm md:text-lg text-purple-300">
+                        Current Session In Chastity {isPaused ? '(Paused)' : ''}:
+                    </p>
+                    <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
+                        {formatElapsedTime(mainChastityDisplayTime)}
+                    </p>
+                    {isPaused && pauseStartTime && (
+                        <p className="text-xs text-yellow-300 mt-1">Currently paused for: {formatElapsedTime(livePauseDuration)}</p>
+                    )}
+                    {isCageOn && accumulatedPauseTimeThisSession > 0 && (
+                        <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
+                    )}
+                </div>
+                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}>
+                    <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
+                    <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
+                </div>
             </div>
-            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                <p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p>
-                <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(liveTotalChastityTime)}</p>
-            </div>
-            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm sm:col-span-2">
-                <p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p>
-                <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(liveTotalTimeCageOff)}</p>
+
+            {/* Row 3 - Two Smaller Boxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
+                    <p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p>
+                    <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalChastityTime)}</p>
+                </div>
+                <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
+                    <p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p>
+                    <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalTimeCageOff)}</p>
+                </div>
             </div>
           </div>
+
 
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-3 justify-center">
             <button
@@ -196,8 +216,7 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-           {/* Reason for Removal Modal */}
-          {showReasonModal && (
+           {showReasonModal && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-purple-700">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-purple-300">Reason for Cage Removal:</h3>
@@ -211,7 +230,6 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-          {/* Pause Reason Modal */}
           {showPauseReasonModal && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-yellow-700">
