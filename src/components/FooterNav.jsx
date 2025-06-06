@@ -1,30 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import PrivacyPage from '../pages/PrivacyPage'; // Path assumes PrivacyPage.jsx is in src/pages/
-import FeedbackForm from '../pages/FeedbackForm'; // Path assumes FeedbackForm.jsx is in src/pages/
+// src/components/FooterNav.jsx
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 
-const FooterNav = ({ userId }) => { // Added userId prop
-  const [version, setVersion] = useState('Fetching...'); // Initial state
+const PrivacyPage = lazy(() => import('../pages/PrivacyPage'));
+const FeedbackForm = lazy(() => import('../pages/FeedbackForm'));
+
+const FooterNav = ({ userId }) => {
+  const [version, setVersion] = useState('Fetching...');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     fetch('https://api.github.com/repos/thef4tdaddy/chastityOS/releases/latest')
       .then((res) => {
-        if (!res.ok) {
-          throw new Error(`GitHub API responded with ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`GitHub API responded with ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        if (data && data.tag_name) {
-          setVersion(data.tag_name);
-        } else {
-          setVersion('N/A'); // Handle cases where tag_name might be missing
-        }
+        if (data && data.tag_name) setVersion(data.tag_name);
+        else setVersion('N/A');
       })
       .catch((error) => {
         console.error("Failed to fetch version:", error);
-        setVersion('Error'); // Indicate error fetching version
+        setVersion('Error');
       });
   }, []);
 
@@ -55,7 +52,7 @@ const FooterNav = ({ userId }) => { // Added userId prop
             Feedback
           </button>
           <a
-            href="https://ko-fi.com/chastityos" // Update if this is your actual Ko-fi link
+            href="https://ko-fi.com/chastityos"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-purple-300"
@@ -67,19 +64,23 @@ const FooterNav = ({ userId }) => { // Added userId prop
       </footer>
 
       {showPrivacy && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-purple-600 p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left">
-            <PrivacyPage onBack={() => setShowPrivacy(false)} />
+        <Suspense fallback={<div className="text-white">Loading Privacy Policy...</div>}>
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 border border-purple-600 p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left">
+              <PrivacyPage onBack={() => setShowPrivacy(false)} />
+            </div>
           </div>
-        </div>
+        </Suspense>
       )}
 
       {showFeedback && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-purple-600 p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left">
-            <FeedbackForm onBack={() => setShowFeedback(false)} userId={userId} /> {/* Passed userId */}
+        <Suspense fallback={<div className="text-white">Loading Feedback Form...</div>}>
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 border border-purple-600 p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left">
+              <FeedbackForm onBack={() => setShowFeedback(false)} userId={userId} />
+            </div>
           </div>
-        </div>
+        </Suspense>
       )}
     </>
   );
