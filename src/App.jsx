@@ -4,7 +4,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import {
     getFirestore, doc, getDoc, setDoc, Timestamp, setLogLevel,
-    collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc
+    collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc, onSnapshot
 } from 'firebase/firestore';
 
 import { formatTime, formatElapsedTime, EVENT_TYPES } from './utils';
@@ -133,13 +133,32 @@ const App = () => {
     const getDocRef = useCallback((targetUserId = userId) => { 
         if (!targetUserId) return null; 
         return doc(db, "artifacts", appIdForFirestore, "users", targetUserId); 
-    }, [userId]); // Removed appIdForFirestore
+    }, [userId]);
     const getEventsCollectionRef = useCallback((targetUserId = userId) => { 
         if (!targetUserId) return null; 
         return collection(db, "artifacts", appIdForFirestore, "users", targetUserId, "sexualEventsLog"); 
-    }, [userId]); // Removed appIdForFirestore
+    }, [userId]);
 
-    useEffect(() => { const unsub = onAuthStateChanged(auth, async u => { if (u) { setUserId(u.uid); setIsAuthReady(true); } else { if (!userId && !isAuthReady) { try { await signInAnonymously(auth); } catch (e) { console.error("Auth error:", e); setIsAuthReady(false); setUserId(null); setIsLoading(false); } } else { if (userId) console.log("User signed out."); setUserId(null); setIsAuthReady(false);}}}); return unsub; }, [userId, isAuthReady, setIsLoading]);
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, async u => {
+            if (u) {
+                setUserId(u.uid);
+                setIsAuthReady(true);
+                setIsLoading(true); // Set loading to true when user is confirmed
+            } else {
+                try {
+                    await signInAnonymously(auth);
+                } catch (e) {
+                    console.error("Anonymous sign-in error:", e);
+                    setUserId(null);
+                    setIsAuthReady(false);
+                    setIsLoading(false); // No user, so not loading anything
+                }
+            }
+        });
+        return unsub;
+    }, []); // Empty dependency array ensures this runs only once on mount
+
     useEffect(() => { let totalEffectiveChastity = 0; let totalOverallPaused = 0; chastityHistory.forEach(p => { totalEffectiveChastity += Math.max(0, (p.duration || 0) - (p.totalPauseDurationSeconds || 0)); totalOverallPaused += (p.totalPauseDurationSeconds || 0); }); setTotalChastityTime(totalEffectiveChastity); setOverallTotalPauseTime(totalOverallPaused); }, [chastityHistory]);
 
     const applyRestoredData = useCallback((data) => {
@@ -165,31 +184,54 @@ const App = () => {
     }, [setHasSessionEverBeenActive, setIsTrackingAllowed]);
 
     useEffect(() => {
-        if (!isAuthReady && auth.currentUser === null) { setIsLoading(false); return; }
-        if (isAuthReady && !userId) { return; }
-        if (isAuthReady && userId) {
-            const loadInitialDataInternal = async () => {
-                setIsLoading(true);
-                const docRef = getDocRef();
-                try {
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        applyRestoredData(data);
-                        const activeSessionIsCageOnLoaded = data.isCageOn || false;
-                        const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
-                        if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
-                            const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
-                            setLoadedSessionData({ isCageOn: true, cageOnTime: activeSessionCageOnTimeLoaded, timeInChastity: data.timeInChastity || 0, isPaused: data.isPaused || false, pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null, accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0, currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate? p.startTime.toDate() : null, endTime: p.endTime?.toDate? p.endTime.toDate() : null })), });
-                            setIsCageOn(true); setCageOnTime(activeSessionCageOnTimeLoaded); setTimeInChastity(data.timeInChastity || 0); setIsPaused(true); setPauseStartTime(new Date()); setAccumulatedPauseTimeThisSession(data.accumulatedPauseTimeThisSession || 0); setCurrentSessionPauseEvents((data.currentSessionPauseEvents || []).map(p => ({...p, startTime: p.startTime?.toDate? p.startTime.toDate() : null, endTime: p.endTime?.toDate? p.endTime.toDate() : null}))); setShowRestoreSessionPrompt(true);
-                        } else { setShowRestoreSessionPrompt(false); }
-                    } else { applyRestoredData({}); setTimeInChastity(0); setTimeCageOff(0); }
-                } catch (error) { console.error("Error loading initial tracker data:", error); applyRestoredData({}); setTimeInChastity(0); setTimeCageOff(0);
-                } finally { setIsLoading(false); }
-            };
-            loadInitialDataInternal();
+        if (!isAuthReady || !userId) {
+            return;
         }
-    }, [isAuthReady, userId, getDocRef, setIsLoading, applyRestoredData]);
+
+        const docRef = getDocRef();
+        if (!docRef) {
+            setIsLoading(false);
+            return;
+        }
+
+        // Set up the real-time listener
+        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Check if this is the initial load for a potentially active session
+                if (isLoading) {
+                    const activeSessionIsCageOnLoaded = data.isCageOn || false;
+                    const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
+                    if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
+                        const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
+                        setLoadedSessionData({
+                            isCageOn: true,
+                            cageOnTime: activeSessionCageOnTimeLoaded,
+                            timeInChastity: data.timeInChastity || 0,
+                            isPaused: data.isPaused || false,
+                            pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null,
+                            accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0,
+                            currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate? p.startTime.toDate() : null, endTime: p.endTime?.toDate? p.endTime.toDate() : null })),
+                        });
+                        setShowRestoreSessionPrompt(true);
+                    }
+                }
+                 // Always apply the latest data from the snapshot
+                applyRestoredData(data);
+            } else {
+                // If the document doesn't exist, apply empty data
+                applyRestoredData({});
+            }
+            setIsLoading(false); // Stop loading after first snapshot
+        }, (error) => {
+            console.error("Error with real-time listener:", error);
+            setIsLoading(false);
+        });
+
+        // Cleanup: Detach the listener when the component unmounts
+        return () => unsubscribe();
+
+    }, [isAuthReady, userId, getDocRef, applyRestoredData, isLoading]);
 
     useEffect(() => { // Populate edit inputs for cageOnTime when session is active
         if (isCageOn && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime())) {
@@ -329,7 +371,7 @@ const App = () => {
     const handleInitiatePause = useCallback(() => { setPauseCooldownMessage(''); if (lastPauseEndTime instanceof Date && !isNaN(lastPauseEndTime.getTime())) { const twelveHoursInMillis = 12 * 3600 * 1000; const timeSinceLastPauseEnd = new Date().getTime() - lastPauseEndTime.getTime(); if (timeSinceLastPauseEnd < twelveHoursInMillis) { const remainingTime = twelveHoursInMillis - timeSinceLastPauseEnd; const hours = Math.floor(remainingTime / 3600000); const minutes = Math.floor((remainingTime % 3600000) / 60000); setPauseCooldownMessage(`You can pause again in approximately ${hours}h ${minutes}m.`); setTimeout(() => setPauseCooldownMessage(''), 5000); return; } } setShowPauseReasonModal(true); }, [lastPauseEndTime]);
     const handleConfirmPause = useCallback(async () => { if (!isCageOn) { setShowPauseReasonModal(false); setReasonForPauseInput(''); return; } const now = new Date(); const newPauseEvent = { id: crypto.randomUUID(), startTime: now, reason: reasonForPauseInput.trim() || "N/A", endTime: null, duration: null }; setIsPaused(true); setPauseStartTime(now); const updatedSessionPauses = [...currentSessionPauseEvents, newPauseEvent]; setCurrentSessionPauseEvents(updatedSessionPauses); setShowPauseReasonModal(false); setReasonForPauseInput(''); await saveDataToFirestore({ isPaused: true, pauseStartTime: now, accumulatedPauseTimeThisSession, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime }); }, [isCageOn, reasonForPauseInput, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore, lastPauseEndTime]);
     const handleCancelPauseModal = useCallback(() => { setShowPauseReasonModal(false); setReasonForPauseInput(''); }, []);
-    const handleResumeSession = useCallback(async () => { if (!isPaused || !(pauseStartTime instanceof Date) || isNaN(pauseStartTime.getTime())) { setIsPaused(false); setPauseStartTime(null); setLivePauseDuration(0); return; } const endTime = new Date(); const currentPauseDuration = Math.max(0, Math.floor((endTime.getTime() - pauseStartTime.getTime()) / 1000)); const newAccumulatedPauseTime = accumulatedPauseTimeThisSession + currentPauseDuration; const updatedSessionPauses = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime, duration: currentPauseDuration } : event); setAccumulatedPauseTimeThisSession(newAccumulatedPauseTime); setIsPaused(false); setPauseStartTime(null); setCurrentSessionPauseEvents(updatedSessionPauses); setLivePauseDuration(0); setLastPauseEndTime(endTime); await saveDataToFirestore({ isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: newAccumulatedPauseTime, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime: endTime }); }, [isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore]);
+    const handleResumeSession = useCallback(async () => { if (!isPaused || !(pauseStartTime instanceof Date) || isNaN(pauseStartTime.getTime())) { setIsPaused(false); setPauseStartTime(null); setLivePauseDuration(0); return; } const endTime = new Date(); const currentPauseDuration = Math.max(0, Math.floor((endTime.getTime() - pauseStartTime.getTime()) / 1000)); const newAccumulatedPauseTime = accumulatedPauseTimeThisSession + currentPauseDuration; const updatedSessionPauses = currentSessionPauseEvents.map((event, index) => (index === currentSessionPauseEvents.length - 1 && !event.endTime) ? { ...event, endTime, duration: currentPauseDuration } : event ); setAccumulatedPauseTimeThisSession(newAccumulatedPauseTime); setIsPaused(false); setPauseStartTime(null); setCurrentSessionPauseEvents(updatedSessionPauses); setLivePauseDuration(0); setLastPauseEndTime(endTime); await saveDataToFirestore({ isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: newAccumulatedPauseTime, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime: endTime }); }, [isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore]);
 
     const handleToggleCage = useCallback(() => {
         if (!isAuthReady || isPaused) { return; }
