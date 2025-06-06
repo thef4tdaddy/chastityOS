@@ -32,26 +32,36 @@ export const formatTime = (date, includeDate = false, forTextReport = false) => 
 };
 
 /**
- * Formats a duration in seconds into a string including days, hours, minutes, and seconds.
+ * Formats a duration in seconds into a readable string, showing only the highest necessary time units.
  * @param {number} totalSeconds - The duration in seconds.
- * @returns {string} Formatted time string (e.g., "1d 05h 30m 15s" or "12h 00m 00s").
+ * @returns {string} Formatted time string (e.g., "1d 05h 30m 15s", "12h 00m 00s", "05m 10s", or "45s").
  */
 export const formatElapsedTime = (totalSeconds) => {
-  if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds) || totalSeconds < 0) return '00h 00m 00s'; // Default for invalid or zero input
+  if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds) || totalSeconds < 0) {
+    return '0s';
+  }
 
-  const days = Math.floor(totalSeconds / (3600 * 24));
-  const remainingSecondsAfterDays = totalSeconds % (3600 * 24);
-  const hours = Math.floor(remainingSecondsAfterDays / 3600);
-  const remainingSecondsAfterHours = remainingSecondsAfterDays % 3600;
-  const minutes = Math.floor(remainingSecondsAfterHours / 60);
-  const seconds = Math.floor(remainingSecondsAfterHours % 60);
-  const pad = (num) => num.toString().padStart(2, '0');
+  if (totalSeconds < 1) {
+      return `${Math.floor(totalSeconds)}s`;
+  }
+
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+
+  const pad = (num) => String(num).padStart(2, '0');
 
   if (days > 0) {
     return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
-  } else {
+  }
+  if (hours > 0) {
     return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
   }
+  if (minutes > 0) {
+    return `${pad(minutes)}m ${pad(seconds)}s`;
+  }
+  return `${seconds}s`;
 };
 
 /**

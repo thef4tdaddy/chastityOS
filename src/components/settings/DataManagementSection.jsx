@@ -35,37 +35,6 @@ const DataManagementSection = ({
     <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
       <h3 className="text-xl font-semibold text-purple-300 mb-4">Data Management</h3>
 
-      {/* Restore from User ID */}
-      <div className="mb-8">
-        <h4 className="text-lg font-medium text-sky-300 mb-2">Restore from User ID</h4>
-        <p className="text-sm text-purple-200 mb-3">
-          Enter a User ID to load their data. <strong className="text-yellow-400">Warning:</strong> This will overwrite your current data.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center sm:space-x-3">
-          <input
-            type="text"
-            id="restoreUserId"
-            value={restoreUserIdInput || ''}
-            onChange={handleRestoreUserIdInputChange}
-            placeholder="Enter User ID to restore from"
-            className="w-full sm:flex-grow px-3 py-1.5 rounded-md border border-sky-600 bg-gray-900 text-gray-50 text-sm focus:ring-sky-500 focus:border-sky-500"
-          />
-          <button
-            type="button"
-            onClick={handleInitiateRestoreFromId}
-            disabled={!isAuthReady || !(restoreUserIdInput || '').trim()}
-            className="w-full mt-2 sm:mt-0 sm:w-auto bg-sky-600 hover:bg-sky-700 text-white text-sm py-1.5 px-3 rounded-md shadow-sm transition duration-300 disabled:opacity-50"
-          >
-            Load Data
-          </button>
-        </div>
-        {restoreFromIdMessage && (
-          <p className={`text-xs mt-2 ${restoreFromIdMessage.includes('successfully') || restoreFromIdMessage.includes('found') ? 'text-green-400' : 'text-red-500'}`}>
-            {restoreFromIdMessage}
-          </p>
-        )}
-      </div>
-
       {/* Export Options */}
       <h4 className="text-lg font-medium text-purple-200 mb-2">Export Data Options</h4>
       <div className="flex flex-col space-y-3">
@@ -94,27 +63,64 @@ const DataManagementSection = ({
 
       {/* Import Section */}
       <hr className="my-4 border-purple-600" />
-      <h4 className="text-lg font-medium text-purple-200 mb-2">Import Data</h4>
+      <h4 className="text-lg font-medium text-purple-200 mb-2">Import Data from File</h4>
       <div className="p-3 bg-yellow-900/30 border border-yellow-700 rounded-lg mb-4">
         <p className="text-sm text-yellow-300 font-bold">Warning:</p>
         <p className="text-xs text-yellow-400">Importing a backup will overwrite all existing data.</p>
       </div>
+      <label
+        htmlFor="import-json-input"
+        className="block w-full bg-yellow-600 hover:bg-yellow-700 text-white text-sm text-center py-2 px-4 rounded-lg shadow-md transition duration-300 cursor-pointer"
+      >
+        Import Full Backup (.json)
+      </label>
       <input
+        id="import-json-input"
         type="file"
         accept=".json"
         onChange={handleImportJSON}
-        className="block w-full text-sm text-slate-500
-          file:mr-4 file:py-2 file:px-4
-          file:rounded-full file:border-0
-          file:text-sm file:font-semibold
-          file:bg-violet-50 file:text-violet-700
-          hover:file:bg-violet-100"
+        className="hidden"
       />
       {eventLogMessage && eventLogMessage.includes('restored') && (
         <p className={`text-xs mt-3 ${eventLogMessage.includes('successfully') || eventLogMessage.includes('restored') ? 'text-green-400' : 'text-yellow-400'}`}>
           {eventLogMessage}
         </p>
       )}
+
+      {/* Restore from User ID */}
+      <hr className="my-4 border-purple-600" />
+      <div className="mb-8">
+        <h4 className="text-lg font-medium text-sky-300 mb-2">Restore from User ID</h4>
+        <p className="text-sm text-purple-200 mb-3">
+          Enter another User ID to load their data. <strong className="text-yellow-400">Warning:</strong> This will overwrite your current data.
+        </p>
+        <p className="text-xs text-sky-400 mb-3">
+          Note: The User ID you are restoring from must have existing data saved in the application's database.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center sm:space-x-3">
+          <input
+            type="text"
+            id="restoreUserId"
+            value={restoreUserIdInput || ''}
+            onChange={handleRestoreUserIdInputChange}
+            placeholder="Enter User ID to restore from"
+            className="w-full sm:flex-grow px-3 py-1.5 rounded-md border border-sky-600 bg-gray-900 text-gray-50 text-sm focus:ring-sky-500 focus:border-sky-500"
+          />
+          <button
+            type="button"
+            onClick={handleInitiateRestoreFromId}
+            disabled={!isAuthReady || !(restoreUserIdInput || '').trim()}
+            className="w-full mt-2 sm:mt-0 sm:w-auto bg-sky-600 hover:bg-sky-700 text-white text-sm py-1.5 px-3 rounded-md shadow-sm transition duration-300 disabled:opacity-50"
+          >
+            Load Data
+          </button>
+        </div>
+        {restoreFromIdMessage && (
+          <p className={`text-xs mt-2 ${restoreFromIdMessage.includes('successfully') || restoreFromIdMessage.includes('found') ? 'text-green-400' : 'text-red-500'}`}>
+            {restoreFromIdMessage}
+          </p>
+        )}
+      </div>
 
       {/* Reset Section */}
       <hr className="my-4 border-purple-600" />
