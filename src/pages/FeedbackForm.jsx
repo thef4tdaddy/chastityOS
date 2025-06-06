@@ -6,6 +6,7 @@ const FeedbackForm = () => {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState('');
+  const [discordUsername, setDiscordUsername] = useState('');
 
   const discordWebhook = {
     bug: import.meta.env.VITE_DISCORD_WEBHOOK_BUG,
@@ -22,7 +23,9 @@ const FeedbackForm = () => {
 
     const label = type === 'bug' ? ['bug'] : ['enhancement'];
     const title = `${type === 'bug' ? 'Bug Report' : 'Feature Suggestion'}: ${message.substring(0, 60)}`;
-    const discordPayload = { content: `**New ${type.toUpperCase()}**\n${message}` };
+    const discordPayload = {
+      content: `**New ${type.toUpperCase()}**\n${message}\n\n**User:** ${discordUsername || 'N/A'}`
+    };
     const githubPayload = {
       title,
       body: message,
@@ -76,6 +79,13 @@ const FeedbackForm = () => {
         <option value="bug">Bug</option>
         <option value="suggestion">Suggestion</option>
       </select>
+      <input
+        type="text"
+        value={discordUsername}
+        onChange={(e) => setDiscordUsername(e.target.value)}
+        placeholder="Your Discord Username (optional)"
+        className="w-full bg-gray-900 border border-purple-600 text-purple-100 px-3 py-2 rounded-md"
+      />
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}

@@ -4,7 +4,7 @@ import React, { useEffect, useState, lazy, Suspense } from 'react';
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage'));
 const FeedbackForm = lazy(() => import('../pages/FeedbackForm'));
 
-const FooterNav = ({ userId }) => {
+const FooterNav = ({ userId, googleEmail }) => {
   const [version, setVersion] = useState('Fetching...');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -61,6 +61,15 @@ const FooterNav = ({ userId }) => {
           </a>
         </div>
         © {new Date().getFullYear()} ChastityOS
+        {googleEmail ? (
+          <div className="mt-2 text-green-400">
+            Signed in with Google: {googleEmail}
+          </div>
+        ) : (
+          <div className="mt-2 text-yellow-400">
+            Anonymous session
+          </div>
+        )}
       </footer>
 
       {showPrivacy && (
