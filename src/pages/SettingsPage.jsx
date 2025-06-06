@@ -55,6 +55,7 @@ const SettingsPage = (props) => {
     handleConfirmRestoreFromId,
     handleCancelRestoreFromId
   } = props;
+  const googleEmail = props.auth?.user?.email || null;
 
   return (
     <div className="p-0 md:p-4">
@@ -68,6 +69,8 @@ const SettingsPage = (props) => {
         handleSubmissivesNameInputChange={handleSubmissivesNameInputChange}
         handleSetSubmissivesName={handleSetSubmissivesName}
         nameMessage={nameMessage}
+        googleEmail={googleEmail}
+        googleEmailNotice={googleEmail ? `Signed in with Google: ${googleEmail}` : null}
       />
 
       <KeyholderSection

@@ -43,7 +43,6 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 }
 const appIdForFirestore = firebaseConfig.appId || 'default-chastity-app-id';
 const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 setLogLevel('debug'); // Consider 'warn' or 'error' for production
 const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
@@ -58,7 +57,9 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage')); // For footer mod
 
 const App = () => {
     const [userId, setUserId] = useState(null);
+    const [googleEmail, setGoogleEmail] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
+    const [user, setUser] = useState(null); // Store full user object
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState('tracker');
     const [showUserIdInSettings, setShowUserIdInSettings] = useState(false);
@@ -140,24 +141,34 @@ const App = () => {
     }, [userId]);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, async u => {
+        const unsubscribe = onAuthStateChanged(getAuth(), (u) => {
             if (u) {
                 setUserId(u.uid);
                 setIsAuthReady(true);
-                setIsLoading(true); // Set loading to true when user is confirmed
+                setGoogleEmail(!u.isAnonymous ? u.email : null);
+                setUser(u); // Ensure the full user object is available
             } else {
-                try {
-                    await signInAnonymously(auth);
-                } catch (e) {
-                    console.error("Anonymous sign-in error:", e);
-                    setUserId(null);
-                    setIsAuthReady(false);
-                    setIsLoading(false); // No user, so not loading anything
-                }
+                setUser(null);
+                setUserId(null);
+                setIsAuthReady(false);
+                setGoogleEmail(null);
             }
         });
-        return unsub;
-    }, []); // Empty dependency array ensures this runs only once on mount
+        return () => unsubscribe();
+    }, []);
+
+    // Enable anonymous sign-in as default for new users
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                signInAnonymously(auth).catch((error) => {
+                    console.error("Anonymous sign-in failed:", error);
+                });
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => { let totalEffectiveChastity = 0; let totalOverallPaused = 0; chastityHistory.forEach(p => { totalEffectiveChastity += Math.max(0, (p.duration || 0) - (p.totalPauseDurationSeconds || 0)); totalOverallPaused += (p.totalPauseDurationSeconds || 0); }); setTotalChastityTime(totalEffectiveChastity); setOverallTotalPauseTime(totalOverallPaused); }, [chastityHistory]);
 
@@ -644,7 +655,33 @@ const App = () => {
                     {currentPage === 'logEvent' && ( <LogEventPage {...{ isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime, selectedEventTypes, handleEventTypeChange, otherEventTypeChecked, handleOtherEventTypeCheckChange, otherEventTypeDetail, setOtherEventTypeDetail, newEventNotes, setNewEventNotes, newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes, newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount, handleLogNewEvent, eventLogMessage, isLoadingEvents, sexualEventsLog, savedSubmissivesName, keyholderName }} /> )}
                     {currentPage === 'settings' && (
                         <SettingsPage
-                            isAuthReady={isAuthReady} eventLogMessage={eventLogMessage} handleExportTrackerCSV={handleExportTrackerCSV} chastityHistory={chastityHistory} handleExportEventLogCSV={handleExportEventLogCSV} sexualEventsLog={sexualEventsLog} handleResetAllData={handleResetAllData} confirmReset={confirmReset} nameMessage={nameMessage} handleExportTextReport={handleExportTextReport} handleExportJSON={handleExportJSON} handleImportJSON={handleImportJSON} userId={userId} showUserIdInSettings={showUserIdInSettings} handleToggleUserIdVisibility={handleToggleUserIdVisibility} savedSubmissivesName={savedSubmissivesName} submissivesNameInput={submissivesNameInput} handleSubmissivesNameInputChange={handleSubmissivesNameInputChange} handleSetSubmissivesName={handleSetSubmissivesName} restoreUserIdInput={restoreUserIdInput} handleRestoreUserIdInputChange={handleRestoreUserIdInputChange} handleInitiateRestoreFromId={handleInitiateRestoreFromId} showRestoreFromIdPrompt={showRestoreFromIdPrompt} handleConfirmRestoreFromId={handleConfirmRestoreFromId} handleCancelRestoreFromId={handleCancelRestoreFromId} restoreFromIdMessage={restoreFromIdMessage} setCurrentPage={setCurrentPage}
+                            isAuthReady={isAuthReady}
+                            eventLogMessage={eventLogMessage}
+                            handleExportTrackerCSV={handleExportTrackerCSV}
+                            chastityHistory={chastityHistory}
+                            handleExportEventLogCSV={handleExportEventLogCSV}
+                            sexualEventsLog={sexualEventsLog}
+                            handleResetAllData={handleResetAllData}
+                            confirmReset={confirmReset}
+                            nameMessage={nameMessage}
+                            handleExportTextReport={handleExportTextReport}
+                            handleExportJSON={handleExportJSON}
+                            handleImportJSON={handleImportJSON}
+                            userId={userId}
+                            showUserIdInSettings={showUserIdInSettings}
+                            handleToggleUserIdVisibility={handleToggleUserIdVisibility}
+                            savedSubmissivesName={savedSubmissivesName}
+                            submissivesNameInput={submissivesNameInput}
+                            handleSubmissivesNameInputChange={handleSubmissivesNameInputChange}
+                            handleSetSubmissivesName={handleSetSubmissivesName}
+                            restoreUserIdInput={restoreUserIdInput}
+                            handleRestoreUserIdInputChange={handleRestoreUserIdInputChange}
+                            handleInitiateRestoreFromId={handleInitiateRestoreFromId}
+                            showRestoreFromIdPrompt={showRestoreFromIdPrompt}
+                            handleConfirmRestoreFromId={handleConfirmRestoreFromId}
+                            handleCancelRestoreFromId={handleCancelRestoreFromId}
+                            restoreFromIdMessage={restoreFromIdMessage}
+                            setCurrentPage={setCurrentPage}
                             currentGoalDurationSeconds={goalDurationSeconds}
                             handleSetGoalDuration={handleSetGoalDuration}
                             keyholderName={keyholderName}
@@ -666,13 +703,15 @@ const App = () => {
                             editSessionMessage={editSessionMessage}
                             isCurrentSessionActive={isCageOn}
                             cageOnTime={cageOnTime} // Pass current cageOnTime for display in settings
+                            user={user}
+                            googleEmail={googleEmail}
                         />
                     )}
                     {currentPage === 'privacy' && ( <PrivacyPage onBack={() => setCurrentPage('settings')} /> )}
                     {currentPage === 'feedback' && ( <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} /> )}
                 </Suspense>
             </div>
-            <FooterNav userId={userId} />
+            <FooterNav userId={userId} googleEmail={googleEmail} />
         </div>
     );
 };
