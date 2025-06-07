@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [3.5] - June 7, 2025
+
+### Added
+- 🔐 Support for Google Sign-In alongside default anonymous auth
+- 🚪 Logout and Google disconnect options, including full data deletion
+- 👁️ Visual indicator in footer showing active Google login email
+- 🧹 Confirmation modal for data reset when disconnecting Google
+- 🧩 Compartmentalized account settings into clearer state-managed sections
+
+### Changed
+- 🧼 Cleaned up auth handling logic and ensured anonymous remains default
+- 📤 Settings page logic now conditionally shows relevant buttons based on auth state
+
+## v3.4.4 - June 5, 2025
+
+- **✨ PWA Enhancements**:
+  - Integrated `vite-plugin-pwa` to make ChastityOS installable as a Progressive Web App.
+  - Enabled auto-updates for the PWA and automatic registration of the service worker.
+  - Configured Workbox for offline capabilities, including precaching of essential app assets (`js,css,html,ico,png,svg,json,vue,txt,woff2`).
+  - Implemented runtime caching strategies (NetworkFirst) for Firestore API calls and Google Tag Manager to ensure functionality and data freshness while offline or on slow networks.
+  - Added a comprehensive web app manifest (`manifest.json`) including app name, short name, FLR-themed description, theme colors, background color, display mode, scope, start URL, and various icon sizes (including a maskable icon).
+  - Included mobile and desktop screenshots in the manifest for an enhanced PWA installation experience.
+- **💾 JSON Backup & Restore**:
+  - Implemented functionality to export all application data (including chastity history, sexual events, settings, and current session state) to a downloadable JSON file from the Settings page.
+  - Added the ability to import data from a JSON backup file via the Settings page, which overwrites existing data after user confirmation, ensuring data integrity by preserving original event IDs where possible.
+- **⏱️ Timer Display Update**:
+  - Modified the `formatElapsedTime` utility to display durations in days, hours, minutes, and seconds (e.g., "1d 05h 30m 15s") when the total duration is 24 hours or more. For durations less than 24 hours, it displays hours, minutes, and seconds (e.g., "12h 00m 00s").
+
 ## v3.4.3 - June 5, 2025
 
 - 🔐 **Keyholder Mode Added**:
