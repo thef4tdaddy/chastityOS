@@ -1,5 +1,6 @@
-// File: src/pages/HotjarScript.jsx
+import React from 'react';
 import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 
 const HotjarScript = ({ isTrackingAllowed }) => {
   useEffect(() => {

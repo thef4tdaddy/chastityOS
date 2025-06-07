@@ -1,3 +1,5 @@
+**Current Version: 3.5**
+
 # ChastityOS
 
 ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web app designed for self-trackers and keyholders alike. Whether you're logging cage time, orgasms, or enforcing a keyholder's required duration, ChastityOS empowers you with privacy, control, and full visibility.
@@ -19,7 +21,7 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Adjust the start date/time of the current session via Settings
 - All changes are logged as "Session Edit" events in your log
 
-### 🧠 Keyholder Mode *(New!)*
+### 🧠 Keyholder Mode
 - Set a keyholder with a name and secure password preview
 - Keyholder can set a required minimum chastity duration
 - Locked controls unless the user enters the correct 8-character password preview
@@ -44,8 +46,15 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Export sexual event log (.csv)
 - Generate a full text report for journaling or backup
 
-### ☁️ Import/Export JSON (Coming Soon)
-- Allow users to backup and migrate data manually between devices
+### ☁️ Import/Export JSON
+- Allow users to backup and migrate data manually between devices or browsers via JSON file import/export.
+
+### 🔐 Authentication Options
+- Default anonymous sign-in (no setup required)
+- Optional upgrade to sign in with Google account
+- Once linked to Google, your data syncs automatically and you no longer need to remember your User ID
+- Visual indicators in Settings and Footer when signed in with Google
+- Ability to disconnect Google and delete all synced data to return to anonymous mode
 
 ---
 
@@ -56,6 +65,7 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - **Backend:** Firebase (Auth + Firestore)
 - **Analytics:** Google Analytics, GTM, Hotjar
 - **Feedback:** GitHub API + Discord Webhooks
+- **Auth Handling:** Firebase Auth (Anonymous + Google Sign-In)
 
 ---
 
@@ -64,7 +74,7 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 ChastityOS prioritizes your privacy:
 - No sensitive content (name, notes, orgasm logs) is shared externally
 - Analytics are anonymous and used only to improve app usability
-- Your Firebase User ID is never used for tracking—only for data storage
+- Your Firebase User ID (anonymous or Google-linked) is never used for tracking—only for data storage
 
 You can view the full Privacy & Analytics statement in the app’s footer modal.
 
