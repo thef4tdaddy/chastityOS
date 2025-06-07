@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [3.5] - June 7, 2025
+
+### Added
+- 🔐 Support for Google Sign-In alongside default anonymous auth
+- 🚪 Logout and Google disconnect options, including full data deletion
+- 👁️ Visual indicator in footer showing active Google login email
+- 🧹 Confirmation modal for data reset when disconnecting Google
+- 🧩 Compartmentalized account settings into clearer state-managed sections
+
+### Changed
+- 🧼 Cleaned up auth handling logic and ensured anonymous remains default
+- 📤 Settings page logic now conditionally shows relevant buttons based on auth state
+
 ## v3.4.4 - June 5, 2025
 
 - **✨ PWA Enhancements**:
