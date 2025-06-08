@@ -25,7 +25,7 @@ const AccountSection = ({
     
     try {
       await signInWithPopup(auth, provider);
-      // The onAuthStateChanged listener in useChastityOS will handle the rest.
+      // The onAuthStateChanged listener in useChastityState will handle the rest.
     } catch (error) {
       console.error('❌ Google Sign-In Error:', error);
       if (error.code !== 'auth/popup-closed-by-user') {

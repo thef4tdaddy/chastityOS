@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useState, Suspense, lazy } from 'react';
-import { useChastityOS } from './hooks/useChastityOS'; // Import the new hook
+import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
@@ -16,7 +16,7 @@ const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
     
     // Get all state and logic from the custom hook
-    const chastityOS = useChastityOS();
+    const chastityOS = useChastityState();
 
     const { 
         isLoading, 

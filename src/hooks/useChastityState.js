@@ -1,4 +1,4 @@
-// src/hooks/useChastityOS.js
+// src/hooks/useChastityState.js
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
@@ -7,22 +7,8 @@ import {
     collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc, onSnapshot
 } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
-
-// --- Hashing Helper ---
-async function generateHash(text) {
-    if (!text) return null;
-    try {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(text);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    } catch (error) {
-        console.error("Error generating hash:", error);
-        return null;
-    }
-}
+import { generateHash } from '../utils/hash';
+import { useKeyholderHandlers } from './chastity/keyholderHandlers';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -42,7 +28,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 setLogLevel('debug');
 
-export const useChastityOS = () => {
+export const useChastityState = () => {
     // All state from App.jsx is here
     const [userId, setUserId] = useState(null);
     const [googleEmail, setGoogleEmail] = useState(null);
@@ -191,74 +177,25 @@ export const useChastityOS = () => {
         }
     }, [saveDataToFirestore]);
 
-    const handleSetKeyholder = useCallback(async (name) => {
-        if (!userId) { setKeyholderMessage("Error: User ID not available."); return null; }
-        const khName = name.trim();
-        if (!khName) { setKeyholderMessage("Keyholder name cannot be empty."); return null; }
-        const stringToHash = userId + khName;
-        const hash = await generateHash(stringToHash);
-        if (!hash) { setKeyholderMessage("Error generating Keyholder ID."); return null; }
-        setKeyholderName(khName);
-        setKeyholderPasswordHash(hash);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null });
-        setKeyholderMessage(`Keyholder "${khName}" set. Password preview generated.`);
-        return hash.substring(0, 8).toUpperCase();
-    }, [userId, saveDataToFirestore]);
-
-    const handleClearKeyholder = useCallback(async () => {
-        setKeyholderName('');
-        setKeyholderPasswordHash(null);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null });
-        setKeyholderMessage("Keyholder data cleared.");
-    }, [saveDataToFirestore]);
-
-    const handleUnlockKeyholderControls = useCallback(async (enteredPasswordPreview) => {
-        if (!userId || !keyholderName || !keyholderPasswordHash) {
-            setKeyholderMessage("Keyholder not fully set up.");
-            return false;
-        }
-        const expectedPreview = keyholderPasswordHash.substring(0, 8).toUpperCase();
-        if (enteredPasswordPreview.toUpperCase() === expectedPreview) {
-            setIsKeyholderModeUnlocked(true);
-            setKeyholderMessage("Keyholder controls unlocked.");
-            return true;
-        } else {
-            setIsKeyholderModeUnlocked(false);
-            setKeyholderMessage("Incorrect Keyholder password.");
-            return false;
-        }
-    }, [userId, keyholderName, keyholderPasswordHash]);
-
-    const handleLockKeyholderControls = useCallback(() => {
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage("Keyholder controls locked.");
-    }, []);
-
-    const handleSetRequiredDuration = useCallback(async (durationInSeconds) => {
-        const newDuration = Number(durationInSeconds);
-        if (!isNaN(newDuration) && newDuration >= 0) {
-            setRequiredKeyholderDurationSeconds(newDuration);
-            await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
-            setKeyholderMessage("Required duration updated.");
-            return true;
-        }
-        setKeyholderMessage("Invalid duration value.");
-        return false;
-    }, [saveDataToFirestore]);
-    
-    const handleSetGoalDuration = useCallback(async (newDurationInSeconds) => {
-        const newDuration = newDurationInSeconds === null ? null : Number(newDurationInSeconds);
-        if (newDuration === null || (!isNaN(newDuration) && newDuration >= 0)) {
-            setGoalDurationSeconds(newDuration);
-            await saveDataToFirestore({ goalDurationSeconds: newDuration });
-            return true;
-        }
-        return false;
-    }, [saveDataToFirestore]);
+    const {
+        handleSetKeyholder,
+        handleClearKeyholder,
+        handleUnlockKeyholderControls,
+        handleLockKeyholderControls,
+        handleSetRequiredDuration,
+        handleSetGoalDuration
+    } = useKeyholderHandlers({
+        userId,
+        saveDataToFirestore,
+        setKeyholderName,
+        setKeyholderPasswordHash,
+        setRequiredKeyholderDurationSeconds,
+        setIsKeyholderModeUnlocked,
+        setKeyholderMessage,
+        setGoalDurationSeconds,
+        keyholderPasswordHash,
+        keyholderName
+    });
     
     const handleUpdateCurrentCageOnTime = useCallback(async () => {
         if (!isCageOn || !cageOnTime) {
