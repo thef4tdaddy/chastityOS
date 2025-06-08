@@ -65,10 +65,19 @@ export const formatElapsedTime = (totalSeconds) => {
 };
 
 /**
- * Array of predefined event types for logging.
+ * A simple array of event types for the log event form.
  */
-// Updated to include "Session Edit"
-export const EVENT_TYPES = ["Orgasm (Self)", "Orgasm (Partner)", "Ruined Orgasm", "Edging", "Tease & Denial", "Play Session", "Hygiene", "Medication", "Mood Entry", "Session Edit"]; 
+export const EVENT_TYPES = [
+    "Orgasm (Self)",
+    "Orgasm (Partner)",
+    "Ruined Orgasm",
+    "Edging",
+    "Tease & Denial",
+    "Play Session",
+    "Hygiene",
+    "Medication",
+    "Mood Entry"
+];
 
 /**
  * Helper function to pad a string to a certain length.
