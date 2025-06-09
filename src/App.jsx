@@ -8,6 +8,7 @@ import HotjarScript from './components/HotjarScript';
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
 const LogEventPage = lazy(() => import('./pages/LogEventPage'));
+const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
@@ -28,7 +29,7 @@ const App = () => {
     } = chastityOS;
 
     let pageTitleText = "ChastityOS";
-    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
+    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder Mode", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
     if (currentPage === 'tracker' && showRestoreSessionPrompt) {
         pageTitleText = "Restore Session";
     } else if (navItemNames[currentPage]) {
@@ -58,6 +59,7 @@ const App = () => {
                     {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
                     {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
                     {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+                    {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
                     {currentPage === 'settings' && <SettingsPage {...chastityOS} setCurrentPage={setCurrentPage} />}
                     {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
                     {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
