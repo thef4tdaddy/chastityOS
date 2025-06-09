@@ -7,7 +7,6 @@ import {
     collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc, onSnapshot
 } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
-import { generateHash } from '../utils/hash';
 import { useKeyholderHandlers } from './chastity/keyholderHandlers';
 
 const firebaseConfig = {
@@ -452,8 +451,25 @@ export const useChastityState = () => {
 
     // --- All useEffect hooks --- //
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(getAuth(), (u) => {
+        const unsubscribe = onAuthStateChanged(getAuth(), async (u) => {
             if (u) {
+                // Migrate data from anonymous user to new Google account if needed
+                if (user && user.isAnonymous && !u.isAnonymous && user.uid !== u.uid) {
+                  // Migrate data from anonymous UID to signed-in UID
+                  const anonDocRef = doc(db, "artifacts", appIdForFirestore, "users", user.uid);
+                  const newDocRef = doc(db, "artifacts", appIdForFirestore, "users", u.uid);
+                  try {
+                    const anonSnap = await getDoc(anonDocRef);
+                    if (anonSnap.exists()) {
+                      const dataToMigrate = anonSnap.data();
+                      await setDoc(newDocRef, dataToMigrate, { merge: true });
+                      await deleteDoc(anonDocRef); // Optional: delete old doc
+                      console.log("✅ Migrated data from anonymous account to Google account.");
+                    }
+                  } catch (err) {
+                    console.error("⚠️ Failed to migrate anonymous data:", err);
+                  }
+                }
                 setUserId(u.uid);
                 setIsAuthReady(true);
                 setGoogleEmail(!u.isAnonymous ? u.email : null);
@@ -467,7 +483,7 @@ export const useChastityState = () => {
             }
         });
         return () => unsubscribe();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         if (!isAuthReady || !userId) return;
@@ -476,31 +492,36 @@ export const useChastityState = () => {
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (isLoading) { // Check for active session only on initial load
-                    const activeSessionIsCageOnLoaded = data.isCageOn || false;
-                    const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
-                    if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
-                        const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
-                        setLoadedSessionData({
-                            isCageOn: true,
-                            cageOnTime: activeSessionCageOnTimeLoaded,
-                            timeInChastity: data.timeInChastity || 0,
-                            isPaused: data.isPaused || false,
-                            pauseStartTime: loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime()) ? loadedPauseStartTimeFromData : null,
-                            accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0,
-                            currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate? p.startTime.toDate() : null, endTime: p.endTime?.toDate? p.endTime.toDate() : null })),
-                        });
-                        setShowRestoreSessionPrompt(true);
-                    } else {
-                         applyRestoredData(data);
-                    }
-                } else {
-                    applyRestoredData(data);
+                if (isLoading) {
+                  const activeSessionIsCageOnLoaded = data.isCageOn || false;
+                  const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
+                  if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
+                    const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
+                    setLoadedSessionData({
+                      isCageOn: true,
+                      cageOnTime: activeSessionCageOnTimeLoaded,
+                      timeInChastity: data.timeInChastity || 0,
+                      isPaused: data.isPaused || false,
+                      pauseStartTime:
+                        loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime())
+                          ? loadedPauseStartTimeFromData
+                          : null,
+                      accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0,
+                      currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({
+                        ...p,
+                        startTime: p.startTime?.toDate ? p.startTime.toDate() : null,
+                        endTime: p.endTime?.toDate ? p.endTime.toDate() : null
+                      })),
+                    });
+                    setShowRestoreSessionPrompt(true);
+                  }
                 }
+                applyRestoredData(data);
+                setIsLoading(false);
             } else {
                 applyRestoredData({});
+                setIsLoading(false);
             }
-            setIsLoading(false);
         }, (error) => {
             console.error("Error with real-time listener:", error);
             setIsLoading(false);
@@ -588,6 +609,7 @@ export const useChastityState = () => {
         rewards, punishments,
         keyholderMessage, setKeyholderMessage, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage,
+        setEditSessionMessage,
         isTrackingAllowed, eventDisplayMode,
         handleSetEventDisplayMode, handleSetKeyholder, handleClearKeyholder, handleUnlockKeyholderControls,
         handleLockKeyholderControls, handleSetRequiredDuration, handleSetGoalDuration,
