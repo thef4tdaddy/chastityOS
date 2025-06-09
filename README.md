@@ -26,6 +26,7 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Keyholder can set a required minimum chastity duration
 - Locked controls unless the user enters the correct 8-character password preview
 - Visual tracker shows progress toward required keyholder time
+- Access these controls via the **Keyholder Mode** page in the main navigation
 
 ### 🎯 Goal Tracking
 - Set a personal chastity goal duration (optional)
