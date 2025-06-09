@@ -12,7 +12,7 @@ const SettingsPage = (props) => {
     <div className="p-0 md:p-4">
       <AccountSection {...props} />
       <DataManagementSection {...props} />
-      <SessionEditSection {...props} />
+      <SessionEditSection {...props} sessionId={props.userId} />
     </div>
   );
 };

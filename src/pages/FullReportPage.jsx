@@ -3,7 +3,8 @@ import React from 'react';
 import CurrentStatusSection from '../components/full_report/CurrentStatusSection';
 import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
-import SexualEventsLogSection from '../components/full_report/SexualEventsLogSection';
+import SexualEventsLogSection from '../components/full_report/SessionEventsLogSection';
+import SessionEventLogSection from '../components/full_report/SessionEventLogSection';
 
 const FullReportPage = ({
     savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff,
@@ -56,6 +57,11 @@ const FullReportPage = ({
                 sexualEventsLog={sexualEventsLog}
                 savedSubmissivesName={savedSubmissivesName}
                 keyholderName={keyholderName}
+            />
+            <h3 className="text-xl font-semibold text-orange-300 mt-8 mb-2 text-center">Session Event Log</h3>
+            <SessionEventLogSection
+              isLoadingEvents={isLoadingEvents}
+              eventLog={sexualEventsLog}
             />
         </div>
     );
