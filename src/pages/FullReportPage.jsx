@@ -3,7 +3,7 @@ import React from 'react';
 import CurrentStatusSection from '../components/full_report/CurrentStatusSection';
 import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
-import SexualEventsLogSection from '../components/full_report/SessionEventLogSection';
+import EventLogTable from '../components/log_event/EventLogTable';
 import SessionEventLogSection from '../components/full_report/SessionEventLogSection';
 
 const FullReportPage = ({
@@ -52,7 +52,7 @@ const FullReportPage = ({
             <hr className="my-3 border-purple-700"/>
 
             <h3 className="text-xl font-semibold text-purple-300 mt-4 mb-2 text-center">Sexual Events Log</h3>
-            <SexualEventsLogSection
+            <EventLogTable
                 isLoadingEvents={isLoadingEvents}
                 sexualEventsLog={sexualEventsLog}
                 savedSubmissivesName={savedSubmissivesName}

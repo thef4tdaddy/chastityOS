@@ -15,7 +15,9 @@ const SessionEditSection = ({
   setEditSessionTimeInput,
   editSessionMessage,
   setEditSessionMessage,
-  isAuthReady
+  isAuthReady,
+  setCageOnTime,
+  setTimeInChastity
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const db = getFirestore();
@@ -68,6 +70,11 @@ const SessionEditSection = ({
       await setDoc(sessionRef, {
         cageOnTime: newStartDateTime
       }, { merge: true });
+
+      // Update local state for timer page
+      setCageOnTime(newStartDateTime);
+      const updatedTime = Math.max(0, Math.floor((Date.now() - newStartDateTime.getTime()) / 1000));
+      setTimeInChastity(updatedTime);
 
       // Log the change in eventLog
       await addDoc(eventLogRef, {
