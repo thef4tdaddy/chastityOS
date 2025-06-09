@@ -93,6 +93,8 @@ export const useChastityState = () => {
     const [editSessionMessage, setEditSessionMessage] = useState('');
     const [isTrackingAllowed, setIsTrackingAllowed] = useState(true);
     const [eventDisplayMode, setEventDisplayMode] = useState('kinky'); // Keep state for future use
+    const [rewards, setRewards] = useState([]);
+    const [punishments, setPunishments] = useState([]);
 
     const timerInChastityRef = useRef(null);
     const timerCageOffRef = useRef(null);
@@ -120,6 +122,8 @@ export const useChastityState = () => {
                 keyholderName: dataToSave.keyholderName !== undefined ? dataToSave.keyholderName : keyholderName,
                 keyholderPasswordHash: dataToSave.keyholderPasswordHash !== undefined ? dataToSave.keyholderPasswordHash : keyholderPasswordHash,
                 requiredKeyholderDurationSeconds: dataToSave.requiredKeyholderDurationSeconds !== undefined ? dataToSave.requiredKeyholderDurationSeconds : requiredKeyholderDurationSeconds,
+                rewards: dataToSave.rewards !== undefined ? dataToSave.rewards : rewards,
+                punishments: dataToSave.punishments !== undefined ? dataToSave.punishments : punishments,
                 isTrackingAllowed
             };
             const toTS = (d) => d instanceof Date && !isNaN(d.getTime()) ? Timestamp.fromDate(d) : (typeof d === 'string' && new Date(d) instanceof Date && !isNaN(new Date(d).getTime()) ? Timestamp.fromDate(new Date(d)) : null);
@@ -132,7 +136,7 @@ export const useChastityState = () => {
             if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'userAlias')) { delete firestoreReadyData.userAlias; }
             await setDoc(docRef, firestoreReadyData, { merge: true });
         } catch (error) { console.error("Error saving main data to Firestore:", error); }
-    }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds, isTrackingAllowed, eventDisplayMode]);
+    }, [userId, getDocRef, isAuthReady, savedSubmissivesName, hasSessionEverBeenActive, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds, rewards, punishments, isTrackingAllowed, eventDisplayMode]);
 
     const applyRestoredData = useCallback((data) => {
         const loadedHist = (data.chastityHistory || []).map(item => ({ ...item, startTime: item.startTime?.toDate ? item.startTime.toDate() : null, endTime: item.endTime?.toDate ? item.endTime.toDate() : null, totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0, pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate ? p.startTime.toDate() : null, endTime: p.endTime?.toDate ? p.endTime.toDate() : null })) }));
@@ -151,6 +155,8 @@ export const useChastityState = () => {
         setKeyholderName(data.keyholderName || '');
         setKeyholderPasswordHash(data.keyholderPasswordHash || null);
         setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds || null);
+        setRewards(data.rewards || []);
+        setPunishments(data.punishments || []);
         setIsKeyholderModeUnlocked(false);
         setShowRestoreSessionPrompt(false); setLoadedSessionData(null);
         setEventDisplayMode(data.eventDisplayMode || 'kinky');
@@ -196,6 +202,27 @@ export const useChastityState = () => {
         keyholderPasswordHash,
         keyholderName
     });
+
+    const handleAddReward = useCallback(async ({ timeSeconds = 0, other = '' }) => {
+        const newReward = { id: crypto.randomUUID(), timeSeconds: timeSeconds > 0 ? timeSeconds : null, other: other.trim() };
+        const updated = [...rewards, newReward];
+        setRewards(updated);
+        let newRequired = requiredKeyholderDurationSeconds;
+        if (timeSeconds > 0 && requiredKeyholderDurationSeconds !== null) {
+            newRequired = Math.max(0, requiredKeyholderDurationSeconds - timeSeconds);
+            setRequiredKeyholderDurationSeconds(newRequired);
+        }
+        await saveDataToFirestore({ rewards: updated, requiredKeyholderDurationSeconds: newRequired });
+    }, [rewards, requiredKeyholderDurationSeconds, saveDataToFirestore]);
+
+    const handleAddPunishment = useCallback(async ({ timeSeconds = 0, other = '' }) => {
+        const newPunishment = { id: crypto.randomUUID(), timeSeconds: timeSeconds > 0 ? timeSeconds : null, other: other.trim() };
+        const updated = [...punishments, newPunishment];
+        setPunishments(updated);
+        const newRequired = (requiredKeyholderDurationSeconds || 0) + (timeSeconds > 0 ? timeSeconds : 0);
+        setRequiredKeyholderDurationSeconds(newRequired);
+        await saveDataToFirestore({ punishments: updated, requiredKeyholderDurationSeconds: newRequired });
+    }, [punishments, requiredKeyholderDurationSeconds, saveDataToFirestore]);
     
     const handleUpdateCurrentCageOnTime = useCallback(async () => {
         if (!isCageOn || !cageOnTime) {
@@ -558,11 +585,13 @@ export const useChastityState = () => {
         loadedSessionData, hasSessionEverBeenActive,
         goalDurationSeconds, keyholderName,
         isKeyholderModeUnlocked, requiredKeyholderDurationSeconds,
+        rewards, punishments,
         keyholderMessage, setKeyholderMessage, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage,
         isTrackingAllowed, eventDisplayMode,
         handleSetEventDisplayMode, handleSetKeyholder, handleClearKeyholder, handleUnlockKeyholderControls,
         handleLockKeyholderControls, handleSetRequiredDuration, handleSetGoalDuration,
+        handleAddReward, handleAddPunishment,
         handleUpdateCurrentCageOnTime, handleInitiatePause, handleConfirmPause,
         handleCancelPauseModal, handleResumeSession, handleToggleCage,
         handleConfirmRemoval, handleCancelRemoval, handleResetAllData,
