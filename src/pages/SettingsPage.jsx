@@ -1,7 +1,6 @@
 // src/pages/SettingsPage.jsx
 import React from 'react';
 import AccountSection from '../components/settings/AccountSection';
-import KeyholderSection from '../components/settings/KeyholderSection';
 import DataManagementSection from '../components/settings/DataManagementSection';
 import SessionEditSection from '../components/settings/SessionEditSection';
 
@@ -12,7 +11,6 @@ const SettingsPage = (props) => {
   return (
     <div className="p-0 md:p-4">
       <AccountSection {...props} />
-      <KeyholderSection {...props} />
       <DataManagementSection {...props} />
       <SessionEditSection {...props} />
     </div>
