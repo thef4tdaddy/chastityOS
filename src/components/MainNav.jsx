@@ -6,6 +6,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
     { id: 'tracker', name: 'Chastity Tracker' },
     { id: 'logEvent', name: 'Log Event' },
     { id: 'fullReport', name: 'Full Report' },
+    { id: 'keyholder', name: 'Keyholder' },
     { id: 'rewards', name: 'Rewards/Punishments' },
     { id: 'settings', name: 'Settings' },
     // { id: 'privacy', name: 'Privacy' }, // Privacy removed from main navigation
