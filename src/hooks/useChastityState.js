@@ -7,7 +7,6 @@ import {
     collection, addDoc, query, orderBy, getDocs, serverTimestamp, deleteDoc, onSnapshot
 } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
-import { generateHash } from '../utils/hash';
 import { useKeyholderHandlers } from './chastity/keyholderHandlers';
 
 const firebaseConfig = {
@@ -556,7 +555,7 @@ export const useChastityState = () => {
         lastPauseEndTime, setLastPauseEndTime,
         pauseCooldownMessage, setPauseCooldownMessage, showRestoreSessionPrompt, setShowRestoreSessionPrompt,
         loadedSessionData, hasSessionEverBeenActive,
-        goalDurationSeconds, keyholderName,
+        goalDurationSeconds, keyholderName, keyholderPasswordHash,
         isKeyholderModeUnlocked, requiredKeyholderDurationSeconds,
         keyholderMessage, setKeyholderMessage, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage,

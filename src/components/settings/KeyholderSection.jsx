@@ -4,6 +4,7 @@ import { formatElapsedTime } from '../../utils';
 
 const KeyholderSection = ({
   keyholderName,
+  keyholderPasswordHash,
   handleSetKeyholder,
   handleClearKeyholder,
   handleUnlockKeyholderControls,
@@ -19,6 +20,7 @@ const KeyholderSection = ({
   const [khRequiredDurationDays, setKhRequiredDurationDays] = useState('');
   const [khRequiredDurationHours, setKhRequiredDurationHours] = useState('');
   const [khRequiredDurationMinutes, setKhRequiredDurationMinutes] = useState('');
+  const passwordPreview = keyholderPasswordHash ? keyholderPasswordHash.substring(0, 8).toUpperCase() : '';
 
   useEffect(() => {
     if (requiredKeyholderDurationSeconds) {
@@ -65,6 +67,9 @@ const KeyholderSection = ({
           <p className="text-purple-300 mb-2">Keyholder: <strong>{keyholderName}</strong></p>
           {!isKeyholderModeUnlocked ? (
             <>
+              {passwordPreview && (
+                <p className="text-purple-400 mb-2 text-sm">Password Preview: <code>{passwordPreview}</code></p>
+              )}
               <input type="text" maxLength={8} value={khPasswordInput} onChange={e => setKhPasswordInput(e.target.value)} placeholder="Enter Password Preview"
                 className="w-full px-3 py-2 mb-3 rounded border border-pink-600 bg-gray-900 text-white" />
               <button onClick={onUnlockControls} className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded">Unlock Controls</button>
