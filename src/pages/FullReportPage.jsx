@@ -3,7 +3,7 @@ import React from 'react';
 import CurrentStatusSection from '../components/full_report/CurrentStatusSection';
 import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
-import SexualEventsLogSection from '../components/full_report/SessionEventsLogSection';
+import SexualEventsLogSection from '../components/full_report/SessionEventLogSection';
 import SessionEventLogSection from '../components/full_report/SessionEventLogSection';
 
 const FullReportPage = ({
