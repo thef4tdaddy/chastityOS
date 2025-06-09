@@ -35,8 +35,9 @@ export function useKeyholderHandlers(options) {
         setRequiredKeyholderDurationSeconds(null);
         setIsKeyholderModeUnlocked(false);
         await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null });
-        setKeyholderMessage(`Keyholder "${khName}" set. Password preview generated.`);
-        return hash.substring(0, 8).toUpperCase();
+        const preview = hash.substring(0, 8).toUpperCase();
+        setKeyholderMessage(`Keyholder "${khName}" set. Password preview: ${preview}`);
+        return preview;
     }, [userId, saveDataToFirestore]);
 
     const handleClearKeyholder = useCallback(async () => {
