@@ -9,6 +9,7 @@ const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
 const LogEventPage = lazy(() => import('./pages/LogEventPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const RewardsPunishmentsPage = lazy(() => import('./pages/RewardsPunishmentsPage'));
@@ -29,7 +30,7 @@ const App = () => {
     } = chastityOS;
 
     let pageTitleText = "ChastityOS";
-    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
+    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
     if (currentPage === 'tracker' && showRestoreSessionPrompt) {
         pageTitleText = "Restore Session";
     } else if (navItemNames[currentPage]) {
@@ -59,6 +60,7 @@ const App = () => {
                     {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
                     {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
                     {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+                    {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
                     {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
                     {currentPage === 'settings' && <SettingsPage {...chastityOS} setCurrentPage={setCurrentPage} />}
                     {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
