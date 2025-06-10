@@ -1,7 +1,6 @@
 // src/components/settings/AccountSection.jsx
-import React, { useState, useEffect } from 'react';
-import { getAuth, signInWithPopup, GoogleAuthProvider, linkWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, doc, deleteDoc } from 'firebase/firestore';
+import React, { useState } from 'react';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, reauthenticateWithPopup, deleteUser } from 'firebase/auth';
 
 const AccountSection = ({
   isAuthReady,
@@ -12,47 +11,26 @@ const AccountSection = ({
   showUserIdInSettings,
   handleToggleUserIdVisibility,
   userId,
-  nameMessage
+  nameMessage,
+  handleResetAllData,
+  user,
+  googleEmail
 }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [googleEmail, setGoogleEmail] = useState(null);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (user && !user.isAnonymous && user.email) {
-      setGoogleEmail(user.email);
-    }
-  }, [isAuthReady]);
+  const [deleteMessage, setDeleteMessage] = useState('');
 
   const handleGoogleSignIn = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
-
+    
     try {
-      if (auth.currentUser && auth.currentUser.isAnonymous) {
-        const result = await linkWithPopup(auth.currentUser, provider);
-        console.log('✅ Anonymous user linked to Google:', result.user);
-        // GTM/GA4 login event
-        window.gtag && window.gtag('event', 'login', {
-          method: 'Google',
-          user_id: result.user.uid,
-          email: result.user.email
-        });
-        setGoogleEmail(result.user.email);
-      } else {
-        const result = await signInWithPopup(auth, provider);
-        console.log('✅ Signed in with Google:', result.user);
-        // GTM/GA4 login event
-        window.gtag && window.gtag('event', 'login', {
-          method: 'Google',
-          user_id: result.user.uid,
-          email: result.user.email
-        });
-        setGoogleEmail(result.user.email);
-      }
+      await signInWithPopup(auth, provider);
+      // The onAuthStateChanged listener in useChastityState will handle the rest.
     } catch (error) {
       console.error('❌ Google Sign-In Error:', error);
+      if (error.code !== 'auth/popup-closed-by-user') {
+        alert(`Google Sign-In failed: ${error.message}`);
+      }
     }
   };
 
@@ -60,12 +38,7 @@ const AccountSection = ({
     const auth = getAuth();
     try {
       await signOut(auth);
-      // GTM/GA4 logout event
-      window.gtag && window.gtag('event', 'logout', {
-        method: 'Google'
-      });
       alert('You have been signed out.');
-      setGoogleEmail(null);
     } catch (error) {
       console.error('❌ Sign-out failed:', error);
     }
@@ -73,44 +46,57 @@ const AccountSection = ({
 
   const handleDeleteAccountAndReset = async () => {
     const auth = getAuth();
-    const db = getFirestore();
-    const user = auth.currentUser;
+    const currentUser = auth.currentUser;
 
-    if (!user) return;
+    if (!currentUser || currentUser.isAnonymous) {
+        setDeleteMessage("No authenticated account to delete.");
+        setTimeout(() => setDeleteMessage(''), 4000);
+        return;
+    }
+    
+    const provider = new GoogleAuthProvider();
+    try {
+        setDeleteMessage("Please re-authenticate with Google to confirm account deletion.");
+        await reauthenticateWithPopup(currentUser, provider);
+    } catch (error) {
+        console.error("Re-authentication for deletion failed:", error);
+        setDeleteMessage(`Re-authentication failed. Deletion cancelled. Error: ${error.code}`);
+        setTimeout(() => {
+          setShowConfirmDelete(false);
+          setDeleteMessage('');
+        }, 5000);
+        return;
+    }
 
     try {
-      const userRef = doc(db, 'users', user.uid);
-      await deleteDoc(userRef);
-      // GTM/GA4 delete_account event
-      window.gtag && window.gtag('event', 'delete_account', {
-        method: 'Google',
-        user_id: user.uid,
-        email: user.email
-      });
-      await signOut(auth);
-      await auth.signInAnonymously();
-      console.log('✅ User data deleted. Signed back in anonymously.');
-      alert('Your data has been deleted and you are now signed in anonymously.');
-      setShowConfirmDelete(false);
-      setGoogleEmail(null);
+      setDeleteMessage("Deleting all data and account...");
+      // First, reset all Firestore data
+      await handleResetAllData(true); 
+
+      // Now, delete the user from Firebase Authentication
+      await deleteUser(currentUser);
+      
+      setDeleteMessage("Account and all data permanently deleted.");
+      setTimeout(() => {
+        window.location.reload(); // Reload to ensure a clean state
+      }, 4000);
+
     } catch (error) {
-      console.error('❌ Error deleting account:', error);
-      alert('Something went wrong while deleting your data.');
+        console.error("Error during final account deletion:", error);
+        setDeleteMessage(`Deletion failed: ${error.message}. Please sign out and sign back in.`);
+        setTimeout(() => setDeleteMessage(''), 5000);
     }
   };
 
   return (
     <div className="mb-8 p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-      <h3 className="text-xl font-semibold text-purple-300 mb-4">Profile Information</h3>
+      <h3 className="text-xl font-semibold text-purple-300 mb-4">Profile & Account</h3>
 
-      {googleEmail && (
+      {user && !user.isAnonymous && (
         <div className="text-left mb-4 bg-gray-700 p-3 rounded-md border border-green-500">
           <p className="text-sm text-green-400 font-medium">
             ✅ Google Account Linked:
             <span className="block font-mono text-green-100 mt-1">{googleEmail}</span>
-          </p>
-          <p className="text-xs text-green-300 mt-1">
-            Your data is now synced to this Google account. Your anonymous User ID is no longer needed.
           </p>
         </div>
       )}
@@ -145,7 +131,6 @@ const AccountSection = ({
         <div className="mb-4 text-left">
           <p className="text-sm font-medium text-purple-300">Submissive's Name:</p>
           <p className="text-lg text-purple-100">{savedSubmissivesName}</p>
-          <p className="text-xs text-purple-400">(To change, use "Reset All Application Data" below.)</p>
         </div>
       )}
 
@@ -155,79 +140,73 @@ const AccountSection = ({
         </p>
       )}
 
-      {!googleEmail && (
+      <hr className="my-4 border-purple-600" />
+
+      {(!user || user.isAnonymous) && (
         <div>
-          <h4 className="text-lg font-medium text-purple-200 mb-2 text-left">Account ID</h4>
-          {!googleEmail && isAuthReady && (
-            <>
-              <button
+          <h4 className="text-lg font-medium text-purple-200 mb-2 text-left">Account Sync & Backup</h4>
+            <p className="text-xs text-purple-400 mb-3 text-left">
+                Your data is currently only stored on this device. Sign in with Google to sync your data across devices and prevent data loss.
+            </p>
+            <div className="mt-4 text-left">
+                <button
+                    onClick={handleGoogleSignIn}
+                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition"
+                >
+                    Sign In with Google
+                </button>
+            </div>
+            <hr className="my-4 border-purple-600" />
+            <h4 className="text-lg font-medium text-purple-200 mb-2 text-left">Anonymous Account ID</h4>
+            <button
                 type="button"
                 onClick={handleToggleUserIdVisibility}
                 disabled={!isAuthReady}
                 className="w-full sm:w-auto bg-slate-600 hover:bg-slate-700 text-white text-sm py-2 px-4 rounded-lg shadow-md transition duration-300 disabled:opacity-50 mb-3"
-              >
+            >
                 {showUserIdInSettings ? 'Hide User ID' : 'Show User ID'}
-              </button>
-
-              {showUserIdInSettings && userId && (
+            </button>
+            {showUserIdInSettings && userId && (
                 <div className="p-3 bg-gray-700 rounded-md text-left">
                   <p className="text-sm text-purple-300">
-                    Your User ID: <span className="font-mono text-purple-100 select-all">{userId}</span>
-                  </p>
-                  <p className="text-xs text-purple-400 mt-1">
-                    (This ID is used for anonymous data syncing. If you sign in with Google, this ID will no longer be used.)
+                    Your Anonymous User ID: <span className="font-mono text-purple-100 select-all">{userId}</span>
                   </p>
                 </div>
-              )}
-
-              {showUserIdInSettings && !userId && isAuthReady && (
-                <p className="text-sm text-yellow-400 bg-gray-700 p-2 rounded text-left">
-                  User ID not available yet. Please wait for authentication to complete.
-                </p>
-              )}
-            </>
-          )}
+            )}
         </div>
       )}
 
-      {isAuthReady && !googleEmail && (
-        <div className="mt-6 text-left">
-          <button
-            onClick={handleGoogleSignIn}
-            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition"
-          >
-            Link your account with Google
-          </button>
-        </div>
-      )}
-
-      {googleEmail && (
+      {user && !user.isAnonymous && (
         <div className="mt-6 text-left space-y-3">
           <button
             onClick={handleLogout}
             className="w-full sm:w-auto bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition"
           >
-            Sign Out Only
+            Sign Out of Google
           </button>
           <button
             onClick={() => setShowConfirmDelete(true)}
-            className="w-full sm:w-auto bg-red-700 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition"
+            className="w-full sm:w-auto bg-red-700 hover:bg-red-800 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition ml-0 sm:ml-4 mt-2 sm:mt-0"
           >
-            Delete All Synced Data & Reset
+            Delete Google Account & All Data
           </button>
         </div>
       )}
 
       {showConfirmDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-          <div className="bg-gray-900 border border-red-700 rounded-lg shadow-lg p-6 w-11/12 max-w-md">
-            <h2 className="text-lg font-semibold text-red-400 mb-2">Delete All Data</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-red-700 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold text-red-400 mb-3">Permanent Account Deletion</h2>
             <p className="text-sm text-gray-300 mb-4">
-              This will permanently delete all your synced data and return you to anonymous mode. Are you sure?
+              This will permanently delete your Google account link AND all associated tracker data. This action cannot be undone.
             </p>
+            <p className="text-sm text-yellow-300 mb-4">
+              You will be asked to sign in with Google again to confirm this is your account.
+            </p>
+            {deleteMessage && <p className="text-sm font-bold text-center text-yellow-300 my-3">{deleteMessage}</p>}
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setShowConfirmDelete(false)}
+                onClick={() => { setShowConfirmDelete(false); setDeleteMessage(''); }}
                 className="px-4 py-2 bg-gray-600 text-sm rounded-md hover:bg-gray-700 text-white"
               >
                 Cancel
@@ -236,7 +215,7 @@ const AccountSection = ({
                 onClick={handleDeleteAccountAndReset}
                 className="px-4 py-2 bg-red-600 text-sm rounded-md hover:bg-red-700 text-white"
               >
-                Delete & Reset
+                Confirm & Delete
               </button>
             </div>
           </div>

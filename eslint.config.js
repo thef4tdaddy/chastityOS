@@ -4,9 +4,22 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
+  // Global ignores
   { ignores: ['dist'] },
+
+  // Configuration for Node.js files (like vite.config.js, postcss.config.js)
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.config.js', '**/*.config.cjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  
+  // Configuration for React source files
+  {
+    files: ['src/**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
