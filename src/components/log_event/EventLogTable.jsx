@@ -30,13 +30,27 @@ const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName 
                     <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Orgasm Count(s)</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Notes</th>
                 </tr></thead><tbody className="divide-y divide-purple-700">
-                {sexualEventsLog.map(event => (<tr key={event.id} className="hover:bg-purple-900/20">
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp, true)}</td>
-                    <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{formatEventTypesForDisplay(event.types, event.otherTypeDetail, savedSubmissivesName)}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatOrgasmCounts(event.selfOrgasmAmount, event.partnerOrgasmAmount)}</td>
-                    <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{event.notes}</td>
-                </tr>))}</tbody></table></div>) : <p className="text-purple-200">No events logged yet.</p>}
+                {sexualEventsLog.map(event => (
+                    event.eventType === 'startTimeEdit' ? (
+                        <tr key={event.id} className="hover:bg-purple-900/20">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp || event.timestamp, true)}</td>
+                            <td className="px-4 py-3 text-sm text-purple-200">Start Time Edited</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">N/A</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">N/A</td>
+                            <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">
+                                {`Old: ${event.oldStartTime ? formatTime(new Date(event.oldStartTime), true) : 'N/A'} \u2192 New: ${event.newStartTime ? formatTime(new Date(event.newStartTime), true) : 'N/A'}${event.editedBy ? ` (by ${event.editedBy})` : ''}`}
+                            </td>
+                        </tr>
+                    ) : (
+                        <tr key={event.id} className="hover:bg-purple-900/20">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp, true)}</td>
+                            <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{formatEventTypesForDisplay(event.types, event.otherTypeDetail, savedSubmissivesName)}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatOrgasmCounts(event.selfOrgasmAmount, event.partnerOrgasmAmount)}</td>
+                            <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{event.notes}</td>
+                        </tr>
+                    )
+                ))}</tbody></table></div>) : <p className="text-purple-200">No events logged yet.</p>}
         </div>
     );
 };
