@@ -38,7 +38,7 @@ const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName 
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">N/A</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">N/A</td>
                             <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">
-                                {`Old: ${event.oldStartTime ? formatTime(new Date(event.oldStartTime), true) : 'N/A'} \u2192 New: ${event.newStartTime ? formatTime(new Date(event.newStartTime), true) : 'N/A'}${event.editedBy ? ` (by ${event.editedBy})` : ''}`}
+                                {event.notes || `Old: ${event.oldStartTime ? formatTime(new Date(event.oldStartTime), true) : 'N/A'} \u2192 New: ${event.newStartTime ? formatTime(new Date(event.newStartTime), true) : 'N/A'}${event.editedBy ? ` (by ${event.editedBy})` : ''}`}
                             </td>
                         </tr>
                     ) : (
