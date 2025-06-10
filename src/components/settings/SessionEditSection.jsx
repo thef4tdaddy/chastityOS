@@ -9,6 +9,8 @@ import { getAuth } from 'firebase/auth';
 
 const SessionEditSection = ({
   cageOnTime,
+  setCageOnTime,
+  setTimeInChastity,
   editSessionDateInput,
   setEditSessionDateInput,
   editSessionTimeInput,
@@ -76,8 +78,13 @@ const SessionEditSection = ({
         oldStartTime,
         newStartTime: newStartDateTime.toISOString(),
         editedBy: userId ?? 'unknown',
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
+        eventTimestamp: serverTimestamp()
       });
+
+      // Update local state so the tracker reflects the new start time immediately
+      setCageOnTime(newStartDateTime);
+      setTimeInChastity(Math.max(0, Math.floor((Date.now() - newStartDateTime.getTime()) / 1000)));
 
       setEditSessionMessage('Start time updated successfully.');
     } catch (error) {
