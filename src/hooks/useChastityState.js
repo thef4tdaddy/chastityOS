@@ -22,7 +22,7 @@ const firebaseConfig = {
 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
     console.error("Firebase configuration is missing or incomplete.");
 }
-const appIdForFirestore = firebaseConfig.appId || 'default-chastity-app-id';
+
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 setLogLevel('debug');
@@ -100,12 +100,12 @@ export const useChastityState = () => {
 
     const getDocRef = useCallback((targetUserId = userId) => {
         if (!targetUserId) return null;
-        return doc(db, "artifacts", appIdForFirestore, "users", targetUserId);
+        return doc(db, "users", targetUserId);
     }, [userId]);
 
     const getEventsCollectionRef = useCallback((targetUserId = userId) => {
         if (!targetUserId) return null;
-        return collection(db, "artifacts", appIdForFirestore, "users", targetUserId, "sexualEventsLog");
+        return collection(db, "users", targetUserId, "sexualEventsLog");
     }, [userId]);
 
     const saveDataToFirestore = useCallback(async (dataToSave) => {
@@ -253,12 +253,14 @@ export const useChastityState = () => {
         const eventsColRef = getEventsCollectionRef();
         if (eventsColRef && userId) {
             try {
+                const editor = googleEmail || `Anonymous User (${userId.slice(0,6)}...)`
                 await addDoc(eventsColRef, {
                     eventTimestamp: Timestamp.now(), 
                     loggedAt: serverTimestamp(),
                     types: ["Session Edit"],
+                    eventType: 'startTimeEdit', // For specific filtering
                     otherTypeDetail: "",
-                    notes: `Cage start time manually updated.\nOriginal: ${oldCageOnTimeForLog}.\nNew: ${newCageOnTimeForLog}.`,
+                    notes: `Start time edited by ${editor}.\nOriginal: ${oldCageOnTimeForLog}.\nNew: ${newCageOnTimeForLog}.`,
                     durationSeconds: null, selfOrgasmAmount: null, partnerOrgasmAmount: null
                 });
                 fetchEvents();
@@ -284,7 +286,7 @@ export const useChastityState = () => {
         });
         setEditSessionMessage("Session start time updated successfully!");
         setTimeout(() => setEditSessionMessage(''), 3000);
-    }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, userId, fetchEvents, saveDataToFirestore, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, chastityHistory, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds]);
+    }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, userId, fetchEvents, saveDataToFirestore, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, chastityHistory, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds, googleEmail]);
 
     const handleInitiatePause = useCallback(() => { setPauseCooldownMessage(''); if (lastPauseEndTime instanceof Date && !isNaN(lastPauseEndTime.getTime())) { const twelveHoursInMillis = 12 * 3600 * 1000; const timeSinceLastPauseEnd = new Date().getTime() - lastPauseEndTime.getTime(); if (timeSinceLastPauseEnd < twelveHoursInMillis) { const remainingTime = twelveHoursInMillis - timeSinceLastPauseEnd; const hours = Math.floor(remainingTime / 3600000); const minutes = Math.floor((remainingTime % 3600000) / 60000); setPauseCooldownMessage(`You can pause again in approximately ${hours}h ${minutes}m.`); setTimeout(() => setPauseCooldownMessage(''), 5000); return; } } setShowPauseReasonModal(true); }, [lastPauseEndTime]);
     const handleConfirmPause = useCallback(async () => { if (!isCageOn) { setShowPauseReasonModal(false); setReasonForPauseInput(''); return; } const now = new Date(); const newPauseEvent = { id: crypto.randomUUID(), startTime: now, reason: reasonForPauseInput.trim() || "N/A", endTime: null, duration: null }; setIsPaused(true); setPauseStartTime(now); const updatedSessionPauses = [...currentSessionPauseEvents, newPauseEvent]; setCurrentSessionPauseEvents(updatedSessionPauses); setShowPauseReasonModal(false); setReasonForPauseInput(''); await saveDataToFirestore({ isPaused: true, pauseStartTime: now, accumulatedPauseTimeThisSession, currentSessionPauseEvents: updatedSessionPauses, lastPauseEndTime }); }, [isCageOn, reasonForPauseInput, accumulatedPauseTimeThisSession, currentSessionPauseEvents, saveDataToFirestore, lastPauseEndTime]);
@@ -431,7 +433,7 @@ export const useChastityState = () => {
     const handleCancelRestoreFromId = () => { setShowRestoreFromIdPrompt(false); setRestoreFromIdMessage(''); };
     const handleConfirmRestoreFromId = async () => {
         if (!restoreUserIdInput.trim() || !userId) { setRestoreFromIdMessage("Invalid input or current user session not ready."); setTimeout(() => setRestoreFromIdMessage(''), 3000); setShowRestoreFromIdPrompt(false); return; }
-        const targetDocRef = doc(db, "artifacts", appIdForFirestore, "users", restoreUserIdInput.trim());
+        const targetDocRef = doc(db, "users", restoreUserIdInput.trim());
         try {
             const docSnap = await getDoc(targetDocRef);
             if (docSnap.exists()) {
@@ -460,9 +462,8 @@ export const useChastityState = () => {
             if (u) {
                 // Migrate data from anonymous user to new Google account if needed
                 if (user && user.isAnonymous && !u.isAnonymous && user.uid !== u.uid) {
-                  // Migrate data from anonymous UID to signed-in UID
-                  const anonDocRef = doc(db, "artifacts", appIdForFirestore, "users", user.uid);
-                  const newDocRef = doc(db, "artifacts", appIdForFirestore, "users", u.uid);
+                  const anonDocRef = doc(db, "users", user.uid);
+                  const newDocRef = doc(db, "users", u.uid);
                   try {
                     const anonSnap = await getDoc(anonDocRef);
                     if (anonSnap.exists()) {
@@ -492,25 +493,28 @@ export const useChastityState = () => {
 
     useEffect(() => {
         if (!isAuthReady || !userId) return;
+
+        fetchEvents(userId);
+
         const docRef = getDocRef();
-        if (!docRef) { setIsLoading(false); return; }
+        if (!docRef) { 
+            setIsLoading(false);
+            return; 
+        }
+
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (isLoading) {
+                if (isLoading) { // Only show restore prompt on initial load
                   const activeSessionIsCageOnLoaded = data.isCageOn || false;
                   const activeSessionCageOnTimeLoaded = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
                   if (activeSessionIsCageOnLoaded && activeSessionCageOnTimeLoaded && !isNaN(activeSessionCageOnTimeLoaded.getTime())) {
-                    const loadedPauseStartTimeFromData = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
                     setLoadedSessionData({
                       isCageOn: true,
                       cageOnTime: activeSessionCageOnTimeLoaded,
                       timeInChastity: data.timeInChastity || 0,
                       isPaused: data.isPaused || false,
-                      pauseStartTime:
-                        loadedPauseStartTimeFromData && !isNaN(loadedPauseStartTimeFromData.getTime())
-                          ? loadedPauseStartTimeFromData
-                          : null,
+                      pauseStartTime: data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null,
                       accumulatedPauseTimeThisSession: data.accumulatedPauseTimeThisSession || 0,
                       currentSessionPauseEvents: (data.currentSessionPauseEvents || []).map(p => ({
                         ...p,
@@ -522,17 +526,16 @@ export const useChastityState = () => {
                   }
                 }
                 applyRestoredData(data);
-                setIsLoading(false);
             } else {
-                applyRestoredData({});
-                setIsLoading(false);
+                applyRestoredData({}); // Set to default state if no doc exists
             }
+            setIsLoading(false);
         }, (error) => {
             console.error("Error with real-time listener:", error);
             setIsLoading(false);
         });
         return () => unsubscribe();
-    }, [isAuthReady, userId, getDocRef, applyRestoredData, isLoading]);
+    }, [isAuthReady, userId, fetchEvents, getDocRef, applyRestoredData, isLoading, setIsLoading]);
 
     useEffect(() => {
         let totalEffectiveChastity = 0;
