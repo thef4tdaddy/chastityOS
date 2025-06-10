@@ -170,7 +170,12 @@ export const useChastityState = () => {
         try {
             const q = query(eventsColRef, orderBy("eventTimestamp", "desc"));
             const querySnapshot = await getDocs(q);
-            setSexualEventsLog(querySnapshot.docs.map(d => ({ id: d.id, ...d.data(), eventTimestamp: d.data().eventTimestamp?.toDate() })));
+            setSexualEventsLog(querySnapshot.docs.map(d => ({
+                id: d.id,
+                ...d.data(),
+                eventTimestamp: d.data().eventTimestamp?.toDate() || d.data().timestamp?.toDate(),
+                timestamp: d.data().timestamp?.toDate()
+            })));
         } catch (error) { console.error("Error fetching events:", error); setEventLogMessage("Failed to load events."); setTimeout(() => setEventLogMessage(''), 3000);
         } finally { setIsLoadingEvents(false); }
     }, [isAuthReady, userId, getEventsCollectionRef]);

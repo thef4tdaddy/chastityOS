@@ -76,7 +76,8 @@ const SessionEditSection = ({
         oldStartTime,
         newStartTime: newStartDateTime.toISOString(),
         editedBy: userId ?? 'unknown',
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
+        eventTimestamp: serverTimestamp()
       });
 
       setEditSessionMessage('Start time updated successfully.');
