@@ -251,10 +251,11 @@ export const useChastityState = () => {
         const newCageOnTimeForLog = formatTime(newProposedCageOnTime, true, true);
         setCageOnTime(newProposedCageOnTime);
         const eventsColRef = getEventsCollectionRef();
+        let logFailed = false;
         if (eventsColRef && userId) {
             try {
                 await addDoc(eventsColRef, {
-                    eventTimestamp: Timestamp.now(), 
+                    eventTimestamp: Timestamp.now(),
                     loggedAt: serverTimestamp(),
                     types: ["Session Edit"],
                     otherTypeDetail: "",
@@ -264,10 +265,7 @@ export const useChastityState = () => {
                 fetchEvents();
             } catch (error) {
                 console.error("App.js: Error logging session edit event:", error);
-                setEditSessionMessage("Failed to log edit. See console. Start time reverted.");
-                setTimeout(() => setEditSessionMessage(''), 4000);
-                setCageOnTime(originalCageOnTime);
-                return; 
+                logFailed = true;
             }
         }
         let updatedTimeInChastity = 0;
@@ -282,7 +280,10 @@ export const useChastityState = () => {
             lastPauseEndTime, goalDurationSeconds, keyholderName,
             keyholderPasswordHash, requiredKeyholderDurationSeconds,
         });
-        setEditSessionMessage("Session start time updated successfully!");
+        const message = logFailed ?
+            "Start time updated, but failed to log edit." :
+            "Session start time updated successfully!";
+        setEditSessionMessage(message);
         setTimeout(() => setEditSessionMessage(''), 3000);
     }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, userId, fetchEvents, saveDataToFirestore, isPaused, pauseStartTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, chastityHistory, totalTimeCageOff, savedSubmissivesName, lastPauseEndTime, goalDurationSeconds, keyholderName, keyholderPasswordHash, requiredKeyholderDurationSeconds]);
 
