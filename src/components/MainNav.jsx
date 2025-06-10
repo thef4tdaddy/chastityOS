@@ -6,6 +6,8 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
     { id: 'tracker', name: 'Chastity Tracker' },
     { id: 'logEvent', name: 'Log Event' },
     { id: 'fullReport', name: 'Full Report' },
+    { id: 'keyholder', name: 'Keyholder' },
+    { id: 'rewards', name: 'Rewards/Punishments' },
     { id: 'settings', name: 'Settings' },
     // { id: 'privacy', name: 'Privacy' }, // Privacy removed from main navigation
     { id: 'feedback', name: 'Feedback' }
@@ -35,7 +37,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
           ))}
         </select>
       ) : (
-        <div className="flex flex-wrap justify-center space-x-1 sm:space-x-2">
+        <div className="flex flex-wrap justify-center gap-x-1 sm:gap-x-2 gap-y-2">
           {navItems.map((page) => (
             <button
               key={page.id}
