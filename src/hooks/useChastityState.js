@@ -125,12 +125,52 @@ export const useChastityState = () => {
                 punishments: dataToSave.punishments !== undefined ? dataToSave.punishments : punishments,
                 isTrackingAllowed
             };
-            const toTS = (d) => d instanceof Date && !isNaN(d.getTime()) ? Timestamp.fromDate(d) : (typeof d === 'string' && new Date(d) instanceof Date && !isNaN(new Date(d).getTime()) ? Timestamp.fromDate(new Date(d)) : null);
-            firestoreReadyData.cageOnTime = toTS(firestoreReadyData.cageOnTime);
-            if (firestoreReadyData.chastityHistory) { firestoreReadyData.chastityHistory = firestoreReadyData.chastityHistory.map(item => ({ ...item, startTime: toTS(item.startTime), endTime: toTS(item.endTime), pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: toTS(p.startTime), endTime: toTS(p.endTime) })) })); }
-            firestoreReadyData.pauseStartTime = toTS(firestoreReadyData.pauseStartTime);
-            firestoreReadyData.lastPauseEndTime = toTS(firestoreReadyData.lastPauseEndTime);
-            if (firestoreReadyData.currentSessionPauseEvents) { firestoreReadyData.currentSessionPauseEvents = firestoreReadyData.currentSessionPauseEvents.map(p => ({ ...p, startTime: toTS(p.startTime), endTime: toTS(p.endTime) })); }
+            const toTS = (d) => {
+                if (d === undefined) return undefined;
+                if (d === null) return null;
+                if (d instanceof Date && !isNaN(d.getTime())) return Timestamp.fromDate(d);
+                if (typeof d === 'string') {
+                    const parsed = new Date(d);
+                    if (!isNaN(parsed.getTime())) return Timestamp.fromDate(parsed);
+                }
+                return undefined;
+            };
+            if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'cageOnTime')) {
+                const ts = toTS(firestoreReadyData.cageOnTime);
+                if (ts !== undefined) firestoreReadyData.cageOnTime = ts; else delete firestoreReadyData.cageOnTime;
+            }
+            if (firestoreReadyData.chastityHistory) {
+                firestoreReadyData.chastityHistory = firestoreReadyData.chastityHistory.map(item => {
+                    const newItem = { ...item };
+                    if ('startTime' in newItem) { const ts = toTS(newItem.startTime); if (ts !== undefined) newItem.startTime = ts; else delete newItem.startTime; }
+                    if ('endTime' in newItem) { const ts = toTS(newItem.endTime); if (ts !== undefined) newItem.endTime = ts; else delete newItem.endTime; }
+                    if (newItem.pauseEvents) {
+                        newItem.pauseEvents = newItem.pauseEvents.map(p => {
+                            const np = { ...p };
+                            if ('startTime' in np) { const ts = toTS(np.startTime); if (ts !== undefined) np.startTime = ts; else delete np.startTime; }
+                            if ('endTime' in np) { const ts = toTS(np.endTime); if (ts !== undefined) np.endTime = ts; else delete np.endTime; }
+                            return np;
+                        });
+                    }
+                    return newItem;
+                });
+            }
+            if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'pauseStartTime')) {
+                const ts = toTS(firestoreReadyData.pauseStartTime);
+                if (ts !== undefined) firestoreReadyData.pauseStartTime = ts; else delete firestoreReadyData.pauseStartTime;
+            }
+            if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'lastPauseEndTime')) {
+                const ts = toTS(firestoreReadyData.lastPauseEndTime);
+                if (ts !== undefined) firestoreReadyData.lastPauseEndTime = ts; else delete firestoreReadyData.lastPauseEndTime;
+            }
+            if (firestoreReadyData.currentSessionPauseEvents) {
+                firestoreReadyData.currentSessionPauseEvents = firestoreReadyData.currentSessionPauseEvents.map(p => {
+                    const np = { ...p };
+                    if ('startTime' in np) { const ts = toTS(np.startTime); if (ts !== undefined) np.startTime = ts; else delete np.startTime; }
+                    if ('endTime' in np) { const ts = toTS(np.endTime); if (ts !== undefined) np.endTime = ts; else delete np.endTime; }
+                    return np;
+                });
+            }
             if (typeof firestoreReadyData.submissivesName === 'undefined') firestoreReadyData.submissivesName = savedSubmissivesName;
             if (Object.prototype.hasOwnProperty.call(firestoreReadyData, 'userAlias')) { delete firestoreReadyData.userAlias; }
             await setDoc(docRef, firestoreReadyData, { merge: true });
