@@ -1,7 +1,3 @@
 {
-  "overrides": {
-    "nightly/**": {
-      "buildCommand": "npm run build:nightly"
-    }
-  }
+  "buildCommand": "sh vercel.sh"
 }
