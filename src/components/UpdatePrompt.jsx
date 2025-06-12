@@ -3,11 +3,10 @@ import React from 'react';
 
 const UpdatePrompt = ({ onUpdate }) => {
   const handleUpdateClick = () => {
-    // Call the original onUpdate prop which triggers the service worker update
+    // Call the onUpdate prop which triggers the service worker update.
+    // The reload is now handled by the `onUpdated` callback in App.jsx,
+    // which waits for the new service worker to be active.
     onUpdate();
-    // Explicitly reload the page to ensure the new service worker takes over
-    // and the updated app version is loaded, dismissing the prompt.
-    window.location.reload(); 
   };
 
   return (
@@ -19,7 +18,7 @@ const UpdatePrompt = ({ onUpdate }) => {
             A new version of ChastityOS has been downloaded. Restart the app to apply the update.
           </p>
           <button
-            onClick={handleUpdateClick} // Use the new handler
+            onClick={handleUpdateClick} // Use the corrected handler
             className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-800 focus:ring-white"
           >
             Restart & Update
@@ -47,10 +46,6 @@ const styles = `
 }
 `;
 
-// Inject styles into the document head
-// This approach is generally discouraged in React components
-// but is kept here to match the existing pattern if this is a standalone file.
-// For a React app, it's better to use a dedicated CSS file or Tailwind's JIT.
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = styles;
