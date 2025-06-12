@@ -1,3 +1,14 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [3.6.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.4.3-beta...v3.6.1) (2025-06-12)
+
+
+### Features
+
+* add migration warning banner ([af0f84f](https://github.com/thef4tdaddy/chastityOS/commit/af0f84f4bbf11811072e7181e8af0d498870dabf))
+
 # ChastityOS Changelog
 
 All notable changes to this project will be documented in this file.
