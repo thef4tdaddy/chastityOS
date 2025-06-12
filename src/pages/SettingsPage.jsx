@@ -1,9 +1,10 @@
 // src/pages/SettingsPage.jsx
 import React from 'react';
-import AccountSection from '../components/settings/AccountSection.jsx'; // Added .jsx
-import DataManagementSection from '../components/settings/DataManagementSection.jsx'; // Added .jsx
-import SessionEditSection from '../components/settings/SessionEditSection.jsx'; // Added .jsx
-import DisplaySettingsSection from '../components/settings/DisplaySettingsSection.jsx'; // Added .jsx
+import AccountSection from '../components/settings/AccountSection.jsx';
+import DataManagementSection from '../components/settings/DataManagementSection.jsx';
+import SessionEditSection from '../components/settings/SessionEditSection.jsx';
+import DisplaySettingsSection from '../components/settings/DisplaySettingsSection.jsx';
+import PersonalGoalSection from '../components/settings/PersonalGoalSection.jsx';
 
 const SettingsPage = (props) => {
   return (
@@ -12,12 +13,14 @@ const SettingsPage = (props) => {
       <AccountSection {...props} />
       {/* 2. Display Settings */}
       <DisplaySettingsSection {...props} />
-      {/* 3. Edit Chastity Time */}
+      {/* 3. Personal Goal */}
+      <PersonalGoalSection {...props} />
+      {/* 4. Edit Chastity Time */}
       <SessionEditSection {...props} sessionId={props.userId} />
-      {/* 4. Data Management */}
+      {/* 5. Data Management */}
       <DataManagementSection {...props} />
     </div>
   );
 };
 
-export default SettingsPage;
+export default SettingsPage

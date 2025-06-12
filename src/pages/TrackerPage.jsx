@@ -26,7 +26,6 @@ const TrackerPage = (props) => {
         loadedSessionData,
         goalDurationSeconds,
         keyholderName,
-        // isKeyholderModeUnlocked, // Removed as it's not used in this component
         requiredKeyholderDurationSeconds
     } = props;
 
@@ -97,7 +96,8 @@ const TrackerPage = (props) => {
                     <li>
                         Currently: {loadedSessionData.isPaused
                             ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})`
-                            : `Active (for ${formatElapsedTime(loadedSessionData.timeInChastity - (loadedSessionData.accumulatedPauseTimeThisSession || 0))})`}
+                            : `Active (for ${formatElapsedTime(Math.floor((new Date().getTime() - new Date(loadedSessionData.cageOnTime).getTime()) / 1000) - (loadedSessionData.accumulatedPauseTimeThisSession || 0))})`
+                        }
                     </li>
                 </ul>
                 <p className="text-sm text-gray-300 mb-4">Would you like to resume this session or start a new one?</p>
