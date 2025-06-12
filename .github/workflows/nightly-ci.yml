@@ -4,7 +4,8 @@ name: Nightly CI Build
 
 on:
   push:
-    branches: [nightly]
+    tags:
+      - 'v*-nightly.*'
 
 jobs:
   build:
