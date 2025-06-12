@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Get current Git branch manually
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+BRANCH="${VERCEL_GIT_COMMIT_REF:-$(git rev-parse --abbrev-ref HEAD)}"
+
 echo "🛠 Branch: $BRANCH"
 
 if [ "$BRANCH" = "nightly" ]; then
