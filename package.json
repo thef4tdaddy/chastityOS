@@ -21,6 +21,8 @@
     "react-helmet-async": "^2.0.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^9.25.0",
     "@sentry/vite-plugin": "^2.16.1",
     "@tailwindcss/postcss": "^4.1.8",
@@ -31,6 +33,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "postcss": "^8.5.4",
     "standard-version": "^9.5.0",
     "tailwindcss": "^4.1.8",
