@@ -1,8 +1,10 @@
 #!/bin/bash
 
-echo "🛠 Branch: $VERCEL_GIT_COMMIT_REF"
+BRANCH="$VERCEL_GIT_COMMIT_REF"
 
-if [ "$VERCEL_GIT_COMMIT_REF" = "nightly" ]; then
+echo "🛠 Branch: $BRANCH"
+
+if [ "$BRANCH" = "nightly" ]; then
   echo "🔧 Running nightly build"
   npm run build:nightly
 else
