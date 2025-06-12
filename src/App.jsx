@@ -1,11 +1,10 @@
 // src/App.jsx
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
-import UpdatePrompt from './components/UpdatePrompt.jsx'; 
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -28,19 +27,26 @@ const App = () => {
         googleEmail
     } = chastityOS;
 
-    // Simplified PWA update logic - removed unused 'offlineReady'
+    // This hook will now automatically handle the update in the background.
     const { needRefresh, updateServiceWorker } = useRegisterSW({
         onRegistered(r) {
-          console.log('SW Registered:', r);
+          if (r) {
+            console.log('Service Worker registered.');
+          }
         },
         onRegisterError(error) {
-          console.log('SW registration error:', error);
+          console.error('Service Worker registration error:', error);
         },
     });
 
-    const handleUpdate = () => {
-        updateServiceWorker(true);
-    };
+    // This effect will run when a new service worker is available,
+    // and it will immediately trigger the update.
+    useEffect(() => {
+        if (needRefresh) {
+            console.log("New content available, updating service worker...");
+            updateServiceWorker(true);
+        }
+    }, [needRefresh, updateServiceWorker]);
 
     let pageTitleText = "ChastityOS";
     const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
@@ -62,8 +68,7 @@ const App = () => {
         <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
             <HotjarScript isTrackingAllowed={isTrackingAllowed} />
             
-            {/* The prompt will now only show if there's a real need to refresh. */}
-            {needRefresh && <UpdatePrompt onUpdate={handleUpdate} />}
+            {/* The UpdatePrompt component is no longer rendered here. */}
 
             <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
                 <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
