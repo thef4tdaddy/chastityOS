@@ -70,10 +70,25 @@ export const useChastitySession = (
     }, [isAuthReady, userId, getDocRef]);
 
     const applyRestoredData = useCallback((data) => {
-        const loadedHist = (data.chastityHistory || []).map(item => ({ ...item, startTime: item.startTime?.toDate ? item.startTime.toDate() : null, endTime: item.endTime?.toDate ? item.endTime.toDate() : null, totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0, pauseEvents: (item.pauseEvents || []).map(p => ({ ...p, startTime: p.startTime?.toDate ? p.startTime.toDate() : null, endTime: p.endTime?.toDate ? p.endTime.toDate() : null })) }));
+        if (!data || typeof data !== 'object') {
+            console.warn("⚠️ Skipping applyRestoredData: invalid or empty data", data);
+            return;
+        }
+
+        const loadedHist = (data.chastityHistory || []).map(item => ({
+            ...item,
+            startTime: item.startTime?.toDate ? item.startTime.toDate() : null,
+            endTime: item.endTime?.toDate ? item.endTime.toDate() : null,
+            totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0,
+            pauseEvents: (item.pauseEvents || []).map(p => ({
+                ...p,
+                startTime: p.startTime?.toDate ? p.startTime.toDate() : null,
+                endTime: p.endTime?.toDate ? p.endTime.toDate() : null
+            }))
+        }));
         setChastityHistory(loadedHist);
         setTotalTimeCageOff(data.totalTimeCageOff || 0);
-        
+
         const lPauseEndTime = data.lastPauseEndTime?.toDate ? data.lastPauseEndTime.toDate() : null;
         setLastPauseEndTime(lPauseEndTime && !isNaN(lPauseEndTime.getTime()) ? lPauseEndTime : null);
         const loadedCageOn = data.isCageOn || false;
@@ -85,9 +100,17 @@ export const useChastitySession = (
         setIsPaused(loadedCageOn ? (data.isPaused || false) : false);
         setPauseStartTime(loadedCageOn && data.isPaused && loadedPauseStart && !isNaN(loadedPauseStart.getTime()) ? loadedPauseStart : null);
         setAccumulatedPauseTimeThisSession(loadedCageOn ? (data.accumulatedPauseTimeThisSession || 0) : 0);
-        setCurrentSessionPauseEvents(loadedCageOn ? (data.currentSessionPauseEvents || []).map(p => ({...p, startTime: p.startTime?.toDate(), endTime: p.endTime?.toDate()})) : []);
+        setCurrentSessionPauseEvents(
+            loadedCageOn
+                ? (data.currentSessionPauseEvents || []).map(p => ({
+                    ...p,
+                    startTime: p.startTime?.toDate(),
+                    endTime: p.endTime?.toDate()
+                }))
+                : []
+        );
         setHasSessionEverBeenActive(data.hasSessionEverBeenActive !== undefined ? data.hasSessionEverBeenActive : true);
-        
+
         setShowRestoreSessionPrompt(false);
         setLoadedSessionData(null);
     }, []);
@@ -133,7 +156,7 @@ export const useChastitySession = (
         if (isNaN(newTime.getTime()) || newTime > new Date()) { setEditSessionMessage("Invalid date."); return; }
         const oldTimeForLog = formatTime(cageOnTime, true, true);
         const newTimeForLog = formatTime(newTime, true, true);
-        const eventsColRef = getEventsCollectionRef();
+        const eventsColRef = typeof getEventsCollectionRef === 'function' ? getEventsCollectionRef() : null;
         if (eventsColRef) {
             await addDoc(eventsColRef, {
                 eventTimestamp: Timestamp.now(), 
@@ -230,6 +253,33 @@ export const useChastitySession = (
         });
         return () => unsubscribe();
     }, [isAuthReady, userId, getDocRef, applyRestoredData, isCageOn]);
+
+    // Ensure user doc exists on login
+    useEffect(() => {
+        if (!isAuthReady || !userId) return;
+
+        const ensureUserDocExists = async () => {
+            try {
+                const docRef = getDocRef();
+                if (!docRef) return;
+
+                const docSnap = await getDoc(docRef);
+                if (!docSnap.exists()) {
+                    console.log("🆕 Creating default user doc for:", userId);
+                    await setDoc(docRef, {
+                        isCageOn: false,
+                        chastityHistory: [],
+                        totalTimeCageOff: 0,
+                        hasSessionEverBeenActive: false
+                    });
+                }
+            } catch (error) {
+                console.error("Error checking/creating Firestore user doc:", error);
+            }
+        };
+
+        ensureUserDocExists();
+    }, [isAuthReady, userId, getDocRef]);
 
     useEffect(() => {
         let totalEffective = 0;
