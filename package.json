@@ -7,6 +7,8 @@
     "dev": "vite",
     "dev:nightly": "vite --mode nightly",
     "build": "vite build",
+    "build:nightly": "vite build --mode nightly",
+    "build:production": "vite build --mode production",
     "build:vercel": "node vercel.build.cjs",
     "lint": "eslint .",
     "preview": "vite preview",
