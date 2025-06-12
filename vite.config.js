@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt', // This allows the app to show a prompt when an update is available.
+        registerType: 'autoUpdate', // Changed from 'prompt'
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'ChastityOS',
@@ -29,17 +29,17 @@ export default defineConfig(({ mode }) => {
           start_url: '/',
           icons: [
             {
-              src: 'icons/pwa-192x192.png',
+              src: 'pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
             },
             {
-              src: 'icons/pwa-512x512.png',
+              src: 'pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
             },
             {
-              src: 'icons/pwa-512x512.png',
+              src: 'pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any maskable',
@@ -47,6 +47,9 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          // This will ensure the service worker updates and activates new content seamlessly.
+          skipWaiting: true,
+          clientsClaim: true,
           // Precaching essential assets for offline use.
           globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
           // Caching strategies for runtime requests.
