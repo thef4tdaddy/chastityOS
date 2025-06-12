@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Load Vercel environment variables
+[ -f .vercel/environment.sh ] && source .vercel/environment.sh
+
 BRANCH="$VERCEL_GIT_COMMIT_REF"
 
 echo "🛠 Branch: $BRANCH"
