@@ -1,0 +1,7 @@
+{
+  "overrides": {
+    "nightly/**": {
+      "buildCommand": "npm run build:nightly"
+    }
+  }
+}
