@@ -1,3 +1,15 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### 3.6.1 (2025-06-12)
+
+
+### Features
+
+* PWA update notification + fix ([0f0c010](https://github.com/thef4tdaddy/chastityOS/commit/0f0c010e47c0665750b58f6be29c3de86cd59844))
+* update FeedbackForm, App.jsx, and SettingsPage with GTM tracking and Ko-fi link ([f8fef70](https://github.com/thef4tdaddy/chastityOS/commit/f8fef70375a00e63197cf2899f45fd60c13d01ca))
+
 # ChastityOS Changelog
 
 All notable changes to this project will be documented in this file.
