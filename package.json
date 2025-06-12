@@ -1,7 +1,7 @@
 {
   "name": "chastity-os",
   "private": true,
-  "version": "3.6.3-nightly.2",
+  "version": "3.6.3-nightly.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
