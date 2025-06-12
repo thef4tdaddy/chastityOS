@@ -1,0 +1,41 @@
+
+
+name: Post Release Changelog to Discord
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Extract Changelog Summary
+        id: changelog
+        run: |
+          version=${{ github.event.release.tag_name }}
+          content=$(awk "/## \\[?$version\\]?/ {flag=1; next} /^## /{flag=0} flag" CHANGELOG.md | head -n 10)
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          echo "summary=$content" >> $GITHUB_OUTPUT
+
+      - name: Post to Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "username": "ChastityOS Release Bot",
+              "avatar_url": "https://app.chastityOS.io/icon.png",
+              "embeds": [{
+                "title": "📦 New Release: '${{ github.event.release.tag_name }}'",
+                "description": "'"${{ steps.changelog.outputs.summary }}"'",
+                "url": "${{ github.event.release.html_url }}",
+                "color": 5814783,
+                "footer": { "text": "Branch: ${{ github.ref_name }}" },
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            https://discord.com/api/webhooks/1382689996120522852/ciYTn8b9AqJXi1o63htq1Sz9XqgYaY64Loj3RrdN3dYkNyiV56--PH9wZXXQgQvgH6oI
