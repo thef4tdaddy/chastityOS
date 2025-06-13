@@ -31,6 +31,13 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0, 
 });
 
+if (import.meta.env.VITE_ENV === 'prod') {
+  console.debug = () => {};
+  console.log = () => {};
+  console.info = () => {};
+  // Keep errors, and optionally warnings:
+  // console.warn = () => {};
+}
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

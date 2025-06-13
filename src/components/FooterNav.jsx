@@ -16,8 +16,14 @@ const FooterNav = ({ userId, googleEmail }) => {
         return res.json();
       })
       .then((data) => {
-        if (data && data.tag_name) setVersion(data.tag_name);
-        else setVersion('N/A');
+        if (data && data.tag_name) {
+          const env = import.meta.env.VITE_ENV || 'local';
+          if (env === 'nightly' && data.tag_name.includes('nightly')) {
+            setVersion(data.tag_name);
+          } else {
+            setVersion(`${data.tag_name} (${env})`);
+          }
+        } else setVersion('N/A');
       })
       .catch((error) => {
         console.error("Failed to fetch version:", error);
@@ -30,7 +36,7 @@ const FooterNav = ({ userId, googleEmail }) => {
       <footer className="mt-8 text-center text-xs text-gray-500">
         <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-2">
           <a
-            href="https://github.com/thef4tdaddy/chastityOS/releases"
+            href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version.replace(/\s.*$/, '')}`}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-purple-300"
