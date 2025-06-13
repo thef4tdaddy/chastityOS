@@ -1,6 +1,12 @@
 const { execSync } = require("child_process");
 
+
 const branch = process.env.VERCEL_GIT_COMMIT_REF || "";
+
+console.log("🔍 Detected environment variables:");
+console.log("    VERCEL_GIT_COMMIT_REF:", process.env.VERCEL_GIT_COMMIT_REF);
+console.log("    NODE_ENV:", process.env.NODE_ENV);
+console.log("    VERCEL_ENV:", process.env.VERCEL_ENV);
 
 console.log(`🛠 Branch: ${branch}`);
 
