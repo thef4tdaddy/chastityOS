@@ -1,6 +1,6 @@
 const { execSync } = require("child_process");
 
-const env = process.env.VERCEL_ENV || "";
+const env = process.env.VERCEL_ENV || "production";
 
 console.log("🔍 Detected environment variables:");
 console.log("    VERCEL_GIT_COMMIT_REF:", process.env.VERCEL_GIT_COMMIT_REF);
