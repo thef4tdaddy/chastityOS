@@ -1,13 +1,18 @@
 {
   "name": "chastity-os",
   "private": true,
-  "version": "3.6.1",
+  "version": "3.6.3-nightly.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:nightly": "vite --mode nightly",
     "build": "vite build",
+    "build:nightly": "vite build --mode nightly",
+    "build:production": "vite build --mode production",
+    "build:vercel": "node vercel.build.cjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "standard-version"
   },
   "dependencies": {
     "@sentry/react": "^8.17.0",
@@ -20,6 +25,8 @@
     "react-helmet-async": "^2.0.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^9.25.0",
     "@sentry/vite-plugin": "^2.16.1",
     "@tailwindcss/postcss": "^4.1.8",
@@ -30,9 +37,11 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "postcss": "^8.5.4",
+    "standard-version": "^9.5.0",
     "tailwindcss": "^4.1.8",
     "vite": "^6.3.5",
-    "vite-plugin-pwa": "^0.20.0"
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

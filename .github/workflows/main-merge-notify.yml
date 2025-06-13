@@ -1,0 +1,55 @@
+name: Notify Discord on Main Updates
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Commit Message
+        id: commit
+        run: |
+          echo "message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+
+      - name: Notify Discord - Merge from Nightly
+        if: startsWith(steps.commit.outputs.message, 'Merge branch ''nightly''')
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "username": "ChastityOS Release Bot",
+              "avatar_url": "https://app.chastityOS.io/icon.png",
+              "embeds": [{
+                "title": "🚀 Main Updated from Nightly",
+                "description": "A new major or minor version has been merged from nightly to main.",
+                "color": 3447003,
+                "footer": { "text": "Branch: main" },
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            https://discord.com/api/webhooks/1382689996120522852/ciYTn8b9AqJXi1o63htq1Sz9XqgYaY64Loj3RrdN3dYkNyiV56--PH9wZXXQgQvgH6oI
+
+      - name: Notify Discord - Direct Patch to Main
+        if: ${{ !startsWith(steps.commit.outputs.message, 'Merge branch ''nightly''') }}
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "username": "ChastityOS Release Bot",
+              "avatar_url": "https://app.chastityOS.io/icon.png",
+              "embeds": [{
+                "title": "🩹 Patch Released Directly on Main",
+                "description": "A direct commit has been applied to main (likely a patch).",
+                "color": 15844367,
+                "footer": { "text": "Branch: main" },
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            https://discord.com/api/webhooks/1382689996120522852/ciYTn8b9AqJXi1o63htq1Sz9XqgYaY64Loj3RrdN3dYkNyiV56--PH9wZXXQgQvgH6oI

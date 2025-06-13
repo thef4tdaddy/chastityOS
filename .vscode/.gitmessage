@@ -1,0 +1,18 @@
+# Commit Message Template (Conventional Commits Format)
+#
+# Examples:
+#   feat: add rewards and punishments page for keyholder
+#   fix: prevent crash when editing start time
+#   chore: cleanup unused components
+#   docs: update README with PWA instructions
+#   refactor: modularize main navigation
+#   perf: optimize timer display rendering
+#   test: add tests for session event logic
+#
+# Format: <type>(optional scope): <short summary>
+# Leave a blank line
+# Then add longer description if needed.
+#
+# Types: feat | fix | chore | docs | refactor | style | test | perf | build | ci
+#
+# --------------------

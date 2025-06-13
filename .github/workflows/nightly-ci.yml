@@ -1,0 +1,49 @@
+
+
+name: Nightly CI Build
+
+on:
+  push:
+    tags:
+      - 'v*-nightly.*'
+
+jobs:
+  build:
+    name: Run Build & Lint on Nightly
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
+
+      - name: Notify Discord
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "username": "ChastityOS Nightly",
+              "avatar_url": "https://app.chastityOS.io/icon.png",
+              "embeds": [{
+                "title": "✅ Nightly Build Deployed",
+                "description": "[View Preview](https://nightly.chastityOS.io)",
+                "color": 3066993,
+                "footer": { "text": "Branch: nightly" },
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
+              }]
+            }' \
+            https://discord.com/api/webhooks/1382689996120522852/ciYTn8b9AqJXi1o63htq1Sz9XqgYaY64Loj3RrdN3dYkNyiV56--PH9wZXXQgQvgH6oI
