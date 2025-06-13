@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.4...v3.7.5) (2025-06-13)
+
+
+### 🧹 Chores
+
+* missing dependency ([e840b63](https://github.com/thef4tdaddy/chastityOS/commit/e840b63de261c9e1bfe056cf6d3adab67faa918f))
+
 ### [3.7.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.3...v3.7.4) (2025-06-13)
 
 
