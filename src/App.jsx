@@ -10,7 +10,9 @@ import Header from './components/Header';
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
 const LogEventPage = lazy(() => import('./pages/LogEventPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsMainPage'));
+const SettingsMainPage = lazy(() => import('./pages/SettingsMainPage'));
+const SettingsDataManagement = lazy(() => import('./pages/SettingsDataManagement'));
 const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
@@ -87,7 +89,8 @@ const App = () => {
                     {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
                     {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
                     {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
-                    {currentPage === 'settings' && <SettingsPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'syncData' && <SettingsDataManagement {...chastityOS} setCurrentPage={setCurrentPage} />}
                     {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
                     {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
                 </Suspense>

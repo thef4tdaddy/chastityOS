@@ -8,7 +8,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
     { id: 'fullReport', name: 'Full Report' },
     { id: 'keyholder', name: 'Keyholder' },
     { id: 'rewards', name: 'Rewards/Punishments' },
-    { id: 'settings', name: 'Settings' },
+    { id: 'settings', name: 'Profile & Preferences' },
     // { id: 'privacy', name: 'Privacy' }, // Privacy removed from main navigation
     { id: 'feedback', name: 'Feedback' }
   ];
@@ -30,11 +30,22 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
           onChange={(e) => setCurrentPage(e.target.value)}
           className="w-full p-3 rounded-lg bg-gray-700 text-purple-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 border-gray-600 shadow-sm text-sm"
         >
-          {navItems.map((page) => (
-            <option key={page.id} value={page.id}>
-              {page.name}
-            </option>
-          ))}
+          {navItems.map((page) => {
+            const emojiMap = {
+              tracker: '📈 ',
+              logEvent: '📝 ',
+              fullReport: '📊 ',
+              keyholder: '🔐 ',
+              rewards: '🎁 ',
+              settings: '⚙️ ',
+              feedback: '💬 ',
+            };
+            return (
+              <option key={page.id} value={page.id}>
+                {emojiMap[page.id] || ''}{page.name}
+              </option>
+            );
+          })}
         </select>
       ) : (
         <div className="flex flex-wrap justify-center gap-x-1 sm:gap-x-2 gap-y-2">
