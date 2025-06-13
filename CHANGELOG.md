@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.1...v3.7.2) (2025-06-13)
+
+
+### 🧹 Chores
+
+* fixing vercel build ([59e0b32](https://github.com/thef4tdaddy/chastityOS/commit/59e0b3267ab4ee03275319eb0d4d6a64b21a6c4b))
+
 ### [3.7.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.3-nightly.3...v3.7.1) (2025-06-13)
 
 
