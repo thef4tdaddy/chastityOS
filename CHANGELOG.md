@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.3...v3.7.4) (2025-06-13)
+
+
+### 🧹 Chores
+
+* vercel be killing me man ([c08bf3f](https://github.com/thef4tdaddy/chastityOS/commit/c08bf3f25f6457e543af3caa24daa9739e20b893))
+
 ### [3.7.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.2...v3.7.3) (2025-06-13)
 
 
