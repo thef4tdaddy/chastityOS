@@ -5,6 +5,7 @@ import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
+import Header from './components/Header';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -69,6 +70,8 @@ const App = () => {
             <HotjarScript isTrackingAllowed={isTrackingAllowed} />
             
             {/* The UpdatePrompt component is no longer rendered here. */}
+
+            <Header />
 
             <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
                 <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>

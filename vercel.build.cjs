@@ -1,10 +1,16 @@
-const branch = process.env.VERCEL_GIT_COMMIT_REF || "nightly";
-console.log("🛠 Branch:", branch);
+const { execSync } = require("child_process");
 
-if (branch === "nightly") {
-  console.log("🔧 Running nightly build");
-  require("child_process").execSync("npm run build:nightly", { stdio: "inherit" });
+const branch = process.env.VERCEL_GIT_COMMIT_REF || "";
+
+console.log(`🛠 Branch: ${branch}`);
+
+if (branch === "main") {
+  console.log("🚀 Running production build...");
+  execSync("npm run build:production", { stdio: "inherit" });
+} else if (branch === "nightly") {
+  console.log("🔧 Running nightly build...");
+  execSync("npm run build:nightly", { stdio: "inherit" });
 } else {
-  console.log("⛔ Production build blocked temporarily. Remove this message in 24 hours to allow production deployment.");
-  process.exit(1);
+  console.log("⚠️ Unknown branch. Skipping custom build.");
+  process.exit(0);
 }
