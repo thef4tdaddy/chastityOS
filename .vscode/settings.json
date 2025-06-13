@@ -1,0 +1,26 @@
+{
+  // GitLens formatting and display
+  "gitlens.defaultDateFormat": "MMMM Do YYYY, h:mm:ss a",
+  "gitlens.defaultDateStyle": "relative",
+  "gitlens.defaultGravatarStyle": "identicon",
+  "gitlens.currentLine.enabled": true,
+  "gitlens.blame.line.enabled": true,
+  "gitlens.heatmap.enabled": true,
+
+  // GitLens CodeLens above each function or class
+  "gitlens.codeLens.enabled": true,
+  "gitlens.codeLens.authors.enabled": true,
+  "gitlens.codeLens.recentChange.enabled": true,
+
+  // Hover behavior for better commit info
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.hovers.annotations.enabled": true,
+
+  // UI Preferences
+  "gitlens.views.repositories.files.layout": "tree",
+  "gitlens.views.commits.fileFormat": "name, status, stats",
+
+  // Show full Conventional Commit messages
+  "gitlens.views.commits.formats.labels": "type(scope): subject",
+  "gitlens.views.commits.formats.description": "{message}"
+}

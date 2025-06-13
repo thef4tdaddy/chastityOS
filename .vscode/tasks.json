@@ -1,0 +1,80 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Release • Version Bump (auto)",
+      "type": "shell",
+      "command": "npm run release",
+      "detail": "Runs standard-version with default rules, based on commit messages",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Release • Nightly Pre-release",
+      "type": "shell",
+      "command": "npx standard-version --prerelease nightly",
+      "detail": "Creates a nightly build like 3.6.1-nightly.0 and updates changelog",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Release • Choose Stable Bump",
+      "type": "shell",
+      "command": "npx standard-version --release-as patch",
+      "detail": "Interactively chooses patch/minor/major and generates changelog",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Release • Stable After Merge (minor)",
+      "type": "shell",
+      "command": "npx standard-version --release-as minor && git push --follow-tags",
+      "detail": "Bumps minor version (e.g., 3.6.0 → 3.7.0) and pushes to main after merge",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Release • Patch on Main (direct fix)",
+      "type": "shell",
+      "command": "npx standard-version --release-as patch && git push --follow-tags",
+      "detail": "For hotfixes directly on main — bumps patch and pushes with tags",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
