@@ -4,16 +4,16 @@ import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
 import { useChastitySession } from './useChastitySession';
-import { doc, getDocs, deleteDoc, query } from 'firebase/firestore';
+import { useDataManagement } from './useDataManagement'; // Import the new hook
+import { doc, getDocs, query, writeBatch } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const useChastityState = () => {
-    // 1. Compose all specialized hooks
+    // Compose all specialized hooks
     const authState = useAuth();
     const { userId, isAuthReady, googleEmail } = authState;
 
     const settingsState = useSettings(userId, isAuthReady);
-    const { savedSubmissivesName, goalDurationSeconds, keyholderName, requiredKeyholderDurationSeconds } = settingsState;
     
     const eventLogState = useEventLog(userId, isAuthReady);
     const { getEventsCollectionRef } = eventLogState;
@@ -21,66 +21,65 @@ export const useChastityState = () => {
     const sessionState = useChastitySession(
         userId,
         isAuthReady,
-        savedSubmissivesName,
-        goalDurationSeconds,
-        keyholderName,
-        requiredKeyholderDurationSeconds,
+        googleEmail,
         getEventsCollectionRef,
-        eventLogState.fetchEvents,
-        googleEmail
+        eventLogState.fetchEvents
     );
+
+    // Use the new data management hook
+    const dataManagementState = useDataManagement({
+        userId,
+        settingsState,
+        sessionState,
+        eventLogState,
+        getEventsCollectionRef
+    });
 
     const [confirmReset, setConfirmReset] = useState(false);
 
-    // --- Global Handlers that need access to multiple hooks ---
-    const handleResetAllData = useCallback(async () => {
-        if (!confirmReset) {
+    const handleResetAllData = useCallback(async (isAccountDeletion = false) => {
+        if (!isAccountDeletion && !confirmReset) {
             setConfirmReset(true);
             setTimeout(() => setConfirmReset(false), 3000);
             return;
         }
+        if (!isAuthReady || !userId) return;
 
-        if (!isAuthReady) return;
-
-        // Clear Session Data
-        await sessionState.saveDataToFirestore({ 
+        const batch = writeBatch(db);
+        const userDocRef = doc(db, "users", userId);
+        batch.set(userDocRef, {
+            submissivesName: '', keyholderName: '', keyholderPasswordHash: null, 
+            requiredKeyholderDurationSeconds: null, goalDurationSeconds: null, rewards: [], 
+            punishments: [], isTrackingAllowed: true, eventDisplayMode: 'kinky',
             isCageOn: false, cageOnTime: null, timeInChastity: 0, 
             chastityHistory: [], totalTimeCageOff: 0, 
             isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, 
-            currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false 
-        });
-        sessionState.setChastityHistory([]);
-        sessionState.setTimeCageOff(0);
-
-
-        // Clear Settings Data
-        await settingsState.saveSettingsToFirestore({ 
-            submissivesName: '', keyholderName: '', keyholderPasswordHash: null, 
-            requiredKeyholderDurationSeconds: null, goalDurationSeconds: null, rewards: [], 
-            punishments: [], isTrackingAllowed: true, eventDisplayMode: 'kinky' 
+            currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false
         });
 
-        // Clear Event Log
         const eventsColRef = getEventsCollectionRef();
         if (eventsColRef) {
             const q = query(eventsColRef);
             const querySnapshot = await getDocs(q);
-            const deletePromises = querySnapshot.docs.map(docSnapshot => deleteDoc(doc(db, eventsColRef.path, docSnapshot.id)));
-            await Promise.all(deletePromises);
-            eventLogState.setSexualEventsLog([]);
+            querySnapshot.docs.forEach(docSnapshot => batch.delete(docSnapshot.ref));
         }
-
+        
+        try {
+            await batch.commit();
+            if(!isAccountDeletion) alert('All data has been reset.');
+        } catch (error) {
+            console.error("Error resetting data:", error);
+            if(!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
+        }
         setConfirmReset(false);
+    }, [isAuthReady, userId, confirmReset, getEventsCollectionRef]);
 
-    }, [isAuthReady, confirmReset, sessionState, settingsState, eventLogState, getEventsCollectionRef]);
-
-
-    // 5. Combine and return everything
     return {
         ...authState,
         ...settingsState,
         ...eventLogState,
         ...sessionState,
+        ...dataManagementState, // Spread the returned functions
         confirmReset,
         handleResetAllData,
     };
