@@ -1,14 +1,34 @@
-// src/pages/SettingsPage.jsx
-import React from 'react';
-import DataManagementSection from '../components/settings/DataManagementSection.jsx';
+// src/pages/SettingsDataManagement.jsx
 
-const SettingsPage = (props) => {
+import { useContext } from 'react';
+import { ChastityOSContext } from '../hooks/useChastityState';
+import DataManagementSection from '../components/settings/DataManagementSection';
+
+function SettingsDataManagement() {
+  const {
+    currentUser,
+    chastityState,
+    setChastityState,
+    handleExportData,
+    handleImportData,
+    handleResetAllData,
+    confirmReset, // This was the missing line
+  } = useContext(ChastityOSContext);
+
   return (
-    <div className="p-0 md:p-4">
-      {/* Data Management */}
-      <DataManagementSection {...props} />
+    <div>
+      <h2 className="text-2xl font-bold mb-4">Data Management</h2>
+      <DataManagementSection
+        currentUser={currentUser}
+        chastityState={chastityState}
+        setChastityState={setChastityState}
+        onExport={handleExportData}
+        onImport={handleImportData}
+        handleResetAllData={handleResetAllData}
+        confirmReset={confirmReset} // And you need to pass it here
+      />
     </div>
   );
-};
+}
 
-export default SettingsPage;
+export default SettingsDataManagement;

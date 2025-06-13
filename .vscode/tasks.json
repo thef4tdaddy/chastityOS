@@ -19,8 +19,8 @@
     {
       "label": "Release • Nightly Pre-release",
       "type": "shell",
-      "command": "npx standard-version --prerelease nightly",
-      "detail": "Creates a nightly build like 3.6.1-nightly.0 and updates changelog",
+      "command": "npx standard-version --prerelease nightly && git push origin nightly --follow-tags",
+      "detail": "Creates a nightly version (e.g., 3.6.1-nightly.0), updates changelog, and pushes to nightly branch",
       "group": {
         "kind": "build",
         "isDefault": false

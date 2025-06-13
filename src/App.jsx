@@ -67,8 +67,11 @@ const App = () => {
         );
     }
 
+    const appEnv = import.meta.env.VITE_APP_ENV || 'production';
+    const themeClass = appEnv === 'nightly' ? 'theme-nightly' : 'theme-prod';
+
     return (
-        <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+        <div className={`${themeClass} min-h-screen flex flex-col items-center justify-center p-4 md:p-8`}>
             <HotjarScript isTrackingAllowed={isTrackingAllowed} />
             
             {/* The UpdatePrompt component is no longer rendered here. */}
@@ -76,8 +79,14 @@ const App = () => {
             <Header />
 
             <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
-                <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
-                {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
+                {savedSubmissivesName && (
+                    <p className="text-md font-semibold text-purple-300 mb-6">
+                        ChastityOS is currently tracking {savedSubmissivesName}&apos;s FLR journey
+                        {chastityOS.keyholderName && (
+                            <span> for {chastityOS.keyholderName}</span>
+                        )}
+                    </p>
+                )}
 
                 <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
