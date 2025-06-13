@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.3-nightly.3...v3.7.1) (2025-06-13)
+
+
+### 🐛 Bug Fixes
+
+* discord notifications for commits ([15261d6](https://github.com/thef4tdaddy/chastityOS/commit/15261d6fdb2dbc5d0d34d4381c987993792bb0eb))
+
+
+### ✨ Features
+
+* add migration warning banner ([a668793](https://github.com/thef4tdaddy/chastityOS/commit/a6687932646669502ddf47b55b4c015470b88879))
+* **env:** separate nightly and prod builds with distinct configs, themes, and settings layout ([ca1bf30](https://github.com/thef4tdaddy/chastityOS/commit/ca1bf309e7d240b76346b73012fc7382b0b01da1))
+* setup for differences between builds, new header ([1bf83fe](https://github.com/thef4tdaddy/chastityOS/commit/1bf83fe324244330344578fe1df8da647bef24e2))
+
+
+### 🔧 Refactoring
+
+* **export:** fix export crash and clean up export handler logic ([a0ca40c](https://github.com/thef4tdaddy/chastityOS/commit/a0ca40c3323742c7dca7883e94cdd5055b60c524))
+
+
+### 🧹 Chores
+
+* ensure dotfiles are included in merge ([dbe425b](https://github.com/thef4tdaddy/chastityOS/commit/dbe425b9f1bd057e35f5b5ae08155d0c4ea07b2c))
+* new.env files ([7dcc0d0](https://github.com/thef4tdaddy/chastityOS/commit/7dcc0d046a9824d7e8677382671f68afb3f8f3ec))
+* **release:** 3.6.1 ([942d1e9](https://github.com/thef4tdaddy/chastityOS/commit/942d1e9bf74781eb9139364297441919d3ac1c39))
+* **release:** 3.7.0 ([3b55133](https://github.com/thef4tdaddy/chastityOS/commit/3b551332a996f8ba73455805430a998931699bab))
+* resolve merge conflicts from nightly into main ([08e7525](https://github.com/thef4tdaddy/chastityOS/commit/08e752511873104713f8ccb6c920cc7c8109d16c))
+* seperate sentry nightly and prod ([7916f32](https://github.com/thef4tdaddy/chastityOS/commit/7916f323dc6dbb63b0fd16b3516c13528d3bc81e))
+* update release script ([b839e87](https://github.com/thef4tdaddy/chastityOS/commit/b839e87184883a9a9358b7c2303d633d2487af7d))
+
+### [3.4.3-beta](https://github.com/thef4tdaddy/chastityOS/compare/v3.4.2...v3.4.3-beta) (2025-06-05)
+
+### [3.4.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.4.1...v3.4.2) (2025-06-04)
+
+### [3.4.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.3.1...v3.4.1) (2025-05-31)
+
+### 3.3.1 (2025-05-31)
+
 ## [3.7.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.3-nightly.3...v3.7.0) (2025-06-13)
 
 
