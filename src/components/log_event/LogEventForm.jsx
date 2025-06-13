@@ -1,6 +1,6 @@
 // src/components/log_event/LogEventForm.jsx
 import React from 'react';
-import { EVENT_TYPES } from '../../utils'; // Reverted to simple EVENT_TYPES
+import { EVENT_TYPE_DEFINITIONS } from '../../event_types.js'; // Changed import
 
 const LogEventForm = ({
     isAuthReady, newEventDate, setNewEventDate, newEventTime, setNewEventTime,
@@ -9,10 +9,16 @@ const LogEventForm = ({
     newEventNotes, setNewEventNotes,
     newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes,
     newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount,
-    handleLogNewEvent, eventLogMessage, isLoadingEvents, savedSubmissivesName, keyholderName
+    handleLogNewEvent, eventLogMessage, isLoadingEvents, savedSubmissivesName, keyholderName,
+    eventDisplayMode // Added eventDisplayMode prop
 }) => {
     const showSelfOrgasmAmountInput = selectedEventTypes.includes("Orgasm (Self)");
     const showPartnerOrgasmAmountInput = selectedEventTypes.includes("Orgasm (Partner)");
+
+    // Filter event types based on userSelectable and current eventDisplayMode
+    const filteredEventTypes = EVENT_TYPE_DEFINITIONS.filter(typeDef =>
+        typeDef.userSelectable && (eventDisplayMode === 'kinky' || typeDef.mode === 'vanilla')
+    );
 
     return (
         <form onSubmit={handleLogNewEvent} className="mb-8 p-4 bg-gray-800 rounded-lg border border-purple-700 space-y-4">
@@ -35,7 +41,8 @@ const LogEventForm = ({
             <div>
                 <label className="block text-sm font-medium text-purple-300 text-left mb-1">Event Type(s):</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {EVENT_TYPES.map(type => {
+                    {filteredEventTypes.map(typeDef => { // Changed to filteredEventTypes
+                        const type = typeDef.name;
                         const displayLabel = type === "Orgasm (Self)" && savedSubmissivesName
                             ? `Orgasm (${savedSubmissivesName})`
                             : type === "Orgasm (Partner)" && keyholderName
@@ -85,4 +92,3 @@ const LogEventForm = ({
     );
 };
 export default LogEventForm;
-

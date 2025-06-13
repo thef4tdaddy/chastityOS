@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const FeedbackForm = () => {
   const [type, setType] = useState('bug');
@@ -21,14 +26,19 @@ const FeedbackForm = () => {
     setSubmitting(true);
     setStatus('');
 
+    // Define app version with environment label
+    const appVersion = `${import.meta.env.VITE_APP_VERSION || 'dev'} (${import.meta.env.VITE_ENV || 'local'})`;
+    const userAgent = navigator.userAgent;
+    const platform = navigator.platform;
+    const timestamp = dayjs().tz('America/Chicago').format('YYYY-MM-DD hh:mm A z');
+
     const label = type === 'bug' ? ['bug'] : ['enhancement'];
-    const title = `${type === 'bug' ? 'Bug Report' : 'Feature Suggestion'}: ${message.substring(0, 60)}`;
     const discordPayload = {
-      content: `**New ${type.toUpperCase()}**\n${message}\n\n**User:** ${discordUsername || 'N/A'}`
+      content: `**New ${type.toUpperCase()}**\n${message}\n\n**User:** ${discordUsername || 'N/A'}\n**App Version:** ${appVersion}\n**Time:** ${timestamp}\n**Platform:** ${platform}\n**User Agent:** ${userAgent}`
     };
     const githubPayload = {
-      title,
-      body: message,
+      title: `[${type.toUpperCase()}] ${appVersion}: ${message.substring(0, 60)}`,
+      body: `${message}\n\n🔖 **App Version:** ${appVersion}\n🕒 **Time:** ${timestamp}\n💻 **Platform:** ${platform}\n🧭 **User Agent:** ${userAgent}`,
       labels: label
     };
 

@@ -2,12 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [3.6.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.4.3-beta...v3.6.1) (2025-06-12)
+### [3.6.3-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.3-nightly.2...v3.6.3-nightly.3) (2025-06-12)
+
+
+### 🧹 Chores
+
+* firebase version check ([b7c3441](https://github.com/thef4tdaddy/chastityOS/commit/b7c3441132382f0997235a70593833885f60ea13))
+* literally dead right now ([0ef7c72](https://github.com/thef4tdaddy/chastityOS/commit/0ef7c7280dd2fb82b9cbeb28f41e02b668af4cfa))
+* pls work vercel ([fdf9e90](https://github.com/thef4tdaddy/chastityOS/commit/fdf9e9096d11bd4a60e4f09530a97d59768ff7b6))
+* the carnage never ends ([67cb673](https://github.com/thef4tdaddy/chastityOS/commit/67cb673c635011365300c5cca1d6309285bc0a2e))
+* trigger nightly deploy ([5ae5704](https://github.com/thef4tdaddy/chastityOS/commit/5ae5704696ab157af2d8f147d40dc0e3a45f9777))
+* trigger redeploy ([8f68421](https://github.com/thef4tdaddy/chastityOS/commit/8f684211cff10549c2e2fe97860a0d05c368039e))
+* vercel build commands ([51e4df3](https://github.com/thef4tdaddy/chastityOS/commit/51e4df30d1763db5dea2c1f25a61731a707066d5))
+* vercel fix ([adaf7d0](https://github.com/thef4tdaddy/chastityOS/commit/adaf7d0f773b25b339a0bf0f584badab282c4ba5))
+* vercel is killing me ([a4efa12](https://github.com/thef4tdaddy/chastityOS/commit/a4efa12258035bed727687b871a0c07246657d10))
+* vercel please ([3905d77](https://github.com/thef4tdaddy/chastityOS/commit/3905d77f80fa47a863d57b042a6e59531066139b))
+* vercel please stop ([c14aa22](https://github.com/thef4tdaddy/chastityOS/commit/c14aa22cda9c2211cbe9e0fe3f72ce7ed97ab547))
+* why won't you work ([90f95c5](https://github.com/thef4tdaddy/chastityOS/commit/90f95c50402ff8f0e41ac5ee2cac5e5251e56228))
+* will vercel work now ([cd69cec](https://github.com/thef4tdaddy/chastityOS/commit/cd69cec00236e9a8b1fa4e75bb2f650c4f5055cf))
+
+
+### 🐛 Bug Fixes
+
+* logic error when editing ([1025e43](https://github.com/thef4tdaddy/chastityOS/commit/1025e43a75e868fad170f32b36e9a20cfb1d9c9b))
+* man that update prompt is a buggger ([7f886ac](https://github.com/thef4tdaddy/chastityOS/commit/7f886acd675be10f74212d410b3efb3c7fe599a0))
+* reasons unable to be edited ([91171ae](https://github.com/thef4tdaddy/chastityOS/commit/91171ae76fcc55ad0593c304fbdf664f3c5c6c5c))
+* update prompt + pwa fix ([e1f37de](https://github.com/thef4tdaddy/chastityOS/commit/e1f37de8ec0c5c0de11d2ec69eb0ba5875355bba))
+* update prompt fix ([750aaac](https://github.com/thef4tdaddy/chastityOS/commit/750aaac8996aec1ad9d250ec305b46d34ec94df7))
+* update prompt fix attempt 2 ([ba7dbdc](https://github.com/thef4tdaddy/chastityOS/commit/ba7dbdc62ab7f09963e47128dbf4e606564cc254))
+* update prompt won't go away ([836f50a](https://github.com/thef4tdaddy/chastityOS/commit/836f50ab8d2968919cc4eda5823e0b225cbef784))
+
+### [3.6.3-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.3-nightly.1...v3.6.3-nightly.2) (2025-06-12)
+
+
+### 🐛 Bug Fixes
+
+* fixing errors before moving prod to new db ([8b5af7e](https://github.com/thef4tdaddy/chastityOS/commit/8b5af7e75b3a5ceca7e44df9d1696ee8f30f837f))
+
+### [3.6.3-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.3-nightly.0...v3.6.3-nightly.1) (2025-06-12)
+
+
+### 🧹 Chores
+
+* adding a conventional commits doc ([a324a95](https://github.com/thef4tdaddy/chastityOS/commit/a324a95b998b6e0c3318ece1dcce5da33b752bc8))
+* adding more Github Actions, documentation ([0343dac](https://github.com/thef4tdaddy/chastityOS/commit/0343dacbb1f4478bcf3f4afcd8d338d19c1bbaa4))
+
+### [3.6.3-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.1...v3.6.3-nightly.0) (2025-06-12)
+
+### [3.6.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.6.1...v3.6.2) (2025-06-12)
+
+### 3.6.1 (2025-06-12)
 
 
 ### Features
 
-* add migration warning banner ([af0f84f](https://github.com/thef4tdaddy/chastityOS/commit/af0f84f4bbf11811072e7181e8af0d498870dabf))
+* PWA update notification + fix ([0f0c010](https://github.com/thef4tdaddy/chastityOS/commit/0f0c010e47c0665750b58f6be29c3de86cd59844))
+* update FeedbackForm, App.jsx, and SettingsPage with GTM tracking and Ko-fi link ([f8fef70](https://github.com/thef4tdaddy/chastityOS/commit/f8fef70375a00e63197cf2899f45fd60c13d01ca))
 
 # ChastityOS Changelog
 

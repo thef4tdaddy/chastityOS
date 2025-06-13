@@ -1,0 +1,20 @@
+
+
+name: Enforce Conventional Commits
+
+on:
+  pull_request:
+  push:
+    branches: [main, nightly]
+
+jobs:
+  commitlint:
+    name: Validate commit messages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint commits
+        uses: wagoid/commitlint-github-action@v5

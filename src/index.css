@@ -46,3 +46,11 @@ body,
   The global 'button' styles you had before, especially 'background-color', 
   were causing the button color issue.
 */
+/* Nightly vs Prod Theme Classes */
+.theme-nightly {
+  @apply bg-white text-black;
+}
+
+.theme-prod {
+  @apply bg-gray-950 text-white;
+}

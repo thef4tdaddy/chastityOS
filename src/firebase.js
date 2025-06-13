@@ -15,6 +15,7 @@ const firebaseConfig = {
 };
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+console.log("✅ Firebase Project ID:", firebaseConfig.projectId);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
