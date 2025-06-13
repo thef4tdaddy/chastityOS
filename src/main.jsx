@@ -31,6 +31,14 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0, 
 });
 
+Sentry.setTag("environment", import.meta.env.VITE_ENV);
+Sentry.setTag("project", import.meta.env.VITE_SENTRY_PROJECT);
+
+if (import.meta.env.DEV) {
+  console.info(`[Sentry] Environment: ${import.meta.env.VITE_ENV}`);
+  console.info(`[Sentry] Project: ${import.meta.env.VITE_SENTRY_PROJECT}`);
+}
+
 if (import.meta.env.VITE_ENV === 'prod') {
   console.debug = () => {};
   console.log = () => {};
