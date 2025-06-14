@@ -6,7 +6,7 @@ import SessionEditSection from '../components/settings/SessionEditSection.jsx';
 
 const SettingsMainPage = (props) => {
   return (
-    <div className="p-0 md:p-4 space-y-6">
+    <div className="settings-container space-y-6">
       <AccountSection {...props} />
       <DisplaySettingsSection {...props} />
       <PersonalGoalSection {...props} />
@@ -15,7 +15,7 @@ const SettingsMainPage = (props) => {
       <div className="mt-8 flex justify-end">
         <button
           onClick={() => props.setCurrentPage('syncData')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition"
+          className="settings-button text-white font-semibold py-2 px-4 rounded shadow transition"
         >
           Manage Data & Export
         </button>

@@ -5,6 +5,7 @@ const PrivacyPage = lazy(() => import('../pages/PrivacyPage'));
 const FeedbackForm = lazy(() => import('../pages/FeedbackForm'));
 
 const FooterNav = ({ userId, googleEmail }) => {
+  const isNightly = import.meta.env.VITE_ENV === 'nightly';
   const [version, setVersion] = useState('Fetching...');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -39,21 +40,21 @@ const FooterNav = ({ userId, googleEmail }) => {
             href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version.replace(/\s.*$/, '')}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-purple-300"
+            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
           >
             Version: {version}
           </a>
           <button
             type="button"
             onClick={() => setShowPrivacy(true)}
-            className="hover:text-purple-300"
+            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
           >
             Privacy
           </button>
           <button
             type="button"
             onClick={() => setShowFeedback(true)}
-            className="hover:text-purple-300"
+            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
           >
             Feedback
           </button>
@@ -61,7 +62,7 @@ const FooterNav = ({ userId, googleEmail }) => {
             href="https://ko-fi.com/chastityos"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-purple-300"
+            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
           >
             Support on Ko-fi
           </a>
@@ -81,7 +82,7 @@ const FooterNav = ({ userId, googleEmail }) => {
       {showPrivacy && (
         <Suspense fallback={<div className="text-white">Loading Privacy Policy...</div>}>
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 border border-purple-600 p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left">
+            <div className={`bg-gray-800 border ${isNightly ? 'border-green-600' : 'border-purple-600'} p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left`}>
               <PrivacyPage onBack={() => setShowPrivacy(false)} />
             </div>
           </div>
@@ -91,7 +92,7 @@ const FooterNav = ({ userId, googleEmail }) => {
       {showFeedback && (
         <Suspense fallback={<div className="text-white">Loading Feedback Form...</div>}>
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 border border-purple-600 p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left">
+            <div className={`bg-gray-800 border ${isNightly ? 'border-green-600' : 'border-purple-600'} p-6 rounded-lg max-w-xl w-full overflow-y-auto max-h-[90vh] text-left`}>
               <FeedbackForm onBack={() => setShowFeedback(false)} userId={userId} />
             </div>
           </div>

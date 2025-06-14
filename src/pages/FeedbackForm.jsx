@@ -83,9 +83,9 @@ const FeedbackForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-gray-800 border border-purple-700 rounded-md text-left space-y-4">
-      <div className="text-purple-200 font-semibold">Submit Feedback</div>
-      <select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-gray-700 border border-purple-600 text-purple-100 px-3 py-2 rounded-md">
+    <form onSubmit={handleSubmit} className="p-4 border rounded-md text-left space-y-4 bg-theme-bg border-theme-border text-theme-text">
+      <div className="text-theme-accent font-semibold">Submit Feedback</div>
+      <select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-theme-input border border-theme-border text-theme-text px-3 py-2 rounded-md">
         <option value="bug">Bug</option>
         <option value="suggestion">Suggestion</option>
       </select>
@@ -94,7 +94,7 @@ const FeedbackForm = () => {
         value={discordUsername}
         onChange={(e) => setDiscordUsername(e.target.value)}
         placeholder="Your Discord Username (optional)"
-        className="w-full bg-gray-900 border border-purple-600 text-purple-100 px-3 py-2 rounded-md"
+        className="w-full bg-theme-input border border-theme-border text-theme-text px-3 py-2 rounded-md"
       />
       <textarea
         value={message}
@@ -102,12 +102,12 @@ const FeedbackForm = () => {
         placeholder="Describe the bug or suggestion..."
         required
         rows={4}
-        className="w-full bg-gray-900 border border-purple-600 text-purple-100 px-3 py-2 rounded-md"
+        className="w-full bg-theme-input border border-theme-border text-theme-text px-3 py-2 rounded-md"
       />
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-md"
+        className="w-full bg-theme-button hover:bg-theme-button-hover text-white py-2 rounded-md"
       >
         {submitting ? 'Sending...' : 'Submit'}
       </button>

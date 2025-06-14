@@ -47,10 +47,273 @@ body,
   were causing the button color issue.
 */
 /* Nightly vs Prod Theme Classes */
+/* Nightly theme: Cohesive dark green styling */
 .theme-nightly {
-  @apply bg-white text-black;
+  @apply bg-green-950 text-green-100;
+}
+
+.theme-nightly .app-wrapper {
+  @apply bg-green-950 text-green-100;
+}
+
+.theme-nightly .card,
+.theme-nightly .box,
+.theme-nightly .section,
+.theme-nightly .tracker-box,
+.theme-nightly .bordered {
+  @apply bg-green-900 border border-green-700 text-green-100;
+}
+
+.theme-nightly .box,
+.theme-nightly .card,
+.theme-nightly .section {
+  @apply p-4 rounded-md;
+}
+
+.theme-nightly .bg-gray-900,
+.theme-nightly .bg-gray-800 {
+  @apply bg-green-900;
+}
+
+.theme-nightly h1,
+.theme-nightly h2,
+.theme-nightly h3,
+.theme-nightly h4,
+.theme-nightly h5,
+.theme-nightly h6 {
+  @apply text-green-300;
+}
+
+.theme-nightly button {
+  @apply bg-green-600 text-white hover:bg-green-500;
+}
+
+.theme-nightly a {
+  @apply text-green-300 hover:text-green-100;
+}
+
+.theme-nightly .subpage-title {
+  @apply text-green-300 border-b border-green-600 pb-1 text-xl font-semibold rounded-md;
+}
+
+.theme-nightly input,
+.theme-nightly select,
+.theme-nightly textarea {
+  @apply border-green-500 bg-green-900 text-green-100 focus:ring-green-400 focus:border-green-400;
+}
+
+.theme-nightly table {
+  @apply border border-green-700 bg-green-900 text-green-100;
+}
+
+.theme-nightly th,
+.theme-nightly td {
+  @apply border border-green-700 px-2 py-1;
+}
+
+.theme-nightly p:not([class]),
+.theme-nightly span:not([class]),
+.theme-nightly div:not([class]) {
+  @apply text-green-200;
 }
 
 .theme-prod {
   @apply bg-gray-950 text-white;
+}
+
+.theme-prod .app-wrapper {
+  @apply bg-gray-950 text-white;
+}
+
+.theme-prod .card,
+.theme-prod .box,
+.theme-prod .section,
+.theme-prod .tracker-box {
+  @apply bg-gray-900 border border-gray-600;
+}
+
+.theme-prod .box,
+.theme-prod .card,
+.theme-prod .section {
+  @apply p-4 rounded-md;
+}
+
+.theme-prod h1,
+.theme-prod h2,
+.theme-prod h3,
+.theme-prod h4,
+.theme-prod h5,
+.theme-prod h6 {
+  @apply text-purple-300;
+}
+
+.theme-prod .bordered {
+  @apply border-purple-500;
+}
+
+.theme-prod p,
+.theme-prod span,
+.theme-prod div {
+  @apply text-gray-200;
+}
+
+.theme-prod button {
+  @apply bg-purple-600 text-white hover:bg-purple-500;
+}
+
+.theme-prod a {
+  @apply text-purple-300 hover:text-purple-100;
+}
+
+.theme-prod input,
+.theme-prod select,
+.theme-prod textarea {
+  @apply border-purple-500 bg-gray-800 text-white focus:ring-purple-400 focus:border-purple-400;
+}
+
+.theme-prod table {
+  @apply border border-gray-700 bg-gray-900 text-white;
+}
+
+.theme-prod th,
+.theme-prod td {
+  @apply border border-gray-700 px-2 py-1;
+}
+
+/* Theme-based label and legend styling */
+.theme-nightly label,
+.theme-nightly legend {
+  @apply text-green-300;
+}
+
+.theme-prod label,
+.theme-prod legend {
+  @apply text-purple-300;
+}
+
+/* Theme-based checkbox and radio accent styling */
+.theme-nightly input[type='checkbox'],
+.theme-nightly input[type='radio'] {
+  @apply accent-green-500;
+}
+
+.theme-prod input[type='checkbox'],
+.theme-prod input[type='radio'] {
+  @apply accent-purple-500;
+}
+
+/* Shared h3 title class for both themes */
+.theme-prod .h3-title {
+  @apply text-purple-300;
+}
+
+.theme-nightly .h3-title {
+  @apply text-green-300;
+}
+
+/* Specific h3 overrides */
+.theme-prod .title-blue, .theme-nightly .title-blue {
+  @apply text-blue-300;
+}
+
+.theme-prod .title-yellow, .theme-nightly .title-yellow {
+  @apply text-yellow-300;
+}
+
+.theme-prod .title-red, .theme-nightly .title-red {
+  @apply text-red-300;
+}
+
+/* Shared utility classes for color-specific content (text, borders, background) */
+.text-keyholder {
+  @apply text-pink-400;
+}
+
+.border-reward {
+  @apply border-yellow-400;
+}
+
+.bg-punishment {
+  @apply bg-red-900;
+}
+
+/* Utility class to forcibly remove all borders, for special cases like subpage titles */
+.no-border {
+  @apply !border-none;
+}
+
+/* Global utility classes moved out from theme blocks */
+.reward-box {
+  @apply bg-yellow-900 text-yellow-200 border border-yellow-400;
+}
+
+.punishment-box {
+  @apply bg-red-900 text-red-200 border border-red-400;
+}
+
+.task-box {
+  @apply bg-blue-900 text-blue-200 border border-blue-400;
+}
+
+.title-red {
+  @apply text-red-300;
+}
+
+.title-yellow {
+  @apply text-yellow-300;
+}
+
+.title-blue {
+  @apply text-blue-300;
+}
+
+/* Global utility classes for colored inputs */
+.input-red {
+  @apply bg-red-900 text-red-200 border border-red-400 focus:ring-red-400 focus:border-red-400;
+}
+
+.input-yellow {
+  @apply bg-yellow-900 text-yellow-200 border border-yellow-400 focus:ring-yellow-400 focus:border-yellow-400;
+}
+
+.input-blue {
+  @apply bg-blue-900 text-blue-200 border border-blue-400 focus:ring-blue-400 focus:border-blue-400;
+}
+
+/* Global utility classes for colored buttons */
+.button-red {
+  @apply bg-red-700 text-red-100 hover:bg-red-600;
+}
+
+.button-yellow {
+  @apply bg-yellow-700 text-yellow-100 hover:bg-yellow-600;
+}
+
+.button-blue {
+  @apply bg-blue-700 text-blue-100 hover:bg-blue-600;
+}
+
+/* Additional utility classes */
+.inputbox-red {
+  @apply px-2 py-1 border border-red-400 bg-red-950 text-red-300 rounded;
+}
+
+.button-red {
+  @apply bg-red-950 hover:bg-red-800 text-red-300 px-4 py-2 rounded;
+}
+
+.text-red {
+  @apply text-red-300;
+}
+
+.inputbox-yellow {
+  @apply px-2 py-1 border border-yellow-400 bg-yellow-950 text-yellow-300 rounded;
+}
+
+.button-yellow {
+  @apply bg-yellow-950 hover:bg-yellow-800 text-yellow-300 px-4 py-2 rounded;
+}
+
+.text-yellow {
+  @apply text-yellow-300;
 }
