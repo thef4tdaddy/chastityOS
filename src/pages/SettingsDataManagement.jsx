@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { ChastityOSContext } from '../context/ChastityOSProvider';
+// Import the context directly rather than from the provider component
+import { ChastityOSContext } from '../context/ChastityOSContextOnly.js';
 import DataManagementSection from '../components/settings/DataManagementSection';
 
 function SettingsDataManagement() {
