@@ -74,66 +74,66 @@ const KeyholderSection = ({
   };
 
   return (
-    <div className="mb-8 p-4 bg-gray-800 border border-pink-700 rounded-lg shadow-sm">
-      <h3 className="text-xl font-semibold text-pink-300 mb-4">Keyholder Mode</h3>
+    <div className="mb-8 p-4 bg-transparent border border-keyholder rounded-lg shadow-sm">
+      <h3 className="title-red !text-red-300">Keyholder Mode</h3>
       {!keyholderName ? (
         <>
           <input type="text" value={khNameInput} onChange={e => setKhNameInput(e.target.value)} placeholder="Keyholder's Name"
-            className="w-full px-3 py-2 mb-3 rounded border border-pink-600 bg-gray-900 text-white" />
+            className="inputbox-red !text-red-300" />
           <button onClick={onSetKeyholder} disabled={!isAuthReady || !khNameInput.trim()}
-            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded">Set Keyholder</button>
+            className="button-red !text-red-300">Set Keyholder</button>
         </>
       ) : (
         <>
-          <p className="text-purple-300 mb-2">Keyholder: <strong>{keyholderName}</strong></p>
+          <p className="text-keyholder mb-2">Keyholder: <strong>{keyholderName}</strong></p>
           {!isKeyholderModeUnlocked ? (
             <>
               <input type="text" maxLength={8} value={khPasswordInput} onChange={e => setKhPasswordInput(e.target.value)} placeholder="Enter Password Preview"
-                className="w-full px-3 py-2 mb-3 rounded border border-pink-600 bg-gray-900 text-white" />
-              <button onClick={onUnlockControls} className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded">Unlock Controls</button>
+                className="inputbox-red !text-red-300" />
+              <button onClick={onUnlockControls} className="button-red !text-red-300">Unlock Controls</button>
             </>
           ) : (
             <div>
-              <p className="text-purple-200 mb-2">Required Duration: {requiredKeyholderDurationSeconds ? formatElapsedTime(requiredKeyholderDurationSeconds) : 'Not Set'}</p>
+              <p className="text-blue mb-2">Required Duration: {requiredKeyholderDurationSeconds ? formatElapsedTime(requiredKeyholderDurationSeconds) : 'Not Set'}</p>
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Days"
-                  className="px-2 py-1 border border-pink-600 bg-gray-900 text-white rounded" />
+                  className="inputbox-blue !text-blue-300 bg-transparent" />
                 <input type="number" value={khRequiredDurationHours} onChange={e => setKhRequiredDurationHours(e.target.value)} placeholder="Hours"
-                  className="px-2 py-1 border border-pink-600 bg-gray-900 text-white rounded" />
+                  className="inputbox-blue !text-blue-300 bg-transparent" />
                 <input type="number" value={khRequiredDurationMinutes} onChange={e => setKhRequiredDurationMinutes(e.target.value)} placeholder="Minutes"
-                  className="px-2 py-1 border border-pink-600 bg-gray-900 text-white rounded" />
+                  className="inputbox-blue !text-blue-300 bg-transparent" />
               </div>
-              <button onClick={onSetKHRequiredDuration} className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded mr-2">Update Duration</button>
-              <button onClick={handleLockKeyholderControls} className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Lock</button>
+              <button onClick={onSetKHRequiredDuration} className="button-blue !text-blue-300 mr-2">Update Duration</button>
+              <button onClick={handleLockKeyholderControls} className="button-blue !text-blue-300">Lock</button>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <h4 className="text-pink-200 mb-1 font-medium">Add Reward</h4>
+                  <h4 className="title-yellow !text-yellow-300">Add Reward</h4>
                   <div className="grid grid-cols-3 gap-1 mb-2">
-                    <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Days" className="px-2 py-1 border border-green-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={rewardHours} onChange={e=>setRewardHours(e.target.value)} placeholder="Hours" className="px-2 py-1 border border-green-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={rewardMinutes} onChange={e=>setRewardMinutes(e.target.value)} placeholder="Minutes" className="px-2 py-1 border border-green-600 bg-gray-900 text-white rounded" />
+                    <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Days" className="inputbox-yellow !text-yellow-300 bg-transparent" />
+                    <input type="number" value={rewardHours} onChange={e=>setRewardHours(e.target.value)} placeholder="Hours" className="inputbox-yellow !text-yellow-300 bg-transparent" />
+                    <input type="number" value={rewardMinutes} onChange={e=>setRewardMinutes(e.target.value)} placeholder="Minutes" className="inputbox-yellow !text-yellow-300 bg-transparent" />
                   </div>
-                  <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Other reward" className="w-full px-2 py-1 border border-green-600 bg-gray-900 text-white rounded mb-2" />
-                  <button onClick={onAddReward} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Add Reward</button>
+                  <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Other reward" className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
+                  <button onClick={onAddReward} className="button-yellow !text-yellow-300">Add Reward</button>
                 </div>
                 <div>
-                  <h4 className="text-pink-200 mb-1 font-medium">Add Punishment</h4>
+                  <h4 className="title-red !text-red-300">Add Punishment</h4>
                   <div className="grid grid-cols-3 gap-1 mb-2">
-                    <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Days" className="px-2 py-1 border border-red-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={punishHours} onChange={e=>setPunishHours(e.target.value)} placeholder="Hours" className="px-2 py-1 border border-red-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={punishMinutes} onChange={e=>setPunishMinutes(e.target.value)} placeholder="Minutes" className="px-2 py-1 border border-red-600 bg-gray-900 text-white rounded" />
+                    <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Days" className="inputbox-red !text-red-300 bg-transparent" />
+                    <input type="number" value={punishHours} onChange={e=>setPunishHours(e.target.value)} placeholder="Hours" className="inputbox-red !text-red-300 bg-transparent" />
+                    <input type="number" value={punishMinutes} onChange={e=>setPunishMinutes(e.target.value)} placeholder="Minutes" className="inputbox-red !text-red-300 bg-transparent" />
                   </div>
-                  <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Other punishment" className="w-full px-2 py-1 border border-red-600 bg-gray-900 text-white rounded mb-2" />
-                  <button onClick={onAddPunishment} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Add Punishment</button>
+                  <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Other punishment" className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
+                  <button onClick={onAddPunishment} className="button-red !text-red-300">Add Punishment</button>
                 </div>
               </div>
             </div>
           )}
-          <button onClick={handleClearKeyholder} className="mt-3 bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded text-sm">Clear Keyholder</button>
+          <button onClick={handleClearKeyholder} className="button-red !text-red-300 mt-3">Clear Keyholder</button>
         </>
       )}
-      {keyholderMessage && <p className="text-sm mt-2 text-purple-300">{keyholderMessage}</p>}
+      {keyholderMessage && <p className="text-sm mt-2 text-keyholder">{keyholderMessage}</p>}
     </div>
   );
 };

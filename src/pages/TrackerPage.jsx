@@ -148,20 +148,20 @@ const TrackerPage = (props) => {
           {/* Stats Display Area */}
           <div className="space-y-4 mb-6 md:mb-8">
             {/* Row 1 - Large Box for Cage Last On / Cage Off Since */}
-            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm text-center">
-                <p className="text-sm md:text-lg text-purple-300">{topBoxLabel}</p>
-                <p className="text-2xl md:text-4xl font-semibold text-purple-400">
+            <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm text-center">
+                <p className="tracker-label text-sm md:text-lg">{topBoxLabel}</p>
+                <p className="tracker-value text-2xl md:text-4xl font-semibold">
                     {formatTime(topBoxTime, true)}
                 </p>
             </div>
 
             {/* Row 2 - Two Smaller Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}>
-                    <p className="text-sm md:text-lg text-purple-300">
+                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'tracker-box'}`}>
+                    <p className="tracker-label text-sm md:text-lg">
                         Current Session In Chastity {isPaused ? '(Paused)' : ''}:
                     </p>
-                    <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
+                    <p className={`tracker-value text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : ''}`}>
                         {formatElapsedTime(mainChastityDisplayTime)}
                     </p>
                     {isPaused && pauseStartTime && (
@@ -171,21 +171,21 @@ const TrackerPage = (props) => {
                         <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
                     )}
                 </div>
-                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}>
-                    <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
-                    <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
+                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'tracker-box'}`}>
+                    <p className="tracker-label text-sm md:text-lg">Current Session Cage Off:</p>
+                    <p className={`tracker-value text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : ''}`}>{formatElapsedTime(timeCageOff)}</p>
                 </div>
             </div>
 
             {/* Row 3 - Two Smaller Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                    <p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p>
-                    <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalChastityTime)}</p>
+                <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm">
+                    <p className="tracker-label text-sm md:text-lg">Total Time In Chastity:</p>
+                    <p className="tracker-value text-2xl md:text-4xl font-bold">{formatElapsedTime(totalChastityTime)}</p>
                 </div>
-                <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                    <p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p>
-                    <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalTimeCageOff)}</p>
+                <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm">
+                    <p className="tracker-label text-sm md:text-lg">Total Time Cage Off:</p>
+                    <p className="tracker-value text-2xl md:text-4xl font-bold">{formatElapsedTime(totalTimeCageOff)}</p>
                 </div>
             </div>
           </div>

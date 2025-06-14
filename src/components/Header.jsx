@@ -7,11 +7,11 @@ const Header = () => {
       : 'Built nightly with kink and care.';
 
   return (
-    <header className="flex items-center gap-4 p-4 bg-gray-900 shadow-md border-b border-gray-700">
+    <header className="flex items-center gap-4 p-4 bg-theme-bg shadow-md border-b border-theme-border text-theme-text">
       <img src={logo} alt="ChastityOS Logo" className="h-10 w-10 rounded-lg" />
       <div>
-        <h1 className="text-xl font-bold text-white">ChastityOS</h1>
-        <p className="text-sm text-gray-300">{tagline}</p>
+        <h1 className="text-xl font-bold text-theme-text">ChastityOS</h1>
+        <p className="text-sm text-theme-text">{tagline}</p>
       </div>
     </header>
   );

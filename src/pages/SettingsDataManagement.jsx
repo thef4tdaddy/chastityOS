@@ -4,7 +4,7 @@ import DataManagementSection from '../components/settings/DataManagementSection.
 
 const SettingsPage = (props) => {
   return (
-    <div className="p-0 md:p-4">
+    <div className="settings-container">
       {/* Data Management */}
       <DataManagementSection {...props} />
     </div>
