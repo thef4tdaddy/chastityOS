@@ -4,7 +4,7 @@ import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
-export const useAuth = () => {
+const useAuth = () => {
     const [user, setUser] = useState(null);
     const [userId, setUserId] = useState(null);
     const [googleEmail, setGoogleEmail] = useState(null);
@@ -78,3 +78,5 @@ export const useAuth = () => {
         handleToggleUserIdVisibility
     };
 };
+
+export default useAuth;

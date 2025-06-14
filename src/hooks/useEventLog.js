@@ -1,6 +1,5 @@
-// src/hooks/useEventLog.js
 import { useState, useCallback, useEffect } from 'react';
-import { collection, addDoc, query, orderBy, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, getDocs, serverTimestamp, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export const useEventLog = (userId, isAuthReady) => {
@@ -8,7 +7,7 @@ export const useEventLog = (userId, isAuthReady) => {
     const [isLoadingEvents, setIsLoadingEvents] = useState(false);
     const [eventLogMessage, setEventLogMessage] = useState('');
 
-    // Form state
+    // Form state for logging a new event
     const [newEventDate, setNewEventDate] = useState(new Date().toISOString().slice(0, 10));
     const [newEventTime, setNewEventTime] = useState(new Date().toTimeString().slice(0, 5));
     const [selectedEventTypes, setSelectedEventTypes] = useState([]);
@@ -120,6 +119,7 @@ export const useEventLog = (userId, isAuthReady) => {
         try {
             await addDoc(eventsColRef, newEventData);
             setEventLogMessage("Event logged!");
+            // Reset form fields
             setNewEventDate(new Date().toISOString().slice(0, 10));
             setNewEventTime(new Date().toTimeString().slice(0, 5));
             setSelectedEventTypes([]);
@@ -130,13 +130,25 @@ export const useEventLog = (userId, isAuthReady) => {
             setNewEventDurationMinutes('');
             setNewEventSelfOrgasmAmount('');
             setNewEventPartnerOrgasmAmount('');
-            fetchEvents();
+            await fetchEvents(); // Refresh event list
         } catch (error) {
             console.error("Error logging new event:", error);
             setEventLogMessage("Failed to log. See console.");
         }
         setTimeout(() => setEventLogMessage(''), 3000);
     }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents]);
+    
+    const deleteEvent = useCallback(async (eventId) => {
+        if (!isAuthReady || !userId) return;
+        const eventDocRef = doc(db, "users", userId, "sexualEventsLog", eventId);
+        try {
+            await deleteDoc(eventDocRef);
+            await fetchEvents(); // Refresh after deleting
+        } catch (error) {
+            console.error("Error deleting event:", error);
+        }
+    }, [isAuthReady, userId, fetchEvents]);
+
 
     return {
         sexualEventsLog,
@@ -155,8 +167,9 @@ export const useEventLog = (userId, isAuthReady) => {
         handleEventTypeChange,
         handleOtherEventTypeCheckChange,
         handleLogNewEvent,
+        deleteEvent, // Expose delete function
         fetchEvents,
-        getEventsCollectionRef, // For reset function
-        setSexualEventsLog // Expose setter for reset
+        getEventsCollectionRef, 
+        setSexualEventsLog 
     };
 };

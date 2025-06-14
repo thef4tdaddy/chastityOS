@@ -1,110 +1,78 @@
-import { createContext, useState, useEffect } from 'react';
-import useChastitySession from './useChastitySession';
-import useEventLog from './useEventLog';
-import useSettings from './useSettings';
-import useDataManagement from './useDataManagement';
-import { hashSHA256 } from '../utils/hash';
+import { useState, useEffect } from 'react';
+import { useChastitySession } from './useChastitySession.js';
+import { useEventLog } from './useEventLog.js';
+import { useSettings } from './useSettings.js';
+import { useDataManagement } from './useDataManagement.js';
+import { hashSHA256 } from '../utils/hash.js';
 
-// Export the context so other components can use it
-export const ChastityOSContext = createContext();
-
-export const ChastityOSProvider = ({ children }) => {
+// The hook now accepts currentUser as an argument.
+export function useChastityState(currentUser) {
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  // The local currentUser and setCurrentUser state has been removed.
   const [nameMessage, setNameMessage] = useState('');
-  const [eventLogMessage, setEventLogMessage] = useState('');
   const [confirmReset, setConfirmReset] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreUserIdInput, setRestoreUserIdInput] = useState('');
   const [restoreFromIdMessage, setRestoreFromIdMessage] = useState('');
   const [showRestoreFromIdPrompt, setShowRestoreFromIdPrompt] = useState(false);
 
-  const { chastityState, setChastityState, loading, setLoading, initialCheckComplete } = useChastitySession(currentUser, isRestoring);
-  const { sexualEventsLog, setSexualEventsLog, logEvent, deleteEvent } = useEventLog(currentUser);
-  const { settings, setSettings, saveSettings } = useSettings(currentUser);
-
+  const { chastityState, setChastityState, loading: sessionLoading, initialCheckComplete } = useChastitySession(currentUser, isRestoring);
+  const eventLogHook = useEventLog(currentUser?.uid, initialCheckComplete);
+  const settingsHook = useSettings(currentUser);
+  
   useEffect(() => {
     if (initialCheckComplete) {
       setIsAuthReady(true);
     }
   }, [initialCheckComplete]);
 
-  const {
-    handleExportJSON,
-    handleImportJSON,
-    handleResetAllData,
-    handleExportTextReport,
-    handleExportTrackerCSV,
-    handleExportEventLogCSV,
-    handleInitiateRestoreFromId,
-    handleConfirmRestoreFromId,
-    handleCancelRestoreFromId,
-    handleRestoreUserIdInputChange,
-  } = useDataManagement({
+  const dataManagement = useDataManagement({
     currentUser,
-    setCurrentUser,
+    // Note: there is no setCurrentUser here anymore
     chastityState,
     setChastityState,
-    sexualEventsLog,
-    setSexualEventsLog,
-    settings,
-    setSettings,
+    sexualEventsLog: eventLogHook.sexualEventsLog,
+    setSexualEventsLog: eventLogHook.setSexualEventsLog,
+    settings: settingsHook.settings,
+    setSettings: settingsHook.setSettings,
     setNameMessage,
-    setEventLogMessage,
+    setEventLogMessage: eventLogHook.setEventLogMessage, 
     confirmReset,
     setConfirmReset,
-    isRestoring,
     setIsRestoring,
     restoreUserIdInput,
     setRestoreUserIdInput,
-    restoreFromIdMessage,
     setRestoreFromIdMessage,
-    showRestoreFromIdPrompt,
     setShowRestoreFromIdPrompt,
   });
 
-  const value = {
+  return {
     isAuthReady,
-    currentUser,
-    setCurrentUser,
+    // We no longer return currentUser/setCurrentUser from here. It's managed in App.jsx.
+    loading: sessionLoading || settingsHook.loading || eventLogHook.isLoadingEvents,
     chastityState,
     setChastityState,
-    sexualEventsLog,
-    logEvent,
-    deleteEvent,
-    settings,
-    setSettings,
-    saveSettings,
+    chastityHistory: chastityState.chastityHistory,
+    settings: settingsHook.settings,
+    saveSettings: settingsHook.saveSettings,
     nameMessage,
-    setNameMessage,
-    eventLogMessage,
-    setEventLogMessage,
-    loading,
-    setLoading,
-    handleExportJSON,
-    handleImportJSON,
-    handleResetAllData,
+    keyholderMessage: settingsHook.keyholderMessage,
+    isKeyholderModeUnlocked: settingsHook.isKeyholderModeUnlocked,
+    handleSetUsername: settingsHook.handleSetUsername,
+    handleSetKeyholder: settingsHook.handleSetKeyholder,
+    handleClearKeyholder: settingsHook.handleClearKeyholder,
+    handleUnlockKeyholderControls: settingsHook.handleUnlockKeyholderControls,
+    handleLockKeyholderControls: settingsHook.handleLockKeyholderControls,
+    handleSetRequiredDuration: settingsHook.handleSetRequiredDuration,
+    handleAddReward: settingsHook.handleAddReward,
+    handleAddPunishment: settingsHook.handleAddPunishment,
+    ...eventLogHook,
+    ...dataManagement,
     confirmReset,
-    setConfirmReset,
-    handleExportTextReport,
-    handleExportTrackerCSV,
-    handleExportEventLogCSV,
     isRestoring,
-    setIsRestoring,
     restoreUserIdInput,
-    handleRestoreUserIdInputChange,
-    handleInitiateRestoreFromId,
     restoreFromIdMessage,
     showRestoreFromIdPrompt,
-    handleConfirmRestoreFromId,
-    handleCancelRestoreFromId,
     hashSHA256,
-    chastityHistory: chastityState.chastityHistory,
   };
-
-  return (
-    <ChastityOSContext.Provider value={value}>
-      {children}
-    </ChastityOSContext.Provider>
-  );
-};
+}

@@ -1,31 +1,35 @@
-// src/pages/SettingsDataManagement.jsx
-
-import { useContext } from 'react';
-import { ChastityOSContext } from '../hooks/useChastityState';
+import React, { useContext } from 'react';
+import { ChastityOSContext } from '../context/ChastityOSProvider';
 import DataManagementSection from '../components/settings/DataManagementSection';
 
 function SettingsDataManagement() {
-  const {
-    currentUser,
-    chastityState,
-    setChastityState,
-    handleExportData,
-    handleImportData,
-    handleResetAllData,
-    confirmReset, // This was the missing line
-  } = useContext(ChastityOSContext);
+  // Use the main context to get all necessary state and functions.
+  const chastityOS = useContext(ChastityOSContext);
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Data Management</h2>
       <DataManagementSection
-        currentUser={currentUser}
-        chastityState={chastityState}
-        setChastityState={setChastityState}
-        onExport={handleExportData}
-        onImport={handleImportData}
-        handleResetAllData={handleResetAllData}
-        confirmReset={confirmReset} // And you need to pass it here
+        // Pass all the props from the context down to the component.
+        isAuthReady={chastityOS.isAuthReady}
+        handleExportTextReport={chastityOS.handleExportTextReport}
+        handleExportTrackerCSV={chastityOS.handleExportTrackerCSV}
+        handleExportEventLogCSV={chastityOS.handleExportEventLogCSV}
+        handleExportJSON={chastityOS.handleExportJSON}
+        handleImportJSON={chastityOS.handleImportJSON}
+        handleResetAllData={chastityOS.handleResetAllData}
+        confirmReset={chastityOS.confirmReset}
+        nameMessage={chastityOS.nameMessage}
+        eventLogMessage={chastityOS.eventLogMessage}
+        sexualEventsLog={chastityOS.sexualEventsLog}
+        chastityHistory={chastityOS.chastityHistory}
+        restoreUserIdInput={chastityOS.restoreUserIdInput}
+        handleRestoreUserIdInputChange={chastityOS.handleRestoreUserIdInputChange}
+        handleInitiateRestoreFromId={chastityOS.handleInitiateRestoreFromId}
+        restoreFromIdMessage={chastityOS.restoreFromIdMessage}
+        showRestoreFromIdPrompt={chastityOS.showRestoreFromIdPrompt}
+        handleConfirmRestoreFromId={chastityOS.handleConfirmRestoreFromId}
+        handleCancelRestoreFromId={chastityOS.handleCancelRestoreFromId}
       />
     </div>
   );
