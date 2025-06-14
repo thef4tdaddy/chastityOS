@@ -1,86 +1,110 @@
-// src/hooks/useChastityState.js
-import { useCallback, useState } from 'react';
-import { useAuth } from './useAuth';
-import { useSettings } from './useSettings';
-import { useEventLog } from './useEventLog';
-import { useChastitySession } from './useChastitySession';
-import { useDataManagement } from './useDataManagement'; // Import the new hook
-import { doc, getDocs, query, writeBatch } from 'firebase/firestore';
-import { db } from '../firebase';
+import { createContext, useState, useEffect } from 'react';
+import useChastitySession from './useChastitySession';
+import useEventLog from './useEventLog';
+import useSettings from './useSettings';
+import useDataManagement from './useDataManagement';
+import { hashSHA256 } from '../utils/hash';
 
-export const useChastityState = () => {
-    // Compose all specialized hooks
-    const authState = useAuth();
-    const { userId, isAuthReady, googleEmail } = authState;
+// Export the context so other components can use it
+export const ChastityOSContext = createContext();
 
-    const settingsState = useSettings(userId, isAuthReady);
-    
-    const eventLogState = useEventLog(userId, isAuthReady);
-    const { getEventsCollectionRef } = eventLogState;
+export const ChastityOSProvider = ({ children }) => {
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [nameMessage, setNameMessage] = useState('');
+  const [eventLogMessage, setEventLogMessage] = useState('');
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreUserIdInput, setRestoreUserIdInput] = useState('');
+  const [restoreFromIdMessage, setRestoreFromIdMessage] = useState('');
+  const [showRestoreFromIdPrompt, setShowRestoreFromIdPrompt] = useState(false);
 
-    const sessionState = useChastitySession(
-        userId,
-        isAuthReady,
-        googleEmail,
-        getEventsCollectionRef,
-        eventLogState.fetchEvents
-    );
+  const { chastityState, setChastityState, loading, setLoading, initialCheckComplete } = useChastitySession(currentUser, isRestoring);
+  const { sexualEventsLog, setSexualEventsLog, logEvent, deleteEvent } = useEventLog(currentUser);
+  const { settings, setSettings, saveSettings } = useSettings(currentUser);
 
-    // Use the new data management hook
-    const dataManagementState = useDataManagement({
-        userId,
-        settingsState,
-        sessionState,
-        eventLogState,
-        getEventsCollectionRef
-    });
+  useEffect(() => {
+    if (initialCheckComplete) {
+      setIsAuthReady(true);
+    }
+  }, [initialCheckComplete]);
 
-    const [confirmReset, setConfirmReset] = useState(false);
+  const {
+    handleExportJSON,
+    handleImportJSON,
+    handleResetAllData,
+    handleExportTextReport,
+    handleExportTrackerCSV,
+    handleExportEventLogCSV,
+    handleInitiateRestoreFromId,
+    handleConfirmRestoreFromId,
+    handleCancelRestoreFromId,
+    handleRestoreUserIdInputChange,
+  } = useDataManagement({
+    currentUser,
+    setCurrentUser,
+    chastityState,
+    setChastityState,
+    sexualEventsLog,
+    setSexualEventsLog,
+    settings,
+    setSettings,
+    setNameMessage,
+    setEventLogMessage,
+    confirmReset,
+    setConfirmReset,
+    isRestoring,
+    setIsRestoring,
+    restoreUserIdInput,
+    setRestoreUserIdInput,
+    restoreFromIdMessage,
+    setRestoreFromIdMessage,
+    showRestoreFromIdPrompt,
+    setShowRestoreFromIdPrompt,
+  });
 
-    const handleResetAllData = useCallback(async (isAccountDeletion = false) => {
-        if (!isAccountDeletion && !confirmReset) {
-            setConfirmReset(true);
-            setTimeout(() => setConfirmReset(false), 3000);
-            return;
-        }
-        if (!isAuthReady || !userId) return;
+  const value = {
+    isAuthReady,
+    currentUser,
+    setCurrentUser,
+    chastityState,
+    setChastityState,
+    sexualEventsLog,
+    logEvent,
+    deleteEvent,
+    settings,
+    setSettings,
+    saveSettings,
+    nameMessage,
+    setNameMessage,
+    eventLogMessage,
+    setEventLogMessage,
+    loading,
+    setLoading,
+    handleExportJSON,
+    handleImportJSON,
+    handleResetAllData,
+    confirmReset,
+    setConfirmReset,
+    handleExportTextReport,
+    handleExportTrackerCSV,
+    handleExportEventLogCSV,
+    isRestoring,
+    setIsRestoring,
+    restoreUserIdInput,
+    handleRestoreUserIdInputChange,
+    handleInitiateRestoreFromId,
+    restoreFromIdMessage,
+    showRestoreFromIdPrompt,
+    handleConfirmRestoreFromId,
+    handleCancelRestoreFromId,
+    hashSHA256,
+    chastityHistory: chastityState.chastityHistory,
+  };
 
-        const batch = writeBatch(db);
-        const userDocRef = doc(db, "users", userId);
-        batch.set(userDocRef, {
-            submissivesName: '', keyholderName: '', keyholderPasswordHash: null, 
-            requiredKeyholderDurationSeconds: null, goalDurationSeconds: null, rewards: [], 
-            punishments: [], isTrackingAllowed: true, eventDisplayMode: 'kinky',
-            isCageOn: false, cageOnTime: null, timeInChastity: 0, 
-            chastityHistory: [], totalTimeCageOff: 0, 
-            isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, 
-            currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false
-        });
-
-        const eventsColRef = getEventsCollectionRef();
-        if (eventsColRef) {
-            const q = query(eventsColRef);
-            const querySnapshot = await getDocs(q);
-            querySnapshot.docs.forEach(docSnapshot => batch.delete(docSnapshot.ref));
-        }
-        
-        try {
-            await batch.commit();
-            if(!isAccountDeletion) alert('All data has been reset.');
-        } catch (error) {
-            console.error("Error resetting data:", error);
-            if(!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
-        }
-        setConfirmReset(false);
-    }, [isAuthReady, userId, confirmReset, getEventsCollectionRef]);
-
-    return {
-        ...authState,
-        ...settingsState,
-        ...eventLogState,
-        ...sessionState,
-        ...dataManagementState, // Spread the returned functions
-        confirmReset,
-        handleResetAllData,
-    };
+  return (
+    <ChastityOSContext.Provider value={value}>
+      {children}
+    </ChastityOSContext.Provider>
+  );
 };
