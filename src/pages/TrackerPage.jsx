@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { formatTime, formatElapsedTime } from '../utils';
+import { ChastityOSContext } from '../context/ChastityOSContextOnly.js';
 
 const TrackerPage = (props) => {
+    const context = useContext(ChastityOSContext) || {};
     const {
         isAuthReady,
         isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
@@ -27,7 +29,7 @@ const TrackerPage = (props) => {
         goalDurationSeconds,
         keyholderName,
         requiredKeyholderDurationSeconds
-    } = props;
+    } = { ...context, ...props };
 
     const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false;
     const [remainingGoalTime, setRemainingGoalTime] = useState(null);
