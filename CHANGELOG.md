@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.8.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.1...v3.8.0-nightly.2) (2025-06-14)
+
+
+### 🐛 Bug Fixes
+
+* tailwind config fix attempt 2 ([4919dfe](https://github.com/thef4tdaddy/chastityOS/commit/4919dfe3cc2c70d0f4ad0357b2584ef7146f3734))
+
 ## [3.8.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.0...v3.8.0-nightly.1) (2025-06-14)
 
 
