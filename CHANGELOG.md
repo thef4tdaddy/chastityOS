@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.8.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.2...v3.8.0-nightly.3) (2025-06-15)
+
+
+### 🐛 Bug Fixes
+
+* build issue when seperating variants ([fd3f858](https://github.com/thef4tdaddy/chastityOS/commit/fd3f858e576a910efd90ab0ac0f3c5760328baa7))
+* discord release github action ([499acf1](https://github.com/thef4tdaddy/chastityOS/commit/499acf1f7b95a3012e7c1a45aba28d2b39e39871))
+
 ## [3.8.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.1...v3.8.0-nightly.2) (2025-06-14)
 
 
