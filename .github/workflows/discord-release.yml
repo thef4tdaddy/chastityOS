@@ -38,4 +38,4 @@ jobs:
                 "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
               }]
             }' \
-            https://discord.com/api/webhooks/1382689996120522852/ciYTn8b9AqJXi1o63htq1Sz9XqgYaY64Loj3RrdN3dYkNyiV56--PH9wZXXQgQvgH6oI
+            https://discord.com/api/webhooks/1383916150467067934/jbx3c-ePdqIQswo5dprxolEBnTO2ffU-sei8T1No9pH4QkqdO4FfZ7mbZdUT-DnLM_OW
