@@ -8,8 +8,14 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
-  const gitHash = execSync('git rev-parse --short HEAD').toString().trim();
-  const releaseVersion = `chastityOS-${gitHash}`;
+  const variant = process.env.VITE_APP_VARIANT || 'unknown';
+  let gitHash = 'dev';
+  try {
+    gitHash = execSync('git rev-parse --short HEAD').toString().trim();
+  } catch (e) {
+    console.warn('[vite.config.js] Git hash not available. Using "dev" instead.');
+  }
+  const releaseVersion = `chastityOS-${variant}-${gitHash}`;
 
   return {
     plugins: [
