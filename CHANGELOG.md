@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.4...v3.7.5) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* fixes footer attempt 2 ([c8afe6e](https://github.com/thef4tdaddy/chastityOS/commit/c8afe6ebd70e18ec17dc3f3bfd4f4a5f18350a86))
+
 ### [3.7.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.3...v3.7.4) (2025-06-16)
 
 
