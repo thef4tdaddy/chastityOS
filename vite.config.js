@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
   const releaseVersion = `chastityOS-${variant}-${gitHash}`;
 
   return {
+    define: {
+      'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(releaseVersion),
+    },
     plugins: [
       react(), 
       tailwindcss(),
@@ -94,4 +97,3 @@ export default defineConfig(({ mode }) => {
     }
   }
 })
-

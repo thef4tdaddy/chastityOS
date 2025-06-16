@@ -42,14 +42,18 @@ const FooterNav = ({ userId, googleEmail }) => {
     <>
       <footer className="mt-8 text-center text-xs text-gray-500">
         <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-2">
-          <a
-            href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version.replace(/\s.*$/, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-purple-300"
-          >
-            Version: {version}
-          </a>
+          {!version.startsWith('dev') && !version.startsWith('Error') ? (
+            <a
+              href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version.replace(/\s.*$/, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-purple-300"
+            >
+              Version: {version}
+            </a>
+          ) : (
+            <span className="text-gray-400">Version: {version}</span>
+          )}
           <button
             type="button"
             onClick={() => setShowPrivacy(true)}
