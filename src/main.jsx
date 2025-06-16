@@ -6,9 +6,17 @@ import * as Sentry from "@sentry/react";
 import './index.css';
 import App from './App.jsx';
 
+console.log('[SENTRY CONFIG]', {
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  release: import.meta.env.VITE_SENTRY_RELEASE,
+  env: import.meta.env.VITE_ENV,
+});
+
 // Initialize Sentry for error and performance monitoring
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
+  release: import.meta.env.VITE_SENTRY_RELEASE || 'chastityOS-dev',
+  environment: import.meta.env.VITE_ENV || 'unknown',
   integrations: [
     // See docs for support of different integrations
     // https://docs.sentry.io/platforms/javascript/guides/react/features/

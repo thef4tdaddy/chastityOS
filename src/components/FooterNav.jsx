@@ -10,22 +10,27 @@ const FooterNav = ({ userId, googleEmail }) => {
   const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
-    fetch('https://api.github.com/repos/thef4tdaddy/chastityOS/releases/latest')
+    fetch('https://api.github.com/repos/thef4tdaddy/chastityOS/releases?per_page=5')
       .then((res) => {
         if (!res.ok) throw new Error(`GitHub API responded with ${res.status}`);
         return res.json();
       })
-      .then((data) => {
-        if (data && data.tag_name) {
-          const rawEnv = import.meta.env.VITE_ENV;
-          const env = rawEnv === undefined ? 'unknown' : rawEnv;
-          console.log('[FooterNav] VITE_ENV:', rawEnv);
-          if (env === 'nightly' && data.tag_name.includes('nightly')) {
-            setVersion(data.tag_name);
-          } else {
-            setVersion(`${data.tag_name} (${env})`);
-          }
-        } else setVersion('N/A');
+      .then((releases) => {
+        const rawEnv = import.meta.env.VITE_ENV;
+        const env = rawEnv === undefined ? 'unknown' : rawEnv;
+        console.log('[FooterNav] VITE_ENV:', rawEnv);
+
+        const match = releases.find((r) =>
+          env === 'nightly'
+            ? r.tag_name.includes('nightly')
+            : !r.tag_name.includes('nightly')
+        );
+
+        if (match?.tag_name) {
+          setVersion(`${match.tag_name} (${env})`);
+        } else {
+          setVersion('N/A');
+        }
       })
       .catch((error) => {
         console.error("Failed to fetch version:", error);
