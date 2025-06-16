@@ -78,7 +78,7 @@ const App = () => {
             <Header />
 
             <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">
-                <h1 className="app-title">ChastityOS</h1>
+                {/* <h1 className="app-title">ChastityOS</h1> */}
                 {savedSubmissivesName && (
                   <p className="app-subtitle">ChastityOS is currently tracking <span className="font-semibold">{savedSubmissivesName}'s FLR Journey</span></p>
                 )}

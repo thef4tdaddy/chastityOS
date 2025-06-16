@@ -49,6 +49,7 @@ body,
 /* Nightly vs Prod Theme Classes */
 /* Nightly theme: Cohesive dark green styling */
 .theme-nightly {
+  font-family: 'Orbitron', sans-serif;
   @apply bg-green-950 text-green-100;
 }
 
@@ -118,6 +119,7 @@ body,
 }
 
 .theme-prod {
+  font-family: 'Cinzel', serif;
   @apply bg-gray-950 text-white;
 }
 
