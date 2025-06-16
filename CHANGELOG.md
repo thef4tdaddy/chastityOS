@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.2...v3.7.3) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* pwa files ([4b0b5ad](https://github.com/thef4tdaddy/chastityOS/commit/4b0b5aded20d4ff23b98736364a6710db008ae0d))
+
 ### [3.7.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.1...v3.7.2) (2025-06-16)
 
 
