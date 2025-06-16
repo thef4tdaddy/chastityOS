@@ -17,7 +17,9 @@ const FooterNav = ({ userId, googleEmail }) => {
       })
       .then((data) => {
         if (data && data.tag_name) {
-          const env = import.meta.env.VITE_ENV || 'local';
+          const rawEnv = import.meta.env.VITE_ENV;
+          const env = rawEnv === undefined ? 'unknown' : rawEnv;
+          console.log('[FooterNav] VITE_ENV:', rawEnv);
           if (env === 'nightly' && data.tag_name.includes('nightly')) {
             setVersion(data.tag_name);
           } else {
