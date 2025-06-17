@@ -1,5 +1,6 @@
 #!/bin/bash
 # A modernized script to clean up old nightly GitHub releases and merge their notes.
+# This version is compatible with both macOS and Linux date commands.
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
@@ -7,11 +8,20 @@ set -e
 # --- Configuration ---
 # The GitHub repository in the format "owner/repo".
 REPO="thef4tdaddy/chastityOS"
-# The time window to check for releases.
-SINCE=$(date -u --date='23 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
+
+# --- Date Calculation (OS Agnostic) ---
+# Determine the operating system to use the correct date command.
+if [[ "$(uname)" == "Darwin" ]]; then
+  # macOS/BSD date command
+  SINCE=$(date -u -v-23H +"%Y-%m-%dT%H:%M:%SZ")
+else
+  # Linux/GNU date command
+  SINCE=$(date -u --date='23 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
+fi
 
 echo "🧹 Starting nightly cleanup for repository: $REPO"
 echo "🔍 Searching for nightly releases since: $SINCE"
+
 
 # --- Main Logic ---
 # Use a single jq command to:
