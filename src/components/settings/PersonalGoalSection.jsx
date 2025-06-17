@@ -1,102 +1,94 @@
 // src/components/settings/PersonalGoalSection.jsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { formatElapsedTime } from '../../utils';
+import { usePersonalGoal } from '../../hooks/usePersonalGoal'; // Import the new hook
 
-const PersonalGoalSection = ({ goalDurationSeconds, handleSetGoalDuration, isAuthReady }) => {
-  const [days, setDays] = useState('');
-  const [hours, setHours] = useState('');
-  const [minutes, setMinutes] = useState('');
+const PersonalGoalSection = (props) => {
+  // All the complex logic is now handled by the custom hook
+  const {
+    days, setDays,
+    hours, setHours,
+    minutes, setMinutes,
+    isSelfLockEnabled, setIsSelfLockEnabled,
+    selfLockCombination, setSelfLockCombination,
+    onSetGoal,
+    onClearGoal,
+  } = usePersonalGoal(props);
+  
+  // Destructure the remaining props needed directly by the view
+  const {
+    goalDurationSeconds,
+    isAuthReady,
+    isSelfLocked,
+    selfLockMessage,
+    onAcknowledgeBackupCode
+  } = props;
 
-  useEffect(() => {
-    if (goalDurationSeconds !== null && goalDurationSeconds > 0) {
-      const d = Math.floor(goalDurationSeconds / 86400);
-      const h = Math.floor((goalDurationSeconds % 86400) / 3600);
-      const m = Math.floor((goalDurationSeconds % 3600) / 60);
-      setDays(d.toString());
-      setHours(h.toString());
-      setMinutes(m.toString());
-    } else {
-      setDays('');
-      setHours('');
-      setMinutes('');
-    }
-  }, [goalDurationSeconds]);
-
-  const onSetGoal = () => {
-    const totalSeconds = (parseInt(days) || 0) * 86400 + (parseInt(hours) || 0) * 3600 + (parseInt(minutes) || 0) * 60;
-    handleSetGoalDuration(totalSeconds > 0 ? totalSeconds : null);
-  };
-
-  const onClearGoal = () => {
-    handleSetGoalDuration(null);
-  };
+  const hasTimeInput = parseInt(days) > 0 || parseInt(hours) > 0 || parseInt(minutes) > 0;
 
   return (
-    <div className="mb-8 px-4 py-5 sm:p-6 bg-gray-800 border border-blue-700 rounded-lg shadow">
-      <h3 className="text-lg leading-6 font-medium text-blue-200 mb-3">Personal Chastity Goal</h3>
-      <p className="text-sm text-blue-300 mb-4">
-        Set a personal time goal for your chastity sessions. This will be shown on the main tracker page.
+    <div className="personal-goal-section">
+      <h3>Personal Chastity Goal</h3>
+      <p className="text-sm mb-4">
+        Set a personal time goal. To take it further, enable Hardcore Mode to lock yourself in.
       </p>
       
-      {goalDurationSeconds > 0 && (
-        <p className="text-sm text-green-300 mb-4">
+      {isSelfLocked && (
+        <div className="locked-state-message">
+          A self-lock goal is currently active for <strong>{formatElapsedTime(goalDurationSeconds)}</strong>. Controls are disabled until the goal is complete.
+        </div>
+      )}
+      
+      {goalDurationSeconds > 0 && !isSelfLocked && (
+        <p className="current-goal-message">
           Current Goal: <strong>{formatElapsedTime(goalDurationSeconds)}</strong>
         </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-        <div>
-          <label htmlFor="goalDays" className="block text-xs font-medium text-blue-300 mb-1">Days</label>
-          <input
-            type="number"
-            id="goalDays"
-            value={days}
-            onChange={(e) => setDays(e.target.value)}
-            className="w-full px-3 py-1.5 rounded-md border border-blue-500 bg-gray-900 text-blue-100 text-sm focus:ring-blue-400 focus:border-blue-400"
-            placeholder="0"
-          />
+      <fieldset disabled={isSelfLocked}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div><label htmlFor="goalDays">Days</label><input type="number" id="goalDays" value={days} onChange={(e) => setDays(e.target.value)} placeholder="0" /></div>
+          <div><label htmlFor="goalHours">Hours</label><input type="number" id="goalHours" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="0" /></div>
+          <div><label htmlFor="goalMinutes">Minutes</label><input type="number" id="goalMinutes" value={minutes} onChange={(e) => setMinutes(e.target.value)} placeholder="0" /></div>
         </div>
-        <div>
-          <label htmlFor="goalHours" className="block text-xs font-medium text-blue-300 mb-1">Hours</label>
-          <input
-            type="number"
-            id="goalHours"
-            value={hours}
-            onChange={(e) => setHours(e.target.value)}
-            className="w-full px-3 py-1.5 rounded-md border border-blue-500 bg-gray-900 text-blue-100 text-sm focus:ring-blue-400 focus:border-blue-400"
-            placeholder="0"
-          />
+
+        <div className="self-lock-toggle">
+            <label htmlFor="selfLockEnable">Enable Self-Lock (Hardcore Mode)</label>
+            <input id="selfLockEnable" type="checkbox" checked={isSelfLockEnabled} onChange={(e) => setIsSelfLockEnabled(e.target.checked)} />
         </div>
-        <div>
-          <label htmlFor="goalMinutes" className="block text-xs font-medium text-blue-300 mb-1">Minutes</label>
-          <input
-            type="number"
-            id="goalMinutes"
-            value={minutes}
-            onChange={(e) => setMinutes(e.target.value)}
-            className="w-full px-3 py-1.5 rounded-md border border-blue-500 bg-gray-900 text-blue-100 text-sm focus:ring-blue-400 focus:border-blue-400"
-            placeholder="0"
-          />
+
+        {isSelfLockEnabled && (
+            <div className="self-lock-input-box">
+                <h4>Set Lock Combination</h4>
+                <p className="text-xs mb-3">Enter the combination for your physical lock. This will be hidden and revealed only after your goal is complete.</p>
+                <input
+                    type="text"
+                    value={selfLockCombination}
+                    onChange={(e) => setSelfLockCombination(e.target.value)}
+                    placeholder="e.g., 12-34-56"
+                    className="w-full font-mono tracking-widest"
+                />
+            </div>
+        )}
+
+        <div className="flex space-x-3 mt-4">
+          <button type="button" onClick={onSetGoal} disabled={!isAuthReady || !hasTimeInput || (isSelfLockEnabled && !selfLockCombination.trim())}>
+            {isSelfLockEnabled ? 'Set Goal & Lock' : 'Set/Update Goal'}
+          </button>
+          <button type="button" onClick={onClearGoal} disabled={!isAuthReady || !goalDurationSeconds}>
+            Clear Goal
+          </button>
         </div>
-      </div>
-      <div className="flex space-x-3">
-        <button
-          type="button"
-          onClick={onSetGoal}
-          disabled={!isAuthReady}
-          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-4 rounded-md shadow-sm transition duration-300 disabled:opacity-50"
-        >
-          Set/Update Goal
-        </button>
-        <button
-          type="button"
-          onClick={onClearGoal}
-          disabled={!isAuthReady || !goalDurationSeconds}
-          className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white text-sm py-2 px-4 rounded-md shadow-sm transition duration-300 disabled:opacity-50"
-        >
-          Clear Goal
-        </button>
-      </div>
+      </fieldset>
+      
+      {selfLockMessage && (
+        <div className="util-box box-red mt-4">
+            <h4>IMPORTANT: Backup Code</h4>
+            <p className="text-sm">{selfLockMessage}</p>
+            <p className="text-xs text-yellow-400 mt-2">This is the **only** time this backup code will be shown. Write it down and keep it somewhere safe.</p>
+            <button onClick={onAcknowledgeBackupCode} className="w-full mt-3">I have saved my backup code</button>
+        </div>
+      )}
     </div>
   );
 };

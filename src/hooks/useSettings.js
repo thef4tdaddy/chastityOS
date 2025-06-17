@@ -5,22 +5,25 @@ import { db } from '../firebase';
 import { generateHash } from '../utils/hash';
 
 export const useSettings = (userId, isAuthReady) => {
-    // All settings-related state is now managed here
+    // --- State Management ---
     const [savedSubmissivesName, setSavedSubmissivesName] = useState('');
     const [submissivesNameInput, setSubmissivesNameInput] = useState('');
     const [nameMessage, setNameMessage] = useState('');
-
     const [keyholderName, setKeyholderName] = useState('');
     const [keyholderPasswordHash, setKeyholderPasswordHash] = useState(null);
     const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
     const [requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds] = useState(null);
     const [keyholderMessage, setKeyholderMessage] = useState('');
-
+    const [passwordAcknowledged, setPasswordAcknowledged] = useState(false);
     const [goalDurationSeconds, setGoalDurationSeconds] = useState(null);
     const [rewards, setRewards] = useState([]);
     const [punishments, setPunishments] = useState([]);
     const [isTrackingAllowed, setIsTrackingAllowed] = useState(true);
     const [eventDisplayMode, setEventDisplayMode] = useState('kinky');
+    const [isSelfLocked, setIsSelfLocked] = useState(false);
+    const [selfLockCode, setSelfLockCode] = useState(null);
+    const [selfLockBackupAcknowledged, setSelfLockBackupAcknowledged] = useState(false);
+    const [selfLockMessage, setSelfLockMessage] = useState('');
 
     const saveSettingsToFirestore = useCallback(async (settingsToSave) => {
         if (!isAuthReady || !userId) return;
@@ -34,7 +37,6 @@ export const useSettings = (userId, isAuthReady) => {
 
     useEffect(() => {
         if (!isAuthReady || !userId) return;
-
         const docRef = doc(db, "users", userId);
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
@@ -43,28 +45,25 @@ export const useSettings = (userId, isAuthReady) => {
                 setSubmissivesNameInput(data.submissivesName || '');
                 setKeyholderName(data.keyholderName || '');
                 setKeyholderPasswordHash(data.keyholderPasswordHash || null);
-                setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds !== undefined ? data.requiredKeyholderDurationSeconds : null);
-                setGoalDurationSeconds(data.goalDurationSeconds !== undefined ? data.goalDurationSeconds : null);
+                setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds ?? null);
+                setGoalDurationSeconds(data.goalDurationSeconds ?? null);
                 setRewards(data.rewards || []);
                 setPunishments(data.punishments || []);
-                setIsTrackingAllowed(data.isTrackingAllowed !== undefined ? data.isTrackingAllowed : true);
+                setIsTrackingAllowed(data.isTrackingAllowed !== false);
                 setEventDisplayMode(data.eventDisplayMode || 'kinky');
+                setPasswordAcknowledged(data.passwordAcknowledged || false);
+                setIsSelfLocked(data.isSelfLocked || false);
+                setSelfLockCode(data.selfLockCode || null);
+                setSelfLockBackupAcknowledged(data.selfLockBackupAcknowledged || false);
             }
         });
-
         return () => unsubscribe();
     }, [isAuthReady, userId]);
 
-    const handleSubmissivesNameInputChange = useCallback((event) => {
-        setSubmissivesNameInput(event.target.value);
-    }, []);
+    // --- All Handlers ---
+    const handleSubmissivesNameInputChange = useCallback((event) => setSubmissivesNameInput(event.target.value), []);
 
     const handleSetSubmissivesName = useCallback(async () => {
-        if (!isAuthReady || !userId) {
-            setNameMessage("Authentication is not ready.");
-            setTimeout(() => setNameMessage(''), 3000);
-            return;
-        }
         const trimmedName = submissivesNameInput.trim();
         if (!trimmedName) {
             setNameMessage("Name cannot be empty.");
@@ -75,7 +74,7 @@ export const useSettings = (userId, isAuthReady) => {
         await saveSettingsToFirestore({ submissivesName: trimmedName });
         setNameMessage("Submissive's name has been set!");
         setTimeout(() => setNameMessage(''), 3000);
-    }, [isAuthReady, userId, submissivesNameInput, saveSettingsToFirestore]);
+    }, [submissivesNameInput, saveSettingsToFirestore]);
 
     const handleSetKeyholder = useCallback(async (name) => {
         const khName = name.trim();
@@ -89,11 +88,12 @@ export const useSettings = (userId, isAuthReady) => {
         await saveSettingsToFirestore({ 
             keyholderName: khName, 
             keyholderPasswordHash: hash, 
-            requiredKeyholderDurationSeconds: null 
+            requiredKeyholderDurationSeconds: null,
+            passwordAcknowledged: false
         });
 
         setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage(`Keyholder "${khName}" set. Password preview: ${preview}`);
+        setKeyholderMessage(`Your keyholder password is: ${preview}`);
         return preview;
     }, [userId, saveSettingsToFirestore]);
 
@@ -101,7 +101,8 @@ export const useSettings = (userId, isAuthReady) => {
         await saveSettingsToFirestore({ 
             keyholderName: '', 
             keyholderPasswordHash: null, 
-            requiredKeyholderDurationSeconds: null 
+            requiredKeyholderDurationSeconds: null,
+            passwordAcknowledged: false
         });
         setIsKeyholderModeUnlocked(false);
         setKeyholderMessage('Keyholder data cleared.');
@@ -137,15 +138,6 @@ export const useSettings = (userId, isAuthReady) => {
         return false;
     }, [saveSettingsToFirestore]);
 
-    const handleSetGoalDuration = useCallback(async (newDurationInSeconds) => {
-        const newDuration = newDurationInSeconds === null ? null : Number(newDurationInSeconds);
-        if (newDuration === null || (!isNaN(newDuration) && newDuration >= 0)) {
-            await saveSettingsToFirestore({ goalDurationSeconds: newDuration });
-            return true;
-        }
-        return false;
-    }, [saveSettingsToFirestore]);
-    
     const handleAddReward = useCallback(async ({ timeSeconds = 0, other = '' }) => {
         const newReward = { id: crypto.randomUUID(), timeSeconds: timeSeconds > 0 ? timeSeconds : null, other: other.trim() };
         const updatedRewards = [...rewards, newReward];
@@ -163,7 +155,6 @@ export const useSettings = (userId, isAuthReady) => {
         await saveSettingsToFirestore({ punishments: updatedPunishments, requiredKeyholderDurationSeconds: newRequired });
     }, [punishments, requiredKeyholderDurationSeconds, saveSettingsToFirestore]);
     
-    // *** RESTORED THIS HANDLER ***
     const handleSetEventDisplayMode = useCallback(async (mode) => {
         if (mode === 'kinky' || mode === 'vanilla') {
             setEventDisplayMode(mode);
@@ -171,30 +162,45 @@ export const useSettings = (userId, isAuthReady) => {
         }
     }, [saveSettingsToFirestore]);
 
+    const onAcknowledgePassword = useCallback(async () => {
+        await saveSettingsToFirestore({ passwordAcknowledged: true });
+    }, [saveSettingsToFirestore]);
+
+    // --- Self-Lock Handlers ---
+    const handleSetSelfLock = useCallback(async (duration, code) => {
+        if (!duration || !code) return;
+        const backupCode = `BACKUP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+        await saveSettingsToFirestore({
+            goalDurationSeconds: duration, isSelfLocked: true,
+            selfLockCode: code, selfLockBackupCode: backupCode,
+            selfLockBackupAcknowledged: false,
+        });
+        setSelfLockMessage(`Your backup code is: ${backupCode}`);
+    }, [saveSettingsToFirestore]);
+
+    const handleClearSelfLock = useCallback(async () => {
+        await saveSettingsToFirestore({
+            goalDurationSeconds: null, isSelfLocked: false,
+            selfLockCode: null, selfLockBackupCode: null,
+            selfLockBackupAcknowledged: true,
+        });
+        setSelfLockMessage('');
+    }, [saveSettingsToFirestore]);
+    
+    const onAcknowledgeBackupCode = useCallback(async () => {
+        await saveSettingsToFirestore({ selfLockBackupAcknowledged: true });
+        setSelfLockMessage('');
+    }, [saveSettingsToFirestore]);
+
+    const handleSetGoalDuration = useCallback(async (duration) => {
+        if (isSelfLocked) return;
+        await saveSettingsToFirestore({ goalDurationSeconds: duration ?? null });
+    }, [isSelfLocked, saveSettingsToFirestore]);
+
     return {
-        savedSubmissivesName,
-        submissivesNameInput,
-        nameMessage,
-        keyholderName,
-        isKeyholderModeUnlocked,
-        requiredKeyholderDurationSeconds,
-        keyholderMessage,
-        goalDurationSeconds,
-        rewards,
-        punishments,
-        isTrackingAllowed,
-        eventDisplayMode,
-        handleSetSubmissivesName,
-        handleSubmissivesNameInputChange,
-        handleSetKeyholder,
-        handleClearKeyholder,
-        handleUnlockKeyholderControls,
-        handleLockKeyholderControls,
-        handleSetRequiredDuration,
-        handleSetGoalDuration,
-        handleAddReward,
-        handleAddPunishment,
-        handleSetEventDisplayMode, // Expose the restored handler
-        saveSettingsToFirestore 
+        savedSubmissivesName, submissivesNameInput, nameMessage, keyholderName, isKeyholderModeUnlocked, requiredKeyholderDurationSeconds, keyholderMessage, goalDurationSeconds, rewards, punishments, isTrackingAllowed, eventDisplayMode, passwordAcknowledged,
+        isSelfLocked, selfLockCode, selfLockBackupAcknowledged, selfLockMessage,
+        handleSetSubmissivesName, handleSubmissivesNameInputChange, handleSetKeyholder, handleClearKeyholder, handleUnlockKeyholderControls, handleLockKeyholderControls, handleSetRequiredDuration, handleSetGoalDuration, handleAddReward, handleAddPunishment, handleSetEventDisplayMode, saveSettingsToFirestore, onAcknowledgePassword,
+        handleSetSelfLock, handleClearSelfLock, onAcknowledgeBackupCode
     };
 };

@@ -4,7 +4,8 @@ import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
 import { useChastitySession } from './useChastitySession';
-import { useDataManagement } from './useDataManagement'; // Import the new hook
+import { useDataManagement } from './useDataManagement';
+import { useTasks } from './useTasks';
 import { doc, getDocs, query, writeBatch } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -14,25 +15,18 @@ export const useChastityState = () => {
     const { userId, isAuthReady, googleEmail } = authState;
 
     const settingsState = useSettings(userId, isAuthReady);
-    
     const eventLogState = useEventLog(userId, isAuthReady);
+    const tasksState = useTasks(userId, isAuthReady);
     const { getEventsCollectionRef } = eventLogState;
 
     const sessionState = useChastitySession(
-        userId,
-        isAuthReady,
-        googleEmail,
-        getEventsCollectionRef,
-        eventLogState.fetchEvents
+        userId, isAuthReady, googleEmail,
+        getEventsCollectionRef, eventLogState.fetchEvents
     );
 
-    // Use the new data management hook
     const dataManagementState = useDataManagement({
-        userId,
-        settingsState,
-        sessionState,
-        eventLogState,
-        getEventsCollectionRef
+        userId, settingsState, sessionState,
+        eventLogState, getEventsCollectionRef
     });
 
     const [confirmReset, setConfirmReset] = useState(false);
@@ -49,14 +43,18 @@ export const useChastityState = () => {
         const userDocRef = doc(db, "users", userId);
         batch.set(userDocRef, {
             submissivesName: '', keyholderName: '', keyholderPasswordHash: null, 
-            requiredKeyholderDurationSeconds: null, goalDurationSeconds: null, rewards: [], 
-            punishments: [], isTrackingAllowed: true, eventDisplayMode: 'kinky',
+            passwordAcknowledged: false, requiredKeyholderDurationSeconds: null, 
+            goalDurationSeconds: null, rewards: [], punishments: [], 
+            isTrackingAllowed: true, eventDisplayMode: 'kinky',
             isCageOn: false, cageOnTime: null, timeInChastity: 0, 
             chastityHistory: [], totalTimeCageOff: 0, 
             isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, 
-            currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false
+            currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false,
+            tasks: [], isSelfLocked: false, selfLockCode: null,
+            selfLockBackupCode: null, selfLockBackupAcknowledged: false
         });
 
+        // Correctly query and delete all documents in the events subcollection
         const eventsColRef = getEventsCollectionRef();
         if (eventsColRef) {
             const q = query(eventsColRef);
@@ -67,7 +65,8 @@ export const useChastityState = () => {
         try {
             await batch.commit();
             if(!isAccountDeletion) alert('All data has been reset.');
-        } catch (error) {
+        } 
+        catch (error) {
             console.error("Error resetting data:", error);
             if(!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
         }
@@ -79,7 +78,8 @@ export const useChastityState = () => {
         ...settingsState,
         ...eventLogState,
         ...sessionState,
-        ...dataManagementState, // Spread the returned functions
+        ...dataManagementState,
+        ...tasksState,
         confirmReset,
         handleResetAllData,
     };

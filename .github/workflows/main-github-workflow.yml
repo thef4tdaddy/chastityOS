@@ -1,0 +1,102 @@
+name: CI and Release Notifications
+
+# This workflow listens to three different types of events.
+on:
+  # 1. For pushes to the main branch
+  push:
+    branches:
+      - main
+    # 2. For pushes of nightly tags
+    tags:
+      - 'v*-nightly.*'
+  # 3. For when a stable release is published
+  release:
+    types: [published]
+
+jobs:
+  #====================================================
+  # JOB 1: Runs only for pushes of nightly tags
+  #====================================================
+  nightly-build:
+    name: Nightly CI Build
+    # This job only runs if the trigger was a push of a nightly tag.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-nightly.')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Lint
+        run: npm run lint
+      - name: Build project
+        run: npm run build
+      - name: Notify Discord on Success
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{
+            "username": "ChastityOS Nightly", "avatar_url": "https://app.chastityOS.io/icon.png",
+            "embeds": [{"title": "✅ Nightly Build Succeeded", "description": "[View Preview](https://nightly.chastityOS.io)", "color": 3066993, "footer": { "text": "Tag: ${{ github.ref_name }}" }, "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}]
+          }' ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  #====================================================
+  # JOB 2: Runs only when a new release is published
+  #====================================================
+  stable-release-notifier:
+    name: Post Release Changelog to Discord
+    # This job only runs if the trigger was a published release.
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Extract Changelog Summary
+        id: changelog
+        run: |
+          version=${{ github.event.release.tag_name }}
+          content=$(awk "/## \\[?$version\\]?/ {flag=1; next} /^## /{flag=0} flag" CHANGELOG.md | head -n 10)
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          echo "summary=$content" >> $GITHUB_OUTPUT
+      - name: Post to Discord
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{
+            "username": "ChastityOS Release Bot", "avatar_url": "https://app.chastityOS.io/icon.png",
+            "embeds": [{"title": "📦 New Release: ${{ github.event.release.tag_name }}", "description": "'"${{ steps.changelog.outputs.summary }}"'", "url": "${{ github.event.release.html_url }}", "color": 5814783, "footer": { "text": "Branch: ${{ github.ref_name }}" }, "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}]
+          }' ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  #====================================================
+  # JOB 3: Runs only for pushes to the main branch
+  #====================================================
+  main-update-notifier:
+    name: Notify Discord on Main Updates
+    # This job only runs if the trigger was a push to the main branch.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # We need to fetch more than the last commit to see the commit message
+          fetch-depth: 2
+      - name: Get Commit Message
+        id: commit
+        run: echo "message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+      - name: Notify Discord
+        run: |
+          if [[ "${{ steps.commit.outputs.message }}" == "feat: Merge nightly branch into main for release" ]]; then
+            TITLE="🚀 Main Updated from Nightly"
+            DESCRIPTION="A new major or minor version has been merged into main."
+            COLOR=3447003
+          else
+            TITLE="🩹 Direct Update to Main"
+            DESCRIPTION="A direct commit has been applied to main (likely a patch)."
+            COLOR=15844367
+          fi
+          curl -H "Content-Type: application/json" -X POST -d '{
+            "username": "ChastityOS Release Bot", "avatar_url": "https://app.chastityOS.io/icon.png",
+            "embeds": [{"title": "'"$TITLE"'", "description": "'"$DESCRIPTION"'", "color": '$COLOR', "footer": { "text": "Branch: main" }, "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}]
+          }' ${{ secrets.DISCORD_WEBHOOK_URL }}
