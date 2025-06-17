@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.2-nightly.0...v3.9.0-nightly.0) (2025-06-17)
+
+
+### ✨ Features
+
+* cleaning up css, adding self locking, scaffolding out tasks but not implemented ([456b5d3](https://github.com/thef4tdaddy/chastityOS/commit/456b5d3c211b43837fba7fe574f3ccb3bc0ca855))
+
+
+### 📚 Documentation
+
+* scripts being put to git ([66f5e63](https://github.com/thef4tdaddy/chastityOS/commit/66f5e6364ee25bba40687041b2cdc8ad523497bd))
+
 ### [3.8.2-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.3...v3.8.2-nightly.0) (2025-06-16)
 
 ## [3.8.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.2...v3.8.0-nightly.3) (2025-06-15)
