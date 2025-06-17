@@ -11,50 +11,69 @@ const FooterNav = ({ userId, googleEmail }) => {
   const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
-    fetch('https://api.github.com/repos/thef4tdaddy/chastityOS/releases/latest')
+    // Determine the correct API endpoint based on the environment
+    const apiUrl = isNightly
+      ? 'https://api.github.com/repos/thef4tdaddy/chastityOS/releases' // Fetch all releases for nightly
+      : 'https://api.github.com/repos/thef4tdaddy/chastityOS/releases/latest'; // Fetch latest stable for prod
+
+    fetch(apiUrl)
       .then((res) => {
         if (!res.ok) throw new Error(`GitHub API responded with ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        if (data && data.tag_name) {
-          const env = import.meta.env.VITE_ENV || 'local';
-          if (env === 'nightly' && data.tag_name.includes('nightly')) {
-            setVersion(data.tag_name);
-          } else {
-            setVersion(`${data.tag_name} (${env})`);
+        let releaseVersion = 'N/A';
+        if (isNightly && Array.isArray(data)) {
+          // If nightly, find the most recent release marked as a prerelease containing "nightly"
+          const nightlyRelease = data.find(
+            (release) => release.prerelease && release.tag_name.includes('nightly')
+          );
+          if (nightlyRelease) {
+            releaseVersion = nightlyRelease.tag_name;
           }
-        } else setVersion('N/A');
+        } else if (!isNightly && data && data.tag_name) {
+          // If prod, use the tag_name from the 'latest' release
+          releaseVersion = data.tag_name;
+        }
+        setVersion(releaseVersion);
       })
       .catch((error) => {
         console.error("Failed to fetch version:", error);
         setVersion('Error');
       });
-  }, []);
+  }, [isNightly]); // Re-run effect if isNightly changes
+
+  // Shared classes for hover and focus effects
+  const interactiveClasses = isNightly
+    ? 'hover:text-green-300 focus:outline-none focus:text-green-300'
+    : 'hover:text-purple-300 focus:outline-none focus:text-purple-300';
+  
+  // Combine the interactive classes with our new button reset class
+  const buttonAsLinkClasses = `button-as-link ${interactiveClasses}`;
 
   return (
     <>
       <footer className="mt-8 text-center text-xs text-gray-500">
         <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-2">
           <a
-            href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version.replace(/\s.*$/, '')}`}
+            href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
+            className={interactiveClasses}
           >
             Version: {version}
           </a>
           <button
             type="button"
             onClick={() => setShowPrivacy(true)}
-            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
+            className={buttonAsLinkClasses}
           >
             Privacy
           </button>
           <button
             type="button"
             onClick={() => setShowFeedback(true)}
-            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
+            className={buttonAsLinkClasses}
           >
             Feedback
           </button>
@@ -62,7 +81,7 @@ const FooterNav = ({ userId, googleEmail }) => {
             href="https://ko-fi.com/chastityos"
             target="_blank"
             rel="noopener noreferrer"
-            className={`hover:text-${isNightly ? 'green' : 'purple'}-300`}
+            className={interactiveClasses}
           >
             Support on Ko-fi
           </a>
