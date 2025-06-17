@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.2...v3.9.0-nightly.3) (2025-06-17)
+
+
+### 🧹 Chores
+
+* chmod of a script ([dd6e5cc](https://github.com/thef4tdaddy/chastityOS/commit/dd6e5cc59430345bd7d4ce80dee42664e662d6c0))
+
 ## [3.9.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.1...v3.9.0-nightly.2) (2025-06-17)
 
 ## [3.9.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.0...v3.9.0-nightly.1) (2025-06-17)
