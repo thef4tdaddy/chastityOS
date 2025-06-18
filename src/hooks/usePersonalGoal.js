@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { hash, verify, generateSalt } from '../utils/hash';
+import { hash, verify } from '../utils/hash';
 
 export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
   const { user, isAuthReady } = useAuth();
@@ -42,17 +42,15 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
       isSelfLocked: false,
       selfLockCombination: null,
       backupCodeHash: null,
-      backupCodeSalt: null,
+      // Your hash function combines the salt, so a separate field is not needed.
     };
 
     if (isSelfLockEnabled && selfLockCombination.trim()) {
       const backupCode = `BACKUP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-      // FIX: Using the 'generateSalt' and 'hash' functions from your utility.
-      const salt = generateSalt();
       newGoal.isSelfLocked = true;
       newGoal.selfLockCombination = selfLockCombination;
-      newGoal.backupCodeSalt = salt;
-      newGoal.backupCodeHash = hash(backupCode, salt);
+      // FIX: Using the 'hash' function which correctly handles salt generation internally.
+      newGoal.backupCodeHash = hash(backupCode);
 
       if (onSetSelfLock) {
         onSetSelfLock(backupCode);
@@ -76,7 +74,6 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
           isSelfLocked: false,
           selfLockCombination: null,
           backupCodeHash: null,
-          backupCodeSalt: null,
         },
       });
       setGoalDurationSeconds(0);
@@ -92,11 +89,10 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const personalGoal = docSnap.data().settings?.personalGoal;
-      // FIX: Using the 'verify' function from your utility.
+      // FIX: Using the 'verify' function which takes the plaintext and the full hash.
       if (
         personalGoal?.backupCodeHash &&
-        personalGoal?.backupCodeSalt &&
-        verify(backupCodeInput, personalGoal.backupCodeSalt, personalGoal.backupCodeHash)
+        verify(backupCodeInput, personalGoal.backupCodeHash)
       ) {
         await onClearGoal();
         if (onUnlockSelfLock) {
