@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.12](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.11...v3.9.0-nightly.12) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* i hate node sometimes a lot ([977e432](https://github.com/thef4tdaddy/chastityOS/commit/977e4323bb51839384e2a14a12c90e422f5d7e59))
+
 ## [3.9.0-nightly.11](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.10...v3.9.0-nightly.11) (2025-06-18)
 
 
