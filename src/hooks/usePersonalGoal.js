@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { hashWithSalt, verifyHash } from '../utils/hash';
+import { hashPassword, verifyPassword } from '../utils/hash';
 
 export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
   const { user, isAuthReady } = useAuth();
@@ -39,17 +39,21 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
 
     const newGoal = {
       goalDurationSeconds: totalSeconds,
-      isSelfLocked: false, // default
+      isSelfLocked: false,
       selfLockCombination: null,
       backupCodeHash: null,
+      backupCodeSalt: null, // Ensure salt is cleared for non-self-lock goals
     };
 
     if (isSelfLockEnabled && selfLockCombination.trim()) {
       const backupCode = `BACKUP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+      // FIX: Your hashPassword function requires a salt. We generate one here.
+      const salt = Math.random().toString(36).substring(2, 10);
       newGoal.isSelfLocked = true;
       newGoal.selfLockCombination = selfLockCombination;
-      // FIX: Using your existing hash utility instead of js-sha256
-      newGoal.backupCodeHash = hashWithSalt(backupCode);
+      newGoal.backupCodeSalt = salt;
+      newGoal.backupCodeHash = hashPassword(backupCode, salt);
+
       if (onSetSelfLock) {
         onSetSelfLock(backupCode);
       }
@@ -72,6 +76,7 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
           isSelfLocked: false,
           selfLockCombination: null,
           backupCodeHash: null,
+          backupCodeSalt: null,
         },
       });
       setGoalDurationSeconds(0);
@@ -87,10 +92,11 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const personalGoal = docSnap.data().settings?.personalGoal;
-      // FIX: Using your existing verifyHash utility
+      // FIX: Using your verifyPassword utility with the required salt.
       if (
         personalGoal?.backupCodeHash &&
-        verifyHash(backupCodeInput, personalGoal.backupCodeHash)
+        personalGoal?.backupCodeSalt &&
+        verifyPassword(backupCodeInput, personalGoal.backupCodeSalt, personalGoal.backupCodeHash)
       ) {
         await onClearGoal();
         if (onUnlockSelfLock) {
