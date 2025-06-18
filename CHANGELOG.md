@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.20](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.19...v3.9.0-nightly.20) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* (perf) removing extra depdencies, swapping away from bcrypt lets hope this works ([ea6d6d1](https://github.com/thef4tdaddy/chastityOS/commit/ea6d6d17cada17737e04759594bf2a38b085f3e1))
+
 ## [3.9.0-nightly.19](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.18...v3.9.0-nightly.19) (2025-06-18)
 
 
