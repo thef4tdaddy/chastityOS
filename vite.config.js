@@ -11,9 +11,12 @@ export default defineConfig(({ mode }) => {
     define: {
       __APP_ENV__: JSON.stringify(env.APP_ENV),
     },
-    // FIX: Explicitly telling Vite to find and include 'bcryptjs' to resolve the build error.
     optimizeDeps: {
       include: ['bcryptjs'],
+    },
+    // FIX: Adding the 'ssr.noExternal' option to force Vite to bundle 'bcryptjs'.
+    ssr: {
+      noExternal: ['bcryptjs'],
     },
     build: {
       sourcemap: true,
