@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.23](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.22...v3.9.0-nightly.23) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* depcheck is a liar ([73759e9](https://github.com/thef4tdaddy/chastityOS/commit/73759e9b7ccf23ce187eefcfd248cb85430bcee9))
+
 ## [3.9.0-nightly.22](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.21...v3.9.0-nightly.22) (2025-06-18)
 
 
