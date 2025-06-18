@@ -27,6 +27,7 @@ const PersonalGoalSection = (props) => {
   const hasTimeInput = parseInt(days) > 0 || parseInt(hours) > 0 || parseInt(minutes) > 0;
 
   return (
+    // This single class controls the entire section's appearance
     <div className="personal-goal-section">
       <h3>Personal Chastity Goal</h3>
       <p className="text-sm mb-4">
