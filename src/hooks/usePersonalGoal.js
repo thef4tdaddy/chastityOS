@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-// FIX: Using the correct 'hashPassword' and 'verifyPassword' functions from your hash utility.
-import { hashPassword, verifyPassword } from '../utils/hash';
+// FIX: Using the correct exported functions 'hash' and 'verify' from your hash utility.
+import { hash, verify } from '../utils/hash';
 
 export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
   const { user, isAuthReady } = useAuth();
@@ -49,8 +49,9 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
       const backupCode = `BACKUP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
       newGoal.isSelfLocked = true;
       newGoal.selfLockCombination = selfLockCombination;
-      // FIX: Using the 'hashPassword' function which handles salting internally.
-      newGoal.backupCodeHash = hashPassword(backupCode);
+      // FIX: Using the 'hash' function which correctly handles salt generation internally
+      // and returns a combined salt:hash string.
+      newGoal.backupCodeHash = hash(backupCode);
 
       if (onSetSelfLock) {
         onSetSelfLock(backupCode);
@@ -89,10 +90,10 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const personalGoal = docSnap.data().settings?.personalGoal;
-      // FIX: Using the 'verifyPassword' function which takes the plaintext and the full combined hash.
+      // FIX: Using the 'verify' function which takes the plaintext and the full combined hash.
       if (
         personalGoal?.backupCodeHash &&
-        verifyPassword(backupCodeInput, personalGoal.backupCodeHash)
+        verify(backupCodeInput, personalGoal.backupCodeHash)
       ) {
         await onClearGoal();
         if (onUnlockSelfLock) {
