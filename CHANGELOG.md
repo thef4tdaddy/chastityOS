@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.21](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.20...v3.9.0-nightly.21) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* (perf) hashing is now done in hash.js no imports done ([0753735](https://github.com/thef4tdaddy/chastityOS/commit/07537354b788bc931d5fd574462e93b7627bbf30))
+
 ## [3.9.0-nightly.20](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.19...v3.9.0-nightly.20) (2025-06-18)
 
 
