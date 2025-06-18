@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.4...v3.9.0-nightly.5) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* coloring personal goal section ([e6a7f5d](https://github.com/thef4tdaddy/chastityOS/commit/e6a7f5d387c9170a7a7b5a43f7bae29f1c7b9a68))
+
+
+### 🔧 Refactoring
+
+* enhance reset functionality and modal handling in Data Management ([ffae8bf](https://github.com/thef4tdaddy/chastityOS/commit/ffae8bff0f8e14f45882b4f967789009606122f0))
+
 ## [3.9.0-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.3...v3.9.0-nightly.4) (2025-06-17)
 
 
