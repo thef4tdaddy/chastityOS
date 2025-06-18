@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.6...v3.9.0-nightly.7) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* hardcore mode fix number 2 ([22baa98](https://github.com/thef4tdaddy/chastityOS/commit/22baa9847f08952766f7e7e8e68a4630d366fbf8))
+
 ## [3.9.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.5...v3.9.0-nightly.6) (2025-06-18)
 
 
