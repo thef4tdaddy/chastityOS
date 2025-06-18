@@ -158,14 +158,19 @@ th, td { border: 1px solid var(--color-border-primary); @apply px-2 py-1 text-le
 
 /* --- Personal Goal Section --- */
 .personal-goal-section { @apply p-4 rounded-lg text-left border; background-color: theme('colors.blue.950'); border-color: theme('colors.blue.700'); color: theme('colors.blue.200'); }
+.personal-goal-section h3, .personal-goal-section h4 { color: theme('colors.blue.300'); border-bottom-color: theme('colors.blue.800'); @apply text-lg font-semibold mb-3 pb-2 border-b; }
+.personal-goal-section label { color: theme('colors.blue.300'); @apply block text-xs font-medium mb-1; }
+.personal-goal-section input { background-color: theme('colors.blue.900'); border-color: theme('colors.blue.600'); width: 100%; @apply rounded px-2 py-1; }
+.personal-goal-section button { background-color: theme('colors.blue.700'); color: theme('colors.blue.100'); }
+.personal-goal-section button:hover { background-color: theme('colors.blue.600'); }
 .personal-goal-section fieldset:disabled { @apply opacity-50; }
-.personal-goal-section label { @apply block text-xs font-medium mb-1; }
 .current-goal-message { @apply text-sm text-green-300 mb-4; }
 .locked-state-message { @apply text-sm bg-gray-900 border border-gray-600 p-3 rounded-md text-center text-yellow-300 mb-4; }
-.self-lock-toggle { @apply flex items-center justify-center gap-3 p-2 border border-blue-800 bg-blue-900 rounded-md; }
-.self-lock-toggle label { @apply font-bold mb-0; }
-.self-lock-input-box { @apply p-4 rounded-lg text-left border; background-color: theme('colors.yellow.950'); border-color: theme('colors.yellow.700'); color: theme('colors.yellow.200'); }
-.self-lock-input-box h4 { @apply text-lg font-semibold mb-3 pb-2 border-b; color: theme('colors.yellow.300'); border-bottom-color: theme('colors.yellow.800'); }
+.self-lock-toggle { @apply flex items-center justify-between gap-3 p-2 border border-blue-800 bg-blue-900 rounded-md; }
+.self-lock-toggle label { @apply font-bold mb-0 text-sm whitespace-nowrap; }
+.self-lock-input-box { @apply p-4 rounded-lg text-left border mt-4; background-color: theme('colors.yellow.950'); border-color: theme('colors.yellow.700'); color: theme('colors.yellow.200'); }
+.self-lock-input-box h4 { color: theme('colors.yellow.300'); border-bottom-color: theme('colors.yellow.800'); }
+
 
 
 /* =============================================
