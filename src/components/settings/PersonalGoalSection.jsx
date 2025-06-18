@@ -1,4 +1,3 @@
-// src/components/settings/PersonalGoalSection.jsx
 import React from 'react';
 import { formatElapsedTime } from '../../utils';
 import { usePersonalGoal } from '../../hooks/usePersonalGoal';
@@ -60,7 +59,7 @@ const PersonalGoalSection = (props) => {
                 <p className="text-xs mb-3">Enter the combination for your physical lock. This will be hidden and revealed only after your goal is complete.</p>
                 <input
                     type="text"
-                    value={selfLockCombination}
+                    value={selfLockCombination || ''}
                     onChange={(e) => setSelfLockCombination(e.target.value)}
                     placeholder="e.g., 12-34-56"
                     className="w-full font-mono tracking-widest"
@@ -69,7 +68,8 @@ const PersonalGoalSection = (props) => {
         )}
 
         <div className="flex space-x-3 mt-4">
-          <button type="button" onClick={onSetGoal} disabled={!isAuthReady || !hasTimeInput || (isSelfLockEnabled && !selfLockCombination.trim())}>
+          {/* FIX 1: Added a check for selfLockCombination before calling .trim() */}
+          <button type="button" onClick={onSetGoal} disabled={!isAuthReady || !hasTimeInput || (isSelfLockEnabled && (!selfLockCombination || !selfLockCombination.trim()))}>
             {isSelfLockEnabled ? 'Set Goal & Lock' : 'Set/Update Goal'}
           </button>
           <button type="button" onClick={onClearGoal} disabled={!isAuthReady || !goalDurationSeconds}>
@@ -86,13 +86,14 @@ const PersonalGoalSection = (props) => {
             <input 
               type="text" 
               placeholder="Enter BACKUP-..." 
-              value={backupCodeInput}
+              value={backupCodeInput || ''}
               onChange={(e) => setBackupCodeInput(e.target.value)}
               className="flex-grow font-mono"
             />
+            {/* FIX 2: Added a check for backupCodeInput before calling .trim() */}
             <button 
               onClick={onUseBackupCode} 
-              disabled={!backupCodeInput.trim()}
+              disabled={!backupCodeInput || !backupCodeInput.trim()}
             >
               Use Backup
             </button>
