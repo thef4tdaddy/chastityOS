@@ -26,7 +26,7 @@ const PersonalGoalSection = (props) => {
     <div className="personal-goal-section">
       <h3>Personal Chastity Goal</h3>
       <p className="text-sm mb-4">
-        Set a personal time goal or enable Hardcore Mode to lock yourself in.
+        Set a personal time goal. Hardcore mode will lock you out of your controls and let you put in a combination to a physical lock.
       </p>
       
       {isSelfLocked && (
@@ -56,7 +56,7 @@ const PersonalGoalSection = (props) => {
         {isSelfLockEnabled && (
             <div className="self-lock-input-box">
                 <h4>Set Lock Combination</h4>
-                <p className="text-xs mb-3">Enter the combination for your physical lock. This will be hidden and revealed only after your goal is complete.</p>
+                <p className="text-xs mb-3">Enter the combination for your physical lock. This will be hidden and revealed only after your goal is complete. If you do not use a combination lock you can enter N/A</p>
                 <input
                     type="text"
                     value={selfLockCombination || ''}
