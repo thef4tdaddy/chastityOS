@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.10](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.9...v3.9.0-nightly.10) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* just kidding this time now final personal goal.js repair ([754d7b4](https://github.com/thef4tdaddy/chastityOS/commit/754d7b475819226aa7520867b5f909f9790e5dba))
+
 ## [3.9.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.8...v3.9.0-nightly.9) (2025-06-18)
 
 
