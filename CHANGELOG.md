@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.19](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.18...v3.9.0-nightly.19) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* viteconfig change ([ae7d64a](https://github.com/thef4tdaddy/chastityOS/commit/ae7d64a55a69c2164e523260cc6c22269dd9890f))
+
 ## [3.9.0-nightly.18](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.17...v3.9.0-nightly.18) (2025-06-18)
 
 
