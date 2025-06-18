@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { hashPassword, verifyPassword } from '../utils/hash';
+import { hash, verify, generateSalt } from '../utils/hash';
 
 export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
   const { user, isAuthReady } = useAuth();
@@ -42,17 +42,17 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
       isSelfLocked: false,
       selfLockCombination: null,
       backupCodeHash: null,
-      backupCodeSalt: null, // Ensure salt is cleared for non-self-lock goals
+      backupCodeSalt: null,
     };
 
     if (isSelfLockEnabled && selfLockCombination.trim()) {
       const backupCode = `BACKUP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-      // FIX: Your hashPassword function requires a salt. We generate one here.
-      const salt = Math.random().toString(36).substring(2, 10);
+      // FIX: Using the 'generateSalt' and 'hash' functions from your utility.
+      const salt = generateSalt();
       newGoal.isSelfLocked = true;
       newGoal.selfLockCombination = selfLockCombination;
       newGoal.backupCodeSalt = salt;
-      newGoal.backupCodeHash = hashPassword(backupCode, salt);
+      newGoal.backupCodeHash = hash(backupCode, salt);
 
       if (onSetSelfLock) {
         onSetSelfLock(backupCode);
@@ -92,11 +92,11 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const personalGoal = docSnap.data().settings?.personalGoal;
-      // FIX: Using your verifyPassword utility with the required salt.
+      // FIX: Using the 'verify' function from your utility.
       if (
         personalGoal?.backupCodeHash &&
         personalGoal?.backupCodeSalt &&
-        verifyPassword(backupCodeInput, personalGoal.backupCodeSalt, personalGoal.backupCodeHash)
+        verify(backupCodeInput, personalGoal.backupCodeSalt, personalGoal.backupCodeHash)
       ) {
         await onClearGoal();
         if (onUnlockSelfLock) {
