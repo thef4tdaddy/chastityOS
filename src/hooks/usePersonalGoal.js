@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { hashPassword, verifyPassword } from '../utils/hash';
+import { hash, verify } from '../utils/hash';
 
 export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
   const { user, isAuthReady } = useAuth();
@@ -48,7 +48,7 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
       const backupCode = `BACKUP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
       newGoal.isSelfLocked = true;
       newGoal.selfLockCombination = selfLockCombination;
-      newGoal.backupCodeHash = hashPassword(backupCode);
+      newGoal.backupCodeHash = hash(backupCode);
 
       if (onSetSelfLock) {
         onSetSelfLock(backupCode);
@@ -89,7 +89,7 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
       const personalGoal = docSnap.data().settings?.personalGoal;
       if (
         personalGoal?.backupCodeHash &&
-        verifyPassword(backupCodeInput, personalGoal.backupCodeHash)
+        verify(backupCodeInput, personalGoal.backupCodeHash)
       ) {
         await onClearGoal();
         if (onUnlockSelfLock) {
