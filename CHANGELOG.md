@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.17](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.16...v3.9.0-nightly.17) (2025-06-18)
+
+
+### 🐛 Bug Fixes
+
+* so the problem was in my vite config not my code, maybe ai will save me here by finding this ([7d87bac](https://github.com/thef4tdaddy/chastityOS/commit/7d87baca89ccc87aa9c39b84fc89ed6f3240c216))
+
 ## [3.9.0-nightly.16](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.15...v3.9.0-nightly.16) (2025-06-18)
 
 
