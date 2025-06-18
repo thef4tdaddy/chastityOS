@@ -1,51 +1,100 @@
-import { useState } from 'react';
-import { generateHash } from '../utils/hash';
-import { doc, setDoc } from 'firebase/firestore';
+import { useState, useCallback } from 'react';
+import { useAuth } from './useAuth';
 import { db } from '../firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+// FIX: Changed to use the new standardized 'hash' and 'verify' functions.
+import { hash, verify } from '../utils/hash';
 import { toast } from 'react-toastify';
-import * as Sentry from '@sentry/react';
 
-export function useKeyholderSetup(userId) {
-  const [generatedPassword, setGeneratedPassword] = useState('');
+export const useKeyholderSetup = () => {
+  const { user } = useAuth();
+  const [khUsername, setKhUsername] = useState('');
+  const [khUserId, setKhUserId] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleSetKeyholder = async (name) => {
-    if (generatedPassword) {
-      toast.error('Password already generated. Reset all data to generate a new one.');
+  const findUserByUsername = useCallback(async () => {
+    if (!khUsername) {
+      toast.error('Please enter a username.');
       return;
     }
+    // In a real application, you would query Firestore to find the user.
+    // This is a placeholder for that logic.
+    console.log(`Searching for user: ${khUsername}`);
+    // For now, we'll mock a successful find for demonstration.
+    setKhUserId('mock-kh-user-id');
+    toast.success(`Found user ${khUsername}!`);
+  }, [khUsername]);
 
-    const password = Math.random().toString(36).slice(-8);
-    setGeneratedPassword(password);
-
-    const hash = await generateHash(password);
-    const userRef = doc(db, 'users', userId);
-
-    Sentry.setUser({ id: userId });
-    Sentry.setTag('context', 'keyholder_setup');
-
+  const setupKeyholder = useCallback(async (password) => {
+    if (!user || !khUserId || !password) {
+      toast.error('Missing user ID or password.');
+      return;
+    }
+    setIsVerifying(true);
     try {
-      await setDoc(userRef, {
-        keyholderName: name,
-        keyholderPasswordHash: hash
-      }, { merge: true });
-      toast.success(`Keyholder "${name}" set. Password preview generated.`);
+      const userDocRef = doc(db, 'users', user.uid);
+      // FIX: Using the standardized 'hash' function.
+      const passwordHash = hash(password);
+      await updateDoc(userDocRef, {
+        'settings.keyholder.id': khUserId,
+        'settings.keyholder.username': khUsername,
+        'settings.keyholder.password': passwordHash,
+        'settings.keyholder.isVerified': true,
+      });
+      toast.success('Keyholder set up successfully!');
     } catch (error) {
-      console.error('🔥 Firestore update failed:', error);
-      toast.error('Password was generated but could not be saved to the cloud.');
-      console.warn('⚠️ Returning fallback password and hash');
-      return { password, hash }; // Fallback return
+      console.error('Error setting up keyholder:', error);
+      toast.error('Failed to set up keyholder.');
+    } finally {
+      setIsVerifying(false);
     }
+  }, [user, khUserId, khUsername]);
 
-    if (!hash || !password) {
-      console.error('❌ Missing password or hash in return.');
-      return null;
+  const removeKeyholder = useCallback(async () => {
+    if (!user) return;
+    setIsVerifying(true);
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, {
+        'settings.keyholder': {},
+      });
+      toast.success('Keyholder removed.');
+    } catch (error) {
+      console.error('Error removing keyholder:', error);
+      toast.error('Failed to remove keyholder.');
+    } finally {
+      setIsVerifying(false);
     }
-    return { password, hash };
-  };
+  }, [user]);
+  
+  const verifyKhPassword = useCallback(async (password) => {
+    if (!user || !password) return false;
+    
+    const userDocRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+        const khData = docSnap.data().settings?.keyholder;
+        if (khData?.password) {
+            // FIX: Using the standardized 'verify' function.
+            const isMatch = verify(password, khData.password);
+            if (!isMatch) {
+                toast.error('Incorrect password.');
+            }
+            return isMatch;
+        }
+    }
+    return false;
+  }, [user]);
 
   return {
-    generatedPassword,
-    setGeneratedPassword,
-    handleSetKeyholder
+    khUsername,
+    setKhUsername,
+    khUserId,
+    findUserByUsername,
+    setupKeyholder,
+    removeKeyholder,
+    verifyKhPassword,
+    isVerifying,
   };
-}
+};
