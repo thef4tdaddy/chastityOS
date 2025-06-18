@@ -1,38 +1,53 @@
-import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { sentryVitePlugin } from "@sentry/vite-plugin";
-import { execSync } from 'child_process';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
-
-  const variant = process.env.VITE_APP_VARIANT || 'unknown';
-  let gitHash = 'dev';
-  try {
-    gitHash = execSync('git rev-parse --short HEAD').toString().trim();
-  } catch (e) {
-    console.warn('[vite.config.js] Git hash not available. Using "dev" instead.');
-  }
-  const releaseVersion = `chastityOS-${variant}-${gitHash}`;
+  const env = loadEnv(mode, process.cwd(), '');
 
   return {
+    define: {
+      __APP_ENV__: JSON.stringify(env.APP_ENV),
+    },
+    // FIX: Explicitly telling Vite to find and include 'bcryptjs' to resolve the build error.
+    optimizeDeps: {
+      include: ['bcryptjs'],
+    },
+    build: {
+      sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+            react: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
+            sentry: ['@sentry/react', '@sentry/browser', '@sentry/tracing'],
+            ui: ['@headlessui/react', '@heroicons/react'],
+          },
+        },
+      },
+    },
     plugins: [
-      react(), 
-      tailwindcss(),
+      react(),
+      visualizer({
+        filename: 'reports/bundle-visualizer.html',
+        open: false,
+      }),
       VitePWA({
-        registerType: 'autoUpdate', // Changed from 'prompt'
-        includeAssets: ['favicon.png', 'apple-touch-icon.png', 'masked-icon.svg'],
+        registerType: 'autoUpdate',
+        devOptions: {
+          enabled: true,
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
+        },
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'ChastityOS',
           short_name: 'ChastityOS',
-          description: 'A modern chastity and FLR tracking web app.',
-          theme_color: '#4f46e5',
-          background_color: '#111827',
-          display: 'standalone',
-          scope: '/',
-          start_url: '/',
+          description: 'A chastity tracking app for wearers and keyholders.',
+          theme_color: '#ffffff',
           icons: [
             {
               src: 'pwa-192x192.png',
@@ -44,59 +59,14 @@ export default defineConfig(({ mode }) => {
               sizes: '512x512',
               type: 'image/png',
             },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable',
-            },
-          ],
-        },
-        workbox: {
-          // This will ensure the service worker updates and activates new content seamlessly.
-          skipWaiting: true,
-          clientsClaim: true,
-          // Precaching essential assets for offline use.
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
-          // Caching strategies for runtime requests.
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'firestore-cache',
-                expiration: {
-                  maxEntries: 20,
-                  maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
           ],
         },
       }),
       sentryVitePlugin({
-        org: process.env.SENTRY_ORG,
-        project: process.env.SENTRY_PROJECT,
         authToken: process.env.SENTRY_AUTH_TOKEN,
-        release: releaseVersion,
-        include: './dist',
-        urlPrefix: '~/',
-        deploy: {
-          env: 'production',
-        },
-        telemetry: false
+        org: 'chastityos',
+        project: 'chastityos',
       }),
     ],
-    server: {
-      headers: {
-        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-      },
-    },
-    build: {
-      sourcemap: true,
-    }
-  }
-})
+  };
+});
