@@ -1,8 +1,33 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
-// FIX: Using the correct exported functions from your hash utility.
-import { hashPassword, verifyPassword } from '../utils/hash';
+// FIX: Importing crypto directly and including hashing functions locally to bypass the stubborn build error.
+import { pbkdf2Sync, randomBytes } from 'crypto';
+
+// --- Hashing functions from utils/hash.js copied here to resolve build issue ---
+function _hash(password, salt) {
+  return pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+}
+
+function _generateSalt() {
+  return randomBytes(16).toString('hex');
+}
+
+function hashPasswordInHook(password) {
+  const salt = _generateSalt();
+  const passwordHash = _hash(password, salt);
+  return `${salt}:${passwordHash}`;
+}
+
+function verifyPasswordInHook(password, storedHash) {
+  if (!storedHash || !password) return false;
+  const [salt, key] = storedHash.split(':');
+  if (!salt || !key) return false;
+  const passwordHash = _hash(password, salt);
+  return key === passwordHash;
+}
+// --- End of local hashing functions ---
+
 
 export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
   const { user, isAuthReady } = useAuth();
@@ -49,8 +74,8 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
       const backupCode = `BACKUP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
       newGoal.isSelfLocked = true;
       newGoal.selfLockCombination = selfLockCombination;
-      // FIX: Using the 'hashPassword' function which handles salting internally and returns a combined string.
-      newGoal.backupCodeHash = hashPassword(backupCode);
+      // FIX: Using the locally defined hashing function to bypass the import error.
+      newGoal.backupCodeHash = hashPasswordInHook(backupCode);
 
       if (onSetSelfLock) {
         onSetSelfLock(backupCode);
@@ -89,10 +114,10 @@ export const usePersonalGoal = ({ onSetSelfLock, onUnlockSelfLock }) => {
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
       const personalGoal = docSnap.data().settings?.personalGoal;
-      // FIX: Using the 'verifyPassword' function which takes the plaintext and the full combined hash string.
+      // FIX: Using the locally defined verification function.
       if (
         personalGoal?.backupCodeHash &&
-        verifyPassword(backupCodeInput, personalGoal.backupCodeHash)
+        verifyPasswordInHook(backupCodeInput, personalGoal.backupCodeHash)
       ) {
         await onClearGoal();
         if (onUnlockSelfLock) {
