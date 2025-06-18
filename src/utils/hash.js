@@ -1,31 +1,28 @@
-// FIX: Rewritten to use the browser-compatible 'bcryptjs' library.
-import bcrypt from 'bcryptjs';
+import { sha256 } from 'js-sha256';
 
 /**
- * Hashes a password using bcrypt. The salt is generated and included in the output hash.
- * @param {string} password The plaintext password to hash.
- * @returns {string} The resulting hash.
+ * Hashes a string using SHA256.
+ * @param {string} data The plaintext data to hash.
+ * @returns {string} The resulting SHA256 hash.
  */
-export function hashPassword(password) {
-  // 10 is the number of salt rounds. More rounds are more secure but slower.
-  const salt = bcrypt.genSaltSync(10);
-  return bcrypt.hashSync(password, salt);
+export function hash(data) {
+  if (typeof data !== 'string') return '';
+  return sha256(data);
 }
 
 /**
- * Verifies a plaintext password against a stored bcrypt hash.
- * @param {string} password The plaintext password to verify.
- * @param {string} storedHash The hash to compare against, fetched from storage.
- * @returns {boolean} True if the password matches the hash, false otherwise.
+ * Verifies plaintext data against a stored SHA256 hash.
+ * @param {string} data The plaintext data to verify.
+ * @param {string} storedHash The hash to compare against.
+ * @returns {boolean} True if the data matches the hash, false otherwise.
  */
-export function verifyPassword(password, storedHash) {
-  if (!password || !storedHash) {
+export function verify(data, storedHash) {
+  if (typeof data !== 'string' || !storedHash) {
     return false;
   }
-  return bcrypt.compareSync(password, storedHash);
+  return sha256(data) === storedHash;
 }
 
 // Maintaining the old export names for any part of the app that might still use them.
-// These now point to the new bcryptjs implementations.
-export { hashPassword as hash };
-export { verifyPassword as verify };
+export { hash as hashPassword };
+export { verify as verifyPassword };
