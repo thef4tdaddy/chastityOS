@@ -1,6 +1,8 @@
 /* src/index.css */
 
-@import "tailwindcss"; /* This must be the very first line */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* =============================================
    === 1. THEME & GLOBAL VARIABLES           ===
