@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.1-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1-nightly.3...v3.9.1-nightly.4) (2025-06-19)
+
+
+### 🐛 Bug Fixes
+
+* lint fix and missing dep ([114af6a](https://github.com/thef4tdaddy/chastityOS/commit/114af6a4b5f724a8f6d28e5c5f3593d8d9187f38))
+
 ### [3.9.1-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1-nightly.2...v3.9.1-nightly.3) (2025-06-19)
 
 ### [3.9.1-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1-nightly.1...v3.9.1-nightly.2) (2025-06-19)
