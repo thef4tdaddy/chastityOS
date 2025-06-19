@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.1...v3.9.0-nightly.5) (2025-06-19)
+
+
+### 🧹 Chores
+
+* chmod of a script ([dd6e5cc](https://github.com/thef4tdaddy/chastityOS/commit/dd6e5cc59430345bd7d4ce80dee42664e662d6c0))
+* fixing nightly script ([c4a677b](https://github.com/thef4tdaddy/chastityOS/commit/c4a677b7ffdc9738fd88996443a9e1e963bdb992))
+* **release:** 3.9.0-nightly.2 ([ae15e8a](https://github.com/thef4tdaddy/chastityOS/commit/ae15e8ae7580322b467a84f83306f11f57f672c2))
+* **release:** 3.9.0-nightly.3 ([cebc58b](https://github.com/thef4tdaddy/chastityOS/commit/cebc58bc6eb5fa448337d1cac4c46541f5bd376a))
+* **release:** 3.9.0-nightly.4 ([edfd84b](https://github.com/thef4tdaddy/chastityOS/commit/edfd84b655c73ad3e4b3319ff8fa0a38faae52f6))
+
+
+### 🐛 Bug Fixes
+
+* react-icons installed ([c0519c5](https://github.com/thef4tdaddy/chastityOS/commit/c0519c5fd06fe9def5f934c0e0416be716e9a079))
+* reset all prompt ([1cb0ee2](https://github.com/thef4tdaddy/chastityOS/commit/1cb0ee228023035760a274a43447528fcb15689d))
+* reset all prompt confirmations ([3e3a9ac](https://github.com/thef4tdaddy/chastityOS/commit/3e3a9ac12f6b0a39488c0e4b94128819ad59bd86))
+* sentry fixes ([a7d0e4f](https://github.com/thef4tdaddy/chastityOS/commit/a7d0e4f7ce9d4505fe4a282a51728a7fcfa6edd1))
+* work in progress: settings page and personal goal ([25f7ac2](https://github.com/thef4tdaddy/chastityOS/commit/25f7ac2a62e460d8377961fe8aab2994f0797d92))
+
 ## [3.9.0-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.3...v3.9.0-nightly.4) (2025-06-17)
 
 
