@@ -1,5 +1,8 @@
+import forms from '@tailwindcss/forms';
+
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}"
@@ -21,7 +24,6 @@ module.exports = {
     'punishment-box',
     'task-box',
   ],
-  darkMode: false,
   theme: {
     extend: {
       colors: {
@@ -38,5 +40,8 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  // FIX: Switched from 'require' to the modern 'import' syntax for the plugin.
+  plugins: [
+    forms,
+  ],
 }

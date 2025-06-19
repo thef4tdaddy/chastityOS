@@ -29,6 +29,7 @@
     "react-toastify": "^10.0.5"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@sentry/vite-plugin": "^2.20.1",
