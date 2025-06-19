@@ -1,58 +1,52 @@
-// src/main.jsx
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { HelmetProvider } from 'react-helmet-async';
-import * as Sentry from "@sentry/react";
-import './index.css';
+import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
+import './index.css';
+import * as Sentry from "@sentry/react";
+import { HelmetProvider } from 'react-helmet-async';
 
-// Initialize Sentry for error and performance monitoring
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  integrations: [
-    // See docs for support of different integrations
-    // https://docs.sentry.io/platforms/javascript/guides/react/features/
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  
-  // Performance Monitoring
-  // Capture 100% of the transactions.
-  // Adjust this value in production to a lower number to avoid overwhelming your Sentry quota.
-  tracesSampleRate: 1.0, 
-  
-  // Session Replay
-  // This sets the sample rate at 10%. You may want to change it to 100% while in development
-  // and then sample at a lower rate in production.
-  replaysSessionSampleRate: 0.1, 
-  
-  // If you're not already sampling the entire session, change the sample rate to 100% 
-  // when sampling sessions where errors occur.
-  replaysOnErrorSampleRate: 1.0, 
-});
+// Read all Sentry config from environment variables
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+const environment = import.meta.env.VITE_APP_VARIANT || 'production';
+const sentryProject = import.meta.env.VITE_SENTRY_PROJECT;
 
-Sentry.setTag("environment", import.meta.env.VITE_ENV);
-Sentry.setTag("project", import.meta.env.VITE_SENTRY_PROJECT);
-
-if (import.meta.env.DEV) {
-  console.info(`[Sentry] Environment: ${import.meta.env.VITE_ENV}`);
-  console.info(`[Sentry] Project: ${import.meta.env.VITE_SENTRY_PROJECT}`);
+// Only initialize Sentry if a DSN is provided
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({
+        maskAllText: false,
+        blockAllMedia: false,
+      }),
+      // The feedback integration has been removed as requested.
+      Sentry.reactRouterV6BrowserTracingIntegration({
+        useEffect: React.useEffect,
+      }),
+    ],
+    // Performance Monitoring
+    tracesSampleRate: 1.0, 
+    tracePropagationTargets: ["localhost"], // Only trace local requests for development
+    // Session Replay
+    replaysSessionSampleRate: 0.1, 
+    replaysOnErrorSampleRate: 1.0,
+    // Set the environment for Sentry
+    environment: environment,
+  });
+  console.log(`[Sentry] Initialized for project '${sentryProject}' in '${environment}' environment.`);
+} else {
+  console.warn('[Sentry] DSN not found. Sentry is not initialized.');
 }
 
-if (import.meta.env.VITE_ENV === 'prod') {
-  console.debug = () => {};
-  console.log = () => {};
-  console.info = () => {};
-  // Keep errors, and optionally warnings:
-  // console.warn = () => {};
-}
+const SentryApp = Sentry.withProfiler(App);
 
-createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={<p>An error has occurred. Please refresh the page.</p>}>
+    <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
       <HelmetProvider>
-        <App />
+        <SentryApp />
       </HelmetProvider>
     </Sentry.ErrorBoundary>
-  </React.StrictMode>
-);
+  </React.StrictMode>,
+)
