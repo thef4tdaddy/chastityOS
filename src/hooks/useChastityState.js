@@ -1,13 +1,11 @@
 // src/hooks/useChastityState.js
-import { useCallback, useState } from 'react';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
 import { useChastitySession } from './useChastitySession';
 import { useDataManagement } from './useDataManagement';
 import { useTasks } from './useTasks';
-import { doc, getDocs, query, writeBatch } from 'firebase/firestore';
-import { db } from '../firebase';
+import { usePersonalGoal } from './usePersonalGoal'; // 1. Import the new hook
 
 export const useChastityState = () => {
     // Compose all specialized hooks
@@ -24,55 +22,27 @@ export const useChastityState = () => {
         getEventsCollectionRef, eventLogState.fetchEvents
     );
 
+    // 2. Initialize the personal goal hook
+    // We pass it the functions it needs to interact with other parts of the state
+    const personalGoalState = usePersonalGoal({
+        setSettings: settingsState.setSettings,
+        handleEndChastityNow: sessionState.handleEndChastityNow, // Give it the ability to end the session
+        settings: { // Pass only the specific settings it needs
+            goalBackupCodeHash: settingsState.goalBackupCodeHash,
+        }
+    });
+
+    // The Data Management hook can stay as it is
     const dataManagementState = useDataManagement({
         userId, settingsState, sessionState,
         eventLogState, getEventsCollectionRef
     });
 
-    const [confirmReset, setConfirmReset] = useState(false);
+    // We no longer need the local reset logic, as it's handled elsewhere
+    // const [confirmReset, setConfirmReset] = useState(false);
+    // const handleResetAllData = ...
 
-    const handleResetAllData = useCallback(async (isAccountDeletion = false) => {
-        if (!isAccountDeletion && !confirmReset) {
-            setConfirmReset(true);
-            setTimeout(() => setConfirmReset(false), 3000);
-            return;
-        }
-        if (!isAuthReady || !userId) return;
-
-        const batch = writeBatch(db);
-        const userDocRef = doc(db, "users", userId);
-        batch.set(userDocRef, {
-            submissivesName: '', keyholderName: '', keyholderPasswordHash: null, 
-            passwordAcknowledged: false, requiredKeyholderDurationSeconds: null, 
-            goalDurationSeconds: null, rewards: [], punishments: [], 
-            isTrackingAllowed: true, eventDisplayMode: 'kinky',
-            isCageOn: false, cageOnTime: null, timeInChastity: 0, 
-            chastityHistory: [], totalTimeCageOff: 0, 
-            isPaused: false, pauseStartTime: null, accumulatedPauseTimeThisSession: 0, 
-            currentSessionPauseEvents: [], lastPauseEndTime: null, hasSessionEverBeenActive: false,
-            tasks: [], isSelfLocked: false, selfLockCode: null,
-            selfLockBackupCode: null, selfLockBackupAcknowledged: false
-        });
-
-        // Correctly query and delete all documents in the events subcollection
-        const eventsColRef = getEventsCollectionRef();
-        if (eventsColRef) {
-            const q = query(eventsColRef);
-            const querySnapshot = await getDocs(q);
-            querySnapshot.docs.forEach(docSnapshot => batch.delete(docSnapshot.ref));
-        }
-        
-        try {
-            await batch.commit();
-            if(!isAccountDeletion) alert('All data has been reset.');
-        } 
-        catch (error) {
-            console.error("Error resetting data:", error);
-            if(!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
-        }
-        setConfirmReset(false);
-    }, [isAuthReady, userId, confirmReset, getEventsCollectionRef]);
-
+    // 3. Return all the state and functions, including the new ones from the personal goal hook
     return {
         ...authState,
         ...settingsState,
@@ -80,7 +50,6 @@ export const useChastityState = () => {
         ...sessionState,
         ...dataManagementState,
         ...tasksState,
-        confirmReset,
-        handleResetAllData,
+        ...personalGoalState, // This includes handleEmergencyUnlock, isGoalActive, etc.
     };
 };

@@ -1,92 +1,135 @@
 // src/components/settings/PersonalGoalSection.jsx
 import React from 'react';
-import { formatElapsedTime } from '../../utils';
-import { usePersonalGoal } from '../../hooks/usePersonalGoal'; // Import the new hook
+import { FaLock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { formatElapsedTime } from '../../utils'; // FIX: Added the missing import
 
-const PersonalGoalSection = (props) => {
-  // All the complex logic is now handled by the custom hook
-  const {
-    days, setDays,
-    hours, setHours,
-    minutes, setMinutes,
-    isSelfLockEnabled, setIsSelfLockEnabled,
-    selfLockCombination, setSelfLockCombination,
-    onSetGoal,
-    onClearGoal,
-  } = usePersonalGoal(props);
-  
-  // Destructure the remaining props needed directly by the view
-  const {
-    goalDurationSeconds,
-    isAuthReady,
-    isSelfLocked,
-    selfLockMessage,
-    onAcknowledgeBackupCode
-  } = props;
+const PersonalGoalSection = ({
+  // Props from the hook
+  goalDuration,
+  setGoalDuration,
+  isSelfLocking,
+  setIsSelfLocking,
+  selfLockCodeInput,
+  setSelfLockCodeInput,
+  handleSetPersonalGoal,
+  handleClearPersonalGoal,
+  generatedBackupCode, // For the new one-time code modal
+  setGeneratedBackupCode, // To close the modal
 
-  const hasTimeInput = parseInt(days) > 0 || parseInt(hours) > 0 || parseInt(minutes) > 0;
+  // Props from global state
+  isGoalActive,
+  isGoalCompleted,
+  goalEndDate,
+  revealedSelfLockCode, // The decoded code to show on completion
+}) => {
+
+  const onSetGoalClick = () => {
+    // Pass both the self-lock state and the code to the handler
+    handleSetPersonalGoal(isSelfLocking, selfLockCodeInput);
+  };
+
+  // --- MODAL FOR BACKUP CODE ---
+  if (generatedBackupCode) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+        <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-lg text-gray-50 border-2 border-yellow-500">
+          <FaExclamationTriangle className="text-5xl text-yellow-400 mx-auto mb-4" />
+          <h3 className="text-xl md:text-2xl font-bold mb-4 text-yellow-300">Hardcore Goal Set!</h3>
+          <p className="text-md text-purple-200 mb-4">
+            Save this one-time **Backup Code**. It is the ONLY way to unlock early.
+          </p>
+          <div className="bg-gray-900 p-4 rounded-lg my-4">
+            <p className="text-3xl font-mono tracking-widest text-white">{generatedBackupCode}</p>
+          </div>
+          <p className="text-xs text-yellow-400 mb-6">
+            Store it somewhere safe. If you lose this code, you cannot end your session until the goal is met.
+          </p>
+          <button
+            type="button"
+            onClick={() => setGeneratedBackupCode(null)} // Close the modal
+            className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition"
+          >
+            I have saved my code and understand
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
-    <div className="personal-goal-section">
-      <h3>Personal Chastity Goal</h3>
-      <p className="text-sm mb-4">
-        Set a personal time goal. To take it further, enable Hardcore Mode to lock yourself in.
-      </p>
+    <div className="settings-section">
+      <h3 className="settings-section-title">Personal Chastity Goal</h3>
       
-      {isSelfLocked && (
-        <div className="locked-state-message">
-          A self-lock goal is currently active for <strong>{formatElapsedTime(goalDurationSeconds)}</strong>. Controls are disabled until the goal is complete.
-        </div>
-      )}
-      
-      {goalDurationSeconds > 0 && !isSelfLocked && (
-        <p className="current-goal-message">
-          Current Goal: <strong>{formatElapsedTime(goalDurationSeconds)}</strong>
-        </p>
-      )}
-
-      <fieldset disabled={isSelfLocked}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <div><label htmlFor="goalDays">Days</label><input type="number" id="goalDays" value={days} onChange={(e) => setDays(e.target.value)} placeholder="0" /></div>
-          <div><label htmlFor="goalHours">Hours</label><input type="number" id="goalHours" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="0" /></div>
-          <div><label htmlFor="goalMinutes">Minutes</label><input type="number" id="goalMinutes" value={minutes} onChange={(e) => setMinutes(e.target.value)} placeholder="0" /></div>
-        </div>
-
-        <div className="self-lock-toggle">
-            <label htmlFor="selfLockEnable">Enable Self-Lock (Hardcore Mode)</label>
-            <input id="selfLockEnable" type="checkbox" checked={isSelfLockEnabled} onChange={(e) => setIsSelfLockEnabled(e.target.checked)} />
-        </div>
-
-        {isSelfLockEnabled && (
-            <div className="self-lock-input-box">
-                <h4>Set Lock Combination</h4>
-                <p className="text-xs mb-3">Enter the combination for your physical lock. This will be hidden and revealed only after your goal is complete.</p>
-                <input
-                    type="text"
-                    value={selfLockCombination}
-                    onChange={(e) => setSelfLockCombination(e.target.value)}
-                    placeholder="e.g., 12-34-56"
-                    className="w-full font-mono tracking-widest"
-                />
+      {isGoalActive ? (
+        <div className="text-center p-4 bg-gray-900/50 rounded-lg border border-purple-700">
+          {isGoalCompleted ? (
+            <div>
+              <FaCheckCircle className="text-5xl text-green-400 mx-auto mb-4" />
+              <h4 className="text-xl font-bold text-green-300">Goal Completed!</h4>
+              {revealedSelfLockCode ? (
+                <>
+                  <p className="text-md text-purple-200 mt-2">Here is the combination you saved:</p>
+                  <div className="bg-gray-900 p-4 rounded-lg my-4">
+                    <p className="text-3xl font-mono tracking-widest text-white">{revealedSelfLockCode}</p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-md text-purple-200 mt-2">You have reached the end of your goal.</p>
+              )}
+              <button onClick={handleClearPersonalGoal} className="btn-secondary mt-4">
+                Clear Completed Goal
+              </button>
             </div>
-        )}
-
-        <div className="flex space-x-3 mt-4">
-          <button type="button" onClick={onSetGoal} disabled={!isAuthReady || !hasTimeInput || (isSelfLockEnabled && !selfLockCombination.trim())}>
-            {isSelfLockEnabled ? 'Set Goal & Lock' : 'Set/Update Goal'}
-          </button>
-          <button type="button" onClick={onClearGoal} disabled={!isAuthReady || !goalDurationSeconds}>
-            Clear Goal
-          </button>
+          ) : (
+            <div>
+              <p className="text-purple-300 font-semibold">Goal is active and locked!</p>
+              <p className="text-lg font-bold text-white">Ends on: {goalEndDate ? new Date(goalEndDate).toLocaleString() : 'Calculating...'}</p>
+              {goalEndDate && <p className="text-sm text-gray-400">({formatElapsedTime(Date.parse(goalEndDate) - Date.now())} remaining)</p>}
+            </div>
+          )}
         </div>
-      </fieldset>
-      
-      {selfLockMessage && (
-        <div className="util-box box-red mt-4">
-            <h4>IMPORTANT: Backup Code</h4>
-            <p className="text-sm">{selfLockMessage}</p>
-            <p className="text-xs text-yellow-400 mt-2">This is the **only** time this backup code will be shown. Write it down and keep it somewhere safe.</p>
-            <button onClick={onAcknowledgeBackupCode} className="w-full mt-3">I have saved my backup code</button>
+      ) : (
+        <div>
+          <p className="text-sm text-purple-200 mb-4">
+            Set a duration for your personal chastity goal.
+          </p>
+          <div className="flex items-center space-x-2 mb-4">
+            <input
+              type="number"
+              value={goalDuration}
+              onChange={(e) => setGoalDuration(e.target.value)}
+              placeholder="Days"
+              className="input-field w-24"
+            />
+            <button onClick={onSetGoalClick} className="btn-primary flex-grow flex items-center justify-center">
+              <FaLock className="mr-2" /> Set & Lock Goal
+            </button>
+          </div>
+          
+          <div className="mt-4 p-3 bg-gray-800/60 border border-gray-700 rounded-lg">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isSelfLocking}
+                onChange={(e) => setIsSelfLocking(e.target.checked)}
+                className="form-checkbox h-5 w-5 bg-gray-900 border-purple-500 text-purple-600 focus:ring-purple-500 rounded"
+              />
+              <span className="ml-3 text-sm font-medium text-purple-200">Hardcore Mode? (Locks Cage Off button)</span>
+            </label>
+            {isSelfLocking && (
+              <div className="mt-3">
+                 <p className="text-xs text-yellow-400 mb-2">Optionally, enter your physical lock's combination. The app will save it and reveal it to you only after the goal is complete.</p>
+                <input
+                  type="text"
+                  value={selfLockCodeInput}
+                  onChange={(e) => setSelfLockCodeInput(e.target.value)}
+                  placeholder="Enter combination for your lock (optional)"
+                  className="input-field w-full"
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

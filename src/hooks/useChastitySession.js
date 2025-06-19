@@ -315,6 +315,43 @@ export const useChastitySession = (
         });
     }, [pauseStartTime, accumulatedPauseTimeThisSession, saveDataToFirestore, currentSessionPauseEvents]);
     
+    const handleEndChastityNow = useCallback(async (reason = 'Session ended programmatically.') => {
+        if (!isCageOn || !cageOnTime) {
+            console.error("Cannot end session: No active session.");
+            return;
+        }
+        const endTime = new Date();
+        let finalAccumulatedPauseTime = accumulatedPauseTimeThisSession;
+        if (isPaused && pauseStartTime) {
+            finalAccumulatedPauseTime += Math.max(0, Math.floor((endTime.getTime() - pauseStartTime.getTime()) / 1000));
+        }
+        const rawDurationSeconds = Math.max(0, Math.floor((endTime.getTime() - cageOnTime.getTime()) / 1000));
+        const newHistoryEntry = {
+            id: crypto.randomUUID(),
+            periodNumber: chastityHistory.length + 1,
+            startTime: cageOnTime,
+            endTime: endTime,
+            duration: rawDurationSeconds,
+            reasonForRemoval: reason,
+            totalPauseDurationSeconds: finalAccumulatedPauseTime,
+            pauseEvents: currentSessionPauseEvents
+        };
+        const updatedHistory = [...chastityHistory, newHistoryEntry];
+        setChastityHistory(updatedHistory);
+        setIsCageOn(false);
+        setCageOnTime(null);
+        setTimeInChastity(0);
+        setIsPaused(false);
+        setPauseStartTime(null);
+        setAccumulatedPauseTimeThisSession(0);
+        setCurrentSessionPauseEvents([]);
+        await saveDataToFirestore({
+            isCageOn: false, cageOnTime: null, timeInChastity: 0,
+            chastityHistory: updatedHistory, isPaused: false, pauseStartTime: null,
+            accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: []
+        });
+    }, [isCageOn, cageOnTime, accumulatedPauseTimeThisSession, isPaused, pauseStartTime, chastityHistory, currentSessionPauseEvents, saveDataToFirestore]);
+    
     const handleRestoreUserIdInputChange = (e) => setRestoreUserIdInput(e.target.value);
     const handleInitiateRestoreFromId = () => setShowRestoreFromIdPrompt(true);
     const handleCancelRestoreFromId = () => setShowRestoreFromIdPrompt(false);
@@ -480,7 +517,11 @@ export const useChastitySession = (
         hasSessionEverBeenActive, confirmReset, setConfirmReset, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage, restoreUserIdInput,
         showRestoreFromIdPrompt, restoreFromIdMessage, handleUpdateCurrentCageOnTime, handleToggleCage,
-        handleConfirmRemoval, handleCancelRemoval, handleInitiatePause, handleConfirmPause,
+        handleConfirmRemoval,
+        // FIX: Added the missing function to the return object
+        handleCancelRemoval,
+        handleEndChastityNow,
+        handleInitiatePause, handleConfirmPause,
         handleCancelPauseModal, handleResumeSession, handleRestoreUserIdInputChange, handleInitiateRestoreFromId,
         handleCancelRestoreFromId, handleConfirmRestoreFromId, handleConfirmRestoreSession,
         handleDiscardAndStartNew, saveDataToFirestore, setChastityHistory, setTimeCageOff, setIsCageOn,
