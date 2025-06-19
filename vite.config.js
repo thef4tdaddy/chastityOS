@@ -6,11 +6,13 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 
+// Cache-busting comment to force a clean build on Vercel: 2025-06-19-A
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    // FIX: Added explicit PostCSS configuration to resolve build error.
+    // Explicitly configure PostCSS to resolve CSS build errors.
     css: {
       postcss: {
         plugins: [
