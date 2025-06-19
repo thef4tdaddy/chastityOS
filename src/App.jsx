@@ -1,11 +1,12 @@
 // src/App.jsx
-import React, { useState, Suspense, lazy, useEffect } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
+import UpdatePrompt from './components/UpdatePrompt'; // Import the new component
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -23,17 +24,23 @@ const App = () => {
     const chastityOS = useChastityState();
     const { isLoading, savedSubmissivesName, isTrackingAllowed, userId, googleEmail } = chastityOS;
 
-    const { needRefresh, updateServiceWorker } = useRegisterSW({
-        onRegistered: (r) => { if (r) console.log('SW registered.'); },
-        onRegisterError: (e) => console.error('SW registration error:', e),
+    const {
+        offlineReady: [offlineReady, setOfflineReady],
+        needRefresh: [needRefresh, setNeedRefresh],
+        updateServiceWorker,
+    } = useRegisterSW({
+        onRegistered(r) {
+            console.log('SW Registered:', r);
+        },
+        onRegisterError(error) {
+            console.log('SW registration error:', error);
+        },
     });
 
-    useEffect(() => {
-        if (needRefresh) {
-            console.log("New content available, updating...");
-            updateServiceWorker(true);
-        }
-    }, [needRefresh, updateServiceWorker]);
+    const closePrompt = () => {
+        setOfflineReady(false);
+        setNeedRefresh(false);
+    };
 
     const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", tasks: "Tasks", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
     const pageTitleText = navItemNames[currentPage] || "ChastityOS";
@@ -44,6 +51,7 @@ const App = () => {
 
     return (
         <div className={`${themeClass} min-h-screen flex flex-col items-center justify-center p-4 md:p-8`}>
+            {needRefresh && <UpdatePrompt onUpdate={() => updateServiceWorker(true)} />}
             <HotjarScript isTrackingAllowed={isTrackingAllowed} />
             <Header />
             <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">

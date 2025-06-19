@@ -4,8 +4,6 @@ import React from 'react';
 const UpdatePrompt = ({ onUpdate }) => {
   const handleUpdateClick = () => {
     // Call the onUpdate prop which triggers the service worker update.
-    // The reload is now handled by the `onUpdated` callback in App.jsx,
-    // which waits for the new service worker to be active.
     onUpdate();
   };
 
@@ -18,7 +16,7 @@ const UpdatePrompt = ({ onUpdate }) => {
             A new version of ChastityOS has been downloaded. Restart the app to apply the update.
           </p>
           <button
-            onClick={handleUpdateClick} // Use the corrected handler
+            onClick={handleUpdateClick}
             className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-800 focus:ring-white"
           >
             Restart & Update
