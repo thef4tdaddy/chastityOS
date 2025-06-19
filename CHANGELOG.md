@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.3-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.2-nightly.0...v3.9.3-nightly.0) (2025-06-19)
+
+
+### 🐛 Bug Fixes
+
+* perform clean reinstall of all dependencies ([49163d3](https://github.com/thef4tdaddy/chastityOS/commit/49163d3fb82760b98f4033788941ea523fac352a))
+* postcss issues in vercel build ([4d2dcdc](https://github.com/thef4tdaddy/chastityOS/commit/4d2dcdcfaf8488b1de65f1ba3dbe325f70b713a7))
+
 ### [3.9.2-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1-nightly.5...v3.9.2-nightly.0) (2025-06-19)
 
 
