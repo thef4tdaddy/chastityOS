@@ -3,6 +3,7 @@ import React from 'react';
 import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
 import { formatTime, formatElapsedTime } from '../utils';
 import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
+import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component
 
 const TrackerPage = (props) => {
     // These props are passed through to the hook or used for other modals
@@ -98,7 +99,7 @@ const TrackerPage = (props) => {
                         {remainingGoalTime <= 0 ? "Goal Reached!" : "Time Remaining on Goal:"}
                     </p>
                     {remainingGoalTime > 0 && (
-                        <p className="text-3xl font-bold text-blue-100">{formatElapsedTime(Math.round(remainingGoalTime / 1000))}</p>
+                        <p className="text-3xl font-bold text-blue-100">{formatElapsedTime(remainingGoalTime)}</p>
                     )}
                 </div>
             )}
@@ -222,43 +223,14 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-          {showEmergencyUnlockModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg w-full max-w-md border border-red-700">
-                <h3 className="text-lg md:text-xl font-bold mb-4 text-red-400 text-center">Emergency Unlock</h3>
-                <p className="text-sm text-purple-200 mb-4 text-center">
-                  A Hardcore Goal is active. To unlock early, please provide your 6-character backup code.
-                </p>
-                <input
-                  type="text"
-                  value={backupCodeInput}
-                  onChange={(e) => setBackupCodeInput(e.target.value.toUpperCase())}
-                  maxLength="6"
-                  placeholder="BACKUP CODE"
-                  className="w-full p-3 rounded-md border border-red-600 bg-gray-900 text-white text-2xl text-center font-mono tracking-widest focus:ring-red-500 focus:border-red-500 mb-4"
-                />
-                <button
-                  onClick={handleAttemptEmergencyUnlock}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition"
-                  disabled={!backupCodeInput || unlockMessage === 'Verifying code...'}
-                >
-                  {unlockMessage === 'Verifying code...' ? 'Verifying...' : 'Verify & Unlock'}
-                </button>
-                {unlockMessage && (
-                  <p className={`text-sm mt-4 text-center ${unlockMessage.includes('successful') ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {unlockMessage}
-                  </p>
-                )}
-                 <button
-                    type="button"
-                    onClick={() => setShowEmergencyUnlockModal(false)}
-                    className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition mt-4"
-                  >
-                    Cancel
-                  </button>
-              </div>
-            </div>
-          )}
+          <EmergencyUnlockModal 
+            isOpen={showEmergencyUnlockModal}
+            onClose={() => setShowEmergencyUnlockModal(false)}
+            onSubmit={handleAttemptEmergencyUnlock}
+            backupCode={backupCodeInput}
+            setBackupCode={setBackupCodeInput}
+            unlockMessage={unlockMessage}
+          />
         </>
     );
 };

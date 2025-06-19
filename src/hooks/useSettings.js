@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from '../firebase';
-// FIX: Changed 'generateHash' to 'generateSecureHash' to match the actual export
 import { generateSecureHash, verifyHash } from '../utils/hash';
 
 export const useSettings = (userId, isAuthReady) => {
@@ -17,6 +16,8 @@ export const useSettings = (userId, isAuthReady) => {
     const [goalDurationSeconds, setGoalDurationSeconds] = useState(null);
     const [goalSetDate, setGoalSetDate] = useState(null);
     const [goalBackupCodeHash, setGoalBackupCodeHash] = useState(null);
+    const [isHardcoreGoal, setIsHardcoreGoal] = useState(false);
+    const [selfLockCode, setSelfLockCode] = useState(null); // Add state for the self-lock code
     const [rewards, setRewards] = useState([]);
     const [punishments, setPunishments] = useState([]);
     const [eventDisplayMode, setEventDisplayMode] = useState('kinky');
@@ -70,10 +71,12 @@ export const useSettings = (userId, isAuthReady) => {
                 setGoalDurationSeconds(data.goalDurationSeconds || null);
                 setGoalSetDate(data.goalSetDate || null);
                 setGoalBackupCodeHash(data.goalBackupCodeHash || null);
+                setIsHardcoreGoal(data.isHardcoreGoal || false);
+                setSelfLockCode(data.selfLockCode || null); // **THE FIX IS HERE**
                 setRewards(data.rewards || []);
                 setPunishments(data.punishments || []);
                 setEventDisplayMode(data.eventDisplayMode || 'kinky');
-                setIsTrackingAllowed(data.isTrackingAllowed !== false); // Default to true if undefined
+                setIsTrackingAllowed(data.isTrackingAllowed !== false);
             }
         }, (error) => {
             console.error("Error fetching settings:", error);
@@ -97,6 +100,8 @@ export const useSettings = (userId, isAuthReady) => {
         goalSetDate,
         goalBackupCodeHash,
         isGoalActive,
+        isHardcoreGoal,
+        selfLockCode, // And returned here
         goalEndDate,
         isGoalCompleted,
         rewards, setRewards,
