@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.5...v3.9.0-nightly.6) (2025-06-19)
+
+
+### 🔧 Refactoring
+
+* tracker page refactored ([c26a1ea](https://github.com/thef4tdaddy/chastityOS/commit/c26a1ea33039361832054cbbd62a8d7e7ecf4fb0))
+
+
+### 🐛 Bug Fixes
+
+* hardcore mode fully operational ([670cf52](https://github.com/thef4tdaddy/chastityOS/commit/670cf5287f34cd80a4b0eb73c0d37be0cdccec1b))
+* hardcore regular differentiation of personal goal ([185e1ba](https://github.com/thef4tdaddy/chastityOS/commit/185e1ba8c327ca87dec766a9d175331509c9eeb6))
+
+
+### 📚 Documentation
+
+* adding an eula to the bottom ([d4bdf3f](https://github.com/thef4tdaddy/chastityOS/commit/d4bdf3fc9ca4b2b1d07d3ba07de24b42f0b655ae))
+
 ## [3.9.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.1...v3.9.0-nightly.5) (2025-06-19)
 
 
