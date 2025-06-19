@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate', // Changed from 'prompt'
+        registerType: 'prompt', // Changed from 'autoUpdate'
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'ChastityOS',
