@@ -1,46 +1,51 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+import globals from 'globals';
+import pluginJs from '@eslint/js';
+import pluginReactConfig from 'eslint-plugin-react/configs/recommended.js';
+import { fixupConfigRules } from '@eslint/compat';
+import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
 
 export default [
-  // Global ignores
-  { ignores: ['dist'] },
-
-  // Configuration for Node.js files (like vite.config.js, postcss.config.js)
+  pluginJs.configs.recommended,
+  ...fixupConfigRules(pluginReactConfig),
   {
-    files: ['**/*.config.js', '**/*.config.cjs'],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-      },
-    },
-  },
-  
-  // Configuration for React source files
-  {
+    // FIX: This section now explicitly applies all the React rules and settings
+    // to both .js and .jsx files within your 'src' directory.
     files: ['src/**/*.{js,jsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        __APP_ENV__: 'readonly',
+      },
+      ecmaVersion: 'latest',
+      sourceType: 'module',
       parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    settings: {
+      react: {
+        version: 'detect',
       },
     },
     plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
+      'react-hooks': eslintPluginReactHooks,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
+      ...eslintPluginReactHooks.configs.recommended.rules,
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          args: 'after-used',
+          ignoreRestSiblings: false,
+          varsIgnorePattern: '^[A-Z_]',
+        },
       ],
     },
   },
-]
+];
