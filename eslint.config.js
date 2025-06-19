@@ -1,16 +1,19 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
-import pluginReactConfig from 'eslint-plugin-react/configs/recommended.js';
-import { fixupConfigRules } from '@eslint/compat';
-import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
+import pluginReact from 'eslint-plugin-react';
+import pluginReactHooks from 'eslint-plugin-react-hooks';
 
 export default [
+  // Base configuration recommended by ESLint
   pluginJs.configs.recommended,
-  ...fixupConfigRules(pluginReactConfig),
+
+  // Configuration block for all React-related linting
   {
-    // FIX: This section now explicitly applies all the React rules and settings
-    // to both .js and .jsx files within your 'src' directory.
-    files: ['src/**/*.{js,jsx}'],
+    files: ['src/**/*.{js,jsx}'], // Apply these rules to all JS and JSX files in the src folder
+    plugins: {
+      react: pluginReact,
+      'react-hooks': pluginReactHooks,
+    },
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -27,16 +30,17 @@ export default [
     },
     settings: {
       react: {
-        version: 'detect',
+        version: 'detect', // Automatically detect the React version
       },
     },
-    plugins: {
-      'react-hooks': eslintPluginReactHooks,
-    },
     rules: {
-      ...eslintPluginReactHooks.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
+      // Start with the recommended rules from both plugins
+      ...pluginReact.configs.recommended.rules,
+      ...pluginReactHooks.configs.recommended.rules,
+      
+      // Your custom rule overrides
+      'react/react-in-jsx-scope': 'off', // Not needed with modern React
+      'react/prop-types': 'off', // Turn off prop-types validation
       'no-unused-vars': [
         'error',
         {
