@@ -1,107 +1,56 @@
-import React, { useEffect, useState, useRef } from 'react';
+// src/pages/TrackerPage.jsx
+import React from 'react';
 import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
 import { formatTime, formatElapsedTime } from '../utils';
+import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
 
 const TrackerPage = (props) => {
+    // These props are passed through to the hook or used for other modals
     const {
         isAuthReady,
-        isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
+        isCageOn,
         handleToggleCage,
         showReasonModal,
         reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
-        isPaused: isPausedProp,
+        isPaused,
         handleInitiatePause,
         handleResumeSession,
         showPauseReasonModal,
         handleCancelPauseModal,
-        reasonForPauseInput,
-        setReasonForPauseInput,
-        handleConfirmPause,
-        accumulatedPauseTimeThisSession,
-        pauseStartTime,
+        reasonForPauseInput, setReasonForPauseInput, handleConfirmPause,
         livePauseDuration,
         pauseCooldownMessage,
         showRestoreSessionPrompt,
         handleConfirmRestoreSession,
         handleDiscardAndStartNew,
         loadedSessionData,
-        goalDurationSeconds,
         keyholderName,
         requiredKeyholderDurationSeconds,
         isGoalActive,
-        handleEmergencyUnlock,
+        isHardcoreGoal,
+        totalChastityTime,
+        totalTimeCageOff,
+        timeCageOff,
+        pauseStartTime,
+        accumulatedPauseTimeThisSession
     } = props;
 
-    // --- FIX: Guard against undefined/null props to prevent crashes on initial render ---
-    const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false;
-    const safeChastityHistory = chastityHistory || [];
-    const safeTimeInChastity = timeInChastity || 0;
-    const safeAccumulatedPauseTime = accumulatedPauseTimeThisSession || 0;
+    // Call the new hook to get all the logic and state for this page
+    const {
+        remainingGoalTime,
+        showEmergencyUnlockModal,
+        backupCodeInput,
+        unlockMessage,
+        effectiveTimeInChastityForGoal,
+        mainChastityDisplayTime,
+        topBoxLabel,
+        topBoxTime,
+        setBackupCodeInput,
+        handleOpenUnlockModal,
+        handleAttemptEmergencyUnlock,
+        setShowEmergencyUnlockModal,
+    } = useTrackerPage(props); // Pass all props from parent to the hook
 
-    const [remainingGoalTime, setRemainingGoalTime] = useState(null);
-    const goalTimerRef = useRef(null);
-    
-    const [showEmergencyUnlockModal, setShowEmergencyUnlockModal] = useState(false);
-    const [backupCodeInput, setBackupCodeInput] = useState('');
-    const [unlockMessage, setUnlockMessage] = useState('');
-
-    const effectiveTimeInChastityForGoal = Math.max(0, safeTimeInChastity - safeAccumulatedPauseTime);
-
-    useEffect(() => {
-        if (isCageOn && !isPaused && goalDurationSeconds && goalDurationSeconds > 0) {
-            const calculateRemaining = () => {
-                const currentEffectiveChastity = Math.max(0, safeTimeInChastity - safeAccumulatedPauseTime);
-                const remaining = goalDurationSeconds - currentEffectiveChastity;
-                setRemainingGoalTime(remaining > 0 ? remaining : 0);
-            };
-            calculateRemaining();
-            goalTimerRef.current = setInterval(calculateRemaining, 1000);
-        } else {
-            if (goalTimerRef.current) clearInterval(goalTimerRef.current);
-            if (!isCageOn || !goalDurationSeconds || goalDurationSeconds <= 0) {
-                 setRemainingGoalTime(null);
-            } else if (isPaused && goalDurationSeconds && goalDurationSeconds > 0) {
-                const currentEffectiveChastity = Math.max(0, safeTimeInChastity - safeAccumulatedPauseTime);
-                const remaining = goalDurationSeconds - currentEffectiveChastity;
-                setRemainingGoalTime(remaining > 0 ? remaining : 0);
-            }
-        }
-        return () => { if (goalTimerRef.current) clearInterval(goalTimerRef.current); };
-    }, [isCageOn, isPaused, safeTimeInChastity, safeAccumulatedPauseTime, goalDurationSeconds]);
-
-    const mainChastityDisplayTime = Math.max(0, safeTimeInChastity - safeAccumulatedPauseTime);
-
-    let topBoxLabel = "Cage Status Time";
-    let topBoxTime = null;
-    if (isCageOn) {
-        topBoxLabel = "Cage On Since:";
-        topBoxTime = cageOnTime;
-    } else {
-        topBoxLabel = "Cage Off Since:";
-        if (safeChastityHistory.length > 0) {
-            topBoxTime = safeChastityHistory[safeChastityHistory.length - 1].endTime;
-        } else {
-            topBoxTime = null;
-        }
-    }
-
-    const handleOpenUnlockModal = () => {
-        setUnlockMessage('');
-        setBackupCodeInput('');
-        setShowEmergencyUnlockModal(true);
-    };
-
-    const handleAttemptEmergencyUnlock = async () => {
-        if (!backupCodeInput) return;
-        setUnlockMessage('Verifying code...');
-        const result = await handleEmergencyUnlock(backupCodeInput);
-        setUnlockMessage(result.message);
-        if (result.success) {
-            setTimeout(() => { setShowEmergencyUnlockModal(false); }, 2500);
-        }
-    };
-
-    // --- FIX: Add a loading state to prevent rendering before data is ready ---
     if (!isAuthReady) {
         return (
             <div className="flex justify-center items-center p-8">
@@ -111,9 +60,9 @@ const TrackerPage = (props) => {
         );
     }
 
+    // The JSX remains the same, but it uses the values from the hook
     return (
         <>
-          {/* FIX: Restored ALL original UI, modals, and stat displays */}
           {showRestoreSessionPrompt && loadedSessionData && (
              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-700 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-blue-500">
@@ -143,17 +92,17 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-          {isCageOn && goalDurationSeconds && goalDurationSeconds > 0 && remainingGoalTime !== null && (
+          {isCageOn && props.goalDurationSeconds > 0 && remainingGoalTime !== null && (
                 <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border ${remainingGoalTime <= 0 ? 'bg-green-700 border-green-500' : 'bg-blue-800 border-blue-600'}`}>
                     <p className={`text-lg font-semibold ${remainingGoalTime <=0 ? 'text-green-200' : 'text-blue-200'}`}>
                         {remainingGoalTime <= 0 ? "Goal Reached!" : "Time Remaining on Goal:"}
                     </p>
                     {remainingGoalTime > 0 && (
-                        <p className="text-3xl font-bold text-blue-100">{formatElapsedTime(remainingGoalTime)}</p>
+                        <p className="text-3xl font-bold text-blue-100">{formatElapsedTime(Math.round(remainingGoalTime / 1000))}</p>
                     )}
                 </div>
             )}
-            {keyholderName && requiredKeyholderDurationSeconds !== null && requiredKeyholderDurationSeconds > 0 && (
+            {keyholderName && requiredKeyholderDurationSeconds > 0 && (
                 <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border ${
                     isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds ? 'bg-pink-700 border-pink-500' : 'bg-purple-800 border-purple-600'
                 }`}>
@@ -191,8 +140,8 @@ const TrackerPage = (props) => {
                     {isPaused && pauseStartTime && (
                         <p className="text-xs text-yellow-300 mt-1">Currently paused for: {formatElapsedTime(livePauseDuration)}</p>
                     )}
-                    {isCageOn && safeAccumulatedPauseTime > 0 && (
-                        <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? safeAccumulatedPauseTime + livePauseDuration : safeAccumulatedPauseTime )}</p>
+                    {isCageOn && accumulatedPauseTimeThisSession > 0 && (
+                        <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
                     )}
                 </div>
                 <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'tracker-box'}`}>
@@ -218,7 +167,7 @@ const TrackerPage = (props) => {
                       className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-purple-500 hover:bg-purple-600 focus:ring-purple-400">
                       Cage On / Start Session
                   </button>
-              ) : isGoalActive ? (
+              ) : isGoalActive && isHardcoreGoal ? (
                   <button type="button" onClick={handleOpenUnlockModal} disabled={!isAuthReady || showRestoreSessionPrompt}
                       className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-700 hover:bg-red-800 focus:ring-red-500 flex items-center justify-center">
                      <FaLock className="mr-2"/> Emergency Unlock
@@ -278,7 +227,7 @@ const TrackerPage = (props) => {
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg w-full max-w-md border border-red-700">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-red-400 text-center">Emergency Unlock</h3>
                 <p className="text-sm text-purple-200 mb-4 text-center">
-                  A Personal Goal is active. To unlock early, please provide your 6-character backup code.
+                  A Hardcore Goal is active. To unlock early, please provide your 6-character backup code.
                 </p>
                 <input
                   type="text"
