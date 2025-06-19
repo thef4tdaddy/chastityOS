@@ -5,7 +5,7 @@ import { useEventLog } from './useEventLog';
 import { useChastitySession } from './useChastitySession';
 import { useDataManagement } from './useDataManagement';
 import { useTasks } from './useTasks';
-import { usePersonalGoal } from './usePersonalGoal'; // 1. Import the new hook
+import { usePersonalGoal } from './usePersonalGoal';
 
 export const useChastityState = () => {
     // Compose all specialized hooks
@@ -22,27 +22,27 @@ export const useChastityState = () => {
         getEventsCollectionRef, eventLogState.fetchEvents
     );
 
-    // 2. Initialize the personal goal hook
-    // We pass it the functions it needs to interact with other parts of the state
+    // Initialize the personal goal hook
     const personalGoalState = usePersonalGoal({
         setSettings: settingsState.setSettings,
-        handleEndChastityNow: sessionState.handleEndChastityNow, // Give it the ability to end the session
-        settings: { // Pass only the specific settings it needs
+        handleEndChastityNow: sessionState.handleEndChastityNow,
+        settings: {
+            // **THE FIX IS HERE**
+            // Pass down all the necessary goal-related settings
             goalBackupCodeHash: settingsState.goalBackupCodeHash,
+            selfLockCode: settingsState.selfLockCode,
+            isHardcoreGoal: settingsState.isHardcoreGoal,
+            goalDurationSeconds: settingsState.goalDurationSeconds,
+            goalSetDate: settingsState.goalSetDate,
         }
     });
 
-    // The Data Management hook can stay as it is
     const dataManagementState = useDataManagement({
         userId, settingsState, sessionState,
         eventLogState, getEventsCollectionRef
     });
-
-    // We no longer need the local reset logic, as it's handled elsewhere
-    // const [confirmReset, setConfirmReset] = useState(false);
-    // const handleResetAllData = ...
-
-    // 3. Return all the state and functions, including the new ones from the personal goal hook
+    
+    // Return all state and functions, ensuring they are correctly spread
     return {
         ...authState,
         ...settingsState,
@@ -50,6 +50,6 @@ export const useChastityState = () => {
         ...sessionState,
         ...dataManagementState,
         ...tasksState,
-        ...personalGoalState, // This includes handleEmergencyUnlock, isGoalActive, etc.
+        ...personalGoalState,
     };
 };

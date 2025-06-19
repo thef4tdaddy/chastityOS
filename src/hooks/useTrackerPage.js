@@ -27,7 +27,7 @@ export const useTrackerPage = (props) => {
     const [backupCodeInput, setBackupCodeInput] = useState('');
     const [unlockMessage, setUnlockMessage] = useState('');
 
-    // --- FIX: Wrap safe initial values in useMemo to stabilize them ---
+    // Wrap safe initial values in useMemo to stabilize them and prevent unnecessary re-renders
     const safeTimeInChastity = useMemo(() => timeInChastity || 0, [timeInChastity]);
     const safeAccumulatedPauseTime = useMemo(() => accumulatedPauseTimeThisSession || 0, [accumulatedPauseTimeThisSession]);
     const safeHistory = useMemo(() => chastityHistory || [], [chastityHistory]);
@@ -68,7 +68,7 @@ export const useTrackerPage = (props) => {
             }
             return { topBoxLabel: "Cage Off Since:", topBoxTime: null };
         }
-    }, [isCageOn, cageOnTime, safeHistory]); // This dependency array is now correct and stable
+    }, [isCageOn, cageOnTime, safeHistory]);
 
     // Handlers for the emergency unlock modal
     const handleOpenUnlockModal = () => {
@@ -82,7 +82,7 @@ export const useTrackerPage = (props) => {
         setUnlockMessage('Verifying code...');
         const result = await handleEmergencyUnlock(backupCodeInput);
         setUnlockMessage(result.message);
-        if (result.success) {
+        if (result.success && !result.revealedCode) {
             setTimeout(() => { setShowEmergencyUnlockModal(false); }, 2500);
         }
     };
