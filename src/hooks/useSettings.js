@@ -1,206 +1,112 @@
 // src/hooks/useSettings.js
 import { useState, useEffect, useCallback } from 'react';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from '../firebase';
-import { generateHash } from '../utils/hash';
+// FIX: Changed 'generateHash' to 'generateSecureHash' to match the actual export
+import { generateSecureHash, verifyHash } from '../utils/hash';
 
 export const useSettings = (userId, isAuthReady) => {
-    // --- State Management ---
+    // State for various settings
     const [savedSubmissivesName, setSavedSubmissivesName] = useState('');
-    const [submissivesNameInput, setSubmissivesNameInput] = useState('');
-    const [nameMessage, setNameMessage] = useState('');
     const [keyholderName, setKeyholderName] = useState('');
+    const [keyholderPassword, setKeyholderPassword] = useState('');
     const [keyholderPasswordHash, setKeyholderPasswordHash] = useState(null);
-    const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
-    const [requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds] = useState(null);
-    const [keyholderMessage, setKeyholderMessage] = useState('');
+    const [keyholderPasswordMessage, setKeyholderPasswordMessage] = useState('');
     const [passwordAcknowledged, setPasswordAcknowledged] = useState(false);
+    const [requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds] = useState(null);
     const [goalDurationSeconds, setGoalDurationSeconds] = useState(null);
+    const [goalSetDate, setGoalSetDate] = useState(null);
+    const [goalBackupCodeHash, setGoalBackupCodeHash] = useState(null);
     const [rewards, setRewards] = useState([]);
     const [punishments, setPunishments] = useState([]);
-    const [isTrackingAllowed, setIsTrackingAllowed] = useState(true);
     const [eventDisplayMode, setEventDisplayMode] = useState('kinky');
-    const [isSelfLocked, setIsSelfLocked] = useState(false);
-    const [selfLockCode, setSelfLockCode] = useState(null);
-    const [selfLockBackupAcknowledged, setSelfLockBackupAcknowledged] = useState(false);
-    const [selfLockMessage, setSelfLockMessage] = useState('');
+    const [nameMessage, setNameMessage] = useState('');
+    const [isTrackingAllowed, setIsTrackingAllowed] = useState(true);
 
-    const saveSettingsToFirestore = useCallback(async (settingsToSave) => {
+    const setSettings = useCallback(async (newSettings) => {
         if (!isAuthReady || !userId) return;
         const docRef = doc(db, "users", userId);
         try {
-            await setDoc(docRef, settingsToSave, { merge: true });
+            await setDoc(docRef, newSettings, { merge: true });
         } catch (error) {
-            console.error("Error saving settings to Firestore:", error);
+            console.error("Error updating settings:", error);
         }
     }, [isAuthReady, userId]);
 
+    const handleSetKeyholderPassword = useCallback(async () => {
+        if (keyholderPassword.length < 6) {
+            setKeyholderPasswordMessage('Password must be at least 6 characters long.');
+            setTimeout(() => setKeyholderPasswordMessage(''), 3000);
+            return;
+        }
+        try {
+            const hash = await generateSecureHash(keyholderPassword);
+            await setSettings({ keyholderPasswordHash: hash, passwordAcknowledged: true });
+            setKeyholderPassword('');
+            setKeyholderPasswordMessage('Keyholder password set successfully.');
+            setTimeout(() => setKeyholderPasswordMessage(''), 3000);
+        } catch (error) {
+            console.error("Error setting keyholder password:", error);
+            setKeyholderPasswordMessage('Failed to set password. See console for details.');
+            setTimeout(() => setKeyholderPasswordMessage(''), 3000);
+        }
+    }, [keyholderPassword, setSettings]);
+
+    const handleAcknowledgePassword = useCallback(() => {
+        setSettings({ passwordAcknowledged: true });
+    }, [setSettings]);
+
     useEffect(() => {
         if (!isAuthReady || !userId) return;
-        const docRef = doc(db, "users", userId);
+        const docRef = doc(db, 'users', userId);
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                setSavedSubmissivesName(data.submissivesName || '');
-                setSubmissivesNameInput(data.submissivesName || '');
+                setSavedSubmissivesName(data.savedSubmissivesName || '');
                 setKeyholderName(data.keyholderName || '');
                 setKeyholderPasswordHash(data.keyholderPasswordHash || null);
-                setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds ?? null);
-                setGoalDurationSeconds(data.goalDurationSeconds ?? null);
+                setPasswordAcknowledged(data.passwordAcknowledged || false);
+                setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds || null);
+                setGoalDurationSeconds(data.goalDurationSeconds || null);
+                setGoalSetDate(data.goalSetDate || null);
+                setGoalBackupCodeHash(data.goalBackupCodeHash || null);
                 setRewards(data.rewards || []);
                 setPunishments(data.punishments || []);
-                setIsTrackingAllowed(data.isTrackingAllowed !== false);
                 setEventDisplayMode(data.eventDisplayMode || 'kinky');
-                setPasswordAcknowledged(data.passwordAcknowledged || false);
-                setIsSelfLocked(data.isSelfLocked || false);
-                setSelfLockCode(data.selfLockCode || null);
-                setSelfLockBackupAcknowledged(data.selfLockBackupAcknowledged || false);
+                setIsTrackingAllowed(data.isTrackingAllowed !== false); // Default to true if undefined
             }
+        }, (error) => {
+            console.error("Error fetching settings:", error);
         });
         return () => unsubscribe();
     }, [isAuthReady, userId]);
 
-    // --- All Handlers ---
-    const handleSubmissivesNameInputChange = useCallback((event) => setSubmissivesNameInput(event.target.value), []);
-
-    const handleSetSubmissivesName = useCallback(async () => {
-        const trimmedName = submissivesNameInput.trim();
-        if (!trimmedName) {
-            setNameMessage("Name cannot be empty.");
-            setTimeout(() => setNameMessage(''), 3000);
-            return;
-        }
-        setSavedSubmissivesName(trimmedName);
-        await saveSettingsToFirestore({ submissivesName: trimmedName });
-        setNameMessage("Submissive's name has been set!");
-        setTimeout(() => setNameMessage(''), 3000);
-    }, [submissivesNameInput, saveSettingsToFirestore]);
-
-    const handleSetKeyholder = useCallback(async (name) => {
-        const khName = name.trim();
-        if (!khName) {
-            setKeyholderMessage('Keyholder name cannot be empty.');
-            return null;
-        }
-        const hash = await generateHash(userId + khName);
-        const preview = hash.substring(0, 8).toUpperCase();
-        
-        await saveSettingsToFirestore({ 
-            keyholderName: khName, 
-            keyholderPasswordHash: hash, 
-            requiredKeyholderDurationSeconds: null,
-            passwordAcknowledged: false
-        });
-
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage(`Your keyholder password is: ${preview}`);
-        return preview;
-    }, [userId, saveSettingsToFirestore]);
-
-    const handleClearKeyholder = useCallback(async () => {
-        await saveSettingsToFirestore({ 
-            keyholderName: '', 
-            keyholderPasswordHash: null, 
-            requiredKeyholderDurationSeconds: null,
-            passwordAcknowledged: false
-        });
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Keyholder data cleared.');
-    }, [saveSettingsToFirestore]);
-
-    const handleUnlockKeyholderControls = useCallback(async (enteredPasswordPreview) => {
-        if (!keyholderPasswordHash) {
-            setKeyholderMessage('Keyholder not fully set up.');
-            return false;
-        }
-        const expectedPreview = keyholderPasswordHash.substring(0, 8).toUpperCase();
-        if (enteredPasswordPreview.toUpperCase() === expectedPreview) {
-            setIsKeyholderModeUnlocked(true);
-            setKeyholderMessage('Keyholder controls unlocked.');
-            return true;
-        }
-        setKeyholderMessage('Incorrect Keyholder password.');
-        return false;
-    }, [keyholderPasswordHash]);
-
-    const handleLockKeyholderControls = useCallback(() => {
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Keyholder controls locked.');
-    }, []);
-
-    const handleSetRequiredDuration = useCallback(async (durationInSeconds) => {
-        const newDuration = Number(durationInSeconds);
-        if (!isNaN(newDuration) && newDuration >= 0) {
-            await saveSettingsToFirestore({ requiredKeyholderDurationSeconds: newDuration });
-            setKeyholderMessage('Required duration updated.');
-            return true;
-        }
-        return false;
-    }, [saveSettingsToFirestore]);
-
-    const handleAddReward = useCallback(async ({ timeSeconds = 0, other = '' }) => {
-        const newReward = { id: crypto.randomUUID(), timeSeconds: timeSeconds > 0 ? timeSeconds : null, other: other.trim() };
-        const updatedRewards = [...rewards, newReward];
-        let newRequired = requiredKeyholderDurationSeconds;
-        if (timeSeconds > 0 && requiredKeyholderDurationSeconds !== null) {
-            newRequired = Math.max(0, requiredKeyholderDurationSeconds - timeSeconds);
-        }
-        await saveSettingsToFirestore({ rewards: updatedRewards, requiredKeyholderDurationSeconds: newRequired });
-    }, [rewards, requiredKeyholderDurationSeconds, saveSettingsToFirestore]);
-
-    const handleAddPunishment = useCallback(async ({ timeSeconds = 0, other = '' }) => {
-        const newPunishment = { id: crypto.randomUUID(), timeSeconds: timeSeconds > 0 ? timeSeconds : null, other: other.trim() };
-        const updatedPunishments = [...punishments, newPunishment];
-        const newRequired = (requiredKeyholderDurationSeconds || 0) + (timeSeconds > 0 ? timeSeconds : 0);
-        await saveSettingsToFirestore({ punishments: updatedPunishments, requiredKeyholderDurationSeconds: newRequired });
-    }, [punishments, requiredKeyholderDurationSeconds, saveSettingsToFirestore]);
-    
-    const handleSetEventDisplayMode = useCallback(async (mode) => {
-        if (mode === 'kinky' || mode === 'vanilla') {
-            setEventDisplayMode(mode);
-            await saveSettingsToFirestore({ eventDisplayMode: mode });
-        }
-    }, [saveSettingsToFirestore]);
-
-    const onAcknowledgePassword = useCallback(async () => {
-        await saveSettingsToFirestore({ passwordAcknowledged: true });
-    }, [saveSettingsToFirestore]);
-
-    // --- Self-Lock Handlers ---
-    const handleSetSelfLock = useCallback(async (duration, code) => {
-        if (!duration || !code) return;
-        const backupCode = `BACKUP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-        await saveSettingsToFirestore({
-            goalDurationSeconds: duration, isSelfLocked: true,
-            selfLockCode: code, selfLockBackupCode: backupCode,
-            selfLockBackupAcknowledged: false,
-        });
-        setSelfLockMessage(`Your backup code is: ${backupCode}`);
-    }, [saveSettingsToFirestore]);
-
-    const handleClearSelfLock = useCallback(async () => {
-        await saveSettingsToFirestore({
-            goalDurationSeconds: null, isSelfLocked: false,
-            selfLockCode: null, selfLockBackupCode: null,
-            selfLockBackupAcknowledged: true,
-        });
-        setSelfLockMessage('');
-    }, [saveSettingsToFirestore]);
-    
-    const onAcknowledgeBackupCode = useCallback(async () => {
-        await saveSettingsToFirestore({ selfLockBackupAcknowledged: true });
-        setSelfLockMessage('');
-    }, [saveSettingsToFirestore]);
-
-    const handleSetGoalDuration = useCallback(async (duration) => {
-        if (isSelfLocked) return;
-        await saveSettingsToFirestore({ goalDurationSeconds: duration ?? null });
-    }, [isSelfLocked, saveSettingsToFirestore]);
+    const isGoalActive = goalDurationSeconds > 0 && goalSetDate;
+    const goalEndDate = isGoalActive ? new Date(new Date(goalSetDate).getTime() + goalDurationSeconds * 1000) : null;
+    const isGoalCompleted = isGoalActive && goalEndDate < new Date();
 
     return {
-        savedSubmissivesName, submissivesNameInput, nameMessage, keyholderName, isKeyholderModeUnlocked, requiredKeyholderDurationSeconds, keyholderMessage, goalDurationSeconds, rewards, punishments, isTrackingAllowed, eventDisplayMode, passwordAcknowledged,
-        isSelfLocked, selfLockCode, selfLockBackupAcknowledged, selfLockMessage,
-        handleSetSubmissivesName, handleSubmissivesNameInputChange, handleSetKeyholder, handleClearKeyholder, handleUnlockKeyholderControls, handleLockKeyholderControls, handleSetRequiredDuration, handleSetGoalDuration, handleAddReward, handleAddPunishment, handleSetEventDisplayMode, saveSettingsToFirestore, onAcknowledgePassword,
-        handleSetSelfLock, handleClearSelfLock, onAcknowledgeBackupCode
+        savedSubmissivesName, setSavedSubmissivesName,
+        keyholderName, setKeyholderName,
+        keyholderPassword, setKeyholderPassword,
+        keyholderPasswordHash,
+        keyholderPasswordMessage,
+        passwordAcknowledged,
+        requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds,
+        goalDurationSeconds,
+        goalSetDate,
+        goalBackupCodeHash,
+        isGoalActive,
+        goalEndDate,
+        isGoalCompleted,
+        rewards, setRewards,
+        punishments, setPunishments,
+        eventDisplayMode, setEventDisplayMode,
+        nameMessage, setNameMessage,
+        isTrackingAllowed, setIsTrackingAllowed,
+        setSettings,
+        handleSetKeyholderPassword,
+        handleAcknowledgePassword,
+        verifyHash,
     };
 };
