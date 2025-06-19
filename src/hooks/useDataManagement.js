@@ -15,11 +15,12 @@ const triggerDownload = (filename, content, contentType = 'text/plain') => {
     document.body.removeChild(element);
 };
 
+// FIX: Added default empty objects {} to prevent crashes when state is not ready.
 export const useDataManagement = ({
     userId,
-    settingsState,
-    sessionState,
-    eventLogState,
+    settingsState = {},
+    sessionState = {},
+    eventLogState = {},
     getEventsCollectionRef
 }) => {
     const handleExportTextReport = useCallback(() => {
@@ -34,15 +35,16 @@ export const useDataManagement = ({
         if (sessionState.isCageOn && sessionState.cageOnTime) {
             report += `Current Session Started: ${formatTime(sessionState.cageOnTime, true, true)}\n`;
         }
-        report += `Effective Time This Session: ${formatElapsedTime(effectiveCurrentTime)}\n\n`;
+        report += `Effective Time This Session: ${formatElapsedTime(effectiveCurrentTime || 0)}\n\n`;
 
         report += `--- TOTALS ---\n`;
-        report += `Total Effective Chastity Time: ${formatElapsedTime(sessionState.totalChastityTime)}\n`;
-        report += `Total Time Cage Off: ${formatElapsedTime(sessionState.totalTimeCageOff)}\n`;
-        report += `Total Paused Time: ${formatElapsedTime(sessionState.overallTotalPauseTime)}\n\n`;
+        report += `Total Effective Chastity Time: ${formatElapsedTime(sessionState.totalChastityTime || 0)}\n`;
+        report += `Total Time Cage Off: ${formatElapsedTime(sessionState.totalTimeCageOff || 0)}\n`;
+        report += `Total Paused Time: ${formatElapsedTime(sessionState.overallTotalPauseTime || 0)}\n\n`;
 
         report += `--- CHASTITY HISTORY ---\n`;
-        if (sessionState.chastityHistory.length > 0) {
+        // FIX: Use optional chaining (?.) and default array ([]) for safety
+        if ((sessionState.chastityHistory?.length || 0) > 0) {
             [...sessionState.chastityHistory].reverse().forEach(h => {
                 report += `Period ${h.periodNumber}: ${formatTime(h.startTime, true, true)} to ${formatTime(h.endTime, true, true)}\n`;
                 report += `  - Raw Duration: ${formatElapsedTime(h.duration)}\n`;
@@ -55,7 +57,8 @@ export const useDataManagement = ({
         }
 
         report += `--- EVENT LOG ---\n`;
-        if (eventLogState.sexualEventsLog.length > 0) {
+        // FIX: Use optional chaining (?.) and default array ([]) for safety
+        if ((eventLogState.sexualEventsLog?.length || 0) > 0) {
             [...eventLogState.sexualEventsLog].forEach(e => {
                 const types = [...(e.types || [])];
                 if (e.otherTypeDetail) types.push(`Other: ${e.otherTypeDetail}`);
@@ -70,9 +73,10 @@ export const useDataManagement = ({
     }, [userId, settingsState, sessionState, eventLogState]);
 
     const handleExportTrackerCSV = useCallback(() => {
-        if (sessionState.chastityHistory.length === 0) return alert('No tracker history to export.');
+        // FIX: Use optional chaining (?.) for safety
+        if (!sessionState.chastityHistory?.length) return alert('No tracker history to export.');
         const headers = "Period,Start Time,End Time,Raw Duration (s),Paused Duration (s),Effective Duration (s),Reason for Removal";
-        const rows = [...sessionState.chastityHistory].reverse().map(h => 
+        const rows = [...sessionState.chastityHistory].reverse().map(h =>
             [
                 h.periodNumber,
                 formatTime(h.startTime, true, true),
@@ -87,7 +91,8 @@ export const useDataManagement = ({
     }, [sessionState.chastityHistory]);
 
     const handleExportEventLogCSV = useCallback(() => {
-        if (eventLogState.sexualEventsLog.length === 0) return alert('No event log data to export.');
+        // FIX: Use optional chaining (?.) for safety
+        if (!eventLogState.sexualEventsLog?.length) return alert('No event log data to export.');
         const headers = "Timestamp,Types,Other Detail,Duration (s),Self Orgasm Count,Partner Orgasm Count,Notes";
         const rows = [...eventLogState.sexualEventsLog].map(e => {
             const types = (e.types || []).join('; ');
@@ -103,7 +108,7 @@ export const useDataManagement = ({
         });
         triggerDownload('ChastityOS-EventLog.csv', [headers, ...rows].join('\n'));
     }, [eventLogState.sexualEventsLog]);
-    
+
     const handleExportJSON = useCallback(() => {
         const backupData = {
             version: '1.0',
@@ -137,7 +142,7 @@ export const useDataManagement = ({
         reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-                
+
                 const batch = writeBatch(db);
                 const userDocRef = doc(db, 'users', userId);
 
@@ -148,12 +153,11 @@ export const useDataManagement = ({
                 if(eventsColRef) {
                     const existingEvents = await getDocs(query(eventsColRef));
                     existingEvents.forEach(doc => batch.delete(doc.ref));
-                    
+
                     if (data.eventLog && Array.isArray(data.eventLog)) {
                         data.eventLog.forEach(log => {
                             const newEventRef = doc(eventsColRef);
-                            // FIX: Rename 'id' to '_id' to satisfy ESLint rule for unused variables
-                            const { id: _id, ...logData } = log; 
+                            const { id: _id, ...logData } = log;
                             if (logData.eventTimestamp) {
                                 logData.eventTimestamp = Timestamp.fromDate(new Date(logData.eventTimestamp));
                             }
@@ -161,7 +165,7 @@ export const useDataManagement = ({
                         });
                     }
                 }
-                
+
                 await batch.commit();
 
                 alert('Data imported successfully! The app will now refresh to apply changes.');
@@ -178,11 +182,42 @@ export const useDataManagement = ({
 
     }, [userId, getEventsCollectionRef]);
 
+    const handleResetAllData = useCallback(async () => {
+        if (!userId) {
+            throw new Error('You must be logged in to reset data.');
+        }
+        try {
+            const batch = writeBatch(db);
+            const eventsColRef = getEventsCollectionRef();
+            if (eventsColRef) {
+                const eventsSnapshot = await getDocs(query(eventsColRef));
+                eventsSnapshot.forEach(doc => batch.delete(doc.ref));
+            }
+            const defaultUserData = {
+                savedSubmissivesName: '', keyholderName: '', keyholderPasswordHash: null,
+                requiredKeyholderDurationSeconds: 0, goalDurationSeconds: 0, rewards: [],
+                punishments: [], eventDisplayMode: 'table', isTrackingAllowed: true,
+                isCageOn: false, cageOnTime: null, timeInChastity: 0,
+                accumulatedPauseTimeThisSession: 0, isPaused: false, lastPauseTime: null,
+                overallTotalPauseTime: 0, totalChastityTime: 0, chastityHistory: [],
+                totalTimeCageOff: 0, lastPauseEndTime: null, hasSessionEverBeenActive: false,
+            };
+            const userDocRef = doc(db, 'users', userId);
+            batch.set(userDocRef, defaultUserData);
+            await batch.commit();
+            return true;
+        } catch (error) {
+            console.error("Failed to reset data:", error);
+            throw error;
+        }
+    }, [userId, getEventsCollectionRef]);
+
     return {
         handleExportTextReport,
         handleExportTrackerCSV,
         handleExportEventLogCSV,
         handleExportJSON,
         handleImportJSON,
+        handleResetAllData,
     };
 };
