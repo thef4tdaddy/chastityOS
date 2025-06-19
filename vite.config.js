@@ -3,20 +3,24 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
+    // FIX: Added explicit PostCSS configuration to resolve build error.
+    css: {
+      postcss: {
+        plugins: [
+          tailwindcss(),
+          autoprefixer(),
+        ],
+      },
+    },
     define: {
       __APP_ENV__: JSON.stringify(env.APP_ENV),
-    },
-    optimizeDeps: {
-      include: ['bcryptjs'],
-    },
-    // FIX: Adding the 'ssr.noExternal' option to force Vite to bundle 'bcryptjs'.
-    ssr: {
-      noExternal: ['bcryptjs'],
     },
     build: {
       sourcemap: true,
@@ -25,7 +29,7 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
             react: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
-            sentry: ['@sentry/react', '@sentry/browser', '@sentry/tracing'],
+            sentry: ['@sentry/react', '@sentry/tracing'],
             ui: ['@headlessui/react', '@heroicons/react'],
           },
         },
