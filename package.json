@@ -9,7 +9,7 @@
     "build:vercel": "node vercel.build.cjs",
     "build:development": "vite build --mode development",
     "build:production": "vite build --mode production",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,21 +27,20 @@
     "react-router-dom": "^6.25.1",
     "react-toastify": "^10.0.5"
   },
-  "devDependencies": {
+    "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@sentry/vite-plugin": "^2.20.1",
-    "@tailwindcss/postcss": "^4.0.0-alpha.13",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.4",
+    "eslint": "^9.8.0",
+    "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.9",
     "husky": "^9.1.4",
     "postcss": "^8.4.40",
     "rollup-plugin-visualizer": "^5.12.0",
-    "tailwindcss": "^4.0.0-alpha.13",
+    "tailwindcss": "^3.4.7",
     "vite": "^5.3.5",
     "vite-plugin-pwa": "^0.20.1"
   }
