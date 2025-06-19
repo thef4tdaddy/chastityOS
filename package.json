@@ -1,7 +1,7 @@
 {
   "name": "chastity-os",
   "private": true,
-  "version": "3.9.1-nightly.0",
+  "version": "3.9.1-nightly.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,7 +27,7 @@
     "react-router-dom": "^6.25.1",
     "react-toastify": "^10.0.5"
   },
-    "devDependencies": {
+  "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@sentry/vite-plugin": "^2.20.1",
