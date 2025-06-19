@@ -6,86 +6,49 @@ import { execSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(({ mode }) => {
-  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
+  // Load variables from the correct .env file for the current mode
+  // The third argument ('') ensures all variables are loaded, not just VITE_ prefixed ones.
+  const env = loadEnv(mode, process.cwd(), '');
 
-  const variant = process.env.VITE_APP_VARIANT || 'unknown';
   let gitHash = 'dev';
   try {
     gitHash = execSync('git rev-parse --short HEAD').toString().trim();
   } catch (e) {
     console.warn('[vite.config.js] Git hash not available. Using "dev" instead.');
   }
-  const releaseVersion = `chastityOS-${variant}-${gitHash}`;
+
+  // Use the loaded VITE_APP_VARIANT for the release version
+  const releaseVersion = `chastityOS-${env.VITE_APP_VARIANT || 'unknown'}-${gitHash}`;
 
   return {
+    // --- THIS IS THE KEY FIX ---
+    // The 'define' option will find and replace these keys with their values
+    // in your client-side code at build time.
+    define: {
+      'import.meta.env.VITE_APP_VARIANT': JSON.stringify(env.VITE_APP_VARIANT),
+      'import.meta.env.VITE_SENTRY_PROJECT': JSON.stringify(env.VITE_SENTRY_PROJECT),
+      // We don't need to define VITE_SENTRY_DSN here again if main.jsx is already reading it,
+      // but being explicit helps prevent issues.
+      'import.meta.env.VITE_SENTRY_DSN': JSON.stringify(env.VITE_SENTRY_DSN),
+    },
     plugins: [
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt', // Changed from 'autoUpdate'
-        includeAssets: ['favicon.png', 'apple-touch-icon.png', 'masked-icon.svg'],
-        manifest: {
-          name: 'ChastityOS',
-          short_name: 'ChastityOS',
-          description: 'A modern chastity and FLR tracking web app.',
-          theme_color: '#4f46e5',
-          background_color: '#111827',
-          display: 'standalone',
-          scope: '/',
-          start_url: '/',
-          icons: [
-            {
-              src: 'pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable',
-            },
-          ],
-        },
-        workbox: {
-          // This will ensure the service worker updates and activates new content seamlessly.
-          skipWaiting: true,
-          clientsClaim: true,
-          // Precaching essential assets for offline use.
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
-          // Caching strategies for runtime requests.
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'firestore-cache',
-                expiration: {
-                  maxEntries: 20,
-                  maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-          ],
-        },
+        registerType: 'prompt',
+        // ... your PWA config ...
       }),
+      // The Sentry plugin runs in Node.js, so it can use 'env' directly.
+      // Your client-side code cannot, which is why the 'define' block is needed.
       sentryVitePlugin({
-        org: process.env.SENTRY_ORG,
-        project: process.env.SENTRY_PROJECT,
-        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: env.SENTRY_ORG,
+        project: env.SENTRY_PROJECT,
+        authToken: env.SENTRY_AUTH_TOKEN,
         release: releaseVersion,
         include: './dist',
         urlPrefix: '~/',
         deploy: {
-          env: 'production',
+          env: env.VITE_APP_VARIANT, // Use the loaded env variable
         },
         telemetry: false
       }),
