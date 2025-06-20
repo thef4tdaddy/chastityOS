@@ -1,103 +1,107 @@
 import { useCallback } from 'react';
-import { generateHash } from '../../utils/hash';
+import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../firebase';
+import { sha256 } from '../../utils/hash';
 
-export function useKeyholderHandlers(options) {
-    const {
-        userId,
-        saveDataToFirestore,
-        setKeyholderName,
-        setKeyholderPasswordHash,
-        setRequiredKeyholderDurationSeconds,
-        setIsKeyholderModeUnlocked,
-        setKeyholderMessage,
-        setGoalDurationSeconds,
-        keyholderPasswordHash,
-        keyholderName
-    } = options;
+export function useKeyholderHandlers({
+  userId,
+  isAuthReady,
+  setSettings,
+  session,
+  updateSession,
+  addTask,
+}) {
+  const handleSetKeyholder = useCallback(
+    async (keyholderEmail) => {
+      if (!isAuthReady || !userId || !keyholderEmail) return;
+      try {
+        const hashedEmail = await sha256(keyholderEmail.toLowerCase().trim());
+        const keyholderRef = doc(db, 'keyholders', hashedEmail);
+        const keyholderSnap = await getDoc(keyholderRef);
 
-    const handleSetKeyholder = useCallback(async (name) => {
-        if (!userId) {
-            setKeyholderMessage('Error: User ID not available.');
-            return null;
+        if (keyholderSnap.exists()) {
+          const keyholderData = keyholderSnap.data();
+          const userRef = doc(db, 'users', userId);
+          await updateDoc(userRef, { 'settings.keyholder': keyholderData.userId });
+          setSettings((prev) => ({ ...prev, keyholder: keyholderData.userId }));
+        } else {
+          console.error('Keyholder not found');
+          // Handle case where keyholder does not exist
         }
-        const khName = name.trim();
-        if (!khName) {
-            setKeyholderMessage('Keyholder name cannot be empty.');
-            return null;
-        }
-        const hash = await generateHash(userId + khName);
-        if (!hash) {
-            setKeyholderMessage('Error generating Keyholder ID.');
-            return null;
-        }
-        setKeyholderName(khName);
-        setKeyholderPasswordHash(hash);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null });
-        const preview = hash.substring(0, 8).toUpperCase();
-        setKeyholderMessage(`Keyholder "${khName}" set. Password preview: ${preview}`);
-        return preview;
-    }, [userId, saveDataToFirestore]);
+      } catch (error) {
+        console.error('Error setting keyholder:', error);
+      }
+    },
+    [isAuthReady, userId, setSettings]
+  );
 
-    const handleClearKeyholder = useCallback(async () => {
-        setKeyholderName('');
-        setKeyholderPasswordHash(null);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null });
-        setKeyholderMessage('Keyholder data cleared.');
-    }, [saveDataToFirestore]);
+  const handleClearKeyholder = useCallback(async () => {
+    if (!isAuthReady || !userId) return;
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, { 'settings.keyholder': null });
+      setSettings((prev) => ({ ...prev, keyholder: null }));
+    } catch (error) {
+      console.error('Error clearing keyholder:', error);
+    }
+  }, [isAuthReady, userId, setSettings]);
 
-    const handleUnlockKeyholderControls = useCallback(async (enteredPasswordPreview) => {
-        if (!userId || !keyholderName || !keyholderPasswordHash) {
-            setKeyholderMessage('Keyholder not fully set up.');
-            return false;
-        }
-        const expectedPreview = keyholderPasswordHash.substring(0, 8).toUpperCase();
-        if (enteredPasswordPreview.toUpperCase() === expectedPreview) {
-            setIsKeyholderModeUnlocked(true);
-            setKeyholderMessage('Keyholder controls unlocked.');
-            return true;
-        }
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Incorrect Keyholder password.');
-        return false;
-    }, [userId, keyholderName, keyholderPasswordHash]);
+  const handleUnlockKeyholderControls = useCallback(async () => {
+    if (!session || !session.id) return;
+    await updateDoc(doc(db, 'sessions', session.id), { isKeyholderLocked: false });
+    updateSession({ isKeyholderLocked: false });
+  }, [session, updateSession]);
 
-    const handleLockKeyholderControls = useCallback(() => {
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Keyholder controls locked.');
-    }, []);
+  const handleLockKeyholderControls = useCallback(async () => {
+    if (!session || !session.id) return;
+    await updateDoc(doc(db, 'sessions', session.id), { isKeyholderLocked: true });
+    updateSession({ isKeyholderLocked: true });
+  }, [session, updateSession]);
 
-    const handleSetRequiredDuration = useCallback(async (durationInSeconds) => {
-        const newDuration = Number(durationInSeconds);
-        if (!isNaN(newDuration) && newDuration >= 0) {
-            setRequiredKeyholderDurationSeconds(newDuration);
-            await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
-            setKeyholderMessage('Required duration updated.');
-            return true;
-        }
-        setKeyholderMessage('Invalid duration value.');
-        return false;
-    }, [saveDataToFirestore]);
+  const handleSetRequiredDuration = useCallback(
+    async (duration) => {
+      if (!session || !session.id) return;
+      const sessionRef = doc(db, 'sessions', session.id);
+      await updateDoc(sessionRef, { requiredDuration: duration });
+      updateSession({ requiredDuration: duration });
+    },
+    [session, updateSession]
+  );
 
-    const handleSetGoalDuration = useCallback(async (newDurationInSeconds) => {
-        const newDuration = newDurationInSeconds === null ? null : Number(newDurationInSeconds);
-        if (newDuration === null || (!isNaN(newDuration) && newDuration >= 0)) {
-            setGoalDurationSeconds(newDuration);
-            await saveDataToFirestore({ goalDurationSeconds: newDuration });
-            return true;
-        }
-        return false;
-    }, [saveDataToFirestore]);
+  const handleSetGoalDuration = useCallback(
+    async (duration) => {
+      if (!session || !session.id) return;
+      const sessionRef = doc(db, 'sessions', session.id);
+      await updateDoc(sessionRef, { goalDuration: duration });
+      updateSession({ goalDuration: duration });
+    },
+    [session, updateSession]
+  );
 
-    return {
-        handleSetKeyholder,
-        handleClearKeyholder,
-        handleUnlockKeyholderControls,
-        handleLockKeyholderControls,
-        handleSetRequiredDuration,
-        handleSetGoalDuration
-    };
+  const handleAddReward = useCallback(
+    async (reward) => {
+      if (!userId || !addTask) return;
+      await addTask({ ...reward, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+    },
+    [userId, addTask]
+  );
+
+  const handleAddPunishment = useCallback(
+    async (punishment) => {
+      if (!userId || !addTask) return;
+      await addTask({ ...punishment, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+    },
+    [userId, addTask]
+  );
+
+  return {
+    handleSetKeyholder,
+    handleClearKeyholder,
+    handleUnlockKeyholderControls,
+    handleLockKeyholderControls,
+    handleSetRequiredDuration,
+    handleSetGoalDuration,
+    handleAddReward,
+    handleAddPunishment,
+  };
 }
