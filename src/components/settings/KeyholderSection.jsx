@@ -5,7 +5,7 @@ const KeyholderSection = ({
   keyholderName,
   handleSetKeyholderName,
   handleKeyholderPasswordCheck,
-  handleSetPermanentPassword, // Receive the new function
+  handleSetPermanentPassword,
   isKeyholderModeUnlocked,
   handleLockKeyholderControls,
   requiredKeyholderDurationSeconds,
@@ -18,13 +18,25 @@ const KeyholderSection = ({
   const [khNameInput, setKhNameInput] = useState('');
   const [khPasswordInput, setKhPasswordInput] = useState('');
   
-  // State for the new permanent password form
+  // Simplified state to only manage days for the required duration.
+  const [khRequiredDurationDays, setKhRequiredDurationDays] = useState('');
+
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
   const [modalPassword, setModalPassword] = useState('');
 
+  // Effect to sync the duration input field with the main state.
+  useEffect(() => {
+    if (requiredKeyholderDurationSeconds) {
+      const days = Math.floor(requiredKeyholderDurationSeconds / 86400);
+      setKhRequiredDurationDays(days.toString());
+    } else {
+      setKhRequiredDurationDays('');
+    }
+  }, [requiredKeyholderDurationSeconds]);
+  
+  // Effect to show the password modal.
   useEffect(() => {
     if (keyholderMessage && keyholderMessage.includes('password is:')) {
       const password = keyholderMessage.split(':')[1].split('.')[0].trim();
@@ -45,7 +57,6 @@ const KeyholderSection = ({
 
   const onSetPermanentPassword = () => {
     if (newPassword !== confirmNewPassword) {
-      // You can replace this with a more elegant message
       alert("Passwords do not match.");
       return;
     }
@@ -54,54 +65,30 @@ const KeyholderSection = ({
     setConfirmNewPassword('');
   };
 
-  const [khRequiredDurationDays, setKhRequiredDurationDays] = useState('');
-  const [khRequiredDurationHours, setKhRequiredDurationHours] = useState('');
-  const [khRequiredDurationMinutes, setKhRequiredDurationMinutes] = useState('');
-
-  useEffect(() => {
-    if (requiredKeyholderDurationSeconds) {
-      const days = Math.floor(requiredKeyholderDurationSeconds / 86400);
-      const hours = Math.floor((requiredKeyholderDurationSeconds % 86400) / 3600);
-      const minutes = Math.floor((requiredKeyholderDurationSeconds % 3600) / 60);
-      setKhRequiredDurationDays(days.toString());
-      setKhRequiredDurationHours(hours.toString());
-      setKhRequiredDurationMinutes(minutes.toString());
-    } else {
-      setKhRequiredDurationDays('');
-      setKhRequiredDurationHours('');
-      setKhRequiredDurationMinutes('');
-    }
-  }, [requiredKeyholderDurationSeconds]);
-
+  // Simplified handler to only use days.
   const onSetKHRequiredDuration = async () => {
     const days = parseInt(khRequiredDurationDays, 10) || 0;
-    const hours = parseInt(khRequiredDurationHours, 10) || 0;
-    const minutes = parseInt(khRequiredDurationMinutes, 10) || 0;
-    const totalSeconds = days * 86400 + hours * 3600 + minutes * 60;
+    const totalSeconds = days * 86400;
     await handleSetRequiredDuration(totalSeconds);
   };
   
+  // Simplified state for reward/punishment forms.
   const [rewardDays, setRewardDays] = useState('');
-  const [rewardHours, setRewardHours] = useState('');
-  const [rewardMinutes, setRewardMinutes] = useState('');
   const [rewardOther, setRewardOther] = useState('');
   const [punishDays, setPunishDays] = useState('');
-  const [punishHours, setPunishHours] = useState('');
-  const [punishMinutes, setPunishMinutes] = useState('');
   const [punishOther, setPunishOther] = useState('');
 
   const onAddReward = async () => {
-    const secs = (parseInt(rewardDays, 10)||0)*86400 + (parseInt(rewardHours, 10)||0)*3600 + (parseInt(rewardMinutes, 10)||0)*60;
+    const secs = (parseInt(rewardDays, 10)||0) * 86400;
     await handleAddReward({ timeSeconds: secs, other: rewardOther });
-    setRewardDays(''); setRewardHours(''); setRewardMinutes(''); setRewardOther('');
+    setRewardDays(''); setRewardOther('');
   };
 
   const onAddPunishment = async () => {
-    const secs = (parseInt(punishDays, 10)||0)*86400 + (parseInt(punishHours, 10)||0)*3600 + (parseInt(punishMinutes, 10)||0)*60;
+    const secs = (parseInt(punishDays, 10)||0) * 86400;
     await handleAddPunishment({ timeSeconds: secs, other: punishOther });
-    setPunishDays(''); setPunishHours(''); setPunishMinutes(''); setPunishOther('');
+    setPunishDays(''); setPunishOther('');
   };
-
 
   return (
     <>
@@ -125,7 +112,6 @@ const KeyholderSection = ({
                 <button onClick={onUnlockControls} className="button-red !text-red-300">Unlock Controls</button>
               </>
             ) : (
-              // --- Unlocked State ---
               <div>
                 <div className="alert alert-success mb-4"><p>Controls Unlocked</p></div>
                 
@@ -145,37 +131,29 @@ const KeyholderSection = ({
                 <hr className="my-4 border-purple-700"/>
 
                 <p className="text-blue mb-2">Required Duration: {requiredKeyholderDurationSeconds ? formatElapsedTime(requiredKeyholderDurationSeconds) : 'Not Set'}</p>
-                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Days"
-                    className="inputbox-blue !text-blue-300 bg-transparent" />
-                  <input type="number" value={khRequiredDurationHours} onChange={e => setKhRequiredDurationHours(e.target.value)} placeholder="Hours"
-                    className="inputbox-blue !text-blue-300 bg-transparent" />
-                  <input type="number" value={khRequiredDurationMinutes} onChange={e => setKhRequiredDurationMinutes(e.target.value)} placeholder="Minutes"
+                 <div className="grid grid-cols-1 gap-2 mb-3">
+                  {/* Simplified to a single input for days */}
+                  <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Set Duration in Days"
                     className="inputbox-blue !text-blue-300 bg-transparent" />
                 </div>
                 <button onClick={onSetKHRequiredDuration} className="button-blue !text-blue-300 mr-2">Update Duration</button>
                 <button onClick={handleLockKeyholderControls} className="button-blue !text-blue-300">Lock</button>
                 
-                {/* Fix: Added the missing UI sections for rewards and punishments */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
-                    <h4 className="title-yellow !text-yellow-300">Reward (Subtracts Time)</h4>
-                    <div className="grid grid-cols-3 gap-1 mb-2">
-                      <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Days" className="inputbox-yellow !text-yellow-300 bg-transparent" />
-                      <input type="number" value={rewardHours} onChange={e=>setRewardHours(e.target.value)} placeholder="Hours" className="inputbox-yellow !text-yellow-300 bg-transparent" />
-                      <input type="number" value={rewardMinutes} onChange={e=>setRewardMinutes(e.target.value)} placeholder="Minutes" className="inputbox-yellow !text-yellow-300 bg-transparent" />
+                    <h4 className="title-yellow !text-yellow-300">Reward</h4>
+                    <div className="grid grid-cols-1 gap-1 mb-2">
+                      <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Subtract Days" className="inputbox-yellow !text-yellow-300 bg-transparent" />
                     </div>
-                    <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Reason for reward" className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
+                    <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Describe reward (e.g., a special treat)" className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
                     <button onClick={onAddReward} className="button-yellow !text-yellow-300">Add Reward</button>
                   </div>
                   <div>
-                    <h4 className="title-red !text-red-300">Punishment (Adds Time)</h4>
-                    <div className="grid grid-cols-3 gap-1 mb-2">
-                      <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Days" className="inputbox-red !text-red-300 bg-transparent" />
-                      <input type="number" value={punishHours} onChange={e=>setPunishHours(e.target.value)} placeholder="Hours" className="inputbox-red !text-red-300 bg-transparent" />
-                      <input type="number" value={punishMinutes} onChange={e=>setPunishMinutes(e.target.value)} placeholder="Minutes" className="inputbox-red !text-red-300 bg-transparent" />
+                    <h4 className="title-red !text-red-300">Punishment</h4>
+                    <div className="grid grid-cols-1 gap-1 mb-2">
+                      <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Add Days" className="inputbox-red !text-red-300 bg-transparent" />
                     </div>
-                    <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Reason for punishment" className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
+                    <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Describe punishment (e.g., extra chores)" className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
                     <button onClick={onAddPunishment} className="button-red !text-red-300">Add Punishment</button>
                   </div>
                 </div>
@@ -188,7 +166,7 @@ const KeyholderSection = ({
       {isPasswordModalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
           <div className="bg-gray-800 border-2 border-yellow-500 rounded-lg shadow-2xl p-6 w-full max-w-md text-center">
-            <h2 className="text-2xl font-bold text-yellow-300 mb-4">Your One-Time Password</h2>
+            <h2 className="text-2xl font-bold text-yellow-300 mb-4">Your Keyholder Password</h2>
             <p className="text-gray-300 mb-4">
               Your keyholder must use this password to unlock the controls.
             </p>
@@ -196,7 +174,7 @@ const KeyholderSection = ({
               <p className="text-3xl font-mono tracking-widest text-white select-all">{modalPassword}</p>
             </div>
             <p className="text-sm text-yellow-400 mb-6">
-              This is now the permanent password unless a new custom password is set.
+              This is the permanent password unless a new custom password is set.
             </p>
             <button
               onClick={() => setIsPasswordModalVisible(false)}

@@ -38,7 +38,7 @@ jobs:
       - name: Notify Discord on Success
         run: |
           curl -H "Content-Type: application/json" -X POST -d '{
-            "username": "ChastityOS Nightly", "avatar_url": "https://app.chastityOS.io/icon.png",
+            "username": "ChastityOS Bot", "avatar_url": "https://nightly.chastityos.io/assets/logo-nightly-8dN8bA7W.png",
             "embeds": [{"title": "✅ Nightly Build Succeeded", "description": "[View Preview](https://nightly.chastityOS.io)", "color": 3066993, "footer": { "text": "Tag: ${{ github.ref_name }}" }, "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}]
           }' ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -64,7 +64,7 @@ jobs:
       - name: Post to Discord
         run: |
           curl -H "Content-Type: application/json" -X POST -d '{
-            "username": "ChastityOS Release Bot", "avatar_url": "https://app.chastityOS.io/icon.png",
+            "username": "ChastityOS Bot", "avatar_url": "https://app.chastityos.io/assets/logo-DykiMpeK.png",
             "embeds": [{"title": "📦 New Release: ${{ github.event.release.tag_name }}", "description": "'"${{ steps.changelog.outputs.summary }}"'", "url": "${{ github.event.release.html_url }}", "color": 5814783, "footer": { "text": "Branch: ${{ github.ref_name }}" }, "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}]
           }' ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -97,6 +97,6 @@ jobs:
             COLOR=15844367
           fi
           curl -H "Content-Type: application/json" -X POST -d '{
-            "username": "ChastityOS Release Bot", "avatar_url": "https://app.chastityOS.io/icon.png",
+            "username": "ChastityOS Bot", "avatar_url": "https://app.chastityos.io/assets/logo-DykiMpeK.png",
             "embeds": [{"title": "'"$TITLE"'", "description": "'"$DESCRIPTION"'", "color": '$COLOR', "footer": { "text": "Branch: main" }, "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}]
           }' ${{ secrets.DISCORD_WEBHOOK_URL }}
