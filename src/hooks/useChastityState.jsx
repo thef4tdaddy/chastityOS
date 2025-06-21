@@ -16,8 +16,7 @@ export const useChastityState = () => {
   const { userId, isAuthReady, googleEmail } = authState;
 
   const settingsState = useSettings(userId, isAuthReady);
-  // Fix: Destructure the setSettings function to provide a stable dependency.
-  const { setSettings } = settingsState;
+  const { settings, setSettings } = settingsState;
   
   const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
@@ -25,45 +24,60 @@ export const useChastityState = () => {
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
   );
   const tasksState = useTasks(userId, isAuthReady);
-  const personalGoalState = usePersonalGoal({ userId, isAuthReady, settings: settingsState.settings });
+  const personalGoalState = usePersonalGoal({ userId, isAuthReady, settings: settings });
   const dataManagementState = useDataManagement({
-    userId, isAuthReady, userEmail: googleEmail, settings: settingsState.settings,
+    userId, isAuthReady, userEmail: googleEmail, settings: settings,
     session: sessionState, events: eventLogState.events, tasks: tasksState.tasks,
   });
 
-  const [keyholderPasswordHash, setKeyholderPasswordHash] = useState('');
+  // --- Keyholder Setup Logic with Permanent Password ---
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
   
   const generateTempPassword = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const handleSetKeyholderName = useCallback(async (name) => {
-    // Persistently save the keyholder's name
-    // The call now uses the destructured, stable 'setSettings' function.
-    setSettings(prev => ({...prev, keyholderName: name}));
-
     const tempPassword = generateTempPassword();
     const hash = await generateSecureHash(tempPassword);
-    setKeyholderPasswordHash(hash);
     
-    setKeyholderMessage(`Your keyholder password is: ${tempPassword}. Enter it below to unlock controls.`);
+    // Save the keyholder's name AND the new password hash to the database.
+    setSettings(prev => ({
+      ...prev,
+      keyholderName: name,
+      keyholderPasswordHash: hash,
+    }));
+    
+    setKeyholderMessage(`Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`);
 
-  // The dependency array now correctly lists the stable 'setSettings' function.
   }, [setSettings]);
 
   const handleKeyholderPasswordCheck = useCallback(async (passwordAttempt) => {
-    if (!keyholderPasswordHash) {
-      setKeyholderMessage("Error: No password has been generated. Please set the keyholder name again.");
+    // Check against the password hash stored in the main settings.
+    const storedHash = settings?.keyholderPasswordHash;
+    if (!storedHash) {
+      setKeyholderMessage("Error: No keyholder password is set in the database.");
       return;
     }
     const attemptHash = await generateSecureHash(passwordAttempt);
-    if (attemptHash === keyholderPasswordHash) {
+    if (attemptHash === storedHash) {
       setIsKeyholderModeUnlocked(true);
       setKeyholderMessage('Controls are now unlocked.');
     } else {
       setKeyholderMessage('Incorrect password. Please try again.');
     }
-  }, [keyholderPasswordHash]);
+  }, [settings?.keyholderPasswordHash]);
+
+  // --- New function to set a custom permanent password ---
+  const handleSetPermanentPassword = useCallback(async (newPassword) => {
+    if (!newPassword || newPassword.length < 6) {
+      setKeyholderMessage("Password must be at least 6 characters long.");
+      return;
+    }
+    const newHash = await generateSecureHash(newPassword);
+    // Overwrite the old hash with the new one.
+    setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
+    setKeyholderMessage("Permanent password has been updated successfully!");
+  }, [setSettings]);
 
   const lockKeyholderControls = useCallback(() => {
     setIsKeyholderModeUnlocked(false);
@@ -90,7 +104,8 @@ export const useChastityState = () => {
     keyholderMessage,
     handleSetKeyholderName,
     handleKeyholderPasswordCheck,
+    handleSetPermanentPassword, // Return the new function
     lockKeyholderControls,
-    keyholderName: settingsState.settings?.keyholderName,
+    keyholderName: settings.keyholderName,
   };
 };

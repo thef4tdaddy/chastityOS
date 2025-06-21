@@ -1,6 +1,6 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useChastityState } from './hooks/useChastityState'; // Correctly import the hook
+import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
@@ -22,8 +22,16 @@ const TasksPage = lazy(() => import('./pages/TasksPage'));
 const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
     const [showEulaModal, setShowEulaModal] = useState(false);
-    const chastityOS = useChastityState(); // This will now work correctly
-    const { isLoading, savedSubmissivesName, isTrackingAllowed, userId, googleEmail } = chastityOS;
+    const chastityOS = useChastityState();
+    // Destructure keyholderName from the main state object
+    const { 
+      isLoading, 
+      savedSubmissivesName, 
+      keyholderName, 
+      isTrackingAllowed, 
+      userId, 
+      googleEmail 
+    } = chastityOS;
 
     const {
         needRefresh: [needRefresh, setNeedRefresh],
@@ -53,6 +61,14 @@ const App = () => {
             <Header />
             <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">
                 {savedSubmissivesName && <p className="app-subtitle">Tracking <span className="font-semibold">{savedSubmissivesName}'s</span> Journey</p>}
+                
+                {/* This new line will appear only when a keyholderName is set */}
+                {keyholderName && (
+                  <p className="text-sm text-red-300 -mt-2 mb-3">
+                    under <span className="font-semibold">{keyholderName}'s</span> control
+                  </p>
+                )}
+
                 <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
                 <h2 className="subpage-title no-border">{pageTitleText}</h2>
                 <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
