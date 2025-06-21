@@ -33,16 +33,15 @@ export function useKeyholderHandlers({
       if (!saveDataToFirestore) return;
       
       const timeToRemoveInSeconds = reward.timeSeconds || 0;
-      // Calculate the new duration, ensuring it doesn't go below zero.
       const currentDuration = requiredKeyholderDurationSeconds || 0;
       const newDuration = Math.max(0, currentDuration - timeToRemoveInSeconds);
       
-      // Save the new, shorter duration to the database.
       await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
       
-      // Optionally, we can still log this as a task for the user's history.
+      // Fix: The 'text' property is no longer auto-generated.
+      // It will only save the note from the 'other' input field.
       if (userId && addTask) {
-        await addTask({ ...reward, text: reward.other || `Time reduced by ${timeToRemoveInSeconds}s`, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+        await addTask({ ...reward, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
       }
     },
     [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
@@ -54,16 +53,15 @@ export function useKeyholderHandlers({
       if (!saveDataToFirestore) return;
 
       const timeToAddInSeconds = punishment.timeSeconds || 0;
-      // Calculate the new duration by adding the punishment time.
       const currentDuration = requiredKeyholderDurationSeconds || 0;
       const newDuration = currentDuration + timeToAddInSeconds;
       
-      // Save the new, longer duration to the database.
       await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
 
-      // Optionally, we can still log this as a task for the user's history.
+      // Fix: The 'text' property is no longer auto-generated.
+      // It will only save the note from the 'other' input field.
       if (userId && addTask) {
-        await addTask({ ...punishment, text: punishment.other || `Time increased by ${timeToAddInSeconds}s`, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+        await addTask({ ...punishment, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
       }
     },
     [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
