@@ -1,4 +1,3 @@
-// src/hooks/useChastitySession.js
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
@@ -47,6 +46,10 @@ export const useChastitySession = (
     const [editSessionDateInput, setEditSessionDateInput] = useState('');
     const [editSessionTimeInput, setEditSessionTimeInput] = useState('');
     const [editSessionMessage, setEditSessionMessage] = useState('');
+    
+    // --- New State for Keyholder Duration ---
+    const [requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds] = useState(0);
+
 
     const timerInChastityRef = useRef(null);
     const timerCageOffRef = useRef(null);
@@ -119,10 +122,15 @@ export const useChastitySession = (
                 : []
         );
         setHasSessionEverBeenActive(data.hasSessionEverBeenActive !== undefined ? data.hasSessionEverBeenActive : true);
+        
+        // --- Load the Keyholder Duration ---
+        setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds || 0);
+        
         setShowRestoreSessionPrompt(false);
         setLoadedSessionData(null);
     }, []);
 
+    // ... (All your other functions: handleToggleCage, handleConfirmRemoval, etc. remain unchanged)
     const handleToggleCage = useCallback(() => {
         if (!isAuthReady || isPaused) {
             if (isPaused) {
@@ -460,7 +468,9 @@ export const useChastitySession = (
                         totalTimeCageOff: 0,
                         hasSessionEverBeenActive: false,
                         isPaused: false,
-                        accumulatedPauseTimeThisSession: 0
+                        accumulatedPauseTimeThisSession: 0,
+                        // --- Add the new field to the default doc ---
+                        requiredKeyholderDurationSeconds: 0
                     });
                 }
             } catch (error) {
@@ -517,9 +527,7 @@ export const useChastitySession = (
         hasSessionEverBeenActive, confirmReset, setConfirmReset, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage, restoreUserIdInput,
         showRestoreFromIdPrompt, restoreFromIdMessage, handleUpdateCurrentCageOnTime, handleToggleCage,
-        handleConfirmRemoval,
-        // FIX: Added the missing function to the return object
-        handleCancelRemoval,
+        handleConfirmRemoval, handleCancelRemoval,
         handleEndChastityNow,
         handleInitiatePause, handleConfirmPause,
         handleCancelPauseModal, handleResumeSession, handleRestoreUserIdInputChange, handleInitiateRestoreFromId,
@@ -527,5 +535,7 @@ export const useChastitySession = (
         handleDiscardAndStartNew, saveDataToFirestore, setChastityHistory, setTimeCageOff, setIsCageOn,
         setCageOnTime, setTimeInChastity, setIsPaused, setPauseStartTime,
         setAccumulatedPauseTimeThisSession, setCurrentSessionPauseEvents, setLastPauseEndTime, setHasSessionEverBeenActive,
+        // --- Return the new state value ---
+        requiredKeyholderDurationSeconds
     };
 };

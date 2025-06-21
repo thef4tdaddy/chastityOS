@@ -1,7 +1,6 @@
-// src/App.jsx
 import React, { useState, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useChastityState } from './hooks/useChastityState';
+import { useChastityState } from './hooks/useChastityState'; // Correctly import the hook
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
@@ -13,7 +12,6 @@ const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
 const LogEventPage = lazy(() => import('./pages/LogEventPage'));
 const SettingsMainPage = lazy(() => import('./pages/SettingsMainPage'));
-// FIX: Corrected the import path to match the actual file name.
 const SettingsDataManagementPage = lazy(() => import('./pages/SettingsDataManagement.jsx'));
 const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
@@ -24,7 +22,7 @@ const TasksPage = lazy(() => import('./pages/TasksPage'));
 const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
     const [showEulaModal, setShowEulaModal] = useState(false);
-    const chastityOS = useChastityState();
+    const chastityOS = useChastityState(); // This will now work correctly
     const { isLoading, savedSubmissivesName, isTrackingAllowed, userId, googleEmail } = chastityOS;
 
     const {
