@@ -1,7 +1,8 @@
 import React from 'react';
 import { formatElapsedTime } from '../utils';
 
-const RewardsPunishmentsPage = ({ rewards, punishments }) => {
+// Fix: Add default empty arrays to the props to prevent crashing on initial render.
+const RewardsPunishmentsPage = ({ rewards = [], punishments = [] }) => {
   return (
     <div className="settings-container p-0 md:p-4 space-y-6">
       <div className="task-box p-4 rounded-lg shadow-sm">

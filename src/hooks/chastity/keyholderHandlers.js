@@ -1,106 +1,77 @@
 import { useCallback } from 'react';
-import { doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { sha256 } from '../../utils/hash';
+import { serverTimestamp } from 'firebase/firestore';
 
+// This hook is now correctly aligned with your application's data structure.
+// It uses the saveDataToFirestore function from your useChastitySession hook.
 export function useKeyholderHandlers({
   userId,
-  isAuthReady,
-  setSettings,
-  session,
-  updateSession,
   addTask,
+  saveDataToFirestore,
+  // This prop is now used to read the current duration for calculations
+  requiredKeyholderDurationSeconds,
 }) {
-  const handleSetKeyholder = useCallback(
-    async (keyholderEmail) => {
-      if (!isAuthReady || !userId || !keyholderEmail) return;
-      try {
-        const hashedEmail = await sha256(keyholderEmail.toLowerCase().trim());
-        const keyholderRef = doc(db, 'keyholders', hashedEmail);
-        const keyholderSnap = await getDoc(keyholderRef);
-
-        if (keyholderSnap.exists()) {
-          const keyholderData = keyholderSnap.data();
-          const userRef = doc(db, 'users', userId);
-          await updateDoc(userRef, { 'settings.keyholder': keyholderData.userId });
-          setSettings((prev) => ({ ...prev, keyholder: keyholderData.userId }));
-        } else {
-          console.error('Keyholder not found');
-          // Handle case where keyholder does not exist
-        }
-      } catch (error) {
-        console.error('Error setting keyholder:', error);
-      }
-    },
-    [isAuthReady, userId, setSettings]
-  );
-
-  const handleClearKeyholder = useCallback(async () => {
-    if (!isAuthReady || !userId) return;
-    try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { 'settings.keyholder': null });
-      setSettings((prev) => ({ ...prev, keyholder: null }));
-    } catch (error) {
-      console.error('Error clearing keyholder:', error);
-    }
-  }, [isAuthReady, userId, setSettings]);
-
-  const handleUnlockKeyholderControls = useCallback(async () => {
-    if (!session || !session.id) return;
-    await updateDoc(doc(db, 'sessions', session.id), { isKeyholderLocked: false });
-    updateSession({ isKeyholderLocked: false });
-  }, [session, updateSession]);
-
   const handleLockKeyholderControls = useCallback(async () => {
-    if (!session || !session.id) return;
-    await updateDoc(doc(db, 'sessions', session.id), { isKeyholderLocked: true });
-    updateSession({ isKeyholderLocked: true });
-  }, [session, updateSession]);
+    if (!saveDataToFirestore) return;
+    await saveDataToFirestore({ isKeyholderControlsLocked: true });
+  }, [saveDataToFirestore]);
 
+  // This function sets the base duration, like a "hardcore personal goal".
   const handleSetRequiredDuration = useCallback(
     async (duration) => {
-      if (!session || !session.id) return;
-      const sessionRef = doc(db, 'sessions', session.id);
-      await updateDoc(sessionRef, { requiredDuration: duration });
-      updateSession({ requiredDuration: duration });
+      if (!saveDataToFirestore) {
+        console.error("saveDataToFirestore function is not available.");
+        return;
+      }
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: duration });
     },
-    [session, updateSession]
+    [saveDataToFirestore]
   );
 
-  const handleSetGoalDuration = useCallback(
-    async (duration) => {
-      if (!session || !session.id) return;
-      const sessionRef = doc(db, 'sessions', session.id);
-      await updateDoc(sessionRef, { goalDuration: duration });
-      updateSession({ goalDuration: duration });
-    },
-    [session, updateSession]
-  );
-
+  // This function now SUBTRACTS time from the required duration.
   const handleAddReward = useCallback(
     async (reward) => {
-      if (!userId || !addTask) return;
-      await addTask({ ...reward, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      if (!saveDataToFirestore) return;
+      
+      const timeToRemoveInSeconds = reward.timeSeconds || 0;
+      // Calculate the new duration, ensuring it doesn't go below zero.
+      const currentDuration = requiredKeyholderDurationSeconds || 0;
+      const newDuration = Math.max(0, currentDuration - timeToRemoveInSeconds);
+      
+      // Save the new, shorter duration to the database.
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+      
+      // Optionally, we can still log this as a task for the user's history.
+      if (userId && addTask) {
+        await addTask({ ...reward, text: reward.other || `Time reduced by ${timeToRemoveInSeconds}s`, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      }
     },
-    [userId, addTask]
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
   );
 
+  // This function now ADDS time to the required duration.
   const handleAddPunishment = useCallback(
     async (punishment) => {
-      if (!userId || !addTask) return;
-      await addTask({ ...punishment, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      if (!saveDataToFirestore) return;
+
+      const timeToAddInSeconds = punishment.timeSeconds || 0;
+      // Calculate the new duration by adding the punishment time.
+      const currentDuration = requiredKeyholderDurationSeconds || 0;
+      const newDuration = currentDuration + timeToAddInSeconds;
+      
+      // Save the new, longer duration to the database.
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+
+      // Optionally, we can still log this as a task for the user's history.
+      if (userId && addTask) {
+        await addTask({ ...punishment, text: punishment.other || `Time increased by ${timeToAddInSeconds}s`, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      }
     },
-    [userId, addTask]
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
   );
 
   return {
-    handleSetKeyholder,
-    handleClearKeyholder,
-    handleUnlockKeyholderControls,
     handleLockKeyholderControls,
     handleSetRequiredDuration,
-    handleSetGoalDuration,
     handleAddReward,
     handleAddPunishment,
   };
