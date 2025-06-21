@@ -65,11 +65,14 @@ const KeyholderSection = ({
     setConfirmNewPassword('');
   };
 
-  // Simplified handler to only use days.
-  const onSetKHRequiredDuration = async () => {
+  // This handler now sets the duration AND re-locks the controls.
+  const onSetKHRequiredDurationAndLock = async () => {
     const days = parseInt(khRequiredDurationDays, 10) || 0;
     const totalSeconds = days * 86400;
+    // Wait for the duration to be set...
     await handleSetRequiredDuration(totalSeconds);
+    // ...then immediately lock the controls.
+    handleLockKeyholderControls();
   };
   
   // Simplified state for reward/punishment forms.
@@ -92,7 +95,8 @@ const KeyholderSection = ({
 
   return (
     <>
-      <div className="mb-8 p-4 bg-transparent border border-keyholder rounded-lg shadow-sm">
+      {/* The main wrapper now has a more prominent red border and shadow */}
+      <div className="mb-8 p-4 bg-gray-900/50 border-2 border-keyholder rounded-2xl shadow-lg shadow-red-500/20">
         <h3 className="title-red !text-red-300">Keyholder Mode</h3>
         {!keyholderName ? (
           <>
@@ -136,8 +140,8 @@ const KeyholderSection = ({
                   <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Set Duration in Days"
                     className="inputbox-blue !text-blue-300 bg-transparent" />
                 </div>
-                <button onClick={onSetKHRequiredDuration} className="button-blue !text-blue-300 mr-2">Update Duration</button>
-                <button onClick={handleLockKeyholderControls} className="button-blue !text-blue-300">Lock</button>
+                {/* Simplified to a single button */}
+                <button onClick={onSetKHRequiredDurationAndLock} className="button-blue !text-blue-300">Update & Lock</button>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
@@ -145,16 +149,28 @@ const KeyholderSection = ({
                     <div className="grid grid-cols-1 gap-1 mb-2">
                       <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Subtract Days" className="inputbox-yellow !text-yellow-300 bg-transparent" />
                     </div>
-                    <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Describe reward (e.g., a special treat)" className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
-                    <button onClick={onAddReward} className="button-yellow !text-yellow-300">Add Reward</button>
+                    {/* Re-added placeholder text */}
+                    <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Note (optional)"
+                      className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
+                    {/* Kept helper text below the input */}
+                    <p className="text-xs text-gray-400 italic text-left mt-1">
+                      Describe the reward (e.g., a special treat, early release). This can be used with or without a time adjustment.
+                    </p>
+                    <button onClick={onAddReward} className="button-yellow !text-yellow-300 mt-2">Add Reward</button>
                   </div>
                   <div>
                     <h4 className="title-red !text-red-300">Punishment</h4>
                     <div className="grid grid-cols-1 gap-1 mb-2">
                       <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Add Days" className="inputbox-red !text-red-300 bg-transparent" />
                     </div>
-                    <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Describe punishment (e.g., extra chores)" className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
-                    <button onClick={onAddPunishment} className="button-red !text-red-300">Add Punishment</button>
+                    {/* Re-added placeholder text */}
+                    <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Note (optional)"
+                      className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
+                     {/* Kept helper text below the input */}
+                     <p className="text-xs text-gray-400 italic text-left mt-1">
+                      Describe the punishment (e.g., extra chores, writing lines). This can be used with or without a time adjustment.
+                    </p>
+                    <button onClick={onAddPunishment} className="button-red !text-red-300 mt-2">Add Punishment</button>
                   </div>
                 </div>
               </div>
