@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.6...v3.9.0-nightly.7) (2025-06-21)
+
+
+### 🐛 Bug Fixes
+
+* keyholder utilties ([1917700](https://github.com/thef4tdaddy/chastityOS/commit/19177009c404b29362514e0a83c35368bae65e89))
+* **keyholder:** overhaul functionality and resolve state persistence issues ([ef8a18b](https://github.com/thef4tdaddy/chastityOS/commit/ef8a18b88bd318dd43e47e6162f19259f3846494))
+* trying to fix husky ([9d4fb2d](https://github.com/thef4tdaddy/chastityOS/commit/9d4fb2dde6be76e394eed91653f89a6bcc0d1a74))
+
 ## [3.9.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.5...v3.9.0-nightly.6) (2025-06-19)
 
 
