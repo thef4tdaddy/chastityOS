@@ -1,101 +1,92 @@
-// src/App.jsx
-import React, { useState, Suspense, lazy, useEffect } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
+import UpdatePrompt from './components/UpdatePrompt';
+import EulaModal from './components/EulaModal';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
 const LogEventPage = lazy(() => import('./pages/LogEventPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsMainPage'));
 const SettingsMainPage = lazy(() => import('./pages/SettingsMainPage'));
-const SettingsDataManagement = lazy(() => import('./pages/SettingsDataManagement'));
+const SettingsDataManagementPage = lazy(() => import('./pages/SettingsDataManagement.jsx'));
 const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const RewardsPunishmentsPage = lazy(() => import('./pages/RewardsPunishmentsPage'));
+const TasksPage = lazy(() => import('./pages/TasksPage'));
 
 const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
+    const [showEulaModal, setShowEulaModal] = useState(false);
     const chastityOS = useChastityState();
-    const {
-        isLoading,
-        savedSubmissivesName,
-        showRestoreSessionPrompt,
-        isTrackingAllowed,
-        userId,
-        googleEmail
+    // Destructure keyholderName from the main state object
+    const { 
+      isLoading, 
+      savedSubmissivesName, 
+      keyholderName, 
+      isTrackingAllowed, 
+      userId, 
+      googleEmail 
     } = chastityOS;
 
-    // This hook will now automatically handle the update in the background.
-    const { needRefresh, updateServiceWorker } = useRegisterSW({
-        onRegistered(r) {
-          if (r) {
-            console.log('Service Worker registered.');
-          }
-        },
-        onRegisterError(error) {
-          console.error('Service Worker registration error:', error);
-        },
+    const {
+        needRefresh: [needRefresh, setNeedRefresh],
+        updateServiceWorker,
+    } = useRegisterSW({
+        onRegistered(r) { console.log('SW Registered:', r); },
+        onRegisterError(error) { console.log('SW registration error:', error); },
     });
 
-    // This effect will run when a new service worker is available,
-    // and it will immediately trigger the update.
-    useEffect(() => {
-        if (needRefresh) {
-            console.log("New content available, updating service worker...");
-            updateServiceWorker(true);
-        }
-    }, [needRefresh, updateServiceWorker]);
+    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", tasks: "Tasks", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
+    const pageTitleText = navItemNames[currentPage] || "ChastityOS";
 
-    let pageTitleText = "ChastityOS";
-    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
-    if (currentPage === 'tracker' && showRestoreSessionPrompt) {
-        pageTitleText = "Restore Session";
-    } else if (navItemNames[currentPage]) {
-        pageTitleText = navItemNames[currentPage];
-    }
-
+    const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
+    const themeClass = isNightly ? 'theme-nightly' : 'theme-prod';
+    
     if (isLoading) {
-        return (
-            <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
-                <div className="text-purple-300 text-xl">Loading ChastityOS...</div>
-            </div>
-        );
+      return <div className="loading-fullscreen">Loading...</div>;
     }
 
     return (
-        <div className="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+        <div className={`${themeClass} min-h-screen flex flex-col items-center justify-center p-4 md:p-8`}>
+            {needRefresh && <UpdatePrompt onUpdate={() => {
+                updateServiceWorker(true);
+                setNeedRefresh(false);
+            }} />}
             <HotjarScript isTrackingAllowed={isTrackingAllowed} />
-            
-            {/* The UpdatePrompt component is no longer rendered here. */}
-
             <Header />
-
-            <div className="w-full max-w-3xl text-center bg-gray-800 p-6 rounded-xl shadow-lg border border-purple-800">
-                <h1 className="text-4xl font-bold text-purple-400 mb-4 tracking-wider">ChastityOS</h1>
-                {savedSubmissivesName && <p className="text-lg text-purple-200 mb-6">For: <span className="font-semibold">{savedSubmissivesName}</span></p>}
+            <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">
+                {savedSubmissivesName && <p className="app-subtitle">Tracking <span className="font-semibold">{savedSubmissivesName}'s</span> Journey</p>}
+                
+                {/* This new line will appear only when a keyholderName is set */}
+                {keyholderName && (
+                  <p className="text-sm text-red-300 -mt-2 mb-3">
+                    under <span className="font-semibold">{keyholderName}'s</span> control
+                  </p>
+                )}
 
                 <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
-
-                <h2 className="text-2xl font-bold text-purple-300 mb-4">{pageTitleText}</h2>
-
-                <Suspense fallback={<div className="text-center p-8 text-purple-300">Loading page...</div>}>
+                <h2 className="subpage-title no-border">{pageTitleText}</h2>
+                <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
                     {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
                     {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
                     {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
                     {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
+                    {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
                     {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
                     {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-                    {currentPage === 'syncData' && <SettingsDataManagement {...chastityOS} setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
                     {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
                     {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
                 </Suspense>
             </div>
-            <FooterNav userId={userId} googleEmail={googleEmail} />
+            <FooterNav userId={userId} googleEmail={googleEmail} onShowEula={() => setShowEulaModal(true)} />
+
+            <EulaModal isOpen={showEulaModal} onClose={() => setShowEulaModal(false)} />
         </div>
     );
 };

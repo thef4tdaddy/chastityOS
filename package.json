@@ -1,7 +1,7 @@
 {
   "name": "chastity-os",
   "private": true,
-  "version": "3.7.5",
+  "version": "3.9.0-nightly.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -23,7 +23,8 @@
     "firebase": "^11.8.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-helmet-async": "^2.0.5"
+    "react-helmet-async": "^2.0.5",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

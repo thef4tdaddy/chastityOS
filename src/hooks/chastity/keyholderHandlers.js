@@ -1,103 +1,76 @@
 import { useCallback } from 'react';
-import { generateHash } from '../../utils/hash';
+import { serverTimestamp } from 'firebase/firestore';
 
-export function useKeyholderHandlers(options) {
-    const {
-        userId,
-        saveDataToFirestore,
-        setKeyholderName,
-        setKeyholderPasswordHash,
-        setRequiredKeyholderDurationSeconds,
-        setIsKeyholderModeUnlocked,
-        setKeyholderMessage,
-        setGoalDurationSeconds,
-        keyholderPasswordHash,
-        keyholderName
-    } = options;
+// This hook is now correctly aligned with your application's data structure.
+// It uses the saveDataToFirestore function from your useChastitySession hook.
+export function useKeyholderHandlers({
+  userId,
+  addTask,
+  saveDataToFirestore,
+  // This prop is now used to read the current duration for calculations
+  requiredKeyholderDurationSeconds,
+}) {
+  const handleLockKeyholderControls = useCallback(async () => {
+    if (!saveDataToFirestore) return;
+    await saveDataToFirestore({ isKeyholderControlsLocked: true });
+  }, [saveDataToFirestore]);
 
-    const handleSetKeyholder = useCallback(async (name) => {
-        if (!userId) {
-            setKeyholderMessage('Error: User ID not available.');
-            return null;
-        }
-        const khName = name.trim();
-        if (!khName) {
-            setKeyholderMessage('Keyholder name cannot be empty.');
-            return null;
-        }
-        const hash = await generateHash(userId + khName);
-        if (!hash) {
-            setKeyholderMessage('Error generating Keyholder ID.');
-            return null;
-        }
-        setKeyholderName(khName);
-        setKeyholderPasswordHash(hash);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null });
-        const preview = hash.substring(0, 8).toUpperCase();
-        setKeyholderMessage(`Keyholder "${khName}" set. Password preview: ${preview}`);
-        return preview;
-    }, [userId, saveDataToFirestore]);
+  // This function sets the base duration, like a "hardcore personal goal".
+  const handleSetRequiredDuration = useCallback(
+    async (duration) => {
+      if (!saveDataToFirestore) {
+        console.error("saveDataToFirestore function is not available.");
+        return;
+      }
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: duration });
+    },
+    [saveDataToFirestore]
+  );
 
-    const handleClearKeyholder = useCallback(async () => {
-        setKeyholderName('');
-        setKeyholderPasswordHash(null);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null });
-        setKeyholderMessage('Keyholder data cleared.');
-    }, [saveDataToFirestore]);
+  // This function now SUBTRACTS time from the required duration.
+  const handleAddReward = useCallback(
+    async (reward) => {
+      if (!saveDataToFirestore) return;
+      
+      const timeToRemoveInSeconds = reward.timeSeconds || 0;
+      const currentDuration = requiredKeyholderDurationSeconds || 0;
+      const newDuration = Math.max(0, currentDuration - timeToRemoveInSeconds);
+      
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+      
+      // Fix: The 'text' property is no longer auto-generated.
+      // It will only save the note from the 'other' input field.
+      if (userId && addTask) {
+        await addTask({ ...reward, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      }
+    },
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
+  );
 
-    const handleUnlockKeyholderControls = useCallback(async (enteredPasswordPreview) => {
-        if (!userId || !keyholderName || !keyholderPasswordHash) {
-            setKeyholderMessage('Keyholder not fully set up.');
-            return false;
-        }
-        const expectedPreview = keyholderPasswordHash.substring(0, 8).toUpperCase();
-        if (enteredPasswordPreview.toUpperCase() === expectedPreview) {
-            setIsKeyholderModeUnlocked(true);
-            setKeyholderMessage('Keyholder controls unlocked.');
-            return true;
-        }
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Incorrect Keyholder password.');
-        return false;
-    }, [userId, keyholderName, keyholderPasswordHash]);
+  // This function now ADDS time to the required duration.
+  const handleAddPunishment = useCallback(
+    async (punishment) => {
+      if (!saveDataToFirestore) return;
 
-    const handleLockKeyholderControls = useCallback(() => {
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Keyholder controls locked.');
-    }, []);
+      const timeToAddInSeconds = punishment.timeSeconds || 0;
+      const currentDuration = requiredKeyholderDurationSeconds || 0;
+      const newDuration = currentDuration + timeToAddInSeconds;
+      
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
 
-    const handleSetRequiredDuration = useCallback(async (durationInSeconds) => {
-        const newDuration = Number(durationInSeconds);
-        if (!isNaN(newDuration) && newDuration >= 0) {
-            setRequiredKeyholderDurationSeconds(newDuration);
-            await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
-            setKeyholderMessage('Required duration updated.');
-            return true;
-        }
-        setKeyholderMessage('Invalid duration value.');
-        return false;
-    }, [saveDataToFirestore]);
+      // Fix: The 'text' property is no longer auto-generated.
+      // It will only save the note from the 'other' input field.
+      if (userId && addTask) {
+        await addTask({ ...punishment, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      }
+    },
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
+  );
 
-    const handleSetGoalDuration = useCallback(async (newDurationInSeconds) => {
-        const newDuration = newDurationInSeconds === null ? null : Number(newDurationInSeconds);
-        if (newDuration === null || (!isNaN(newDuration) && newDuration >= 0)) {
-            setGoalDurationSeconds(newDuration);
-            await saveDataToFirestore({ goalDurationSeconds: newDuration });
-            return true;
-        }
-        return false;
-    }, [saveDataToFirestore]);
-
-    return {
-        handleSetKeyholder,
-        handleClearKeyholder,
-        handleUnlockKeyholderControls,
-        handleLockKeyholderControls,
-        handleSetRequiredDuration,
-        handleSetGoalDuration
-    };
+  return {
+    handleLockKeyholderControls,
+    handleSetRequiredDuration,
+    handleAddReward,
+    handleAddPunishment,
+  };
 }
