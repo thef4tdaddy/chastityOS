@@ -2,9 +2,9 @@ import React from 'react';
 
 const PrivacyPage = ({ onBack }) => {
   return (
-    <div className="p-2 sm:p-4 text-left text-purple-200">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-purple-300">Privacy & Analytics</h2>
-      <div className="space-y-4 text-sm sm:text-base text-gray-300">
+    <div className="theme-container p-2 sm:p-4 text-left">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Privacy & Analytics</h2>
+      <div className="space-y-4 text-sm sm:text-base">
         <p>
           ChastityOS uses Google Analytics and Google Tag Manager to help us understand how users interact with the app during beta.
           This helps us identify popular features, areas for improvement, and potential bugs.
@@ -25,7 +25,7 @@ const PrivacyPage = ({ onBack }) => {
       <button 
         type="button"
         onClick={onBack} 
-        className="mt-6 px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white font-semibold transition-colors"
+        className="mt-6 px-4 py-2 rounded bg-primary hover:bg-primary-dark text-white font-semibold transition-colors"
       >
         Back
       </button>

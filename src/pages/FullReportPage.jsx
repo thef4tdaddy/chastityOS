@@ -18,7 +18,7 @@ const FullReportPage = ({
         : 0;
 
     return (
-        <div className="text-left text-purple-200 p-4 bg-gray-800 rounded-lg border border-purple-700">
+        <div className="app-wrapper">
             <div className="mb-4"><strong>Submissive’s Name:</strong> {savedSubmissivesName || '(Not Set)'}</div>
             {!savedSubmissivesName && userId && (
                 <div className="mb-4"><strong>User ID:</strong> {userId}</div>
@@ -26,7 +26,7 @@ const FullReportPage = ({
             {keyholderName && (
                 <div className="mb-4"><strong>Keyholder:</strong> {keyholderName}</div>
             )}
-            <hr className="my-3 border-purple-700"/>
+            <hr className="section-divider"/>
 
             <CurrentStatusSection
                 isCageOn={isCageOn}
@@ -37,20 +37,20 @@ const FullReportPage = ({
                 livePauseDuration={livePauseDuration}
                 timeCageOff={timeCageOff}
             />
-            <hr className="my-3 border-purple-700"/>
+            <hr className="section-divider"/>
 
             <TotalsSection
                 totalChastityTime={totalChastityTime}
                 totalTimeCageOff={totalTimeCageOff}
                 overallTotalPauseTime={overallTotalPauseTime}
             />
-            <hr className="my-3 border-purple-700"/>
+            <hr className="section-divider"/>
 
-            <h3 className="text-xl font-semibold text-purple-300 mb-2 text-center">Chastity History</h3>
+            <h3 className="section-title">Chastity History</h3>
             <ChastityHistoryTable chastityHistory={chastityHistory} />
-            <hr className="my-3 border-purple-700"/>
+            <hr className="section-divider"/>
 
-            <h3 className="text-xl font-semibold text-purple-300 mt-4 mb-2 text-center">Sexual Events Log</h3>
+            <h3 className="section-title">Sexual Events Log</h3>
             <EventLogTable
                 isLoadingEvents={isLoadingEvents}
                 sexualEventsLog={sexualEventsLog}

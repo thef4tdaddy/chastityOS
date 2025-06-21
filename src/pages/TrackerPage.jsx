@@ -1,89 +1,67 @@
-import React, { useEffect, useState, useRef } from 'react';
+// src/pages/TrackerPage.jsx
+import React from 'react';
+import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
 import { formatTime, formatElapsedTime } from '../utils';
+import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
+import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component
 
 const TrackerPage = (props) => {
+    // These props are passed through to the hook or used for other modals
     const {
         isAuthReady,
-        isCageOn, cageOnTime, timeInChastity, timeCageOff, totalChastityTime, totalTimeCageOff, chastityHistory,
+        isCageOn,
         handleToggleCage,
         showReasonModal,
         reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
-        isPaused: isPausedProp,
+        isPaused,
         handleInitiatePause,
         handleResumeSession,
         showPauseReasonModal,
         handleCancelPauseModal,
-        reasonForPauseInput,
-        setReasonForPauseInput,
-        handleConfirmPause,
-        accumulatedPauseTimeThisSession,
-        pauseStartTime,
+        reasonForPauseInput, setReasonForPauseInput, handleConfirmPause,
         livePauseDuration,
         pauseCooldownMessage,
         showRestoreSessionPrompt,
         handleConfirmRestoreSession,
         handleDiscardAndStartNew,
         loadedSessionData,
-        goalDurationSeconds,
         keyholderName,
-        requiredKeyholderDurationSeconds
+        requiredKeyholderDurationSeconds,
+        isGoalActive,
+        isHardcoreGoal,
+        totalChastityTime,
+        totalTimeCageOff,
+        timeCageOff,
+        pauseStartTime,
+        accumulatedPauseTimeThisSession
     } = props;
 
-    const isPaused = typeof isPausedProp === 'boolean' ? isPausedProp : false;
-    const [remainingGoalTime, setRemainingGoalTime] = useState(null);
-    const goalTimerRef = useRef(null);
+    // Call the new hook to get all the logic and state for this page
+    const {
+        remainingGoalTime,
+        showEmergencyUnlockModal,
+        backupCodeInput,
+        unlockMessage,
+        effectiveTimeInChastityForGoal,
+        mainChastityDisplayTime,
+        topBoxLabel,
+        topBoxTime,
+        setBackupCodeInput,
+        handleOpenUnlockModal,
+        handleAttemptEmergencyUnlock,
+        setShowEmergencyUnlockModal,
+    } = useTrackerPage(props); // Pass all props from parent to the hook
 
-    const effectiveTimeInChastityForGoal = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
-
-    useEffect(() => {
-        if (isCageOn && !isPaused && goalDurationSeconds && goalDurationSeconds > 0) {
-            const calculateRemaining = () => {
-                const currentEffectiveChastity = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
-                const remaining = goalDurationSeconds - currentEffectiveChastity;
-                setRemainingGoalTime(remaining > 0 ? remaining : 0);
-            };
-            calculateRemaining();
-            goalTimerRef.current = setInterval(calculateRemaining, 1000);
-        } else {
-            if (goalTimerRef.current) {
-                clearInterval(goalTimerRef.current);
-            }
-             if (!isCageOn || !goalDurationSeconds || goalDurationSeconds <= 0) {
-                 setRemainingGoalTime(null);
-             } else if (isPaused && goalDurationSeconds && goalDurationSeconds > 0) {
-                const currentEffectiveChastity = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
-                const remaining = goalDurationSeconds - currentEffectiveChastity;
-                setRemainingGoalTime(remaining > 0 ? remaining : 0);
-             }
-        }
-        return () => {
-            if (goalTimerRef.current) {
-                clearInterval(goalTimerRef.current);
-            }
-        };
-    }, [isCageOn, isPaused, timeInChastity, accumulatedPauseTimeThisSession, goalDurationSeconds]);
-
-    const mainChastityDisplayTime = Math.max(0, timeInChastity - (accumulatedPauseTimeThisSession || 0));
-
-    // Determine the label and time for the top box
-    let topBoxLabel = "Cage Status Time";
-    let topBoxTime = null;
-
-    if (isCageOn) {
-        topBoxLabel = "Cage On Since:";
-        topBoxTime = cageOnTime;
-    } else {
-        topBoxLabel = "Cage Off Since:";
-        if (chastityHistory.length > 0) {
-            // Get the endTime of the most recent session in history
-            topBoxTime = chastityHistory[chastityHistory.length - 1].endTime;
-        } else {
-            // If no history and cage is off, it implies it was never on or data was reset
-            topBoxTime = null; // Or a placeholder like 'N/A' could be handled by formatTime
-        }
+    if (!isAuthReady) {
+        return (
+            <div className="flex justify-center items-center p-8">
+                <FaSpinner className="animate-spin text-4xl text-purple-400" />
+                <p className="ml-4 text-lg">Loading Session...</p>
+            </div>
+        );
     }
 
-
+    // The JSX remains the same, but it uses the values from the hook
     return (
         <>
           {showRestoreSessionPrompt && loadedSessionData && (
@@ -115,7 +93,7 @@ const TrackerPage = (props) => {
             </div>
           )}
 
-          {isCageOn && goalDurationSeconds && goalDurationSeconds > 0 && remainingGoalTime !== null && (
+          {isCageOn && props.goalDurationSeconds > 0 && remainingGoalTime !== null && (
                 <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border ${remainingGoalTime <= 0 ? 'bg-green-700 border-green-500' : 'bg-blue-800 border-blue-600'}`}>
                     <p className={`text-lg font-semibold ${remainingGoalTime <=0 ? 'text-green-200' : 'text-blue-200'}`}>
                         {remainingGoalTime <= 0 ? "Goal Reached!" : "Time Remaining on Goal:"}
@@ -125,7 +103,7 @@ const TrackerPage = (props) => {
                     )}
                 </div>
             )}
-            {keyholderName && requiredKeyholderDurationSeconds !== null && requiredKeyholderDurationSeconds > 0 && (
+            {keyholderName && requiredKeyholderDurationSeconds > 0 && (
                 <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border ${
                     isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds ? 'bg-pink-700 border-pink-500' : 'bg-purple-800 border-purple-600'
                 }`}>
@@ -145,23 +123,19 @@ const TrackerPage = (props) => {
                 </div>
             )}
 
-          {/* Stats Display Area */}
           <div className="space-y-4 mb-6 md:mb-8">
-            {/* Row 1 - Large Box for Cage Last On / Cage Off Since */}
-            <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm text-center">
-                <p className="text-sm md:text-lg text-purple-300">{topBoxLabel}</p>
-                <p className="text-2xl md:text-4xl font-semibold text-purple-400">
+            <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm text-center">
+                <p className="tracker-label text-sm md:text-lg">{topBoxLabel}</p>
+                <p className="tracker-value text-2xl md:text-4xl font-semibold">
                     {formatTime(topBoxTime, true)}
                 </p>
             </div>
-
-            {/* Row 2 - Two Smaller Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-gray-800 border-purple-700'}`}>
-                    <p className="text-sm md:text-lg text-purple-300">
+                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'tracker-box'}`}>
+                    <p className="tracker-label text-sm md:text-lg">
                         Current Session In Chastity {isPaused ? '(Paused)' : ''}:
                     </p>
-                    <p className={`text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-400'}`}>
+                    <p className={`tracker-value text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : ''}`}>
                         {formatElapsedTime(mainChastityDisplayTime)}
                     </p>
                     {isPaused && pauseStartTime && (
@@ -171,38 +145,43 @@ const TrackerPage = (props) => {
                         <p className="text-xs text-yellow-300 mt-1">Total time paused this session: {formatElapsedTime(isPaused && pauseStartTime ? accumulatedPauseTimeThisSession + livePauseDuration : accumulatedPauseTimeThisSession )}</p>
                     )}
                 </div>
-                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-gray-800 border-purple-700'}`}>
-                    <p className="text-sm md:text-lg text-purple-300">Current Session Cage Off:</p>
-                    <p className={`text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : 'text-purple-400'}`}>{formatElapsedTime(timeCageOff)}</p>
+                <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'tracker-box'}`}>
+                    <p className="tracker-label text-sm md:text-lg">Current Session Cage Off:</p>
+                    <p className={`tracker-value text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : ''}`}>{formatElapsedTime(timeCageOff || 0)}</p>
                 </div>
             </div>
-
-            {/* Row 3 - Two Smaller Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                    <p className="text-sm md:text-lg text-purple-300">Total Time In Chastity:</p>
-                    <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalChastityTime)}</p>
+                <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm">
+                    <p className="tracker-label text-sm md:text-lg">Total Time In Chastity:</p>
+                    <p className="tracker-value text-2xl md:text-4xl font-bold">{formatElapsedTime(totalChastityTime || 0)}</p>
                 </div>
-                <div className="p-3 md:p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-                    <p className="text-sm md:text-lg text-purple-300">Total Time Cage Off:</p>
-                    <p className="text-2xl md:text-4xl font-bold text-purple-400">{formatElapsedTime(totalTimeCageOff)}</p>
+                <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm">
+                    <p className="tracker-label text-sm md:text-lg">Total Time Cage Off:</p>
+                    <p className="tracker-value text-2xl md:text-4xl font-bold">{formatElapsedTime(totalTimeCageOff || 0)}</p>
                 </div>
             </div>
           </div>
-
 
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-3 justify-center">
-            <button
-                type="button"
-                onClick={handleToggleCage}
-                disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
-                className={`flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 ${isCageOn ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-purple-500 hover:bg-purple-600 focus:ring-purple-400'}`}
-            >
-                {isCageOn ? 'Cage Off / End Session' : 'Cage On / Start Session'}
-            </button>
-          </div>
+              {!isCageOn ? (
+                  <button type="button" onClick={handleToggleCage} disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
+                      className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-purple-500 hover:bg-purple-600 focus:ring-purple-400">
+                      Cage On / Start Session
+                  </button>
+              ) : isGoalActive && isHardcoreGoal ? (
+                  <button type="button" onClick={handleOpenUnlockModal} disabled={!isAuthReady || showRestoreSessionPrompt}
+                      className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-700 hover:bg-red-800 focus:ring-red-500 flex items-center justify-center">
+                     <FaLock className="mr-2"/> Emergency Unlock
+                  </button>
+              ) : (
+                  <button type="button" onClick={handleToggleCage} disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
+                      className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-600 hover:bg-red-700 focus:ring-red-500">
+                      Cage Off / End Session
+                  </button>
+              )}
+        </div>
 
-          {isCageOn && (
+        {isCageOn && (
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6 md:mb-8 justify-center">
                 {!isPaused ? (
                     <button type="button" onClick={handleInitiatePause} disabled={!isAuthReady || showRestoreSessionPrompt} className="flex-grow bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition disabled:opacity-50">
@@ -243,6 +222,15 @@ const TrackerPage = (props) => {
               </div>
             </div>
           )}
+
+          <EmergencyUnlockModal 
+            isOpen={showEmergencyUnlockModal}
+            onClose={() => setShowEmergencyUnlockModal(false)}
+            onSubmit={handleAttemptEmergencyUnlock}
+            backupCode={backupCodeInput}
+            setBackupCode={setBackupCodeInput}
+            unlockMessage={unlockMessage}
+          />
         </>
     );
 };

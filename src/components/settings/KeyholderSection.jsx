@@ -1,12 +1,11 @@
-// src/components/settings/KeyholderSection.jsx
 import React, { useState, useEffect } from 'react';
 import { formatElapsedTime } from '../../utils';
 
 const KeyholderSection = ({
   keyholderName,
-  handleSetKeyholder,
-  handleClearKeyholder,
-  handleUnlockKeyholderControls,
+  handleSetKeyholderName,
+  handleKeyholderPasswordCheck,
+  handleSetPermanentPassword,
   isKeyholderModeUnlocked,
   handleLockKeyholderControls,
   requiredKeyholderDurationSeconds,
@@ -18,123 +17,191 @@ const KeyholderSection = ({
 }) => {
   const [khNameInput, setKhNameInput] = useState('');
   const [khPasswordInput, setKhPasswordInput] = useState('');
+  
+  // Simplified state to only manage days for the required duration.
   const [khRequiredDurationDays, setKhRequiredDurationDays] = useState('');
-  const [khRequiredDurationHours, setKhRequiredDurationHours] = useState('');
-  const [khRequiredDurationMinutes, setKhRequiredDurationMinutes] = useState('');
 
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [modalPassword, setModalPassword] = useState('');
+
+  // Effect to sync the duration input field with the main state.
   useEffect(() => {
     if (requiredKeyholderDurationSeconds) {
       const days = Math.floor(requiredKeyholderDurationSeconds / 86400);
-      const hours = Math.floor((requiredKeyholderDurationSeconds % 86400) / 3600);
-      const minutes = Math.floor((requiredKeyholderDurationSeconds % 3600) / 60);
       setKhRequiredDurationDays(days.toString());
-      setKhRequiredDurationHours(hours.toString());
-      setKhRequiredDurationMinutes(minutes.toString());
+    } else {
+      setKhRequiredDurationDays('');
     }
   }, [requiredKeyholderDurationSeconds]);
+  
+  // Effect to show the password modal.
+  useEffect(() => {
+    if (keyholderMessage && keyholderMessage.includes('password is:')) {
+      const password = keyholderMessage.split(':')[1].split('.')[0].trim();
+      setModalPassword(password);
+      setIsPasswordModalVisible(true);
+    }
+  }, [keyholderMessage]);
 
-  const onSetKeyholder = async () => {
+  const onSetKeyholder = () => {
     if (!khNameInput.trim()) return;
-    await handleSetKeyholder(khNameInput);
-    setKhNameInput('');
+    handleSetKeyholderName(khNameInput);
   };
 
-  const onUnlockControls = async () => {
-    await handleUnlockKeyholderControls(khPasswordInput);
+  const onUnlockControls = () => {
+    handleKeyholderPasswordCheck(khPasswordInput);
     setKhPasswordInput('');
   };
 
-  const onSetKHRequiredDuration = async () => {
-    const days = parseInt(khRequiredDurationDays) || 0;
-    const hours = parseInt(khRequiredDurationHours) || 0;
-    const minutes = parseInt(khRequiredDurationMinutes) || 0;
-    const totalSeconds = days * 86400 + hours * 3600 + minutes * 60;
-    await handleSetRequiredDuration(totalSeconds);
+  const onSetPermanentPassword = () => {
+    if (newPassword !== confirmNewPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+    handleSetPermanentPassword(newPassword);
+    setNewPassword('');
+    setConfirmNewPassword('');
   };
 
+  // This handler now sets the duration AND re-locks the controls.
+  const onSetKHRequiredDurationAndLock = async () => {
+    const days = parseInt(khRequiredDurationDays, 10) || 0;
+    const totalSeconds = days * 86400;
+    // Wait for the duration to be set...
+    await handleSetRequiredDuration(totalSeconds);
+    // ...then immediately lock the controls.
+    handleLockKeyholderControls();
+  };
+  
+  // Simplified state for reward/punishment forms.
   const [rewardDays, setRewardDays] = useState('');
-  const [rewardHours, setRewardHours] = useState('');
-  const [rewardMinutes, setRewardMinutes] = useState('');
   const [rewardOther, setRewardOther] = useState('');
   const [punishDays, setPunishDays] = useState('');
-  const [punishHours, setPunishHours] = useState('');
-  const [punishMinutes, setPunishMinutes] = useState('');
   const [punishOther, setPunishOther] = useState('');
 
   const onAddReward = async () => {
-    const secs = (parseInt(rewardDays)||0)*86400 + (parseInt(rewardHours)||0)*3600 + (parseInt(rewardMinutes)||0)*60;
+    const secs = (parseInt(rewardDays, 10)||0) * 86400;
     await handleAddReward({ timeSeconds: secs, other: rewardOther });
-    setRewardDays(''); setRewardHours(''); setRewardMinutes(''); setRewardOther('');
+    setRewardDays(''); setRewardOther('');
   };
 
   const onAddPunishment = async () => {
-    const secs = (parseInt(punishDays)||0)*86400 + (parseInt(punishHours)||0)*3600 + (parseInt(punishMinutes)||0)*60;
+    const secs = (parseInt(punishDays, 10)||0) * 86400;
     await handleAddPunishment({ timeSeconds: secs, other: punishOther });
-    setPunishDays(''); setPunishHours(''); setPunishMinutes(''); setPunishOther('');
+    setPunishDays(''); setPunishOther('');
   };
 
   return (
-    <div className="mb-8 p-4 bg-gray-800 border border-pink-700 rounded-lg shadow-sm">
-      <h3 className="text-xl font-semibold text-pink-300 mb-4">Keyholder Mode</h3>
-      {!keyholderName ? (
-        <>
-          <input type="text" value={khNameInput} onChange={e => setKhNameInput(e.target.value)} placeholder="Keyholder's Name"
-            className="w-full px-3 py-2 mb-3 rounded border border-pink-600 bg-gray-900 text-white" />
-          <button onClick={onSetKeyholder} disabled={!isAuthReady || !khNameInput.trim()}
-            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded">Set Keyholder</button>
-        </>
-      ) : (
-        <>
-          <p className="text-purple-300 mb-2">Keyholder: <strong>{keyholderName}</strong></p>
-          {!isKeyholderModeUnlocked ? (
-            <>
-              <input type="text" maxLength={8} value={khPasswordInput} onChange={e => setKhPasswordInput(e.target.value)} placeholder="Enter Password Preview"
-                className="w-full px-3 py-2 mb-3 rounded border border-pink-600 bg-gray-900 text-white" />
-              <button onClick={onUnlockControls} className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded">Unlock Controls</button>
-            </>
-          ) : (
-            <div>
-              <p className="text-purple-200 mb-2">Required Duration: {requiredKeyholderDurationSeconds ? formatElapsedTime(requiredKeyholderDurationSeconds) : 'Not Set'}</p>
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Days"
-                  className="px-2 py-1 border border-pink-600 bg-gray-900 text-white rounded" />
-                <input type="number" value={khRequiredDurationHours} onChange={e => setKhRequiredDurationHours(e.target.value)} placeholder="Hours"
-                  className="px-2 py-1 border border-pink-600 bg-gray-900 text-white rounded" />
-                <input type="number" value={khRequiredDurationMinutes} onChange={e => setKhRequiredDurationMinutes(e.target.value)} placeholder="Minutes"
-                  className="px-2 py-1 border border-pink-600 bg-gray-900 text-white rounded" />
-              </div>
-              <button onClick={onSetKHRequiredDuration} className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded mr-2">Update Duration</button>
-              <button onClick={handleLockKeyholderControls} className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded">Lock</button>
+    <>
+      {/* The main wrapper now has a more prominent red border and shadow */}
+      <div className="mb-8 p-4 bg-gray-900/50 border-2 border-keyholder rounded-2xl shadow-lg shadow-red-500/20">
+        <h3 className="title-red !text-red-300">Keyholder Mode</h3>
+        {!keyholderName ? (
+          <>
+            <input type="text" value={khNameInput} onChange={e => setKhNameInput(e.target.value)} placeholder="Keyholder's Name"
+              className="inputbox-red !text-red-300" />
+            <button onClick={onSetKeyholder} disabled={!isAuthReady || !khNameInput.trim()}
+              className="button-red !text-red-300">Set Keyholder</button>
+          </>
+        ) : (
+          <>
+            <p className="text-keyholder mb-2">Keyholder: <strong>{keyholderName}</strong></p>
+            {!isKeyholderModeUnlocked ? (
+              <>
+                <p className="text-sm my-2 text-keyholder">Enter the keyholder password to unlock controls.</p>
+                <input type="password" value={khPasswordInput} onChange={e => setKhPasswordInput(e.target.value)} placeholder="Enter Password"
+                  className="inputbox-red !text-red-300" />
+                <button onClick={onUnlockControls} className="button-red !text-red-300">Unlock Controls</button>
+              </>
+            ) : (
+              <div>
+                <div className="alert alert-success mb-4"><p>Controls Unlocked</p></div>
+                
+                <div className="my-6 p-4 border border-green-500 rounded-lg">
+                  <h4 className="title-green !text-green-300 mb-2">Set Permanent Password</h4>
+                  <p className="text-xs text-gray-400 mb-3">Optionally, set a custom password. If you don't, the randomly generated one will remain the permanent password.</p>
+                  <div className="space-y-2">
+                    <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="New Permanent Password"
+                      className="inputbox-green w-full" />
+                    <input type="password" value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} placeholder="Confirm New Password"
+                      className="inputbox-green w-full" />
+                  </div>
+                  <button onClick={onSetPermanentPassword} className="button-green !text-green-300 mt-2">Set Custom Password</button>
+                  {keyholderMessage.includes("updated successfully") && <p className="text-green-400 text-sm mt-2">{keyholderMessage}</p>}
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div>
-                  <h4 className="text-pink-200 mb-1 font-medium">Add Reward</h4>
-                  <div className="grid grid-cols-3 gap-1 mb-2">
-                    <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Days" className="px-2 py-1 border border-green-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={rewardHours} onChange={e=>setRewardHours(e.target.value)} placeholder="Hours" className="px-2 py-1 border border-green-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={rewardMinutes} onChange={e=>setRewardMinutes(e.target.value)} placeholder="Minutes" className="px-2 py-1 border border-green-600 bg-gray-900 text-white rounded" />
-                  </div>
-                  <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Other reward" className="w-full px-2 py-1 border border-green-600 bg-gray-900 text-white rounded mb-2" />
-                  <button onClick={onAddReward} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">Add Reward</button>
+                <hr className="my-4 border-purple-700"/>
+
+                <p className="text-blue mb-2">Required Duration: {requiredKeyholderDurationSeconds ? formatElapsedTime(requiredKeyholderDurationSeconds) : 'Not Set'}</p>
+                 <div className="grid grid-cols-1 gap-2 mb-3">
+                  {/* Simplified to a single input for days */}
+                  <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Set Duration in Days"
+                    className="inputbox-blue !text-blue-300 bg-transparent" />
                 </div>
-                <div>
-                  <h4 className="text-pink-200 mb-1 font-medium">Add Punishment</h4>
-                  <div className="grid grid-cols-3 gap-1 mb-2">
-                    <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Days" className="px-2 py-1 border border-red-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={punishHours} onChange={e=>setPunishHours(e.target.value)} placeholder="Hours" className="px-2 py-1 border border-red-600 bg-gray-900 text-white rounded" />
-                    <input type="number" value={punishMinutes} onChange={e=>setPunishMinutes(e.target.value)} placeholder="Minutes" className="px-2 py-1 border border-red-600 bg-gray-900 text-white rounded" />
+                {/* Simplified to a single button */}
+                <button onClick={onSetKHRequiredDurationAndLock} className="button-blue !text-blue-300">Update & Lock</button>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <h4 className="title-yellow !text-yellow-300">Reward</h4>
+                    <div className="grid grid-cols-1 gap-1 mb-2">
+                      <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Subtract Days" className="inputbox-yellow !text-yellow-300 bg-transparent" />
+                    </div>
+                    {/* Re-added placeholder text */}
+                    <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Note (optional)"
+                      className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
+                    {/* Kept helper text below the input */}
+                    <p className="text-xs text-gray-400 italic text-left mt-1">
+                      Describe the reward (e.g., a special treat, early release). This can be used with or without a time adjustment.
+                    </p>
+                    <button onClick={onAddReward} className="button-yellow !text-yellow-300 mt-2">Add Reward</button>
                   </div>
-                  <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Other punishment" className="w-full px-2 py-1 border border-red-600 bg-gray-900 text-white rounded mb-2" />
-                  <button onClick={onAddPunishment} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Add Punishment</button>
+                  <div>
+                    <h4 className="title-red !text-red-300">Punishment</h4>
+                    <div className="grid grid-cols-1 gap-1 mb-2">
+                      <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Add Days" className="inputbox-red !text-red-300 bg-transparent" />
+                    </div>
+                    {/* Re-added placeholder text */}
+                    <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Note (optional)"
+                      className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
+                     {/* Kept helper text below the input */}
+                     <p className="text-xs text-gray-400 italic text-left mt-1">
+                      Describe the punishment (e.g., extra chores, writing lines). This can be used with or without a time adjustment.
+                    </p>
+                    <button onClick={onAddPunishment} className="button-red !text-red-300 mt-2">Add Punishment</button>
+                  </div>
                 </div>
               </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {isPasswordModalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+          <div className="bg-gray-800 border-2 border-yellow-500 rounded-lg shadow-2xl p-6 w-full max-w-md text-center">
+            <h2 className="text-2xl font-bold text-yellow-300 mb-4">Your Keyholder Password</h2>
+            <p className="text-gray-300 mb-4">
+              Your keyholder must use this password to unlock the controls.
+            </p>
+            <div className="bg-gray-900 p-4 rounded-lg my-4 border border-gray-600">
+              <p className="text-3xl font-mono tracking-widest text-white select-all">{modalPassword}</p>
             </div>
-          )}
-          <button onClick={handleClearKeyholder} className="mt-3 bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded text-sm">Clear Keyholder</button>
-        </>
+            <p className="text-sm text-yellow-400 mb-6">
+              This is the permanent password unless a new custom password is set.
+            </p>
+            <button
+              onClick={() => setIsPasswordModalVisible(false)}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300"
+            >
+              I have saved this password
+            </button>
+          </div>
+        </div>
       )}
-      {keyholderMessage && <p className="text-sm mt-2 text-purple-300">{keyholderMessage}</p>}
-    </div>
+    </>
   );
 };
 
