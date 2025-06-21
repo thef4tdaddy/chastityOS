@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.7...v3.9.0-nightly.8) (2025-06-21)
+
+
+### 🐛 Bug Fixes
+
+* kh punishments and rewards now displayed ([50eb1b3](https://github.com/thef4tdaddy/chastityOS/commit/50eb1b37d1cb89c14b7fe5e7d62ad2563ab875dd))
+
 ## [3.9.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.6...v3.9.0-nightly.7) (2025-06-21)
 
 
