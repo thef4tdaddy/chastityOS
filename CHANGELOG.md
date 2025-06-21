@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.8...v3.9.0-nightly.9) (2025-06-21)
+
+
+### 🐛 Bug Fixes
+
+* editing KH section to be more intuitive, also fixing ci for announcements in discord ([a29cf29](https://github.com/thef4tdaddy/chastityOS/commit/a29cf2923c3a31d6be22c529a224358884d021ca))
+* kh password persistence and permanent password ([b68e436](https://github.com/thef4tdaddy/chastityOS/commit/b68e4366e4b0a326ae5e420541f605ed722a3f58))
+* kh rewards/punishments pushing to rewards page ([89f58da](https://github.com/thef4tdaddy/chastityOS/commit/89f58daba2ecb0572d5562b82a70600944879a74))
+
 ## [3.9.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.7...v3.9.0-nightly.8) (2025-06-21)
 
 
