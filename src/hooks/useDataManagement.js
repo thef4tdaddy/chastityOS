@@ -1,223 +1,181 @@
-// src/hooks/useDataManagement.js
-import { useCallback } from 'react';
-import { writeBatch, doc, getDocs, query, Timestamp } from 'firebase/firestore';
+import { useCallback, useState } from 'react';
 import { db } from '../firebase';
-import { formatTime, formatElapsedTime } from '../utils';
+// Fix: Removed unused 'getDoc' and 'setDoc' imports.
+import { doc, writeBatch, collection, getDocs, query } from 'firebase/firestore';
+import * as Sentry from '@sentry/react';
 
-// A utility function to trigger file downloads
-const triggerDownload = (filename, content, contentType = 'text/plain') => {
-    const element = document.createElement("a");
-    const file = new Blob([content], { type: contentType });
-    element.href = URL.createObjectURL(file);
-    element.download = filename;
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-    document.body.removeChild(element);
-};
+export function useDataManagement({ userId, isAuthReady, userEmail, settings, session, events, tasks }) {
+  const [exportMessage, setExportMessage] = useState('');
+  const [importMessage, setImportMessage] = useState('');
 
-// FIX: Added default empty objects {} to prevent crashes when state is not ready.
-export const useDataManagement = ({
-    userId,
-    settingsState = {},
-    sessionState = {},
-    eventLogState = {},
-    getEventsCollectionRef
-}) => {
-    const handleExportTextReport = useCallback(() => {
-        let report = `ChastityOS Report\n`;
-        report += `Generated: ${formatTime(new Date(), true, true)}\n`;
-        report += `Submissive: ${settingsState.savedSubmissivesName || 'N/A'}\n`;
-        report += `User ID: ${userId}\n\n`;
+  const handleExportData = useCallback(() => {
+    if (!userId) {
+      setExportMessage('User not found.');
+      return;
+    }
+    try {
+      const dataToExport = {
+        userId,
+        userEmail,
+        exportedAt: new Date().toISOString(),
+        settings,
+        session,
+        events,
+        tasks,
+      };
+      const dataStr = JSON.stringify(dataToExport, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `chastityos-backup-${userId}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setExportMessage('Data exported successfully!');
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      Sentry.captureException(error);
+      setExportMessage('Failed to export data.');
+    } finally {
+      setTimeout(() => setExportMessage(''), 3000);
+    }
+  }, [userId, userEmail, settings, session, events, tasks]);
 
-        report += `--- CURRENT STATUS ---\n`;
-        const effectiveCurrentTime = sessionState.isCageOn ? sessionState.timeInChastity - sessionState.accumulatedPauseTimeThisSession : 0;
-        report += `Cage Status: ${sessionState.isCageOn ? (sessionState.isPaused ? 'ON (Paused)' : 'ON') : 'OFF'}\n`;
-        if (sessionState.isCageOn && sessionState.cageOnTime) {
-            report += `Current Session Started: ${formatTime(sessionState.cageOnTime, true, true)}\n`;
+  const handleImportData = useCallback(async (file) => {
+    if (!file) {
+      setImportMessage('No file selected.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.userId) {
+          throw new Error('Invalid backup file: Missing user ID.');
         }
-        report += `Effective Time This Session: ${formatElapsedTime(effectiveCurrentTime || 0)}\n\n`;
 
-        report += `--- TOTALS ---\n`;
-        report += `Total Effective Chastity Time: ${formatElapsedTime(sessionState.totalChastityTime || 0)}\n`;
-        report += `Total Time Cage Off: ${formatElapsedTime(sessionState.totalTimeCageOff || 0)}\n`;
-        report += `Total Paused Time: ${formatElapsedTime(sessionState.overallTotalPauseTime || 0)}\n\n`;
+        const userDocRef = doc(db, 'users', userId);
+        const batch = writeBatch(db);
 
-        report += `--- CHASTITY HISTORY ---\n`;
-        // FIX: Use optional chaining (?.) and default array ([]) for safety
-        if ((sessionState.chastityHistory?.length || 0) > 0) {
-            [...sessionState.chastityHistory].reverse().forEach(h => {
-                report += `Period ${h.periodNumber}: ${formatTime(h.startTime, true, true)} to ${formatTime(h.endTime, true, true)}\n`;
-                report += `  - Raw Duration: ${formatElapsedTime(h.duration)}\n`;
-                report += `  - Paused: ${formatElapsedTime(h.totalPauseDurationSeconds || 0)}\n`;
-                report += `  - Effective: ${formatElapsedTime((h.duration || 0) - (h.totalPauseDurationSeconds || 0))}\n`;
-                report += `  - Reason: ${h.reasonForRemoval || 'N/A'}\n\n`;
+        // Prepare data for Firestore, converting date strings back to Timestamps
+        const settingsToImport = data.settings || {};
+        const sessionToImport = data.session ? {
+            ...data.session,
+            // Add date conversions if your session object has them
+        } : {};
+        
+        // Overwrite the main user document
+        batch.set(userDocRef, { settings: settingsToImport, ...sessionToImport });
+        
+        // Clear old tasks and events before importing new ones
+        const tasksCollectionRef = collection(db, 'users', userId, 'tasks');
+        const oldTasksSnap = await getDocs(query(tasksCollectionRef));
+        oldTasksSnap.forEach(doc => batch.delete(doc.ref));
+
+        const eventsCollectionRef = collection(db, 'users', userId, 'events');
+        const oldEventsSnap = await getDocs(query(eventsCollectionRef));
+        oldEventsSnap.forEach(doc => batch.delete(doc.ref));
+        
+        // Import new tasks
+        if (data.tasks && Array.isArray(data.tasks)) {
+            data.tasks.forEach(task => {
+                const newTaskRef = doc(tasksCollectionRef); // Create new doc with new ID
+                batch.set(newTaskRef, task);
             });
-        } else {
-            report += 'No history.\n\n';
         }
-
-        report += `--- EVENT LOG ---\n`;
-        // FIX: Use optional chaining (?.) and default array ([]) for safety
-        if ((eventLogState.sexualEventsLog?.length || 0) > 0) {
-            [...eventLogState.sexualEventsLog].forEach(e => {
-                const types = [...(e.types || [])];
-                if (e.otherTypeDetail) types.push(`Other: ${e.otherTypeDetail}`);
-                report += `${formatTime(e.eventTimestamp, true, true)} - ${types.join(', ')}\n`;
-                if(e.notes) report += `  Notes: ${e.notes}\n`;
+        
+        // Import new events
+        if (data.events && Array.isArray(data.events)) {
+            data.events.forEach(event => {
+                const newEventRef = doc(eventsCollectionRef);
+                batch.set(newEventRef, event);
             });
-        } else {
-            report += 'No events.\n';
         }
-
-        triggerDownload('ChastityOS-Report.txt', report);
-    }, [userId, settingsState, sessionState, eventLogState]);
-
-    const handleExportTrackerCSV = useCallback(() => {
-        // FIX: Use optional chaining (?.) for safety
-        if (!sessionState.chastityHistory?.length) return alert('No tracker history to export.');
-        const headers = "Period,Start Time,End Time,Raw Duration (s),Paused Duration (s),Effective Duration (s),Reason for Removal";
-        const rows = [...sessionState.chastityHistory].reverse().map(h =>
-            [
-                h.periodNumber,
-                formatTime(h.startTime, true, true),
-                formatTime(h.endTime, true, true),
-                h.duration || 0,
-                h.totalPauseDurationSeconds || 0,
-                (h.duration || 0) - (h.totalPauseDurationSeconds || 0),
-                `"${(h.reasonForRemoval || '').replace(/"/g, '""')}"`
-            ].join(',')
-        );
-        triggerDownload('ChastityOS-TrackerHistory.csv', [headers, ...rows].join('\n'));
-    }, [sessionState.chastityHistory]);
-
-    const handleExportEventLogCSV = useCallback(() => {
-        // FIX: Use optional chaining (?.) for safety
-        if (!eventLogState.sexualEventsLog?.length) return alert('No event log data to export.');
-        const headers = "Timestamp,Types,Other Detail,Duration (s),Self Orgasm Count,Partner Orgasm Count,Notes";
-        const rows = [...eventLogState.sexualEventsLog].map(e => {
-            const types = (e.types || []).join('; ');
-            return [
-                formatTime(e.eventTimestamp, true, true),
-                `"${types}"`,
-                `"${e.otherTypeDetail || ''}"`,
-                e.durationSeconds || 0,
-                e.selfOrgasmAmount || 0,
-                e.partnerOrgasmAmount || 0,
-                `"${(e.notes || '').replace(/"/g, '""')}"`
-            ].join(',')
-        });
-        triggerDownload('ChastityOS-EventLog.csv', [headers, ...rows].join('\n'));
-    }, [eventLogState.sexualEventsLog]);
-
-    const handleExportJSON = useCallback(() => {
-        const backupData = {
-            version: '1.0',
-            timestamp: new Date().toISOString(),
-            settings: {
-                submissivesName: settingsState.savedSubmissivesName,
-                keyholderName: settingsState.keyholderName,
-                keyholderPasswordHash: settingsState.keyholderPasswordHash,
-                requiredKeyholderDurationSeconds: settingsState.requiredKeyholderDurationSeconds,
-                goalDurationSeconds: settingsState.goalDurationSeconds,
-                rewards: settingsState.rewards,
-                punishments: settingsState.punishments,
-                eventDisplayMode: settingsState.eventDisplayMode
-            },
-            session: {
-                chastityHistory: sessionState.chastityHistory,
-                totalTimeCageOff: sessionState.totalTimeCageOff,
-                lastPauseEndTime: sessionState.lastPauseEndTime,
-                hasSessionEverBeenActive: sessionState.hasSessionEverBeenActive,
-            },
-            eventLog: eventLogState.sexualEventsLog
-        };
-        triggerDownload('ChastityOS-Backup.json', JSON.stringify(backupData, null, 2), 'application/json');
-    }, [settingsState, sessionState, eventLogState]);
-
-    const handleImportJSON = useCallback((event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-
-                const batch = writeBatch(db);
-                const userDocRef = doc(db, 'users', userId);
-
-                const combinedUserData = { ...data.settings, ...data.session };
-                batch.set(userDocRef, combinedUserData, { merge: true });
-
-                const eventsColRef = getEventsCollectionRef();
-                if(eventsColRef) {
-                    const existingEvents = await getDocs(query(eventsColRef));
-                    existingEvents.forEach(doc => batch.delete(doc.ref));
-
-                    if (data.eventLog && Array.isArray(data.eventLog)) {
-                        data.eventLog.forEach(log => {
-                            const newEventRef = doc(eventsColRef);
-                            const { id: _id, ...logData } = log;
-                            if (logData.eventTimestamp) {
-                                logData.eventTimestamp = Timestamp.fromDate(new Date(logData.eventTimestamp));
-                            }
-                            batch.set(newEventRef, logData);
-                        });
-                    }
-                }
-
-                await batch.commit();
-
-                alert('Data imported successfully! The app will now refresh to apply changes.');
-                window.location.reload();
-
-            } catch (error) {
-                console.error("Failed to import JSON:", error);
-                alert(`Error importing data: ${error.message}`);
-            } finally {
-                event.target.value = null;
-            }
-        };
-        reader.readAsText(file);
-
-    }, [userId, getEventsCollectionRef]);
-
-    const handleResetAllData = useCallback(async () => {
-        if (!userId) {
-            throw new Error('You must be logged in to reset data.');
-        }
-        try {
-            const batch = writeBatch(db);
-            const eventsColRef = getEventsCollectionRef();
-            if (eventsColRef) {
-                const eventsSnapshot = await getDocs(query(eventsColRef));
-                eventsSnapshot.forEach(doc => batch.delete(doc.ref));
-            }
-            const defaultUserData = {
-                savedSubmissivesName: '', keyholderName: '', keyholderPasswordHash: null,
-                requiredKeyholderDurationSeconds: 0, goalDurationSeconds: 0, rewards: [],
-                punishments: [], eventDisplayMode: 'table', isTrackingAllowed: true,
-                isCageOn: false, cageOnTime: null, timeInChastity: 0,
-                accumulatedPauseTimeThisSession: 0, isPaused: false, lastPauseTime: null,
-                overallTotalPauseTime: 0, totalChastityTime: 0, chastityHistory: [],
-                totalTimeCageOff: 0, lastPauseEndTime: null, hasSessionEverBeenActive: false,
-            };
-            const userDocRef = doc(db, 'users', userId);
-            batch.set(userDocRef, defaultUserData);
-            await batch.commit();
-            return true;
-        } catch (error) {
-            console.error("Failed to reset data:", error);
-            throw error;
-        }
-    }, [userId, getEventsCollectionRef]);
-
-    return {
-        handleExportTextReport,
-        handleExportTrackerCSV,
-        handleExportEventLogCSV,
-        handleExportJSON,
-        handleImportJSON,
-        handleResetAllData,
+        
+        await batch.commit();
+        setImportMessage('Data imported successfully! The page will now reload.');
+        setTimeout(() => window.location.reload(), 2000);
+      } catch (error) {
+        console.error("Error importing data:", error);
+        Sentry.captureException(error);
+        setImportMessage(`Import failed: ${error.message}`);
+      } finally {
+        setTimeout(() => setImportMessage(''), 3000);
+      }
     };
-};
+    reader.readAsText(file);
+  }, [userId]);
+  
+  // This is the function for resetting data
+  const handleResetAllData = useCallback(async (isAccountDeletion = false) => {
+    if (!isAuthReady || !userId) return;
+
+    console.log("Initiating full data reset...");
+    const batch = writeBatch(db);
+    const userDocRef = doc(db, "users", userId);
+    
+    // 1. Set the main user document back to its default state
+    batch.set(userDocRef, {
+        settings: {
+          submissivesName: '',
+          keyholderName: '',
+          keyholderPasswordHash: null,
+          isTrackingAllowed: true,
+          eventDisplayMode: 'kinky',
+        },
+        // Reset all session-related fields as well
+        requiredKeyholderDurationSeconds: 0,
+        // ... any other fields on the root user document
+    });
+
+    // 2. Delete all documents in the 'tasks' subcollection
+    const tasksCollectionRef = collection(db, 'users', userId, 'tasks');
+    try {
+        const tasksSnapshot = await getDocs(query(tasksCollectionRef));
+        tasksSnapshot.forEach(doc => {
+            console.log(`Adding task ${doc.id} to delete batch.`);
+            batch.delete(doc.ref);
+        });
+    } catch (error) {
+        console.error("Error querying tasks for deletion:", error);
+        Sentry.captureException(error);
+    }
+    
+    // 3. (Optional but recommended) Delete all documents in the 'events' subcollection
+    const eventsCollectionRef = collection(db, 'users', userId, 'events');
+     try {
+        const eventsSnapshot = await getDocs(query(eventsCollectionRef));
+        eventsSnapshot.forEach(doc => {
+            console.log(`Adding event ${doc.id} to delete batch.`);
+            batch.delete(doc.ref);
+        });
+    } catch (error) {
+        console.error("Error querying events for deletion:", error);
+        Sentry.captureException(error);
+    }
+
+    // 4. Commit all the changes at once
+    try {
+        await batch.commit();
+        console.log("Full data reset successful.");
+        if (!isAccountDeletion) {
+          alert('All data has been reset.');
+          window.location.reload(); // Reload to reflect changes
+        }
+    } catch (error) {
+        console.error("Error committing data reset batch:", error);
+        Sentry.captureException(error);
+        if (!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
+    }
+  }, [isAuthReady, userId]);
+
+  return { 
+    handleExportData, 
+    handleImportData, 
+    handleResetAllData, 
+    exportMessage, 
+    importMessage 
+  };
+}
