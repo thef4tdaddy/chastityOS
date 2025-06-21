@@ -2,6 +2,74 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.10...v3.9.0) (2025-06-21)
+
+
+### ✨ Features
+
+* merge branch 'nightly' into main ([d742c79](https://github.com/thef4tdaddy/chastityOS/commit/d742c797e375f147dd3ada252d005153d578bf80))
+
+### [3.7.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.4...v3.7.5) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* fixes footer attempt 2 ([c8afe6e](https://github.com/thef4tdaddy/chastityOS/commit/c8afe6ebd70e18ec17dc3f3bfd4f4a5f18350a86))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.5 ([38e5bf2](https://github.com/thef4tdaddy/chastityOS/commit/38e5bf2218960fc0df060bdf3f276a698516b20f))
+
+### [3.7.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.3...v3.7.4) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* footernav edit and sentry repair ([9576fb4](https://github.com/thef4tdaddy/chastityOS/commit/9576fb46beac4a87d8b00aeccd899393294c3082))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.4 ([e58631b](https://github.com/thef4tdaddy/chastityOS/commit/e58631b8781363cd8304a3124939dd3f097b889c))
+
+### [3.7.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.2...v3.7.3) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* pwa files ([4b0b5ad](https://github.com/thef4tdaddy/chastityOS/commit/4b0b5aded20d4ff23b98736364a6710db008ae0d))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.3 ([7290d9f](https://github.com/thef4tdaddy/chastityOS/commit/7290d9f0b9afa4b7be78983115aab1f0e4ffcc95))
+
+### [3.7.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.1...v3.7.2) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* footernav fix, and vite fix number 2 ([b5242ad](https://github.com/thef4tdaddy/chastityOS/commit/b5242ad9641c48114c77b6bffcbe5bac23d8f2ef))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.2 ([9b6b15e](https://github.com/thef4tdaddy/chastityOS/commit/9b6b15e9d4f11d6af1f3e0d2c77de2b31bd57fc0))
+
+### [3.7.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.3...v3.7.1) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* discord release github action ([8961aff](https://github.com/thef4tdaddy/chastityOS/commit/8961aff3e2e812611533f9891d04112b91308d3f))
+* vite.config.js fix ([1b8baa8](https://github.com/thef4tdaddy/chastityOS/commit/1b8baa806e3ac1df15b7ff7d815922a0dac84426))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.1 ([a929a19](https://github.com/thef4tdaddy/chastityOS/commit/a929a192e73186d538476ca6350efe9f4f892a84))
+
 ## [3.9.0-nightly.10](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.9...v3.9.0-nightly.10) (2025-06-21)
 
 ## [3.9.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.8...v3.9.0-nightly.9) (2025-06-21)
