@@ -1,4 +1,12 @@
 #!/bin/sh
+
+# Fix for nvm:
+# This ensures that the nvm command is available to the script.
+# It sources the nvm script if it exists in the default location.
+if [ -f ~/.nvm/nvm.sh ]; then
+  . ~/.nvm/nvm.sh
+fi
+
 . "$(dirname "$0")/_/husky.sh"
 
 npx --no -- commitlint --edit "$1"
