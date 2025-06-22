@@ -61,8 +61,6 @@ export function useSettings(userId, isAuthReady) {
     }
   }, [isAuthReady, userId]);
 
-  // This is the generic settings updater function that handles both
-  // direct objects and functional updates.
   const updateSettings = useCallback((value) => {
     if (typeof value === 'function') {
       setSettings(prevState => {
@@ -81,21 +79,25 @@ export function useSettings(userId, isAuthReady) {
   };
 
   const handleSetSubmissivesName = useCallback(() => {
-    // This handler now uses the generic 'updateSettings' function
     updateSettings(prev => ({ ...prev, submissivesName: submissivesNameInput }));
     setNameMessage("Name updated successfully!");
     setTimeout(() => setNameMessage(''), 3000);
   }, [submissivesNameInput, updateSettings]);
 
-  return { 
-    settings, 
+  const handleSetEventDisplayMode = useCallback((mode) => {
+    updateSettings(prev => ({ ...prev, eventDisplayMode: mode }));
+  }, [updateSettings]);
+
+  return {
+    settings,
     isLoading,
-    // Fix: Restore the setSettings function to the return object
     setSettings: updateSettings,
     savedSubmissivesName: settings.submissivesName,
     submissivesNameInput,
     handleSubmissivesNameInputChange,
     handleSetSubmissivesName,
     nameMessage,
+    eventDisplayMode: settings.eventDisplayMode,
+    handleSetEventDisplayMode,
   };
 }
