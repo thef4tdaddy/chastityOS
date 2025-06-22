@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.9.0-nightly.11](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.10...v3.9.0-nightly.11) (2025-06-22)
+
+
+### ✨ Features
+
+* tasks page now active ([159e1bf](https://github.com/thef4tdaddy/chastityOS/commit/159e1bf0fe3804ad8631ee6af3bf308d33ea87db))
+
+
+### 🐛 Bug Fixes
+
+* (refactor) keyholder ([402b6d2](https://github.com/thef4tdaddy/chastityOS/commit/402b6d281b6f51535a7dbe49fcb94132994fb045))
+* fixing google analytics ([d975529](https://github.com/thef4tdaddy/chastityOS/commit/d975529030e28aa6f815cedb197be68860988a27))
+
 ## [3.9.0-nightly.10](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.9...v3.9.0-nightly.10) (2025-06-21)
 
 ## [3.9.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.8...v3.9.0-nightly.9) (2025-06-21)
