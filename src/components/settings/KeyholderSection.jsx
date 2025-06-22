@@ -12,19 +12,20 @@ const KeyholderSection = ({
   handleSetRequiredDuration,
   handleAddReward,
   handleAddPunishment,
+  handleAddTask, // <-- Added prop to handle adding tasks
   keyholderMessage,
   isAuthReady
 }) => {
   const [khNameInput, setKhNameInput] = useState('');
   const [khPasswordInput, setKhPasswordInput] = useState('');
-  
-  // Simplified state to only manage days for the required duration.
   const [khRequiredDurationDays, setKhRequiredDurationDays] = useState('');
-
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
   const [modalPassword, setModalPassword] = useState('');
+
+  // --- State for the new task input ---
+  const [taskInput, setTaskInput] = useState('');
 
   // Effect to sync the duration input field with the main state.
   useEffect(() => {
@@ -57,7 +58,7 @@ const KeyholderSection = ({
 
   const onSetPermanentPassword = () => {
     if (newPassword !== confirmNewPassword) {
-      alert("Passwords do not match.");
+      alert("Passwords do not match."); // Note: A custom modal would be better than alert().
       return;
     }
     handleSetPermanentPassword(newPassword);
@@ -65,17 +66,13 @@ const KeyholderSection = ({
     setConfirmNewPassword('');
   };
 
-  // This handler now sets the duration AND re-locks the controls.
   const onSetKHRequiredDurationAndLock = async () => {
     const days = parseInt(khRequiredDurationDays, 10) || 0;
     const totalSeconds = days * 86400;
-    // Wait for the duration to be set...
     await handleSetRequiredDuration(totalSeconds);
-    // ...then immediately lock the controls.
     handleLockKeyholderControls();
   };
   
-  // Simplified state for reward/punishment forms.
   const [rewardDays, setRewardDays] = useState('');
   const [rewardOther, setRewardOther] = useState('');
   const [punishDays, setPunishDays] = useState('');
@@ -93,9 +90,16 @@ const KeyholderSection = ({
     setPunishDays(''); setPunishOther('');
   };
 
+  // --- Handler to call the handleAddTask prop ---
+  const onAddTask = async () => {
+    if (taskInput.trim() && handleAddTask) {
+      await handleAddTask(taskInput);
+      setTaskInput(''); // Clear the input after adding
+    }
+  };
+
   return (
     <>
-      {/* The main wrapper now has a more prominent red border and shadow */}
       <div className="mb-8 p-4 bg-gray-900/50 border-2 border-keyholder rounded-2xl shadow-lg shadow-red-500/20">
         <h3 className="title-red !text-red-300">Keyholder Mode</h3>
         {!keyholderName ? (
@@ -134,13 +138,30 @@ const KeyholderSection = ({
 
                 <hr className="my-4 border-purple-700"/>
 
+                {/* --- Assign Task Section --- */}
+                <div className="my-6 p-4 border border-blue-500 rounded-lg">
+                  <h4 className="title-blue !text-blue-300 mb-2">Assign a New Task</h4>
+                  <p className="text-xs text-gray-400 mb-3">Assign a task that the user must complete and submit for review.</p>
+                  <input
+                    type="text"
+                    value={taskInput}
+                    onChange={(e) => setTaskInput(e.target.value)}
+                    placeholder="Enter a new task description"
+                    className="inputbox-blue !text-blue-300 w-full mb-2 bg-transparent"
+                  />
+                  <button onClick={onAddTask} className="button-blue !text-blue-300 mt-2">
+                    Assign Task
+                  </button>
+                </div>
+                {/* --- End Assign Task Section --- */}
+
+                <hr className="my-4 border-purple-700"/>
+
                 <p className="text-blue mb-2">Required Duration: {requiredKeyholderDurationSeconds ? formatElapsedTime(requiredKeyholderDurationSeconds) : 'Not Set'}</p>
                  <div className="grid grid-cols-1 gap-2 mb-3">
-                  {/* Simplified to a single input for days */}
                   <input type="number" value={khRequiredDurationDays} onChange={e => setKhRequiredDurationDays(e.target.value)} placeholder="Set Duration in Days"
                     className="inputbox-blue !text-blue-300 bg-transparent" />
                 </div>
-                {/* Simplified to a single button */}
                 <button onClick={onSetKHRequiredDurationAndLock} className="button-blue !text-blue-300">Update & Lock</button>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -149,10 +170,8 @@ const KeyholderSection = ({
                     <div className="grid grid-cols-1 gap-1 mb-2">
                       <input type="number" value={rewardDays} onChange={e=>setRewardDays(e.target.value)} placeholder="Subtract Days" className="inputbox-yellow !text-yellow-300 bg-transparent" />
                     </div>
-                    {/* Re-added placeholder text */}
                     <input type="text" value={rewardOther} onChange={e=>setRewardOther(e.target.value)} placeholder="Note (optional)"
                       className="inputbox-yellow !text-yellow-300 w-full mb-2 bg-transparent" />
-                    {/* Kept helper text below the input */}
                     <p className="text-xs text-gray-400 italic text-left mt-1">
                       Describe the reward (e.g., a special treat, early release). This can be used with or without a time adjustment.
                     </p>
@@ -163,10 +182,8 @@ const KeyholderSection = ({
                     <div className="grid grid-cols-1 gap-1 mb-2">
                       <input type="number" value={punishDays} onChange={e=>setPunishDays(e.target.value)} placeholder="Add Days" className="inputbox-red !text-red-300 bg-transparent" />
                     </div>
-                    {/* Re-added placeholder text */}
                     <input type="text" value={punishOther} onChange={e=>setPunishOther(e.target.value)} placeholder="Note (optional)"
                       className="inputbox-red !text-red-300 w-full mb-2 bg-transparent" />
-                     {/* Kept helper text below the input */}
                      <p className="text-xs text-gray-400 italic text-left mt-1">
                       Describe the punishment (e.g., extra chores, writing lines). This can be used with or without a time adjustment.
                     </p>

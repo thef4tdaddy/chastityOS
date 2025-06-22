@@ -67,10 +67,26 @@ export function useKeyholderHandlers({
     [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
   );
 
+  // Re-added handler to add a task, assigned by the keyholder
+  const handleAddTask = useCallback(
+    async (taskText) => {
+      if (userId && addTask) {
+        await addTask({
+          text: taskText,
+          status: 'pending',
+          assignedBy: 'keyholder',
+          createdAt: serverTimestamp(), // Use server timestamp for consistency
+        });
+      }
+    },
+    [userId, addTask]
+  );
+
   return {
     handleLockKeyholderControls,
     handleSetRequiredDuration,
     handleAddReward,
     handleAddPunishment,
+    handleAddTask, // Exposing the task handler again
   };
 }
