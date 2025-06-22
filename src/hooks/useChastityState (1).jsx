@@ -24,23 +24,28 @@ export const useChastityState = () => {
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
   );
   const tasksState = useTasks(userId, isAuthReady);
+
+  // The personal goal state needs access to settings
   const personalGoalState = usePersonalGoal({ userId, isAuthReady, settings: settings });
+  
+  // The data management state needs access to all other states
   const dataManagementState = useDataManagement({
     userId, isAuthReady, userEmail: googleEmail, settings: settings,
     session: sessionState, events: eventLogState.events, tasks: tasksState.tasks,
   });
 
-  // --- Keyholder Setup Logic with Permanent Password ---
+  // --- Keyholder Setup and Authentication Logic ---
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
   
+  // Generates a temporary password for initial setup
   const generateTempPassword = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const handleSetKeyholderName = useCallback(async (name) => {
     const tempPassword = generateTempPassword();
     const hash = await generateSecureHash(tempPassword);
     
-    // Save the keyholder's name AND the new password hash to the database.
+    // Save the keyholder's name AND the new password hash to settings.
     setSettings(prev => ({
       ...prev,
       keyholderName: name,
@@ -52,7 +57,6 @@ export const useChastityState = () => {
   }, [setSettings]);
 
   const handleKeyholderPasswordCheck = useCallback(async (passwordAttempt) => {
-    // Check against the password hash stored in the main settings.
     const storedHash = settings?.keyholderPasswordHash;
     if (!storedHash) {
       setKeyholderMessage("Error: No keyholder password is set in the database.");
@@ -63,35 +67,37 @@ export const useChastityState = () => {
       setIsKeyholderModeUnlocked(true);
       setKeyholderMessage('Controls are now unlocked.');
     } else {
+      setIsKeyholderModeUnlocked(false);
       setKeyholderMessage('Incorrect password. Please try again.');
     }
   }, [settings?.keyholderPasswordHash]);
 
-  // --- New function to set a custom permanent password ---
+  // Sets a new custom permanent password
   const handleSetPermanentPassword = useCallback(async (newPassword) => {
     if (!newPassword || newPassword.length < 6) {
       setKeyholderMessage("Password must be at least 6 characters long.");
       return;
     }
     const newHash = await generateSecureHash(newPassword);
-    // Overwrite the old hash with the new one.
     setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
     setKeyholderMessage("Permanent password has been updated successfully!");
   }, [setSettings]);
 
+  // Locks the keyholder controls and clears any related messages
   const lockKeyholderControls = useCallback(() => {
     setIsKeyholderModeUnlocked(false);
     setKeyholderMessage('');
   }, []);
   
+  // Instantiate the keyholder action handlers, passing in necessary functions from other hooks
   const keyholderHandlers = useKeyholderHandlers({
     userId,
-    addTask: tasksState.addTask,
+    addTask: tasksState.addTask, // <-- This is the crucial connection
     saveDataToFirestore: sessionState.saveData,
-    // Safely access nested property using optional chaining to prevent crash on initial load
-    requiredKeyholderDurationSeconds: sessionState.session?.requiredKeyholderDurationSeconds,
+    requiredKeyholderDurationSeconds: sessionState.session.requiredKeyholderDurationSeconds,
   });
 
+  // Combine and return all state and functions
   return {
     ...authState,
     ...settingsState,
@@ -105,7 +111,7 @@ export const useChastityState = () => {
     keyholderMessage,
     handleSetKeyholderName,
     handleKeyholderPasswordCheck,
-    handleSetPermanentPassword, // Return the new function
+    handleSetPermanentPassword,
     lockKeyholderControls,
     keyholderName: settings.keyholderName,
   };

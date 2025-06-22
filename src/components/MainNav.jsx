@@ -5,11 +5,11 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
   const navItems = [
     { id: 'tracker', name: 'Chastity Tracker' },
     { id: 'logEvent', name: 'Log Event' },
+    { id: 'tasks', name: 'Tasks' },
     { id: 'fullReport', name: 'Full Report' },
     { id: 'keyholder', name: 'Keyholder' },
     { id: 'rewards', name: 'Rewards/Punishments' },
     { id: 'settings', name: 'Profile & Preferences' },
-    // { id: 'privacy', name: 'Privacy' }, // Privacy removed from main navigation
     { id: 'feedback', name: 'Feedback' }
   ];
 
@@ -34,6 +34,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
             const emojiMap = {
               tracker: '📈 ',
               logEvent: '📝 ',
+              tasks: '✅ ',
               fullReport: '📊 ',
               keyholder: '🔐 ',
               rewards: '🎁 ',
