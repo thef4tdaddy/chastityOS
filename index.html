@@ -15,17 +15,10 @@
     <meta name="theme-color" content="#8b5cf6"> 
 
     <!-- 
-      Google Analytics Measurement ID has been inserted below.
+      The Google Analytics script has been removed from this file.
+      Analytics are now handled exclusively by the Firebase SDK (initialized in firebase.js)
+      to prevent duplicate tracking and to properly manage user consent.
     -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WJHSVRZZ9S"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      // The main config call (e.g., gtag('config', 'YOUR_ID');) is handled in App.jsx 
-      // using the VITE_GA_MEASUREMENT_ID environment variable from your .env file.
-      // This ensures it runs after the Measurement ID is properly loaded from the environment.
-    </script>
     </head>
   <body>
     <div id="root"></div>
