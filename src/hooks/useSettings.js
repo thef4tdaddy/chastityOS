@@ -6,8 +6,8 @@ import * as Sentry from '@sentry/react';
 const defaultSettings = {
   submissivesName: '',
   keyholderName: '',
-  isTrackingAllowed: true,
-  eventDisplayMode: 'kinky',
+  isTrackingAllowed: true, // Default to true
+  eventDisplayMode: 'kinky', // Default display mode
 };
 
 export function useSettings(userId, isAuthReady) {
@@ -33,10 +33,12 @@ export function useSettings(userId, isAuthReady) {
       try {
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists() && docSnap.data().settings) {
+          // Ensure default settings are merged with loaded settings
           const loadedSettings = { ...defaultSettings, ...docSnap.data().settings };
           setSettings(loadedSettings);
           setSubmissivesNameInput(loadedSettings.submissivesName || '');
         } else {
+          // If no settings exist, create them with the default values
           await setDoc(userDocRef, { settings: defaultSettings }, { merge: true });
           setSettings(defaultSettings);
         }
@@ -61,8 +63,6 @@ export function useSettings(userId, isAuthReady) {
     }
   }, [isAuthReady, userId]);
 
-  // This is the generic settings updater function that handles both
-  // direct objects and functional updates.
   const updateSettings = useCallback((value) => {
     if (typeof value === 'function') {
       setSettings(prevState => {
@@ -81,7 +81,6 @@ export function useSettings(userId, isAuthReady) {
   };
 
   const handleSetSubmissivesName = useCallback(() => {
-    // This handler now uses the generic 'updateSettings' function
     updateSettings(prev => ({ ...prev, submissivesName: submissivesNameInput }));
     setNameMessage("Name updated successfully!");
     setTimeout(() => setNameMessage(''), 3000);
@@ -90,12 +89,14 @@ export function useSettings(userId, isAuthReady) {
   return { 
     settings, 
     isLoading,
-    // Fix: Restore the setSettings function to the return object
     setSettings: updateSettings,
     savedSubmissivesName: settings.submissivesName,
     submissivesNameInput,
     handleSubmissivesNameInputChange,
     handleSetSubmissivesName,
     nameMessage,
+    // Explicitly return the tracking and display mode flags
+    isTrackingAllowed: settings.isTrackingAllowed,
+    eventDisplayMode: settings.eventDisplayMode,
   };
 }
