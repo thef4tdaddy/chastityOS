@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.9.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0...v3.9.1) (2025-06-22)
+
+
+### 🐛 Bug Fixes
+
+* kinky/vanilla mode back to working ([abaf32e](https://github.com/thef4tdaddy/chastityOS/commit/abaf32ed0d70a24ebbd2d9faaf9f2f1215134b62))
+
 ## [3.9.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.10...v3.9.0) (2025-06-21)
 
 
