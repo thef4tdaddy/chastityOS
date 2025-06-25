@@ -1,13 +1,11 @@
 import { useCallback } from 'react';
 import { serverTimestamp } from 'firebase/firestore';
 
-// This hook is now correctly aligned with your application's data structure.
-// It uses the saveDataToFirestore function from your useChastitySession hook.
 export function useKeyholderHandlers({
   userId,
   addTask,
+  updateTask,
   saveDataToFirestore,
-  // This prop is now used to read the current duration for calculations
   requiredKeyholderDurationSeconds,
 }) {
   const handleLockKeyholderControls = useCallback(async () => {
@@ -15,7 +13,6 @@ export function useKeyholderHandlers({
     await saveDataToFirestore({ isKeyholderControlsLocked: true });
   }, [saveDataToFirestore]);
 
-  // This function sets the base duration, like a "hardcore personal goal".
   const handleSetRequiredDuration = useCallback(
     async (duration) => {
       if (!saveDataToFirestore) {
@@ -27,7 +24,6 @@ export function useKeyholderHandlers({
     [saveDataToFirestore]
   );
 
-  // This function now SUBTRACTS time from the required duration.
   const handleAddReward = useCallback(
     async (reward) => {
       if (!saveDataToFirestore) return;
@@ -38,8 +34,6 @@ export function useKeyholderHandlers({
       
       await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
       
-      // Fix: The 'text' property is no longer auto-generated.
-      // It will only save the note from the 'other' input field.
       if (userId && addTask) {
         await addTask({ ...reward, type: 'reward', assignedBy: 'keyholder', createdAt: serverTimestamp() });
       }
@@ -47,7 +41,6 @@ export function useKeyholderHandlers({
     [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
   );
 
-  // This function now ADDS time to the required duration.
   const handleAddPunishment = useCallback(
     async (punishment) => {
       if (!saveDataToFirestore) return;
@@ -58,8 +51,6 @@ export function useKeyholderHandlers({
       
       await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
 
-      // Fix: The 'text' property is no longer auto-generated.
-      // It will only save the note from the 'other' input field.
       if (userId && addTask) {
         await addTask({ ...punishment, type: 'punishment', assignedBy: 'keyholder', createdAt: serverTimestamp() });
       }
@@ -67,10 +58,48 @@ export function useKeyholderHandlers({
     [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
   );
 
+  // --- Handler for the Add Task Form ---
+  const handleAddTask = useCallback(
+    async (taskData) => {
+      if (userId && addTask) {
+        await addTask({
+          ...taskData,
+          status: 'pending',
+          assignedBy: 'keyholder',
+          createdAt: serverTimestamp(),
+        });
+      }
+    },
+    [userId, addTask]
+  );
+
+  // --- Handlers for Task Approval ---
+  const handleApproveTask = useCallback(
+    async (taskId) => {
+      if (userId && updateTask) {
+        await updateTask(taskId, { status: 'approved' });
+      }
+    },
+    [userId, updateTask]
+  );
+
+  const handleRejectTask = useCallback(
+    async (taskId) => {
+      if (userId && updateTask) {
+        await updateTask(taskId, { status: 'rejected' });
+      }
+    },
+    [userId, updateTask]
+  );
+
+  // --- Return all available actions ---
   return {
     handleLockKeyholderControls,
     handleSetRequiredDuration,
     handleAddReward,
     handleAddPunishment,
+    handleAddTask,
+    handleApproveTask,
+    handleRejectTask,
   };
 }

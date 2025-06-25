@@ -1,14 +1,14 @@
-// src/pages/TasksPage.jsx
 import React from 'react';
 
-const CheckIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> );
+const TasksPage = (props) => {
+  // DEBUG: Log all props arriving at this component
+  console.log("[DEBUG] TasksPage: Received props:", props);
 
-// This component displays tasks and allows the user to submit them for review.
-const TasksPage = ({ tasks = [], handleSubmitForReview }) => {
-  
-  // Filter for tasks that are still pending and assigned to the user
-  const pendingTasks = tasks.filter(task => task.status === 'pending');
-  const submittedTasks = tasks.filter(task => task.status === 'submitted');
+  // Destructure tasks from props AFTER logging
+  const { tasks = [], handleSubmitForReview } = props;
+
+  const pendingTasks = tasks.filter(task => task.assignedBy === 'keyholder' && task.status === 'pending');
+  const submittedTasks = tasks.filter(task => task.status === 'pending_approval');
 
   return (
     <div className="tasks-container">
@@ -21,26 +21,26 @@ const TasksPage = ({ tasks = [], handleSubmitForReview }) => {
               <span className="task-text flex-grow">{task.text}</span>
               <button
                 onClick={() => handleSubmitForReview(task.id)}
-                className="submit-button" /* Using a new class for styling */
-                aria-label="Submit task for review"
+                className="complete-button"
+                aria-label={`Submit task for review: ${task.text}`}
               >
                 Submit for Review
               </button>
             </div>
           ))
         ) : (
-          <p className="no-tasks-message">No pending tasks. Great job!</p>
+          <p className="no-tasks-message">You have no pending tasks from your Keyholder. Great job!</p>
         )}
       </div>
 
       {submittedTasks.length > 0 && (
-        <div className="submitted-tasks-section">
-          <h4 className="submitted-title">Pending Keyholder Review</h4>
+        <div className="mt-6">
+          <h4 className="subpage-title mb-3">Awaiting Keyholder Review</h4>
           <div className="task-list">
             {submittedTasks.map((task) => (
-              <div key={task.id} className="task-item submitted">
-                <span className="task-text">{task.text}</span>
-                <span className="submitted-status">Submitted</span>
+              <div key={task.id} className="task-item opacity-70">
+                <span className="task-text flex-grow line-through">{task.text}</span>
+                <span className="text-sm font-semibold text-yellow-300">Submitted</span>
               </div>
             ))}
           </div>

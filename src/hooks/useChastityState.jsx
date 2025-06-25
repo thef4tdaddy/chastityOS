@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
@@ -17,7 +17,7 @@ export const useChastityState = () => {
 
   const settingsState = useSettings(userId, isAuthReady);
   const { settings, setSettings } = settingsState;
-  
+
   const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
   const sessionState = useChastitySession(
@@ -30,29 +30,23 @@ export const useChastityState = () => {
     session: sessionState, events: eventLogState.events, tasks: tasksState.tasks,
   });
 
-  // --- Keyholder Setup Logic with Permanent Password ---
+  useEffect(() => {
+    console.log("[DEBUG] useChastityState: The `tasksState` object contains:", tasksState);
+  }, [tasksState]);
+
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
-  
+
   const generateTempPassword = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const handleSetKeyholderName = useCallback(async (name) => {
     const tempPassword = generateTempPassword();
     const hash = await generateSecureHash(tempPassword);
-    
-    // Save the keyholder's name AND the new password hash to the database.
-    setSettings(prev => ({
-      ...prev,
-      keyholderName: name,
-      keyholderPasswordHash: hash,
-    }));
-    
+    setSettings(prev => ({ ...prev, keyholderName: name, keyholderPasswordHash: hash }));
     setKeyholderMessage(`Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`);
-
   }, [setSettings]);
 
   const handleKeyholderPasswordCheck = useCallback(async (passwordAttempt) => {
-    // Check against the password hash stored in the main settings.
     const storedHash = settings?.keyholderPasswordHash;
     if (!storedHash) {
       setKeyholderMessage("Error: No keyholder password is set in the database.");
@@ -67,14 +61,12 @@ export const useChastityState = () => {
     }
   }, [settings?.keyholderPasswordHash]);
 
-  // --- New function to set a custom permanent password ---
   const handleSetPermanentPassword = useCallback(async (newPassword) => {
     if (!newPassword || newPassword.length < 6) {
       setKeyholderMessage("Password must be at least 6 characters long.");
       return;
     }
     const newHash = await generateSecureHash(newPassword);
-    // Overwrite the old hash with the new one.
     setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
     setKeyholderMessage("Permanent password has been updated successfully!");
   }, [setSettings]);
@@ -83,13 +75,25 @@ export const useChastityState = () => {
     setIsKeyholderModeUnlocked(false);
     setKeyholderMessage('');
   }, []);
-  
+
   const keyholderHandlers = useKeyholderHandlers({
     userId,
     addTask: tasksState.addTask,
+    updateTask: tasksState.updateTask,
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
+
+  // --- Submissive Action Handlers ---
+  const handleSubmitForReview = useCallback(async (taskId) => {
+    if (!tasksState.updateTask) {
+      console.error("updateTask function is not available.");
+      return;
+    }
+    await tasksState.updateTask(taskId, { status: 'pending_approval' });
+    // --- THIS IS THE FIX ---
+    // The dependency array now correctly includes `tasksState`.
+  }, [tasksState]);
 
   return {
     ...authState,
@@ -104,8 +108,9 @@ export const useChastityState = () => {
     keyholderMessage,
     handleSetKeyholderName,
     handleKeyholderPasswordCheck,
-    handleSetPermanentPassword, // Return the new function
+    handleSetPermanentPassword,
     lockKeyholderControls,
+    handleSubmitForReview,
     keyholderName: settings.keyholderName,
   };
 };
