@@ -22,8 +22,11 @@ const TasksPage = lazy(() => import('./pages/TasksPage'));
 const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
     const [showEulaModal, setShowEulaModal] = useState(false);
+    
+    // chastityOS now contains everything, including task data and handlers
     const chastityOS = useChastityState();
-    // Destructure keyholderName from the main state object
+    
+    // Destructure everything needed for this component's logic
     const { 
       isLoading, 
       savedSubmissivesName, 
@@ -62,7 +65,6 @@ const App = () => {
             <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">
                 {savedSubmissivesName && <p className="app-subtitle">Tracking <span className="font-semibold">{savedSubmissivesName}'s</span> Journey</p>}
                 
-                {/* This new line will appear only when a keyholderName is set */}
                 {keyholderName && (
                   <p className="text-sm text-red-300 -mt-2 mb-3">
                     under <span className="font-semibold">{keyholderName}'s</span> control
@@ -72,10 +74,14 @@ const App = () => {
                 <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
                 <h2 className="subpage-title no-border">{pageTitleText}</h2>
                 <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
+                    {/* All pages now receive the entire chastityOS state object */}
                     {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
                     {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
                     {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+                    
+                    {/* The KeyholderPage now gets everything it needs, including task handlers */}
                     {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
+                    
                     {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
                     {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
                     {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}

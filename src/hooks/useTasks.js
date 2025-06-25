@@ -22,21 +22,27 @@ export function useTasks(userId, isAuthReady) {
     if (!tasksCollectionRef) return;
 
     setIsLoading(true);
+    // DEBUG: Log the exact path we are querying
+    console.log(`[DEBUG] Setting up listener for tasks at: /users/${userId}/tasks`);
+
     const q = query(tasksCollectionRef);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const tasksData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // DEBUG: Log the raw data coming from Firestore
+      console.log("[DEBUG] useTasks: Snapshot received. Raw data:", tasksData);
+      
       setTasks(tasksData);
       setIsLoading(false);
     }, (error) => {
-      console.error("Error fetching tasks:", error);
+      console.error("[DEBUG] useTasks: Error fetching tasks snapshot:", error);
       setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, [isAuthReady, userId, getTasksCollectionRef]);
 
-  // This function now has logging to help us debug.
   const addTask = useCallback(async (taskData) => {
     const tasksCollectionRef = getTasksCollectionRef();
     if (!tasksCollectionRef) {
