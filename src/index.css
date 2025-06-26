@@ -167,6 +167,30 @@ th, td { border: 1px solid var(--color-border-primary); @apply px-2 py-1 text-le
 .self-lock-input-box { @apply p-4 rounded-lg text-left border; background-color: theme('colors.yellow.950'); border-color: theme('colors.yellow.700'); color: theme('colors.yellow.200'); }
 .self-lock-input-box h4 { @apply text-lg font-semibold mb-3 pb-2 border-b; color: theme('colors.yellow.300'); border-bottom-color: theme('colors.yellow.800'); }
 
+/* --- Rewards/Punishments History Display --- */
+.rewards-history-box,
+.punishments-history-box {
+  @apply p-4 rounded-lg shadow-sm;
+}
+
+.rewards-history-box h4,
+.punishments-history-box h4 {
+  @apply text-lg font-semibold mb-2 flex items-center;
+}
+
+.rewards-history-box ul, .rewards-history-box p,
+.punishments-history-box ul, .punishments-history-box p {
+  @apply text-left list-disc list-inside space-y-1 text-sm;
+}
+
+/* Apply specific text colors from your utility classes */
+.rewards-history-box li, .rewards-history-box p {
+  color: theme('colors.yellow.300');
+}
+
+.punishments-history-box li, .punishments-history-box p {
+  color: theme('colors.red.300');
+}
 
 /* =============================================
    === 5. UTILITY & OVERRIDE CLASSES         ===

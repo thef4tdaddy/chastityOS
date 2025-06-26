@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react'; // Re-added useEffect
+import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
@@ -17,7 +18,7 @@ export const useChastityState = () => {
 
   const settingsState = useSettings(userId, isAuthReady);
   const { settings, setSettings } = settingsState;
-  
+
   const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
   const sessionState = useChastitySession(
@@ -30,29 +31,19 @@ export const useChastityState = () => {
     session: sessionState, events: eventLogState.events, tasks: tasksState.tasks,
   });
 
-  // --- Keyholder Setup Logic with Permanent Password ---
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
-  
+
   const generateTempPassword = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
   const handleSetKeyholderName = useCallback(async (name) => {
     const tempPassword = generateTempPassword();
     const hash = await generateSecureHash(tempPassword);
-    
-    // Save the keyholder's name AND the new password hash to the database.
-    setSettings(prev => ({
-      ...prev,
-      keyholderName: name,
-      keyholderPasswordHash: hash,
-    }));
-    
+    setSettings(prev => ({ ...prev, keyholderName: name, keyholderPasswordHash: hash }));
     setKeyholderMessage(`Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`);
-
   }, [setSettings]);
 
   const handleKeyholderPasswordCheck = useCallback(async (passwordAttempt) => {
-    // Check against the password hash stored in the main settings.
     const storedHash = settings?.keyholderPasswordHash;
     if (!storedHash) {
       setKeyholderMessage("Error: No keyholder password is set in the database.");
@@ -67,14 +58,12 @@ export const useChastityState = () => {
     }
   }, [settings?.keyholderPasswordHash]);
 
-  // --- New function to set a custom permanent password ---
   const handleSetPermanentPassword = useCallback(async (newPassword) => {
     if (!newPassword || newPassword.length < 6) {
       setKeyholderMessage("Password must be at least 6 characters long.");
       return;
     }
     const newHash = await generateSecureHash(newPassword);
-    // Overwrite the old hash with the new one.
     setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
     setKeyholderMessage("Permanent password has been updated successfully!");
   }, [setSettings]);
@@ -83,13 +72,48 @@ export const useChastityState = () => {
     setIsKeyholderModeUnlocked(false);
     setKeyholderMessage('');
   }, []);
-  
+
   const keyholderHandlers = useKeyholderHandlers({
     userId,
+    tasks: tasksState.tasks,
     addTask: tasksState.addTask,
+    updateTask: tasksState.updateTask,
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
+
+  const handleSubmitForReview = useCallback(async (taskId, note) => {
+    if (!tasksState.updateTask) {
+      console.error("updateTask function is not available.");
+      return;
+    }
+    await tasksState.updateTask(taskId, {
+      status: 'pending_approval',
+      submissiveNote: note,
+      submittedAt: serverTimestamp()
+    });
+  }, [tasksState]);
+
+  // --- NEW: Effect for auto-submitting overdue tasks ---
+  useEffect(() => {
+    const checkOverdueTasks = () => {
+      const now = new Date();
+      const pendingTasks = tasksState.tasks.filter(t => t.status === 'pending' && t.deadline);
+
+      for (const task of pendingTasks) {
+        if (now > task.deadline) {
+          console.log(`Task "${task.text}" is overdue. Auto-submitting...`);
+          handleSubmitForReview(task.id, 'Automatically submitted: Deadline passed.');
+        }
+      }
+    };
+
+    // Check for overdue tasks every 30 seconds
+    const intervalId = setInterval(checkOverdueTasks, 30000);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, [tasksState.tasks, handleSubmitForReview]);
 
   return {
     ...authState,
@@ -104,8 +128,9 @@ export const useChastityState = () => {
     keyholderMessage,
     handleSetKeyholderName,
     handleKeyholderPasswordCheck,
-    handleSetPermanentPassword, // Return the new function
+    handleSetPermanentPassword,
     lockKeyholderControls,
+    handleSubmitForReview,
     keyholderName: settings.keyholderName,
   };
 };
