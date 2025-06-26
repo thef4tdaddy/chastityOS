@@ -16,9 +16,14 @@ const KeyholderAddTaskForm = ({ onAddTask }) => {
       return;
     }
 
+    // --- NEW: Deadline Validation ---
+    if (deadline && new Date(deadline) < new Date()) {
+      alert('Cannot set a deadline in the past. Please choose a future date and time.');
+      return; // Stop the submission
+    }
+
     const taskData = {
       text: taskText.trim(),
-      // The `requiredTaskDurationSeconds` is now removed.
       deadline: deadline ? new Date(deadline) : null,
       reward: {
         type: rewardType,
