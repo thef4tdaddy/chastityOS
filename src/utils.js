@@ -65,6 +65,21 @@ export const formatElapsedTime = (totalSeconds) => {
 };
 
 /**
+ * Formats a duration in seconds into a readable string showing only the number of days.
+ * @param {number} totalSeconds - The duration in seconds.
+ * @returns {string} Formatted time string (e.g., "1 day", "5 days").
+ */
+export const formatDaysOnly = (totalSeconds) => {
+  if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds) || totalSeconds < 0) {
+    return '0 days';
+  }
+
+  const days = Math.floor(totalSeconds / 86400);
+  return `${days} day${days !== 1 ? 's' : ''}`;
+};
+
+
+/**
  * A simple array of event types for the log event form.
  */
 export const EVENT_TYPES = [

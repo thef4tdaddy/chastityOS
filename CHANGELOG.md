@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.10.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0-nightly.0...v3.10.0-nightly.1) (2025-06-26)
+
+
+### 🧹 Chores
+
+* add deadline validation and error modal to task form ([b563e5d](https://github.com/thef4tdaddy/chastityOS/commit/b563e5d3ed35637c1bd64586fa109ac56e9e0149))
+* task feature fully enabled ([7034a56](https://github.com/thef4tdaddy/chastityOS/commit/7034a569208a8cc4379a4fd0e09e80f8c32dfda0))
+
+
+### 🐛 Bug Fixes
+
+* i messed up the files ([11dfffc](https://github.com/thef4tdaddy/chastityOS/commit/11dfffc69ae7d14b3edd5eae9dd5ea06b60a5e74))
+
+## [3.10.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1...v3.10.0-nightly.0) (2025-06-25)
+
+
+### 🐛 Bug Fixes
+
+* (style) changing wording on required chastity timer by kh ([374ab9a](https://github.com/thef4tdaddy/chastityOS/commit/374ab9ac84b4fa05c6d84a5ab72f041732eb3e86))
+* (style) rewards/punishment page coloring ([866725e](https://github.com/thef4tdaddy/chastityOS/commit/866725eb6f1ea76ce70979772bdd67b0d0c80b1b))
+
+
+### ✨ Features
+
+* adding task list to the main nav ([cb65806](https://github.com/thef4tdaddy/chastityOS/commit/cb658067341e8fb7b6912cf799a932b91307e16c))
+* implement keyholder dashboard with task management and approval features (wip) ([60ccfac](https://github.com/thef4tdaddy/chastityOS/commit/60ccfacf324df8ba059562e2164cfb38b48de1f6))
+
 ### [3.9.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0...v3.9.1) (2025-06-22)
 
 

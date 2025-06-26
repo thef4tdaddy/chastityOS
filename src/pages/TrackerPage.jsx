@@ -1,7 +1,7 @@
 // src/pages/TrackerPage.jsx
 import React from 'react';
 import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
-import { formatTime, formatElapsedTime } from '../utils';
+import { formatTime, formatElapsedTime, formatDaysOnly } from '../utils';
 import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
 import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component
 
@@ -26,6 +26,7 @@ const TrackerPage = (props) => {
         handleDiscardAndStartNew,
         loadedSessionData,
         keyholderName,
+        savedSubmissivesName,
         requiredKeyholderDurationSeconds,
         isGoalActive,
         isHardcoreGoal,
@@ -110,11 +111,11 @@ const TrackerPage = (props) => {
                     <p className={`text-sm font-semibold ${
                         isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds ? 'text-pink-200' : 'text-purple-200'
                     }`}>
-                        {keyholderName}'s Required Duration: {formatElapsedTime(requiredKeyholderDurationSeconds)}
+                        {keyholderName} requires {savedSubmissivesName || 'the submissive'} to be in chastity for {formatDaysOnly(requiredKeyholderDurationSeconds)}
                     </p>
                     {isCageOn && effectiveTimeInChastityForGoal < requiredKeyholderDurationSeconds && (
                         <p className="text-lg font-bold text-purple-100">
-                            Time left for KH: {formatElapsedTime(requiredKeyholderDurationSeconds - effectiveTimeInChastityForGoal)}
+                            Time Left in required chastity: {formatElapsedTime(requiredKeyholderDurationSeconds - effectiveTimeInChastityForGoal)}
                         </p>
                     )}
                     {isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds && (
