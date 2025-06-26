@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.10.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0-nightly.0...v3.10.0-nightly.1) (2025-06-26)
+
+
+### 🧹 Chores
+
+* add deadline validation and error modal to task form ([b563e5d](https://github.com/thef4tdaddy/chastityOS/commit/b563e5d3ed35637c1bd64586fa109ac56e9e0149))
+* task feature fully enabled ([7034a56](https://github.com/thef4tdaddy/chastityOS/commit/7034a569208a8cc4379a4fd0e09e80f8c32dfda0))
+
+
+### 🐛 Bug Fixes
+
+* i messed up the files ([11dfffc](https://github.com/thef4tdaddy/chastityOS/commit/11dfffc69ae7d14b3edd5eae9dd5ea06b60a5e74))
+
 ## [3.10.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1...v3.10.0-nightly.0) (2025-06-25)
 
 
