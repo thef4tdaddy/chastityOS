@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
@@ -29,10 +30,6 @@ export const useChastityState = () => {
     userId, isAuthReady, userEmail: googleEmail, settings: settings,
     session: sessionState, events: eventLogState.events, tasks: tasksState.tasks,
   });
-
-  useEffect(() => {
-    console.log("[DEBUG] useChastityState: The `tasksState` object contains:", tasksState);
-  }, [tasksState]);
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
@@ -76,23 +73,26 @@ export const useChastityState = () => {
     setKeyholderMessage('');
   }, []);
 
+  // This is the key change: passing tasksState.tasks into the hook
   const keyholderHandlers = useKeyholderHandlers({
     userId,
+    tasks: tasksState.tasks, // Pass the tasks array
     addTask: tasksState.addTask,
     updateTask: tasksState.updateTask,
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
 
-  // --- Submissive Action Handlers ---
-  const handleSubmitForReview = useCallback(async (taskId) => {
+  const handleSubmitForReview = useCallback(async (taskId, note) => {
     if (!tasksState.updateTask) {
       console.error("updateTask function is not available.");
       return;
     }
-    await tasksState.updateTask(taskId, { status: 'pending_approval' });
-    // --- THIS IS THE FIX ---
-    // The dependency array now correctly includes `tasksState`.
+    await tasksState.updateTask(taskId, {
+      status: 'pending_approval',
+      submissiveNote: note,
+      submittedAt: serverTimestamp()
+    });
   }, [tasksState]);
 
   return {

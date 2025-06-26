@@ -22,21 +22,33 @@ export function useTasks(userId, isAuthReady) {
     if (!tasksCollectionRef) return;
 
     setIsLoading(true);
-    // DEBUG: Log the exact path we are querying
-    console.log(`[DEBUG] Setting up listener for tasks at: /users/${userId}/tasks`);
-
     const q = query(tasksCollectionRef);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const tasksData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      // DEBUG: Log the raw data coming from Firestore
-      console.log("[DEBUG] useTasks: Snapshot received. Raw data:", tasksData);
+      // --- THIS IS THE FIX ---
+      // When mapping the data, check for a 'deadline' field.
+      // If it exists and is a Firestore Timestamp, convert it with .toDate()
+      const tasksData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          deadline: data.deadline && typeof data.deadline.toDate === 'function' 
+            ? data.deadline.toDate() 
+            : null,
+          createdAt: data.createdAt && typeof data.createdAt.toDate === 'function'
+            ? data.createdAt.toDate()
+            : null,
+          submittedAt: data.submittedAt && typeof data.submittedAt.toDate === 'function'
+            ? data.submittedAt.toDate()
+            : null
+        };
+      });
       
       setTasks(tasksData);
       setIsLoading(false);
     }, (error) => {
-      console.error("[DEBUG] useTasks: Error fetching tasks snapshot:", error);
+      console.error("Error fetching tasks:", error);
       setIsLoading(false);
     });
 
@@ -45,16 +57,11 @@ export function useTasks(userId, isAuthReady) {
 
   const addTask = useCallback(async (taskData) => {
     const tasksCollectionRef = getTasksCollectionRef();
-    if (!tasksCollectionRef) {
-      console.error("[Debug] addTask failed: No collection reference available.");
-      return;
-    }
-    console.log("[Debug] Attempting to add task:", taskData);
+    if (!tasksCollectionRef) return;
     try {
-      const docRef = await addDoc(tasksCollectionRef, taskData);
-      console.log("[Debug] Task added successfully with ID:", docRef.id);
+      await addDoc(tasksCollectionRef, taskData);
     } catch (error) {
-      console.error("[Debug] Error adding task to Firestore:", error);
+      console.error("Error adding task to Firestore:", error);
     }
   }, [getTasksCollectionRef]);
 
