@@ -22,33 +22,32 @@ export const useChastityState = () => {
   const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
   
-  // This hook returns a flat object of state values
   const sessionState = useChastitySession(
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
   );
   
+  // FIX: Destructure tasksState to isolate the `tasks` array from the other properties.
   const tasksState = useTasks(userId, isAuthReady);
+  const { tasks, ...otherTaskState } = tasksState;
   
-  // FIX: Manually assemble the `session` object that other hooks expect,
-  // using the flat data returned from the new `useChastitySession` hook.
   const sessionObjectForHooks = {
       isChastityOn: sessionState.isCageOn,
       chastityStartTimestamp: sessionState.cageOnTime,
       requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
-      // Add any other session-related fields here if other hooks need them
   };
 
   const personalGoalState = usePersonalGoal({
     userId,
     settings,
     setSettings,
-    session: sessionObjectForHooks, // Pass the correctly assembled object
+    session: sessionObjectForHooks,
   });
 
   const dataManagementState = useDataManagement({
     userId, isAuthReady, userEmail: googleEmail, settings: settings,
-    session: sessionObjectForHooks, // Pass the same object here
-    events: eventLogState.events, tasks: tasksState.tasks,
+    session: sessionObjectForHooks,
+    events: eventLogState.sexualEventsLog, // Corrected property name
+    tasks: tasks, // Pass the isolated tasks array
   });
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
@@ -95,9 +94,10 @@ export const useChastityState = () => {
 
   const keyholderHandlers = useKeyholderHandlers({
     userId,
-    tasks: tasksState.tasks,
+    tasks: tasks, // Pass the isolated tasks array
     addTask: tasksState.addTask,
     updateTask: tasksState.updateTask,
+    deleteTask: tasksState.deleteTask, // Pass the delete function
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
@@ -117,7 +117,7 @@ export const useChastityState = () => {
   useEffect(() => {
     const checkOverdueTasks = () => {
       const now = new Date();
-      const pendingTasks = tasksState.tasks.filter(t => t.status === 'pending' && t.deadline);
+      const pendingTasks = tasks.filter(t => t.status === 'pending' && t.deadline);
 
       for (const task of pendingTasks) {
         if (now > task.deadline) {
@@ -128,13 +128,16 @@ export const useChastityState = () => {
     };
     const intervalId = setInterval(checkOverdueTasks, 30000);
     return () => clearInterval(intervalId);
-  }, [tasksState.tasks, handleSubmitForReview]);
+  }, [tasks, handleSubmitForReview]);
 
+  // FIX: Assemble the final returned object more explicitly
+  // to prevent accidental property overwrites.
   return {
     ...authState,
     ...settingsState,
     ...eventLogState,
     ...sessionState,
+    ...otherTaskState, // Spread the other functions from useTasks
     ...personalGoalState,
     ...dataManagementState,
     ...keyholderHandlers,
@@ -146,5 +149,6 @@ export const useChastityState = () => {
     lockKeyholderControls,
     handleSubmitForReview,
     keyholderName: settings.keyholderName,
+    tasks: tasks, // Explicitly include the `tasks` array
   };
 };
