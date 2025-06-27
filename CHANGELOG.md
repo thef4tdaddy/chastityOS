@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.10.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.0) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* personal goal was not working, but then also made it so personal goal cannot be added while keyholder duration is active ([5545b36](https://github.com/thef4tdaddy/chastityOS/commit/5545b364d2a604402b421aafd43ae919a4c3d8cd))
+* tasks wasnt posting into taskpage ([3775890](https://github.com/thef4tdaddy/chastityOS/commit/3775890ef0d5bb6ff5ecd599e8f5bf3c513993d7))
+
 ## [3.10.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0-nightly.1...v3.10.0) (2025-06-26)
 
 
