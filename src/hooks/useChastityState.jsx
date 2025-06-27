@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'; // Re-added useEffect
+import { useState, useCallback, useEffect } from 'react';
 import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
@@ -10,7 +10,7 @@ import { useDataManagement } from './useDataManagement';
 import { db } from '../firebase';
 import { collection } from 'firebase/firestore';
 import { useKeyholderHandlers } from './chastity/keyholderHandlers';
-import { generateSecureHash } from '../utils/hash';
+import { sha256 } from '../utils/hash';
 
 export const useChastityState = () => {
   const authState = useAuth();
@@ -21,14 +21,34 @@ export const useChastityState = () => {
 
   const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
+  
+  // This hook returns a flat object of state values
   const sessionState = useChastitySession(
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
   );
+  
   const tasksState = useTasks(userId, isAuthReady);
-  const personalGoalState = usePersonalGoal({ userId, isAuthReady, settings: settings });
+  
+  // FIX: Manually assemble the `session` object that other hooks expect,
+  // using the flat data returned from the new `useChastitySession` hook.
+  const sessionObjectForHooks = {
+      isChastityOn: sessionState.isCageOn,
+      chastityStartTimestamp: sessionState.cageOnTime,
+      requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
+      // Add any other session-related fields here if other hooks need them
+  };
+
+  const personalGoalState = usePersonalGoal({
+    userId,
+    settings,
+    setSettings,
+    session: sessionObjectForHooks, // Pass the correctly assembled object
+  });
+
   const dataManagementState = useDataManagement({
     userId, isAuthReady, userEmail: googleEmail, settings: settings,
-    session: sessionState, events: eventLogState.events, tasks: tasksState.tasks,
+    session: sessionObjectForHooks, // Pass the same object here
+    events: eventLogState.events, tasks: tasksState.tasks,
   });
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
@@ -38,7 +58,7 @@ export const useChastityState = () => {
 
   const handleSetKeyholderName = useCallback(async (name) => {
     const tempPassword = generateTempPassword();
-    const hash = await generateSecureHash(tempPassword);
+    const hash = await sha256(tempPassword);
     setSettings(prev => ({ ...prev, keyholderName: name, keyholderPasswordHash: hash }));
     setKeyholderMessage(`Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`);
   }, [setSettings]);
@@ -49,7 +69,7 @@ export const useChastityState = () => {
       setKeyholderMessage("Error: No keyholder password is set in the database.");
       return;
     }
-    const attemptHash = await generateSecureHash(passwordAttempt);
+    const attemptHash = await sha256(passwordAttempt);
     if (attemptHash === storedHash) {
       setIsKeyholderModeUnlocked(true);
       setKeyholderMessage('Controls are now unlocked.');
@@ -63,7 +83,7 @@ export const useChastityState = () => {
       setKeyholderMessage("Password must be at least 6 characters long.");
       return;
     }
-    const newHash = await generateSecureHash(newPassword);
+    const newHash = await sha256(newPassword);
     setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
     setKeyholderMessage("Permanent password has been updated successfully!");
   }, [setSettings]);
@@ -94,7 +114,6 @@ export const useChastityState = () => {
     });
   }, [tasksState]);
 
-  // --- NEW: Effect for auto-submitting overdue tasks ---
   useEffect(() => {
     const checkOverdueTasks = () => {
       const now = new Date();
@@ -107,11 +126,7 @@ export const useChastityState = () => {
         }
       }
     };
-
-    // Check for overdue tasks every 30 seconds
     const intervalId = setInterval(checkOverdueTasks, 30000);
-
-    // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, [tasksState.tasks, handleSubmitForReview]);
 
@@ -120,7 +135,6 @@ export const useChastityState = () => {
     ...settingsState,
     ...eventLogState,
     ...sessionState,
-    ...tasksState,
     ...personalGoalState,
     ...dataManagementState,
     ...keyholderHandlers,
