@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.10.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.2...v3.10.3) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* fixed random package.json error preventing build ([a830a72](https://github.com/thef4tdaddy/chastityOS/commit/a830a72cc00e0d06fd6360943b2adcc9bc6e5b40))
+
+
+### 🧹 Chores
+
+* **release:** 3.10.2 ([a72e17a](https://github.com/thef4tdaddy/chastityOS/commit/a72e17ab41e6399a83878a70aef07615fddb6a22))
+
 ### [3.10.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.10.2) (2025-06-27)
 
 
