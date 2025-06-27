@@ -1,34 +1,27 @@
-// src/utils/hash.js
-
 /**
- * Hashes a string using the SHA-256 algorithm.
- * This is a one-way process.
- * @param {string} input The string to hash.
- * @returns {Promise<string>} The resulting hash as a hexadecimal string.
+ * Generates a SHA-256 hash of a given string.
+ * @param {string} string - The input string to hash.
+ * @returns {Promise<string>} The SHA-256 hash as a hex string.
  */
-export async function generateSecureHash(input) {
-  // Ensure the input is a string
-  const stringInput = String(input);
-  // Encode the string into a buffer of bytes
-  const textAsBuffer = new TextEncoder().encode(stringInput);
-  // Use the browser's built-in crypto library to perform the hash
-  const hashBuffer = await window.crypto.subtle.digest('SHA-256', textAsBuffer);
-  // Convert the buffer into an array of bytes
+export async function sha256(string) {
+  const utf8 = new TextEncoder().encode(string);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  // Convert each byte to a 2-character hexadecimal string and join them
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const hashHex = hashArray
+    .map((bytes) => bytes.toString(16).padStart(2, '0'))
+    .join('');
   return hashHex;
 }
 
 /**
- * Compares a raw input string with a stored SHA-256 hash to see if they match.
- * @param {string} input The raw string to check (e.g., the backup code entered by the user).
- * @param {string} hash The stored hash to compare against.
- * @returns {Promise<boolean>} True if the input hashes to the same value, false otherwise.
+ * Generates a 6-character, easy-to-read backup code.
+ * @returns {string} The generated backup code.
  */
-export async function verifyHash(input, hash) {
-  // Hash the raw input string using the same method
-  const inputHash = await generateSecureHash(input);
-  // Compare the newly generated hash with the stored hash
-  return inputHash === hash;
+export function generateBackupCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }

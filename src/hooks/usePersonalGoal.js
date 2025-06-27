@@ -1,63 +1,135 @@
-import { useState, useEffect, useCallback } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { useState, useCallback } from 'react';
+import { sha256, generateBackupCode } from '../utils/hash';
+import { logEvent } from '../utils/logging';
+import { eventTypes } from '../utils/eventTypes';
 
-export function usePersonalGoal({ userId, isAuthReady, settings }) {
-  // Add a default empty object to prevent crash on initial render
-  const { goal, goalAchieved } = settings || {};
+/**
+ * Manages the state and logic for the user's personal chastity goal.
+ * @param {object} props - The props for the hook.
+ * @param {string} props.userId - The ID of the current user.
+ * @param {object} props.settings - The user's current settings object.
+ * @param {function} props.setSettings - The function to update the user's settings.
+ * @param {object} props.session - The user's current session object.
+ */
+export const usePersonalGoal = ({ userId, settings, setSettings, session }) => {
+  const [goalDuration, setGoalDuration] = useState(7);
+  const [isSelfLocking, setIsSelfLocking] = useState(false);
+  const [selfLockCodeInput, setSelfLockCodeInput] = useState('');
+  const [generatedBackupCode, setGeneratedBackupCode] = useState(null);
+  const [goalError, setGoalError] = useState(null);
 
-  const [personalGoal, setPersonalGoal] = useState(goal || '');
-  const [isGoalAchieved, setIsGoalAchieved] = useState(goalAchieved || false);
-  const [backupCode, setBackupCode] = useState('');
-
-  useEffect(() => {
-    if (settings) {
-      setPersonalGoal(settings.goal || '');
-      setIsGoalAchieved(settings.goalAchieved || false);
-    }
-  }, [settings]);
+  // Check if a Keyholder lock is active by seeing if a required duration is set.
+  const isKhLocked = session?.requiredKeyholderDurationSeconds > 0;
 
   const handleSetPersonalGoal = useCallback(async () => {
-    if (!isAuthReady || !userId || !personalGoal) return;
-    try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { 'settings.goal': personalGoal });
-    } catch (error) {
-      console.error("Error setting personal goal:", error);
+    // Prevent setting a goal if a KH lock is active.
+    if (isKhLocked) {
+      setGoalError('Personal goals are disabled while a Keyholder lock is active.');
+      return;
     }
-  }, [isAuthReady, userId, personalGoal]);
 
-  const handleCompleteGoal = useCallback(async () => {
-    if (!isAuthReady || !userId) return;
-    try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { 'settings.goalAchieved': true });
-      setIsGoalAchieved(true);
-    } catch (error) {
-      console.error("Error completing goal:", error);
+    setGoalError(null);
+    if (!userId) {
+      setGoalError('User not authenticated.');
+      return;
     }
-  }, [isAuthReady, userId]);
+    if (!goalDuration || goalDuration <= 0) {
+      setGoalError('Please enter a valid duration for the goal.');
+      return;
+    }
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + parseInt(goalDuration, 10));
 
-  const handleResetGoal = useCallback(async () => {
-    if (!isAuthReady || !userId) return;
-    try {
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { 'settings.goal': '', 'settings.goalAchieved': false });
-      setPersonalGoal('');
-      setIsGoalAchieved(false);
-    } catch (error) {
-      console.error("Error resetting goal:", error);
+    let backupCodeHash = null;
+    let hashedSelfLockCode = null;
+
+    if (isSelfLocking) {
+      const backupCode = generateBackupCode();
+      backupCodeHash = await sha256(backupCode);
+      setGeneratedBackupCode(backupCode);
+      if (selfLockCodeInput) {
+        hashedSelfLockCode = await sha256(selfLockCodeInput);
+      }
     }
-  }, [isAuthReady, userId]);
+
+    setSettings(prev => ({
+      ...prev,
+      isGoalActive: true,
+      isGoalCompleted: false,
+      goalDuration: parseInt(goalDuration, 10),
+      goalEndDate: endDate.toISOString(),
+      isHardcoreGoal: isSelfLocking,
+      goalBackupCodeHash: backupCodeHash,
+      hashedSelfLockCode: hashedSelfLockCode,
+      revealedSelfLockCode: null,
+    }));
+
+    logEvent(userId, eventTypes.PERSONAL_GOAL_SET.type, { duration: goalDuration, isHardcore: isSelfLocking });
+  }, [userId, goalDuration, isSelfLocking, selfLockCodeInput, setSettings, isKhLocked]);
+
+  const handleClearPersonalGoal = useCallback(async (backupCode = '') => {
+    // Prevent clearing a goal if a KH lock is active.
+    if (isKhLocked) {
+      setGoalError('Personal goals are disabled while a Keyholder lock is active.');
+      return;
+    }
+    
+    setGoalError(null);
+    if (!userId) {
+      setGoalError('User not authenticated.');
+      return;
+    }
+
+    const isHardcore = settings?.isHardcoreGoal;
+    const storedBackupHash = settings?.goalBackupCodeHash;
+    const isCompleted = settings?.isGoalCompleted;
+
+    if (isHardcore && !isCompleted) {
+      if (!backupCode) {
+        const msg = 'This is a hardcore goal. A backup code is required to unlock early.';
+        setGoalError(msg);
+        return;
+      }
+      const inputBackupCodeHash = await sha256(backupCode);
+      if (inputBackupCodeHash !== storedBackupHash) {
+        const msg = 'Incorrect backup code.';
+        setGoalError(msg);
+        return;
+      }
+    }
+
+    setSettings(prev => ({
+      ...prev,
+      isGoalActive: false,
+      isGoalCompleted: false,
+      goalDuration: 0,
+      goalEndDate: null,
+      isHardcoreGoal: false,
+      goalBackupCodeHash: null,
+      hashedSelfLockCode: null,
+      revealedSelfLockCode: null,
+    }));
+
+    logEvent(userId, eventTypes.PERSONAL_GOAL_REMOVED.type, { wasCompleted: isCompleted });
+  }, [userId, settings, setSettings, isKhLocked]);
 
   return {
-    personalGoal,
-    setPersonalGoal,
-    isGoalAchieved,
-    backupCode,
-    setBackupCode,
+    goalDuration,
+    setGoalDuration,
+    isSelfLocking,
+    setIsSelfLocking,
+    selfLockCodeInput,
+    setSelfLockCodeInput,
     handleSetPersonalGoal,
-    handleCompleteGoal,
-    handleResetGoal,
+    handleClearPersonalGoal,
+    generatedBackupCode,
+    setGeneratedBackupCode,
+    goalError,
+    isGoalActive: settings?.isGoalActive,
+    isGoalCompleted: settings?.isGoalCompleted,
+    isHardcoreGoal: settings?.isHardcoreGoal,
+    goalEndDate: settings?.goalEndDate,
+    revealedSelfLockCode: settings?.revealedSelfLockCode,
+    isKhLocked, // Export the lock status for the UI to use.
   };
-}
+};
