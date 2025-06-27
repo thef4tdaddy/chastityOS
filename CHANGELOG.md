@@ -2,7 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<<<<<<< HEAD
+### [3.10.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.10.2) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* Merge nightly branch into main for release ([8c3de09](https://github.com/thef4tdaddy/chastityOS/commit/8c3de0919554652a2e680814bcb39882f4d87ca6))
+
+### [3.10.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.0...v3.10.1) (2025-06-27)
+
+
+### 🧹 Chores
+
+* **release:** 3.10.1 ([0c6a77c](https://github.com/thef4tdaddy/chastityOS/commit/0c6a77c49e38c9eac6a8c5abf78628c53d53f1d0))
+
+### [3.10.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.0) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* tasks wasnt posting into taskpage ([3775890](https://github.com/thef4tdaddy/chastityOS/commit/3775890ef0d5bb6ff5ecd599e8f5bf3c513993d7))
+
+
+### 🧹 Chores
+
+* **release:** 3.10.1-nightly.0 ([72a4455](https://github.com/thef4tdaddy/chastityOS/commit/72a4455892e2693bf05726e98b7d0b6634c80299))
+
 ### [3.10.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.0...v3.10.1) (2025-06-27)
 =======
 ### [3.10.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.1) (2025-06-27)
