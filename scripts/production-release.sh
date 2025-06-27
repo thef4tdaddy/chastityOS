@@ -7,7 +7,7 @@ set -e
 
 # --- Configuration ---
 # The path to your stable release cleanup script.
-CLEANUP_SCRIPT="./scripts/cleanup-stable.sh"
+CLEANUP_SCRIPT="./scripts/cleanup-stable-patches.sh"
 
 # --- Main Logic ---
 echo "🚀 This script will guide you through creating a new release."
