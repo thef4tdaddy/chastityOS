@@ -47,7 +47,9 @@ export const useSettings = (userId, isAuthReady) => {
                 setGoalDurationSeconds(data.goalDurationSeconds !== undefined ? data.goalDurationSeconds : null);
                 setRewards(data.rewards || []);
                 setPunishments(data.punishments || []);
-                setIsTrackingAllowed(data.isTrackingAllowed !== undefined ? data.isTrackingAllowed : true);
+                setIsTrackingAllowed(
+                    data.isTrackingAllowed !== undefined ? data.isTrackingAllowed : true
+                );
                 setEventDisplayMode(data.eventDisplayMode || 'kinky');
             }
         });
@@ -162,13 +164,18 @@ export const useSettings = (userId, isAuthReady) => {
         const newRequired = (requiredKeyholderDurationSeconds || 0) + (timeSeconds > 0 ? timeSeconds : 0);
         await saveSettingsToFirestore({ punishments: updatedPunishments, requiredKeyholderDurationSeconds: newRequired });
     }, [punishments, requiredKeyholderDurationSeconds, saveSettingsToFirestore]);
-    
+
     // *** RESTORED THIS HANDLER ***
     const handleSetEventDisplayMode = useCallback(async (mode) => {
         if (mode === 'kinky' || mode === 'vanilla') {
             setEventDisplayMode(mode);
             await saveSettingsToFirestore({ eventDisplayMode: mode });
         }
+    }, [saveSettingsToFirestore]);
+
+    const handleSetTrackingAllowed = useCallback(async (allowed) => {
+        setIsTrackingAllowed(allowed);
+        await saveSettingsToFirestore({ isTrackingAllowed: allowed });
     }, [saveSettingsToFirestore]);
 
     return {
@@ -195,6 +202,7 @@ export const useSettings = (userId, isAuthReady) => {
         handleAddReward,
         handleAddPunishment,
         handleSetEventDisplayMode, // Expose the restored handler
-        saveSettingsToFirestore 
+        handleSetTrackingAllowed,
+        saveSettingsToFirestore
     };
 };
