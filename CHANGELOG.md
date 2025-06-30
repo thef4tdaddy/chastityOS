@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.0...v3.11.0-nightly.1) (2025-06-30)
+
+
+### 🔧 Refactoring
+
+* clean up manifest.json by removing unused icons and updating screenshot references ([ebf1691](https://github.com/thef4tdaddy/chastityOS/commit/ebf169136cc96ce530eb97931dbcd9481efccd06))
+
 ## [3.11.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.11.0-nightly.0) (2025-06-30)
 
 
