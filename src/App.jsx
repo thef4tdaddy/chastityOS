@@ -7,6 +7,7 @@ import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
 import UpdatePrompt from './components/UpdatePrompt';
 import EulaModal from './components/EulaModal';
+import HowToModal from './components/HowToModal';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -22,6 +23,7 @@ const TasksPage = lazy(() => import('./pages/TasksPage'));
 const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
     const [showEulaModal, setShowEulaModal] = useState(false);
+    const [showHowToModal, setShowHowToModal] = useState(false);
     
     // chastityOS now contains everything, including task data and handlers
     const chastityOS = useChastityState();
@@ -90,9 +92,15 @@ const App = () => {
                     {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
                 </Suspense>
             </div>
-            <FooterNav userId={userId} googleEmail={googleEmail} onShowEula={() => setShowEulaModal(true)} />
+            <FooterNav
+              userId={userId}
+              googleEmail={googleEmail}
+              onShowEula={() => setShowEulaModal(true)}
+              onShowHowTo={() => setShowHowToModal(true)}
+            />
 
             <EulaModal isOpen={showEulaModal} onClose={() => setShowEulaModal(false)} />
+            <HowToModal isOpen={showHowToModal} onClose={() => setShowHowToModal(false)} />
         </div>
     );
 };
