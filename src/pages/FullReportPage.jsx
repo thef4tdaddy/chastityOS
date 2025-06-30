@@ -4,10 +4,12 @@ import CurrentStatusSection from '../components/full_report/CurrentStatusSection
 import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
 import EventLogTable from '../components/log_event/EventLogTable';
+import ArousalLevelChart from '../components/arousal/ArousalLevelChart';
 
 const FullReportPage = ({
     savedSubmissivesName, userId, isCageOn, cageOnTime, timeInChastity, timeCageOff,
     totalChastityTime, totalTimeCageOff, chastityHistory, sexualEventsLog, isLoadingEvents,
+    arousalLevels,
     isPaused, accumulatedPauseTimeThisSession,
     overallTotalPauseTime,
     keyholderName,
@@ -16,6 +18,8 @@ const FullReportPage = ({
     const effectiveCurrentSessionTime = isCageOn
         ? Math.max(0, timeInChastity - accumulatedPauseTimeThisSession - (isPaused && livePauseDuration ? livePauseDuration : 0))
         : 0;
+
+    const [chartDays, setChartDays] = React.useState(1);
 
     return (
         <div className="app-wrapper">
@@ -44,6 +48,24 @@ const FullReportPage = ({
                 totalTimeCageOff={totalTimeCageOff}
                 overallTotalPauseTime={overallTotalPauseTime}
             />
+            <hr className="section-divider"/>
+
+            <h3 className="section-title">Arousal Level History</h3>
+            <div className="mb-2 text-sm text-left">
+                <label>
+                    Show past
+                    <input
+                        type="number"
+                        value={chartDays}
+                        onChange={e => setChartDays(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                        min="1"
+                        max="30"
+                        className="ml-2 w-16 rounded-md text-black px-1"
+                    />
+                    days
+                </label>
+            </div>
+            <ArousalLevelChart arousalLevels={arousalLevels} days={chartDays} />
             <hr className="section-divider"/>
 
             <h3 className="section-title">Chastity History</h3>
