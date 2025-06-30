@@ -14,6 +14,7 @@ const KeyholderDashboard = ({
   requiredKeyholderDurationSeconds,
   tasks = [],
   keyholderMessage,
+  onManageRules,
   isAuthReady,
   // Destructuring all the specific handlers from props
   handleSetRequiredDuration,
@@ -151,6 +152,7 @@ const KeyholderDashboard = ({
                 <TaskApprovalSection tasks={tasks} onApprove={handleApproveTask} onReject={handleRejectTask} />
                 {/* THE FIX: `onAddTask` now correctly calls `handleAddTask` from props */}
                 <KeyholderAddTaskForm onAddTask={handleAddTask} />
+                <button onClick={onManageRules} className="button-blue !text-blue-300 mt-2">Manage Rules</button>
               </div>
             )}
           </>
