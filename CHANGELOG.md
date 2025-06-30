@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.11.0-nightly.0) (2025-06-30)
+
+
+### ✨ Features
+
+* update PWA configuration and add manifest file ([d46bab0](https://github.com/thef4tdaddy/chastityOS/commit/d46bab0df7d7b103be306d2cb54cd654d7b268fa))
+
 ### [3.10.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.1) (2025-06-27)
 
 
