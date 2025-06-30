@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { formatElapsedTime } from '../../utils';
 import TaskApprovalSection from './TaskApprovalSection';
 import KeyholderAddTaskForm from './KeyholderAddTaskForm';
+import RecurringTasksOverview from '../RecurringTasksOverview';
 
 // This component now uses the specific handlers passed down as props.
 const KeyholderDashboard = ({
@@ -21,7 +22,8 @@ const KeyholderDashboard = ({
   handleAddPunishment,
   handleAddTask,
   handleApproveTask,
-  handleRejectTask
+  handleRejectTask,
+  handleCancelRecurringTask
 }) => {
   const [khNameInput, setKhNameInput] = useState('');
   const [khPasswordInput, setKhPasswordInput] = useState('');
@@ -71,7 +73,6 @@ const KeyholderDashboard = ({
   const onSetKHRequiredDurationAndLock = async () => {
     const days = parseInt(khRequiredDurationDays, 10) || 0;
     const totalSeconds = days * 86400;
-    // THE FIX: Calling the specific handler from props
     await handleSetRequiredDuration(totalSeconds);
     handleLockKeyholderControls();
   };
@@ -83,16 +84,16 @@ const KeyholderDashboard = ({
 
   const handleSimpleReward = async () => {
     const secs = (parseInt(rewardDays, 10) || 0) * 86400;
-    // THE FIX: Calling the specific handler from props
     await handleAddReward({ timeSeconds: secs, other: rewardOther });
-    setRewardDays(''); setRewardOther('');
+    setRewardDays('');
+    setRewardOther('');
   };
 
   const handleSimplePunishment = async () => {
     const secs = (parseInt(punishDays, 10) || 0) * 86400;
-    // THE FIX: Calling the specific handler from props
     await handleAddPunishment({ timeSeconds: secs, other: punishOther });
-    setPunishDays(''); setPunishOther('');
+    setPunishDays('');
+    setPunishOther('');
   };
 
   return (
@@ -147,10 +148,9 @@ const KeyholderDashboard = ({
                   </div>
                 </div>
                 <hr className="my-4 border-purple-700"/>
-                {/* These components now correctly receive their respective handlers */}
                 <TaskApprovalSection tasks={tasks} onApprove={handleApproveTask} onReject={handleRejectTask} />
-                {/* THE FIX: `onAddTask` now correctly calls `handleAddTask` from props */}
                 <KeyholderAddTaskForm onAddTask={handleAddTask} />
+                <RecurringTasksOverview tasks={tasks} onCancel={handleCancelRecurringTask} />
               </div>
             )}
           </>

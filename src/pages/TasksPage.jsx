@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { formatElapsedTime, formatTime } from '../utils';
 import useCountdown from '../hooks/useCountdown';
 import { FaCheckCircle, FaTimesCircle, FaTrophy, FaGavel } from 'react-icons/fa';
+import RecurringTasksOverview from '../components/RecurringTasksOverview';
 
 // Helper component for the countdown display
 const CountdownTimer = ({ deadline }) => {
@@ -18,8 +19,6 @@ const CountdownTimer = ({ deadline }) => {
   );
 };
 
-// --- THIS IS THE FIX ---
-// This component is now fully implemented to use the 'task' prop.
 const ArchivedTaskItem = ({ task }) => {
   const isApproved = task.status === 'approved';
   const consequence = isApproved ? task.reward : task.punishment;
@@ -48,19 +47,27 @@ const ArchivedTaskItem = ({ task }) => {
         </span>
       </div>
 
-      {consequence && consequence.type !== 'none' && (
-        <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs flex items-center gap-2">
-          {isApproved ? <FaTrophy className="text-yellow-400" /> : <FaGavel className="text-orange-400" />}
-          <span className="font-semibold">{isApproved ? 'Reward:' : 'Punishment:'}</span>
-          {consequence.type === 'time' && (
-            <span className="font-mono">{formatElapsedTime(consequence.value)} {isApproved ? 'removed' : 'added'}</span>
-          )}
-          {consequence.type === 'note' && (
-            <span className="italic">{consequence.value}</span>
-          )}
-        </div>
+  {consequence && consequence.type !== 'none' && (
+    <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs flex items-center gap-2">
+      {isApproved ? <FaTrophy className="text-yellow-400" /> : <FaGavel className="text-orange-400" />}
+      <span className="font-semibold">{isApproved ? 'Reward:' : 'Punishment:'}</span>
+      {consequence.type === 'time' && (
+        <span className="font-mono">{formatElapsedTime(consequence.value)} {isApproved ? 'removed' : 'added'}</span>
+      )}
+      {consequence.type === 'note' && (
+        <span className="italic">{consequence.value}</span>
       )}
     </div>
+  )}
+  {task.recurrenceDays > 0 && (
+    <div className="w-full text-left text-xs mt-1 text-blue-300">
+      Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
+      {task.recurrenceEnd && (
+        <> until {formatTime(task.recurrenceEnd, true)}</>
+      )}
+    </div>
+  )}
+</div>
   );
 };
 
@@ -82,6 +89,8 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
     <div className="tasks-container">
       <h3 className="subpage-title mb-4">{pageTitle}</h3>
 
+      <RecurringTasksOverview tasks={tasks} />
+
       <div className="task-list space-y-4">
         {pendingTasks.length > 0 ? (
           pendingTasks.map((task) => (
@@ -93,6 +102,14 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                 <div className="w-full text-left text-sm mt-2 flex justify-between items-center">
                   <span className="text-red-300"><strong>Due:</strong> {formatTime(task.deadline, true)}</span>
                   <CountdownTimer deadline={task.deadline} />
+                </div>
+              )}
+              {task.recurrenceDays > 0 && (
+                <div className="w-full text-left text-xs mt-1 text-blue-300">
+                  Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
+                  {task.recurrenceEnd && (
+                    <> until {formatTime(task.recurrenceEnd, true)}</>
+                  )}
                 </div>
               )}
               <div className="w-full mt-3 flex items-center gap-2">
