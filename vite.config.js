@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
       react(), 
       tailwindcss(),
       VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         // ... your PWA config ...
       }),
       // The Sentry plugin runs in Node.js, so it can use 'env' directly.
