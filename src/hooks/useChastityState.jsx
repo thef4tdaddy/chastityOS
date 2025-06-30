@@ -3,6 +3,7 @@ import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
+import { useArousalLevels } from './useArousalLevels';
 import { useChastitySession } from './useChastitySession';
 import { useTasks } from './useTasks';
 import { usePersonalGoal } from './usePersonalGoal';
@@ -21,6 +22,7 @@ export const useChastityState = () => {
 
   const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
+  const arousalState = useArousalLevels(userId, isAuthReady);
   
   const sessionState = useChastitySession(
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
@@ -137,6 +139,7 @@ export const useChastityState = () => {
     ...settingsState,
     ...eventLogState,
     ...sessionState,
+    ...arousalState,
     ...otherTaskState, // Spread the other functions from useTasks
     ...personalGoalState,
     ...dataManagementState,
