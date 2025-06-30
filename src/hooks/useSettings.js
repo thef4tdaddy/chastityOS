@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/react';
 const defaultSettings = {
   submissivesName: '',
   keyholderName: '',
+  rulesText: '',
   isTrackingAllowed: true,
   eventDisplayMode: 'kinky',
 };

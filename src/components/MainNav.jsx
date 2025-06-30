@@ -8,6 +8,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
     { id: 'fullReport', name: 'Full Report' },
     { id: 'tasks', name: 'Tasks' },
     { id: 'keyholder', name: 'Keyholder' },
+    { id: 'rules', name: 'Rules' },
     { id: 'rewards', name: 'Rewards/Punishments' },
     { id: 'settings', name: 'Profile & Preferences' },
     { id: 'feedback', name: 'Feedback' }
@@ -38,6 +39,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
               tasks: '✅ ',
               keyholder: '🔐 ',
               rewards: '🎁 ',
+              rules: '📜 ',
               settings: '⚙️ ',
               feedback: '💬 ',
             };

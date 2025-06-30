@@ -124,6 +124,7 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
           keyholderPasswordHash: null,
           isTrackingAllowed: true,
           eventDisplayMode: 'kinky',
+          rulesText: '',
         },
         // Reset all session-related fields as well
         requiredKeyholderDurationSeconds: 0,
