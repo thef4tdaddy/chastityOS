@@ -1,3 +1,83 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [3.11.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.1...v3.11.0-nightly.2) (2025-07-01)
+
+
+### 🔧 Refactoring
+
+* clean up recurring tasks comments ([7f78769](https://github.com/thef4tdaddy/chastityOS/commit/7f7876999187babf40d35133f06e51a7575e19ac))
+
+
+### ✨ Features
+
+* add arousal level tracking ([37b255a](https://github.com/thef4tdaddy/chastityOS/commit/37b255a51f560affa8601529ebc2b4f7728fc418))
+* add how-to modal ([5772e52](https://github.com/thef4tdaddy/chastityOS/commit/5772e52fa36d10082bb25b4be5d915b8aeb26793))
+* add rules management ([282cbc5](https://github.com/thef4tdaddy/chastityOS/commit/282cbc5974e4d15e1a9c7916607dc8ed799d5d09))
+* clarify shared account notice ([6ba2ccd](https://github.com/thef4tdaddy/chastityOS/commit/6ba2ccd4cf5ad28a9de099fdcbff37f04aa1ea44))
+
+
+### 🐛 Bug Fixes
+
+* add date-fns dependency required by chartjs-adapter-date-fns ([ba7067e](https://github.com/thef4tdaddy/chastityOS/commit/ba7067e4ac6954b04a7222dc68093c6c99f68717))
+* **events:** store start time edits in sexualEventsLog ([d6fc03b](https://github.com/thef4tdaddy/chastityOS/commit/d6fc03b8f7ce2ba60a2b77f938a12c8c397df48b))
+* **session:** persist cage off timer across reloads ([bba176b](https://github.com/thef4tdaddy/chastityOS/commit/bba176b803c60f0b06419bc954e7e0feb4d8a04f))
+* update script permissions for cleanup-stable-patches.sh ([0bee618](https://github.com/thef4tdaddy/chastityOS/commit/0bee618ee38be37ae35e802d758288044f173bb4))
+
+
+### 🧹 Chores
+
+* downgrade Rollup to v3 to fix Vercel build issue ([76897dc](https://github.com/thef4tdaddy/chastityOS/commit/76897dcde13b2a4f4e2e7435e43c522df34e2763))
+* force clean install on Vercel ([6ea6989](https://github.com/thef4tdaddy/chastityOS/commit/6ea69897559e22c8851048cdc6a2674559048406))
+* log app version ([993f3cc](https://github.com/thef4tdaddy/chastityOS/commit/993f3cc7ff66e20a1d329fe6dbd53ee6cb9c97d7))
+* regenerate lockfile to resolve merge conflict ([bcf9faa](https://github.com/thef4tdaddy/chastityOS/commit/bcf9faa273991b1c4969fb0718a346e733453315))
+* update changelog for version bump ([92465e3](https://github.com/thef4tdaddy/chastityOS/commit/92465e31cb56eb3976d7bfb4d7c5a43233c70937))
+
+### [3.10.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.2...v3.10.3) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* fixed random package.json error preventing build ([a830a72](https://github.com/thef4tdaddy/chastityOS/commit/a830a72cc00e0d06fd6360943b2adcc9bc6e5b40))
+
+
+### 🧹 Chores
+
+* **release:** 3.10.2 ([a72e17a](https://github.com/thef4tdaddy/chastityOS/commit/a72e17ab41e6399a83878a70aef07615fddb6a22))
+* **release:** 3.10.3 ([233697f](https://github.com/thef4tdaddy/chastityOS/commit/233697f0edc1daf76210ae89e87b51d4c8c4ac59))
+
+### [3.10.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.10.2) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* Merge nightly branch into main for release ([8c3de09](https://github.com/thef4tdaddy/chastityOS/commit/8c3de0919554652a2e680814bcb39882f4d87ca6))
+
+
+### 🧹 Chores
+
+* **release:** 3.10.2 ([de0e76c](https://github.com/thef4tdaddy/chastityOS/commit/de0e76c9228d71401c909a8bce0e71a83346b71f))
+
+### [3.10.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.0...v3.10.1) (2025-06-27)
+
+
+### 🧹 Chores
+
+* **release:** 3.10.1 ([0c6a77c](https://github.com/thef4tdaddy/chastityOS/commit/0c6a77c49e38c9eac6a8c5abf78628c53d53f1d0))
+
+### [3.10.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.0) (2025-06-27)
+
+
+### 🐛 Bug Fixes
+
+* tasks wasnt posting into taskpage ([3775890](https://github.com/thef4tdaddy/chastityOS/commit/3775890ef0d5bb6ff5ecd599e8f5bf3c513993d7))
+
+
+### 🧹 Chores
+
+* **release:** 3.10.1-nightly.0 ([72a4455](https://github.com/thef4tdaddy/chastityOS/commit/72a4455892e2693bf05726e98b7d0b6634c80299))
+
 ## [3.12.0-nightly.0] - 2025-07-01
 
 * merging (337d305)
