@@ -3,11 +3,16 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { VitePWA } from 'vite-plugin-pwa';
+import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
 
 export default defineConfig(({ mode }) => {
   // Load variables from the correct .env file for the current mode
   // The third argument ('') ensures all variables are loaded, not just VITE_ prefixed ones.
   const env = loadEnv(mode, process.cwd(), '');
+
+  const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
+  const appVersion = packageJson.version;
 
   let gitHash = 'dev';
   try {
@@ -29,6 +34,7 @@ export default defineConfig(({ mode }) => {
       // We don't need to define VITE_SENTRY_DSN here again if main.jsx is already reading it,
       // but being explicit helps prevent issues.
       'import.meta.env.VITE_SENTRY_DSN': JSON.stringify(env.VITE_SENTRY_DSN),
+      'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
     },
     plugins: [
       react(), 
