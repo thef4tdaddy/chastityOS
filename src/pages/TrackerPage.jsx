@@ -4,6 +4,7 @@ import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
 import { formatTime, formatElapsedTime, formatDaysOnly } from '../utils';
 import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
 import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component
+import { PAUSE_REASON_OPTIONS, REMOVAL_REASON_OPTIONS } from '../event_types.js';
 
 const TrackerPage = (props) => {
     // These props are passed through to the hook or used for other modals
@@ -12,13 +13,14 @@ const TrackerPage = (props) => {
         isCageOn,
         handleToggleCage,
         showReasonModal,
-        reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
+        reasonForRemoval, setReasonForRemoval, removalCustomReason, setRemovalCustomReason,
+        handleConfirmRemoval, handleCancelRemoval,
         isPaused,
         handleInitiatePause,
         handleResumeSession,
         showPauseReasonModal,
         handleCancelPauseModal,
-        reasonForPauseInput, setReasonForPauseInput, handleConfirmPause,
+        pauseReason, setPauseReason, pauseCustomReason, setPauseCustomReason, handleConfirmPause,
         livePauseDuration,
         pauseCooldownMessage,
         showRestoreSessionPrompt,
@@ -200,8 +202,18 @@ const TrackerPage = (props) => {
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-purple-700">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-purple-300">Reason for Cage Removal:</h3>
-                <textarea value={reasonForRemoval} onChange={(e) => setReasonForRemoval(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
-                  className="w-full p-2 mb-6 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                <p className="text-xs text-gray-400 mb-1">(Optional)</p>
+                <select value={reasonForRemoval} onChange={(e) => setReasonForRemoval(e.target.value)}
+                  className="w-full p-2 mb-2 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option value="">Select reason</option>
+                  {REMOVAL_REASON_OPTIONS.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+                {reasonForRemoval === 'Other' && (
+                  <input type="text" value={removalCustomReason} onChange={(e) => setRemovalCustomReason(e.target.value)}
+                    placeholder="Enter other reason" className="w-full p-2 mb-4 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                )}
                 <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
                   <button type="button" onClick={handleConfirmRemoval} className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Removal</button>
                   <button type="button" onClick={handleCancelRemoval} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
@@ -214,8 +226,18 @@ const TrackerPage = (props) => {
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-yellow-700">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">Reason for Pausing Session:</h3>
-                <textarea value={reasonForPauseInput} onChange={(e) => setReasonForPauseInput(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
-                  className="w-full p-2 mb-6 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+                <p className="text-xs text-gray-400 mb-1">(Optional)</p>
+                <select value={pauseReason} onChange={(e) => setPauseReason(e.target.value)}
+                  className="w-full p-2 mb-2 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                  <option value="">Select reason</option>
+                  {PAUSE_REASON_OPTIONS.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+                {pauseReason === 'Other' && (
+                  <input type="text" value={pauseCustomReason} onChange={(e) => setPauseCustomReason(e.target.value)}
+                    placeholder="Enter other reason" className="w-full p-2 mb-4 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                )}
                 <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
                   <button type="button" onClick={handleConfirmPause} className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Pause</button>
                   <button type="button" onClick={handleCancelPauseModal} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
