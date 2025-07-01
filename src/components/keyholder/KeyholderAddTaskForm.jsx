@@ -4,6 +4,8 @@ import { FaPlusCircle, FaExclamationTriangle } from 'react-icons/fa';
 const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
   const [taskText, setTaskText] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [recurrenceDays, setRecurrenceDays] = useState('');
+  const [recurrenceEnd, setRecurrenceEnd] = useState('');
   const [rewardType, setRewardType] = useState('none');
   const [rewardValue, setRewardValue] = useState('');
   const [punishmentType, setPunishmentType] = useState('none');
@@ -29,6 +31,10 @@ const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
     const taskData = {
       text: taskText.trim(),
       deadline: deadline ? new Date(deadline) : null,
+      recurrenceDays: recurrenceDays ? parseInt(recurrenceDays, 10) : 0,
+      recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
+      recurrenceId: recurrenceDays ? crypto.randomUUID() : undefined,
+      recurrenceCancelled: false,
       reward: {
         type: rewardType,
         value: rewardType === 'time' ? Number(rewardValue) * 3600 : rewardValue,
@@ -44,6 +50,8 @@ const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
     // Reset form fields
     setTaskText('');
     setDeadline('');
+    setRecurrenceDays('');
+    setRecurrenceEnd('');
     setRewardType('none');
     setRewardValue('');
     setPunishmentType('none');
@@ -100,6 +108,17 @@ const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
           <div>
             <label htmlFor="task-deadline" className="block text-xs font-medium mb-1">Complete By (Optional)</label>
             <input id="task-deadline" type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="recurrence-days" className="block text-xs font-medium mb-1">Repeat Every (days)</label>
+              <input id="recurrence-days" type="number" min="0" value={recurrenceDays} onChange={(e) => setRecurrenceDays(e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <label htmlFor="recurrence-end" className="block text-xs font-medium mb-1">Repeat Until (Optional)</label>
+              <input id="recurrence-end" type="datetime-local" value={recurrenceEnd} onChange={(e) => setRecurrenceEnd(e.target.value)} className="w-full" />
+            </div>
           </div>
 
           <fieldset className="p-3 border border-blue-800 rounded-md">
