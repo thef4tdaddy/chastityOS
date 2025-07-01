@@ -34,7 +34,9 @@ const TrackerPage = (props) => {
         totalTimeCageOff,
         timeCageOff,
         pauseStartTime,
-        accumulatedPauseTimeThisSession
+        accumulatedPauseTimeThisSession,
+        releaseRequests = [],
+        addReleaseRequest
     } = props;
 
     // Call the new hook to get all the logic and state for this page
@@ -52,6 +54,14 @@ const TrackerPage = (props) => {
         handleAttemptEmergencyUnlock,
         setShowEmergencyUnlockModal,
     } = useTrackerPage(props); // Pass all props from parent to the hook
+
+    const hasPendingReleaseRequest = releaseRequests.some(r => r.status === 'pending');
+
+    const handleBegForRelease = async () => {
+        if (addReleaseRequest) {
+            await addReleaseRequest();
+        }
+    };
 
     if (!isAuthReady) {
         return (
@@ -173,6 +183,11 @@ const TrackerPage = (props) => {
                   <button type="button" onClick={handleOpenUnlockModal} disabled={!isAuthReady || showRestoreSessionPrompt}
                       className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-700 hover:bg-red-800 focus:ring-red-500 flex items-center justify-center">
                      <FaLock className="mr-2"/> Emergency Unlock
+                  </button>
+              ) : requiredKeyholderDurationSeconds > 0 ? (
+                  <button type="button" onClick={handleBegForRelease} disabled={!isAuthReady || hasPendingReleaseRequest || showRestoreSessionPrompt}
+                      className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-500 hover:bg-red-600 focus:ring-red-400">
+                      {hasPendingReleaseRequest ? 'Request Sent' : 'Beg for Release'}
                   </button>
               ) : (
                   <button type="button" onClick={handleToggleCage} disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
