@@ -9,6 +9,8 @@ import { HelmetProvider } from 'react-helmet-async';
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 const environment = import.meta.env.VITE_APP_VARIANT || 'production';
 const sentryProject = import.meta.env.VITE_SENTRY_PROJECT;
+const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
+console.log(`[ChastityOS] Version: ${appVersion}`);
 
 // Only initialize Sentry if a DSN is provided
 if (sentryDsn) {
