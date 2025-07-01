@@ -1,5 +1,6 @@
 // src/pages/FullReportPage.jsx
 import React from 'react';
+import { PAUSE_REASON_OPTIONS } from '../event_types.js';
 import CurrentStatusSection from '../components/full_report/CurrentStatusSection';
 import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
@@ -16,6 +17,20 @@ const FullReportPage = ({
     const effectiveCurrentSessionTime = isCageOn
         ? Math.max(0, timeInChastity - accumulatedPauseTimeThisSession - (isPaused && livePauseDuration ? livePauseDuration : 0))
         : 0;
+
+    const pauseReasonTotals = React.useMemo(() => {
+        const totals = {};
+        chastityHistory.forEach(p => {
+            (p.pauseEvents || []).forEach(ev => {
+if (!ev.duration || !ev.reason) return;
+const category = PAUSE_REASON_OPTIONS.includes(ev.reason)
+  ? ev.reason
+  : 'Other';
+totals[category] = (totals[category] || 0) + ev.duration;
+            });
+        });
+        return totals;
+    }, [chastityHistory]);
 
     return (
         <div className="app-wrapper">
@@ -43,6 +58,7 @@ const FullReportPage = ({
                 totalChastityTime={totalChastityTime}
                 totalTimeCageOff={totalTimeCageOff}
                 overallTotalPauseTime={overallTotalPauseTime}
+                pauseReasonTotals={pauseReasonTotals}
             />
             <hr className="section-divider"/>
 
