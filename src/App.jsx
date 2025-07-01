@@ -19,6 +19,8 @@ const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
 const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const RewardsPunishmentsPage = lazy(() => import('./pages/RewardsPunishmentsPage'));
+const RulesPage = lazy(() => import('./pages/RulesPage'));
+const KeyholderRulesPage = lazy(() => import('./pages/KeyholderRulesPage'));
 const TasksPage = lazy(() => import('./pages/TasksPage'));
 
 const App = () => {
@@ -49,7 +51,7 @@ const App = () => {
         onRegisterError(error) { console.log('SW registration error:', error); },
     });
 
-    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", tasks: "Tasks", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
+    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", rules: "Rules", tasks: "Tasks", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
     const pageTitleText = navItemNames[currentPage] || "ChastityOS";
 
     const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
@@ -83,9 +85,11 @@ const App = () => {
                     {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
                     {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
                     {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+                      {currentPage === 'rules' && <RulesPage {...chastityOS} />}
+                      {currentPage === 'keyholderRules' && <KeyholderRulesPage {...chastityOS} onBack={() => setCurrentPage('keyholder')} />}
                     
                     {/* The KeyholderPage now gets everything it needs, including task handlers */}
-                    {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
+                    {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} setCurrentPage={setCurrentPage} />}
                     
                     {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
                     {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}

@@ -5,8 +5,7 @@ import KeyholderDashboard from '../components/keyholder/KeyholderDashboard';
 // This component now contains logic to automatically re-lock controls
 // when the user navigates away from this page.
 export default function KeyholderPage(props) {
-  const { handleLockKeyholderControls, isKeyholderModeUnlocked } = props;
-
+  const { handleLockKeyholderControls, isKeyholderModeUnlocked, setCurrentPage } = props;
   // This useEffect hook will run when the component is first rendered
   // and will set up a cleanup function to run when it's unmounted.
   useEffect(() => {
@@ -27,7 +26,7 @@ export default function KeyholderPage(props) {
     <div className="container mx-auto p-4">
       {/* 2. UPDATE: Render the KeyholderDashboard component */}
       {/* It continues to pass all props down to the dashboard component */}
-      <KeyholderDashboard {...props} />
+      <KeyholderDashboard {...props} onManageRules={() => setCurrentPage('keyholderRules')} />
     </div>
   );
 }

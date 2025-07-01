@@ -8,6 +8,7 @@ import { useChastitySession } from './useChastitySession';
 import { useTasks } from './useTasks';
 import { usePersonalGoal } from './usePersonalGoal';
 import { useDataManagement } from './useDataManagement';
+import { useRules } from './useRules';
 import { db } from '../firebase';
 import { collection } from 'firebase/firestore';
 import { useKeyholderHandlers } from './chastity/keyholderHandlers';
@@ -56,6 +57,7 @@ export const useChastityState = () => {
     events: eventLogState.sexualEventsLog, // Corrected property name
     tasks: tasks, // Pass the isolated tasks array
   });
+const rulesState = useRules(userId, isAuthReady);
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
@@ -164,6 +166,7 @@ export const useChastityState = () => {
     ...arousalState,
     ...otherTaskState, // Spread the other functions from useTasks
     ...personalGoalState,
+    ...rulesState,
     ...dataManagementState,
     ...keyholderHandlers,
     isKeyholderModeUnlocked,
