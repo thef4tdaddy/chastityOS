@@ -1,114 +1,53 @@
-import React, { useState, Suspense, lazy } from 'react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useChastityState } from './hooks/useChastityState';
-import MainNav from './components/MainNav';
-import FooterNav from './components/FooterNav';
-import HotjarScript from './components/HotjarScript';
-import Header from './components/Header';
-import UpdatePrompt from './components/UpdatePrompt';
-import EulaModal from './components/EulaModal';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import DashboardPage from './pages/DashboardPage';
+import TasksPage from './pages/TasksPage';
+import RewardsPage from './pages/RewardsPage';
+import SettingsPage from './pages/SettingsPage';
+import FullReportPage from './pages/FullReportPage';
+import NotFoundPage from './pages/NotFoundPage';
+import KeyholderDashboard from './pages/KeyholderDashboard';
+import RulesPage from './pages/RulesPage';
+import HowToPage from './pages/HowToPage';
 import WelcomeModal from './components/WelcomeModal';
+import HowToModal from './components/HowToModal';
 import { useWelcome } from './hooks/useWelcome';
 
-const TrackerPage = lazy(() => import('./pages/TrackerPage'));
-const FullReportPage = lazy(() => import('./pages/FullReportPage'));
-const LogEventPage = lazy(() => import('./pages/LogEventPage'));
-const SettingsMainPage = lazy(() => import('./pages/SettingsMainPage'));
-const SettingsDataManagementPage = lazy(() => import('./pages/SettingsDataManagement.jsx'));
-const KeyholderPage = lazy(() => import('./pages/KeyholderPage'));
-const FeedbackForm = lazy(() => import('./pages/FeedbackForm'));
-const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
-const RewardsPunishmentsPage = lazy(() => import('./pages/RewardsPunishmentsPage'));
-const RulesPage = lazy(() => import('./pages/RulesPage'));
-const KeyholderRulesPage = lazy(() => import('./pages/KeyholderRulesPage'));
-const TasksPage = lazy(() => import('./pages/TasksPage'));
+function App() {
+  const { hasAccepted, accept } = useWelcome();
+  const [showEulaModal, setShowEulaModal] = useState(false);
+  const [showHowToModal, setShowHowToModal] = useState(false);
 
-const App = () => {
-    const [currentPage, setCurrentPage] = useState('tracker');
-    const [showEulaModal, setShowEulaModal] = useState(false);
+  return (
+    <Router>
+      <div className="app-wrapper">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/rewards" element={<RewardsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/full-report" element={<FullReportPage />} />
+          <Route path="/keyholder" element={<KeyholderDashboard />} />
+          <Route path="/rules" element={<RulesPage />} />
+          <Route path="/how-to" element={<HowToPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
 
-    // chastityOS contains all state, including task data and handlers
-    const chastityOS = useChastityState();
+        <WelcomeModal
+          isOpen={!hasAccepted}
+          onAccept={accept}
+          onShowLegal={() => setShowEulaModal(true)}
+        />
 
-    const welcomeState = useWelcome(chastityOS.userId, chastityOS.isAuthReady);
-    const { hasAccepted, isLoading: welcomeLoading, accept } = welcomeState;
-    
-    // Destructure everything needed for this component's logic
-    const { 
-      isLoading, 
-      savedSubmissivesName, 
-      keyholderName, 
-      isTrackingAllowed, 
-      userId, 
-      googleEmail 
-    } = chastityOS;
-
-    const {
-        needRefresh: [needRefresh, setNeedRefresh],
-        updateServiceWorker,
-    } = useRegisterSW({
-        onRegistered(r) { console.log('SW Registered:', r); },
-        onRegisterError(error) { console.log('SW registration error:', error); },
-    });
-
-    const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", rules: "Rules", tasks: "Tasks", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };
-    const pageTitleText = navItemNames[currentPage] || "ChastityOS";
-
-    const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
-    const themeClass = isNightly ? 'theme-nightly' : 'theme-prod';
-    
-    if (isLoading || welcomeLoading) {
-      return <div className="loading-fullscreen">Loading...</div>;
-    }
-
-    return (
-        <div className={`${themeClass} min-h-screen flex flex-col items-center justify-center p-4 md:p-8`}>
-            {needRefresh && <UpdatePrompt onUpdate={() => {
-                updateServiceWorker(true);
-                setNeedRefresh(false);
-            }} />}
-            <HotjarScript isTrackingAllowed={isTrackingAllowed} />
-            <Header />
-            <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">
-                {savedSubmissivesName && <p className="app-subtitle">Tracking <span className="font-semibold">{savedSubmissivesName}'s</span> Journey</p>}
-                
-                {keyholderName && (
-                  <p className="text-sm text-red-300 -mt-2 mb-3">
-                    under <span className="font-semibold">{keyholderName}'s</span> control
-                  </p>
-                )}
-
-                <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
-                <h2 className="subpage-title no-border">{pageTitleText}</h2>
-                <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
-                    {/* All pages now receive the entire chastityOS state object */}
-                    {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
-                    {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
-                    {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
-                      {currentPage === 'rules' && <RulesPage {...chastityOS} />}
-                      {currentPage === 'keyholderRules' && <KeyholderRulesPage {...chastityOS} onBack={() => setCurrentPage('keyholder')} />}
-                    
-                    {/* The KeyholderPage now gets everything it needs, including task handlers */}
-                    {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-                    
-                    {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
-                    {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
-                    {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-                    {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
-                    {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
-                    {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
-                </Suspense>
-            </div>
-            <FooterNav userId={userId} googleEmail={googleEmail} onShowEula={() => setShowEulaModal(true)} />
-
-            <EulaModal isOpen={showEulaModal} onClose={() => setShowEulaModal(false)} />
-            <WelcomeModal
-              isOpen={!hasAccepted}
-              onAccept={accept}
-              onShowLegal={() => setShowEulaModal(true)}
-            />
-        </div>
-    );
-};
+        <HowToModal
+          isOpen={showHowToModal}
+          onClose={() => setShowHowToModal(false)}
+        />
+      </div>
+    </Router>
+  );
+}
 
 export default App;
