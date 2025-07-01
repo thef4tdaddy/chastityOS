@@ -21,7 +21,10 @@ const KeyholderDashboard = ({
   handleAddPunishment,
   handleAddTask,
   handleApproveTask,
-  handleRejectTask
+  handleRejectTask,
+  releaseRequests = [],
+  handleGrantReleaseRequest,
+  handleDenyReleaseRequest
 }) => {
   const [khNameInput, setKhNameInput] = useState('');
   const [khPasswordInput, setKhPasswordInput] = useState('');
@@ -151,6 +154,21 @@ const KeyholderDashboard = ({
                 <TaskApprovalSection tasks={tasks} onApprove={handleApproveTask} onReject={handleRejectTask} />
                 {/* THE FIX: `onAddTask` now correctly calls `handleAddTask` from props */}
                 <KeyholderAddTaskForm onAddTask={handleAddTask} />
+
+                {releaseRequests.filter(r => r.status === 'pending').length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <h4 className="title-purple !text-purple-300">Release Requests</h4>
+                    {releaseRequests.filter(r => r.status === 'pending').map(req => (
+                      <div key={req.id} className="flex justify-between items-center p-2 border border-purple-700 rounded-md">
+                        <span className="text-sm">{req.submittedAt ? req.submittedAt.toLocaleString() : ''}</span>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleGrantReleaseRequest(req.id)} className="button-green !text-green-300 px-2">Grant</button>
+                          <button onClick={() => handleDenyReleaseRequest(req.id)} className="button-red !text-red-300 px-2">Deny</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>
