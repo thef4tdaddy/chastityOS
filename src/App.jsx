@@ -40,6 +40,7 @@ function App() {
           isOpen={!hasAccepted}
           onAccept={accept}
           onShowLegal={() => setShowEulaModal(true)}
+          onShowHowTo={() => setShowHowToModal(true)}
         />
 
         <HowToModal
