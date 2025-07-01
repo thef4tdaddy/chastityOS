@@ -18,3 +18,18 @@ export const EVENT_TYPE_DEFINITIONS = [
     // "Session Edit" is logged programmatically and is not a user option
     { name: "Session Edit", mode: 'vanilla', userSelectable: false }
 ];
+
+// --- New categorized reasons ---
+export const REMOVAL_REASON_OPTIONS = [
+    'Orgasm',
+    'Medical',
+    'Travel',
+    'Other'
+];
+
+export const PAUSE_REASON_OPTIONS = [
+    'Cleaning',
+    'Medical',
+    'Exercise',
+    'Other'
+];

@@ -20,7 +20,7 @@ export const useChastitySession = (
     const [totalTimeCageOff, setTotalTimeCageOff] = useState(0);
     const [overallTotalPauseTime, setOverallTotalPauseTime] = useState(0);
     const [showReasonModal, setShowReasonModal] = useState(false);
-    const [reasonForRemoval, setReasonForRemoval] = useState('');
+    const [reasonForRemoval, setReasonForRemoval] = useState(''); // stores selected removal category
     const [tempEndTime, setTempEndTime] = useState(null);
     const [tempStartTime, setTempStartTime] = useState(null);
     const [showRestoreSessionPrompt, setShowRestoreSessionPrompt] = useState(false);
@@ -37,7 +37,7 @@ export const useChastitySession = (
     const [pauseStartTime, setPauseStartTime] = useState(null);
     const [accumulatedPauseTimeThisSession, setAccumulatedPauseTimeThisSession] = useState(0);
     const [showPauseReasonModal, setShowPauseReasonModal] = useState(false);
-    const [reasonForPauseInput, setReasonForPauseInput] = useState('');
+    const [pauseReason, setPauseReason] = useState(''); // stores selected pause category
     const [currentSessionPauseEvents, setCurrentSessionPauseEvents] = useState([]);
     const [livePauseDuration, setLivePauseDuration] = useState(0);
     const [lastPauseEndTime, setLastPauseEndTime] = useState(null);
@@ -286,12 +286,12 @@ export const useChastitySession = (
         const now = new Date();
         setIsPaused(true);
         setPauseStartTime(now);
-        const updatedPauseEvents = [...currentSessionPauseEvents, { startTime: now, reason: reasonForPauseInput }];
+        const updatedPauseEvents = [...currentSessionPauseEvents, { startTime: now, reason: pauseReason }];
         setCurrentSessionPauseEvents(updatedPauseEvents);
         setShowPauseReasonModal(false);
-        setReasonForPauseInput('');
+        setPauseReason('');
         await saveDataToFirestore({ isPaused: true, pauseStartTime: now, currentSessionPauseEvents: updatedPauseEvents });
-    }, [reasonForPauseInput, saveDataToFirestore, currentSessionPauseEvents]);
+    }, [pauseReason, saveDataToFirestore, currentSessionPauseEvents]);
 
     const handleCancelPauseModal = useCallback(() => setShowPauseReasonModal(false), []);
     
@@ -522,7 +522,7 @@ export const useChastitySession = (
         cageOnTime, isCageOn, timeInChastity, timeCageOff, chastityHistory, totalChastityTime,
         totalTimeCageOff, overallTotalPauseTime, showReasonModal, reasonForRemoval, setReasonForRemoval,
         tempEndTime, tempStartTime, isPaused, pauseStartTime, accumulatedPauseTimeThisSession,
-        showPauseReasonModal, reasonForPauseInput, setReasonForPauseInput, currentSessionPauseEvents,
+        showPauseReasonModal, pauseReason, setPauseReason, currentSessionPauseEvents,
         livePauseDuration, lastPauseEndTime, pauseCooldownMessage, showRestoreSessionPrompt, loadedSessionData,
         hasSessionEverBeenActive, confirmReset, setConfirmReset, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage, restoreUserIdInput,
