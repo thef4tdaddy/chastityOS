@@ -1,5 +1,6 @@
 // src/pages/FullReportPage.jsx
 import React from 'react';
+import { PAUSE_REASON_OPTIONS } from '../event_types.js';
 import CurrentStatusSection from '../components/full_report/CurrentStatusSection';
 import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
@@ -21,9 +22,11 @@ const FullReportPage = ({
         const totals = {};
         chastityHistory.forEach(p => {
             (p.pauseEvents || []).forEach(ev => {
-                if (ev.duration && ev.reason) {
-                    totals[ev.reason] = (totals[ev.reason] || 0) + ev.duration;
-                }
+if (!ev.duration || !ev.reason) return;
+const category = PAUSE_REASON_OPTIONS.includes(ev.reason)
+  ? ev.reason
+  : 'Other';
+totals[category] = (totals[category] || 0) + ev.duration;
             });
         });
         return totals;
