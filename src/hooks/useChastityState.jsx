@@ -3,6 +3,7 @@ import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
+import { useArousalLevels } from './useArousalLevels';
 import { useChastitySession } from './useChastitySession';
 import { useTasks } from './useTasks';
 import { usePersonalGoal } from './usePersonalGoal';
@@ -12,6 +13,7 @@ import { db } from '../firebase';
 import { collection } from 'firebase/firestore';
 import { useKeyholderHandlers } from './chastity/keyholderHandlers';
 import { sha256 } from '../utils/hash';
+import { useReleaseRequests } from './useReleaseRequests';
 
 export const useChastityState = () => {
   const authState = useAuth();
@@ -20,8 +22,11 @@ export const useChastityState = () => {
   const settingsState = useSettings(userId, isAuthReady);
   const { settings, setSettings } = settingsState;
 
-  const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
+  // Use the unified 'sexualEventsLog' collection for all session and event data
+  const getEventsCollectionRef = (uid) =>
+    collection(db, 'users', uid, 'sexualEventsLog');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
+  const arousalState = useArousalLevels(userId, isAuthReady);
   
   const sessionState = useChastitySession(
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
@@ -30,6 +35,8 @@ export const useChastityState = () => {
   // FIX: Destructure tasksState to isolate the `tasks` array from the other properties.
   const tasksState = useTasks(userId, isAuthReady);
   const { tasks, ...otherTaskState } = tasksState;
+
+  const releaseRequestState = useReleaseRequests(userId, isAuthReady);
   
   const sessionObjectForHooks = {
       isChastityOn: sessionState.isCageOn,
@@ -104,6 +111,23 @@ const rulesState = useRules(userId, isAuthReady);
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
 
+  const handleGrantReleaseRequest = useCallback(async (requestId) => {
+    await releaseRequestState.updateReleaseRequest(requestId, {
+      status: 'granted',
+      grantedAt: serverTimestamp(),
+      handledBy: settings.keyholderName || 'Keyholder',
+    });
+    await sessionState.handleEndChastityNow('Release granted by keyholder');
+  }, [releaseRequestState, sessionState, settings.keyholderName]);
+
+  const handleDenyReleaseRequest = useCallback(async (requestId) => {
+    await releaseRequestState.updateReleaseRequest(requestId, {
+      status: 'denied',
+      deniedAt: serverTimestamp(),
+      handledBy: settings.keyholderName || 'Keyholder',
+    });
+  }, [releaseRequestState, settings.keyholderName]);
+
   const handleSubmitForReview = useCallback(async (taskId, note) => {
     if (!tasksState.updateTask) {
       console.error("updateTask function is not available.");
@@ -139,6 +163,7 @@ const rulesState = useRules(userId, isAuthReady);
     ...settingsState,
     ...eventLogState,
     ...sessionState,
+    ...arousalState,
     ...otherTaskState, // Spread the other functions from useTasks
     ...personalGoalState,
     ...rulesState,
@@ -153,5 +178,8 @@ const rulesState = useRules(userId, isAuthReady);
     handleSubmitForReview,
     keyholderName: settings.keyholderName,
     tasks: tasks, // Explicitly include the `tasks` array
+    ...releaseRequestState,
+    handleGrantReleaseRequest,
+    handleDenyReleaseRequest,
   };
 };
