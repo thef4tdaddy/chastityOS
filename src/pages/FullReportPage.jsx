@@ -22,11 +22,11 @@ const FullReportPage = ({
         const totals = {};
         chastityHistory.forEach(p => {
             (p.pauseEvents || []).forEach(ev => {
-                if (!ev.duration) return;
-                const category = PAUSE_REASON_OPTIONS.includes(ev.reason)
-                    ? ev.reason
-                    : 'Other';
-                totals[category] = (totals[category] || 0) + ev.duration;
+if (!ev.duration || !ev.reason) return;
+const category = PAUSE_REASON_OPTIONS.includes(ev.reason)
+  ? ev.reason
+  : 'Other';
+totals[category] = (totals[category] || 0) + ev.duration;
             });
         });
         return totals;
