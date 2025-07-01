@@ -254,6 +254,8 @@ export const useChastitySession = (
             try {
                 await addDoc(eventsColRef, {
                     eventType: 'startTimeEdit',
+                    // Include an event type array so this appears in the sexual events log
+                    types: ['Session Edit'],
                     eventTimestamp: Timestamp.now(),
                     oldStartTime: cageOnTime.toISOString(),
                     newStartTime: newTime.toISOString(),
