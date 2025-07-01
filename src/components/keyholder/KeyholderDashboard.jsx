@@ -14,6 +14,7 @@ const KeyholderDashboard = ({
   requiredKeyholderDurationSeconds,
   tasks = [],
   keyholderMessage,
+  onManageRules,
   isAuthReady,
   handleSetRequiredDuration,
   handleAddReward,
@@ -252,59 +253,66 @@ const KeyholderDashboard = ({
                     </button>
                   </div>
                 </div>
-                <hr className="my-4 border-purple-700" />
-                <TaskApprovalSection
-                  tasks={tasks}
-                  onApprove={handleApproveTask}
-                  onReject={handleRejectTask}
-                />
-                <KeyholderAddTaskForm
-                  onAddTask={handleAddTask}
-                  tasks={tasks}
-                />
-                <RecurringTasksOverview
-                  tasks={tasks}
-                  onCancel={handleCancelRecurringTask}
-                />
-                {releaseRequests.filter((r) => r.status === 'pending').length > 0 && (
-                  <div className="mt-6 space-y-3">
-                    <h4 className="title-purple !text-purple-300">
-                      Release Requests
-                    </h4>
-                    {releaseRequests
-                      .filter((r) => r.status === 'pending')
-                      .map((req) => (
-                        <div
-                          key={req.id}
-                          className="flex justify-between items-center p-2 border border-purple-700 rounded-md"
-                        >
-                          <span className="text-sm">
-                            {req.submittedAt
-                              ? req.submittedAt.toLocaleString()
-                              : ''}
-                          </span>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                handleGrantReleaseRequest(req.id)
-                              }
-                              className="button-green !text-green-300 px-2"
-                            >
-                              Grant
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleDenyReleaseRequest(req.id)
-                              }
-                              className="button-red !text-red-300 px-2"
-                            >
-                              Deny
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                )}
+<hr className="my-4 border-purple-700" />
+
+<TaskApprovalSection
+  tasks={tasks}
+  onApprove={handleApproveTask}
+  onReject={handleRejectTask}
+/>
+
+<KeyholderAddTaskForm
+  onAddTask={handleAddTask}
+  tasks={tasks}
+/>
+
+<RecurringTasksOverview
+  tasks={tasks}
+  onCancel={handleCancelRecurringTask}
+/>
+
+<button
+  onClick={onManageRules}
+  className="button-blue !text-blue-300 mt-2"
+>
+  Manage Rules
+</button>
+
+{releaseRequests.filter((r) => r.status === 'pending').length > 0 && (
+  <div className="mt-6 space-y-3">
+    <h4 className="title-purple !text-purple-300">
+      Release Requests
+    </h4>
+    {releaseRequests
+      .filter((r) => r.status === 'pending')
+      .map((req) => (
+        <div
+          key={req.id}
+          className="flex justify-between items-center p-2 border border-purple-700 rounded-md"
+        >
+          <span className="text-sm">
+            {req.submittedAt
+              ? req.submittedAt.toLocaleString()
+              : ''}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleGrantReleaseRequest(req.id)}
+              className="button-green !text-green-300 px-2"
+            >
+              Grant
+            </button>
+            <button
+              onClick={() => handleDenyReleaseRequest(req.id)}
+              className="button-red !text-red-300 px-2"
+            >
+              Deny
+            </button>
+          </div>
+        </div>
+      ))}
+  </div>
+)}
               </div>
             )}
           </>
