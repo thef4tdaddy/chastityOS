@@ -12,6 +12,7 @@ import RulesPage from './pages/RulesPage';
 import HowToPage from './pages/HowToPage';
 import WelcomeModal from './components/WelcomeModal';
 import HowToModal from './components/HowToModal';
+import EulaModal from './components/EulaModal';
 import { useWelcome } from './hooks/useWelcome';
 
 function App() {
@@ -44,6 +45,11 @@ function App() {
         <HowToModal
           isOpen={showHowToModal}
           onClose={() => setShowHowToModal(false)}
+        />
+
+        <EulaModal
+          isOpen={showEulaModal}
+          onClose={() => setShowEulaModal(false)}
         />
       </div>
     </Router>
