@@ -15,6 +15,7 @@ export const useChastitySession = (
     const [isCageOn, setIsCageOn] = useState(false);
     const [timeInChastity, setTimeInChastity] = useState(0);
     const [timeCageOff, setTimeCageOff] = useState(0);
+    const [cageOffStartTime, setCageOffStartTime] = useState(null);
     const [chastityHistory, setChastityHistory] = useState([]);
     const [totalChastityTime, setTotalChastityTime] = useState(0);
     const [totalTimeCageOff, setTotalTimeCageOff] = useState(0);
@@ -102,6 +103,7 @@ export const useChastitySession = (
         const loadedCageOn = data.isCageOn || false;
         const loadedCageOnTime = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
         const loadedPauseStart = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
+        const loadedCageOffStart = data.cageOffStartTime?.toDate ? data.cageOffStartTime.toDate() : null;
         setIsCageOn(loadedCageOn);
         setCageOnTime(loadedCageOn && loadedCageOnTime && !isNaN(loadedCageOnTime.getTime()) ? loadedCageOnTime : null);
         if (loadedCageOn && loadedCageOnTime) {
@@ -114,6 +116,14 @@ export const useChastitySession = (
         setIsPaused(loadedCageOn ? (data.isPaused || false) : false);
         setPauseStartTime(loadedCageOn && data.isPaused && loadedPauseStart && !isNaN(loadedPauseStart.getTime()) ? loadedPauseStart : null);
         setAccumulatedPauseTimeThisSession(loadedCageOn ? (data.accumulatedPauseTimeThisSession || 0) : 0);
+        setCageOffStartTime(!loadedCageOn && loadedCageOffStart && !isNaN(loadedCageOffStart.getTime()) ? loadedCageOffStart : null);
+        if (!loadedCageOn && loadedCageOffStart) {
+            const now = new Date();
+            const elapsedOff = Math.floor((now.getTime() - loadedCageOffStart.getTime()) / 1000);
+            setTimeCageOff(elapsedOff);
+        } else {
+            setTimeCageOff(0);
+        }
         setCurrentSessionPauseEvents(
             loadedCageOn
                 ? (data.currentSessionPauseEvents || []).map(p => ({
@@ -153,6 +163,7 @@ export const useChastitySession = (
             setIsCageOn(true);
             setTimeInChastity(0);
             setTimeCageOff(0);
+            setCageOffStartTime(null);
             setAccumulatedPauseTimeThisSession(0);
             setCurrentSessionPauseEvents([]);
             setPauseStartTime(null);
@@ -163,6 +174,7 @@ export const useChastitySession = (
                 cageOnTime: currentTime,
                 totalTimeCageOff: newTotalOffTime,
                 timeInChastity: 0,
+                cageOffStartTime: null,
                 hasSessionEverBeenActive: true,
                 isPaused: false,
                 pauseStartTime: null,
@@ -201,6 +213,8 @@ export const useChastitySession = (
         setIsCageOn(false);
         setCageOnTime(null);
         setTimeInChastity(0);
+        setCageOffStartTime(tempEndTime);
+        setTimeCageOff(0);
         setIsPaused(false);
         setPauseStartTime(null);
         setAccumulatedPauseTimeThisSession(0);
@@ -211,6 +225,7 @@ export const useChastitySession = (
             isCageOn: false,
             cageOnTime: null,
             timeInChastity: 0,
+            cageOffStartTime: tempEndTime,
             chastityHistory: updatedHistory,
             isPaused: false,
             pauseStartTime: null,
@@ -361,12 +376,15 @@ export const useChastitySession = (
         setIsCageOn(false);
         setCageOnTime(null);
         setTimeInChastity(0);
+        setCageOffStartTime(endTime);
+        setTimeCageOff(0);
         setIsPaused(false);
         setPauseStartTime(null);
         setAccumulatedPauseTimeThisSession(0);
         setCurrentSessionPauseEvents([]);
         await saveDataToFirestore({
             isCageOn: false, cageOnTime: null, timeInChastity: 0,
+            cageOffStartTime: endTime,
             chastityHistory: updatedHistory, isPaused: false, pauseStartTime: null,
             accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: []
         });
@@ -428,7 +446,8 @@ export const useChastitySession = (
             accumulatedPauseTimeThisSession: 0,
             currentSessionPauseEvents: [],
             lastPauseEndTime: null,
-            hasSessionEverBeenActive: false
+            hasSessionEverBeenActive: false,
+            cageOffStartTime: null
         });
         setIsCageOn(false);
         setCageOnTime(null);
@@ -439,6 +458,8 @@ export const useChastitySession = (
         setCurrentSessionPauseEvents([]);
         setLastPauseEndTime(null);
         setHasSessionEverBeenActive(false);
+        setCageOffStartTime(null);
+        setTimeCageOff(0);
         setShowRestoreSessionPrompt(false);
         setLoadedSessionData(null);
     }, [saveDataToFirestore]);
@@ -482,7 +503,8 @@ export const useChastitySession = (
                         isPaused: false,
                         accumulatedPauseTimeThisSession: 0,
                         // --- Add the new field to the default doc ---
-                        requiredKeyholderDurationSeconds: 0
+                        requiredKeyholderDurationSeconds: 0,
+                        cageOffStartTime: null
                     });
                 }
             } catch (error) {
@@ -513,8 +535,12 @@ export const useChastitySession = (
                 const elapsed = Math.floor((now.getTime() - cageOnTime.getTime()) / 1000);
                 setTimeInChastity(elapsed);
             }, 1000);
-        } else if (!isCageOn && hasSessionEverBeenActive) {
-            timerCageOffRef.current = setInterval(() => setTimeCageOff(prev => prev + 1), 1000);
+        } else if (!isCageOn && cageOffStartTime) {
+            timerCageOffRef.current = setInterval(() => {
+                const now = new Date();
+                const elapsed = Math.floor((now.getTime() - cageOffStartTime.getTime()) / 1000);
+                setTimeCageOff(elapsed);
+            }, 1000);
         }
         if (isPaused && pauseStartTime) {
             pauseDisplayTimerRef.current = setInterval(() => {
@@ -528,7 +554,7 @@ export const useChastitySession = (
             clearInterval(timerCageOffRef.current);
             clearInterval(pauseDisplayTimerRef.current);
         };
-    }, [isCageOn, isPaused, cageOnTime, hasSessionEverBeenActive, pauseStartTime]);
+    }, [isCageOn, isPaused, cageOnTime, cageOffStartTime, pauseStartTime]);
 
     return {
         cageOnTime, isCageOn, timeInChastity, timeCageOff, chastityHistory, totalChastityTime,
@@ -548,6 +574,7 @@ export const useChastitySession = (
         handleDiscardAndStartNew, saveDataToFirestore, setChastityHistory, setTimeCageOff, setIsCageOn,
         setCageOnTime, setTimeInChastity, setIsPaused, setPauseStartTime,
         setAccumulatedPauseTimeThisSession, setCurrentSessionPauseEvents, setLastPauseEndTime, setHasSessionEverBeenActive,
+        cageOffStartTime,
         // --- Return the new state value ---
         requiredKeyholderDurationSeconds
     };
