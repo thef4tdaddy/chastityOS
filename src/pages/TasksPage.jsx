@@ -47,27 +47,27 @@ const ArchivedTaskItem = ({ task }) => {
         </span>
       </div>
 
-  {consequence && consequence.type !== 'none' && (
-    <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs flex items-center gap-2">
-      {isApproved ? <FaTrophy className="text-yellow-400" /> : <FaGavel className="text-orange-400" />}
-      <span className="font-semibold">{isApproved ? 'Reward:' : 'Punishment:'}</span>
-      {consequence.type === 'time' && (
-        <span className="font-mono">{formatElapsedTime(consequence.value)} {isApproved ? 'removed' : 'added'}</span>
+      {consequence && consequence.type !== 'none' && (
+        <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs flex items-center gap-2">
+          {isApproved ? <FaTrophy className="text-yellow-400" /> : <FaGavel className="text-orange-400" />}
+          <span className="font-semibold">{isApproved ? 'Reward:' : 'Punishment:'}</span>
+          {consequence.type === 'time' && (
+            <span className="font-mono">{formatElapsedTime(consequence.value)} {isApproved ? 'removed' : 'added'}</span>
+          )}
+          {consequence.type === 'note' && (
+            <span className="italic">{consequence.value}</span>
+          )}
+        </div>
       )}
-      {consequence.type === 'note' && (
-        <span className="italic">{consequence.value}</span>
+      {task.recurrenceDays > 0 && (
+        <div className="w-full text-left text-xs mt-1 text-blue-300">
+          Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
+          {task.recurrenceEnd && (
+            <> until {formatTime(task.recurrenceEnd, true)}</>
+          )}
+        </div>
       )}
     </div>
-  )}
-  {task.recurrenceDays > 0 && (
-    <div className="w-full text-left text-xs mt-1 text-blue-300">
-      Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
-      {task.recurrenceEnd && (
-        <> until {formatTime(task.recurrenceEnd, true)}</>
-      )}
-    </div>
-  )}
-</div>
   );
 };
 
@@ -104,6 +104,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                   <CountdownTimer deadline={task.deadline} />
                 </div>
               )}
+
               {task.recurrenceDays > 0 && (
                 <div className="w-full text-left text-xs mt-1 text-blue-300">
                   Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
@@ -112,7 +113,35 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                   )}
                 </div>
               )}
-              <div className="w-full mt-3 flex items-center gap-2">
+
+              {(task.reward?.type !== 'none' || task.punishment?.type !== 'none') && (
+                <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs space-y-1">
+                  {task.reward && task.reward.type !== 'none' && (
+                    <div className="flex items-center gap-2 text-yellow-300">
+                      <FaTrophy className="text-yellow-400" />
+                      <span className="font-semibold">Reward:</span>
+                      {task.reward.type === 'time' ? (
+                        <span className="font-mono">{formatElapsedTime(task.reward.value)} removed</span>
+                      ) : (
+                        <span className="italic">{task.reward.value}</span>
+                      )}
+                    </div>
+                  )}
+                  {task.punishment && task.punishment.type !== 'none' && (
+                    <div className="flex items-center gap-2 text-orange-300">
+                      <FaGavel className="text-orange-400" />
+                      <span className="font-semibold">Punishment:</span>
+                      {task.punishment.type === 'time' ? (
+                        <span className="font-mono">{formatElapsedTime(task.punishment.value)} added</span>
+                      ) : (
+                        <span className="italic">{task.punishment.value}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="w-full mt-3 flex flex-col sm:flex-row items-stretch gap-2">
                 <input
                   type="text"
                   value={notes[task.id] || ''}
@@ -122,7 +151,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                 />
                 <button
                   onClick={() => handleSubmitForReview(task.id, notes[task.id] || '')}
-                  className="complete-button flex-shrink-0"
+                  className="complete-button w-full sm:w-auto"
                   aria-label={`Submit task for review: ${task.text}`}
                 >
                   Submit for Review
