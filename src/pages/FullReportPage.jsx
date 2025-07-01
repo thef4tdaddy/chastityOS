@@ -17,6 +17,18 @@ const FullReportPage = ({
         ? Math.max(0, timeInChastity - accumulatedPauseTimeThisSession - (isPaused && livePauseDuration ? livePauseDuration : 0))
         : 0;
 
+    const pauseReasonTotals = React.useMemo(() => {
+        const totals = {};
+        chastityHistory.forEach(p => {
+            (p.pauseEvents || []).forEach(ev => {
+                if (ev.duration && ev.reason) {
+                    totals[ev.reason] = (totals[ev.reason] || 0) + ev.duration;
+                }
+            });
+        });
+        return totals;
+    }, [chastityHistory]);
+
     return (
         <div className="app-wrapper">
             <div className="mb-4"><strong>Submissive’s Name:</strong> {savedSubmissivesName || '(Not Set)'}</div>
@@ -43,6 +55,7 @@ const FullReportPage = ({
                 totalChastityTime={totalChastityTime}
                 totalTimeCageOff={totalTimeCageOff}
                 overallTotalPauseTime={overallTotalPauseTime}
+                pauseReasonTotals={pauseReasonTotals}
             />
             <hr className="section-divider"/>
 
