@@ -122,7 +122,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                   )}
                 </div>
               )}
-              <div className="w-full mt-3 flex flex-col items-stretch gap-2">
+              <div className="w-full mt-3 flex flex-col sm:flex-row items-stretch gap-2">
                 <input
                   type="text"
                   value={notes[task.id] || ''}
