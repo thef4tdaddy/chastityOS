@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaPlusCircle, FaExclamationTriangle } from 'react-icons/fa';
 
-const KeyholderAddTaskForm = ({ onAddTask }) => {
+const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
   const [taskText, setTaskText] = useState('');
   const [deadline, setDeadline] = useState('');
   const [rewardType, setRewardType] = useState('none');
@@ -50,6 +50,15 @@ const KeyholderAddTaskForm = ({ onAddTask }) => {
     setPunishmentValue('');
   };
 
+  const recentTasks = tasks
+    .filter(t => t.assignedBy === 'keyholder' && t.text)
+    .sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 3);
+
   return (
     <>
       <div className="tasks-container">
@@ -57,7 +66,23 @@ const KeyholderAddTaskForm = ({ onAddTask }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="task-text" className="block text-xs font-medium mb-1">Task Description</label>
-            <input id="task-text" type="text" value={taskText} onChange={(e) => setTaskText(e.target.value)} placeholder="e.g., Polish my boots" className="w-full" required />
+            <input
+              id="task-text"
+              type="text"
+              value={taskText}
+              onChange={(e) => setTaskText(e.target.value)}
+              placeholder="e.g., Polish my boots"
+              list="recent-tasks"
+              className="w-full"
+              required
+            />
+            {recentTasks.length > 0 && (
+              <datalist id="recent-tasks">
+                {recentTasks.map(task => (
+                  <option key={task.id} value={task.text} />
+                ))}
+              </datalist>
+            )}
           </div>
 
           <div>
