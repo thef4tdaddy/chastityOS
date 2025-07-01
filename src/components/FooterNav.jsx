@@ -4,8 +4,8 @@ import React, { useEffect, useState, lazy, Suspense } from 'react';
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage'));
 const FeedbackForm = lazy(() => import('../pages/FeedbackForm'));
 
-// FIX: Added the 'onShowEula' prop to receive the handler from App.jsx
-const FooterNav = ({ userId, googleEmail, onShowEula }) => {
+// FIX: Added the 'onShowEula' and 'onShowHowTo' props to receive the handlers from App.jsx
+const FooterNav = ({ userId, googleEmail, onShowEula, onShowHowTo }) => {
   const isNightly = import.meta.env.VITE_ENV === 'nightly';
   const [version, setVersion] = useState('Fetching...');
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -82,6 +82,14 @@ const FooterNav = ({ userId, googleEmail, onShowEula }) => {
             className={buttonAsLinkClasses}
           >
             Terms & Disclaimer
+          </button>
+
+          <button
+            type="button"
+            onClick={onShowHowTo}
+            className={buttonAsLinkClasses}
+          >
+            How To
           </button>
 
           <a
