@@ -77,6 +77,10 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
         const eventsCollectionRef = collection(db, 'users', userId, 'events');
         const oldEventsSnap = await getDocs(query(eventsCollectionRef));
         oldEventsSnap.forEach(doc => batch.delete(doc.ref));
+
+        const sexualEventsCollectionRef = collection(db, 'users', userId, 'sexualEventsLog');
+        const oldSexualEventsSnap = await getDocs(query(sexualEventsCollectionRef));
+        oldSexualEventsSnap.forEach(doc => batch.delete(doc.ref));
         
         // Import new tasks
         if (data.tasks && Array.isArray(data.tasks)) {
@@ -143,9 +147,9 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
         Sentry.captureException(error);
     }
     
-    // 3. (Optional but recommended) Delete all documents in the 'events' subcollection
+    // 3. Delete all documents in the 'events' subcollection
     const eventsCollectionRef = collection(db, 'users', userId, 'events');
-     try {
+    try {
         const eventsSnapshot = await getDocs(query(eventsCollectionRef));
         eventsSnapshot.forEach(doc => {
             console.log(`Adding event ${doc.id} to delete batch.`);
@@ -156,7 +160,19 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
         Sentry.captureException(error);
     }
 
-    // 4. Commit all the changes at once
+    // 4. Delete all documents in the 'sexualEventsLog' subcollection
+    const sexualEventsCollectionRef = collection(db, 'users', userId, 'sexualEventsLog');
+    try {
+        const sexualEventsSnapshot = await getDocs(query(sexualEventsCollectionRef));
+        sexualEventsSnapshot.forEach(doc => {
+            console.log(`Adding sexual event ${doc.id} to delete batch.`);
+            batch.delete(doc.ref);
+        });
+    } catch (error) {
+        console.error("Error querying sexual events for deletion:", error);
+        Sentry.captureException(error);
+    }
+    // 5. Commit all the changes at once
     try {
         await batch.commit();
         console.log("Full data reset successful.");
