@@ -7,6 +7,8 @@ import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
 import UpdatePrompt from './components/UpdatePrompt';
 import EulaModal from './components/EulaModal';
+import WelcomeModal from './components/WelcomeModal';
+import { useWelcome } from './hooks/useWelcome';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -24,9 +26,12 @@ const TasksPage = lazy(() => import('./pages/TasksPage'));
 const App = () => {
     const [currentPage, setCurrentPage] = useState('tracker');
     const [showEulaModal, setShowEulaModal] = useState(false);
-    
-    // chastityOS now contains everything, including task data and handlers
+
+    // chastityOS contains all state, including task data and handlers
     const chastityOS = useChastityState();
+
+    const welcomeState = useWelcome(chastityOS.userId, chastityOS.isAuthReady);
+    const { hasAccepted, isLoading: welcomeLoading, accept } = welcomeState;
     
     // Destructure everything needed for this component's logic
     const { 
@@ -52,7 +57,7 @@ const App = () => {
     const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
     const themeClass = isNightly ? 'theme-nightly' : 'theme-prod';
     
-    if (isLoading) {
+    if (isLoading || welcomeLoading) {
       return <div className="loading-fullscreen">Loading...</div>;
     }
 
@@ -97,6 +102,11 @@ const App = () => {
             <FooterNav userId={userId} googleEmail={googleEmail} onShowEula={() => setShowEulaModal(true)} />
 
             <EulaModal isOpen={showEulaModal} onClose={() => setShowEulaModal(false)} />
+            <WelcomeModal
+              isOpen={!hasAccepted}
+              onAccept={accept}
+              onShowLegal={() => setShowEulaModal(true)}
+            />
         </div>
     );
 };
