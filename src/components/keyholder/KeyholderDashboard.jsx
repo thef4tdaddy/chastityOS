@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { formatElapsedTime } from '../../utils';
 import TaskApprovalSection from './TaskApprovalSection';
 import KeyholderAddTaskForm from './KeyholderAddTaskForm';
+import RecurringTasksOverview from '../RecurringTasksOverview';
 
-// This component now uses the specific handlers passed down as props.
 const KeyholderDashboard = ({
   keyholderName,
   handleSetKeyholderName,
@@ -15,13 +15,13 @@ const KeyholderDashboard = ({
   tasks = [],
   keyholderMessage,
   isAuthReady,
-  // Destructuring all the specific handlers from props
   handleSetRequiredDuration,
   handleAddReward,
   handleAddPunishment,
   handleAddTask,
   handleApproveTask,
   handleRejectTask,
+  handleCancelRecurringTask,
   releaseRequests = [],
   handleGrantReleaseRequest,
   handleDenyReleaseRequest
@@ -262,8 +262,11 @@ const KeyholderDashboard = ({
                   onAddTask={handleAddTask}
                   tasks={tasks}
                 />
-                {releaseRequests.filter((r) => r.status === 'pending').length >
-                  0 && (
+                <RecurringTasksOverview
+                  tasks={tasks}
+                  onCancel={handleCancelRecurringTask}
+                />
+                {releaseRequests.filter((r) => r.status === 'pending').length > 0 && (
                   <div className="mt-6 space-y-3">
                     <h4 className="title-purple !text-purple-300">
                       Release Requests
@@ -290,7 +293,9 @@ const KeyholderDashboard = ({
                               Grant
                             </button>
                             <button
-                              onClick={() => handleDenyReleaseRequest(req.id)}
+                              onClick={() =>
+                                handleDenyReleaseRequest(req.id)
+                              }
                               className="button-red !text-red-300 px-2"
                             >
                               Deny
