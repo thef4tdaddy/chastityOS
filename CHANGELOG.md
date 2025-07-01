@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.2...v3.11.0-nightly.3) (2025-07-01)
+
+
+### 🐛 Bug Fixes
+
+* add react-router-dom to dependencies ([9badf0d](https://github.com/thef4tdaddy/chastityOS/commit/9badf0dea60bacd62296d696d7706d9cb7c44ae1))
+
 ## [3.11.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.1...v3.11.0-nightly.2) (2025-07-01)
 
 
