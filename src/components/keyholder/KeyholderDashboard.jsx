@@ -150,7 +150,7 @@ const KeyholderDashboard = ({
                 {/* These components now correctly receive their respective handlers */}
                 <TaskApprovalSection tasks={tasks} onApprove={handleApproveTask} onReject={handleRejectTask} />
                 {/* THE FIX: `onAddTask` now correctly calls `handleAddTask` from props */}
-                <KeyholderAddTaskForm onAddTask={handleAddTask} />
+                <KeyholderAddTaskForm onAddTask={handleAddTask} tasks={tasks} />
               </div>
             )}
           </>
