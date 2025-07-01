@@ -95,7 +95,34 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                   <CountdownTimer deadline={task.deadline} />
                 </div>
               )}
-              <div className="w-full mt-3 flex items-center gap-2">
+
+              {(task.reward?.type !== 'none' || task.punishment?.type !== 'none') && (
+                <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs space-y-1">
+                  {task.reward && task.reward.type !== 'none' && (
+                    <div className="flex items-center gap-2 text-yellow-300">
+                      <FaTrophy className="text-yellow-400" />
+                      <span className="font-semibold">Reward:</span>
+                      {task.reward.type === 'time' ? (
+                        <span className="font-mono">{formatElapsedTime(task.reward.value)} removed</span>
+                      ) : (
+                        <span className="italic">{task.reward.value}</span>
+                      )}
+                    </div>
+                  )}
+                  {task.punishment && task.punishment.type !== 'none' && (
+                    <div className="flex items-center gap-2 text-orange-300">
+                      <FaGavel className="text-orange-400" />
+                      <span className="font-semibold">Punishment:</span>
+                      {task.punishment.type === 'time' ? (
+                        <span className="font-mono">{formatElapsedTime(task.punishment.value)} added</span>
+                      ) : (
+                        <span className="italic">{task.punishment.value}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="w-full mt-3 flex flex-col items-stretch gap-2">
                 <input
                   type="text"
                   value={notes[task.id] || ''}
@@ -105,7 +132,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                 />
                 <button
                   onClick={() => handleSubmitForReview(task.id, notes[task.id] || '')}
-                  className="complete-button flex-shrink-0"
+                  className="complete-button w-full sm:w-auto"
                   aria-label={`Submit task for review: ${task.text}`}
                 >
                   Submit for Review
