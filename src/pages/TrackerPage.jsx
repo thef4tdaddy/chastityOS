@@ -36,7 +36,9 @@ const TrackerPage = (props) => {
         totalTimeCageOff,
         timeCageOff,
         pauseStartTime,
-        accumulatedPauseTimeThisSession
+        accumulatedPauseTimeThisSession,
+        releaseRequests = [],
+        addReleaseRequest
     } = props;
 
     // Call the new hook to get all the logic and state for this page
@@ -54,6 +56,18 @@ const TrackerPage = (props) => {
         handleAttemptEmergencyUnlock,
         setShowEmergencyUnlockModal,
     } = useTrackerPage(props); // Pass all props from parent to the hook
+
+    const hasPendingReleaseRequest = releaseRequests.some(r => r.status === 'pending');
+    const lastDeniedRequest = releaseRequests
+        .filter(r => r.status === 'denied' && r.deniedAt)
+        .sort((a, b) => b.deniedAt - a.deniedAt)[0];
+    const denialCooldownActive = lastDeniedRequest && (Date.now() - lastDeniedRequest.deniedAt.getTime() < 4 * 3600 * 1000);
+
+    const handleBegForRelease = async () => {
+        if (addReleaseRequest) {
+            await addReleaseRequest();
+        }
+    };
 
     if (!isAuthReady) {
         return (
@@ -120,9 +134,15 @@ const TrackerPage = (props) => {
                             Time Left in required chastity: {formatElapsedTime(requiredKeyholderDurationSeconds - effectiveTimeInChastityForGoal)}
                         </p>
                     )}
-                    {isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds && (
+                {isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds && (
                          <p className="text-lg font-bold text-pink-100">KH Duration Met!</p>
                     )}
+                </div>
+            )}
+
+            {denialCooldownActive && lastDeniedRequest && (
+                <div className="mb-4 p-2 rounded-md text-center bg-red-700/30 border border-red-600">
+                    <p className="text-sm text-red-300">Beg for Release denied by {lastDeniedRequest.handledBy || keyholderName} at {lastDeniedRequest.deniedAt.toLocaleString()}</p>
                 </div>
             )}
 
@@ -175,6 +195,11 @@ const TrackerPage = (props) => {
                   <button type="button" onClick={handleOpenUnlockModal} disabled={!isAuthReady || showRestoreSessionPrompt}
                       className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-700 hover:bg-red-800 focus:ring-red-500 flex items-center justify-center">
                      <FaLock className="mr-2"/> Emergency Unlock
+                  </button>
+              ) : requiredKeyholderDurationSeconds > 0 ? (
+                  <button type="button" onClick={handleBegForRelease} disabled={!isAuthReady || hasPendingReleaseRequest || denialCooldownActive || showRestoreSessionPrompt}
+                      className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-500 hover:bg-red-600 focus:ring-red-400">
+                      {hasPendingReleaseRequest ? 'Request Sent' : 'Beg for Release'}
                   </button>
               ) : (
                   <button type="button" onClick={handleToggleCage} disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
