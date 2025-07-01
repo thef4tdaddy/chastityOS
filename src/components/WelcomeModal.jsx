@@ -2,7 +2,7 @@ import React from 'react';
 
 const HOW_TO_URL = 'https://github.com/thef4tdaddy/chastityOS#readme';
 
-const WelcomeModal = ({ isOpen, onAccept, onShowLegal }) => {
+const WelcomeModal = ({ isOpen, onAccept, onShowLegal, onShowHowTo }) => {
   if (!isOpen) return null;
 
   return (
@@ -29,6 +29,13 @@ const WelcomeModal = ({ isOpen, onAccept, onShowLegal }) => {
           className="text-purple-300 underline text-sm mb-4"
         >
           View Terms &amp; Disclaimer
+        </button>
+        <button
+          type="button"
+          onClick={onShowHowTo}
+          className="text-purple-300 underline text-sm mb-4"
+        >
+          How to Use ChastityOS
         </button>
         <button
           onClick={onAccept}
