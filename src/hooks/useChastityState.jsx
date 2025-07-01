@@ -20,7 +20,9 @@ export const useChastityState = () => {
   const settingsState = useSettings(userId, isAuthReady);
   const { settings, setSettings } = settingsState;
 
-  const getEventsCollectionRef = (uid) => collection(db, 'users', uid, 'events');
+  // Use the unified 'sexualEventsLog' collection for all session and event data
+  const getEventsCollectionRef = (uid) =>
+    collection(db, 'users', uid, 'sexualEventsLog');
   const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
   
   const sessionState = useChastitySession(
