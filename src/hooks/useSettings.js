@@ -129,5 +129,7 @@ export function useSettings(userId, isAuthReady) {
     publicStatsVisibility: settings.publicStatsVisibility,
     togglePublicProfileEnabled,
     togglePublicStatVisibility,
+    // THIS IS THE CHANGE: Export the save function directly
+    saveSettingsToFirestore,
   };
 }
