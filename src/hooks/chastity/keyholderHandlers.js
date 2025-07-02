@@ -1,103 +1,147 @@
 import { useCallback } from 'react';
-import { generateHash } from '../../utils/hash';
+import { serverTimestamp } from 'firebase/firestore';
 
-export function useKeyholderHandlers(options) {
-    const {
-        userId,
-        saveDataToFirestore,
-        setKeyholderName,
-        setKeyholderPasswordHash,
-        setRequiredKeyholderDurationSeconds,
-        setIsKeyholderModeUnlocked,
-        setKeyholderMessage,
-        setGoalDurationSeconds,
-        keyholderPasswordHash,
-        keyholderName
-    } = options;
+export function useKeyholderHandlers({
+  userId,
+  tasks,
+  addTask,
+  updateTask,
+  saveDataToFirestore,
+  requiredKeyholderDurationSeconds,
+}) {
+  const handleLockKeyholderControls = useCallback(async () => {
+    if (!saveDataToFirestore) return;
+    await saveDataToFirestore({ isKeyholderControlsLocked: true });
+  }, [saveDataToFirestore]);
 
-    const handleSetKeyholder = useCallback(async (name) => {
-        if (!userId) {
-            setKeyholderMessage('Error: User ID not available.');
-            return null;
-        }
-        const khName = name.trim();
-        if (!khName) {
-            setKeyholderMessage('Keyholder name cannot be empty.');
-            return null;
-        }
-        const hash = await generateHash(userId + khName);
-        if (!hash) {
-            setKeyholderMessage('Error generating Keyholder ID.');
-            return null;
-        }
-        setKeyholderName(khName);
-        setKeyholderPasswordHash(hash);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: khName, keyholderPasswordHash: hash, requiredKeyholderDurationSeconds: null });
-        const preview = hash.substring(0, 8).toUpperCase();
-        setKeyholderMessage(`Keyholder "${khName}" set. Password preview: ${preview}`);
-        return preview;
-    }, [userId, saveDataToFirestore]);
+  const handleSetRequiredDuration = useCallback(
+    async (duration) => {
+      if (!saveDataToFirestore) return;
+      await saveDataToFirestore({ requiredKeyholderDurationSeconds: duration });
+    },
+    [saveDataToFirestore]
+  );
 
-    const handleClearKeyholder = useCallback(async () => {
-        setKeyholderName('');
-        setKeyholderPasswordHash(null);
-        setRequiredKeyholderDurationSeconds(null);
-        setIsKeyholderModeUnlocked(false);
-        await saveDataToFirestore({ keyholderName: '', keyholderPasswordHash: null, requiredKeyholderDurationSeconds: null });
-        setKeyholderMessage('Keyholder data cleared.');
-    }, [saveDataToFirestore]);
+  // Updated to create a standardized log entry
+  const handleAddReward = useCallback(
+    async (reward) => {
+      if (!saveDataToFirestore || !userId || !addTask) return;
+      
+      const timeToRemoveInSeconds = reward.timeSeconds || 0;
+      if (timeToRemoveInSeconds > 0) {
+        const currentDuration = requiredKeyholderDurationSeconds || 0;
+        const newDuration = Math.max(0, currentDuration - timeToRemoveInSeconds);
+        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+      }
+      
+      // Create the standardized log entry
+      await addTask({
+        logType: 'reward',
+        sourceText: 'Manually added by Keyholder',
+        note: reward.other || '',
+        timeChangeSeconds: timeToRemoveInSeconds > 0 ? -timeToRemoveInSeconds : 0,
+        createdAt: serverTimestamp(),
+      });
+    },
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
+  );
 
-    const handleUnlockKeyholderControls = useCallback(async (enteredPasswordPreview) => {
-        if (!userId || !keyholderName || !keyholderPasswordHash) {
-            setKeyholderMessage('Keyholder not fully set up.');
-            return false;
-        }
-        const expectedPreview = keyholderPasswordHash.substring(0, 8).toUpperCase();
-        if (enteredPasswordPreview.toUpperCase() === expectedPreview) {
-            setIsKeyholderModeUnlocked(true);
-            setKeyholderMessage('Keyholder controls unlocked.');
-            return true;
-        }
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Incorrect Keyholder password.');
-        return false;
-    }, [userId, keyholderName, keyholderPasswordHash]);
+  // Updated to create a standardized log entry
+  const handleAddPunishment = useCallback(
+    async (punishment) => {
+      if (!saveDataToFirestore || !userId || !addTask) return;
 
-    const handleLockKeyholderControls = useCallback(() => {
-        setIsKeyholderModeUnlocked(false);
-        setKeyholderMessage('Keyholder controls locked.');
-    }, []);
+      const timeToAddInSeconds = punishment.timeSeconds || 0;
+      if (timeToAddInSeconds > 0) {
+        const currentDuration = requiredKeyholderDurationSeconds || 0;
+        const newDuration = currentDuration + timeToAddInSeconds;
+        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+      }
+      
+      // Create the standardized log entry
+      await addTask({
+        logType: 'punishment',
+        sourceText: 'Manually added by Keyholder',
+        note: punishment.other || '',
+        timeChangeSeconds: timeToAddInSeconds,
+        createdAt: serverTimestamp(),
+      });
+    },
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
+  );
 
-    const handleSetRequiredDuration = useCallback(async (durationInSeconds) => {
-        const newDuration = Number(durationInSeconds);
-        if (!isNaN(newDuration) && newDuration >= 0) {
-            setRequiredKeyholderDurationSeconds(newDuration);
-            await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
-            setKeyholderMessage('Required duration updated.');
-            return true;
-        }
-        setKeyholderMessage('Invalid duration value.');
-        return false;
-    }, [saveDataToFirestore]);
+  const handleAddTask = useCallback(
+    async (taskData) => {
+      if (userId && addTask) {
+        await addTask({ ...taskData, status: 'pending', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+      }
+    },
+    [userId, addTask]
+  );
 
-    const handleSetGoalDuration = useCallback(async (newDurationInSeconds) => {
-        const newDuration = newDurationInSeconds === null ? null : Number(newDurationInSeconds);
-        if (newDuration === null || (!isNaN(newDuration) && newDuration >= 0)) {
-            setGoalDurationSeconds(newDuration);
-            await saveDataToFirestore({ goalDurationSeconds: newDuration });
-            return true;
-        }
-        return false;
-    }, [saveDataToFirestore]);
+  // Updated to automatically log the reward
+  const handleApproveTask = useCallback(
+    async (taskId) => {
+      if (!userId || !updateTask || !tasks) return;
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
 
-    return {
-        handleSetKeyholder,
-        handleClearKeyholder,
-        handleUnlockKeyholderControls,
-        handleLockKeyholderControls,
-        handleSetRequiredDuration,
-        handleSetGoalDuration
-    };
+      const timeChange = (task.reward && task.reward.type === 'time') ? task.reward.value : 0;
+      if (timeChange > 0) {
+        const currentDuration = requiredKeyholderDurationSeconds || 0;
+        const newDuration = Math.max(0, currentDuration - timeChange);
+        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+      }
+
+      // Add a new log entry for the reward
+      await addTask({
+        logType: 'reward',
+        sourceText: `Task: "${task.text}"`,
+        note: (task.reward && task.reward.type === 'note') ? task.reward.value : '',
+        timeChangeSeconds: -timeChange,
+        createdAt: serverTimestamp(),
+      });
+      
+      await updateTask(taskId, { status: 'approved' });
+    },
+    [userId, updateTask, addTask, tasks, requiredKeyholderDurationSeconds, saveDataToFirestore]
+  );
+
+  // Updated to automatically log the punishment
+  const handleRejectTask = useCallback(
+    async (taskId) => {
+      if (!userId || !updateTask || !tasks) return;
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const timeChange = (task.punishment && task.punishment.type === 'time') ? task.punishment.value : 0;
+      if (timeChange > 0) {
+        const currentDuration = requiredKeyholderDurationSeconds || 0;
+        const newDuration = currentDuration + timeChange;
+        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+      }
+      
+      // Add a new log entry for the punishment
+      await addTask({
+        logType: 'punishment',
+        sourceText: `Task: "${task.text}"`,
+        note: (task.punishment && task.punishment.type === 'note') ? task.punishment.value : '',
+        timeChangeSeconds: timeChange,
+        createdAt: serverTimestamp(),
+      });
+
+      await updateTask(taskId, { status: 'rejected' });
+    },
+    [userId, updateTask, addTask, tasks, requiredKeyholderDurationSeconds, saveDataToFirestore]
+  );
+
+  return {
+    handleLockKeyholderControls,
+    handleSetRequiredDuration,
+    handleAddReward,
+    handleAddPunishment,
+    handleAddTask,
+    handleApproveTask,
+    handleRejectTask,
+  };
 }

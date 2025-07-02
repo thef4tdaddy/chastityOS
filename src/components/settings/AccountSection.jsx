@@ -1,4 +1,3 @@
-// src/components/settings/AccountSection.jsx
 import React, { useState } from 'react';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, reauthenticateWithPopup, deleteUser } from 'firebase/auth';
 
@@ -38,6 +37,7 @@ const AccountSection = ({
     const auth = getAuth();
     try {
       await signOut(auth);
+      // Using alert as a placeholder for user feedback since toastify was removed
       alert('You have been signed out.');
     } catch (error) {
       console.error('❌ Sign-out failed:', error);

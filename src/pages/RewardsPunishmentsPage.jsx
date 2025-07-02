@@ -1,40 +1,81 @@
 import React from 'react';
-import { formatElapsedTime } from '../utils';
+import { formatTime, formatElapsedTime } from '../utils';
+import { FaAward, FaExclamationTriangle, FaClock, FaStickyNote } from 'react-icons/fa';
 
-const RewardsPunishmentsPage = ({ rewards, punishments }) => {
+// This helper component renders each individual log item
+const LogItem = ({ item }) => {
+  const isReward = item.logType === 'reward';
+  const timeChange = item.timeChangeSeconds || 0;
+
+  return (
+    <div className="p-3 bg-gray-800/50 rounded-md text-left text-sm">
+      <p className="font-semibold text-gray-300">{item.sourceText}</p>
+      
+      {item.note && (
+        <p className="italic text-gray-400 mt-1 flex items-center gap-2">
+          <FaStickyNote /> {item.note}
+        </p>
+      )}
+
+      {timeChange !== 0 && (
+        <p className={`font-mono mt-1 flex items-center gap-2 ${isReward ? 'text-green-400' : 'text-red-400'}`}>
+          <FaClock /> {formatElapsedTime(Math.abs(timeChange))} {isReward ? 'removed from' : 'added to'} chastity time
+        </p>
+      )}
+
+      {item.createdAt && (
+        <p className="text-xs text-gray-500 text-right mt-1">
+          {formatTime(item.createdAt, true)}
+        </p>
+      )}
+    </div>
+  );
+};
+
+const getCreatedAtMillis = (date) => {
+  if (!date) return 0;
+  if (typeof date.toMillis === 'function') {
+    return date.toMillis();
+  }
+  if (date instanceof Date) {
+    return date.getTime();
+  }
+  return 0;
+};
+
+const RewardsPunishmentsPage = ({ tasks = [] }) => {
+  // Filter for the standardized log entries
+  const rewards = tasks
+    .filter(task => task.logType === 'reward')
+    .sort((a, b) => getCreatedAtMillis(b.createdAt) - getCreatedAtMillis(a.createdAt));
+  const punishments = tasks
+    .filter(task => task.logType === 'punishment')
+    .sort((a, b) => getCreatedAtMillis(b.createdAt) - getCreatedAtMillis(a.createdAt));
+
   return (
     <div className="p-0 md:p-4 space-y-6">
-      <div className="p-4 bg-gray-800 border border-purple-700 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold text-purple-300 mb-1">Tasks</h3>
-        <p className="text-purple-400 text-sm">Keyholder tasks will appear here.</p>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-gray-800 border border-green-700 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold text-green-300 mb-2">Rewards</h3>
-          {rewards.length === 0 ? (
-            <p className="text-purple-300 text-sm">No rewards added.</p>
+        {/* Rewards Box */}
+        <div className="box box-yellow rewards-history-box">
+          <h4><FaAward className="mr-2" />Rewards History</h4>
+          {rewards.length > 0 ? (
+            <div className="space-y-3">
+              {rewards.map(item => <LogItem key={item.id} item={item} />)}
+            </div>
           ) : (
-            <ul className="text-purple-200 text-left list-disc list-inside space-y-1">
-              {rewards.map(r => (
-                <li key={r.id}>
-                  {r.timeSeconds ? `- ${formatElapsedTime(r.timeSeconds)} ` : ''}{r.other}
-                </li>
-              ))}
-            </ul>
+            <p>No rewards have been given.</p>
           )}
         </div>
-        <div className="p-4 bg-gray-800 border border-red-700 rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold text-red-300 mb-2">Punishments</h3>
-          {punishments.length === 0 ? (
-            <p className="text-purple-300 text-sm">No punishments added.</p>
+
+        {/* Punishments Box */}
+        <div className="box box-red punishments-history-box">
+          <h4><FaExclamationTriangle className="mr-2" />Punishments History</h4>
+          {punishments.length > 0 ? (
+            <div className="space-y-3">
+              {punishments.map(item => <LogItem key={item.id} item={item} />)}
+            </div>
           ) : (
-            <ul className="text-purple-200 text-left list-disc list-inside space-y-1">
-              {punishments.map(p => (
-                <li key={p.id}>
-                  {p.timeSeconds ? `+ ${formatElapsedTime(p.timeSeconds)} ` : ''}{p.other}
-                </li>
-              ))}
-            </ul>
+            <p>No punishments have been given.</p>
           )}
         </div>
       </div>
