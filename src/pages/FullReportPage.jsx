@@ -5,6 +5,7 @@ import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
 import EventLogTable from '../components/log_event/EventLogTable';
 import ArousalLevelChart from '../components/arousal/ArousalLevelChart';
+import ChastityHeatmap from '../components/full_report/ChastityHeatmap';
 
 const FullReportPage = ({
   savedSubmissivesName,
@@ -104,6 +105,10 @@ const FullReportPage = ({
         </label>
       </div>
       <ArousalLevelChart arousalLevels={arousalLevels} days={chartDays} />
+      <ChastityHeatmap
+        chastityHistory={chastityHistory}
+        sexualEventsLog={sexualEventsLog}
+      />
       <hr className="section-divider" />
 
       <h3 className="section-title">Chastity History</h3>
