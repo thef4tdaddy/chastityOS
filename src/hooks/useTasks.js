@@ -25,16 +25,19 @@ export function useTasks(userId, isAuthReady) {
     const q = query(tasksCollectionRef);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const tasksData = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          deadline: data.deadline && typeof data.deadline.toDate === 'function'
-            ? data.deadline.toDate()
-            : null,
-          recurrenceEnd: data.recurrenceEnd && typeof data.recurrenceEnd.toDate === 'function'
-            ? data.recurrenceEnd.toDate()
+        const tasksData = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            status: typeof data.status === 'string'
+              ? data.status.trim().toLowerCase()
+              : data.status,
+            deadline: data.deadline && typeof data.deadline.toDate === 'function'
+              ? data.deadline.toDate()
+              : null,
+            recurrenceEnd: data.recurrenceEnd && typeof data.recurrenceEnd.toDate === 'function'
+              ? data.recurrenceEnd.toDate()
             : null,
           createdAt: data.createdAt && typeof data.createdAt.toDate === 'function'
             ? data.createdAt.toDate()
