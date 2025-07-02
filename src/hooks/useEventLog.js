@@ -6,6 +6,7 @@ import { db } from '../firebase';
 export const useEventLog = (userId, isAuthReady) => {
     const [sexualEventsLog, setSexualEventsLog] = useState([]);
     const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [eventLogMessage, setEventLogMessage] = useState('');
 
     // Form state
@@ -72,6 +73,7 @@ export const useEventLog = (userId, isAuthReady) => {
 
     const handleLogNewEvent = useCallback(async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
         if (!isAuthReady || !userId) {
             setEventLogMessage("Auth error.");
             setTimeout(() => setEventLogMessage(''), 3000);
@@ -118,6 +120,7 @@ export const useEventLog = (userId, isAuthReady) => {
         };
 
         try {
+            setIsSubmitting(true);
             await addDoc(eventsColRef, newEventData);
             setEventLogMessage("Event logged!");
             setNewEventDate(new Date().toISOString().slice(0, 10));
@@ -134,9 +137,11 @@ export const useEventLog = (userId, isAuthReady) => {
         } catch (error) {
             console.error("Error logging new event:", error);
             setEventLogMessage("Failed to log. See console.");
+        } finally {
+            setIsSubmitting(false);
         }
         setTimeout(() => setEventLogMessage(''), 3000);
-    }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents]);
+    }, [isAuthReady, userId, selectedEventTypes, otherEventTypeChecked, otherEventTypeDetail, newEventDate, newEventTime, newEventDurationHours, newEventDurationMinutes, newEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, newEventNotes, getEventsCollectionRef, fetchEvents, isSubmitting]);
 
     return {
         sexualEventsLog,
@@ -155,6 +160,7 @@ export const useEventLog = (userId, isAuthReady) => {
         handleEventTypeChange,
         handleOtherEventTypeCheckChange,
         handleLogNewEvent,
+        isSubmitting,
         fetchEvents,
         getEventsCollectionRef, // For reset function
         setSexualEventsLog // Expose setter for reset
