@@ -288,7 +288,9 @@ export const useChastitySession = (
                 setTimeout(() => setEditSessionMessage(''), 3000);
             }
         }
-        await saveDataToFirestore({ cageOnTime: newTime });
+        await saveDataToFirestore({ cageOnTime: newTime, isCageOn: true });
+        setEditSessionDateInput('');
+        setEditSessionTimeInput('');
         setEditSessionMessage("Start time updated successfully!");
         setTimeout(() => setEditSessionMessage(''), 3000);
     }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, googleEmail, saveDataToFirestore, fetchEvents]);
