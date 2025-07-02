@@ -55,11 +55,12 @@ const ChastityHeatmap = ({ chastityHistory, sexualEventsLog }) => {
           if (value.count >= 2) return 'color-github-2';
           return 'color-github-1';
         }}
-        titleForValue={value =>
-          value && value.count
+        titleForValue={value => {
+          if (!value) return '';
+          return value.count
             ? `${value.date}: ${value.count} activity`
-            : `${value.date}: no activity`
-        }
+            : `${value.date}: no activity`;
+        }}
         showWeekdayLabels={false}
       />
     </div>
