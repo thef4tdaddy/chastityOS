@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 
-const HOW_TO_URL = 'https://raw.githubusercontent.com/thef4tdaddy/chastityOS/main/docs/how-to.md';
+const branch = import.meta.env.VITE_APP_VARIANT === 'nightly' ? 'nightly' : 'main';
+const HOW_TO_URL = `https://raw.githubusercontent.com/thef4tdaddy/chastityOS/${branch}/docs/how-to.md`;
 
 const HowToModal = ({ isOpen, onClose }) => {
   const [content, setContent] = useState('');
