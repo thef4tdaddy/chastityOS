@@ -56,7 +56,7 @@ const ChastityHeatmap = ({ chastityHistory, sexualEventsLog }) => {
           return 'color-github-1';
         }}
         titleForValue={value => {
-          if (!value) return '';
+          if (!value || !value.date) return '';
           return value.count
             ? `${value.date}: ${value.count} activity`
             : `${value.date}: no activity`;
