@@ -73,7 +73,13 @@ export function useKeyholderHandlers({
   const handleAddTask = useCallback(
     async (taskData) => {
       if (userId && addTask) {
-        await addTask({ ...taskData, status: 'pending', assignedBy: 'keyholder', createdAt: serverTimestamp() });
+        await addTask({
+          ...taskData,
+          recurrenceId: taskData.recurrenceId || null, // This is the fix
+          status: 'pending',
+          assignedBy: 'keyholder',
+          createdAt: serverTimestamp()
+        });
       }
     },
     [userId, addTask]
