@@ -6,10 +6,10 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
     { id: 'tracker', name: 'Chastity Tracker' },
     { id: 'logEvent', name: 'Log Event' },
     { id: 'fullReport', name: 'Full Report' },
+    { id: 'tasks', name: 'Tasks' },
     { id: 'keyholder', name: 'Keyholder' },
     { id: 'rewards', name: 'Rewards/Punishments' },
     { id: 'settings', name: 'Profile & Preferences' },
-    // { id: 'privacy', name: 'Privacy' }, // Privacy removed from main navigation
     { id: 'feedback', name: 'Feedback' }
   ];
 
@@ -35,6 +35,7 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
               tracker: '📈 ',
               logEvent: '📝 ',
               fullReport: '📊 ',
+              tasks: '✅ ',
               keyholder: '🔐 ',
               rewards: '🎁 ',
               settings: '⚙️ ',
@@ -56,8 +57,8 @@ const MainNav = ({ currentPage, setCurrentPage }) => {
               onClick={() => setCurrentPage(page.id)}
               className={`py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-75 ${
                 currentPage === page.id
-                  ? 'bg-purple-600 text-white shadow-lg transform scale-105 focus:ring-purple-400'
-                  : 'bg-gray-700 text-purple-300 hover:bg-purple-500 hover:text-white hover:shadow-md focus:ring-purple-500'
+                  ? 'bg-nightly-600 text-white shadow-lg transform scale-105 focus:ring-nightly-400 border border-transparent'
+                  : 'bg-gray-700 text-nightly-300 hover:bg-nightly-500 hover:text-white hover:shadow-md focus:ring-nightly-500 border border-transparent'
               }`}
             >
               {page.name}

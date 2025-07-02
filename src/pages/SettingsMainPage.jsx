@@ -1,27 +1,42 @@
 import React from 'react';
-import AccountSection from '../components/settings/AccountSection.jsx';
-import DisplaySettingsSection from '../components/settings/DisplaySettingsSection.jsx';
-import PersonalGoalSection from '../components/settings/PersonalGoalSection.jsx';
-import SessionEditSection from '../components/settings/SessionEditSection.jsx';
+import AccountSection from '../components/settings/AccountSection';
+import DisplaySettingsSection from '../components/settings/DisplaySettingsSection';
+import SessionEditSection from '../components/settings/SessionEditSection';
+import PersonalGoalSection from '../components/settings/PersonalGoalSection';
 
 const SettingsMainPage = (props) => {
-  return (
-    <div className="p-0 md:p-4 space-y-6">
-      <AccountSection {...props} />
-      <DisplaySettingsSection {...props} />
-      <PersonalGoalSection {...props} />
-      <SessionEditSection {...props} sessionId={props.userId} />
+    const { setCurrentPage } = props;
 
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={() => props.setCurrentPage('syncData')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow transition"
-        >
-          Manage Data & Export
-        </button>
-      </div>
-    </div>
-  );
+    const navigateToDataManagement = () => {
+        if (setCurrentPage) {
+            setCurrentPage('dataManagement');
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* All sections receive the necessary props from the main `chastityOS` object */}
+            <AccountSection {...props} />
+            <DisplaySettingsSection {...props} />
+            <PersonalGoalSection {...props} />
+            <SessionEditSection {...props} />
+            
+            <div className="card bg-base-100 shadow-xl mt-6">
+              <div className="card-body">
+                <h2 className="card-title">Data & Backup</h2>
+                <p>Export, import, or reset all your application data.</p>
+                <div className="card-actions justify-end">
+                  <button 
+                    onClick={navigateToDataManagement} 
+                    className="btn btn-primary"
+                  >
+                    Manage Data
+                  </button>
+                </div>
+              </div>
+            </div>
+        </div>
+    );
 };
 
 export default SettingsMainPage;
