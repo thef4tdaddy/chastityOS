@@ -126,6 +126,14 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
           isTrackingAllowed: true,
           eventDisplayMode: 'kinky',
           rulesText: '',
+          publicProfileEnabled: false,
+          publicStatsVisibility: {
+            currentStatus: true,
+            totals: true,
+            arousalChart: true,
+            chastityHistory: true,
+            sexualEvents: true,
+          },
         },
         // Reset all session-related fields as well
         requiredKeyholderDurationSeconds: 0,
