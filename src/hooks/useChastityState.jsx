@@ -143,9 +143,10 @@ const rulesState = useRules(userId, isAuthReady);
   useEffect(() => {
     const checkOverdueTasks = () => {
       const now = new Date();
-      const pendingTasks = tasks.filter(
-        t => t.status?.trim().toLowerCase() === 'pending' && t.deadline
-      );
+      const pendingTasks = tasks.filter(t => {
+        const status = (t.status || '').trim().toLowerCase();
+        return status === 'pending' && t.deadline;
+      });
 
       for (const task of pendingTasks) {
         if (now > task.deadline) {

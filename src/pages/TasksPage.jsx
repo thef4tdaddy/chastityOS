@@ -20,7 +20,7 @@ const CountdownTimer = ({ deadline }) => {
 };
 
 const ArchivedTaskItem = ({ task }) => {
-  const statusText = task.status?.trim().toLowerCase();
+  const statusText = (task.status || '').trim().toLowerCase();
   const isApproved = statusText === 'approved';
   const consequence = isApproved ? task.reward : task.punishment;
 
@@ -79,14 +79,16 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
     setNotes(prev => ({ ...prev, [taskId]: text }));
   };
 
-  const pendingTasks = tasks.filter(
-    task => task.status?.trim().toLowerCase() === 'pending'
-  );
-  const submittedTasks = tasks.filter(
-    task => task.status?.trim().toLowerCase() === 'pending_approval'
-  );
+  const pendingTasks = tasks.filter(task => {
+    const status = (task.status || '').trim().toLowerCase();
+    return status === 'pending';
+  });
+  const submittedTasks = tasks.filter(task => {
+    const status = (task.status || '').trim().toLowerCase();
+    return status === 'pending_approval';
+  });
   const archivedTasks = tasks.filter(task => {
-    const status = task.status?.trim().toLowerCase();
+    const status = (task.status || '').trim().toLowerCase();
     return status === 'approved' || status === 'rejected';
   });
 

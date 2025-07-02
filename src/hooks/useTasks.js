@@ -27,12 +27,14 @@ export function useTasks(userId, isAuthReady) {
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const tasksData = querySnapshot.docs.map(doc => {
           const data = doc.data();
+          const normalizedStatus =
+            typeof data.status === 'string'
+              ? data.status.trim().toLowerCase()
+              : undefined;
           return {
             id: doc.id,
             ...data,
-            status: typeof data.status === 'string'
-              ? data.status.trim().toLowerCase()
-              : data.status,
+            status: normalizedStatus || 'pending',
             deadline: data.deadline && typeof data.deadline.toDate === 'function'
               ? data.deadline.toDate()
               : null,

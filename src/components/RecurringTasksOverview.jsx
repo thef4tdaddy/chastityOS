@@ -16,8 +16,9 @@ const RecurringTasksOverview = ({ tasks = [], onCancel }) => {
           nextDeadline: null,
         };
       }
+      const status = (task.status || '').trim().toLowerCase();
       if (
-        task.status?.trim().toLowerCase() === 'pending' &&
+        status === 'pending' &&
         (!groups[id].nextDeadline ||
           (task.deadline && task.deadline < groups[id].nextDeadline))
       ) {
