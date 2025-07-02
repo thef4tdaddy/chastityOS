@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.8...v3.11.0) (2025-07-02)
+
+
+### ✨ Features
+
+* enhance PublicProfilePage with Firebase integration and improved UI layout ([fe368d3](https://github.com/thef4tdaddy/chastityOS/commit/fe368d3d0bef5cce14d0b96593f2660b63abb640))
+
 ## [3.11.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.7...v3.11.0-nightly.8) (2025-07-02)
 
 
