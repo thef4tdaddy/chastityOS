@@ -59,7 +59,7 @@ const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
   };
 
   const recentTasks = tasks
-    .filter(t => t.assignedBy === 'keyholder' && t.text)
+    .filter(t => t.text)
     .sort((a, b) => {
       const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
