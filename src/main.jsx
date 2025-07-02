@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
+import PublicProfilePage from './pages/PublicProfilePage.jsx';
+import { extractUserIdFromToken } from './utils/publicProfile';
 import './index.css';
 import * as Sentry from "@sentry/react";
 import { HelmetProvider } from 'react-helmet-async';
@@ -42,12 +44,23 @@ if (sentryDsn) {
 }
 
 const SentryApp = Sentry.withProfiler(App);
+const SentryPublic = Sentry.withProfiler(PublicProfilePage);
+
+const params = new URLSearchParams(window.location.search);
+const profileToken = params.get('profile');
+const profileId = extractUserIdFromToken(profileToken);
+
+const RootComponent = profileId ? (
+  <SentryPublic profileId={profileId} />
+) : (
+  <SentryApp />
+);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
       <HelmetProvider>
-        <SentryApp />
+        {RootComponent}
       </HelmetProvider>
     </Sentry.ErrorBoundary>
   </React.StrictMode>,
