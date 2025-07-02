@@ -20,7 +20,8 @@ export const useChastityState = () => {
   const { userId, isAuthReady, googleEmail } = authState;
 
   const settingsState = useSettings(userId, isAuthReady);
-  const { settings, setSettings } = settingsState;
+  // CHANGE 1: Destructure the saveSettingsToFirestore function
+  const { settings, setSettings, saveSettingsToFirestore } = settingsState;
 
   // Use the unified 'sexualEventsLog' collection for all session and event data
   const getEventsCollectionRef = (uid) =>
@@ -32,7 +33,6 @@ export const useChastityState = () => {
     userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
   );
   
-  // FIX: Destructure tasksState to isolate the `tasks` array from the other properties.
   const tasksState = useTasks(userId, isAuthReady);
   const { tasks, ...otherTaskState } = tasksState;
 
@@ -54,10 +54,10 @@ export const useChastityState = () => {
   const dataManagementState = useDataManagement({
     userId, isAuthReady, userEmail: googleEmail, settings: settings,
     session: sessionObjectForHooks,
-    events: eventLogState.sexualEventsLog, // Corrected property name
-    tasks: tasks, // Pass the isolated tasks array
+    events: eventLogState.sexualEventsLog,
+    tasks: tasks,
   });
-const rulesState = useRules(userId, isAuthReady);
+  const rulesState = useRules(userId, isAuthReady);
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
@@ -86,15 +86,25 @@ const rulesState = useRules(userId, isAuthReady);
     }
   }, [settings?.keyholderPasswordHash]);
 
+  // CHANGE 2: The updated password handling logic
   const handleSetPermanentPassword = useCallback(async (newPassword) => {
     if (!newPassword || newPassword.length < 6) {
       setKeyholderMessage("Password must be at least 6 characters long.");
       return;
     }
     const newHash = await sha256(newPassword);
-    setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
+    
+    // Create the new settings object first
+    const newSettings = { ...settings, keyholderPasswordHash: newHash };
+    
+    // Directly call the save function from the settings hook and wait for it to complete
+    await saveSettingsToFirestore(newSettings);
+    
+    // Then, update the local state. This now happens only AFTER successful save.
+    setSettings(newSettings);
+    
     setKeyholderMessage("Permanent password has been updated successfully!");
-  }, [setSettings]);
+  }, [settings, setSettings, saveSettingsToFirestore]);
 
   const lockKeyholderControls = useCallback(() => {
     setIsKeyholderModeUnlocked(false);
@@ -103,10 +113,10 @@ const rulesState = useRules(userId, isAuthReady);
 
   const keyholderHandlers = useKeyholderHandlers({
     userId,
-    tasks: tasks, // Pass the isolated tasks array
+    tasks: tasks,
     addTask: tasksState.addTask,
     updateTask: tasksState.updateTask,
-    deleteTask: tasksState.deleteTask, // Pass the delete function
+    deleteTask: tasksState.deleteTask,
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
@@ -156,15 +166,13 @@ const rulesState = useRules(userId, isAuthReady);
     return () => clearInterval(intervalId);
   }, [tasks, handleSubmitForReview]);
 
-  // FIX: Assemble the final returned object more explicitly
-  // to prevent accidental property overwrites.
   return {
     ...authState,
     ...settingsState,
     ...eventLogState,
     ...sessionState,
     ...arousalState,
-    ...otherTaskState, // Spread the other functions from useTasks
+    ...otherTaskState,
     ...personalGoalState,
     ...rulesState,
     ...dataManagementState,
@@ -177,7 +185,7 @@ const rulesState = useRules(userId, isAuthReady);
     lockKeyholderControls,
     handleSubmitForReview,
     keyholderName: settings.keyholderName,
-    tasks: tasks, // Explicitly include the `tasks` array
+    tasks: tasks,
     ...releaseRequestState,
     handleGrantReleaseRequest,
     handleDenyReleaseRequest,
