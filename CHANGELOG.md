@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.7...v3.11.0-nightly.8) (2025-07-02)
+
+
+### 🐛 Bug Fixes
+
+* events not coming up in log, custom password not persisting ([18a4e8c](https://github.com/thef4tdaddy/chastityOS/commit/18a4e8c92503ccb93174da9b3ad04203a45c1fbe))
+
+
+### ✨ Features
+
+* how to doc fully filled out ([25994b3](https://github.com/thef4tdaddy/chastityOS/commit/25994b3f6c1adc5f0be444c76e3fe268a3a2c6de))
+
 ## [3.11.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.6...v3.11.0-nightly.7) (2025-07-02)
 
 
