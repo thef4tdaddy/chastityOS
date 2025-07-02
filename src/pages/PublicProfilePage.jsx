@@ -90,7 +90,7 @@ const PublicProfilePage = ({ profileId }) => {
   const Card = ({ title, icon, children, isVisible }) => {
     if (!isVisible) return null;
     return (
-      <div className="bg-gray-800/50 border border-gray-700 rounded-2xl shadow-lg backdrop-blur-sm transition-all hover:border-purple-500 hover:shadow-purple-500/20">
+      <div className="bg-gray-800/50 border border-gray-700 rounded-2xl shadow-lg backdrop-blur-sm transition-all hover:border-purple-500 hover:shadow-purple-500/20 h-full">
         <div className="flex items-center p-4 border-b border-gray-700">
           <div className="text-purple-400 mr-3">{icon}</div>
           <h3 className="text-lg font-semibold text-purple-300">{title}</h3>
@@ -125,7 +125,8 @@ const PublicProfilePage = ({ profileId }) => {
             </Card>
           </div>
 
-          <div className="md:col-span-2">
+          {/* THIS IS THE CHANGE: These two cards will now sit side-by-side on medium screens and up */}
+          <div>
             <Card title="Totals & Statistics" icon={<FaHistory size={20} />} isVisible={visibility.totals}>
               <TotalsSection
                 totalChastityTime={totalChastityTime}
@@ -135,8 +136,8 @@ const PublicProfilePage = ({ profileId }) => {
               />
             </Card>
           </div>
-
-          <div className="md:col-span-2">
+          
+          <div>
             <Card title="Arousal History" icon={<FaChartLine size={20} />} isVisible={visibility.arousalChart}>
               <ArousalLevelChart arousalLevels={arousalLevels} days={7} />
             </Card>

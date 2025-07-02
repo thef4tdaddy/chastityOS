@@ -34,7 +34,7 @@ const FullReportPage = ({
       )
     : 0;
 
-  const [chartDays, setChartDays] = useState(1);
+  const [chartDays, setChartDays] = useState(7); // Default to 7 days for a cleaner look
 
   const pauseReasonTotals = useMemo(() => {
     const totals = {};
@@ -78,32 +78,38 @@ const FullReportPage = ({
       />
       <hr className="section-divider" />
 
-      <TotalsSection
-        totalChastityTime={totalChastityTime}
-        totalTimeCageOff={totalTimeCageOff}
-        overallTotalPauseTime={overallTotalPauseTime}
-        pauseReasonTotals={pauseReasonTotals}
-      />
-      <hr className="section-divider" />
-
-      <h3 className="section-title">Arousal Level History</h3>
-      <div className="mb-2 text-sm text-left">
-        <label>
-          Show past
-          <input
-            type="number"
-            value={chartDays}
-            onChange={e =>
-              setChartDays(Math.max(1, parseInt(e.target.value, 10) || 1))
-            }
-            min="1"
-            max="30"
-            className="ml-2 w-16 rounded-md text-black px-1"
+      {/* THIS IS THE CHANGE: A grid layout for Totals and Arousal History */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 className="section-title">Totals & Statistics</h3>
+          <TotalsSection
+            totalChastityTime={totalChastityTime}
+            totalTimeCageOff={totalTimeCageOff}
+            overallTotalPauseTime={overallTotalPauseTime}
+            pauseReasonTotals={pauseReasonTotals}
           />
-          days
-        </label>
+        </div>
+        <div>
+          <h3 className="section-title">Arousal Level History</h3>
+          <div className="mb-2 text-sm text-left">
+            <label>
+              Show past
+              <input
+                type="number"
+                value={chartDays}
+                onChange={e =>
+                  setChartDays(Math.max(1, parseInt(e.target.value, 10) || 1))
+                }
+                min="1"
+                max="30"
+                className="ml-2 w-16 rounded-md text-black px-1"
+              />
+              days
+            </label>
+          </div>
+          <ArousalLevelChart arousalLevels={arousalLevels} days={chartDays} />
+        </div>
       </div>
-      <ArousalLevelChart arousalLevels={arousalLevels} days={chartDays} />
       <hr className="section-divider" />
 
       <h3 className="section-title">Chastity History</h3>
