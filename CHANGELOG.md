@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.12.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.0...v3.12.1-nightly.0) (2025-07-02)
+
+
+### 🐛 Bug Fixes
+
+* changing sizing on arousal chart ([4aaecb2](https://github.com/thef4tdaddy/chastityOS/commit/4aaecb2c9d6eeeebf288802d1fb3a44ef92764fa))
+
 ## [3.12.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0...v3.12.0) (2025-07-02)
 
 ## [3.11.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.8...v3.11.0) (2025-07-02)
