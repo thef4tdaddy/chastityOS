@@ -4,6 +4,7 @@ import DisplaySettingsSection from '../components/settings/DisplaySettingsSectio
 import SessionEditSection from '../components/settings/SessionEditSection';
 import PersonalGoalSection from '../components/settings/PersonalGoalSection';
 import PublicProfileSection from '../components/settings/PublicProfileSection';
+import KeyholderLinkSection from '../components/settings/KeyholderLinkSection';
 
 const SettingsMainPage = (props) => {
     const { setCurrentPage } = props;
@@ -20,6 +21,7 @@ const SettingsMainPage = (props) => {
             <AccountSection {...props} />
             <DisplaySettingsSection {...props} />
             <PublicProfileSection {...props} />
+            <KeyholderLinkSection {...props} />
             <PersonalGoalSection {...props} />
             <SessionEditSection {...props} />
             
