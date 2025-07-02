@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.6...v3.11.0-nightly.7) (2025-07-02)
+
+
+### 🐛 Bug Fixes
+
+* add recurrenceId to task data and include unseen status in pending tasks filter ([b1b0eee](https://github.com/thef4tdaddy/chastityOS/commit/b1b0eee57c0f3c8117fb6fe53ba0f189a7d1b35d))
+* prevent duplicate log events from rapid clicks ([80f824f](https://github.com/thef4tdaddy/chastityOS/commit/80f824f3f2d7a1b94c1715a26b37a8d85632d57f))
+* **session:** save timestamp correctly when editing start ([15e4467](https://github.com/thef4tdaddy/chastityOS/commit/15e4467a5473f81b54b125e36b2e2405449227c0))
+
 ## [3.11.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.5...v3.11.0-nightly.6) (2025-07-02)
 
 
