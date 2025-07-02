@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.11.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.5...v3.11.0-nightly.6) (2025-07-02)
+
+
+### ✨ Features
+
+* update HOW_TO_URL to use dynamic branch based on environment variable ([475f7c7](https://github.com/thef4tdaddy/chastityOS/commit/475f7c7afb57fb9e41e935c181c77a0a89bdf4ca))
+
 ## [3.11.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.4...v3.11.0-nightly.5) (2025-07-01)
 
 
