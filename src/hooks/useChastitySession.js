@@ -171,7 +171,7 @@ export const useChastitySession = (
             setHasSessionEverBeenActive(true);
             saveDataToFirestore({
                 isCageOn: true,
-                cageOnTime: currentTime,
+                cageOnTime: Timestamp.fromDate(currentTime),
                 totalTimeCageOff: newTotalOffTime,
                 timeInChastity: 0,
                 cageOffStartTime: null,
@@ -288,7 +288,7 @@ export const useChastitySession = (
                 setTimeout(() => setEditSessionMessage(''), 3000);
             }
         }
-        await saveDataToFirestore({ cageOnTime: newTime });
+        await saveDataToFirestore({ cageOnTime: Timestamp.fromDate(newTime) });
         setEditSessionMessage("Start time updated successfully!");
         setTimeout(() => setEditSessionMessage(''), 3000);
     }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, googleEmail, saveDataToFirestore, fetchEvents]);
