@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
@@ -7,6 +7,7 @@ import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
 import UpdatePrompt from './components/UpdatePrompt';
 import EulaModal from './components/EulaModal';
+import RestoreSessionPrompt from './components/RestoreSessionPrompt';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -75,6 +76,11 @@ const navItemNames = {
     feedback: "Submit Beta Feedback"
 };
 
+// Placeholder: Replace with actual logic if/when session restore is implemented
+const showRestoreSessionPrompt = chastityOS.showRestoreSessionPrompt || false;
+const loadedSessionData = chastityOS.loadedSessionData || {};
+const handleRestoreSession = chastityOS.handleRestoreSession;
+const handleDiscardSession = chastityOS.handleDiscardSession;
 let pageTitleText = "ChastityOS";
 if (currentPage === 'tracker' && showRestoreSessionPrompt) {
     pageTitleText = "Restore Session";
@@ -108,22 +114,30 @@ if (currentPage === 'tracker' && showRestoreSessionPrompt) {
 
                 <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
                 <h2 className="subpage-title no-border">{pageTitleText}</h2>
-                <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
-                    {/* All pages now receive the entire chastityOS state object */}
-                    {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
-                    {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
-                    {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
-                    
-                    {/* The KeyholderPage now gets everything it needs, including task handlers */}
-                    {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
-                    
-                    {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
-                    {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
-                    {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-                    {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
-                    {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
-                    {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
-                </Suspense>
+                {showRestoreSessionPrompt ? (
+                  <RestoreSessionPrompt
+                    cageOnTime={loadedSessionData.cageOnTime}
+                    onRestore={handleRestoreSession}
+                    onDiscard={handleDiscardSession}
+                  />
+                ) : (
+                  <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
+                      {/* All pages now receive the entire chastityOS state object */}
+                      {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
+                      {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
+                      {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+                      
+                      {/* The KeyholderPage now gets everything it needs, including task handlers */}
+                      {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} />}
+                      
+                      {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
+                      {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
+                      {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+                      {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
+                      {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
+                      {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
+                  </Suspense>
+                )}
             </div>
             <FooterNav userId={userId} googleEmail={googleEmail} onShowEula={() => setShowEulaModal(true)} />
 
