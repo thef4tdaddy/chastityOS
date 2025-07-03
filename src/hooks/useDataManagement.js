@@ -3,7 +3,7 @@ import { db } from '../firebase';
 // Fix: Removed unused 'getDoc' and 'setDoc' imports.
 import { doc, writeBatch, collection, getDocs, query } from 'firebase/firestore';
 import * as Sentry from '@sentry/react';
-import { ActiveUserContext as UserContext } from '../context/UserContext';
+import { ActiveUserContext as UserContext } from '../contexts/ActiveUserContext.jsx';
 
 export function useDataManagement({ isAuthReady, userEmail, settings, session, events, tasks }) {
   const { activeUserId: userId } = useContext(UserContext);
