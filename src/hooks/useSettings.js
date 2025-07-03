@@ -1,36 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { sha256 as generateHash } from '../utils/hash';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as Sentry from '@sentry/react';
 
-const defaultSettings = {
-  submissivesName: '',
-  keyholderName: '',
-  rulesText: '',
-  isTrackingAllowed: true,
-  eventDisplayMode: 'kinky',
-  publicProfileEnabled: false,
-  publicStatsVisibility: {
-    currentStatus: true,
-    totals: true,
-    arousalChart: true,
-    chastityHistory: true,
-    sexualEvents: true,
-  },
-};
+export const useSettings = (userId, isAuthReady) => {
+  const defaultSettings = useMemo(() => ({
+    submissivesName: '',
+    keyholderName: '',
+    keyholderPasswordHash: null,
+    requiredKeyholderDurationSeconds: null,
+    goalDurationSeconds: null,
+    rewards: [],
+    punishments: [],
+    isTrackingAllowed: true,
+    eventDisplayMode: 'kinky',
+    rulesText: '',
+    publicProfileEnabled: false,
+    publicStatsVisibility: {
+      currentStatus: true,
+      totals: true,
+      arousalChart: true,
+      chastityHistory: true,
+      sexualEvents: true,
+    },
+  }), []);
 
-export function useSettings(userId, isAuthReady) {
   const [settings, setSettings] = useState(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
   const [submissivesNameInput, setSubmissivesNameInput] = useState('');
   const [nameMessage, setNameMessage] = useState('');
+  const [keyholderMessage, setKeyholderMessage] = useState('');
+  const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
 
-  useEffect(() => {
-    if (settings.submissivesName) {
-      setSubmissivesNameInput(settings.submissivesName);
-    }
-  }, [settings.submissivesName]);
-
+  // Load settings
   useEffect(() => {
     if (!isAuthReady || !userId) {
       setIsLoading(false);
@@ -41,39 +44,40 @@ export function useSettings(userId, isAuthReady) {
       const userDocRef = doc(db, 'users', userId);
       try {
         const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists() && docSnap.data().settings) {
-          const loadedSettings = { ...defaultSettings, ...docSnap.data().settings };
+        if (docSnap.exists()) {
+          const loadedSettings = { ...defaultSettings, ...docSnap.data() };
           setSettings(loadedSettings);
           setSubmissivesNameInput(loadedSettings.submissivesName || '');
         } else {
-          await setDoc(userDocRef, { settings: defaultSettings }, { merge: true });
+          await setDoc(userDocRef, defaultSettings, { merge: true });
           setSettings(defaultSettings);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
-        Sentry.captureException(error);
+        Sentry.captureException?.(error);
       } finally {
         setIsLoading(false);
       }
     };
     fetchSettings();
-  }, [isAuthReady, userId]);
+  }, [isAuthReady, userId, defaultSettings]);
 
-  const saveSettingsToFirestore = useCallback(async (newSettingsObject) => {
+  const saveSettingsToFirestore = useCallback(async (settingsToSave) => {
     if (!isAuthReady || !userId) return;
-    const userDocRef = doc(db, 'users', userId);
+    const docRef = doc(db, "users", userId);
     try {
-      await setDoc(userDocRef, { settings: newSettingsObject }, { merge: true });
+      await setDoc(docRef, settingsToSave, { merge: true });
+      setSettings(prev => ({ ...prev, ...settingsToSave }));
     } catch (error) {
-      console.error("Error updating settings:", error);
-      Sentry.captureException(error);
+      console.error("Error saving settings to Firestore:", error);
+      Sentry.captureException?.(error);
     }
   }, [isAuthReady, userId]);
 
   const updateSettings = useCallback((value) => {
     if (typeof value === 'function') {
-      setSettings(prevState => {
-        const newState = value(prevState);
+      setSettings(prev => {
+        const newState = value(prev);
         saveSettingsToFirestore(newState);
         return newState;
       });
@@ -98,10 +102,7 @@ export function useSettings(userId, isAuthReady) {
   }, [updateSettings]);
 
   const togglePublicProfileEnabled = useCallback(() => {
-    updateSettings(prev => ({
-      ...prev,
-      publicProfileEnabled: !prev.publicProfileEnabled,
-    }));
+    updateSettings(prev => ({ ...prev, publicProfileEnabled: !prev.publicProfileEnabled }));
   }, [updateSettings]);
 
   const togglePublicStatVisibility = useCallback((key) => {
@@ -113,6 +114,57 @@ export function useSettings(userId, isAuthReady) {
       },
     }));
   }, [updateSettings]);
+
+  // Keyholder logic
+  const handleSetKeyholder = useCallback(async (name) => {
+    const khName = name.trim();
+    if (!khName) {
+      setKeyholderMessage('Keyholder name cannot be empty.');
+      return null;
+    }
+    const hash = await generateHash(userId + khName);
+    const preview = hash.substring(0, 8).toUpperCase();
+
+    await saveSettingsToFirestore({
+      keyholderName: khName,
+      keyholderPasswordHash: hash,
+      requiredKeyholderDurationSeconds: null,
+    });
+
+    setIsKeyholderModeUnlocked(false);
+    setKeyholderMessage(`Keyholder "${khName}" set. Password preview: ${preview}`);
+    return preview;
+  }, [userId, saveSettingsToFirestore]);
+
+  const handleClearKeyholder = useCallback(async () => {
+    await saveSettingsToFirestore({
+      keyholderName: '',
+      keyholderPasswordHash: null,
+      requiredKeyholderDurationSeconds: null,
+    });
+    setIsKeyholderModeUnlocked(false);
+    setKeyholderMessage('Keyholder data cleared.');
+  }, [saveSettingsToFirestore]);
+
+  const handleUnlockKeyholderControls = useCallback(async (enteredPasswordPreview) => {
+    if (!settings.keyholderPasswordHash) {
+      setKeyholderMessage('Keyholder not fully set up.');
+      return false;
+    }
+    const expectedPreview = settings.keyholderPasswordHash.substring(0, 8).toUpperCase();
+    if (enteredPasswordPreview.toUpperCase() === expectedPreview) {
+      setIsKeyholderModeUnlocked(true);
+      setKeyholderMessage('Keyholder controls unlocked.');
+      return true;
+    }
+    setKeyholderMessage('Incorrect Keyholder password.');
+    return false;
+  }, [settings.keyholderPasswordHash]);
+
+  const handleLockKeyholderControls = useCallback(() => {
+    setIsKeyholderModeUnlocked(false);
+    setKeyholderMessage('Keyholder controls locked.');
+  }, []);
 
   return {
     settings,
@@ -129,7 +181,12 @@ export function useSettings(userId, isAuthReady) {
     publicStatsVisibility: settings.publicStatsVisibility,
     togglePublicProfileEnabled,
     togglePublicStatVisibility,
-    // THIS IS THE CHANGE: Export the save function directly
+    keyholderMessage,
+    isKeyholderModeUnlocked,
+    handleSetKeyholder,
+    handleClearKeyholder,
+    handleUnlockKeyholderControls,
+    handleLockKeyholderControls,
     saveSettingsToFirestore,
   };
-}
+};

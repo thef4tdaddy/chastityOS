@@ -32,10 +32,25 @@ const LogItem = ({ item }) => {
   );
 };
 
+const getCreatedAtMillis = (date) => {
+  if (!date) return 0;
+  if (typeof date.toMillis === 'function') {
+    return date.toMillis();
+  }
+  if (date instanceof Date) {
+    return date.getTime();
+  }
+  return 0;
+};
+
 const RewardsPunishmentsPage = ({ tasks = [] }) => {
   // Filter for the standardized log entries
-  const rewards = tasks.filter(task => task.logType === 'reward').sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
-  const punishments = tasks.filter(task => task.logType === 'punishment').sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+  const rewards = tasks
+    .filter(task => task.logType === 'reward')
+    .sort((a, b) => getCreatedAtMillis(b.createdAt) - getCreatedAtMillis(a.createdAt));
+  const punishments = tasks
+    .filter(task => task.logType === 'punishment')
+    .sort((a, b) => getCreatedAtMillis(b.createdAt) - getCreatedAtMillis(a.createdAt));
 
   return (
     <div className="p-0 md:p-4 space-y-6">
