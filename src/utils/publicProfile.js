@@ -1,4 +1,5 @@
-import { safeToDate } from './dateUtils';
+// This file contains utility functions for handling public profiles in a chastity app.
+const safeToDate = (v) => (v && typeof v.toDate === 'function') ? v.toDate() : null;
 import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 
