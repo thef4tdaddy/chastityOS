@@ -29,11 +29,11 @@ const SessionEventLogSection = ({ isLoadingEvents, eventLog }) => {
           {filteredLog.map(event => (
             <tr key={event.id} className="hover:bg-orange-900/20">
               <td className="px-4 py-3 whitespace-nowrap text-sm text-orange-200">
-                {formatTime(safeToDate(event.timestamp), true)}
+                {formatTime(safeToDate(safeToDate(event.timestamp)), true)}
               </td>
               <td className="px-4 py-3 text-sm text-orange-200">Start Time Edited</td>
-              <td className="px-4 py-3 text-sm text-orange-200">{event.oldStartTime ? formatTime(new Date(event.oldStartTime), true) : 'N/A'}</td>
-              <td className="px-4 py-3 text-sm text-orange-200">{event.newStartTime ? formatTime(new Date(event.newStartTime), true) : 'N/A'}</td>
+              <td className="px-4 py-3 text-sm text-orange-200">{event.oldStartTime ? formatTime(safeToDate(new Date(event.oldStartTime)), true) : 'N/A'}</td>
+              <td className="px-4 py-3 text-sm text-orange-200">{event.newStartTime ? formatTime(safeToDate(new Date(event.newStartTime)), true) : 'N/A'}</td>
               <td className="px-4 py-3 text-sm text-orange-200">{event.editedBy || 'N/A'}</td>
             </tr>
           ))}

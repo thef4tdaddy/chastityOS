@@ -40,8 +40,8 @@ const ChastityHistoryTable = ({ chastityHistory }) => {
                         return (
                             <tr key={p.id || (p.startTime ? p.startTime.toString() : Math.random())} className="hover:bg-purple-900/10">
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{p.periodNumber}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(p.startTime, true)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(p.endTime, true)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(p.startTime), true)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(p.endTime), true)}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatElapsedTime(p.duration)}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-yellow-300">{formatElapsedTime(p.totalPauseDurationSeconds || 0)}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-green-400 font-semibold">{formatElapsedTime(effectiveDuration)}</td>

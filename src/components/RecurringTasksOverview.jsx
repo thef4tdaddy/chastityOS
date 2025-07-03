@@ -51,12 +51,12 @@ const RecurringTasksOverview = ({ tasks = [], onCancel }) => {
               Repeats every {entry.recurrenceDays} day
               {entry.recurrenceDays === 1 ? '' : 's'}
               {entry.recurrenceEnd && (
-                <> until {formatTime(entry.recurrenceEnd, true)}</>
+                <> until {formatTime(safeToDate(entry.recurrenceEnd), true)}</>
               )}
             </div>
             {entry.nextDeadline && (
               <div className="w-full text-left text-xs mt-1 text-red-300">
-                Next due {formatTime(entry.nextDeadline, true)}
+                Next due {formatTime(safeToDate(entry.nextDeadline), true)}
               </div>
             )}
           </div>

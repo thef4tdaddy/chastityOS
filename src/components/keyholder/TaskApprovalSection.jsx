@@ -52,7 +52,7 @@ const TaskApprovalSection = ({ tasks, onApprove, onReject }) => {
               )}
               {task.submittedAt && (
                 <span className="font-mono text-gray-500 flex-shrink-0 ml-2">
-                  {formatTime(task.submittedAt, true)}
+                  {formatTime(safeToDate(task.submittedAt), true)}
                 </span>
               )}
             </div>

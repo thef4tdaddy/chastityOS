@@ -87,7 +87,7 @@ const TrackerPage = (props) => {
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-blue-300">Restore Previous Session?</h3>
                 <p className="text-sm text-gray-300 mb-2">An active chastity session was found:</p>
                 <ul className="text-xs text-left text-gray-400 mb-6 list-disc list-inside pl-4">
-                    <li>Started: {formatTime(loadedSessionData.cageOnTime, true)}</li>
+                    <li>Started: {formatTime(safeToDate(loadedSessionData.cageOnTime), true)}</li>
                     <li>
                         Currently: {loadedSessionData.isPaused
                             ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})`
@@ -150,7 +150,7 @@ const TrackerPage = (props) => {
             <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm text-center">
                 <p className="tracker-label text-sm md:text-lg">{topBoxLabel}</p>
                 <p className="tracker-value text-2xl md:text-4xl font-semibold">
-                    {formatTime(topBoxTime, true)}
+                    {formatTime(safeToDate(topBoxTime), true)}
                 </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

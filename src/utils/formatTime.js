@@ -5,7 +5,7 @@
  * Returns 'HH:MM:SS' for numeric seconds.
  * Returns 'Invalid Date' if input is invalid.
  */
-export function formatTime(input) {
+export function formatTime(safeToDate(input)) {
   if (input == null) return "Invalid Date";
   // Firestore Timestamp detection (has .seconds property)
   if (typeof input === "object") {

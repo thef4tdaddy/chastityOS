@@ -63,7 +63,7 @@ const ArchivedTaskItem = ({ task }) => {
         <div className="w-full text-left text-xs mt-1 text-blue-300">
           Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
           {task.recurrenceEnd && (
-            <> until {formatTime(task.recurrenceEnd, true)}</>
+            <> until {formatTime(safeToDate(task.recurrenceEnd), true)}</>
           )}
         </div>
       )}
@@ -100,7 +100,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
               </div>
               {task.deadline && (
                 <div className="w-full text-left text-sm mt-2 flex justify-between items-center">
-                  <span className="text-red-300"><strong>Due:</strong> {formatTime(task.deadline, true)}</span>
+                  <span className="text-red-300"><strong>Due:</strong> {formatTime(safeToDate(task.deadline), true)}</span>
                   <CountdownTimer deadline={task.deadline} />
                 </div>
               )}
@@ -109,7 +109,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
                 <div className="w-full text-left text-xs mt-1 text-blue-300">
                   Repeats every {task.recurrenceDays} day{task.recurrenceDays === 1 ? '' : 's'}
                   {task.recurrenceEnd && (
-                    <> until {formatTime(task.recurrenceEnd, true)}</>
+                    <> until {formatTime(safeToDate(task.recurrenceEnd), true)}</>
                   )}
                 </div>
               )}

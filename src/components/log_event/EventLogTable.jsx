@@ -52,17 +52,17 @@ const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName,
                 {filteredSexualEventsLog.map(event => ( // Changed to filteredSexualEventsLog
                     event.eventType === 'startTimeEdit' ? (
                         <tr key={event.id} className="hover:bg-purple-900/20">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp || event.timestamp, true)}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(event.eventTimestamp || event.timestamp), true)}</td>
                             <td className="px-4 py-3 text-sm text-purple-200">Start Time Edited</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">N/A</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">N/A</td>
                             <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">
-                                {event.notes || `Old: ${event.oldStartTime ? formatTime(new Date(event.oldStartTime), true) : 'N/A'} → New: ${event.newStartTime ? formatTime(new Date(event.newStartTime), true) : 'N/A'}${event.editedBy ? ` (by ${event.editedBy})` : ''}`}
+                                {event.notes || `Old: ${event.oldStartTime ? formatTime(safeToDate(new Date(event.oldStartTime)), true) : 'N/A'} → New: ${event.newStartTime ? formatTime(safeToDate(new Date(event.newStartTime)), true) : 'N/A'}${event.editedBy ? ` (by ${event.editedBy})` : ''}`}
                             </td>
                         </tr>
                     ) : (
                         <tr key={event.id} className="hover:bg-purple-900/20">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(event.eventTimestamp, true)}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(event.eventTimestamp), true)}</td>
                             <td className="px-4 py-3 text-sm text-purple-200 whitespace-pre-wrap break-words max-w-xs">{formatEventTypesForDisplay(event.types, event.otherTypeDetail, savedSubmissivesName)}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{event.durationSeconds ? formatElapsedTime(event.durationSeconds) : 'N/A'}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatOrgasmCounts(event.selfOrgasmAmount, event.partnerOrgasmAmount)}</td>
