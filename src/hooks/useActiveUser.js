@@ -3,19 +3,16 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 /**
  * Hook to provide the current active user's UID from Firebase Auth.
- * Returns null if not logged in.
+ * Returns an object with activeUserId (string or null) and isAuthReady (boolean).
  */
 export const useActiveUser = () => {
-  const [state, setState] = useState(() => {
-    const auth = getAuth();
-    return {
-      activeUserId: auth.currentUser ? auth.currentUser.uid : null,
-      isAuthReady: false,
-    };
+  const auth = getAuth();
+  const [state, setState] = useState({
+    activeUserId: auth.currentUser ? auth.currentUser.uid : null,
+    isAuthReady: false,
   });
 
   useEffect(() => {
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setState({
         activeUserId: user ? user.uid : null,
@@ -23,7 +20,7 @@ export const useActiveUser = () => {
       });
     });
     return () => unsubscribe();
-  }, []);
+  }, [auth]);
 
   return state;
 };
