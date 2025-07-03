@@ -248,6 +248,7 @@ export const useChastitySession = (
         setShowReasonModal(false);
     }, []);
 
+    // Ensure all Timestamps are only created with valid Date instances
     const handleUpdateCurrentCageOnTime = useCallback(async () => {
         if (!isCageOn || !cageOnTime) {
             setEditSessionMessage("No active session to edit.");
@@ -255,8 +256,9 @@ export const useChastitySession = (
             return;
         }
         const newTime = new Date(`${editSessionDateInput}T${editSessionTimeInput}`);
-        if (isNaN(newTime.getTime())) {
-            setEditSessionMessage("Invalid date and/or time provided.");
+        // Guard against invalid date object
+        if (!(newTime instanceof Date) || isNaN(newTime.getTime())) {
+            setEditSessionMessage("Invalid date.");
             setTimeout(() => setEditSessionMessage(''), 3000);
             return;
         }
@@ -266,8 +268,8 @@ export const useChastitySession = (
             return;
         }
         const oldTimeForLog = cageOnTime instanceof Date
-          ? cageOnTime.toLocaleString()
-          : "Unknown";
+            ? cageOnTime.toLocaleString()
+            : "Unknown";
         setCageOnTime(newTime);
         setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
         const newTimeForLog = newTime.toLocaleString();
@@ -279,7 +281,7 @@ export const useChastitySession = (
                     // Include an event type array so this appears in the sexual events log
                     types: ['Session Edit'],
                     eventTimestamp: Timestamp.now(),
-                    oldStartTime: cageOnTime.toISOString(),
+                    oldStartTime: cageOnTime && cageOnTime instanceof Date && !isNaN(cageOnTime.getTime()) ? cageOnTime.toISOString() : null,
                     newStartTime: newTime.toISOString(),
                     notes: `Session start time edited by ${googleEmail || 'Anonymous User'}.\nOriginal: ${oldTimeForLog}.\nNew: ${newTimeForLog}.`,
                     editedBy: googleEmail || 'Anonymous User'
@@ -291,7 +293,12 @@ export const useChastitySession = (
                 setTimeout(() => setEditSessionMessage(''), 3000);
             }
         }
-        await saveDataToFirestore({ cageOnTime: Timestamp.fromDate(newTime) });
+        // When saving, ensure Timestamp.fromDate is only called with a valid Date
+        await saveDataToFirestore({
+            cageOnTime: Timestamp.fromDate(
+                newTime instanceof Date && !isNaN(newTime.getTime()) ? newTime : new Date()
+            )
+        });
         setEditSessionMessage("Start time updated successfully!");
         setTimeout(() => setEditSessionMessage(''), 3000);
     }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, googleEmail, saveDataToFirestore, fetchEvents]);
