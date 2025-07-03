@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/firestore';
-import { formatTime, formatElapsedTime } from '../utils';
+import { formatElapsedTime } from '../utils';
 import { db } from '../firebase';
 
 export const useChastitySession = (
@@ -265,12 +265,12 @@ export const useChastitySession = (
             setTimeout(() => setEditSessionMessage(''), 3000);
             return;
         }
-        const oldTimeForLog = cageOnTime && cageOnTime instanceof Date
-          ? formatTime(cageOnTime, true, true)
+        const oldTimeForLog = cageOnTime instanceof Date
+          ? cageOnTime.toLocaleString()
           : "Unknown";
         setCageOnTime(newTime);
         setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
-        const newTimeForLog = formatTime(newTime, true, true);
+        const newTimeForLog = newTime.toLocaleString();
         const eventsColRef = typeof getEventsCollectionRef === 'function' ? getEventsCollectionRef() : null;
         if (eventsColRef) {
             try {
