@@ -38,11 +38,18 @@ export function useWelcome(userId, isAuthReady) {
   }, [userId, isAuthReady]);
 
   const accept = useCallback(async () => {
-    if (!isAuthReady || !userId) return;
+    console.log('accept() called');
+    console.log('isAuthReady:', isAuthReady, 'userId:', userId);
+    if (!isAuthReady || !userId) {
+      console.log('accept() aborted: missing auth or userId');
+      return;
+    }
     const userDocRef = doc(db, 'users', userId);
     try {
+      console.log('Calling setDoc to set welcomeAccepted: true');
       await setDoc(userDocRef, { welcomeAccepted: true }, { merge: true });
       setHasAccepted(true);
+      console.log('Acceptance recorded successfully');
     } catch (err) {
       console.error('Failed to record acceptance:', err);
     }
