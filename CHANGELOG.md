@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.12.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.0...v3.12.1-nightly.1) (2025-07-03)
+
+
+### 🐛 Bug Fixes
+
+* issue with edited time thanks adlguy on discord ([05597b7](https://github.com/thef4tdaddy/chastityOS/commit/05597b7666c23d0d0fa0f823d525568272a03fcf))
+
 ### [3.12.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.0...v3.12.1-nightly.0) (2025-07-02)
 
 
