@@ -18,29 +18,29 @@ import { useReleaseRequests } from './useReleaseRequests';
 
 export const useChastityState = () => {
   const authState = useAuth();
-  const { isAuthReady, googleEmail } = authState;
+  const { googleEmail } = authState;
 
-  const { activeUserId } = useActiveUser();
+  const { activeUserId, isAuthReady: activeUserReady } = useActiveUser();
   const userId = activeUserId;
 
-  const settingsState = useSettings(userId, isAuthReady);
+  const settingsState = useSettings(userId, activeUserReady);
   const { settings, setSettings } = settingsState;
 
   // Use the unified 'sexualEventsLog' collection for all session and event data
   const getEventsCollectionRef = (uid) =>
     collection(db, 'users', uid, 'sexualEventsLog');
-  const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
-  const arousalState = useArousalLevels(userId, isAuthReady);
+  const eventLogState = useEventLog(userId, activeUserReady, getEventsCollectionRef);
+  const arousalState = useArousalLevels(userId, activeUserReady);
   
   const sessionState = useChastitySession(
-    userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
+    userId, activeUserReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
   );
   
   // FIX: Destructure tasksState to isolate the `tasks` array from the other properties.
-  const tasksState = useTasks(userId, isAuthReady);
+  const tasksState = useTasks(userId, activeUserReady);
   const { tasks, ...otherTaskState } = tasksState;
 
-  const releaseRequestState = useReleaseRequests(userId, isAuthReady);
+  const releaseRequestState = useReleaseRequests(userId, activeUserReady);
   
   const sessionObjectForHooks = {
       isChastityOn: sessionState.isCageOn,
@@ -56,12 +56,12 @@ export const useChastityState = () => {
   });
 
   const dataManagementState = useDataManagement({
-    userId, isAuthReady, userEmail: googleEmail, settings: settings,
+    userId, isAuthReady: activeUserReady, userEmail: googleEmail, settings: settings,
     session: sessionObjectForHooks,
     events: eventLogState.sexualEventsLog, // Corrected property name
     tasks: tasks, // Pass the isolated tasks array
   });
-const rulesState = useRules(userId, isAuthReady);
+  const rulesState = useRules(userId, activeUserReady);
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
@@ -185,5 +185,6 @@ const rulesState = useRules(userId, isAuthReady);
     ...releaseRequestState,
     handleGrantReleaseRequest,
     handleDenyReleaseRequest,
+    isAuthReady: activeUserReady,
   };
 };
