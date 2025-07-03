@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
 import { db } from '../firebase';
+import * as Sentry from '@sentry/react';
 
 export const useChastitySession = (
     userId,
@@ -77,6 +78,7 @@ export const useChastitySession = (
             await setDoc(docRef, dataToSave, { merge: true });
         } catch (error) {
             console.error("Error saving session data to Firestore:", error);
+            Sentry.captureException(error);
         }
     }, [isAuthReady, userId, getDocRef]);
 
@@ -142,7 +144,6 @@ export const useChastitySession = (
         setLoadedSessionData(null);
     }, []);
 
-    // ... (All your other functions: handleToggleCage, handleConfirmRemoval, etc. remain unchanged)
     const handleToggleCage = useCallback(() => {
         if (!isAuthReady || isPaused) {
             if (isPaused) {
@@ -171,7 +172,7 @@ export const useChastitySession = (
             setHasSessionEverBeenActive(true);
             saveDataToFirestore({
                 isCageOn: true,
-                cageOnTime: currentTime,
+                cageOnTime: Timestamp.fromDate(currentTime),
                 totalTimeCageOff: newTotalOffTime,
                 timeInChastity: 0,
                 cageOffStartTime: null,
@@ -248,8 +249,10 @@ export const useChastitySession = (
     }, []);
 
     const handleUpdateCurrentCageOnTime = useCallback(async () => {
-        if (!isCageOn || !cageOnTime) {
-            setEditSessionMessage("No active session to edit.");
+        // THIS IS THE FIX: Add a more robust check to ensure cageOnTime is a valid Date object.
+        if (!isCageOn || !(cageOnTime instanceof Date) || isNaN(cageOnTime.getTime())) {
+            setEditSessionMessage("No valid active session to edit.");
+            Sentry.captureMessage("handleUpdateCurrentCageOnTime called with invalid cageOnTime", { extra: { cageOnTime }});
             setTimeout(() => setEditSessionMessage(''), 3000);
             return;
         }
@@ -265,15 +268,12 @@ export const useChastitySession = (
             return;
         }
         const oldTimeForLog = formatTime(cageOnTime, true, true);
-        setCageOnTime(newTime);
-        setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
         const newTimeForLog = formatTime(newTime, true, true);
         const eventsColRef = typeof getEventsCollectionRef === 'function' ? getEventsCollectionRef() : null;
         if (eventsColRef) {
             try {
                 await addDoc(eventsColRef, {
                     eventType: 'startTimeEdit',
-                    // Include an event type array so this appears in the sexual events log
                     types: ['Session Edit'],
                     eventTimestamp: Timestamp.now(),
                     oldStartTime: cageOnTime.toISOString(),
@@ -284,11 +284,16 @@ export const useChastitySession = (
                 fetchEvents();
             } catch (error) {
                 console.error("Error logging session edit event:", error);
+                Sentry.captureException(error);
                 setEditSessionMessage("Error logging edit. Update applied locally.");
                 setTimeout(() => setEditSessionMessage(''), 3000);
             }
         }
-        await saveDataToFirestore({ cageOnTime: newTime });
+        // Update local state immediately for responsiveness
+        setCageOnTime(newTime);
+        setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
+        // Save to Firestore
+        await saveDataToFirestore({ cageOnTime: Timestamp.fromDate(newTime) });
         setEditSessionMessage("Start time updated successfully!");
         setTimeout(() => setEditSessionMessage(''), 3000);
     }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, googleEmail, saveDataToFirestore, fetchEvents]);
@@ -414,6 +419,7 @@ export const useChastitySession = (
             }
         } catch (error) {
             console.error("Error restoring data from ID:", error);
+            Sentry.captureException(error);
             setRestoreFromIdMessage(`Error restoring data: ${error.message}`);
         } finally {
             setShowRestoreFromIdPrompt(false);
@@ -482,6 +488,7 @@ export const useChastitySession = (
             }
         }, (error) => {
             console.error("Error listening to session data:", error);
+            Sentry.captureException(error);
         });
         return () => unsubscribe();
     }, [isAuthReady, userId, getDocRef, applyRestoredData, isCageOn, showRestoreSessionPrompt]);
@@ -502,13 +509,13 @@ export const useChastitySession = (
                         hasSessionEverBeenActive: false,
                         isPaused: false,
                         accumulatedPauseTimeThisSession: 0,
-                        // --- Add the new field to the default doc ---
                         requiredKeyholderDurationSeconds: 0,
                         cageOffStartTime: null
                     });
                 }
             } catch (error) {
                 console.error("Error checking/creating Firestore user doc:", error);
+                Sentry.captureException(error);
             }
         };
         ensureUserDocExists();
@@ -575,7 +582,6 @@ export const useChastitySession = (
         setCageOnTime, setTimeInChastity, setIsPaused, setPauseStartTime,
         setAccumulatedPauseTimeThisSession, setCurrentSessionPauseEvents, setLastPauseEndTime, setHasSessionEverBeenActive,
         cageOffStartTime,
-        // --- Return the new state value ---
         requiredKeyholderDurationSeconds
     };
 };

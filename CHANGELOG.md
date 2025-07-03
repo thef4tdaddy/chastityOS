@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.12.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.0...v3.12.1-nightly.1) (2025-07-03)
+
+
+### 🐛 Bug Fixes
+
+* issue with edited time thanks adlguy on discord ([05597b7](https://github.com/thef4tdaddy/chastityOS/commit/05597b7666c23d0d0fa0f823d525568272a03fcf))
+
+### [3.12.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.0...v3.12.1-nightly.0) (2025-07-02)
+
+
+### 🐛 Bug Fixes
+
+* changing sizing on arousal chart ([4aaecb2](https://github.com/thef4tdaddy/chastityOS/commit/4aaecb2c9d6eeeebf288802d1fb3a44ef92764fa))
+
+## [3.12.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0...v3.12.0) (2025-07-02)
+
+## [3.11.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.8...v3.11.0) (2025-07-02)
+
+
+### ✨ Features
+
+* enhance PublicProfilePage with Firebase integration and improved UI layout ([fe368d3](https://github.com/thef4tdaddy/chastityOS/commit/fe368d3d0bef5cce14d0b96593f2660b63abb640))
+
+## [3.11.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.7...v3.11.0-nightly.8) (2025-07-02)
+
+
+### 🐛 Bug Fixes
+
+* events not coming up in log, custom password not persisting ([18a4e8c](https://github.com/thef4tdaddy/chastityOS/commit/18a4e8c92503ccb93174da9b3ad04203a45c1fbe))
+
+
+### ✨ Features
+
+* how to doc fully filled out ([25994b3](https://github.com/thef4tdaddy/chastityOS/commit/25994b3f6c1adc5f0be444c76e3fe268a3a2c6de))
+
+## [3.11.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.6...v3.11.0-nightly.7) (2025-07-02)
+
+
+### 🐛 Bug Fixes
+
+* add recurrenceId to task data and include unseen status in pending tasks filter ([b1b0eee](https://github.com/thef4tdaddy/chastityOS/commit/b1b0eee57c0f3c8117fb6fe53ba0f189a7d1b35d))
+* prevent duplicate log events from rapid clicks ([80f824f](https://github.com/thef4tdaddy/chastityOS/commit/80f824f3f2d7a1b94c1715a26b37a8d85632d57f))
+* **session:** save timestamp correctly when editing start ([15e4467](https://github.com/thef4tdaddy/chastityOS/commit/15e4467a5473f81b54b125e36b2e2405449227c0))
+
 ## [3.11.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.5...v3.11.0-nightly.6) (2025-07-02)
 
 

@@ -9,6 +9,14 @@ const defaultSettings = {
   rulesText: '',
   isTrackingAllowed: true,
   eventDisplayMode: 'kinky',
+  publicProfileEnabled: false,
+  publicStatsVisibility: {
+    currentStatus: true,
+    totals: true,
+    arousalChart: true,
+    chastityHistory: true,
+    sexualEvents: true,
+  },
 };
 
 export function useSettings(userId, isAuthReady) {
@@ -89,6 +97,23 @@ export function useSettings(userId, isAuthReady) {
     updateSettings(prev => ({ ...prev, eventDisplayMode: mode }));
   }, [updateSettings]);
 
+  const togglePublicProfileEnabled = useCallback(() => {
+    updateSettings(prev => ({
+      ...prev,
+      publicProfileEnabled: !prev.publicProfileEnabled,
+    }));
+  }, [updateSettings]);
+
+  const togglePublicStatVisibility = useCallback((key) => {
+    updateSettings(prev => ({
+      ...prev,
+      publicStatsVisibility: {
+        ...prev.publicStatsVisibility,
+        [key]: !prev.publicStatsVisibility?.[key],
+      },
+    }));
+  }, [updateSettings]);
+
   return {
     settings,
     isLoading,
@@ -100,5 +125,11 @@ export function useSettings(userId, isAuthReady) {
     nameMessage,
     eventDisplayMode: settings.eventDisplayMode,
     handleSetEventDisplayMode,
+    publicProfileEnabled: settings.publicProfileEnabled,
+    publicStatsVisibility: settings.publicStatsVisibility,
+    togglePublicProfileEnabled,
+    togglePublicStatVisibility,
+    // THIS IS THE CHANGE: Export the save function directly
+    saveSettingsToFirestore,
   };
 }

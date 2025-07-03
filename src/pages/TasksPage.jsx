@@ -78,7 +78,7 @@ const TasksPage = ({ tasks = [], handleSubmitForReview, savedSubmissivesName }) 
     setNotes(prev => ({ ...prev, [taskId]: text }));
   };
 
-  const pendingTasks = tasks.filter(task => task.assignedBy === 'keyholder' && task.status === 'pending');
+  const pendingTasks = tasks.filter(task => task.assignedBy === 'keyholder' && (task.status === 'pending' || task.status === 'unseen'));
   const submittedTasks = tasks.filter(task => task.status === 'pending_approval');
   const archivedTasks = tasks.filter(task => task.status === 'approved' || task.status === 'rejected');
 
