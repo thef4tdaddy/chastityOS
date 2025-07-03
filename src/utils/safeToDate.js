@@ -1,0 +1,1 @@
+export const safeToDate = (v) => (v && typeof v.toDate === 'function') ? v.toDate() : null;
