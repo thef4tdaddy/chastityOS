@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { generateHash } from '../utils/hash'; // Adjust path as needed
+import { sha256 as generateHash } from '../utils/hash'; // Adjust path as needed
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as Sentry from '@sentry/react';
