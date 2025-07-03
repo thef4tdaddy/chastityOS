@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { safeToDate } from './useChastitySession';
+import { safeToDate } from '../utils/safeToDate';
 
 export const useEventLog = (userId, isAuthReady) => {
     const [sexualEventsLog, setSexualEventsLog] = useState([]);

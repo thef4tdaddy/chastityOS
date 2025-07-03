@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, getDocs, limit, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { safeToDate } from './useChastitySession';
+import { safeToDate } from '../utils/safeToDate';
 
 // Maximum frequency to log arousal level (in hours)
 const AR0USAL_INTERVAL_HOURS = 8;
