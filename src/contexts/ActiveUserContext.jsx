@@ -28,3 +28,5 @@ export const ActiveUserProvider = ({ children }) => {
     </ActiveUserContext.Provider>
   );
 };
+
+export { ActiveUserContext };
