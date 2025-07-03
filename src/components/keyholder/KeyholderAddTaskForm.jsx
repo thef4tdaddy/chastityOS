@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { FaPlusCircle, FaExclamationTriangle } from 'react-icons/fa';
 
-const KeyholderAddTaskForm = ({ onAddTask }) => {
+const KeyholderAddTaskForm = ({ onAddTask, tasks = [] }) => {
   const [taskText, setTaskText] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [recurrenceDays, setRecurrenceDays] = useState('');
+  const [recurrenceEnd, setRecurrenceEnd] = useState('');
   const [rewardType, setRewardType] = useState('none');
   const [rewardValue, setRewardValue] = useState('');
   const [punishmentType, setPunishmentType] = useState('none');
@@ -29,6 +31,10 @@ const KeyholderAddTaskForm = ({ onAddTask }) => {
     const taskData = {
       text: taskText.trim(),
       deadline: deadline ? new Date(deadline) : null,
+      recurrenceDays: recurrenceDays ? parseInt(recurrenceDays, 10) : 0,
+      recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : null,
+      recurrenceId: recurrenceDays ? crypto.randomUUID() : undefined,
+      recurrenceCancelled: false,
       reward: {
         type: rewardType,
         value: rewardType === 'time' ? Number(rewardValue) * 3600 : rewardValue,
@@ -44,25 +50,75 @@ const KeyholderAddTaskForm = ({ onAddTask }) => {
     // Reset form fields
     setTaskText('');
     setDeadline('');
+    setRecurrenceDays('');
+    setRecurrenceEnd('');
     setRewardType('none');
     setRewardValue('');
     setPunishmentType('none');
     setPunishmentValue('');
   };
 
+  const recentTasks = tasks
+    .filter(t => t.assignedBy === 'keyholder' && t.text)
+    .sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 3);
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   return (
     <>
       <div className="tasks-container">
         <h4 className="text-lg font-semibold mb-3 pb-2 border-b border-blue-800">Assign a New Task</h4>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="relative">
             <label htmlFor="task-text" className="block text-xs font-medium mb-1">Task Description</label>
-            <input id="task-text" type="text" value={taskText} onChange={(e) => setTaskText(e.target.value)} placeholder="e.g., Polish my boots" className="w-full" required />
+            <input
+              id="task-text"
+              type="text"
+              value={taskText}
+              onChange={(e) => setTaskText(e.target.value)}
+              placeholder="e.g., Polish my boots"
+              className="w-full"
+              required
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
+            />
+            {showSuggestions && recentTasks.length > 0 && (
+              <ul className="absolute z-10 w-full bg-gray-800 border border-gray-600 rounded-md mt-1">
+                {recentTasks.map(task => (
+                  <li
+                    key={task.id}
+                    className="px-3 py-2 hover:bg-gray-700 cursor-pointer"
+                    onMouseDown={() => {
+                      setTaskText(task.text);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {task.text}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div>
             <label htmlFor="task-deadline" className="block text-xs font-medium mb-1">Complete By (Optional)</label>
             <input id="task-deadline" type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="recurrence-days" className="block text-xs font-medium mb-1">Repeat Every (days)</label>
+              <input id="recurrence-days" type="number" min="0" value={recurrenceDays} onChange={(e) => setRecurrenceDays(e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <label htmlFor="recurrence-end" className="block text-xs font-medium mb-1">Repeat Until (Optional)</label>
+              <input id="recurrence-end" type="datetime-local" value={recurrenceEnd} onChange={(e) => setRecurrenceEnd(e.target.value)} className="w-full" />
+            </div>
           </div>
 
           <fieldset className="p-3 border border-blue-800 rounded-md">

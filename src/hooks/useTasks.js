@@ -25,16 +25,16 @@ export function useTasks(userId, isAuthReady) {
     const q = query(tasksCollectionRef);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      // --- THIS IS THE FIX ---
-      // When mapping the data, check for a 'deadline' field.
-      // If it exists and is a Firestore Timestamp, convert it with .toDate()
       const tasksData = querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          deadline: data.deadline && typeof data.deadline.toDate === 'function' 
-            ? data.deadline.toDate() 
+          deadline: data.deadline && typeof data.deadline.toDate === 'function'
+            ? data.deadline.toDate()
+            : null,
+          recurrenceEnd: data.recurrenceEnd && typeof data.recurrenceEnd.toDate === 'function'
+            ? data.recurrenceEnd.toDate()
             : null,
           createdAt: data.createdAt && typeof data.createdAt.toDate === 'function'
             ? data.createdAt.toDate()
