@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { generateHash } from '../utils/hash'; // Adjust path as needed
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as Sentry from '@sentry/react';
 
 export const useSettings = (userId, isAuthReady) => {
-    const defaultSettings = {
+    const defaultSettings = useMemo(() => ({
         submissivesName: '',
         keyholderName: '',
         keyholderPasswordHash: null,
@@ -14,7 +15,7 @@ export const useSettings = (userId, isAuthReady) => {
         punishments: [],
         isTrackingAllowed: true,
         eventDisplayMode: 'kinky',
-    };
+    }), []);
 
     const [settings, setSettings] = useState(defaultSettings);
     const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +53,7 @@ export const useSettings = (userId, isAuthReady) => {
             }
         };
         fetchSettings();
-    }, [isAuthReady, userId]);
+    }, [isAuthReady, userId, defaultSettings]);
 
     const saveSettingsToFirestore = useCallback(async (settingsToSave) => {
         if (!isAuthReady || !userId) return;
@@ -210,58 +211,3 @@ export const useSettings = (userId, isAuthReady) => {
         saveSettingsToFirestore
     };
 };
-    };
-    fetchSettings();
-  }, [isAuthReady, userId]);
-
-  const saveSettingsToFirestore = useCallback(async (newSettingsObject) => {
-    if (!isAuthReady || !userId) return;
-    const userDocRef = doc(db, 'users', userId);
-    try {
-      await setDoc(userDocRef, { settings: newSettingsObject }, { merge: true });
-    } catch (error) {
-      console.error("Error updating settings:", error);
-      Sentry.captureException(error);
-    }
-  }, [isAuthReady, userId]);
-
-  const updateSettings = useCallback((value) => {
-    if (typeof value === 'function') {
-      setSettings(prevState => {
-        const newState = value(prevState);
-        saveSettingsToFirestore(newState);
-        return newState;
-      });
-    } else {
-      setSettings(value);
-      saveSettingsToFirestore(value);
-    }
-  }, [saveSettingsToFirestore]);
-
-  const handleSubmissivesNameInputChange = (e) => {
-    setSubmissivesNameInput(e.target.value);
-  };
-
-  const handleSetSubmissivesName = useCallback(() => {
-    updateSettings(prev => ({ ...prev, submissivesName: submissivesNameInput }));
-    setNameMessage("Name updated successfully!");
-    setTimeout(() => setNameMessage(''), 3000);
-  }, [submissivesNameInput, updateSettings]);
-
-  const handleSetEventDisplayMode = useCallback((mode) => {
-    updateSettings(prev => ({ ...prev, eventDisplayMode: mode }));
-  }, [updateSettings]);
-
-  return {
-    settings,
-    isLoading,
-    setSettings: updateSettings,
-    savedSubmissivesName: settings.submissivesName,
-    submissivesNameInput,
-    handleSubmissivesNameInputChange,
-    handleSetSubmissivesName,
-    nameMessage,
-    eventDisplayMode: settings.eventDisplayMode,
-    handleSetEventDisplayMode,
-  };
-}
