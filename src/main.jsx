@@ -6,6 +6,7 @@ import { extractUserIdFromToken } from './utils/publicProfile';
 import './index.css';
 import * as Sentry from "@sentry/react";
 import { HelmetProvider } from 'react-helmet-async';
+import { ActiveUserProvider } from './contexts/ActiveUserContext.jsx';
 
 // Read all Sentry config from environment variables
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
@@ -60,7 +61,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
       <HelmetProvider>
-        {RootComponent}
+        <ActiveUserProvider>
+          {RootComponent}
+        </ActiveUserProvider>
       </HelmetProvider>
     </Sentry.ErrorBoundary>
   </React.StrictMode>,

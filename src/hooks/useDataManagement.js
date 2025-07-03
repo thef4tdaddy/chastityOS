@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useContext } from 'react';
 import { db } from '../firebase';
 // Fix: Removed unused 'getDoc' and 'setDoc' imports.
 import { doc, writeBatch, collection, getDocs, query } from 'firebase/firestore';
 import * as Sentry from '@sentry/react';
+import { UserContext } from '../context/UserContext';
 
-export function useDataManagement({ userId, isAuthReady, userEmail, settings, session, events, tasks }) {
+export function useDataManagement({ isAuthReady, userEmail, settings, session, events, tasks }) {
+  const { activeUserId: userId } = useContext(UserContext);
   const [exportMessage, setExportMessage] = useState('');
   const [importMessage, setImportMessage] = useState('');
 

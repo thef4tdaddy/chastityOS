@@ -4,11 +4,11 @@ import { formatTime, formatElapsedTime } from '../utils';
 import { db } from '../firebase';
 
 export const useChastitySession = (
-    userId,
     isAuthReady,
     googleEmail,
     getEventsCollectionRef,
-    fetchEvents
+    fetchEvents,
+    activeUserId
 ) => {
     // --- State declarations ---
     const [cageOnTime, setCageOnTime] = useState(null);
@@ -58,13 +58,14 @@ export const useChastitySession = (
     const timerCageOffRef = useRef(null);
     const pauseDisplayTimerRef = useRef(null);
 
-    const getDocRef = useCallback((targetUserId = userId) => {
-        if (!targetUserId) return null;
-        return doc(db, "users", targetUserId);
-    }, [userId]);
+    const getDocRef = useCallback((targetUserId) => {
+        const uid = targetUserId || activeUserId;
+        if (!uid) return null;
+        return doc(db, "users", uid);
+    }, [activeUserId]);
 
     const saveDataToFirestore = useCallback(async (dataToSave) => {
-        if (!isAuthReady || !userId) {
+        if (!isAuthReady || !activeUserId) {
             console.warn("Attempted to save data before authentication was ready or user ID was available.");
             return;
         }
@@ -78,7 +79,7 @@ export const useChastitySession = (
         } catch (error) {
             console.error("Error saving session data to Firestore:", error);
         }
-    }, [isAuthReady, userId, getDocRef]);
+    }, [isAuthReady, activeUserId, getDocRef]);
 
     const applyRestoredData = useCallback((data) => {
         if (!data || typeof data !== 'object') {
@@ -407,8 +408,8 @@ export const useChastitySession = (
             if (docSnap.exists()) {
                 applyRestoredData(docSnap.data());
                 setRestoreFromIdMessage("Data successfully loaded from User ID!");
-                await setDoc(doc(db, "users", userId), docSnap.data(), { merge: true });
-                fetchEvents(userId);
+                await setDoc(doc(db, "users", activeUserId), docSnap.data(), { merge: true });
+                fetchEvents(activeUserId);
             } else {
                 setRestoreFromIdMessage("No data found for the provided User ID.");
             }
@@ -420,7 +421,7 @@ export const useChastitySession = (
             setRestoreUserIdInput('');
             setTimeout(() => setRestoreFromIdMessage(''), 3000);
         }
-    }, [restoreUserIdInput, userId, applyRestoredData, fetchEvents]);
+    }, [restoreUserIdInput, activeUserId, applyRestoredData, fetchEvents]);
 
     const handleConfirmRestoreSession = useCallback(async () => {
         if (loadedSessionData) {
@@ -465,7 +466,7 @@ export const useChastitySession = (
     }, [saveDataToFirestore]);
 
     useEffect(() => {
-        if (!isAuthReady || !userId) return;
+        if (!isAuthReady || !activeUserId) return;
         const docRef = getDocRef();
         if (!docRef) return;
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
@@ -484,17 +485,17 @@ export const useChastitySession = (
             console.error("Error listening to session data:", error);
         });
         return () => unsubscribe();
-    }, [isAuthReady, userId, getDocRef, applyRestoredData, isCageOn, showRestoreSessionPrompt]);
+    }, [isAuthReady, activeUserId, getDocRef, applyRestoredData, isCageOn, showRestoreSessionPrompt]);
 
     useEffect(() => {
-        if (!isAuthReady || !userId) return;
+        if (!isAuthReady || !activeUserId) return;
         const ensureUserDocExists = async () => {
             try {
                 const docRef = getDocRef();
                 if (!docRef) return;
                 const docSnap = await getDoc(docRef);
                 if (!docSnap.exists()) {
-                    console.log("🆕 Creating default user doc for:", userId);
+                    console.log("🆕 Creating default user doc for:", activeUserId);
                     await setDoc(docRef, {
                         isCageOn: false,
                         chastityHistory: [],
@@ -512,7 +513,7 @@ export const useChastitySession = (
             }
         };
         ensureUserDocExists();
-    }, [isAuthReady, userId, getDocRef]);
+    }, [isAuthReady, activeUserId, getDocRef]);
 
     useEffect(() => {
         let totalEffective = 0;

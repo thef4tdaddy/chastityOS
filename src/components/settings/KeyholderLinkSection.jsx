@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { generateKeyholderToken, getUserIdFromKeyholderToken } from '../../utils/keyholderLink';
+import { generateKeyholderToken, getUserIdFromKeyholderToken, createAccountLinkForLinkedUid, deleteKeyholderToken, deleteAccountLink } from '../../utils/keyholderLink';
+import { auth } from '../../firebase'; // Assuming auth is imported from firebase config
 
-const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId }) => {
+const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId, setActiveUserId }) => {
   const [shareToken, setShareToken] = useState('');
   const [inputToken, setInputToken] = useState('');
   const [message, setMessage] = useState('');
@@ -22,12 +23,38 @@ const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId }) => {
   const handleLink = async () => {
     const uid = await getUserIdFromKeyholderToken(inputToken.trim());
     if (uid) {
-      setSettings(prev => ({ ...prev, linkedKeyholderId: uid }));
-      setMessage('Linked successfully!');
+      try {
+        await createAccountLinkForLinkedUid(auth.currentUser.uid, uid);
+        setSettings(prev => ({ ...prev, linkedKeyholderId: uid }));
+        setMessage('Linked successfully!');
+        setActiveUserId(uid);
+      } catch {
+        setMessage('Failed to link account');
+      }
     } else {
       setMessage('Invalid code');
     }
     setTimeout(() => setMessage(''), 3000);
+  };
+
+  const handleRevoke = async () => {
+    if (!linkedKeyholderId) return;
+    try {
+      await deleteAccountLink(auth.currentUser.uid, linkedKeyholderId);
+      await deleteKeyholderToken(userId, linkedKeyholderId);
+      setSettings(prev => ({ ...prev, linkedKeyholderId: null }));
+      setMessage('Link revoked successfully');
+      setActiveUserId(userId);
+    } catch {
+      setMessage('Failed to revoke link');
+    }
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const handleSwitchUser = () => {
+    if (linkedKeyholderId) {
+      setActiveUserId(linkedKeyholderId);
+    }
   };
 
   return (
@@ -69,7 +96,25 @@ const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId }) => {
         </button>
       </div>
       {linkedKeyholderId && (
-        <p className="text-sm text-green-400 mt-3 text-left">Linked to user: {linkedKeyholderId}</p>
+        <>
+          <p className="text-sm text-green-400 mt-3 text-left">Linked to user: {linkedKeyholderId}</p>
+          <div className="flex space-x-3 mt-2">
+            <button
+              type="button"
+              onClick={handleSwitchUser}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-1.5 px-3 rounded-md"
+            >
+              Switch to Linked User
+            </button>
+            <button
+              type="button"
+              onClick={handleRevoke}
+              className="bg-red-600 hover:bg-red-700 text-white text-sm py-1.5 px-3 rounded-md"
+            >
+              Revoke Link
+            </button>
+          </div>
+        </>
       )}
       {message && (
         <p className="text-sm text-yellow-400 mt-2 text-left">{message}</p>

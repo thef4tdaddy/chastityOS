@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
+import { useActiveUser } from './useActiveUser';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
 import { useArousalLevels } from './useArousalLevels';
@@ -17,7 +18,10 @@ import { useReleaseRequests } from './useReleaseRequests';
 
 export const useChastityState = () => {
   const authState = useAuth();
-  const { userId, isAuthReady, googleEmail } = authState;
+  const { isAuthReady, googleEmail } = authState;
+
+  const { activeUserId } = useActiveUser();
+  const userId = activeUserId;
 
   const settingsState = useSettings(userId, isAuthReady);
   const { settings, setSettings } = settingsState;
