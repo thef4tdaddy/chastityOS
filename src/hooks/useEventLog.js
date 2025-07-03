@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { safeToDate } from './useChastitySession';
 
 export const useEventLog = (userId, isAuthReady) => {
     const [sexualEventsLog, setSexualEventsLog] = useState([]);
@@ -42,8 +43,8 @@ export const useEventLog = (userId, isAuthReady) => {
             setSexualEventsLog(querySnapshot.docs.map(d => ({
                 id: d.id,
                 ...d.data(),
-                eventTimestamp: d.data().eventTimestamp?.toDate() || d.data().timestamp?.toDate(),
-                timestamp: d.data().timestamp?.toDate()
+                eventTimestamp: safeToDate(d.data().eventTimestamp) || safeToDate(d.data().timestamp),
+                timestamp: safeToDate(d.data().timestamp)
             })));
         } catch (error) {
             console.error("Error fetching events:", error);

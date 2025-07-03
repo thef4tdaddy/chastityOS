@@ -3,6 +3,9 @@ import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/fir
 import { formatElapsedTime } from '../utils';
 import { db } from '../firebase';
 
+// Safe helper for .toDate() usage
+const safeToDate = (v) => (v && typeof v.toDate === 'function') ? v.toDate() : null;
+
 export const useChastitySession = (
     isAuthReady,
     googleEmail,
@@ -88,23 +91,23 @@ export const useChastitySession = (
         }
         const loadedHist = (data.chastityHistory || []).map(item => ({
             ...item,
-            startTime: item.startTime?.toDate ? item.startTime.toDate() : null,
-            endTime: item.endTime?.toDate ? item.endTime.toDate() : null,
+            startTime: safeToDate(item.startTime),
+            endTime: safeToDate(item.endTime),
             totalPauseDurationSeconds: item.totalPauseDurationSeconds || 0,
             pauseEvents: (item.pauseEvents || []).map(p => ({
                 ...p,
-                startTime: p.startTime?.toDate ? p.startTime.toDate() : null,
-                endTime: p.endTime?.toDate ? p.endTime.toDate() : null
+                startTime: safeToDate(p.startTime),
+                endTime: safeToDate(p.endTime)
             }))
         }));
         setChastityHistory(loadedHist);
         setTotalTimeCageOff(data.totalTimeCageOff || 0);
-        const lPauseEndTime = data.lastPauseEndTime?.toDate ? data.lastPauseEndTime.toDate() : null;
+        const lPauseEndTime = safeToDate(data.lastPauseEndTime);
         setLastPauseEndTime(lPauseEndTime && !isNaN(lPauseEndTime.getTime()) ? lPauseEndTime : null);
         const loadedCageOn = data.isCageOn || false;
-        const loadedCageOnTime = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
-        const loadedPauseStart = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
-        const loadedCageOffStart = data.cageOffStartTime?.toDate ? data.cageOffStartTime.toDate() : null;
+        const loadedCageOnTime = safeToDate(data.cageOnTime);
+        const loadedPauseStart = safeToDate(data.pauseStartTime);
+        const loadedCageOffStart = safeToDate(data.cageOffStartTime);
         setIsCageOn(loadedCageOn);
         setCageOnTime(loadedCageOn && loadedCageOnTime && !isNaN(loadedCageOnTime.getTime()) ? loadedCageOnTime : null);
         if (loadedCageOn && loadedCageOnTime) {
@@ -129,8 +132,8 @@ export const useChastitySession = (
             loadedCageOn
                 ? (data.currentSessionPauseEvents || []).map(p => ({
                     ...p,
-                    startTime: p.startTime?.toDate(),
-                    endTime: p.endTime?.toDate()
+                    startTime: safeToDate(p.startTime),
+                    endTime: safeToDate(p.endTime)
                 }))
                 : []
         );

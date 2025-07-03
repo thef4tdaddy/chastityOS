@@ -1,6 +1,6 @@
 // src/components/full_report/SessionEventLogSection.jsx
 import React from 'react';
-import { formatTime } from '../../utils';
+import { formatTime, safeToDate } from '../../utils';
 
 const SessionEventLogSection = ({ isLoadingEvents, eventLog }) => {
   const filteredLog = eventLog.filter(event => event.eventType === 'startTimeEdit');
@@ -29,7 +29,7 @@ const SessionEventLogSection = ({ isLoadingEvents, eventLog }) => {
           {filteredLog.map(event => (
             <tr key={event.id} className="hover:bg-orange-900/20">
               <td className="px-4 py-3 whitespace-nowrap text-sm text-orange-200">
-                {event.timestamp?.toDate ? formatTime(event.timestamp.toDate(), true) : 'N/A'}
+                {formatTime(safeToDate(event.timestamp), true)}
               </td>
               <td className="px-4 py-3 text-sm text-orange-200">Start Time Edited</td>
               <td className="px-4 py-3 text-sm text-orange-200">{event.oldStartTime ? formatTime(new Date(event.oldStartTime), true) : 'N/A'}</td>

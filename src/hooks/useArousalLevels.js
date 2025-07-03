@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { collection, addDoc, query, orderBy, getDocs, limit, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { safeToDate } from './useChastitySession';
 
 // Maximum frequency to log arousal level (in hours)
 const AR0USAL_INTERVAL_HOURS = 8;
@@ -26,7 +27,7 @@ export const useArousalLevels = (userId, isAuthReady) => {
       const q = query(colRef, orderBy('timestamp', 'desc'));
       const snap = await getDocs(q);
       setArousalLevels(
-        snap.docs.map(d => ({ id: d.id, ...d.data(), timestamp: d.data().timestamp?.toDate() }))
+        snap.docs.map(d => ({ id: d.id, ...d.data(), timestamp: safeToDate(d.data().timestamp) }))
       );
     } catch (err) {
       console.error('Error fetching arousal levels:', err);
@@ -51,7 +52,7 @@ export const useArousalLevels = (userId, isAuthReady) => {
       const now = new Date();
       if (snap.docs.length > 0) {
         const last = snap.docs[0].data();
-        const lastDate = last.timestamp?.toDate ? last.timestamp.toDate() : null;
+        const lastDate = safeToDate(last.timestamp);
         if (lastDate && (now - lastDate) < AR0USAL_INTERVAL_HOURS * 3600 * 1000) {
           setArousalMessage(`You can only log once every ${AR0USAL_INTERVAL_HOURS} hours.`);
           setTimeout(() => setArousalMessage(''), 3000);

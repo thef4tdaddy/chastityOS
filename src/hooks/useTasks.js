@@ -1,3 +1,4 @@
+import { safeToDate } from '../utils/safeToDate';
 import { useState, useEffect, useCallback } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -30,18 +31,10 @@ export function useTasks(userId, isAuthReady) {
         return {
           id: doc.id,
           ...data,
-          deadline: data.deadline && typeof data.deadline.toDate === 'function'
-            ? data.deadline.toDate()
-            : null,
-          recurrenceEnd: data.recurrenceEnd && typeof data.recurrenceEnd.toDate === 'function'
-            ? data.recurrenceEnd.toDate()
-            : null,
-          createdAt: data.createdAt && typeof data.createdAt.toDate === 'function'
-            ? data.createdAt.toDate()
-            : null,
-          submittedAt: data.submittedAt && typeof data.submittedAt.toDate === 'function'
-            ? data.submittedAt.toDate()
-            : null
+          deadline: safeToDate(data.deadline),
+          recurrenceEnd: safeToDate(data.recurrenceEnd),
+          createdAt: safeToDate(data.createdAt),
+          submittedAt: safeToDate(data.submittedAt)
         };
       });
       

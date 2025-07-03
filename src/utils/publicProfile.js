@@ -1,3 +1,4 @@
+import { safeToDate } from './dateUtils';
 import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -28,7 +29,7 @@ export async function loadPublicProfile(userId) {
 
     const sessionData = {
       isCageOn: data.isCageOn || false,
-      cageOnTime: data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null,
+      cageOnTime: safeToDate(data.cageOnTime),
       timeInChastity: data.timeInChastity || 0,
       timeCageOff: data.timeCageOff || 0,
       totalChastityTime: data.totalChastityTime || 0,
@@ -39,12 +40,12 @@ export async function loadPublicProfile(userId) {
       isPaused: data.isPaused || false,
       chastityHistory: (data.chastityHistory || []).map((p) => ({
         ...p,
-        startTime: p.startTime?.toDate ? p.startTime.toDate() : null,
-        endTime: p.endTime?.toDate ? p.endTime.toDate() : null,
+        startTime: safeToDate(p.startTime),
+        endTime: safeToDate(p.endTime),
         pauseEvents: (p.pauseEvents || []).map((ev) => ({
           ...ev,
-          startTime: ev.startTime?.toDate ? ev.startTime.toDate() : null,
-          endTime: ev.endTime?.toDate ? ev.endTime.toDate() : null,
+          startTime: safeToDate(ev.startTime),
+          endTime: safeToDate(ev.endTime),
         })),
       })),
     };
@@ -53,15 +54,15 @@ export async function loadPublicProfile(userId) {
     const events = eventsSnap.docs.map((d) => ({
       id: d.id,
       ...d.data(),
-      eventTimestamp: d.data().eventTimestamp?.toDate(),
-      timestamp: d.data().timestamp?.toDate(),
+      eventTimestamp: safeToDate(d.data().eventTimestamp),
+      timestamp: safeToDate(d.data().timestamp),
     }));
 
     const arousalSnap = await getDocs(query(collection(db, 'users', userId, 'arousalLevels'), orderBy('timestamp', 'desc')));
     const arousalLevels = arousalSnap.docs.map((d) => ({
       id: d.id,
       ...d.data(),
-      timestamp: d.data().timestamp?.toDate(),
+      timestamp: safeToDate(d.data().timestamp),
     }));
 
     return { settings, sessionData, events, arousalLevels };

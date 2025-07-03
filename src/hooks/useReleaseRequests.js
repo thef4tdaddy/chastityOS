@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
+const safeToDate = (v) => (v && typeof v.toDate === 'function') ? v.toDate() : null;
+
 export function useReleaseRequests(userId, isAuthReady) {
   const [releaseRequests, setReleaseRequests] = useState([]);
 
@@ -26,15 +28,9 @@ export function useReleaseRequests(userId, isAuthReady) {
         return {
           id: d.id,
           ...item,
-          submittedAt: item.submittedAt && typeof item.submittedAt.toDate === 'function'
-            ? item.submittedAt.toDate()
-            : null,
-          deniedAt: item.deniedAt && typeof item.deniedAt.toDate === 'function'
-            ? item.deniedAt.toDate()
-            : null,
-          grantedAt: item.grantedAt && typeof item.grantedAt.toDate === 'function'
-            ? item.grantedAt.toDate()
-            : null,
+          submittedAt: safeToDate(item.submittedAt),
+          deniedAt: safeToDate(item.deniedAt),
+          grantedAt: safeToDate(item.grantedAt),
         };
       });
       setReleaseRequests(data);
