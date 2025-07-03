@@ -12,6 +12,7 @@ const FeedbackForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState('');
   const [discordUsername, setDiscordUsername] = useState('');
+  const [discordError, setDiscordError] = useState('');
 
   const discordWebhook = {
     bug: import.meta.env.VITE_DISCORD_WEBHOOK_BUG,
@@ -23,8 +24,16 @@ const FeedbackForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!discordUsername.trim()) {
+      setDiscordError('Discord username is required.');
+      setStatus('Form not submitted: Discord username missing.');
+      return;
+    }
+
     setSubmitting(true);
     setStatus('');
+    setDiscordError('');
 
     // Define app version with environment label
     const appVersion = `${import.meta.env.VITE_APP_VERSION || 'dev'} (${import.meta.env.VITE_ENV || 'local'})`;
@@ -34,7 +43,7 @@ const FeedbackForm = () => {
 
     const label = type === 'bug' ? ['bug'] : ['enhancement'];
     const discordPayload = {
-      content: `**New ${type.toUpperCase()}**\n${message}\n\n**User:** ${discordUsername || 'N/A'}\n**App Version:** ${appVersion}\n**Time:** ${timestamp}\n**Platform:** ${platform}\n**User Agent:** ${userAgent}`
+      content: `**New ${type.toUpperCase()}**\n${message}\n\n**User:** ${discordUsername}\n**App Version:** ${appVersion}\n**Time:** ${timestamp}\n**Platform:** ${platform}\n**User Agent:** ${userAgent}`
     };
     const githubPayload = {
       title: `[${type.toUpperCase()}] ${appVersion}: ${message.substring(0, 60)}`,
@@ -92,10 +101,15 @@ const FeedbackForm = () => {
       <input
         type="text"
         value={discordUsername}
-        onChange={(e) => setDiscordUsername(e.target.value)}
-        placeholder="Your Discord Username (optional)"
+        onChange={(e) => {
+          setDiscordUsername(e.target.value);
+          if (discordError) setDiscordError('');
+        }}
+        placeholder="Your Discord Username"
+        required
         className="w-full bg-theme-input border border-theme-border text-theme-text px-3 py-2 rounded-md"
       />
+      {discordError && <p className="text-red-400 text-sm">{discordError}</p>}
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}

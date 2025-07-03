@@ -30,7 +30,7 @@ const SessionEditSection = ({
       <h3 className="text-lg leading-6 font-medium text-orange-200 mb-3">Edit Chastity Start Time</h3>
       {cageOnTime && (
         <p className="text-sm text-orange-300 mb-4">
-          Current Start: {formatTime(cageOnTime, true, true)}
+          Current Start: {formatTime(safeToDate(cageOnTime), true, true)}
         </p>
       )}
       <p className="text-sm text-orange-300 mb-4">

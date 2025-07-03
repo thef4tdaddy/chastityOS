@@ -10,7 +10,7 @@ const CurrentStatusSection = ({
     <>
         <h3 className="text-xl font-semibold text-purple-300 mb-2">Current Status</h3>
         <div className="mb-1"><strong>Cage Status:</strong> {isCageOn ? (isPaused ? 'ON (Paused)' : 'ON') : 'OFF'}</div>
-        {isCageOn && cageOnTime && <div className="mb-1"><strong>Current Cage On Since:</strong> {formatTime(cageOnTime, true)}</div>}
+        {isCageOn && cageOnTime && <div className="mb-1"><strong>Current Cage On Since:</strong> {formatTime(safeToDate(cageOnTime), true)}</div>}
         <div className={`p-2 my-1 rounded ${isCageOn ? (isPaused ? 'bg-yellow-500/10' : 'bg-green-500/10') : ''}`}>
             <strong>Effective Time This Session:</strong>
             <span className={`ml-2 font-semibold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : 'text-purple-200'}`}>

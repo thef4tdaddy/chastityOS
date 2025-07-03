@@ -70,7 +70,8 @@ export const useAuth = () => {
 
     return {
         user,
-        userId,
+        primaryUserId: userId,
+        activeUserId: user ? user.uid : null,
         googleEmail,
         isAuthReady,
         isLoading,

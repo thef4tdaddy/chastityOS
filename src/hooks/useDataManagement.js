@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useContext } from 'react';
 import { db } from '../firebase';
 // Fix: Removed unused 'getDoc' and 'setDoc' imports.
 import { doc, writeBatch, collection, getDocs, query } from 'firebase/firestore';
 import * as Sentry from '@sentry/react';
+import { ActiveUserContext as UserContext } from '../contexts/ActiveUserContext.jsx';
 
-export function useDataManagement({ userId, isAuthReady, userEmail, settings, session, events, tasks }) {
+export function useDataManagement({ isAuthReady, userEmail, settings, session, events, tasks }) {
+  const { activeUserId: userId } = useContext(UserContext);
   const [exportMessage, setExportMessage] = useState('');
   const [importMessage, setImportMessage] = useState('');
 
@@ -74,7 +76,8 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
         const oldTasksSnap = await getDocs(query(tasksCollectionRef));
         oldTasksSnap.forEach(doc => batch.delete(doc.ref));
 
-        const eventsCollectionRef = collection(db, 'users', userId, 'events');
+        // Use 'sexualEventsLog' for all event data
+        const eventsCollectionRef = collection(db, 'users', userId, 'sexualEventsLog');
         const oldEventsSnap = await getDocs(query(eventsCollectionRef));
         oldEventsSnap.forEach(doc => batch.delete(doc.ref));
         
@@ -124,6 +127,15 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
           keyholderPasswordHash: null,
           isTrackingAllowed: true,
           eventDisplayMode: 'kinky',
+          rulesText: '',
+          publicProfileEnabled: false,
+          publicStatsVisibility: {
+            currentStatus: true,
+            totals: true,
+            arousalChart: true,
+            chastityHistory: true,
+            sexualEvents: true,
+          },
         },
         // Reset all session-related fields as well
         requiredKeyholderDurationSeconds: 0,
@@ -143,8 +155,8 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
         Sentry.captureException(error);
     }
     
-    // 3. (Optional but recommended) Delete all documents in the 'events' subcollection
-    const eventsCollectionRef = collection(db, 'users', userId, 'events');
+    // 3. Delete all documents in the 'sexualEventsLog' subcollection
+    const eventsCollectionRef = collection(db, 'users', userId, 'sexualEventsLog');
      try {
         const eventsSnapshot = await getDocs(query(eventsCollectionRef));
         eventsSnapshot.forEach(doc => {

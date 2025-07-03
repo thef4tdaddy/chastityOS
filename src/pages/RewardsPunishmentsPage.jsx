@@ -25,7 +25,7 @@ const LogItem = ({ item }) => {
 
       {item.createdAt && (
         <p className="text-xs text-gray-500 text-right mt-1">
-          {formatTime(item.createdAt, true)}
+          {formatTime(safeToDate(item.createdAt), true)}
         </p>
       )}
     </div>

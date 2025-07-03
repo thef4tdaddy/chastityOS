@@ -103,6 +103,26 @@ export function useKeyholderHandlers({
       });
       
       await updateTask(taskId, { status: 'approved' });
+
+      if (task.recurrenceDays && task.recurrenceDays > 0 && !task.recurrenceCancelled) {
+        const baseDate = task.deadline ? new Date(task.deadline) : new Date();
+        const nextDeadline = new Date(baseDate.getTime() + task.recurrenceDays * 86400000);
+        if (!task.recurrenceEnd || nextDeadline <= new Date(task.recurrenceEnd)) {
+          await addTask({
+            text: task.text,
+            deadline: nextDeadline,
+            recurrenceDays: task.recurrenceDays,
+            recurrenceEnd: task.recurrenceEnd ? new Date(task.recurrenceEnd) : null,
+            recurrenceId: task.recurrenceId,
+            recurrenceCancelled: false,
+            reward: task.reward,
+            punishment: task.punishment,
+            status: 'pending',
+            assignedBy: 'keyholder',
+            createdAt: serverTimestamp()
+          });
+        }
+      }
     },
     [userId, updateTask, addTask, tasks, requiredKeyholderDurationSeconds, saveDataToFirestore]
   );
@@ -131,8 +151,41 @@ export function useKeyholderHandlers({
       });
 
       await updateTask(taskId, { status: 'rejected' });
+
+      if (task.recurrenceDays && task.recurrenceDays > 0 && !task.recurrenceCancelled) {
+        const baseDate = task.deadline ? new Date(task.deadline) : new Date();
+        const nextDeadline = new Date(baseDate.getTime() + task.recurrenceDays * 86400000);
+        if (!task.recurrenceEnd || nextDeadline <= new Date(task.recurrenceEnd)) {
+          await addTask({
+            text: task.text,
+            deadline: nextDeadline,
+            recurrenceDays: task.recurrenceDays,
+            recurrenceEnd: task.recurrenceEnd ? new Date(task.recurrenceEnd) : null,
+            recurrenceId: task.recurrenceId,
+            recurrenceCancelled: false,
+            reward: task.reward,
+            punishment: task.punishment,
+            status: 'pending',
+            assignedBy: 'keyholder',
+            createdAt: serverTimestamp()
+          });
+        }
+      }
     },
     [userId, updateTask, addTask, tasks, requiredKeyholderDurationSeconds, saveDataToFirestore]
+  );
+
+  const handleCancelRecurringTask = useCallback(
+    async (recurrenceId) => {
+      if (!recurrenceId || !tasks || !updateTask) return;
+      const related = tasks.filter(
+        (t) => t.recurrenceId === recurrenceId && !t.recurrenceCancelled
+      );
+      for (const t of related) {
+        await updateTask(t.id, { recurrenceCancelled: true });
+      }
+    },
+    [tasks, updateTask]
   );
 
   return {
@@ -143,5 +196,6 @@ export function useKeyholderHandlers({
     handleAddTask,
     handleApproveTask,
     handleRejectTask,
+    handleCancelRecurringTask,
   };
 }

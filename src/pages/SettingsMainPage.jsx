@@ -3,6 +3,8 @@ import AccountSection from '../components/settings/AccountSection';
 import DisplaySettingsSection from '../components/settings/DisplaySettingsSection';
 import SessionEditSection from '../components/settings/SessionEditSection';
 import PersonalGoalSection from '../components/settings/PersonalGoalSection';
+import PublicProfileSection from '../components/settings/PublicProfileSection';
+import KeyholderLinkSection from '../components/settings/KeyholderLinkSection';
 
 const SettingsMainPage = (props) => {
     const { setCurrentPage } = props;
@@ -18,6 +20,8 @@ const SettingsMainPage = (props) => {
             {/* All sections receive the necessary props from the main `chastityOS` object */}
             <AccountSection {...props} />
             <DisplaySettingsSection {...props} />
+            <PublicProfileSection {...props} />
+            <KeyholderLinkSection {...props} />
             <PersonalGoalSection {...props} />
             <SessionEditSection {...props} />
             
