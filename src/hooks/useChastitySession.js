@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
 import { db } from '../firebase';
+import * as Sentry from '@sentry/react';
 
 export const useChastitySession = (
     userId,
@@ -15,12 +16,14 @@ export const useChastitySession = (
     const [isCageOn, setIsCageOn] = useState(false);
     const [timeInChastity, setTimeInChastity] = useState(0);
     const [timeCageOff, setTimeCageOff] = useState(0);
+    const [cageOffStartTime, setCageOffStartTime] = useState(null);
     const [chastityHistory, setChastityHistory] = useState([]);
     const [totalChastityTime, setTotalChastityTime] = useState(0);
     const [totalTimeCageOff, setTotalTimeCageOff] = useState(0);
     const [overallTotalPauseTime, setOverallTotalPauseTime] = useState(0);
     const [showReasonModal, setShowReasonModal] = useState(false);
-    const [reasonForRemoval, setReasonForRemoval] = useState('');
+    const [reasonForRemoval, setReasonForRemoval] = useState(''); // stores selected removal category
+    const [removalCustomReason, setRemovalCustomReason] = useState('');
     const [tempEndTime, setTempEndTime] = useState(null);
     const [tempStartTime, setTempStartTime] = useState(null);
     const [showRestoreSessionPrompt, setShowRestoreSessionPrompt] = useState(false);
@@ -37,7 +40,8 @@ export const useChastitySession = (
     const [pauseStartTime, setPauseStartTime] = useState(null);
     const [accumulatedPauseTimeThisSession, setAccumulatedPauseTimeThisSession] = useState(0);
     const [showPauseReasonModal, setShowPauseReasonModal] = useState(false);
-    const [reasonForPauseInput, setReasonForPauseInput] = useState('');
+    const [pauseReason, setPauseReason] = useState(''); // stores selected pause category
+    const [pauseCustomReason, setPauseCustomReason] = useState('');
     const [currentSessionPauseEvents, setCurrentSessionPauseEvents] = useState([]);
     const [livePauseDuration, setLivePauseDuration] = useState(0);
     const [lastPauseEndTime, setLastPauseEndTime] = useState(null);
@@ -74,6 +78,7 @@ export const useChastitySession = (
             await setDoc(docRef, dataToSave, { merge: true });
         } catch (error) {
             console.error("Error saving session data to Firestore:", error);
+            Sentry.captureException(error);
         }
     }, [isAuthReady, userId, getDocRef]);
 
@@ -100,6 +105,7 @@ export const useChastitySession = (
         const loadedCageOn = data.isCageOn || false;
         const loadedCageOnTime = data.cageOnTime?.toDate ? data.cageOnTime.toDate() : null;
         const loadedPauseStart = data.pauseStartTime?.toDate ? data.pauseStartTime.toDate() : null;
+        const loadedCageOffStart = data.cageOffStartTime?.toDate ? data.cageOffStartTime.toDate() : null;
         setIsCageOn(loadedCageOn);
         setCageOnTime(loadedCageOn && loadedCageOnTime && !isNaN(loadedCageOnTime.getTime()) ? loadedCageOnTime : null);
         if (loadedCageOn && loadedCageOnTime) {
@@ -112,6 +118,14 @@ export const useChastitySession = (
         setIsPaused(loadedCageOn ? (data.isPaused || false) : false);
         setPauseStartTime(loadedCageOn && data.isPaused && loadedPauseStart && !isNaN(loadedPauseStart.getTime()) ? loadedPauseStart : null);
         setAccumulatedPauseTimeThisSession(loadedCageOn ? (data.accumulatedPauseTimeThisSession || 0) : 0);
+        setCageOffStartTime(!loadedCageOn && loadedCageOffStart && !isNaN(loadedCageOffStart.getTime()) ? loadedCageOffStart : null);
+        if (!loadedCageOn && loadedCageOffStart) {
+            const now = new Date();
+            const elapsedOff = Math.floor((now.getTime() - loadedCageOffStart.getTime()) / 1000);
+            setTimeCageOff(elapsedOff);
+        } else {
+            setTimeCageOff(0);
+        }
         setCurrentSessionPauseEvents(
             loadedCageOn
                 ? (data.currentSessionPauseEvents || []).map(p => ({
@@ -130,7 +144,6 @@ export const useChastitySession = (
         setLoadedSessionData(null);
     }, []);
 
-    // ... (All your other functions: handleToggleCage, handleConfirmRemoval, etc. remain unchanged)
     const handleToggleCage = useCallback(() => {
         if (!isAuthReady || isPaused) {
             if (isPaused) {
@@ -151,6 +164,7 @@ export const useChastitySession = (
             setIsCageOn(true);
             setTimeInChastity(0);
             setTimeCageOff(0);
+            setCageOffStartTime(null);
             setAccumulatedPauseTimeThisSession(0);
             setCurrentSessionPauseEvents([]);
             setPauseStartTime(null);
@@ -158,9 +172,10 @@ export const useChastitySession = (
             setHasSessionEverBeenActive(true);
             saveDataToFirestore({
                 isCageOn: true,
-                cageOnTime: currentTime,
+                cageOnTime: Timestamp.fromDate(currentTime),
                 totalTimeCageOff: newTotalOffTime,
                 timeInChastity: 0,
+                cageOffStartTime: null,
                 hasSessionEverBeenActive: true,
                 isPaused: false,
                 pauseStartTime: null,
@@ -190,7 +205,7 @@ export const useChastitySession = (
             startTime: tempStartTime,
             endTime: tempEndTime,
             duration: rawDurationSeconds,
-            reasonForRemoval: reasonForRemoval,
+            reasonForRemoval: reasonForRemoval === 'Other' ? (removalCustomReason || 'Other') : reasonForRemoval,
             totalPauseDurationSeconds: finalAccumulatedPauseTime,
             pauseEvents: currentSessionPauseEvents
         };
@@ -199,6 +214,8 @@ export const useChastitySession = (
         setIsCageOn(false);
         setCageOnTime(null);
         setTimeInChastity(0);
+        setCageOffStartTime(tempEndTime);
+        setTimeCageOff(0);
         setIsPaused(false);
         setPauseStartTime(null);
         setAccumulatedPauseTimeThisSession(0);
@@ -209,6 +226,7 @@ export const useChastitySession = (
             isCageOn: false,
             cageOnTime: null,
             timeInChastity: 0,
+            cageOffStartTime: tempEndTime,
             chastityHistory: updatedHistory,
             isPaused: false,
             pauseStartTime: null,
@@ -216,21 +234,25 @@ export const useChastitySession = (
             currentSessionPauseEvents: []
         });
         setReasonForRemoval('');
+        setRemovalCustomReason('');
         setTempEndTime(null);
         setTempStartTime(null);
         setShowReasonModal(false);
-    }, [isAuthReady, tempStartTime, tempEndTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, isPaused, pauseStartTime, chastityHistory, reasonForRemoval, saveDataToFirestore]);
+    }, [isAuthReady, tempStartTime, tempEndTime, accumulatedPauseTimeThisSession, currentSessionPauseEvents, isPaused, pauseStartTime, chastityHistory, reasonForRemoval, removalCustomReason, saveDataToFirestore]);
 
     const handleCancelRemoval = useCallback(() => {
         setReasonForRemoval('');
+        setRemovalCustomReason('');
         setTempEndTime(null);
         setTempStartTime(null);
         setShowReasonModal(false);
     }, []);
 
     const handleUpdateCurrentCageOnTime = useCallback(async () => {
-        if (!isCageOn || !cageOnTime) {
-            setEditSessionMessage("No active session to edit.");
+        // THIS IS THE FIX: Add a more robust check to ensure cageOnTime is a valid Date object.
+        if (!isCageOn || !(cageOnTime instanceof Date) || isNaN(cageOnTime.getTime())) {
+            setEditSessionMessage("No valid active session to edit.");
+            Sentry.captureMessage("handleUpdateCurrentCageOnTime called with invalid cageOnTime", { extra: { cageOnTime }});
             setTimeout(() => setEditSessionMessage(''), 3000);
             return;
         }
@@ -246,14 +268,13 @@ export const useChastitySession = (
             return;
         }
         const oldTimeForLog = formatTime(cageOnTime, true, true);
-        setCageOnTime(newTime);
-        setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
         const newTimeForLog = formatTime(newTime, true, true);
         const eventsColRef = typeof getEventsCollectionRef === 'function' ? getEventsCollectionRef() : null;
         if (eventsColRef) {
             try {
                 await addDoc(eventsColRef, {
                     eventType: 'startTimeEdit',
+                    types: ['Session Edit'],
                     eventTimestamp: Timestamp.now(),
                     oldStartTime: cageOnTime.toISOString(),
                     newStartTime: newTime.toISOString(),
@@ -263,11 +284,16 @@ export const useChastitySession = (
                 fetchEvents();
             } catch (error) {
                 console.error("Error logging session edit event:", error);
+                Sentry.captureException(error);
                 setEditSessionMessage("Error logging edit. Update applied locally.");
                 setTimeout(() => setEditSessionMessage(''), 3000);
             }
         }
-        await saveDataToFirestore({ cageOnTime: newTime });
+        // Update local state immediately for responsiveness
+        setCageOnTime(newTime);
+        setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
+        // Save to Firestore
+        await saveDataToFirestore({ cageOnTime: Timestamp.fromDate(newTime) });
         setEditSessionMessage("Start time updated successfully!");
         setTimeout(() => setEditSessionMessage(''), 3000);
     }, [isCageOn, cageOnTime, editSessionDateInput, editSessionTimeInput, getEventsCollectionRef, googleEmail, saveDataToFirestore, fetchEvents]);
@@ -284,16 +310,22 @@ export const useChastitySession = (
 
     const handleConfirmPause = useCallback(async () => {
         const now = new Date();
+        const finalReason = pauseReason === 'Other' ? (pauseCustomReason || 'Other') : pauseReason;
         setIsPaused(true);
         setPauseStartTime(now);
-        const updatedPauseEvents = [...currentSessionPauseEvents, { startTime: now, reason: reasonForPauseInput }];
+        const updatedPauseEvents = [...currentSessionPauseEvents, { startTime: now, reason: finalReason }];
         setCurrentSessionPauseEvents(updatedPauseEvents);
         setShowPauseReasonModal(false);
-        setReasonForPauseInput('');
+        setPauseReason('');
+        setPauseCustomReason('');
         await saveDataToFirestore({ isPaused: true, pauseStartTime: now, currentSessionPauseEvents: updatedPauseEvents });
-    }, [reasonForPauseInput, saveDataToFirestore, currentSessionPauseEvents]);
+    }, [pauseReason, pauseCustomReason, saveDataToFirestore, currentSessionPauseEvents]);
 
-    const handleCancelPauseModal = useCallback(() => setShowPauseReasonModal(false), []);
+    const handleCancelPauseModal = useCallback(() => {
+        setShowPauseReasonModal(false);
+        setPauseReason('');
+        setPauseCustomReason('');
+    }, []);
     
     const handleResumeSession = useCallback(async () => {
         const now = new Date();
@@ -349,12 +381,15 @@ export const useChastitySession = (
         setIsCageOn(false);
         setCageOnTime(null);
         setTimeInChastity(0);
+        setCageOffStartTime(endTime);
+        setTimeCageOff(0);
         setIsPaused(false);
         setPauseStartTime(null);
         setAccumulatedPauseTimeThisSession(0);
         setCurrentSessionPauseEvents([]);
         await saveDataToFirestore({
             isCageOn: false, cageOnTime: null, timeInChastity: 0,
+            cageOffStartTime: endTime,
             chastityHistory: updatedHistory, isPaused: false, pauseStartTime: null,
             accumulatedPauseTimeThisSession: 0, currentSessionPauseEvents: []
         });
@@ -384,6 +419,7 @@ export const useChastitySession = (
             }
         } catch (error) {
             console.error("Error restoring data from ID:", error);
+            Sentry.captureException(error);
             setRestoreFromIdMessage(`Error restoring data: ${error.message}`);
         } finally {
             setShowRestoreFromIdPrompt(false);
@@ -416,7 +452,8 @@ export const useChastitySession = (
             accumulatedPauseTimeThisSession: 0,
             currentSessionPauseEvents: [],
             lastPauseEndTime: null,
-            hasSessionEverBeenActive: false
+            hasSessionEverBeenActive: false,
+            cageOffStartTime: null
         });
         setIsCageOn(false);
         setCageOnTime(null);
@@ -427,6 +464,8 @@ export const useChastitySession = (
         setCurrentSessionPauseEvents([]);
         setLastPauseEndTime(null);
         setHasSessionEverBeenActive(false);
+        setCageOffStartTime(null);
+        setTimeCageOff(0);
         setShowRestoreSessionPrompt(false);
         setLoadedSessionData(null);
     }, [saveDataToFirestore]);
@@ -449,6 +488,7 @@ export const useChastitySession = (
             }
         }, (error) => {
             console.error("Error listening to session data:", error);
+            Sentry.captureException(error);
         });
         return () => unsubscribe();
     }, [isAuthReady, userId, getDocRef, applyRestoredData, isCageOn, showRestoreSessionPrompt]);
@@ -469,12 +509,13 @@ export const useChastitySession = (
                         hasSessionEverBeenActive: false,
                         isPaused: false,
                         accumulatedPauseTimeThisSession: 0,
-                        // --- Add the new field to the default doc ---
-                        requiredKeyholderDurationSeconds: 0
+                        requiredKeyholderDurationSeconds: 0,
+                        cageOffStartTime: null
                     });
                 }
             } catch (error) {
                 console.error("Error checking/creating Firestore user doc:", error);
+                Sentry.captureException(error);
             }
         };
         ensureUserDocExists();
@@ -501,8 +542,12 @@ export const useChastitySession = (
                 const elapsed = Math.floor((now.getTime() - cageOnTime.getTime()) / 1000);
                 setTimeInChastity(elapsed);
             }, 1000);
-        } else if (!isCageOn && hasSessionEverBeenActive) {
-            timerCageOffRef.current = setInterval(() => setTimeCageOff(prev => prev + 1), 1000);
+        } else if (!isCageOn && cageOffStartTime) {
+            timerCageOffRef.current = setInterval(() => {
+                const now = new Date();
+                const elapsed = Math.floor((now.getTime() - cageOffStartTime.getTime()) / 1000);
+                setTimeCageOff(elapsed);
+            }, 1000);
         }
         if (isPaused && pauseStartTime) {
             pauseDisplayTimerRef.current = setInterval(() => {
@@ -516,13 +561,14 @@ export const useChastitySession = (
             clearInterval(timerCageOffRef.current);
             clearInterval(pauseDisplayTimerRef.current);
         };
-    }, [isCageOn, isPaused, cageOnTime, hasSessionEverBeenActive, pauseStartTime]);
+    }, [isCageOn, isPaused, cageOnTime, cageOffStartTime, pauseStartTime]);
 
     return {
         cageOnTime, isCageOn, timeInChastity, timeCageOff, chastityHistory, totalChastityTime,
         totalTimeCageOff, overallTotalPauseTime, showReasonModal, reasonForRemoval, setReasonForRemoval,
+        removalCustomReason, setRemovalCustomReason,
         tempEndTime, tempStartTime, isPaused, pauseStartTime, accumulatedPauseTimeThisSession,
-        showPauseReasonModal, reasonForPauseInput, setReasonForPauseInput, currentSessionPauseEvents,
+        showPauseReasonModal, pauseReason, setPauseReason, pauseCustomReason, setPauseCustomReason, currentSessionPauseEvents,
         livePauseDuration, lastPauseEndTime, pauseCooldownMessage, showRestoreSessionPrompt, loadedSessionData,
         hasSessionEverBeenActive, confirmReset, setConfirmReset, editSessionDateInput, setEditSessionDateInput,
         editSessionTimeInput, setEditSessionTimeInput, editSessionMessage, restoreUserIdInput,
@@ -535,7 +581,7 @@ export const useChastitySession = (
         handleDiscardAndStartNew, saveDataToFirestore, setChastityHistory, setTimeCageOff, setIsCageOn,
         setCageOnTime, setTimeInChastity, setIsPaused, setPauseStartTime,
         setAccumulatedPauseTimeThisSession, setCurrentSessionPauseEvents, setLastPauseEndTime, setHasSessionEverBeenActive,
-        // --- Return the new state value ---
+        cageOffStartTime,
         requiredKeyholderDurationSeconds
     };
 };

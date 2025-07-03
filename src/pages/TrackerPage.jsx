@@ -4,6 +4,7 @@ import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
 import { formatTime, formatElapsedTime, formatDaysOnly } from '../utils';
 import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
 import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component
+import { PAUSE_REASON_OPTIONS, REMOVAL_REASON_OPTIONS } from '../event_types.js';
 
 const TrackerPage = (props) => {
     // These props are passed through to the hook or used for other modals
@@ -12,13 +13,14 @@ const TrackerPage = (props) => {
         isCageOn,
         handleToggleCage,
         showReasonModal,
-        reasonForRemoval, setReasonForRemoval, handleConfirmRemoval, handleCancelRemoval,
+        reasonForRemoval, setReasonForRemoval, removalCustomReason, setRemovalCustomReason,
+        handleConfirmRemoval, handleCancelRemoval,
         isPaused,
         handleInitiatePause,
         handleResumeSession,
         showPauseReasonModal,
         handleCancelPauseModal,
-        reasonForPauseInput, setReasonForPauseInput, handleConfirmPause,
+        pauseReason, setPauseReason, pauseCustomReason, setPauseCustomReason, handleConfirmPause,
         livePauseDuration,
         pauseCooldownMessage,
         showRestoreSessionPrompt,
@@ -34,7 +36,9 @@ const TrackerPage = (props) => {
         totalTimeCageOff,
         timeCageOff,
         pauseStartTime,
-        accumulatedPauseTimeThisSession
+        accumulatedPauseTimeThisSession,
+        releaseRequests = [],
+        addReleaseRequest
     } = props;
 
     // Call the new hook to get all the logic and state for this page
@@ -52,6 +56,18 @@ const TrackerPage = (props) => {
         handleAttemptEmergencyUnlock,
         setShowEmergencyUnlockModal,
     } = useTrackerPage(props); // Pass all props from parent to the hook
+
+    const hasPendingReleaseRequest = releaseRequests.some(r => r.status === 'pending');
+    const lastDeniedRequest = releaseRequests
+        .filter(r => r.status === 'denied' && r.deniedAt)
+        .sort((a, b) => b.deniedAt - a.deniedAt)[0];
+    const denialCooldownActive = lastDeniedRequest && (Date.now() - lastDeniedRequest.deniedAt.getTime() < 4 * 3600 * 1000);
+
+    const handleBegForRelease = async () => {
+        if (addReleaseRequest) {
+            await addReleaseRequest();
+        }
+    };
 
     if (!isAuthReady) {
         return (
@@ -118,9 +134,15 @@ const TrackerPage = (props) => {
                             Time Left in required chastity: {formatElapsedTime(requiredKeyholderDurationSeconds - effectiveTimeInChastityForGoal)}
                         </p>
                     )}
-                    {isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds && (
+                {isCageOn && effectiveTimeInChastityForGoal >= requiredKeyholderDurationSeconds && (
                          <p className="text-lg font-bold text-pink-100">KH Duration Met!</p>
                     )}
+                </div>
+            )}
+
+            {denialCooldownActive && lastDeniedRequest && (
+                <div className="mb-4 p-2 rounded-md text-center bg-red-700/30 border border-red-600">
+                    <p className="text-sm text-red-300">Beg for Release denied by {lastDeniedRequest.handledBy || keyholderName} at {lastDeniedRequest.deniedAt.toLocaleString()}</p>
                 </div>
             )}
 
@@ -174,6 +196,11 @@ const TrackerPage = (props) => {
                       className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-700 hover:bg-red-800 focus:ring-red-500 flex items-center justify-center">
                      <FaLock className="mr-2"/> Emergency Unlock
                   </button>
+              ) : requiredKeyholderDurationSeconds > 0 ? (
+                  <button type="button" onClick={handleBegForRelease} disabled={!isAuthReady || hasPendingReleaseRequest || denialCooldownActive || showRestoreSessionPrompt}
+                      className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-500 hover:bg-red-600 focus:ring-red-400">
+                      {hasPendingReleaseRequest ? 'Request Sent' : 'Beg for Release'}
+                  </button>
               ) : (
                   <button type="button" onClick={handleToggleCage} disabled={!isAuthReady || isPaused || showRestoreSessionPrompt}
                       className="flex-grow font-bold py-3 px-5 md:py-4 md:px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-75 text-white disabled:opacity-50 bg-red-600 hover:bg-red-700 focus:ring-red-500">
@@ -200,8 +227,18 @@ const TrackerPage = (props) => {
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-purple-700">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-purple-300">Reason for Cage Removal:</h3>
-                <textarea value={reasonForRemoval} onChange={(e) => setReasonForRemoval(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
-                  className="w-full p-2 mb-6 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                <p className="text-xs text-gray-400 mb-1">(Optional)</p>
+                <select value={reasonForRemoval} onChange={(e) => setReasonForRemoval(e.target.value)}
+                  className="w-full p-2 mb-2 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option value="">Select reason</option>
+                  {REMOVAL_REASON_OPTIONS.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+                {reasonForRemoval === 'Other' && (
+                  <input type="text" value={removalCustomReason} onChange={(e) => setRemovalCustomReason(e.target.value)}
+                    placeholder="Enter other reason" className="w-full p-2 mb-4 rounded-lg border border-purple-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                )}
                 <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
                   <button type="button" onClick={handleConfirmRemoval} className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Removal</button>
                   <button type="button" onClick={handleCancelRemoval} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
@@ -214,8 +251,18 @@ const TrackerPage = (props) => {
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
               <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-yellow-700">
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">Reason for Pausing Session:</h3>
-                <textarea value={reasonForPauseInput} onChange={(e) => setReasonForPauseInput(e.target.value)} placeholder="Enter reason here (optional)" rows="4"
-                  className="w-full p-2 mb-6 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+                <p className="text-xs text-gray-400 mb-1">(Optional)</p>
+                <select value={pauseReason} onChange={(e) => setPauseReason(e.target.value)}
+                  className="w-full p-2 mb-2 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                  <option value="">Select reason</option>
+                  {PAUSE_REASON_OPTIONS.map(r => (
+                      <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+                {pauseReason === 'Other' && (
+                  <input type="text" value={pauseCustomReason} onChange={(e) => setPauseCustomReason(e.target.value)}
+                    placeholder="Enter other reason" className="w-full p-2 mb-4 rounded-lg border border-yellow-600 bg-gray-900 text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                )}
                 <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
                   <button type="button" onClick={handleConfirmPause} className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition">Confirm Pause</button>
                   <button type="button" onClick={handleCancelPauseModal} className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
