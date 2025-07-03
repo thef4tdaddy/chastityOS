@@ -5,6 +5,7 @@ import TotalsSection from '../components/full_report/TotalsSection';
 import ChastityHistoryTable from '../components/full_report/ChastityHistoryTable';
 import EventLogTable from '../components/log_event/EventLogTable';
 import ArousalLevelChart from '../components/arousal/ArousalLevelChart';
+import ChastityHeatmap from '../components/full_report/ChastityHeatmap';
 
 const FullReportPage = ({
   savedSubmissivesName,
@@ -78,7 +79,7 @@ const FullReportPage = ({
       />
       <hr className="section-divider" />
 
-      {/* THIS IS THE CHANGE: A grid layout for Totals and Arousal History */}
+      {/* Grid layout for Totals and Arousal History */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 className="section-title">Totals & Statistics</h3>
@@ -110,6 +111,13 @@ const FullReportPage = ({
           <ArousalLevelChart arousalLevels={arousalLevels} days={chartDays} />
         </div>
       </div>
+      <hr className="section-divider" />
+
+      <h3 className="section-title">Chastity Heatmap</h3>
+      <ChastityHeatmap
+        chastityHistory={chastityHistory}
+        sexualEventsLog={sexualEventsLog}
+      />
       <hr className="section-divider" />
 
       <h3 className="section-title">Chastity History</h3>
