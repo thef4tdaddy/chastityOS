@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateKeyholderToken, getUserIdFromKeyholderToken } from '../../utils/keyholderLink';
 
 const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId }) => {
   const [shareToken, setShareToken] = useState('');
   const [inputToken, setInputToken] = useState('');
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get('kh');
+    if (tokenFromUrl) {
+      setInputToken(tokenFromUrl);
+    }
+  }, []);
 
   const handleGenerate = async () => {
     const token = await generateKeyholderToken(userId);
@@ -29,10 +37,18 @@ const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId }) => {
         Generate Share Code
       </button>
       {shareToken && (
-        <div className="text-left mb-4">
-          <p className="text-sm text-purple-200 mb-1">Share this code with your keyholder:</p>
-          <div className="bg-gray-900 p-2 rounded-md text-purple-100 text-sm break-all">
-            {shareToken}
+        <div className="text-left mb-4 space-y-2">
+          <div>
+            <p className="text-sm text-purple-200 mb-1">Share this code with your keyholder:</p>
+            <div className="bg-gray-900 p-2 rounded-md text-purple-100 text-sm break-all">
+              {shareToken}
+            </div>
+          </div>
+          <div>
+            <p className="text-sm text-purple-200 mb-1">Or share this link:</p>
+            <div className="bg-gray-900 p-2 rounded-md text-purple-100 text-sm break-all">
+              {`${window.location.origin}?kh=${shareToken}`}
+            </div>
           </div>
         </div>
       )}

@@ -52,7 +52,7 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Allow users to backup and migrate data manually between devices or browsers via JSON file import/export.
 
 ### 🔗 Keyholder Linking
-- Generate a short code from Settings that your keyholder can enter to link accounts.
+- Generate a short code or shareable link in Settings so your keyholder can easily link accounts.
 
 ### 🔐 Authentication Options
 - Default anonymous sign-in (no setup required)
