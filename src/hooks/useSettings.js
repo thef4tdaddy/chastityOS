@@ -17,6 +17,7 @@ const defaultSettings = {
     chastityHistory: true,
     sexualEvents: true,
   },
+  linkedKeyholderId: '',
 };
 
 export function useSettings(userId, isAuthReady) {
@@ -129,5 +130,6 @@ export function useSettings(userId, isAuthReady) {
     publicStatsVisibility: settings.publicStatsVisibility,
     togglePublicProfileEnabled,
     togglePublicStatVisibility,
+    linkedKeyholderId: settings.linkedKeyholderId,
   };
 }
