@@ -265,7 +265,9 @@ export const useChastitySession = (
             setTimeout(() => setEditSessionMessage(''), 3000);
             return;
         }
-        const oldTimeForLog = formatTime(cageOnTime, true, true);
+        const oldTimeForLog = cageOnTime && cageOnTime instanceof Date
+          ? formatTime(cageOnTime, true, true)
+          : "Unknown";
         setCageOnTime(newTime);
         setTimeInChastity(Math.max(0, Math.floor((new Date().getTime() - newTime.getTime()) / 1000)));
         const newTimeForLog = formatTime(newTime, true, true);
