@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
@@ -7,6 +7,7 @@ import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
 import UpdatePrompt from './components/UpdatePrompt';
 import EulaModal from './components/EulaModal';
+import RestoreSessionPrompt from './components/RestoreSessionPrompt';
 import WelcomeModal from './components/WelcomeModal';
 import HowToModal from './components/HowToModal';
 import { useWelcome } from './hooks/useWelcome';
@@ -31,17 +32,21 @@ const App = () => {
 
   const chastityOS = useChastityState();
 
-  const welcomeState = useWelcome(chastityOS.userId, chastityOS.isAuthReady);
-  const { hasAccepted, isLoading: welcomeLoading, accept } = welcomeState;
-
   const {
     isLoading,
     savedSubmissivesName,
     keyholderName,
     isTrackingAllowed,
     userId,
-    googleEmail
+    googleEmail,
+    showRestoreSessionPrompt,
+    loadedSessionData,
+    handleRestoreSession,
+    handleDiscardSession
   } = chastityOS;
+
+  const welcomeState = useWelcome(userId, chastityOS.isAuthReady);
+  const { hasAccepted, isLoading: welcomeLoading, accept } = welcomeState;
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -51,19 +56,43 @@ const App = () => {
     onRegisterError(error) { console.log('SW registration error:', error); },
   });
 
+  // Google Analytics init
+  useEffect(() => {
+    const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-WJHSVRZZ9S';
+    if (window.gtag && measurementId) {
+      window.gtag('config', measurementId);
+      console.log('[GA Debug] Initialized Google Analytics');
+    }
+  }, []);
+
+  // Service Worker updates
+  useEffect(() => {
+    if (needRefresh) {
+      console.log("New content available, updating service worker...");
+      updateServiceWorker(true);
+    }
+  }, [needRefresh, updateServiceWorker]);
+
   const navItemNames = {
     tracker: "Chastity Tracker",
     logEvent: "Sexual Event Log",
     fullReport: "Full Report",
     keyholder: "Keyholder",
     rules: "Rules",
+    keyholderRules: "Keyholder Rules",
     tasks: "Tasks",
     rewards: "Rewards & Punishments",
     settings: "Settings",
     privacy: "Privacy & Analytics",
     feedback: "Submit Beta Feedback"
   };
-  const pageTitleText = navItemNames[currentPage] || "ChastityOS";
+
+  let pageTitleText = "ChastityOS";
+  if (currentPage === 'tracker' && showRestoreSessionPrompt) {
+    pageTitleText = "Restore Session";
+  } else if (navItemNames[currentPage]) {
+    pageTitleText = navItemNames[currentPage];
+  }
 
   const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
   const themeClass = isNightly ? 'theme-nightly' : 'theme-prod';
@@ -88,29 +117,35 @@ const App = () => {
             Tracking <span className="font-semibold">{savedSubmissivesName}'s</span> Journey
           </p>
         )}
-
         {keyholderName && (
           <p className="text-sm text-red-300 -mt-2 mb-3">
             under <span className="font-semibold">{keyholderName}'s</span> control
           </p>
         )}
-
         <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         <h2 className="subpage-title no-border">{pageTitleText}</h2>
-        <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
-          {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
-          {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
-          {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
-          {currentPage === 'rules' && <RulesPage {...chastityOS} />}
-          {currentPage === 'keyholderRules' && <KeyholderRulesPage {...chastityOS} onBack={() => setCurrentPage('keyholder')} />}
-          {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-          {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
-          {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
-          {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-          {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
-          {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
-          {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
-        </Suspense>
+        {showRestoreSessionPrompt ? (
+          <RestoreSessionPrompt
+            cageOnTime={loadedSessionData?.cageOnTime}
+            onRestore={handleRestoreSession}
+            onDiscard={handleDiscardSession}
+          />
+        ) : (
+          <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
+            {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
+            {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
+            {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+            {currentPage === 'rules' && <RulesPage {...chastityOS} />}
+            {currentPage === 'keyholderRules' && <KeyholderRulesPage {...chastityOS} onBack={() => setCurrentPage('keyholder')} />}
+            {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+            {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
+            {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
+            {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+            {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
+            {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
+            {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
+          </Suspense>
+        )}
       </div>
       <FooterNav
         userId={userId}
@@ -118,21 +153,14 @@ const App = () => {
         onShowEula={() => setShowEulaModal(true)}
         onShowHowTo={() => setShowHowToModal(true)}
       />
-
-      <EulaModal
-        isOpen={showEulaModal}
-        onClose={() => setShowEulaModal(false)}
-      />
+      <EulaModal isOpen={showEulaModal} onClose={() => setShowEulaModal(false)} />
       <WelcomeModal
         isOpen={!hasAccepted}
         onAccept={accept}
         onShowLegal={() => setShowEulaModal(true)}
         onShowHowTo={() => setShowHowToModal(true)}
       />
-      <HowToModal
-        isOpen={showHowToModal}
-        onClose={() => setShowHowToModal(false)}
-      />
+      <HowToModal isOpen={showHowToModal} onClose={() => setShowHowToModal(false)} />
     </div>
   );
 };
