@@ -6,18 +6,24 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
  * Returns null if not logged in.
  */
 export const useActiveUser = () => {
-  const [activeUserId, setActiveUserId] = useState(() => {
+  const [state, setState] = useState(() => {
     const auth = getAuth();
-    return auth.currentUser ? auth.currentUser.uid : null;
+    return {
+      activeUserId: auth.currentUser ? auth.currentUser.uid : null,
+      isAuthReady: false,
+    };
   });
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setActiveUserId(user ? user.uid : null);
+      setState({
+        activeUserId: user ? user.uid : null,
+        isAuthReady: true,
+      });
     });
     return () => unsubscribe();
   }, []);
 
-  return activeUserId;
+  return state;
 };
