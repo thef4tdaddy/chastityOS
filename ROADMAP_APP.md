@@ -1,6 +1,6 @@
 # 📈 ChastityOS App Roadmap
 
-_Last Updated: 2025-06-29_
+_Last Updated: 2025-07-04_
 
 This roadmap outlines planned features, improvements, and milestones for ChastityOS.
 
@@ -30,22 +30,26 @@ _Status: Complete_
 ---
 
 ## 🚧 Phase 2: Enhanced User Experience _(Versions v3+)_
-- **Personal Goals**
+- **Personal Goals** (Completed)
   - Create/manage goals
   - Enforce restrictions during keyholder sessions
-- **Recurring Tasks**
+- **Recurring Tasks** (Basic Completed)
   - Daily/weekly/monthly tasks
-- **Arousal Level Tracking**
+- **Arousal Level Tracking** (Completed)
   - Log daily arousal level in history
-- **Audit Log**
+- **Audit Log** (Optional; may be renamed or removed)
   - Track key events
   - Export logs as CSV
-- **Public Roadmap**
+- **Public Roadmap** (Viewer Completed)
   - In-app viewer synced with this file
-- **Convert Feedback Submissions to Forum Posts**
+- **Convert Feedback Submissions to Forum Posts** (Completed)
   - Update workflow so feedback posts as Discord forum threads
+- **Rules of the Relationship** (Early Implementation Completed)
+  - Keyholder can define/edit rules
+  - Submissive agrees to rules and changes
+- **Heatmap / Charts Reporting** (In Progress)
 
-_Status: ~60% Complete_
+_Status: ~95% Complete_
 
 ---
 
@@ -68,6 +72,8 @@ _Status: ~60% Complete_
   - Stripe integration
 - **Data Encryption**
   - Optional end-to-end encryption
+- **Enhanced Recurring Tasks**
+- **Keyholder Proper Linking**
 
 > **Note:** Some keyholder-specific features may move to Phase 4 or be delayed as part of larger separation.
 
@@ -96,4 +102,4 @@ _Status: Planned_
 ## 📅 Next Update
 Roadmap reviewed and updated **monthly**.
 
-**Next Review Date:** 2025-07-29
+**Next Review Date:** 2025-08-04
