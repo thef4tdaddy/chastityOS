@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.7...v3.13.0-nightly.8) (2025-07-04)
+
+
+### 🐛 Bug Fixes
+
+* prevent unnecessary data application when restore prompt is already shown ([94489d0](https://github.com/thef4tdaddy/chastityOS/commit/94489d0b4cdf48eb23143f9fd14edd364a9b5b66))
+
 ## [3.13.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.6...v3.13.0-nightly.7) (2025-07-04)
 
 
