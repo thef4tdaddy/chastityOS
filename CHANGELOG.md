@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.5...v3.13.0-nightly.6) (2025-07-04)
+
+
+### 🐛 Bug Fixes
+
+* remove unnecessary condition in session restoration logic ([09388fd](https://github.com/thef4tdaddy/chastityOS/commit/09388fd3e57c8fc8a1037c962724e3d0bc161d2a))
+
 ## [3.13.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.4...v3.13.0-nightly.5) (2025-07-04)
 
 
