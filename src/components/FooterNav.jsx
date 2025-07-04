@@ -50,13 +50,13 @@ const FooterNav = ({ userId, googleEmail, onShowEula, onShowHowTo }) => {
 
   return (
     <>
-      <footer className="mt-8 text-center text-xs text-gray-500">
+      <footer className="mt-8 text-center text-xs text-gray-500 min-h-[72px]">
         <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-2">
           <a
             href={`https://github.com/thef4tdaddy/chastityOS/releases/tag/${version}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={interactiveClasses}
+            className={`${interactiveClasses} inline-block w-40 text-left`}
           >
             Version: {version}
           </a>
@@ -102,15 +102,17 @@ const FooterNav = ({ userId, googleEmail, onShowEula, onShowHowTo }) => {
           </a>
         </div>
         © {new Date().getFullYear()} ChastityOS
-        {googleEmail ? (
-          <div className="mt-2 text-green-400">
-            Signed in with Google: {googleEmail}
-          </div>
-        ) : (
-          <div className="mt-2 text-yellow-400">
-            Anonymous session
-          </div>
-        )}
+        <div className="mt-2 min-h-[1.5em]">
+          {googleEmail ? (
+            <div className="text-green-400">
+              Signed in with Google: {googleEmail}
+            </div>
+          ) : (
+            <div className="text-yellow-400">
+              Anonymous session
+            </div>
+          )}
+        </div>
       </footer>
 
       {/* The existing modals for Privacy and Feedback remain unchanged */}
