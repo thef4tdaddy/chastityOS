@@ -477,7 +477,12 @@ export const useChastitySession = (
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (data.isCageOn && !showRestoreSessionPrompt && data.cageOnTime) {
+                if (
+                    data.isCageOn &&
+                    !isCageOn &&
+                    !showRestoreSessionPrompt &&
+                    data.cageOnTime
+                ) {
                     setLoadedSessionData(data);
                     setShowRestoreSessionPrompt(true);
                 } else {
