@@ -12,7 +12,7 @@ const Header = () => {
   const logo = !isNightly ? productionLogo : nightlyLogo; // Use !isNightly for production
 
   return (
-    <header className="flex items-center gap-4 p-4 bg-theme-bg shadow-md text-theme-text">
+    <header className="flex items-center gap-4 p-4 min-h-[96px] bg-theme-bg shadow-md text-theme-text">
       <img
         src={logo}
         alt="ChastityOS Logo"
