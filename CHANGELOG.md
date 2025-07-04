@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.2...v3.13.0-nightly.3) (2025-07-04)
+
+
+### 🐛 Bug Fixes
+
+* optimization of the sizing of logos ([9727a73](https://github.com/thef4tdaddy/chastityOS/commit/9727a7327636ca06d76c49a1f4db10fe5467fe82))
+
+
+### ✨ Features
+
+* enhance performance with font preloading and add visualizer and compression plugins ([b167055](https://github.com/thef4tdaddy/chastityOS/commit/b167055c4ed87d9f322fe6445a7cac956077e240))
+
 ## [3.13.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.1...v3.13.0-nightly.2) (2025-07-04)
 
 
