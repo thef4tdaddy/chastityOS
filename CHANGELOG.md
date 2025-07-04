@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.8...v3.13.0-nightly.9) (2025-07-04)
+
+
+### 🐛 Bug Fixes
+
+* pass userId to getEventsCollectionRef for correct event reference ([7326ee2](https://github.com/thef4tdaddy/chastityOS/commit/7326ee2d45eb0646646691099414e50008712057))
+
 ## [3.13.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.7...v3.13.0-nightly.8) (2025-07-04)
 
 
