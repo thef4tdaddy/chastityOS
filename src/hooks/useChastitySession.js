@@ -269,7 +269,7 @@ export const useChastitySession = (
         }
         const oldTimeForLog = formatTime(cageOnTime, true, true);
         const newTimeForLog = formatTime(newTime, true, true);
-        const eventsColRef = typeof getEventsCollectionRef === 'function' ? getEventsCollectionRef() : null;
+        const eventsColRef = typeof getEventsCollectionRef === 'function' ? getEventsCollectionRef(userId) : null;
         if (eventsColRef) {
             try {
                 await addDoc(eventsColRef, {
