@@ -76,7 +76,7 @@ export default defineConfig(({ mode }) => {
             },
             {
               src: '/screenshots/screenshot-mobile-1.png',
-              sizes: '720x1280',
+              sizes: '540x1027',
               type: 'image/png',
               form_factor: 'narrow'
             }
