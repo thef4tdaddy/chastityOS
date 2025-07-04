@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.1...v3.13.0-nightly.2) (2025-07-04)
+
+
+### 🐛 Bug Fixes
+
+* update screenshot image size for mobile display ([7cdeba6](https://github.com/thef4tdaddy/chastityOS/commit/7cdeba633ae63748474997a4cd1988728e919372))
+
 ## [3.13.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.0...v3.13.0-nightly.1) (2025-07-04)
 
 
