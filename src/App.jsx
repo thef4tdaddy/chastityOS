@@ -60,8 +60,15 @@ const App = () => {
   useEffect(() => {
     const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-WJHSVRZZ9S';
     if (window.gtag && measurementId) {
-      window.gtag('config', measurementId);
-      console.log('[GA Debug] Initialized Google Analytics');
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          window.gtag('config', measurementId);
+          console.log('[GA Debug] Initialized Google Analytics');
+        });
+      } else {
+        window.gtag('config', measurementId);
+        console.log('[GA Debug] Initialized Google Analytics (no idleCallback)');
+      }
     }
   }, []);
 

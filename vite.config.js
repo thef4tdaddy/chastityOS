@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
+import viteCompression from 'vite-plugin-compression';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 
@@ -39,6 +41,15 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(), 
       tailwindcss(),
+      visualizer({
+        filename: './dist/bundle-report.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true
+      }),
+      viteCompression({
+        algorithm: 'brotliCompress'
+      }),
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {

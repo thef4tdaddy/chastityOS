@@ -51,9 +51,11 @@
     "husky": "^9.1.7",
     "postcss": "^8.5.4",
     "rollup": "^3.29.5",
+    "rollup-plugin-visualizer": "^6.0.3",
     "standard-version": "^9.5.0",
     "tailwindcss": "^4.1.8",
     "vite": "^6.3.5",
+    "vite-plugin-compression": "^0.5.1",
     "vite-plugin-pwa": "^1.0.0"
   }
 }
