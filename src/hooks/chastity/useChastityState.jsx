@@ -1,17 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
 import { serverTimestamp } from 'firebase/firestore';
-import { useAuth } from './useAuth';
+import { useAuth } from '../auth/useAuth';
 import { useSettings } from './useSettings';
 import { useEventLog } from './useEventLog';
 import { useArousalLevels } from './useArousalLevels';
 import { useChastitySession } from './useChastitySession';
 import { useTasks } from './useTasks';
 import { usePersonalGoal } from './usePersonalGoal';
-import { useDataManagement } from './useDataManagement';
+import { useDataManagement } from '../data/useDataManagement';
 import { useRules } from './useRules';
 import { db } from '../firebase';
 import { collection } from 'firebase/firestore';
-import { useKeyholderHandlers } from './chastity/keyholderHandlers';
+import { useKeyholder } from './useKeyholder';
 import { sha256 } from '../utils/hash';
 import { useReleaseRequests } from './useReleaseRequests';
 
@@ -111,7 +111,7 @@ export const useChastityState = () => {
     setKeyholderMessage('');
   }, []);
 
-  const keyholderHandlers = useKeyholderHandlers({
+  const keyholderHandlers = useKeyholder({
     userId,
     tasks: tasks,
     addTask: tasksState.addTask,
