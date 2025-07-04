@@ -131,27 +131,26 @@ const App = () => {
         )}
         <MainNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
         <h2 className="subpage-title no-border">{pageTitleText}</h2>
-        {showRestoreSessionPrompt ? (
+        <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
+          {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
+          {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
+          {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
+          {currentPage === 'rules' && <RulesPage {...chastityOS} />}
+          {currentPage === 'keyholderRules' && <KeyholderRulesPage {...chastityOS} onBack={() => setCurrentPage('keyholder')} />}
+          {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+          {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
+          {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
+          {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
+          {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
+          {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
+          {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
+        </Suspense>
+        {showRestoreSessionPrompt && (
           <RestoreSessionPrompt
             cageOnTime={loadedSessionData?.cageOnTime}
             onRestore={handleRestoreSession}
             onDiscard={handleDiscardSession}
           />
-        ) : (
-          <Suspense fallback={<div className="text-center p-8 fallback-text bordered">Loading...</div>}>
-            {currentPage === 'tracker' && <TrackerPage {...chastityOS} />}
-            {currentPage === 'fullReport' && <FullReportPage {...chastityOS} />}
-            {currentPage === 'logEvent' && <LogEventPage {...chastityOS} />}
-            {currentPage === 'rules' && <RulesPage {...chastityOS} />}
-            {currentPage === 'keyholderRules' && <KeyholderRulesPage {...chastityOS} onBack={() => setCurrentPage('keyholder')} />}
-            {currentPage === 'keyholder' && <KeyholderPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-            {currentPage === 'tasks' && <TasksPage {...chastityOS} />}
-            {currentPage === 'rewards' && <RewardsPunishmentsPage {...chastityOS} />}
-            {currentPage === 'settings' && <SettingsMainPage {...chastityOS} setCurrentPage={setCurrentPage} />}
-            {currentPage === 'dataManagement' && <SettingsDataManagementPage {...chastityOS} />}
-            {currentPage === 'privacy' && <PrivacyPage onBack={() => setCurrentPage('settings')} />}
-            {currentPage === 'feedback' && <FeedbackForm onBack={() => setCurrentPage('settings')} userId={userId} />}
-          </Suspense>
         )}
       </div>
       <FooterNav
@@ -162,7 +161,7 @@ const App = () => {
       />
       <EulaModal isOpen={showEulaModal} onClose={() => setShowEulaModal(false)} />
       <WelcomeModal
-        isOpen={!hasAccepted}
+        isOpen={!hasAccepted && !showRestoreSessionPrompt}
         onAccept={accept}
         onShowLegal={() => setShowEulaModal(true)}
         onShowHowTo={() => setShowHowToModal(true)}
