@@ -485,7 +485,7 @@ export const useChastitySession = (
                 ) {
                     setLoadedSessionData(data);
                     setShowRestoreSessionPrompt(true);
-                } else {
+                } else if (!showRestoreSessionPrompt) {
                     applyRestoredData(data);
                 }
             } else {
