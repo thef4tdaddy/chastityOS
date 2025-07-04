@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.0...v3.13.0-nightly.1) (2025-07-04)
+
+
+### ✨ Features
+
+* add PWA manifest and caching strategies to improve app performance ([58e3c5e](https://github.com/thef4tdaddy/chastityOS/commit/58e3c5e3eab5657036c4dd5ed693e058f8178e2e))
+
 ## [3.13.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.1...v3.13.0-nightly.0) (2025-07-04)
 
 
