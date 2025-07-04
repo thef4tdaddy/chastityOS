@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.4...v3.13.0-nightly.5) (2025-07-04)
+
+
+### 🐛 Bug Fixes
+
+* adjust footer and header styles for improved layout and responsiveness ([8dae4c6](https://github.com/thef4tdaddy/chastityOS/commit/8dae4c6254643001d750ab375782d3b43db8ccf3))
+
+
+### ✨ Features
+
+* add react-toastify for enhanced notification support ([6b04ac8](https://github.com/thef4tdaddy/chastityOS/commit/6b04ac838e110d3dbec455f7ae67a35f0c593b56))
+
 ## [3.13.0-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.3...v3.13.0-nightly.4) (2025-07-04)
 
 
