@@ -41,7 +41,66 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        // ... your PWA config ...
+        manifest: {
+          name: 'ChastityOS',
+          short_name: 'ChastityOS',
+          start_url: '/',
+          display: 'standalone',
+          background_color: '#000000',
+          theme_color: '#000000',
+          icons: [
+            {
+              src: '/icons/icon-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: '/icons/icon-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            }
+          ],
+          screenshots: [
+            {
+              src: '/screenshots/screenshot-desktop-1.png',
+              sizes: '1280x720',
+              type: 'image/png'
+            },
+            {
+              src: '/screenshots/screenshot-desktop-1.png',
+              sizes: '1280x720',
+              type: 'image/png',
+              form_factor: 'wide'
+            },
+            {
+              src: '/screenshots/screenshot-mobile-1.png',
+              sizes: '720x1280',
+              type: 'image/png',
+              form_factor: 'narrow'
+            }
+          ]
+        },
+        workbox: {
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.destination === 'document',
+              handler: 'NetworkFirst'
+            },
+            {
+              urlPattern: ({ request }) => ['style', 'script', 'worker'].includes(request.destination),
+              handler: 'StaleWhileRevalidate'
+            },
+            {
+              urlPattern: ({ request }) => request.destination === 'image',
+              handler: 'CacheFirst'
+            }
+          ]
+        },
+        devOptions: {
+          enabled: true
+        }
       }),
       // The Sentry plugin runs in Node.js, so it can use 'env' directly.
       // Your client-side code cannot, which is why the 'define' block is needed.
