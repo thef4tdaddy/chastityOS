@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { useChastityState } from './hooks/useChastityState';
+import { useChastityState } from './hooks/chastity/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
 import HotjarScript from './components/HotjarScript';
