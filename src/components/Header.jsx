@@ -13,7 +13,14 @@ const Header = () => {
 
   return (
     <header className="flex items-center gap-4 p-4 bg-theme-bg shadow-md text-theme-text">
-      <img src={logo} alt="ChastityOS Logo" className="h-20 w-20 rounded-lg" />
+      <img
+        src={logo}
+        alt="ChastityOS Logo"
+        width={80}
+        height={80}
+        loading="eager"
+        className="h-20 w-20 rounded-lg"
+      />
       <div>
         <h1 className="text-xl font-bold text-theme-text">ChastityOS</h1>
         <p className="text-sm text-theme-text">{tagline}</p>
