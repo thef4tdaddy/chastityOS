@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.13.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.1...v3.13.0-nightly.0) (2025-07-04)
+
+
+### ✨ Features
+
+* implement session restoration prompt and update App component logic ([d4e3743](https://github.com/thef4tdaddy/chastityOS/commit/d4e37436aad2b275f525c725c404508e355f90d9))
+
+
+### 🐛 Bug Fixes
+
+* handle date sorting for logs ([165d4a5](https://github.com/thef4tdaddy/chastityOS/commit/165d4a5c0245179a6c6ee160bd34779a8a89538f))
+* trying to get PWA full install ([1f63898](https://github.com/thef4tdaddy/chastityOS/commit/1f63898317fef7db861400ed701d14d4822d950c))
+* update hash function import to use sha256 for improved security ([7aaca15](https://github.com/thef4tdaddy/chastityOS/commit/7aaca153534d285f0492c1d2ce270c7489455286))
+
 ### [3.12.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.0...v3.12.1-nightly.1) (2025-07-03)
 
 
