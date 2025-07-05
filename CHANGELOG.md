@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.9...v4.0.0-nightly.0) (2025-07-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* - Vite upgraded from 6 to 7
+- Rollup upgraded from 3 to 4
+- marked upgraded from 9 to 16
+- Service Worker disabled in development mode
+- Sentry env vars standardized
+
+### 🧹 Chores
+
+* upgrade Vite to 7, Rollup to 4, marked to 16, and clean env config ([8e554bf](https://github.com/thef4tdaddy/chastityOS/commit/8e554bf53b5aec925ab0d375868b55af122b6549))
+
+
+### 🐛 Bug Fixes
+
+* normalize single line breaks to double line breaks when saving rules ([35e1c76](https://github.com/thef4tdaddy/chastityOS/commit/35e1c76cd32a5094a229fbc7a27b6498ea95285e))
+
 ## [3.13.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.8...v3.13.0-nightly.9) (2025-07-04)
 
 
