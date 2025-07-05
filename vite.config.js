@@ -110,7 +110,7 @@ export default defineConfig(({ mode }) => {
           ]
         },
         devOptions: {
-          enabled: true
+          enabled: mode !== 'development'
         }
       }),
       // The Sentry plugin runs in Node.js, so it can use 'env' directly.
