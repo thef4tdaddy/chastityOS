@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.14.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v4.0.0-nightly.0...v3.14.0-nightly.1) (2025-07-05)
+
+
+### 🧹 Chores
+
+* reset version to 3.14.0-nightly.0 after accidental bump ([1a1617c](https://github.com/thef4tdaddy/chastityOS/commit/1a1617c181b5d0de77fe937406c4ad055720f4ca))
+
 ## [4.0.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.9...v4.0.0-nightly.0) (2025-07-05)
 
 
