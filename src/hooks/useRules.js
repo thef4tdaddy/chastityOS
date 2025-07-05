@@ -35,14 +35,15 @@ export function useRules(userId, isAuthReady) {
   const saveRulesText = useCallback(
     async (text) => {
       if (!isAuthReady || !userId) return;
+      const normalized = text.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
       const userDocRef = doc(db, 'users', userId);
       try {
         await setDoc(
           userDocRef,
-          { settings: { rulesText: text } },
+          { settings: { rulesText: normalized } },
           { merge: true }
         );
-        setRulesTextState(text);
+        setRulesTextState(normalized);
       } catch (err) {
         console.error('Error saving rules:', err);
       }
