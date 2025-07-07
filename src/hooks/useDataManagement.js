@@ -125,6 +125,7 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
           keyholderPasswordHash: null,
           isTrackingAllowed: true,
           eventDisplayMode: 'kinky',
+          themeVariant: 'dark',
           rulesText: '',
           publicProfileEnabled: false,
           publicStatsVisibility: {

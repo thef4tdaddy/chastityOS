@@ -42,7 +42,8 @@ const App = () => {
     showRestoreSessionPrompt,
     loadedSessionData,
     handleRestoreSession,
-    handleDiscardSession
+    handleDiscardSession,
+    themeVariant
   } = chastityOS;
 
   const welcomeState = useWelcome(userId, chastityOS.isAuthReady);
@@ -102,7 +103,11 @@ const App = () => {
   }
 
   const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
-  const themeClass = isNightly ? 'theme-nightly' : 'theme-prod';
+  const themeClass = isNightly
+    ? 'theme-nightly'
+    : themeVariant === 'light'
+      ? 'theme-prod-light'
+      : 'theme-prod';
 
   if (isLoading || welcomeLoading) {
     return <div className="loading-fullscreen">Loading...</div>;
