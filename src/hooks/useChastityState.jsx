@@ -20,8 +20,7 @@ export const useChastityState = () => {
   const { userId, isAuthReady, googleEmail } = authState;
 
   const settingsState = useSettings(userId, isAuthReady);
-  // CHANGE 1: Destructure the saveSettingsToFirestore function
-  const { settings, setSettings, saveSettingsToFirestore } = settingsState;
+  const { settings, setSettings } = settingsState;
 
   // Use the unified 'sexualEventsLog' collection for all session and event data
   const getEventsCollectionRef = (uid) =>
@@ -85,26 +84,18 @@ export const useChastityState = () => {
       setKeyholderMessage('Incorrect password. Please try again.');
     }
   }, [settings?.keyholderPasswordHash]);
-
-  // CHANGE 2: The updated password handling logic
   const handleSetPermanentPassword = useCallback(async (newPassword) => {
     if (!newPassword || newPassword.length < 6) {
       setKeyholderMessage("Password must be at least 6 characters long.");
       return;
     }
     const newHash = await sha256(newPassword);
-    
-    // Create the new settings object first
-    const newSettings = { ...settings, keyholderPasswordHash: newHash };
-    
-    // Directly call the save function from the settings hook and wait for it to complete
-    await saveSettingsToFirestore(newSettings);
-    
-    // Then, update the local state. This now happens only AFTER successful save.
-    setSettings(newSettings);
-    
+
+    // Update via the settings hook so Firestore and local state stay in sync
+    setSettings((prev) => ({ ...prev, keyholderPasswordHash: newHash }));
+
     setKeyholderMessage("Permanent password has been updated successfully!");
-  }, [settings, setSettings, saveSettingsToFirestore]);
+  }, [setSettings]);
 
   const lockKeyholderControls = useCallback(() => {
     setIsKeyholderModeUnlocked(false);
