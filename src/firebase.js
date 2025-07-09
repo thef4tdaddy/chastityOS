@@ -1,7 +1,7 @@
 
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 
@@ -17,12 +17,8 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 console.log("✅ Firebase Project ID:", firebaseConfig.projectId);
 
-export const db = getFirestore(app);
-// Enable offline persistence so the app can queue writes and cache reads
-// when the user is offline. This allows the PWA to function smoothly
-// without an internet connection and sync changes once connectivity returns.
-enableIndexedDbPersistence(db).catch((err) => {
-  console.warn('IndexedDB persistence could not be enabled', err);
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
 });
 export const auth = getAuth(app);
 export const storage = getStorage(app);
