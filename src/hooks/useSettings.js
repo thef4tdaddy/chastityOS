@@ -25,6 +25,7 @@ export function useSettings(userId, isAuthReady) {
   const [isLoading, setIsLoading] = useState(true);
   const [submissivesNameInput, setSubmissivesNameInput] = useState('');
   const [nameMessage, setNameMessage] = useState('');
+  const [documentExists, setDocumentExists] = useState(true);
 
   useEffect(() => {
     if (settings.submissivesName) {
@@ -47,8 +48,8 @@ export function useSettings(userId, isAuthReady) {
           setSettings(loadedSettings);
           setSubmissivesNameInput(loadedSettings.submissivesName || '');
         } else {
-          await setDoc(userDocRef, { settings: defaultSettings }, { merge: true });
-          setSettings(defaultSettings);
+          console.warn("User document does not exist. Not creating automatically.");
+          setDocumentExists(false);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -60,65 +61,65 @@ export function useSettings(userId, isAuthReady) {
     fetchSettings();
   }, [isAuthReady, userId]);
 
-  const saveSettingsToFirestore = useCallback(async (newSettingsObject) => {
-    if (!isAuthReady || !userId) return;
-    const userDocRef = doc(db, 'users', userId);
-    try {
-      await setDoc(userDocRef, { settings: newSettingsObject }, { merge: true });
-    } catch (error) {
-      console.error("Error updating settings:", error);
-      Sentry.captureException(error);
-    }
-  }, [isAuthReady, userId]);
-
-  const updateSettings = useCallback((value) => {
+  const setSettingsOnly = useCallback((value) => {
     if (typeof value === 'function') {
-      setSettings(prevState => {
-        const newState = value(prevState);
-        saveSettingsToFirestore(newState);
-        return newState;
-      });
+      setSettings(prevState => value(prevState));
     } else {
       setSettings(value);
-      saveSettingsToFirestore(value);
     }
-  }, [saveSettingsToFirestore]);
+  }, []);
+
+  const saveSettings = useCallback(async () => {
+    if (!isAuthReady || !userId || !documentExists) {
+      console.warn("Skipping save because document does not exist.");
+      return;
+    }
+    const userDocRef = doc(db, 'users', userId);
+    try {
+      await setDoc(userDocRef, { settings }, { merge: true });
+      console.log("✅ Settings saved to Firestore.");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      Sentry.captureException(error);
+    }
+  }, [isAuthReady, userId, documentExists, settings]);
 
   const handleSubmissivesNameInputChange = (e) => {
     setSubmissivesNameInput(e.target.value);
   };
 
   const handleSetSubmissivesName = useCallback(() => {
-    updateSettings(prev => ({ ...prev, submissivesName: submissivesNameInput }));
+    setSettingsOnly(prev => ({ ...prev, submissivesName: submissivesNameInput }));
     setNameMessage("Name updated successfully!");
     setTimeout(() => setNameMessage(''), 3000);
-  }, [submissivesNameInput, updateSettings]);
+  }, [submissivesNameInput, setSettingsOnly]);
 
   const handleSetEventDisplayMode = useCallback((mode) => {
-    updateSettings(prev => ({ ...prev, eventDisplayMode: mode }));
-  }, [updateSettings]);
+    setSettingsOnly(prev => ({ ...prev, eventDisplayMode: mode }));
+  }, [setSettingsOnly]);
 
   const togglePublicProfileEnabled = useCallback(() => {
-    updateSettings(prev => ({
+    setSettingsOnly(prev => ({
       ...prev,
       publicProfileEnabled: !prev.publicProfileEnabled,
     }));
-  }, [updateSettings]);
+  }, [setSettingsOnly]);
 
   const togglePublicStatVisibility = useCallback((key) => {
-    updateSettings(prev => ({
+    setSettingsOnly(prev => ({
       ...prev,
       publicStatsVisibility: {
         ...prev.publicStatsVisibility,
         [key]: !prev.publicStatsVisibility?.[key],
       },
     }));
-  }, [updateSettings]);
+  }, [setSettingsOnly]);
 
   return {
     settings,
     isLoading,
-    setSettings: updateSettings,
+    setSettings: setSettingsOnly,
+    saveSettings,
     savedSubmissivesName: settings.submissivesName,
     submissivesNameInput,
     handleSubmissivesNameInputChange,

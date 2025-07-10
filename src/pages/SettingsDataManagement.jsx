@@ -25,9 +25,7 @@ const SettingsDataManagementPage = (props) => {
       setResetStatus('success'); // Show success message
 
       // Wait 2 seconds on the success message before reloading
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      console.log("✅ Data reset complete. Please reload manually.");
 
     } catch (error) {
       setResetStatus('error');

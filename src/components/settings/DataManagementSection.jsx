@@ -1,5 +1,6 @@
 // src/components/settings/DataManagementSection.jsx
-import React from 'react';
+import React, { useState } from 'react';
+import { useResetAllData } from '../../hooks/useResetAllData';
 
 const DataManagementSection = ({
   isAuthReady,
@@ -8,8 +9,6 @@ const DataManagementSection = ({
   handleExportEventLogCSV,
   handleExportJSON,
   handleImportJSON,
-  handleResetAllData,
-  confirmReset,
   nameMessage,
   eventLogMessage,
   sexualEventsLog,
@@ -22,6 +21,9 @@ const DataManagementSection = ({
   handleConfirmRestoreFromId,
   handleCancelRestoreFromId
 }) => {
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const nukeAllData = useResetAllData();
   const handleExportClick = (type) => {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'export_click', export_type: type });
@@ -128,17 +130,60 @@ const DataManagementSection = ({
       <p className="text-sm text-purple-200 mb-3">This action is irreversible. It will delete all data including logs and settings.</p>
       <button
         type="button"
-        onClick={handleResetAllData}
+        onClick={() => setShowResetConfirmModal(true)}
         disabled={!isAuthReady}
         className="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 disabled:opacity-50"
       >
-        {confirmReset ? 'Confirm Full Reset?' : 'Reset All Data'}
+        Reset All Data
       </button>
-      {confirmReset && <p className="text-yellow-400 text-sm mt-3">Click again to permanently delete all data.</p>}
+      {/* Remove confirmReset messages */}
       {nameMessage && nameMessage.includes('reset') && (
         <p className={`text-xs mt-2 ${nameMessage.includes('reset') ? 'text-green-400' : 'text-yellow-400'}`}>
           {nameMessage}
         </p>
+      )}
+
+      {/* Modal for Reset Confirm */}
+      {showResetConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-red-700">
+            <h3 className="text-lg md:text-xl font-bold mb-4 text-red-400">Confirm Full Reset</h3>
+            <p className="text-sm text-purple-200 mb-2">
+              This action will permanently delete <span className="font-bold text-yellow-400">ALL</span> data.
+            </p>
+            <p className="text-sm text-yellow-400 font-semibold mb-6">
+              Are you sure you want to proceed? This cannot be undone.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsResetting(true);
+                  setShowResetConfirmModal(false);
+                  await nukeAllData();
+                  setIsResetting(false);
+                }}
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition"
+              >
+                Confirm &amp; Reset
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetConfirmModal(false)}
+                className="w-full sm:w-auto bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Overlay when resetting */}
+      {isResetting && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <span className="text-white text-lg font-bold">Resetting...</span>
+        </div>
       )}
 
       {/* Modal for Restore Confirm */}

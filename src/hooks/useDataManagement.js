@@ -1,7 +1,7 @@
 import { useCallback, useState, useContext } from 'react';
 import { db } from '../firebase';
 // Fix: Removed unused 'getDoc' and 'setDoc' imports.
-import { doc, writeBatch, collection, getDocs, query } from 'firebase/firestore';
+import { doc, writeBatch, collection, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import * as Sentry from '@sentry/react';
 import { ActiveUserContext as UserContext } from '../contexts/ActiveUserContext.jsx';
 
@@ -112,75 +112,49 @@ export function useDataManagement({ isAuthReady, userEmail, settings, session, e
   }, [userId]);
   
   // This is the function for resetting data
-  const handleResetAllData = useCallback(async (isAccountDeletion = false) => {
+  const handleResetAllData = useCallback(async () => {
     if (!isAuthReady || !userId) return;
 
     console.log("Initiating full data reset...");
-    const batch = writeBatch(db);
-    const userDocRef = doc(db, "users", userId);
-    
-    // 1. Set the main user document back to its default state
-    batch.set(userDocRef, {
-        settings: {
-          submissivesName: '',
-          keyholderName: '',
-          keyholderPasswordHash: null,
-          isTrackingAllowed: true,
-          eventDisplayMode: 'kinky',
-          rulesText: '',
-          publicProfileEnabled: false,
-          publicStatsVisibility: {
-            currentStatus: true,
-            totals: true,
-            arousalChart: true,
-            chastityHistory: true,
-            sexualEvents: true,
-          },
-        },
-        // Reset all session-related fields as well
-        requiredKeyholderDurationSeconds: 0,
-        // ... any other fields on the root user document
+
+    // 1. Delete all tasks
+    const tasksCollectionRef = collection(db, "users", userId, "tasks");
+    const tasksSnapshot = await getDocs(tasksCollectionRef);
+    const batch1 = writeBatch(db);
+    tasksSnapshot.forEach(doc => batch1.delete(doc.ref));
+    await batch1.commit();
+    console.log(`Deleted ${tasksSnapshot.size} tasks.`);
+
+    // 2. Delete all events
+    const eventsCollectionRef = collection(db, "users", userId, "sexualEventsLog");
+    const eventsSnapshot = await getDocs(eventsCollectionRef);
+    const batch2 = writeBatch(db);
+    eventsSnapshot.forEach(doc => batch2.delete(doc.ref));
+    await batch2.commit();
+    console.log(`Deleted ${eventsSnapshot.size} events.`);
+
+    // 3. Delete all account links
+    const linksCollectionRef = collection(db, "accountLinks");
+    const linkedSnap = await getDocs(query(linksCollectionRef, where("linkedUid", "==", userId)));
+    const ownerSnap = await getDocs(query(linksCollectionRef, where("ownerUid", "==", userId)));
+    const batch3 = writeBatch(db);
+    const seen = new Set();
+    linkedSnap.forEach(doc => {
+      batch3.delete(doc.ref);
+      seen.add(doc.id);
     });
+    ownerSnap.forEach(doc => {
+      if (!seen.has(doc.id)) batch3.delete(doc.ref);
+    });
+    await batch3.commit();
+    console.log(`Deleted ${linkedSnap.size + ownerSnap.size} account links.`);
 
-    // 2. Delete all documents in the 'tasks' subcollection
-    const tasksCollectionRef = collection(db, 'users', userId, 'tasks');
-    try {
-        const tasksSnapshot = await getDocs(query(tasksCollectionRef));
-        tasksSnapshot.forEach(doc => {
-            console.log(`Adding task ${doc.id} to delete batch.`);
-            batch.delete(doc.ref);
-        });
-    } catch (error) {
-        console.error("Error querying tasks for deletion:", error);
-        Sentry.captureException(error);
-    }
-    
-    // 3. Delete all documents in the 'sexualEventsLog' subcollection
-    const eventsCollectionRef = collection(db, 'users', userId, 'sexualEventsLog');
-     try {
-        const eventsSnapshot = await getDocs(query(eventsCollectionRef));
-        eventsSnapshot.forEach(doc => {
-            console.log(`Adding event ${doc.id} to delete batch.`);
-            batch.delete(doc.ref);
-        });
-    } catch (error) {
-        console.error("Error querying events for deletion:", error);
-        Sentry.captureException(error);
-    }
+    // 4. Finally delete the main user document
+    await deleteDoc(doc(db, "users", userId));
+    console.log("User document deleted.");
 
-    // 4. Commit all the changes at once
-    try {
-        await batch.commit();
-        console.log("Full data reset successful.");
-        if (!isAccountDeletion) {
-          alert('All data has been reset.');
-          window.location.reload(); // Reload to reflect changes
-        }
-    } catch (error) {
-        console.error("Error committing data reset batch:", error);
-        Sentry.captureException(error);
-        if (!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
-    }
+    console.log("✅ All data reset complete. The user document was deleted and will be recreated automatically on next load.");
+    alert("✅ All data reset complete. Please reload manually.");
   }, [isAuthReady, userId]);
 
   return { 

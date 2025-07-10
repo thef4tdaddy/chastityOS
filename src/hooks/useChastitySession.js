@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useResetAllData } from './useResetAllData';
 import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { formatElapsedTime } from '../utils';
 import { db } from '../firebase';
@@ -25,6 +26,7 @@ export const useChastitySession = (
     activeUserId
 ) => {
     // --- State declarations ---
+    const [documentExists, setDocumentExists] = useState(true);
     const [cageOnTime, setCageOnTime] = useState(null);
     const [isCageOn, setIsCageOn] = useState(false);
     const [timeInChastity, setTimeInChastity] = useState(0);
@@ -79,25 +81,47 @@ export const useChastitySession = (
     }, [activeUserId]);
 
     const saveDataToFirestore = useCallback(async (dataToSave) => {
-        if (!isAuthReady || !activeUserId) {
-            console.warn("Attempted to save data before authentication was ready or user ID was available.");
-            return;
+      if (!isAuthReady || !activeUserId) {
+        console.warn("Skipping save: auth not ready or no active user.");
+        return;
+      }
+      const docRef = getDocRef();
+      if (!docRef) {
+        console.error("Firestore document reference is null, cannot save data.");
+        return;
+      }
+      try {
+        if (!documentExists) {
+          console.warn("Firestore user doc did not exist—creating it now.");
+          await setDoc(docRef, {
+            createdAt: Timestamp.now(),
+            settings: {},
+            session: {}
+          });
+          setDocumentExists(true);
         }
-        const docRef = getDocRef();
-        if (!docRef) {
-            console.error("Firestore document reference is null, cannot save data.");
-            return;
-        }
-        try {
-            await setDoc(docRef, dataToSave, { merge: true });
-        } catch (error) {
-            console.error("Error saving session data to Firestore:", error);
-        }
-    }, [isAuthReady, activeUserId, getDocRef]);
+        await setDoc(docRef, dataToSave, { merge: true });
+      } catch (error) {
+        console.error("Error saving session data to Firestore:", error);
+      }
+    }, [isAuthReady, activeUserId, getDocRef, documentExists]);
 
     const applyRestoredData = useCallback((data) => {
-        if (!data || typeof data !== 'object') {
-            console.warn("⚠️ Skipping applyRestoredData: invalid or empty data", data);
+        if (data === undefined || data === null) {
+            console.warn("Resetting all tracking state to empty.");
+            setChastityHistory([]);
+            setTotalTimeCageOff(0);
+            setLastPauseEndTime(null);
+            setIsCageOn(false);
+            setCageOnTime(null);
+            setTimeInChastity(0);
+            setIsPaused(false);
+            setPauseStartTime(null);
+            setAccumulatedPauseTimeThisSession(0);
+            setCageOffStartTime(null);
+            setTimeCageOff(0);
+            setCurrentSessionPauseEvents([]);
+            setHasSessionEverBeenActive(false);
             return;
         }
         const loadedHist = (data.chastityHistory || []).map(item => ({
@@ -148,7 +172,7 @@ export const useChastitySession = (
                 }))
                 : []
         );
-        setHasSessionEverBeenActive(data.hasSessionEverBeenActive !== undefined ? data.hasSessionEverBeenActive : true);
+        setHasSessionEverBeenActive(data.hasSessionEverBeenActive !== undefined ? data.hasSessionEverBeenActive : false);
         
         // --- Load the Keyholder Duration ---
         setRequiredKeyholderDurationSeconds(data.requiredKeyholderDurationSeconds || 0);
@@ -460,83 +484,72 @@ export const useChastitySession = (
         setLoadedSessionData(null);
     }, [loadedSessionData, applyRestoredData, saveDataToFirestore]);
 
+    // Overwrite: Use useResetAllData to handle full reset logic
+    const { resetAllData } = useResetAllData();
     const handleDiscardAndStartNew = useCallback(async () => {
-        await saveDataToFirestore({
-            isCageOn: false,
-            cageOnTime: null,
-            timeInChastity: 0,
-            isPaused: false,
-            pauseStartTime: null,
-            accumulatedPauseTimeThisSession: 0,
-            currentSessionPauseEvents: [],
-            lastPauseEndTime: null,
-            hasSessionEverBeenActive: false,
-            cageOffStartTime: null
-        });
-        setIsCageOn(false);
-        setCageOnTime(null);
-        setTimeInChastity(0);
-        setIsPaused(false);
-        setPauseStartTime(null);
-        setAccumulatedPauseTimeThisSession(0);
-        setCurrentSessionPauseEvents([]);
-        setLastPauseEndTime(null);
-        setHasSessionEverBeenActive(false);
-        setCageOffStartTime(null);
-        setTimeCageOff(0);
-        setShowRestoreSessionPrompt(false);
-        setLoadedSessionData(null);
-    }, [saveDataToFirestore]);
+        await resetAllData(activeUserId);
+    }, [resetAllData, activeUserId]);
 
+    // --- New: Only subscribe to Firestore, do not recreate blank doc ---
     useEffect(() => {
-        if (!isAuthReady || !activeUserId) return;
-        const docRef = getDocRef();
-        if (!docRef) return;
-        const unsubscribe = onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (data.isCageOn && !isCageOn && !showRestoreSessionPrompt && data.cageOnTime) {
-                    setLoadedSessionData(data);
-                    setShowRestoreSessionPrompt(true);
-                } else {
-                    applyRestoredData(data);
-                }
+      if (!isAuthReady || !activeUserId) return;
+      const uid = activeUserId;
+      let unsubscribe;
+      const init = async () => {
+        const docSnap = await getDoc(doc(db, "users", uid));
+        if (!docSnap.exists()) {
+          console.warn("User document does not exist.");
+          setDocumentExists(false);
+          applyRestoredData({});
+          return;
+        }
+        setDocumentExists(true);
+        // Refactored onSnapshot subscription
+        unsubscribe = onSnapshot(
+          doc(db, "users", uid),
+          (snapshot) => {
+            if (!snapshot.exists()) {
+              console.warn("User document does not exist—resetting state.");
+              setDocumentExists(false);
+              applyRestoredData({});
+              return;
+            }
+            setDocumentExists(true);
+            const data = snapshot.data();
+            // Updated sessionData handling: apply safe default only if session is explicitly empty
+            const sessionData = data.session;
+            if (sessionData && typeof sessionData === "object" && Object.keys(sessionData).length > 0) {
+              console.log("[Session] Applying session data:", sessionData);
+              applyRestoredData(sessionData);
+            } else if (sessionData && typeof sessionData === "object" && Object.keys(sessionData).length === 0) {
+              console.warn("[Session] Empty session object received; applying default empty session.");
+              applyRestoredData({
+                isCageOn: false,
+                hasSessionEverBeenActive: false,
+                timeInChastity: 0,
+                totalTimeCageOff: 0,
+                accumulatedPauseTimeThisSession: 0,
+                chastityHistory: [],
+                currentSessionPauseEvents: [],
+                requiredKeyholderDurationSeconds: 0
+              });
             } else {
-                applyRestoredData({});
+              console.warn("[Session] No session field found or invalid; ignoring.");
+              // Do not overwrite state
             }
-        }, (error) => {
+          },
+          (error) => {
             console.error("Error listening to session data:", error);
-        });
-        return () => unsubscribe();
-    }, [isAuthReady, activeUserId, getDocRef, applyRestoredData, isCageOn, showRestoreSessionPrompt]);
+          }
+        );
+      };
+      init();
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
+    }, [isAuthReady, activeUserId, applyRestoredData]);
 
-    useEffect(() => {
-        if (!isAuthReady || !activeUserId) return;
-        const ensureUserDocExists = async () => {
-            try {
-                const docRef = getDocRef();
-                if (!docRef) return;
-                const docSnap = await getDoc(docRef);
-                if (!docSnap.exists()) {
-                    console.log("🆕 Creating default user doc for:", activeUserId);
-                    await setDoc(docRef, {
-                        isCageOn: false,
-                        chastityHistory: [],
-                        totalTimeCageOff: 0,
-                        hasSessionEverBeenActive: false,
-                        isPaused: false,
-                        accumulatedPauseTimeThisSession: 0,
-                        // --- Add the new field to the default doc ---
-                        requiredKeyholderDurationSeconds: 0,
-                        cageOffStartTime: null
-                    });
-                }
-            } catch (error) {
-                console.error("Error checking/creating Firestore user doc:", error);
-            }
-        };
-        ensureUserDocExists();
-    }, [isAuthReady, activeUserId, getDocRef]);
+    // (Removed: ensureUserDocExists effect, now handled in main effect above)
 
     useEffect(() => {
         let totalEffective = 0;
@@ -580,80 +593,69 @@ export const useChastitySession = (
         };
     }, [isCageOn, isPaused, cageOnTime, cageOffStartTime, pauseStartTime]);
 
-    // If not ready or no user, return default state but after all hooks have been called
-    if (!isAuthReady || !activeUserId) {
-        return {
-            cageOnTime,
-            isCageOn,
-            timeInChastity,
-            timeCageOff,
-            chastityHistory,
-            totalChastityTime,
-            totalTimeCageOff,
-            overallTotalPauseTime,
-            showReasonModal,
-            reasonForRemoval,
-            setReasonForRemoval,
-            removalCustomReason,
-            setRemovalCustomReason,
-            tempEndTime,
-            tempStartTime,
-            isPaused,
-            pauseStartTime,
-            accumulatedPauseTimeThisSession,
-            showPauseReasonModal,
-            pauseReason,
-            setPauseReason,
-            pauseCustomReason,
-            setPauseCustomReason,
-            currentSessionPauseEvents,
-            livePauseDuration,
-            lastPauseEndTime,
-            pauseCooldownMessage,
-            showRestoreSessionPrompt,
-            loadedSessionData,
-            hasSessionEverBeenActive,
-            confirmReset,
-            setConfirmReset,
-            editSessionDateInput,
-            setEditSessionDateInput,
-            editSessionTimeInput,
-            setEditSessionTimeInput,
-            editSessionMessage,
-            restoreUserIdInput,
-            showRestoreFromIdPrompt,
-            restoreFromIdMessage,
-            handleUpdateCurrentCageOnTime: () => {},
-            handleToggleCage: () => {},
-            handleConfirmRemoval: () => {},
-            handleCancelRemoval: () => {},
-            handleEndChastityNow: () => {},
-            handleInitiatePause: () => {},
-            handleConfirmPause: () => {},
-            handleCancelPauseModal: () => {},
-            handleResumeSession: () => {},
-            handleRestoreUserIdInputChange: () => {},
-            handleInitiateRestoreFromId: () => {},
-            handleCancelRestoreFromId: () => {},
-            handleConfirmRestoreFromId: () => {},
-            handleConfirmRestoreSession: () => {},
-            handleDiscardAndStartNew: () => {},
-            saveDataToFirestore: () => {},
-            setChastityHistory,
-            setTimeCageOff,
-            setIsCageOn,
-            setCageOnTime,
-            setTimeInChastity,
-            setIsPaused,
-            setPauseStartTime,
-            setAccumulatedPauseTimeThisSession,
-            setCurrentSessionPauseEvents,
-            setLastPauseEndTime,
-            setHasSessionEverBeenActive,
-            cageOffStartTime,
-            requiredKeyholderDurationSeconds
-        };
-    }
+    // No early return: always return live handlers, even if not ready or no user.
+
+    // Listen for nuke event and reset all local session state, including Firestore data
+    useEffect(() => {
+      const handleNuke = async () => {
+        console.log("[Nuke] Deleting Firestore session data and resetting local state");
+        await resetAllData(activeUserId);
+        // --- Recreate empty document and set documentExists to true ---
+        if (activeUserId) {
+          await setDoc(doc(db, "users", activeUserId), {
+            session: {
+              isCageOn: false,
+              hasSessionEverBeenActive: false,
+              timeInChastity: 0,
+              totalTimeCageOff: 0,
+              accumulatedPauseTimeThisSession: 0,
+              chastityHistory: [],
+              currentSessionPauseEvents: [],
+              requiredKeyholderDurationSeconds: 0
+            },
+            settings: {},
+            createdAt: Timestamp.now()
+          });
+          setDocumentExists(true);
+        }
+        setChastityHistory([]);
+        setTotalTimeCageOff(0);
+        setLastPauseEndTime(null);
+        setIsCageOn(false);
+        setCageOnTime(null);
+        setTimeInChastity(0);
+        setIsPaused(false);
+        setPauseStartTime(null);
+        setAccumulatedPauseTimeThisSession(0);
+        setCageOffStartTime(null);
+        setTimeCageOff(0);
+        setCurrentSessionPauseEvents([]);
+        setHasSessionEverBeenActive(false);
+
+        // Recreate the Firestore document after nuke
+        if (activeUserId) {
+          await setDoc(doc(db, "users", activeUserId), {
+            createdAt: Timestamp.now(),
+            settings: {},
+            session: {
+              isCageOn: false,
+              hasSessionEverBeenActive: false,
+              timeInChastity: 0,
+              totalTimeCageOff: 0,
+              accumulatedPauseTimeThisSession: 0,
+              chastityHistory: [],
+              currentSessionPauseEvents: [],
+              requiredKeyholderDurationSeconds: 0
+            }
+          });
+          setDocumentExists(true);
+        }
+      };
+      // Use a wrapper to allow async function in event listener
+      const nukeListener = () => { handleNuke(); };
+      window.addEventListener("chastityOS_nuke", nukeListener);
+      return () => window.removeEventListener("chastityOS_nuke", nukeListener);
+    }, [resetAllData, activeUserId]);
 
     return {
         cageOnTime, isCageOn, timeInChastity, timeCageOff, chastityHistory, totalChastityTime,
@@ -675,6 +677,7 @@ export const useChastitySession = (
         setAccumulatedPauseTimeThisSession, setCurrentSessionPauseEvents, setLastPauseEndTime, setHasSessionEverBeenActive,
         cageOffStartTime,
         // --- Return the new state value ---
-        requiredKeyholderDurationSeconds
+        requiredKeyholderDurationSeconds,
+        documentExists
     };
 };

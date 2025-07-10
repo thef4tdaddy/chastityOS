@@ -66,8 +66,6 @@ const App = () => {
   const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
   const themeClass = isNightly ? 'theme-nightly' : 'theme-prod';
 
-  console.log('App userId:', userId);
-
   // Wait for Firebase Auth readiness before rendering
   if (isLoading || welcomeLoading || !isAuthReady) {
     return <div className="loading-fullscreen">Loading...</div>;
