@@ -3,8 +3,19 @@ import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/fir
 import { formatElapsedTime } from '../utils';
 import { db } from '../firebase';
 
-// Safe helper for .toDate() usage
-const safeToDate = (v) => (v && typeof v.toDate === 'function') ? v.toDate() : null;
+// Safe helper for various timestamp formats
+const safeToDate = (v) => {
+    if (!v) return null;
+    if (typeof v.toDate === 'function') {
+        const d = v.toDate();
+        return isNaN(d?.getTime?.()) ? null : d;
+    }
+    if (v instanceof Date) {
+        return isNaN(v.getTime()) ? null : v;
+    }
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
+};
 
 export const useChastitySession = (
     isAuthReady,
