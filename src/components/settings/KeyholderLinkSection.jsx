@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { generateKeyholderToken, getUserIdFromKeyholderToken, createAccountLinkForLinkedUid, deleteKeyholderToken, deleteAccountLink } from '../../utils/keyholderLink';
-import { auth } from '../../firebase'; // Assuming auth is imported from firebase config
+import { auth, db } from '../../firebase'; // Assuming auth and db are imported from firebase config
+import { getDoc, doc } from 'firebase/firestore';
 
 const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId, setActiveUserId }) => {
   const [shareToken, setShareToken] = useState('');
   const [inputToken, setInputToken] = useState('');
   const [message, setMessage] = useState('');
+  const [linkInfo, setLinkInfo] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -15,9 +17,30 @@ const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId, setActiv
     }
   }, []);
 
+  useEffect(() => {
+    if (linkedKeyholderId) {
+      const fetchLinkInfo = async () => {
+        const docId = `${auth.currentUser.uid}_${linkedKeyholderId}`;
+        const docRef = doc(db, 'accountLinks', docId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setLinkInfo(docSnap.data());
+        }
+      };
+      fetchLinkInfo();
+    }
+  }, [linkedKeyholderId]);
+
   const handleGenerate = async () => {
-    const token = await generateKeyholderToken(userId);
-    setShareToken(token || '');
+    try {
+      console.log('handleGenerate called. userId:', userId);
+      const token = await generateKeyholderToken(userId);
+      console.log('Generated token:', token);
+      setShareToken(token || '');
+    } catch (err) {
+      console.error('Error generating token:', err);
+      setMessage('Error generating token');
+    }
   };
 
   const handleLink = async () => {
@@ -25,6 +48,13 @@ const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId, setActiv
     if (uid) {
       try {
         await createAccountLinkForLinkedUid(auth.currentUser.uid, uid);
+        // Fetch the created accountLinks doc
+        const docId = `${auth.currentUser.uid}_${uid}`;
+        const docRef = doc(db, 'accountLinks', docId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setLinkInfo(docSnap.data());
+        }
         setSettings(prev => ({ ...prev, linkedKeyholderId: uid }));
         setMessage('Linked successfully!');
         setActiveUserId(uid);
@@ -97,7 +127,14 @@ const KeyholderLinkSection = ({ userId, setSettings, linkedKeyholderId, setActiv
       </div>
       {linkedKeyholderId && (
         <>
-          <p className="text-sm text-green-400 mt-3 text-left">Linked to user: {linkedKeyholderId}</p>
+          <p className="text-sm text-green-400 mt-3 text-left">
+            You are currently linked to: {linkedKeyholderId}
+          </p>
+          {linkInfo?.createdAt && (
+            <p className="text-sm text-purple-300 mt-1 text-left">
+              Linked since: {linkInfo.createdAt.toDate().toLocaleDateString()}
+            </p>
+          )}
           <div className="flex space-x-3 mt-2">
             <button
               type="button"

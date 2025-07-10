@@ -8,18 +8,23 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 export const useActiveUser = () => {
   const auth = getAuth();
   const [state, setState] = useState({
-    activeUserId: auth.currentUser ? auth.currentUser.uid : null,
+    activeUserId: undefined,
     isAuthReady: false,
   });
 
   useEffect(() => {
+    console.log('[useActiveUser] Subscribing to onAuthStateChanged...');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('[useActiveUser] onAuthStateChanged fired. User:', user);
       setState({
         activeUserId: user ? user.uid : null,
         isAuthReady: true,
       });
     });
-    return () => unsubscribe();
+    return () => {
+      console.log('[useActiveUser] Unsubscribing...');
+      unsubscribe();
+    };
   }, [auth]);
 
   return state;

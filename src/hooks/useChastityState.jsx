@@ -185,6 +185,7 @@ const sessionState = useChastitySession(
     ...releaseRequestState,
     handleGrantReleaseRequest,
     handleDenyReleaseRequest,
+    userId: userId,
     isAuthReady: activeUserReady,
   };
 };

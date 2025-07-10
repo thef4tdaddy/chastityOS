@@ -8,11 +8,11 @@ import { db } from '../firebase';
  * @param {string} ownerUid - The owner UID who owns this token.
  * @returns {Promise<string|null>} The generated token or null if userId is not provided.
  */
-export async function generateKeyholderToken(userId, ownerUid) {
-  if (!userId || !ownerUid) return null;
+export async function generateKeyholderToken(userId, ownerUid = userId) {
+  if (!userId) return null;
   const token = generateSecureToken(6);
   const now = serverTimestamp();
-  await setDoc(doc(db, 'keyholderLinks', token), { userId, createdAt: now });
+  await setDoc(doc(db, 'keyholderLinks', token), { userId, ownerUid, createdAt: now });
   return token;
 }
 
