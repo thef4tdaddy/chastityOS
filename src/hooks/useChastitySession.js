@@ -485,10 +485,10 @@ export const useChastitySession = (
     }, [loadedSessionData, applyRestoredData, saveDataToFirestore]);
 
     // Overwrite: Use useResetAllData to handle full reset logic
-    const { resetAllData } = useResetAllData();
+    const resetAllData = useResetAllData();
     const handleDiscardAndStartNew = useCallback(async () => {
-        await resetAllData(activeUserId);
-    }, [resetAllData, activeUserId]);
+        await resetAllData();
+    }, [resetAllData]);
 
     // --- New: Only subscribe to Firestore, do not recreate blank doc ---
     useEffect(() => {
@@ -595,67 +595,18 @@ export const useChastitySession = (
 
     // No early return: always return live handlers, even if not ready or no user.
 
-    // Listen for nuke event and reset all local session state, including Firestore data
+    // Listen for nuke event and reset all local session state
     useEffect(() => {
-      const handleNuke = async () => {
-        console.log("[Nuke] Deleting Firestore session data and resetting local state");
-        await resetAllData(activeUserId);
-        // --- Recreate empty document and set documentExists to true ---
-        if (activeUserId) {
-          await setDoc(doc(db, "users", activeUserId), {
-            session: {
-              isCageOn: false,
-              hasSessionEverBeenActive: false,
-              timeInChastity: 0,
-              totalTimeCageOff: 0,
-              accumulatedPauseTimeThisSession: 0,
-              chastityHistory: [],
-              currentSessionPauseEvents: [],
-              requiredKeyholderDurationSeconds: 0
-            },
-            settings: {},
-            createdAt: Timestamp.now()
-          });
-          setDocumentExists(true);
-        }
-        setChastityHistory([]);
-        setTotalTimeCageOff(0);
-        setLastPauseEndTime(null);
-        setIsCageOn(false);
-        setCageOnTime(null);
-        setTimeInChastity(0);
-        setIsPaused(false);
-        setPauseStartTime(null);
-        setAccumulatedPauseTimeThisSession(0);
-        setCageOffStartTime(null);
-        setTimeCageOff(0);
-        setCurrentSessionPauseEvents([]);
-        setHasSessionEverBeenActive(false);
-
-        // Recreate the Firestore document after nuke
-        if (activeUserId) {
-          await setDoc(doc(db, "users", activeUserId), {
-            createdAt: Timestamp.now(),
-            settings: {},
-            session: {
-              isCageOn: false,
-              hasSessionEverBeenActive: false,
-              timeInChastity: 0,
-              totalTimeCageOff: 0,
-              accumulatedPauseTimeThisSession: 0,
-              chastityHistory: [],
-              currentSessionPauseEvents: [],
-              requiredKeyholderDurationSeconds: 0
-            }
-          });
-          setDocumentExists(true);
-        }
+      const handleNuke = () => {
+        console.log("[Nuke] Resetting local session state");
+        setDocumentExists(false);
+        applyRestoredData(undefined);
       };
       // Use a wrapper to allow async function in event listener
       const nukeListener = () => { handleNuke(); };
       window.addEventListener("chastityOS_nuke", nukeListener);
       return () => window.removeEventListener("chastityOS_nuke", nukeListener);
-    }, [resetAllData, activeUserId]);
+    }, [applyRestoredData]);
 
     return {
         cageOnTime, isCageOn, timeInChastity, timeCageOff, chastityHistory, totalChastityTime,
