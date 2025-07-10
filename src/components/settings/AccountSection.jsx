@@ -77,9 +77,8 @@ const AccountSection = ({
       await deleteUser(currentUser);
       
       setDeleteMessage("Account and all data permanently deleted.");
-      setTimeout(() => {
-        window.location.reload(); // Reload to ensure a clean state
-      }, 4000);
+      console.log("✅ Account and all data permanently deleted. Please reload manually.");
+      alert("✅ Account and all data permanently deleted. Please reload the page manually.");
 
     } catch (error) {
         console.error("Error during final account deletion:", error);

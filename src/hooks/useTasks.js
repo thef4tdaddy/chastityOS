@@ -1,3 +1,4 @@
+import { safeToDate } from '../utils/safeToDate';
 import { useState, useEffect, useCallback } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -25,23 +26,15 @@ export function useTasks(userId, isAuthReady) {
     const q = query(tasksCollectionRef);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      // --- THIS IS THE FIX ---
-      // When mapping the data, check for a 'deadline' field.
-      // If it exists and is a Firestore Timestamp, convert it with .toDate()
       const tasksData = querySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          deadline: data.deadline && typeof data.deadline.toDate === 'function' 
-            ? data.deadline.toDate() 
-            : null,
-          createdAt: data.createdAt && typeof data.createdAt.toDate === 'function'
-            ? data.createdAt.toDate()
-            : null,
-          submittedAt: data.submittedAt && typeof data.submittedAt.toDate === 'function'
-            ? data.submittedAt.toDate()
-            : null
+          deadline: safeToDate(data.deadline),
+          recurrenceEnd: safeToDate(data.recurrenceEnd),
+          createdAt: safeToDate(data.createdAt),
+          submittedAt: safeToDate(data.submittedAt)
         };
       });
       

@@ -9,7 +9,7 @@ const LogEventForm = ({
     newEventNotes, setNewEventNotes,
     newEventDurationHours, setNewEventDurationHours, newEventDurationMinutes, setNewEventDurationMinutes,
     newEventSelfOrgasmAmount, setNewEventSelfOrgasmAmount, newEventPartnerOrgasmAmount, setNewEventPartnerOrgasmAmount,
-    handleLogNewEvent, eventLogMessage, isLoadingEvents, savedSubmissivesName, keyholderName,
+    handleLogNewEvent, eventLogMessage, isLoadingEvents, isSubmitting, savedSubmissivesName, keyholderName,
     eventDisplayMode, isNightly // Added isNightly prop for dynamic classes
 }) => {
     const showSelfOrgasmAmountInput = selectedEventTypes.includes("Orgasm (Self)");
@@ -99,7 +99,7 @@ const LogEventForm = ({
                 <label htmlFor="eventNotes" className={`block text-sm font-medium text-left ${isNightly ? 'text-nightly-accent' : 'text-prod-accent'}`}>Notes:</label>
                 <textarea id="eventNotes" value={newEventNotes} onChange={e => setNewEventNotes(e.target.value)} rows="3" className={`mt-1 block w-full px-3 py-2 rounded-md border bg-app-input text-app-text focus:ring-accent focus:border-accent`} placeholder="Optional details..."></textarea>
             </div>
-            <button type="submit" disabled={!isAuthReady || isLoadingEvents} className="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-300 disabled:opacity-50">Log Event</button>
+            <button type="submit" disabled={!isAuthReady || isLoadingEvents || isSubmitting} className="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-300 disabled:opacity-50">Log Event</button>
             {eventLogMessage && <p className={`text-sm mt-2 ${eventLogMessage.includes('success') ? 'text-green-400' : 'text-red-500'}`}>{eventLogMessage}</p>}
         </form>
     );
