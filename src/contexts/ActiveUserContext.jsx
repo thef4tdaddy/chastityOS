@@ -9,17 +9,26 @@ export const ActiveUserProvider = ({ children }) => {
   const [activeUserId, setActiveUserId] = useState(auth.currentUser?.uid || null);
 
   useEffect(() => {
-    const init = async () => {
-      if (!auth.currentUser) return;
-      const docSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.linkedKeyholderId) {
-          setActiveUserId(data.linkedKeyholderId);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        let id = user.uid;
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.linkedKeyholderId) {
+              id = data.linkedKeyholderId;
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch linked keyholder ID:', err);
         }
+        setActiveUserId(id);
+      } else {
+        setActiveUserId(null);
       }
-    };
-    init();
+    });
+    return () => unsubscribe();
   }, []);
 
   return (
