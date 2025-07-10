@@ -15,6 +15,7 @@ export const useSettings = (userId, isAuthReady) => {
     punishments: [],
     isTrackingAllowed: true,
     eventDisplayMode: 'kinky',
+    themeVariant: 'dark',
     rulesText: '',
     publicProfileEnabled: false,
     publicStatsVisibility: {
@@ -101,6 +102,10 @@ export const useSettings = (userId, isAuthReady) => {
     updateSettings(prev => ({ ...prev, eventDisplayMode: mode }));
   }, [updateSettings]);
 
+  const handleSetThemeVariant = useCallback((variant) => {
+    updateSettings(prev => ({ ...prev, themeVariant: variant }));
+  }, [updateSettings]);
+
   const togglePublicProfileEnabled = useCallback(() => {
     updateSettings(prev => ({ ...prev, publicProfileEnabled: !prev.publicProfileEnabled }));
   }, [updateSettings]);
@@ -177,6 +182,8 @@ export const useSettings = (userId, isAuthReady) => {
     nameMessage,
     eventDisplayMode: settings.eventDisplayMode,
     handleSetEventDisplayMode,
+    themeVariant: settings.themeVariant,
+    handleSetThemeVariant,
     publicProfileEnabled: settings.publicProfileEnabled,
     publicStatsVisibility: settings.publicStatsVisibility,
     togglePublicProfileEnabled,

@@ -1,7 +1,12 @@
 // src/components/settings/DisplaySettingsSection.jsx
 import React from 'react';
 
-const DisplaySettingsSection = ({ eventDisplayMode, handleSetEventDisplayMode }) => {
+const DisplaySettingsSection = ({
+  eventDisplayMode,
+  handleSetEventDisplayMode,
+  themeVariant,
+  handleSetThemeVariant,
+}) => {
   return (
     <div className="mb-8 p-4 bg-gray-800 border border-blue-700 rounded-lg shadow-sm">
       <h3 className="text-xl font-semibold text-blue-300 mb-4">Display Settings</h3>
@@ -37,6 +42,36 @@ const DisplaySettingsSection = ({ eventDisplayMode, handleSetEventDisplayMode })
       <p className="text-xs text-gray-400 mt-2 text-left">
         Choose 'Kinky' to see all logged sexual events. Choose 'Vanilla' to hide specific "kinky" event types from the log for a more discreet view.
       </p>
+
+      <div className="flex items-center justify-between mt-6">
+        <label htmlFor="themeVariantToggle" className="text-sm font-medium text-purple-300 mr-3">
+          Theme:
+        </label>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-2 text-purple-200">
+            <input
+              type="radio"
+              name="themeVariant"
+              value="dark"
+              checked={themeVariant === 'dark'}
+              onChange={() => handleSetThemeVariant('dark')}
+              className="form-radio h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded-full focus:ring-blue-500"
+            />
+            <span>Dark</span>
+          </label>
+          <label className="flex items-center space-x-2 text-purple-200">
+            <input
+              type="radio"
+              name="themeVariant"
+              value="light"
+              checked={themeVariant === 'light'}
+              onChange={() => handleSetThemeVariant('light')}
+              className="form-radio h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded-full focus:ring-blue-500"
+            />
+            <span>Light</span>
+          </label>
+        </div>
+      </div>
     </div>
   );
 };

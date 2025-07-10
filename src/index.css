@@ -11,7 +11,7 @@
 :root, .theme-prod {
   --font-main: 'Cinzel', serif;
 
-  /* --- Primary (Purple) Palette --- */
+  /* --- Primary (Purple) Palette (Dark) --- */
   --color-bg-primary: theme('colors.gray.950');
   --color-bg-secondary: theme('colors.gray.900');
   --color-bg-tertiary: theme('colors.gray.800');
@@ -25,6 +25,25 @@
   --color-button-text: theme('colors.white');
   --color-accent: theme('colors.purple.500');
   --color-focus-ring: theme('colors.purple.400');
+}
+
+/* Light variant for production */
+.theme-prod-light {
+  --font-main: 'Cinzel', serif;
+
+  --color-bg-primary: theme('colors.gray.50');
+  --color-bg-secondary: theme('colors.gray.100');
+  --color-bg-tertiary: theme('colors.gray.200');
+  --color-text-primary: theme('colors.gray.900');
+  --color-text-secondary: theme('colors.gray.800');
+  --color-text-accent: theme('colors.purple.700');
+  --color-border-primary: theme('colors.gray.400');
+  --color-border-accent: theme('colors.purple.600');
+  --color-button-bg: theme('colors.purple.600');
+  --color-button-bg-hover: theme('colors.purple.500');
+  --color-button-text: theme('colors.white');
+  --color-accent: theme('colors.purple.600');
+  --color-focus-ring: theme('colors.purple.500');
 }
 
 .theme-nightly {
@@ -54,7 +73,7 @@
 html, body, #root { @apply h-full m-0 p-0 box-border; }
 *, ::before, ::after { box-sizing: inherit; } 
 :root { @apply leading-normal font-normal text-base; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; color-scheme: light dark; }
-.theme-prod, .theme-nightly { font-family: var(--font-main); background-color: var(--color-bg-primary); color: var(--color-text-primary); }
+.theme-prod, .theme-prod-light, .theme-nightly { font-family: var(--font-main); background-color: var(--color-bg-primary); color: var(--color-text-primary); }
 
 
 /* =============================================
