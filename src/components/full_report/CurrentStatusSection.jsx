@@ -1,6 +1,7 @@
-// src/components/full_report/CurrentStatusSection.jsx
 import React from 'react';
-import { formatTime, formatElapsedTime } from '../../utils';
+import { formatTime } from '../../utils/formatTime';
+import { formatElapsedTime } from '../../utils/formatElapsedTime';
+import { safeToDate } from '../../utils/safeToDate';
 
 const CurrentStatusSection = ({
     isCageOn, isPaused, cageOnTime,

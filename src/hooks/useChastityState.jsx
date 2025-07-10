@@ -32,9 +32,9 @@ export const useChastityState = () => {
   const eventLogState = useEventLog(userId, activeUserReady, getEventsCollectionRef);
   const arousalState = useArousalLevels(userId, activeUserReady);
   
-  const sessionState = useChastitySession(
-    userId, activeUserReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
-  );
+const sessionState = useChastitySession(
+  activeUserReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents, userId
+);
   
   // FIX: Destructure tasksState to isolate the `tasks` array from the other properties.
   const tasksState = useTasks(userId, activeUserReady);

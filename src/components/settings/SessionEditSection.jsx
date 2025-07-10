@@ -1,6 +1,6 @@
-// src/components/settings/SessionEditSection.jsx
 import React from 'react';
-import { formatTime } from '../../utils';
+import { formatTime } from '../../utils/formatTime';
+import { safeToDate } from '../../utils/safeToDate';
 
 const SessionEditSection = ({
   isCageOn,

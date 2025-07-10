@@ -1,9 +1,10 @@
-// src/components/log_event/EventLogTable.jsx
 import React from 'react';
-import { formatTime, formatElapsedTime } from '../../utils';
-import { EVENT_TYPE_DEFINITIONS } from '../../event_types.js'; // Added import and .js extension
+import { formatTime } from '../../utils/formatTime';
+import { formatElapsedTime } from '../../utils/formatElapsedTime';
+import { safeToDate } from '../../utils/safeToDate';
+import { EVENT_TYPE_DEFINITIONS } from '../../event_types.js';
 
-const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName, eventDisplayMode }) => { // Added eventDisplayMode
+const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName, eventDisplayMode }) => {
     const formatEventTypesForDisplay = (types, otherDetail, subName) => {
         let displayTypes = types && types.length > 0
             ? types.map(type => type === "Orgasm (Self)" && subName ? `Orgasm (${subName})` : type).join(', ')
@@ -41,7 +42,7 @@ const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName,
     return (
         <div>
             <h3 className="text-xl font-semibold text-purple-300 mb-3">Logged Events</h3>
-            {isLoadingEvents ? <p className="text-purple-200">Loading events...</p> : filteredSexualEventsLog.length > 0 ? ( // Changed to filteredSexualEventsLog
+            {isLoadingEvents ? <p className="text-purple-200">Loading events...</p> : filteredSexualEventsLog.length > 0 ? (
                 <div className="overflow-x-auto bg-gray-800 rounded-lg border border-purple-700"><table className="min-w-full divide-y divide-purple-700"><thead className="bg-gray-700"><tr>
                     <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Date & Time</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Type(s)</th>
@@ -49,7 +50,7 @@ const EventLogTable = ({ isLoadingEvents, sexualEventsLog, savedSubmissivesName,
                     <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Orgasm Count(s)</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-purple-300 uppercase">Notes</th>
                 </tr></thead><tbody className="divide-y divide-purple-700">
-                {filteredSexualEventsLog.map(event => ( // Changed to filteredSexualEventsLog
+                {filteredSexualEventsLog.map(event => (
                     event.eventType === 'startTimeEdit' ? (
                         <tr key={event.id} className="hover:bg-purple-900/20">
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(event.eventTimestamp || event.timestamp), true)}</td>

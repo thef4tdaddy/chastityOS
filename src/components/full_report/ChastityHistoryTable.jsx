@@ -1,9 +1,10 @@
-// src/components/full_report/ChastityHistoryTable.jsx
 import React from 'react';
-import { formatTime, formatElapsedTime } from '../../utils';
+import { formatTime } from '../../utils/formatTime';
+import { formatElapsedTime } from '../../utils/formatElapsedTime';
+import { safeToDate } from '../../utils/safeToDate';
 
 const ChastityHistoryTable = ({ chastityHistory }) => {
-    if (chastityHistory.length === 0) {
+    if (!chastityHistory || chastityHistory.length === 0) {
         return <p className="text-center text-purple-200">No chastity history records.</p>;
     }
 
@@ -41,7 +42,7 @@ const ChastityHistoryTable = ({ chastityHistory }) => {
                             <tr key={p.id || (p.startTime ? p.startTime.toString() : Math.random())} className="hover:bg-purple-900/10">
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{p.periodNumber}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(p.startTime), true)}</td>
-                                <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatTime(safeToDate(p.endTime), true)}</td>
+                                <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{p.endTime ? formatTime(safeToDate(p.endTime), true) : 'Ongoing'}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-purple-200">{formatElapsedTime(p.duration)}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-yellow-300">{formatElapsedTime(p.totalPauseDurationSeconds || 0)}</td>
                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-green-400 font-semibold">{formatElapsedTime(effectiveDuration)}</td>

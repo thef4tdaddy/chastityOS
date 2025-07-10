@@ -7,9 +7,8 @@ import HotjarScript from './components/HotjarScript';
 import Header from './components/Header';
 import UpdatePrompt from './components/UpdatePrompt';
 import EulaModal from './components/EulaModal';
-import WelcomeModal from './components/WelcomeModal';
 import HowToModal from './components/HowToModal';
-import { useWelcome } from './hooks/useWelcome';
+import { useWelcome } from './hooks/useWelcome.jsx';
 
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const FullReportPage = lazy(() => import('./pages/FullReportPage'));
@@ -30,9 +29,7 @@ const App = () => {
   const [showHowToModal, setShowHowToModal] = useState(false);
 
   const chastityOS = useChastityState();
-
-  const welcomeState = useWelcome(chastityOS.userId, chastityOS.isAuthReady);
-  const { hasAccepted, isLoading: welcomeLoading, accept } = welcomeState;
+  const { isLoading: welcomeLoading, WelcomeModal: WelcomeModalComponent } = useWelcome();
 
   const {
     isLoading,
@@ -123,12 +120,10 @@ const App = () => {
         isOpen={showEulaModal}
         onClose={() => setShowEulaModal(false)}
       />
-      <WelcomeModal
-        isOpen={!hasAccepted}
-        onAccept={accept}
-        onShowLegal={() => setShowEulaModal(true)}
-        onShowHowTo={() => setShowHowToModal(true)}
-      />
+      
+      {/* Render the Welcome Modal element returned from the hook */}
+      {WelcomeModalComponent}
+
       <HowToModal
         isOpen={showHowToModal}
         onClose={() => setShowHowToModal(false)}

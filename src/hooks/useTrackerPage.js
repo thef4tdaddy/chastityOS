@@ -1,4 +1,3 @@
-// src/hooks/useTrackerPage.js
 import { useState, useEffect, useRef, useMemo } from 'react';
 
 /**

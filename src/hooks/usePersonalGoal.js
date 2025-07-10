@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { sha256, generateBackupCode } from '../utils/hash';
-import { logEvent } from '../utils/logging';
+import { logEvent } from '../utils/logEvent';
 import { eventTypes } from '../utils/eventTypes';
 
 /**

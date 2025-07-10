@@ -1,13 +1,14 @@
-// src/pages/TrackerPage.jsx
 import React from 'react';
 import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
-import { formatTime, formatElapsedTime, formatDaysOnly } from '../utils';
-import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
-import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component
+import { formatTime } from '../utils/formatTime';
+import { formatElapsedTime } from '../utils/formatElapsedTime';
+import { formatDaysOnly } from '../utils/formatDaysOnly';
+import { useTrackerPage } from '../hooks/useTrackerPage';
+import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal';
 import { PAUSE_REASON_OPTIONS, REMOVAL_REASON_OPTIONS } from '../event_types.js';
+import { safeToDate } from '../utils/safeToDate.js';
 
 const TrackerPage = (props) => {
-    // These props are passed through to the hook or used for other modals
     const {
         isAuthReady,
         isCageOn,
@@ -41,7 +42,6 @@ const TrackerPage = (props) => {
         addReleaseRequest
     } = props;
 
-    // Call the new hook to get all the logic and state for this page
     const {
         remainingGoalTime,
         showEmergencyUnlockModal,
@@ -55,13 +55,22 @@ const TrackerPage = (props) => {
         handleOpenUnlockModal,
         handleAttemptEmergencyUnlock,
         setShowEmergencyUnlockModal,
-    } = useTrackerPage(props); // Pass all props from parent to the hook
+    } = useTrackerPage(props);
 
     const hasPendingReleaseRequest = releaseRequests.some(r => r.status === 'pending');
+    
     const lastDeniedRequest = releaseRequests
         .filter(r => r.status === 'denied' && r.deniedAt)
-        .sort((a, b) => b.deniedAt - a.deniedAt)[0];
-    const denialCooldownActive = lastDeniedRequest && (Date.now() - lastDeniedRequest.deniedAt.getTime() < 4 * 3600 * 1000);
+        .sort((a, b) => {
+            const dateA = safeToDate(a.deniedAt);
+            const dateB = safeToDate(b.deniedAt);
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            return dateB.getTime() - dateA.getTime();
+        })[0];
+
+    const lastDeniedDate = lastDeniedRequest ? safeToDate(lastDeniedRequest.deniedAt) : null;
+    const denialCooldownActive = lastDeniedDate && (Date.now() - lastDeniedDate.getTime() < 4 * 3600 * 1000);
 
     const handleBegForRelease = async () => {
         if (addReleaseRequest) {
@@ -78,7 +87,8 @@ const TrackerPage = (props) => {
         );
     }
 
-    // The JSX remains the same, but it uses the values from the hook
+    const formattedRestoreTime = loadedSessionData ? formatTime(safeToDate(loadedSessionData.cageOnTime), true) : null;
+
     return (
         <>
           {showRestoreSessionPrompt && loadedSessionData && (
@@ -87,7 +97,7 @@ const TrackerPage = (props) => {
                 <h3 className="text-lg md:text-xl font-bold mb-4 text-blue-300">Restore Previous Session?</h3>
                 <p className="text-sm text-gray-300 mb-2">An active chastity session was found:</p>
                 <ul className="text-xs text-left text-gray-400 mb-6 list-disc list-inside pl-4">
-                    <li>Started: {formatTime(safeToDate(loadedSessionData.cageOnTime), true)}</li>
+                    <li>Started: {formattedRestoreTime && formattedRestoreTime !== 'Invalid Date' ? formattedRestoreTime : '...'}</li>
                     <li>
                         Currently: {loadedSessionData.isPaused
                             ? `Paused (for ${formatElapsedTime( (loadedSessionData.accumulatedPauseTimeThisSession || 0) + (loadedSessionData.pauseStartTime ? Math.floor((new Date().getTime() - new Date(loadedSessionData.pauseStartTime).getTime()) / 1000) : 0) )})`
@@ -142,7 +152,7 @@ const TrackerPage = (props) => {
 
             {denialCooldownActive && lastDeniedRequest && (
                 <div className="mb-4 p-2 rounded-md text-center bg-red-700/30 border border-red-600">
-                    <p className="text-sm text-red-300">Beg for Release denied by {lastDeniedRequest.handledBy || keyholderName} at {lastDeniedRequest.deniedAt.toLocaleString()}</p>
+                    <p className="text-sm text-red-300">Beg for Release denied by {lastDeniedRequest.handledBy || keyholderName} at {lastDeniedDate ? lastDeniedDate.toLocaleString() : 'N/A'}</p>
                 </div>
             )}
 
@@ -150,7 +160,10 @@ const TrackerPage = (props) => {
             <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm text-center">
                 <p className="tracker-label text-sm md:text-lg">{topBoxLabel}</p>
                 <p className="tracker-value text-2xl md:text-4xl font-semibold">
-                    {formatTime(safeToDate(topBoxTime), true)}
+                    {typeof topBoxTime === 'string' 
+                        ? topBoxTime 
+                        : (topBoxTime ? formatTime(safeToDate(topBoxTime), true) : '...')
+                    }
                 </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
