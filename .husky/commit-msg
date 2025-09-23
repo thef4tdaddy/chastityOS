@@ -9,4 +9,4 @@ fi
 
 . "$(dirname "$0")/_/husky.sh"
 
-npx --no -- commitlint --edit "$1"
+npx --no -- commitlint --edit "$1" --config configs/linting/commitlint.config.cjs
