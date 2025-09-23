@@ -28,6 +28,11 @@ export default defineConfig(({ mode }) => {
   // Use the loaded VITE_APP_VARIANT for the release version
   const releaseVersion = `chastityOS-${env.VITE_APP_VARIANT || 'unknown'}-${gitHash}`;
 
+  // Nightly builds: keep console logs, source maps, less compression
+  // Production builds: remove console logs, optimize for performance
+  const isNightly = mode === 'nightly';
+  const isProduction = mode === 'production';
+
   return {
     // --- THIS IS THE KEY FIX ---
     // The 'define' option will find and replace these keys with their values
@@ -45,13 +50,14 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       visualizer({
         filename: './dist/bundle-report.html',
-        open: true,
+        open: !isProduction, // Only open in nightly builds
         gzipSize: true,
         brotliSize: true
       }),
-      viteCompression({
+      // Only compress in production builds
+      ...(isProduction ? [viteCompression({
         algorithm: 'brotliCompress'
-      }),
+      })] : []),
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
@@ -137,6 +143,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: true,
+      minify: isProduction ? 'terser' : 'esbuild',
       rollupOptions: {
         output: {
           manualChunks(id) {
@@ -145,7 +152,23 @@ export default defineConfig(({ mode }) => {
             }
           }
         }
-      }
+      },
+      ...(isProduction && {
+        terserOptions: {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+          },
+        },
+      }),
+    },
+    esbuild: {
+      ...(isNightly && {
+        drop: [], // Keep console logs and debugger in nightly builds
+      }),
+      ...(isProduction && {
+        drop: ['console', 'debugger'], // Remove console logs and debugger in production
+      }),
     }
   }
 })
