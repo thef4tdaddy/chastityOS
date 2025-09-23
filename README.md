@@ -1,4 +1,4 @@
-**Current Version: 3.5**
+**Current Version: 4.0.0-nightly.1**
 
 # ChastityOS
 
@@ -66,12 +66,47 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 
 ## 🔧 Tech Stack
 
-- **Frontend:** React + Vite
-- **Styling:** Tailwind CSS
-- **Backend:** Firebase (Auth + Firestore)
-- **Analytics:** Google Analytics, GTM, Hotjar
-- **Feedback:** GitHub API + Discord Webhooks
-- **Auth Handling:** Firebase Auth (Anonymous + Google Sign-In)
+- **Frontend:** React 19 + Vite 7 + TypeScript (migration in progress)
+- **Styling:** Tailwind CSS 4 + Glass Morphism Design System
+- **State Management:** TanStack Query (server state) + Zustand (UI state) + React Context (auth/app)
+- **Data Layer:** Firebase (cloud) ↔ Dexie (local IndexedDB) ↔ TanStack Query (cache)
+- **Backend:** Firebase (Auth + Firestore + Security Rules)
+- **Build:** Modern ESM + Rollup bundling + Vite dev server
+- **Quality:** ESLint 9 + Prettier + Conventional Commits
+- **Testing:** Comprehensive testing framework (coming in Phase 2)
+- **CI/CD:** GitHub Actions + Automated deployment + Security scanning
+
+## 🏗️ Architecture
+
+ChastityOS uses a modern, scalable architecture with offline-first data management:
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────────┐    ┌────────────────┐
+│   Firebase  │◄──►│    Dexie     │◄──►│ TanStack Query  │◄──►│  React Components │
+│  (Cloud DB) │    │ (Local DB)   │    │ (Server Cache)  │    │   (UI Only)     │
+└─────────────┘    └──────────────┘    └─────────────────┘    └────────────────┘
+                                                    ▲
+                                                    │
+                                              ┌─────────────┐
+                                              │   Zustand   │
+                                              │ (UI State)  │
+                                              └─────────────┘
+```
+
+- **Firebase:** Source of truth, cloud sync, real-time updates
+- **Dexie:** Offline storage, fast local queries, automatic sync
+- **TanStack Query:** Server state caching, optimistic updates, background sync
+- **Zustand:** UI state only (modals, forms, preferences)
+- **React Context:** Auth state, app-level state
+- **Services Layer:** All business logic (separated from UI components)
+
+## 📚 Documentation
+
+For comprehensive guides, API documentation, and architecture details:
+- **Developer Setup:** `docs/development/getting-started.md`
+- **Architecture Overview:** `docs/development/architecture/`
+- **API Documentation:** `docs/api/`
+- **Contributing Guide:** `docs/contributing/guidelines.md`
 
 ---
 
