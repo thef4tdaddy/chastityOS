@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   // Global ignores
-  { ignores: ['dist'] },
+  { ignores: ['../../dist'] },
 
   // Configuration for Node.js files (like vite.config.js, postcss.config.js)
   {
@@ -19,7 +19,7 @@ export default [
   
   // Configuration for React source files
   {
-    files: ['src/**/*.{js,jsx}'],
+    files: ['../../src/**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,

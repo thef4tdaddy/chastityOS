@@ -7,13 +7,15 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import viteCompression from 'vite-plugin-compression';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig(({ mode }) => {
   // Load variables from the correct .env file for the current mode
   // The third argument ('') ensures all variables are loaded, not just VITE_ prefixed ones.
   const env = loadEnv(mode, process.cwd(), '');
 
-  const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
+  const __dirname = fileURLToPath(new URL('.', import.meta.url));
+  const packageJson = JSON.parse(readFileSync(fileURLToPath(new URL('../../package.json', import.meta.url)), 'utf8'));
   const appVersion = packageJson.version;
 
   let gitHash = 'dev';
