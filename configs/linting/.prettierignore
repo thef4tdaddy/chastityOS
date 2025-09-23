@@ -1,0 +1,23 @@
+# Build outputs
+dist
+build
+
+# Dependencies
+node_modules
+
+# Generated files
+*.log
+*.cache
+.vite
+
+# Config files (maintain specific formatting)
+*.config.js
+*.config.cjs
+*.config.mjs
+
+# Documentation that shouldn't be auto-formatted
+CHANGELOG.md
+LICENSE
+
+# Environment files
+.env*
