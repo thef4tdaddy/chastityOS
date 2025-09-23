@@ -19,14 +19,16 @@
     "test": "echo 'Tests not yet configured - will be added with testing framework'",
     "test:watch": "echo 'Test watch mode - will be added with testing framework'",
     "test:coverage": "echo 'Test coverage - will be added with testing framework'",
-    "clean": "rm -rf dist node_modules/.vite",
+    "clean": "./scripts/build/clean.sh",
     "clean:all": "rm -rf dist node_modules package-lock.json && npm install",
     "deps:check": "npm outdated",
-    "deps:update": "npm update && npm audit fix",
+    "deps:update": "./scripts/maintenance/deps-update.sh",
     "deps:audit": "npm audit",
     "release": "standard-version --config configs/package/versionrc.json",
     "release:nightly": "standard-version --prerelease nightly --config configs/package/versionrc.json",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "health-check": "./scripts/deployment/health-check.sh",
+    "test:full": "./scripts/testing/run-tests.sh",
     "start": "npm run dev"
   },
   "dependencies": {
