@@ -550,4 +550,92 @@ export default [
 
 ---
 
-This ESLint configuration ensures code quality, security, and architectural consistency while maintaining developer productivity and code maintainability.
+## 🎯 Custom ChastityOS Rules (Implemented)
+
+### Zustand Safety Rules
+Our custom rules prevent React error #185 and enforce proper architecture:
+
+#### `zustand-safe-patterns/zustand-no-server-data`
+**Level**: Error
+**Rationale**: Enforces that Zustand stores only contain UI state, not server data.
+
+```javascript
+// ❌ Bad - Server data in Zustand
+const useStore = create((set) => ({
+  sessions: [], // Should use TanStack Query
+  currentUser: null, // Should use React Context
+}));
+
+// ✅ Good - UI state only in Zustand
+const useUIStore = create((set) => ({
+  isModalOpen: false,
+  theme: 'light',
+  sidebarCollapsed: false,
+}));
+```
+
+#### `zustand-safe-patterns/zustand-no-getstate-in-useeffect`
+**Level**: Error
+**Rationale**: Prevents infinite render loops from getState() calls in useEffect.
+
+```javascript
+// ❌ Bad - getState() in useEffect
+useEffect(() => {
+  const state = store.getState(); // Causes React error #185
+  // ...
+}, []);
+
+// ✅ Good - Proper subscription
+const data = useUIStore(state => state.data);
+useEffect(() => {
+  // Use the subscribed data
+}, [data]);
+```
+
+#### `zustand-safe-patterns/zustand-store-reference-pattern`
+**Level**: Error
+**Rationale**: Prevents dangerous async patterns that cause infinite loops.
+
+```javascript
+// ❌ Bad - Store reference in async operation
+setTimeout(() => {
+  store.action(); // Dangerous!
+}, 1000);
+
+// ✅ Good - External store reference
+setTimeout(() => {
+  useStoreName.getState().action();
+}, 1000);
+```
+
+## 📊 Current Codebase Analysis
+
+As of implementation, the ESLint rules detected:
+- **137 total violations** (83 errors, 54 warnings)
+- **Major categories:**
+  - Console.log usage: 50+ violations (will use logger utility)
+  - Firebase imports in components: 10+ violations (will use service layer)
+  - Large functions/files: 30+ violations (will be refactored during modernization)
+  - alert() usage: 5+ violations (will use toast notifications)
+
+**Note**: These violations will be naturally resolved during the Phase 2+ modernization rewrite, as we're implementing the new architecture patterns from scratch.
+
+## 🔄 Migration Strategy
+
+### Phase 1: Rules Implementation ✅
+- Custom Zustand safety rules created
+- Architectural enforcement rules configured
+- File size and complexity warnings established
+
+### Phase 2: Natural Resolution During Rewrite
+- Service layer implementation will fix component architecture violations
+- TanStack Query + Zustand implementation will fix state management violations
+- Logger utility adoption will fix console.log violations
+- Toast system will fix alert() violations
+
+### Phase 3: Strict Enforcement
+- Promote warnings to errors for new code
+- Enforce architectural patterns for all new development
+- Add pre-commit hooks for rule enforcement
+
+This ESLint configuration ensures code quality, security, and architectural consistency while supporting the modernization effort with clear patterns for the new architecture.
