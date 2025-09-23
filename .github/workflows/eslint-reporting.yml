@@ -37,6 +37,21 @@ jobs:
           name: eslint-report
           path: eslint_report.json
 
+      - name: Analyze ESLint report for regressions
+        id: eslint_check
+        run: node scripts/ci/check-eslint-regressions.js
+
+      - name: Create GitHub issue for ESLint regression
+        if: steps.eslint_check.outputs.regression_detected == 'true'
+        uses: actions/create-issue@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Code Quality Regression Detected"
+          body: |
+            A regression in code quality has been detected.
+            Please review the attached ESLint report for details.
+          labels: bug, technical-debt
+
       # Placeholder for Google Sheets Integration
       - name: Update Google Sheets
         if: always()

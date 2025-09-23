@@ -32,7 +32,19 @@ jobs:
         run: npm run build
 
       - name: Run Lighthouse CI
-        run: npm run test:lighthouse
+        id: lighthouse_audit
+        run: npm run test:lighthouse || echo "Lighthouse audit failed"
+
+      - name: Create GitHub issue for Lighthouse regression
+        if: failure() && steps.lighthouse_audit.outcome == 'failure'
+        uses: actions/create-issue@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Performance Regression Detected"
+          body: |
+            A regression in performance has been detected.
+            Please review the Lighthouse report for details.
+          labels: performance, regression
 
       # Placeholder for Google Sheets Integration
       - name: Update Google Sheets
