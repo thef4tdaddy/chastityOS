@@ -1,19 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
-import { serverTimestamp } from 'firebase/firestore';
-import { useAuth } from './useAuth';
-import { useSettings } from './useSettings';
-import { useEventLog } from './useEventLog';
-import { useArousalLevels } from './useArousalLevels';
-import { useChastitySession } from './useChastitySession';
-import { useTasks } from './useTasks';
-import { usePersonalGoal } from './usePersonalGoal';
-import { useDataManagement } from './useDataManagement';
-import { useRules } from './useRules';
-import { db } from '../firebase';
-import { collection } from 'firebase/firestore';
-import { useKeyholderHandlers } from './chastity/keyholderHandlers';
-import { sha256 } from '../utils/hash';
-import { useReleaseRequests } from './useReleaseRequests';
+import { useState, useCallback, useEffect } from "react";
+import { serverTimestamp } from "firebase/firestore";
+import { useAuth } from "./useAuth";
+import { useSettings } from "./useSettings";
+import { useEventLog } from "./useEventLog";
+import { useArousalLevels } from "./useArousalLevels";
+import { useChastitySession } from "./useChastitySession";
+import { useTasks } from "./useTasks";
+import { usePersonalGoal } from "./usePersonalGoal";
+import { useDataManagement } from "./useDataManagement";
+import { useRules } from "./useRules";
+import { db } from "../firebase";
+import { collection } from "firebase/firestore";
+import { useKeyholderHandlers } from "./chastity/keyholderHandlers";
+import { sha256 } from "../utils/hash";
+import { useReleaseRequests } from "./useReleaseRequests";
 
 export const useChastityState = () => {
   const authState = useAuth();
@@ -25,23 +25,32 @@ export const useChastityState = () => {
 
   // Use the unified 'sexualEventsLog' collection for all session and event data
   const getEventsCollectionRef = (uid) =>
-    collection(db, 'users', uid, 'sexualEventsLog');
-  const eventLogState = useEventLog(userId, isAuthReady, getEventsCollectionRef);
-  const arousalState = useArousalLevels(userId, isAuthReady);
-  
-  const sessionState = useChastitySession(
-    userId, isAuthReady, googleEmail, getEventsCollectionRef, eventLogState.fetchEvents
+    collection(db, "users", uid, "sexualEventsLog");
+  const eventLogState = useEventLog(
+    userId,
+    isAuthReady,
+    getEventsCollectionRef,
   );
-  
+  const arousalState = useArousalLevels(userId, isAuthReady);
+
+  const sessionState = useChastitySession(
+    userId,
+    isAuthReady,
+    googleEmail,
+    getEventsCollectionRef,
+    eventLogState.fetchEvents,
+  );
+
   const tasksState = useTasks(userId, isAuthReady);
   const { tasks, ...otherTaskState } = tasksState;
 
   const releaseRequestState = useReleaseRequests(userId, isAuthReady);
-  
+
   const sessionObjectForHooks = {
-      isChastityOn: sessionState.isCageOn,
-      chastityStartTimestamp: sessionState.cageOnTime,
-      requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
+    isChastityOn: sessionState.isCageOn,
+    chastityStartTimestamp: sessionState.cageOnTime,
+    requiredKeyholderDurationSeconds:
+      sessionState.requiredKeyholderDurationSeconds,
   };
 
   const personalGoalState = usePersonalGoal({
@@ -52,7 +61,10 @@ export const useChastityState = () => {
   });
 
   const dataManagementState = useDataManagement({
-    userId, isAuthReady, userEmail: googleEmail, settings: settings,
+    userId,
+    isAuthReady,
+    userEmail: googleEmail,
+    settings: settings,
     session: sessionObjectForHooks,
     events: eventLogState.sexualEventsLog,
     tasks: tasks,
@@ -60,55 +72,73 @@ export const useChastityState = () => {
   const rulesState = useRules(userId, isAuthReady);
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
-  const [keyholderMessage, setKeyholderMessage] = useState('');
+  const [keyholderMessage, setKeyholderMessage] = useState("");
 
-  const generateTempPassword = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+  const generateTempPassword = () =>
+    Math.random().toString(36).substring(2, 8).toUpperCase();
 
-  const handleSetKeyholderName = useCallback(async (name) => {
-    const tempPassword = generateTempPassword();
-    const hash = await sha256(tempPassword);
-    setSettings(prev => ({ ...prev, keyholderName: name, keyholderPasswordHash: hash }));
-    setKeyholderMessage(`Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`);
-  }, [setSettings]);
+  const handleSetKeyholderName = useCallback(
+    async (name) => {
+      const tempPassword = generateTempPassword();
+      const hash = await sha256(tempPassword);
+      setSettings((prev) => ({
+        ...prev,
+        keyholderName: name,
+        keyholderPasswordHash: hash,
+      }));
+      setKeyholderMessage(
+        `Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`,
+      );
+    },
+    [setSettings],
+  );
 
-  const handleKeyholderPasswordCheck = useCallback(async (passwordAttempt) => {
-    const storedHash = settings?.keyholderPasswordHash;
-    if (!storedHash) {
-      setKeyholderMessage("Error: No keyholder password is set in the database.");
-      return;
-    }
-    const attemptHash = await sha256(passwordAttempt);
-    if (attemptHash === storedHash) {
-      setIsKeyholderModeUnlocked(true);
-      setKeyholderMessage('Controls are now unlocked.');
-    } else {
-      setKeyholderMessage('Incorrect password. Please try again.');
-    }
-  }, [settings?.keyholderPasswordHash]);
+  const handleKeyholderPasswordCheck = useCallback(
+    async (passwordAttempt) => {
+      const storedHash = settings?.keyholderPasswordHash;
+      if (!storedHash) {
+        setKeyholderMessage(
+          "Error: No keyholder password is set in the database.",
+        );
+        return;
+      }
+      const attemptHash = await sha256(passwordAttempt);
+      if (attemptHash === storedHash) {
+        setIsKeyholderModeUnlocked(true);
+        setKeyholderMessage("Controls are now unlocked.");
+      } else {
+        setKeyholderMessage("Incorrect password. Please try again.");
+      }
+    },
+    [settings?.keyholderPasswordHash],
+  );
 
   // CHANGE 2: The updated password handling logic
-  const handleSetPermanentPassword = useCallback(async (newPassword) => {
-    if (!newPassword || newPassword.length < 6) {
-      setKeyholderMessage("Password must be at least 6 characters long.");
-      return;
-    }
-    const newHash = await sha256(newPassword);
-    
-    // Create the new settings object first
-    const newSettings = { ...settings, keyholderPasswordHash: newHash };
-    
-    // Directly call the save function from the settings hook and wait for it to complete
-    await saveSettingsToFirestore(newSettings);
-    
-    // Then, update the local state. This now happens only AFTER successful save.
-    setSettings(newSettings);
-    
-    setKeyholderMessage("Permanent password has been updated successfully!");
-  }, [settings, setSettings, saveSettingsToFirestore]);
+  const handleSetPermanentPassword = useCallback(
+    async (newPassword) => {
+      if (!newPassword || newPassword.length < 6) {
+        setKeyholderMessage("Password must be at least 6 characters long.");
+        return;
+      }
+      const newHash = await sha256(newPassword);
+
+      // Create the new settings object first
+      const newSettings = { ...settings, keyholderPasswordHash: newHash };
+
+      // Directly call the save function from the settings hook and wait for it to complete
+      await saveSettingsToFirestore(newSettings);
+
+      // Then, update the local state. This now happens only AFTER successful save.
+      setSettings(newSettings);
+
+      setKeyholderMessage("Permanent password has been updated successfully!");
+    },
+    [settings, setSettings, saveSettingsToFirestore],
+  );
 
   const lockKeyholderControls = useCallback(() => {
     setIsKeyholderModeUnlocked(false);
-    setKeyholderMessage('');
+    setKeyholderMessage("");
   }, []);
 
   const keyholderHandlers = useKeyholderHandlers({
@@ -118,47 +148,62 @@ export const useChastityState = () => {
     updateTask: tasksState.updateTask,
     deleteTask: tasksState.deleteTask,
     saveDataToFirestore: sessionState.saveDataToFirestore,
-    requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
+    requiredKeyholderDurationSeconds:
+      sessionState.requiredKeyholderDurationSeconds,
   });
 
-  const handleGrantReleaseRequest = useCallback(async (requestId) => {
-    await releaseRequestState.updateReleaseRequest(requestId, {
-      status: 'granted',
-      grantedAt: serverTimestamp(),
-      handledBy: settings.keyholderName || 'Keyholder',
-    });
-    await sessionState.handleEndChastityNow('Release granted by keyholder');
-  }, [releaseRequestState, sessionState, settings.keyholderName]);
+  const handleGrantReleaseRequest = useCallback(
+    async (requestId) => {
+      await releaseRequestState.updateReleaseRequest(requestId, {
+        status: "granted",
+        grantedAt: serverTimestamp(),
+        handledBy: settings.keyholderName || "Keyholder",
+      });
+      await sessionState.handleEndChastityNow("Release granted by keyholder");
+    },
+    [releaseRequestState, sessionState, settings.keyholderName],
+  );
 
-  const handleDenyReleaseRequest = useCallback(async (requestId) => {
-    await releaseRequestState.updateReleaseRequest(requestId, {
-      status: 'denied',
-      deniedAt: serverTimestamp(),
-      handledBy: settings.keyholderName || 'Keyholder',
-    });
-  }, [releaseRequestState, settings.keyholderName]);
+  const handleDenyReleaseRequest = useCallback(
+    async (requestId) => {
+      await releaseRequestState.updateReleaseRequest(requestId, {
+        status: "denied",
+        deniedAt: serverTimestamp(),
+        handledBy: settings.keyholderName || "Keyholder",
+      });
+    },
+    [releaseRequestState, settings.keyholderName],
+  );
 
-  const handleSubmitForReview = useCallback(async (taskId, note) => {
-    if (!tasksState.updateTask) {
-      console.error("updateTask function is not available.");
-      return;
-    }
-    await tasksState.updateTask(taskId, {
-      status: 'pending_approval',
-      submissiveNote: note,
-      submittedAt: serverTimestamp()
-    });
-  }, [tasksState]);
+  const handleSubmitForReview = useCallback(
+    async (taskId, note) => {
+      if (!tasksState.updateTask) {
+        console.error("updateTask function is not available.");
+        return;
+      }
+      await tasksState.updateTask(taskId, {
+        status: "pending_approval",
+        submissiveNote: note,
+        submittedAt: serverTimestamp(),
+      });
+    },
+    [tasksState],
+  );
 
   useEffect(() => {
     const checkOverdueTasks = () => {
       const now = new Date();
-      const pendingTasks = tasks.filter(t => t.status === 'pending' && t.deadline);
+      const pendingTasks = tasks.filter(
+        (t) => t.status === "pending" && t.deadline,
+      );
 
       for (const task of pendingTasks) {
         if (now > task.deadline) {
           console.log(`Task "${task.text}" is overdue. Auto-submitting...`);
-          handleSubmitForReview(task.id, 'Automatically submitted: Deadline passed.');
+          handleSubmitForReview(
+            task.id,
+            "Automatically submitted: Deadline passed.",
+          );
         }
       }
     };

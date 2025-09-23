@@ -1,13 +1,13 @@
-import productionLogo from '../assets/images/logo-production.png';
-import nightlyLogo from '../assets/images/logo-nightly.png';
+import productionLogo from "../assets/images/logo-production.png";
+import nightlyLogo from "../assets/images/logo-nightly.png";
 
 const Header = () => {
   // Use VITE_APP_VARIANT to check if it's the nightly build
-  const isNightly = import.meta.env.VITE_APP_VARIANT === 'nightly';
+  const isNightly = import.meta.env.VITE_APP_VARIANT === "nightly";
 
   const tagline = !isNightly // Use !isNightly for production
-    ? 'Your personal chastity & FLR tracker.'
-    : 'Built nightly with kink and care.';
+    ? "Your personal chastity & FLR tracker."
+    : "Built nightly with kink and care.";
 
   const logo = !isNightly ? productionLogo : nightlyLogo; // Use !isNightly for production
 

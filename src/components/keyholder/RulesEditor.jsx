@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-const RulesEditor = ({ currentRulesText = '', onSaveRules }) => {
+const RulesEditor = ({ currentRulesText = "", onSaveRules }) => {
   const [text, setText] = useState(currentRulesText);
 
   useEffect(() => {
-    setText(currentRulesText || '');
+    setText(currentRulesText || "");
   }, [currentRulesText]);
 
   const handleSave = () => {

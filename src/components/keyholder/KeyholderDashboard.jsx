@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { formatElapsedTime } from '../../utils';
-import TaskApprovalSection from './TaskApprovalSection';
-import KeyholderAddTaskForm from './KeyholderAddTaskForm';
-import RecurringTasksOverview from '../RecurringTasksOverview';
+import React, { useState, useEffect } from "react";
+import { formatElapsedTime } from "../../utils";
+import TaskApprovalSection from "./TaskApprovalSection";
+import KeyholderAddTaskForm from "./KeyholderAddTaskForm";
+import RecurringTasksOverview from "../RecurringTasksOverview";
 
 const KeyholderDashboard = ({
   keyholderName,
@@ -25,28 +25,28 @@ const KeyholderDashboard = ({
   handleCancelRecurringTask,
   releaseRequests = [],
   handleGrantReleaseRequest,
-  handleDenyReleaseRequest
+  handleDenyReleaseRequest,
 }) => {
-  const [khNameInput, setKhNameInput] = useState('');
-  const [khPasswordInput, setKhPasswordInput] = useState('');
-  const [khRequiredDurationDays, setKhRequiredDurationDays] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [khNameInput, setKhNameInput] = useState("");
+  const [khPasswordInput, setKhPasswordInput] = useState("");
+  const [khRequiredDurationDays, setKhRequiredDurationDays] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
-  const [modalPassword, setModalPassword] = useState('');
+  const [modalPassword, setModalPassword] = useState("");
 
   useEffect(() => {
     if (requiredKeyholderDurationSeconds) {
       const days = Math.floor(requiredKeyholderDurationSeconds / 86400);
       setKhRequiredDurationDays(days.toString());
     } else {
-      setKhRequiredDurationDays('');
+      setKhRequiredDurationDays("");
     }
   }, [requiredKeyholderDurationSeconds]);
 
   useEffect(() => {
-    if (keyholderMessage && keyholderMessage.includes('password is:')) {
-      const password = keyholderMessage.split(':')[1].split('.')[0].trim();
+    if (keyholderMessage && keyholderMessage.includes("password is:")) {
+      const password = keyholderMessage.split(":")[1].split(".")[0].trim();
       setModalPassword(password);
       setIsPasswordModalVisible(true);
     }
@@ -59,7 +59,7 @@ const KeyholderDashboard = ({
 
   const onUnlockControls = () => {
     handleKeyholderPasswordCheck(khPasswordInput);
-    setKhPasswordInput('');
+    setKhPasswordInput("");
   };
 
   const onSetPermanentPassword = () => {
@@ -68,8 +68,8 @@ const KeyholderDashboard = ({
       return;
     }
     handleSetPermanentPassword(newPassword);
-    setNewPassword('');
-    setConfirmNewPassword('');
+    setNewPassword("");
+    setConfirmNewPassword("");
   };
 
   const onSetKHRequiredDurationAndLock = async () => {
@@ -79,23 +79,23 @@ const KeyholderDashboard = ({
     handleLockKeyholderControls();
   };
 
-  const [rewardDays, setRewardDays] = useState('');
-  const [rewardOther, setRewardOther] = useState('');
-  const [punishDays, setPunishDays] = useState('');
-  const [punishOther, setPunishOther] = useState('');
+  const [rewardDays, setRewardDays] = useState("");
+  const [rewardOther, setRewardOther] = useState("");
+  const [punishDays, setPunishDays] = useState("");
+  const [punishOther, setPunishOther] = useState("");
 
   const handleSimpleReward = async () => {
     const secs = (parseInt(rewardDays, 10) || 0) * 86400;
     await handleAddReward({ timeSeconds: secs, other: rewardOther });
-    setRewardDays('');
-    setRewardOther('');
+    setRewardDays("");
+    setRewardOther("");
   };
 
   const handleSimplePunishment = async () => {
     const secs = (parseInt(punishDays, 10) || 0) * 86400;
     await handleAddPunishment({ timeSeconds: secs, other: punishOther });
-    setPunishDays('');
-    setPunishOther('');
+    setPunishDays("");
+    setPunishOther("");
   };
 
   return (
@@ -178,10 +178,10 @@ const KeyholderDashboard = ({
                 <hr className="my-4 border-purple-700" />
                 <div>
                   <p className="text-blue mb-2">
-                    Required Duration:{' '}
+                    Required Duration:{" "}
                     {requiredKeyholderDurationSeconds
                       ? formatElapsedTime(requiredKeyholderDurationSeconds)
-                      : 'Not Set'}
+                      : "Not Set"}
                   </p>
                   <div className="grid grid-cols-1 gap-2 mb-3">
                     <input
@@ -253,66 +253,64 @@ const KeyholderDashboard = ({
                     </button>
                   </div>
                 </div>
-<hr className="my-4 border-purple-700" />
+                <hr className="my-4 border-purple-700" />
 
-<TaskApprovalSection
-  tasks={tasks}
-  onApprove={handleApproveTask}
-  onReject={handleRejectTask}
-/>
+                <TaskApprovalSection
+                  tasks={tasks}
+                  onApprove={handleApproveTask}
+                  onReject={handleRejectTask}
+                />
 
-<KeyholderAddTaskForm
-  onAddTask={handleAddTask}
-  tasks={tasks}
-/>
+                <KeyholderAddTaskForm onAddTask={handleAddTask} tasks={tasks} />
 
-<RecurringTasksOverview
-  tasks={tasks}
-  onCancel={handleCancelRecurringTask}
-/>
+                <RecurringTasksOverview
+                  tasks={tasks}
+                  onCancel={handleCancelRecurringTask}
+                />
 
-<button
-  onClick={onManageRules}
-  className="button-blue !text-blue-300 mt-2"
->
-  Manage Rules
-</button>
+                <button
+                  onClick={onManageRules}
+                  className="button-blue !text-blue-300 mt-2"
+                >
+                  Manage Rules
+                </button>
 
-{releaseRequests.filter((r) => r.status === 'pending').length > 0 && (
-  <div className="mt-6 space-y-3">
-    <h4 className="title-purple !text-purple-300">
-      Release Requests
-    </h4>
-    {releaseRequests
-      .filter((r) => r.status === 'pending')
-      .map((req) => (
-        <div
-          key={req.id}
-          className="flex justify-between items-center p-2 border border-purple-700 rounded-md"
-        >
-          <span className="text-sm">
-            {req.submittedAt
-              ? req.submittedAt.toLocaleString()
-              : ''}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleGrantReleaseRequest(req.id)}
-              className="button-green !text-green-300 px-2"
-            >
-              Grant
-            </button>
-            <button
-              onClick={() => handleDenyReleaseRequest(req.id)}
-              className="button-red !text-red-300 px-2"
-            >
-              Deny
-            </button>
-          </div>
-        </div>
-      ))}
-  </div>
-)}
+                {releaseRequests.filter((r) => r.status === "pending").length >
+                  0 && (
+                  <div className="mt-6 space-y-3">
+                    <h4 className="title-purple !text-purple-300">
+                      Release Requests
+                    </h4>
+                    {releaseRequests
+                      .filter((r) => r.status === "pending")
+                      .map((req) => (
+                        <div
+                          key={req.id}
+                          className="flex justify-between items-center p-2 border border-purple-700 rounded-md"
+                        >
+                          <span className="text-sm">
+                            {req.submittedAt
+                              ? req.submittedAt.toLocaleString()
+                              : ""}
+                          </span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleGrantReleaseRequest(req.id)}
+                              className="button-green !text-green-300 px-2"
+                            >
+                              Grant
+                            </button>
+                            <button
+                              onClick={() => handleDenyReleaseRequest(req.id)}
+                              className="button-red !text-red-300 px-2"
+                            >
+                              Deny
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             )}
           </>

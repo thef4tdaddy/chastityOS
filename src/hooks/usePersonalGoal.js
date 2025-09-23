@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
-import { sha256, generateBackupCode } from '../utils/hash';
-import { logEvent } from '../utils/logging';
-import { eventTypes } from '../utils/eventTypes';
+import { useState, useCallback } from "react";
+import { sha256, generateBackupCode } from "../utils/hash";
+import { logEvent } from "../utils/logging";
+import { eventTypes } from "../utils/eventTypes";
 
 /**
  * Manages the state and logic for the user's personal chastity goal.
@@ -14,7 +14,7 @@ import { eventTypes } from '../utils/eventTypes';
 export const usePersonalGoal = ({ userId, settings, setSettings, session }) => {
   const [goalDuration, setGoalDuration] = useState(7);
   const [isSelfLocking, setIsSelfLocking] = useState(false);
-  const [selfLockCodeInput, setSelfLockCodeInput] = useState('');
+  const [selfLockCodeInput, setSelfLockCodeInput] = useState("");
   const [generatedBackupCode, setGeneratedBackupCode] = useState(null);
   const [goalError, setGoalError] = useState(null);
 
@@ -24,17 +24,19 @@ export const usePersonalGoal = ({ userId, settings, setSettings, session }) => {
   const handleSetPersonalGoal = useCallback(async () => {
     // Prevent setting a goal if a KH lock is active.
     if (isKhLocked) {
-      setGoalError('Personal goals are disabled while a Keyholder lock is active.');
+      setGoalError(
+        "Personal goals are disabled while a Keyholder lock is active.",
+      );
       return;
     }
 
     setGoalError(null);
     if (!userId) {
-      setGoalError('User not authenticated.');
+      setGoalError("User not authenticated.");
       return;
     }
     if (!goalDuration || goalDuration <= 0) {
-      setGoalError('Please enter a valid duration for the goal.');
+      setGoalError("Please enter a valid duration for the goal.");
       return;
     }
     const endDate = new Date();
@@ -52,7 +54,7 @@ export const usePersonalGoal = ({ userId, settings, setSettings, session }) => {
       }
     }
 
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       isGoalActive: true,
       isGoalCompleted: false,
@@ -64,54 +66,72 @@ export const usePersonalGoal = ({ userId, settings, setSettings, session }) => {
       revealedSelfLockCode: null,
     }));
 
-    logEvent(userId, eventTypes.PERSONAL_GOAL_SET.type, { duration: goalDuration, isHardcore: isSelfLocking });
-  }, [userId, goalDuration, isSelfLocking, selfLockCodeInput, setSettings, isKhLocked]);
+    logEvent(userId, eventTypes.PERSONAL_GOAL_SET.type, {
+      duration: goalDuration,
+      isHardcore: isSelfLocking,
+    });
+  }, [
+    userId,
+    goalDuration,
+    isSelfLocking,
+    selfLockCodeInput,
+    setSettings,
+    isKhLocked,
+  ]);
 
-  const handleClearPersonalGoal = useCallback(async (backupCode = '') => {
-    // Prevent clearing a goal if a KH lock is active.
-    if (isKhLocked) {
-      setGoalError('Personal goals are disabled while a Keyholder lock is active.');
-      return;
-    }
-    
-    setGoalError(null);
-    if (!userId) {
-      setGoalError('User not authenticated.');
-      return;
-    }
-
-    const isHardcore = settings?.isHardcoreGoal;
-    const storedBackupHash = settings?.goalBackupCodeHash;
-    const isCompleted = settings?.isGoalCompleted;
-
-    if (isHardcore && !isCompleted) {
-      if (!backupCode) {
-        const msg = 'This is a hardcore goal. A backup code is required to unlock early.';
-        setGoalError(msg);
+  const handleClearPersonalGoal = useCallback(
+    async (backupCode = "") => {
+      // Prevent clearing a goal if a KH lock is active.
+      if (isKhLocked) {
+        setGoalError(
+          "Personal goals are disabled while a Keyholder lock is active.",
+        );
         return;
       }
-      const inputBackupCodeHash = await sha256(backupCode);
-      if (inputBackupCodeHash !== storedBackupHash) {
-        const msg = 'Incorrect backup code.';
-        setGoalError(msg);
+
+      setGoalError(null);
+      if (!userId) {
+        setGoalError("User not authenticated.");
         return;
       }
-    }
 
-    setSettings(prev => ({
-      ...prev,
-      isGoalActive: false,
-      isGoalCompleted: false,
-      goalDuration: 0,
-      goalEndDate: null,
-      isHardcoreGoal: false,
-      goalBackupCodeHash: null,
-      hashedSelfLockCode: null,
-      revealedSelfLockCode: null,
-    }));
+      const isHardcore = settings?.isHardcoreGoal;
+      const storedBackupHash = settings?.goalBackupCodeHash;
+      const isCompleted = settings?.isGoalCompleted;
 
-    logEvent(userId, eventTypes.PERSONAL_GOAL_REMOVED.type, { wasCompleted: isCompleted });
-  }, [userId, settings, setSettings, isKhLocked]);
+      if (isHardcore && !isCompleted) {
+        if (!backupCode) {
+          const msg =
+            "This is a hardcore goal. A backup code is required to unlock early.";
+          setGoalError(msg);
+          return;
+        }
+        const inputBackupCodeHash = await sha256(backupCode);
+        if (inputBackupCodeHash !== storedBackupHash) {
+          const msg = "Incorrect backup code.";
+          setGoalError(msg);
+          return;
+        }
+      }
+
+      setSettings((prev) => ({
+        ...prev,
+        isGoalActive: false,
+        isGoalCompleted: false,
+        goalDuration: 0,
+        goalEndDate: null,
+        isHardcoreGoal: false,
+        goalBackupCodeHash: null,
+        hashedSelfLockCode: null,
+        revealedSelfLockCode: null,
+      }));
+
+      logEvent(userId, eventTypes.PERSONAL_GOAL_REMOVED.type, {
+        wasCompleted: isCompleted,
+      });
+    },
+    [userId, settings, setSettings, isKhLocked],
+  );
 
   return {
     goalDuration,

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { useState, useEffect, useCallback } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 /**
  * Handles showing the welcome modal and persisting acceptance in Firestore.
@@ -18,7 +18,7 @@ export function useWelcome(userId, isAuthReady) {
     }
 
     const fetchAcceptance = async () => {
-      const userDocRef = doc(db, 'users', userId);
+      const userDocRef = doc(db, "users", userId);
       try {
         const snap = await getDoc(userDocRef);
         if (snap.exists()) {
@@ -28,7 +28,7 @@ export function useWelcome(userId, isAuthReady) {
           setHasAccepted(false);
         }
       } catch (err) {
-        console.error('Failed to load acceptance info:', err);
+        console.error("Failed to load acceptance info:", err);
       } finally {
         setIsLoading(false);
       }
@@ -39,12 +39,12 @@ export function useWelcome(userId, isAuthReady) {
 
   const accept = useCallback(async () => {
     if (!isAuthReady || !userId) return;
-    const userDocRef = doc(db, 'users', userId);
+    const userDocRef = doc(db, "users", userId);
     try {
       await setDoc(userDocRef, { welcomeAccepted: true }, { merge: true });
       setHasAccepted(true);
     } catch (err) {
-      console.error('Failed to record acceptance:', err);
+      console.error("Failed to record acceptance:", err);
     }
   }, [userId, isAuthReady]);
 

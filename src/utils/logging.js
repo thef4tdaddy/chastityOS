@@ -1,6 +1,6 @@
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
-import { eventTypes } from './eventTypes';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
+import { eventTypes } from "./eventTypes";
 
 /**
  * Logs an automated system event to the user's 'eventLog' collection in Firestore.
@@ -15,14 +15,16 @@ export const logEvent = async (userId, eventType, details = {}) => {
   }
   try {
     // Defines the path to the user-specific event log collection
-    const eventLogCollection = collection(db, 'users', userId, 'eventLog');
-    
+    const eventLogCollection = collection(db, "users", userId, "eventLog");
+
     const eventData = {
       timestamp: serverTimestamp(),
       type: eventType,
       details: details,
       // Finds the display-friendly text for the event from our definitions
-      text: Object.values(eventTypes).find(e => e.type === eventType)?.text || 'Unknown Event',
+      text:
+        Object.values(eventTypes).find((e) => e.type === eventType)?.text ||
+        "Unknown Event",
     };
 
     // Adds the new event document to Firestore

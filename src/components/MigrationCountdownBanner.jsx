@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-const targetTime = new Date('2025-06-13T08:00:00-05:00'); // CDT
+const targetTime = new Date("2025-06-13T08:00:00-05:00"); // CDT
 
 export default function MigrationCountdownBanner() {
   const [timeLeft, setTimeLeft] = useState(getTimeRemaining());
@@ -19,8 +19,12 @@ export default function MigrationCountdownBanner() {
     <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-400 text-black text-center p-3 shadow-md">
       <div className="flex items-center justify-center gap-4 flex-wrap text-sm sm:text-base">
         <div>
-          <strong>⚠️ Migration Warning:</strong> ChastityOS will switch to a new database at <strong>8:00 AM CDT</strong>.
-          <span className="ml-2">Export your data now. Time left: <strong>{formatTime(timeLeft)}</strong></span>
+          <strong>⚠️ Migration Warning:</strong> ChastityOS will switch to a new
+          database at <strong>8:00 AM CDT</strong>.
+          <span className="ml-2">
+            Export your data now. Time left:{" "}
+            <strong>{formatTime(timeLeft)}</strong>
+          </span>
           <a
             href="/export"
             className="ml-4 underline font-semibold text-blue-700 hover:text-blue-900"

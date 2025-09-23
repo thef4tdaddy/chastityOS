@@ -5,11 +5,11 @@
  */
 export async function sha256(string) {
   const utf8 = new TextEncoder().encode(string);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", utf8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray
-    .map((bytes) => bytes.toString(16).padStart(2, '0'))
-    .join('');
+    .map((bytes) => bytes.toString(16).padStart(2, "0"))
+    .join("");
   return hashHex;
 }
 
@@ -18,10 +18,10 @@ export async function sha256(string) {
  * @returns {string} The generated backup code.
  */
 export function generateBackupCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }

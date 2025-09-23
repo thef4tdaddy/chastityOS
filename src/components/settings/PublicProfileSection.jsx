@@ -1,12 +1,12 @@
-import React from 'react';
-import { makeProfileToken } from '../../utils/publicProfile';
+import React from "react";
+import { makeProfileToken } from "../../utils/publicProfile";
 
 const sectionLabels = {
-  currentStatus: 'Current Status',
-  totals: 'Totals',
-  arousalChart: 'Arousal Chart',
-  chastityHistory: 'Chastity History',
-  sexualEvents: 'Sexual Events',
+  currentStatus: "Current Status",
+  totals: "Totals",
+  arousalChart: "Arousal Chart",
+  chastityHistory: "Chastity History",
+  sexualEvents: "Sexual Events",
 };
 
 const PublicProfileSection = ({
@@ -22,7 +22,9 @@ const PublicProfileSection = ({
 
   return (
     <div className="mb-8 p-4 bg-gray-800 border border-green-700 rounded-lg shadow-sm">
-      <h3 className="text-xl font-semibold text-green-300 mb-4">Public Profile</h3>
+      <h3 className="text-xl font-semibold text-green-300 mb-4">
+        Public Profile
+      </h3>
       <label className="flex items-center space-x-2 mb-3 text-purple-200">
         <input
           type="checkbox"
@@ -41,7 +43,10 @@ const PublicProfileSection = ({
           <p className="text-sm text-purple-200 mb-2">Visible Sections:</p>
           <div className="space-y-2">
             {Object.keys(sectionLabels).map((key) => (
-              <label key={key} className="flex items-center space-x-2 text-purple-200">
+              <label
+                key={key}
+                className="flex items-center space-x-2 text-purple-200"
+              >
                 <input
                   type="checkbox"
                   checked={publicStatsVisibility?.[key] || false}
