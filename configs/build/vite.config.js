@@ -162,6 +162,11 @@ export default defineConfig(({ mode }) => {
         },
       }),
     },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/tests/setup.js',
+    },
     esbuild: {
       ...(isNightly && {
         drop: [], // Keep console logs and debugger in nightly builds
