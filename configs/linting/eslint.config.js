@@ -2,6 +2,8 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import typescriptParser from "@typescript-eslint/parser";
+import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import zustandSafePatterns from "./eslint-rules/zustand-safe-patterns.js";
 
 export default [
@@ -19,8 +21,8 @@ export default [
       ".env*",
       "build/**",
       "public/**/*.js",
-      "**/*.test.js",
-      "**/*.spec.js",
+      "**/*.test.{js,jsx,ts,tsx}",
+      "**/*.spec.{js,jsx,ts,tsx}",
       "**/__tests__/**", // Exclude test directories
       "scripts/**", // Allow console in build scripts
       "configs/linting/eslint-rules/**", // Exclude custom ESLint rule definitions
@@ -28,7 +30,7 @@ export default [
     ],
   },
   {
-    files: ["**/*.{js,jsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2024,
       globals: {
@@ -166,8 +168,25 @@ export default [
     },
   },
   {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        project: "./tsconfig.json",
+      },
+    },
+    plugins: {
+      "@typescript-eslint": typescriptPlugin,
+    },
+    rules: {
+      ...typescriptPlugin.configs.recommended.rules,
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
+  {
     // Component architecture enforcement - prevent direct service imports in components
-    files: ["src/components/**/*.{js,jsx}"],
+    files: ["src/components/**/*.{js,jsx,ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -214,7 +233,7 @@ export default [
   },
   {
     // Services directory rules - enforce separation from React
-    files: ["src/services/**/*.{js,jsx}"],
+    files: ["src/services/**/*.{js,jsx,ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -239,7 +258,7 @@ export default [
   },
   {
     // Hooks directory rules - enforce React patterns
-    files: ["src/hooks/**/*.{js,jsx}"],
+    files: ["src/hooks/**/*.{js,jsx,ts,tsx}"],
     rules: {
       // Hook files must export hooks only
       "no-restricted-syntax": [
@@ -253,7 +272,7 @@ export default [
   },
   {
     // Files over 400 lines need attention
-    files: ["**/*.{js,jsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     rules: {
       "max-lines": [
         "error",
@@ -267,7 +286,7 @@ export default [
   },
   {
     // Files over 500 lines must be refactored
-    files: ["**/*.{js,jsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     rules: {
       "max-lines": [
         "error",
@@ -282,12 +301,12 @@ export default [
   {
     // Exclusions for complex utilities that legitimately need higher complexity
     files: [
-      "src/utils/**/calculations/**/*.js",
-      "src/utils/**/validation/**/*.js",
-      "src/utils/**/formatting/**/*.js",
-      "src/services/sync/**/*.js",
-      "src/services/auth/**/*.js",
-      "src/services/storage/**/*.js",
+      "src/utils/**/calculations/**/*.{js,jsx,ts,tsx}",
+      "src/utils/**/validation/**/*.{js,jsx,ts,tsx}",
+      "src/utils/**/formatting/**/*.{js,jsx,ts,tsx}",
+      "src/services/sync/**/*.{js,jsx,ts,tsx}",
+      "src/services/auth/**/*.{js,jsx,ts,tsx}",
+      "src/services/storage/**/*.{js,jsx,ts,tsx}",
     ],
     rules: {
       complexity: "off", // Complex algorithms and calculations
@@ -300,10 +319,10 @@ export default [
   {
     // Exclusions for core infrastructure files
     files: [
-      "**/firebase.js",
-      "**/dexie-config.js",
-      "**/main.jsx", // App entry point
-      "**/App.jsx", // Main app component
+      "**/firebase.{js,ts}",
+      "**/dexie-config.{js,ts}",
+      "**/main.{jsx,tsx}", // App entry point
+      "**/App.{jsx,tsx}", // Main app component
     ],
     rules: {
       "max-lines": "off", // Core infrastructure needs comprehensive coverage
@@ -317,9 +336,9 @@ export default [
   {
     // Exclusions for auth-related files that can use React Context
     files: [
-      "**/AuthContext.jsx", // Core auth context
-      "**/contexts/*Auth*.{js,jsx}", // Any auth-related context files
-      "src/contexts/**/*.{js,jsx}", // All context files
+      "**/AuthContext.{jsx,tsx}", // Core auth context
+      "**/contexts/*Auth*.{js,jsx,ts,tsx}", // Any auth-related context files
+      "src/contexts/**/*.{js,jsx,ts,tsx}", // All context files
     ],
     rules: {
       "no-restricted-imports": [
@@ -332,7 +351,7 @@ export default [
   },
   {
     // Allow console statements only in logger.js
-    files: ["**/logging.js", "**/logger.js"],
+    files: ["**/logging.{js,ts}", "**/logger.{js,ts}"],
     rules: {
       "no-console": "off", // Logger utility can use console
     },
