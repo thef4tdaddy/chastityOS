@@ -10,10 +10,9 @@
     "build": "vite build --config configs/build/vite.config.js",
     "build:nightly": "vite build --mode nightly --config configs/build/vite.config.js",
     "build:production": "vite build --mode production --config configs/build/vite.config.js",
-    "build:vercel": "node vercel.build.cjs",
     "lint": "eslint . --config configs/linting/eslint.config.js",
     "preview": "vite preview --config configs/build/vite.config.js",
-    "release": "standard-version"
+    "release": "standard-version --config configs/package/versionrc.json"
   },
   "dependencies": {
     "@sentry/react": "^8.17.0",
