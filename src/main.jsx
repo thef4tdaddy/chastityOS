@@ -5,7 +5,7 @@ import PublicProfilePage from './pages/PublicProfilePage.jsx';
 import { extractUserIdFromToken } from './utils/publicProfile';
 import './index.css';
 import * as Sentry from "@sentry/react";
-import { HelmetProvider } from 'react-helmet-async';
+// Removed react-helmet-async (React 19 incompatible)
 
 // Read all Sentry config from environment variables
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
@@ -59,9 +59,7 @@ const RootComponent = profileId ? (
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
-      <HelmetProvider>
         {RootComponent}
-      </HelmetProvider>
     </Sentry.ErrorBoundary>
   </React.StrictMode>,
 )
