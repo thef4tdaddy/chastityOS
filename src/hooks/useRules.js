@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { useState, useEffect, useCallback } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 export function useRules(userId, isAuthReady) {
-  const [rulesText, setRulesTextState] = useState('');
+  const [rulesText, setRulesTextState] = useState("");
   const [isRulesLoading, setIsRulesLoading] = useState(true);
 
   useEffect(() => {
@@ -14,17 +14,17 @@ export function useRules(userId, isAuthReady) {
     const fetchRules = async () => {
       setIsRulesLoading(true);
       try {
-        const userDocRef = doc(db, 'users', userId);
+        const userDocRef = doc(db, "users", userId);
         const snap = await getDoc(userDocRef);
         if (snap.exists()) {
           const data = snap.data();
-          const loaded = data?.settings?.rulesText || data.rulesText || '';
+          const loaded = data?.settings?.rulesText || data.rulesText || "";
           setRulesTextState(loaded);
         } else {
-          setRulesTextState('');
+          setRulesTextState("");
         }
       } catch (err) {
-        console.error('Error fetching rules:', err);
+        console.error("Error fetching rules:", err);
       } finally {
         setIsRulesLoading(false);
       }
@@ -35,20 +35,20 @@ export function useRules(userId, isAuthReady) {
   const saveRulesText = useCallback(
     async (text) => {
       if (!isAuthReady || !userId) return;
-      const normalized = text.replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
-      const userDocRef = doc(db, 'users', userId);
+      const normalized = text.replace(/([^\n])\n([^\n])/g, "$1\n\n$2");
+      const userDocRef = doc(db, "users", userId);
       try {
         await setDoc(
           userDocRef,
           { settings: { rulesText: normalized } },
-          { merge: true }
+          { merge: true },
         );
         setRulesTextState(normalized);
       } catch (err) {
-        console.error('Error saving rules:', err);
+        console.error("Error saving rules:", err);
       }
     },
-    [isAuthReady, userId]
+    [isAuthReady, userId],
   );
 
   return { rulesText, setRulesText: saveRulesText, isRulesLoading };

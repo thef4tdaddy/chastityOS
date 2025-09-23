@@ -1,15 +1,18 @@
-import React from 'react';
+import React from "react";
 
 const RestoreSessionPrompt = ({ onRestore, onDiscard, startedAt }) => {
   const formattedDate = startedAt
     ? new Date(startedAt.seconds * 1000).toLocaleString()
-    : 'Unknown';
+    : "Unknown";
 
   return (
     <div className="bg-gray-800 border border-indigo-500 p-6 rounded-lg shadow-lg max-w-md mx-auto mt-4 text-center">
-      <h3 className="text-xl font-semibold text-indigo-300 mb-2">Restore Previous Session</h3>
+      <h3 className="text-xl font-semibold text-indigo-300 mb-2">
+        Restore Previous Session
+      </h3>
       <p className="text-sm text-gray-300 mb-4">
-        A previous session was in progress.<br />
+        A previous session was in progress.
+        <br />
         <strong>Started at:</strong> {formattedDate}
       </p>
       <div className="flex flex-col sm:flex-row justify-center gap-3">

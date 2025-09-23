@@ -1,5 +1,5 @@
-import React from 'react';
-import RulesEditor from '../components/keyholder/RulesEditor';
+import React from "react";
+import RulesEditor from "../components/keyholder/RulesEditor";
 
 const KeyholderRulesPage = ({ rulesText, setRulesText, onBack }) => {
   return (

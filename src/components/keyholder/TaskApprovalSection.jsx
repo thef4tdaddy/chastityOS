@@ -1,9 +1,11 @@
-import React from 'react';
-import { FaCheck, FaTimes, FaCommentAlt } from 'react-icons/fa';
-import { formatTime } from '../../utils'; // Assuming this utility exists
+import React from "react";
+import { FaCheck, FaTimes, FaCommentAlt } from "react-icons/fa";
+import { formatTime } from "../../utils"; // Assuming this utility exists
 
 const TaskApprovalSection = ({ tasks, onApprove, onReject }) => {
-  const pendingTasks = tasks.filter(task => task.status === 'pending_approval');
+  const pendingTasks = tasks.filter(
+    (task) => task.status === "pending_approval",
+  );
 
   if (pendingTasks.length === 0) {
     return null; // Don't render anything if there are no tasks to approve
@@ -13,8 +15,11 @@ const TaskApprovalSection = ({ tasks, onApprove, onReject }) => {
     <div className="task-approval-box">
       <h4>Tasks Awaiting Approval</h4>
       <div className="task-approval-list">
-        {pendingTasks.map(task => (
-          <div key={task.id} className="task-review-item flex-col items-start !p-3">
+        {pendingTasks.map((task) => (
+          <div
+            key={task.id}
+            className="task-review-item flex-col items-start !p-3"
+          >
             {/* Top row with task text and action buttons */}
             <div className="w-full flex justify-between items-center">
               <span className="task-review-text">{task.text}</span>
@@ -45,7 +50,8 @@ const TaskApprovalSection = ({ tasks, onApprove, onReject }) => {
             <div className="w-full mt-2 pt-2 border-t border-gray-700/50 text-xs text-gray-400 flex justify-between items-center">
               {task.submissiveNote ? (
                 <span className="italic flex items-center">
-                  <FaCommentAlt className="mr-2 flex-shrink-0" /> {task.submissiveNote}
+                  <FaCommentAlt className="mr-2 flex-shrink-0" />{" "}
+                  {task.submissiveNote}
                 </span>
               ) : (
                 <span className="italic">No note provided.</span>

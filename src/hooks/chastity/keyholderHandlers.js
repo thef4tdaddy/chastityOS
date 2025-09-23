@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { serverTimestamp } from 'firebase/firestore';
+import { useCallback } from "react";
+import { serverTimestamp } from "firebase/firestore";
 
 export function useKeyholderHandlers({
   userId,
@@ -19,31 +19,37 @@ export function useKeyholderHandlers({
       if (!saveDataToFirestore) return;
       await saveDataToFirestore({ requiredKeyholderDurationSeconds: duration });
     },
-    [saveDataToFirestore]
+    [saveDataToFirestore],
   );
 
   // Updated to create a standardized log entry
   const handleAddReward = useCallback(
     async (reward) => {
       if (!saveDataToFirestore || !userId || !addTask) return;
-      
+
       const timeToRemoveInSeconds = reward.timeSeconds || 0;
       if (timeToRemoveInSeconds > 0) {
         const currentDuration = requiredKeyholderDurationSeconds || 0;
-        const newDuration = Math.max(0, currentDuration - timeToRemoveInSeconds);
-        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+        const newDuration = Math.max(
+          0,
+          currentDuration - timeToRemoveInSeconds,
+        );
+        await saveDataToFirestore({
+          requiredKeyholderDurationSeconds: newDuration,
+        });
       }
-      
+
       // Create the standardized log entry
       await addTask({
-        logType: 'reward',
-        sourceText: 'Manually added by Keyholder',
-        note: reward.other || '',
-        timeChangeSeconds: timeToRemoveInSeconds > 0 ? -timeToRemoveInSeconds : 0,
+        logType: "reward",
+        sourceText: "Manually added by Keyholder",
+        note: reward.other || "",
+        timeChangeSeconds:
+          timeToRemoveInSeconds > 0 ? -timeToRemoveInSeconds : 0,
         createdAt: serverTimestamp(),
       });
     },
-    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds],
   );
 
   // Updated to create a standardized log entry
@@ -55,19 +61,21 @@ export function useKeyholderHandlers({
       if (timeToAddInSeconds > 0) {
         const currentDuration = requiredKeyholderDurationSeconds || 0;
         const newDuration = currentDuration + timeToAddInSeconds;
-        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+        await saveDataToFirestore({
+          requiredKeyholderDurationSeconds: newDuration,
+        });
       }
-      
+
       // Create the standardized log entry
       await addTask({
-        logType: 'punishment',
-        sourceText: 'Manually added by Keyholder',
-        note: punishment.other || '',
+        logType: "punishment",
+        sourceText: "Manually added by Keyholder",
+        note: punishment.other || "",
         timeChangeSeconds: timeToAddInSeconds,
         createdAt: serverTimestamp(),
       });
     },
-    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds]
+    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds],
   );
 
   const handleAddTask = useCallback(
@@ -76,122 +84,170 @@ export function useKeyholderHandlers({
         await addTask({
           ...taskData,
           recurrenceId: taskData.recurrenceId || null, // This is the fix
-          status: 'pending',
-          assignedBy: 'keyholder',
-          createdAt: serverTimestamp()
+          status: "pending",
+          assignedBy: "keyholder",
+          createdAt: serverTimestamp(),
         });
       }
     },
-    [userId, addTask]
+    [userId, addTask],
   );
 
   // Updated to automatically log the reward
   const handleApproveTask = useCallback(
     async (taskId) => {
       if (!userId || !updateTask || !tasks) return;
-      const task = tasks.find(t => t.id === taskId);
+      const task = tasks.find((t) => t.id === taskId);
       if (!task) return;
 
-      const timeChange = (task.reward && task.reward.type === 'time') ? task.reward.value : 0;
+      const timeChange =
+        task.reward && task.reward.type === "time" ? task.reward.value : 0;
       if (timeChange > 0) {
         const currentDuration = requiredKeyholderDurationSeconds || 0;
         const newDuration = Math.max(0, currentDuration - timeChange);
-        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+        await saveDataToFirestore({
+          requiredKeyholderDurationSeconds: newDuration,
+        });
       }
 
       // Add a new log entry for the reward
       await addTask({
-        logType: 'reward',
+        logType: "reward",
         sourceText: `Task: "${task.text}"`,
-        note: (task.reward && task.reward.type === 'note') ? task.reward.value : '',
+        note:
+          task.reward && task.reward.type === "note" ? task.reward.value : "",
         timeChangeSeconds: -timeChange,
         createdAt: serverTimestamp(),
       });
-      
-      await updateTask(taskId, { status: 'approved' });
 
-      if (task.recurrenceDays && task.recurrenceDays > 0 && !task.recurrenceCancelled) {
+      await updateTask(taskId, { status: "approved" });
+
+      if (
+        task.recurrenceDays &&
+        task.recurrenceDays > 0 &&
+        !task.recurrenceCancelled
+      ) {
         const baseDate = task.deadline ? new Date(task.deadline) : new Date();
-        const nextDeadline = new Date(baseDate.getTime() + task.recurrenceDays * 86400000);
-        if (!task.recurrenceEnd || nextDeadline <= new Date(task.recurrenceEnd)) {
+        const nextDeadline = new Date(
+          baseDate.getTime() + task.recurrenceDays * 86400000,
+        );
+        if (
+          !task.recurrenceEnd ||
+          nextDeadline <= new Date(task.recurrenceEnd)
+        ) {
           await addTask({
             text: task.text,
             deadline: nextDeadline,
             recurrenceDays: task.recurrenceDays,
-            recurrenceEnd: task.recurrenceEnd ? new Date(task.recurrenceEnd) : null,
+            recurrenceEnd: task.recurrenceEnd
+              ? new Date(task.recurrenceEnd)
+              : null,
             recurrenceId: task.recurrenceId,
             recurrenceCancelled: false,
             reward: task.reward,
             punishment: task.punishment,
-            status: 'pending',
-            assignedBy: 'keyholder',
-            createdAt: serverTimestamp()
+            status: "pending",
+            assignedBy: "keyholder",
+            createdAt: serverTimestamp(),
           });
         }
       }
     },
-    [userId, updateTask, addTask, tasks, requiredKeyholderDurationSeconds, saveDataToFirestore]
+    [
+      userId,
+      updateTask,
+      addTask,
+      tasks,
+      requiredKeyholderDurationSeconds,
+      saveDataToFirestore,
+    ],
   );
 
   // Updated to automatically log the punishment
   const handleRejectTask = useCallback(
     async (taskId) => {
       if (!userId || !updateTask || !tasks) return;
-      const task = tasks.find(t => t.id === taskId);
+      const task = tasks.find((t) => t.id === taskId);
       if (!task) return;
 
-      const timeChange = (task.punishment && task.punishment.type === 'time') ? task.punishment.value : 0;
+      const timeChange =
+        task.punishment && task.punishment.type === "time"
+          ? task.punishment.value
+          : 0;
       if (timeChange > 0) {
         const currentDuration = requiredKeyholderDurationSeconds || 0;
         const newDuration = currentDuration + timeChange;
-        await saveDataToFirestore({ requiredKeyholderDurationSeconds: newDuration });
+        await saveDataToFirestore({
+          requiredKeyholderDurationSeconds: newDuration,
+        });
       }
-      
+
       // Add a new log entry for the punishment
       await addTask({
-        logType: 'punishment',
+        logType: "punishment",
         sourceText: `Task: "${task.text}"`,
-        note: (task.punishment && task.punishment.type === 'note') ? task.punishment.value : '',
+        note:
+          task.punishment && task.punishment.type === "note"
+            ? task.punishment.value
+            : "",
         timeChangeSeconds: timeChange,
         createdAt: serverTimestamp(),
       });
 
-      await updateTask(taskId, { status: 'rejected' });
+      await updateTask(taskId, { status: "rejected" });
 
-      if (task.recurrenceDays && task.recurrenceDays > 0 && !task.recurrenceCancelled) {
+      if (
+        task.recurrenceDays &&
+        task.recurrenceDays > 0 &&
+        !task.recurrenceCancelled
+      ) {
         const baseDate = task.deadline ? new Date(task.deadline) : new Date();
-        const nextDeadline = new Date(baseDate.getTime() + task.recurrenceDays * 86400000);
-        if (!task.recurrenceEnd || nextDeadline <= new Date(task.recurrenceEnd)) {
+        const nextDeadline = new Date(
+          baseDate.getTime() + task.recurrenceDays * 86400000,
+        );
+        if (
+          !task.recurrenceEnd ||
+          nextDeadline <= new Date(task.recurrenceEnd)
+        ) {
           await addTask({
             text: task.text,
             deadline: nextDeadline,
             recurrenceDays: task.recurrenceDays,
-            recurrenceEnd: task.recurrenceEnd ? new Date(task.recurrenceEnd) : null,
+            recurrenceEnd: task.recurrenceEnd
+              ? new Date(task.recurrenceEnd)
+              : null,
             recurrenceId: task.recurrenceId,
             recurrenceCancelled: false,
             reward: task.reward,
             punishment: task.punishment,
-            status: 'pending',
-            assignedBy: 'keyholder',
-            createdAt: serverTimestamp()
+            status: "pending",
+            assignedBy: "keyholder",
+            createdAt: serverTimestamp(),
           });
         }
       }
     },
-    [userId, updateTask, addTask, tasks, requiredKeyholderDurationSeconds, saveDataToFirestore]
+    [
+      userId,
+      updateTask,
+      addTask,
+      tasks,
+      requiredKeyholderDurationSeconds,
+      saveDataToFirestore,
+    ],
   );
 
   const handleCancelRecurringTask = useCallback(
     async (recurrenceId) => {
       if (!recurrenceId || !tasks || !updateTask) return;
       const related = tasks.filter(
-        (t) => t.recurrenceId === recurrenceId && !t.recurrenceCancelled
+        (t) => t.recurrenceId === recurrenceId && !t.recurrenceCancelled,
       );
       for (const t of related) {
         await updateTask(t.id, { recurrenceCancelled: true });
       }
     },
-    [tasks, updateTask]
+    [tasks, updateTask],
   );
 
   return {

@@ -1,0 +1,83 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production
+        run: npm run build:production
+
+      - name: Run health check
+        run: |
+          npm run preview &
+          sleep 5
+          npm run health-check http://localhost:4173
+          pkill -f "vite preview" || true
+
+      - name: Create release archive
+        run: |
+          tar -czf chastityos-${{ github.ref_name }}.tar.gz dist/
+          zip -r chastityos-${{ github.ref_name }}.zip dist/
+
+      - name: Get release notes
+        id: release_notes
+        run: |
+          # Extract version from tag
+          VERSION=${GITHUB_REF#refs/tags/}
+
+          # Get release notes from CHANGELOG.md
+          if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            # Extract section between this version and next version/end
+            awk "/## \[$VERSION\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md > release_notes.md
+          else
+            echo "Release notes for $VERSION" > release_notes.md
+            echo "" >> release_notes.md
+            echo "Automated release created from tag $VERSION" >> release_notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release_notes.md
+          files: |
+            chastityos-${{ github.ref_name }}.tar.gz
+            chastityos-${{ github.ref_name }}.zip
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'nightly') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
+
+  cleanup-old-releases:
+    name: Cleanup Old Releases
+    runs-on: ubuntu-latest
+    needs: release
+    if: contains(github.ref_name, 'nightly')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cleanup old nightly releases
+        run: |
+          chmod +x scripts/maintenance/cleanup-nightlies.sh
+          scripts/maintenance/cleanup-nightlies.sh

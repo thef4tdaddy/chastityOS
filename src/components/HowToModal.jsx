@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
-import ReactMarkdown from 'react-markdown';
+import React, { useEffect, useState } from "react";
+import { FaTimes } from "react-icons/fa";
+import ReactMarkdown from "react-markdown";
 
-const branch = import.meta.env.VITE_APP_VARIANT === 'nightly' ? 'nightly' : 'main';
+const branch =
+  import.meta.env.VITE_APP_VARIANT === "nightly" ? "nightly" : "main";
 const HOW_TO_URL = `https://raw.githubusercontent.com/thef4tdaddy/chastityOS/${branch}/docs/how-to.md`;
 
 const HowToModal = ({ isOpen, onClose }) => {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
     fetch(HOW_TO_URL)
       .then((res) => res.text())
       .then((text) => setContent(text))
-      .catch(() => setContent('Failed to load instructions.'));
+      .catch(() => setContent("Failed to load instructions."));
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -28,7 +29,9 @@ const HowToModal = ({ isOpen, onClose }) => {
         >
           <FaTimes size={22} />
         </button>
-        <h2 className="text-2xl font-bold text-purple-300 mb-4 text-center">How To Use</h2>
+        <h2 className="text-2xl font-bold text-purple-300 mb-4 text-center">
+          How To Use
+        </h2>
         {/* The markdown-body class is the target for our new CSS styles */}
         <div className="markdown-body">
           <ReactMarkdown>{content}</ReactMarkdown>
@@ -113,8 +116,8 @@ const styles = `
     border: 0;
 }
 `;
-const styleSheet = document.createElement('style');
-styleSheet.type = 'text/css';
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
 styleSheet.innerText = styles;
 document.head.appendChild(styleSheet);
 

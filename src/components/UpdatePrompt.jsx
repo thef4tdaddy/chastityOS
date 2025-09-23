@@ -1,5 +1,5 @@
 // src/components/UpdatePrompt.jsx
-import React from 'react';
+import React from "react";
 
 const UpdatePrompt = ({ onUpdate }) => {
   const handleUpdateClick = () => {
@@ -11,9 +11,12 @@ const UpdatePrompt = ({ onUpdate }) => {
     <div className="fixed bottom-4 right-4 z-50 animate-fade-in-up">
       <div className="bg-purple-800 text-white rounded-xl shadow-2xl p-4 w-72 border-2 border-purple-500 transform transition-transform hover:scale-105">
         <div className="flex flex-col text-center">
-          <h4 className="font-bold text-lg mb-2 text-purple-200">New Version Available!</h4>
+          <h4 className="font-bold text-lg mb-2 text-purple-200">
+            New Version Available!
+          </h4>
           <p className="text-sm text-purple-300 mb-4">
-            A new version of ChastityOS has been downloaded. Restart the app to apply the update.
+            A new version of ChastityOS has been downloaded. Restart the app to
+            apply the update.
           </p>
           <button
             onClick={handleUpdateClick}

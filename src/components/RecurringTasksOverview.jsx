@@ -1,5 +1,5 @@
-import React from 'react';
-import { formatTime } from '../utils';
+import React from "react";
+import { formatTime } from "../utils";
 
 const RecurringTasksOverview = ({ tasks = [], onCancel }) => {
   // Gather active recurring tasks grouped by recurrenceId
@@ -17,7 +17,7 @@ const RecurringTasksOverview = ({ tasks = [], onCancel }) => {
         };
       }
       if (
-        task.status === 'pending' &&
+        task.status === "pending" &&
         (!groups[id].nextDeadline ||
           (task.deadline && task.deadline < groups[id].nextDeadline))
       ) {
@@ -49,7 +49,7 @@ const RecurringTasksOverview = ({ tasks = [], onCancel }) => {
             </div>
             <div className="w-full text-left text-xs mt-1 text-blue-300">
               Repeats every {entry.recurrenceDays} day
-              {entry.recurrenceDays === 1 ? '' : 's'}
+              {entry.recurrenceDays === 1 ? "" : "s"}
               {entry.recurrenceEnd && (
                 <> until {formatTime(entry.recurrenceEnd, true)}</>
               )}
