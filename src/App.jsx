@@ -3,7 +3,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useChastityState } from './hooks/useChastityState';
 import MainNav from './components/MainNav';
 import FooterNav from './components/FooterNav';
-import HotjarScript from './components/HotjarScript';
+// Removed HotjarScript - no longer needed
 import Header from './components/Header';
 import UpdatePrompt from './components/UpdatePrompt';
 import EulaModal from './components/EulaModal';
@@ -36,7 +36,6 @@ const App = () => {
     isLoading,
     savedSubmissivesName,
     keyholderName,
-    isTrackingAllowed,
     userId,
     googleEmail,
     showRestoreSessionPrompt,
@@ -116,7 +115,6 @@ const App = () => {
           setNeedRefresh(false);
         }} />
       )}
-      <HotjarScript isTrackingAllowed={isTrackingAllowed} />
       <Header />
       <div className="w-full max-w-3xl text-center p-6 rounded-xl shadow-lg card">
         {savedSubmissivesName && (
