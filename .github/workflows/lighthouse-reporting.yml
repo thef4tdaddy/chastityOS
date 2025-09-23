@@ -1,0 +1,45 @@
+name: Lighthouse Performance Reporting
+
+on:
+  push:
+    branches:
+      - main
+      - nightly
+  pull_request:
+    branches:
+      - main
+      - nightly
+
+jobs:
+  lighthouse:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        run: npm run test:lighthouse
+
+      # Placeholder for Google Sheets Integration
+      - name: Update Google Sheets
+        if: always()
+        run: echo "TODO: Add Google Sheets integration using secrets."
+
+      # Placeholder for Discord Notification
+      - name: Send Discord Notification
+        if: always()
+        run: echo "TODO: Add Discord notification using secrets."

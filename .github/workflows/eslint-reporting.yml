@@ -1,0 +1,48 @@
+name: ESLint Quality Reporting
+
+on:
+  push:
+    branches:
+      - main
+      - nightly
+  pull_request:
+    branches:
+      - main
+      - nightly
+
+jobs:
+  eslint-report:
+    name: ESLint Quality Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint and generate report
+        run: npm run lint:report
+
+      - name: Upload ESLint report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint_report.json
+
+      # Placeholder for Google Sheets Integration
+      - name: Update Google Sheets
+        if: always()
+        run: echo "TODO: Add Google Sheets integration using secrets."
+
+      # Placeholder for Discord Notification
+      - name: Send Discord Notification
+        if: always()
+        run: echo "TODO: Add Discord notification using secrets."
