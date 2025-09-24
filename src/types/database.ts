@@ -62,6 +62,9 @@ export interface DBSession extends DBBase {
   keyholderApprovalRequired: boolean;
   endReason?: string;
   notes?: string;
+  isEmergencyUnlock?: boolean; // Flag for emergency unlock sessions
+  emergencyReason?: string; // Reason for emergency unlock
+  emergencyNotes?: string; // Additional notes for emergency unlock
 }
 
 export interface DBEvent extends DBBase {
