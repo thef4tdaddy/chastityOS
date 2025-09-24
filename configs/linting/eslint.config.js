@@ -27,6 +27,7 @@ export default [
       "scripts/**", // Allow console in build scripts
       "configs/linting/eslint-rules/**", // Exclude custom ESLint rule definitions
       "src/utils/logging.js", // Allow console in logger utility
+      "original-app/**", // Exclude legacy JavaScript app - TypeScript migration complete
     ],
   },
   {
