@@ -1,0 +1,200 @@
+/**
+ * Synchronization Service
+ * Handles bidirectional data sync between Dexie and Firebase
+ */
+import { serviceLogger } from "@/utils/logging";
+import { db, sessionDBService, eventDBService, taskDBService, goalDBService, settingsDBService } from "../database";
+import { getFirestore, getFirebaseAuth } from "../firebase";
+import { collection, doc, setDoc, writeBatch, query, where, getDocs, Timestamp } from "firebase/firestore";
+import type { DBEvent, DBGoal, DBSession, DBSettings, DBTask } from "@/types/database";
+
+const logger = serviceLogger("SyncService");
+
+class SyncService {
+  private isSyncing = false;
+
+  constructor() {
+    logger.info("SyncService initialized");
+  }
+
+  /**
+   * Main entry point for the synchronization process
+   */
+  async sync() {
+    if (this.isSyncing) {
+      logger.warn("Sync already in progress");
+      return;
+    }
+
+    const auth = await getFirebaseAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      logger.warn("No user authenticated, skipping sync");
+      return;
+    }
+
+    this.isSyncing = true;
+    logger.info("Starting synchronization process", { userId: user.uid });
+
+    try {
+      // TODO: Add logic to check for online status
+
+      // Sync all collections
+      await this.syncCollection("sessions", user.uid);
+      await this.syncCollection("events", user.uid);
+      await this.syncCollection("tasks", user.uid);
+      await this.syncCollection("goals", user.uid);
+      await this.syncCollection("settings", user.uid);
+
+      logger.info("Synchronization process completed", { userId: user.uid });
+    } catch (error) {
+      logger.error("Synchronization process failed", { error: error as Error, userId: user.uid });
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+
+  /**
+   * Synchronize a specific collection
+   */
+  private async syncCollection(collectionName: string, userId: string) {
+    logger.debug(`Syncing collection: ${collectionName}`, { userId });
+
+    try {
+      await this.pushChangesToFirebase(collectionName, userId);
+      await this.pullChangesFromFirebase(collectionName, userId);
+    } catch (error) {
+      logger.error(`Failed to sync collection: ${collectionName}`, { error: error as Error, userId });
+    }
+  }
+
+  /**
+   * Push local changes to Firebase
+   */
+  private async pushChangesToFirebase(collectionName: string, userId: string) {
+    const firestore = await getFirestore();
+    const pendingDocs = await this.getPendingDocs(collectionName, userId);
+
+    if (pendingDocs.length === 0) {
+      logger.debug(`No pending changes to push for ${collectionName}`, { userId });
+      return;
+    }
+
+    logger.debug(`Pushing ${pendingDocs.length} pending changes for ${collectionName}`, { userId });
+
+    const batch = writeBatch(firestore);
+    const syncedIds: string[] = [];
+
+    for (const docData of pendingDocs) {
+      const docRef = doc(firestore, `users/${userId}/${collectionName}`, docData.id);
+      batch.set(docRef, docData, { merge: true });
+      syncedIds.push(docData.id);
+    }
+
+    try {
+      await batch.commit();
+      await this.markDocsAsSynced(collectionName, syncedIds);
+      logger.debug(`Successfully pushed ${syncedIds.length} changes for ${collectionName}`, { userId });
+    } catch (error) {
+      logger.error(`Failed to push changes for ${collectionName}`, { error: error as Error, userId });
+    }
+  }
+
+  /**
+   * Pull remote changes from Firebase
+   */
+  private async pullChangesFromFirebase(collectionName: string, userId: string) {
+    const firestore = await getFirestore();
+    const syncMeta = await db.syncMeta.get(collectionName);
+    const lastSync = syncMeta ? syncMeta.lastSync : new Date(0);
+
+    logger.debug(`Pulling changes for ${collectionName} since ${lastSync.toISOString()}`, { userId });
+
+    const q = query(
+      collection(firestore, `users/${userId}/${collectionName}`),
+      where("lastModified", ">", Timestamp.fromDate(lastSync))
+    );
+
+    try {
+      const querySnapshot = await getDocs(q);
+      const remoteDocs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      if (remoteDocs.length === 0) {
+        logger.debug(`No new changes to pull for ${collectionName}`, { userId });
+        return;
+      }
+
+      logger.debug(`Pulled ${remoteDocs.length} new changes for ${collectionName}`, { userId });
+
+      await this.applyRemoteChanges(collectionName, remoteDocs);
+
+      await db.syncMeta.update(collectionName, { lastSync: new Date() });
+    } catch (error) {
+      logger.error(`Failed to pull changes for ${collectionName}`, { error: error as Error, userId });
+    }
+  }
+
+  private async getPendingDocs(collectionName: string, userId: string): Promise<any[]> {
+    switch (collectionName) {
+      case "sessions":
+        return sessionDBService.getPendingSync(userId);
+      case "events":
+        return eventDBService.getPendingSync(userId);
+      case "tasks":
+        return taskDBService.getPendingSync(userId);
+      case "goals":
+        return goalDBService.getPendingSync(userId);
+      case "settings":
+        return settingsDBService.getPendingSync(userId);
+      default:
+        return [];
+    }
+  }
+
+  private async markDocsAsSynced(collectionName: string, ids: string[]) {
+    switch (collectionName) {
+      case "sessions":
+        await sessionDBService.bulkMarkAsSynced(ids);
+        break;
+      case "events":
+        await eventDBService.bulkMarkAsSynced(ids);
+        break;
+      case "tasks":
+        await taskDBService.bulkMarkAsSynced(ids);
+        break;
+      case "goals":
+        await goalDBService.bulkMarkAsSynced(ids);
+        break;
+      case "settings":
+        await settingsDBService.bulkMarkAsSynced(ids);
+        break;
+    }
+  }
+
+  private async applyRemoteChanges(collectionName: string, docs: any[]) {
+    for (const docData of docs) {
+      // Basic conflict resolution: last write wins (Firebase > local)
+      // A more robust solution would compare timestamps and handle conflicts gracefully
+      switch (collectionName) {
+        case "sessions":
+          await sessionDBService.update(docData.id, docData);
+          break;
+        case "events":
+          await eventDBService.update(docData.id, docData);
+          break;
+        case "tasks":
+          await taskDBService.update(docData.id, docData);
+          break;
+        case "goals":
+          await goalDBService.update(docData.id, docData);
+          break;
+        case "settings":
+          await settingsDBService.update(docData.userId, docData);
+          break;
+      }
+    }
+  }
+}
+
+export const syncService = new SyncService();

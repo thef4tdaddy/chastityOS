@@ -104,17 +104,19 @@ export abstract class BaseDBService<
   /**
    * Get all records with pending sync status
    */
-  async getPendingSync(): Promise<T[]> {
+  async getPendingSync(userId?: string): Promise<T[]> {
     try {
-      const results = await this.table
-        .where("syncStatus")
-        .equals("pending")
-        .toArray();
-      logger.debug("Found pending sync records", { count: results.length });
+      let query = this.table.where("syncStatus").equals("pending");
+      if (userId) {
+        query = query.and((doc) => doc.userId === userId);
+      }
+      const results = await query.toArray();
+      logger.debug("Found pending sync records", { count: results.length, userId });
       return results;
     } catch (error) {
       logger.error("Failed to get pending sync records", {
         error: error as Error,
+        userId,
       });
       throw error;
     }
