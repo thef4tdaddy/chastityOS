@@ -1,5 +1,6 @@
+
 /**
- * Synchronization Service
+ * Firebase Sync Service
  * Handles bidirectional data sync between Dexie and Firebase
  */
 import { serviceLogger } from "@/utils/logging";
@@ -7,14 +8,15 @@ import { db, sessionDBService, eventDBService, taskDBService, goalDBService, set
 import { getFirestore, getFirebaseAuth } from "../firebase";
 import { collection, doc, setDoc, writeBatch, query, where, getDocs, Timestamp } from "firebase/firestore";
 import type { DBEvent, DBGoal, DBSession, DBSettings, DBTask } from "@/types/database";
+import { conflictResolver } from "./ConflictResolver";
 
-const logger = serviceLogger("SyncService");
+const logger = serviceLogger("FirebaseSync");
 
-class SyncService {
+class FirebaseSync {
   private isSyncing = false;
 
   constructor() {
-    logger.info("SyncService initialized");
+    logger.info("FirebaseSync initialized");
   }
 
   /**
@@ -177,17 +179,23 @@ class SyncService {
       const localDoc = await this.getLocalDoc(collectionName, docData.id);
 
       if (localDoc) {
-        // Conflict resolution logic
-        const remoteTimestamp = (docData.lastModified as Timestamp).toDate();
-        if (remoteTimestamp > localDoc.lastModified) {
-          // Server wins
-          logger.debug(`Conflict detected for ${collectionName}:${docData.id}. Server wins.`);
-          await this.updateLocalDoc(collectionName, docData.id, docData);
-        } else {
-          // Local is newer, what to do?
-          // For now, we do nothing, but we could push the local changes again
-          logger.warn(`Conflict detected for ${collectionName}:${docData.id}. Local is newer. Ignoring remote change.`);
+        let resolvedDoc;
+        switch (collectionName) {
+          case "sessions":
+            resolvedDoc = conflictResolver.resolveSessionConflict(localDoc, docData);
+            break;
+          case "tasks":
+            resolvedDoc = conflictResolver.resolveTaskConflict(localDoc, docData);
+            break;
+          case "settings":
+            resolvedDoc = conflictResolver.resolveSettingsConflict(localDoc, docData);
+            break;
+          default:
+            // Default to server wins
+            resolvedDoc = docData;
+            break;
         }
+        await this.updateLocalDoc(collectionName, docData.id, resolvedDoc);
       } else {
         // New document from server
         await this.createLocalDoc(collectionName, docData);
@@ -253,4 +261,4 @@ class SyncService {
   }
 }
 
-export const syncService = new SyncService();
+export const firebaseSync = new FirebaseSync();

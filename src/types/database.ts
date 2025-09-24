@@ -236,3 +236,11 @@ export interface TaskFilters {
   isOverdue?: boolean;
   hasConsequence?: boolean;
 }
+
+export interface QueuedOperation {
+  id?: number;
+  type: "create" | "update" | "delete";
+  collectionName: string;
+  payload: any;
+  createdAt: Date;
+}
