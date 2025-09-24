@@ -47,7 +47,8 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
     },
     plugins: [
-      react(), 
+      react(),
+      tsconfigPaths(),
       tailwindcss(),
       visualizer({
         filename: './dist/bundle-report.html',

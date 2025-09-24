@@ -2,7 +2,7 @@ import React from "react";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { queryClient } from "./services/queryClient";
+import { queryClient } from "./hooks/api/queryClient";
 
 function App(): React.ReactElement {
   return (

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { SessionService } from "@/services/api/session-service";
-import { cacheConfig } from "@/services/queryClient";
+import { cacheConfig } from "@/services/cache-config";
 
 export function useCurrentSession(userId: string | undefined) {
   return useQuery({
