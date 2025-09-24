@@ -1,0 +1,5 @@
+# Run Prettier on all files
+npm run format
+
+# Stage formatted files
+git add .
