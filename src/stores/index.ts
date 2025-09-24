@@ -1,12 +1,9 @@
 /**
  * Stores index
  * Exports all Zustand stores
- *
- * Note: Minimal implementation - full store architecture will be
- * implemented after Firebase redesign (#101) and data layer changes (#93-95)
  */
 
-// Keyholder Store (example implementation)
+// Keyholder Store
 export { useKeyholderStore } from "./keyholderStore";
 export type {
   KeyholderState,
@@ -14,8 +11,47 @@ export type {
   KeyholderStore,
 } from "./keyholderStore";
 
-// TODO: Additional stores to be implemented after architectural changes
-// - UI Store (modals, navigation, loading states)
-// - Navigation Store (page routing, breadcrumbs)
-// - Form Store (draft data, validation states)
-// - Preferences Store (theme, layout, local settings)
+// Navigation Store
+export { useNavigationStore } from "./navigationStore";
+export type {
+  NavigationState,
+  NavigationActions,
+  NavigationStore,
+  BreadcrumbItem,
+} from "./navigationStore";
+
+// Modal Store
+export { useModalStore } from "./modalStore";
+export type {
+  ModalState,
+  ModalActions,
+  ModalStore,
+  ModalConfig,
+} from "./modalStore";
+
+// Notification Store
+export { useNotificationStore } from "./notificationStore";
+export type {
+  NotificationState,
+  NotificationActions,
+  NotificationStore,
+  NotificationConfig,
+  NotificationType,
+  NotificationAction,
+} from "./notificationStore";
+
+// Theme Store
+export { useThemeStore } from "./themeStore";
+export type {
+  ThemeState,
+  ThemeActions,
+  ThemeStore,
+  ThemeMode,
+  ColorScheme,
+  FontSize,
+  AnimationSpeed,
+} from "./themeStore";
+
+// TODO: Form Store (draft data, validation states)
+// TODO: Keyboard shortcut store
+// TODO: Search/filter stores
