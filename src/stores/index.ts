@@ -1,12 +1,55 @@
 /**
  * Stores index
- * Exports all Zustand stores
+ * Exports all Zustand stores for UI state management
  *
- * Note: Minimal implementation - full store architecture will be
- * implemented after Firebase redesign (#101) and data layer changes (#93-95)
+ * Architecture: Firebase ↔ Dexie ↔ TanStack Query ↔ Components
+ *                                         ↑
+ *                                   Zustand (UI State Only)
  */
 
-// Keyholder Store (example implementation)
+// Navigation Store - Page routing, breadcrumbs, mobile menu
+export {
+  useNavigationStore,
+  useCurrentPage,
+  useBreadcrumbs,
+  useIsMobileMenuOpen,
+  useIsPageLoading,
+} from "./navigationStore";
+
+// Modal Store - Modal visibility, content, confirmation dialogs
+export {
+  useModalStore,
+  useModal,
+  useIsModalOpen,
+  useConfirmModal,
+  MODAL_IDS,
+} from "./modalStore";
+
+// UI Preferences Store - Theme, animations, layout settings
+export {
+  useUIPreferencesStore,
+  useTheme,
+  useAnimations,
+  useCompactMode,
+  useSidebarCollapsed,
+  useHighContrast,
+  useFontSize,
+  useShowDebugInfo,
+  useShowPerformanceMetrics,
+  useThemeEffect,
+  useSystemThemeListener,
+} from "./uiPreferencesStore";
+
+// Notification Store - Toast messages, alerts, temporary UI feedback
+export {
+  useNotificationStore,
+  useNotifications,
+  useNotificationActions,
+  useErrorHandler,
+  useSuccessHandler,
+} from "./notificationStore";
+
+// Keyholder Store - Specialized business logic (existing)
 export { useKeyholderStore } from "./keyholderStore";
 export type {
   KeyholderState,
@@ -14,8 +57,8 @@ export type {
   KeyholderStore,
 } from "./keyholderStore";
 
-// TODO: Additional stores to be implemented after architectural changes
-// - UI Store (modals, navigation, loading states)
-// - Navigation Store (page routing, breadcrumbs)
-// - Form Store (draft data, validation states)
-// - Preferences Store (theme, layout, local settings)
+// Types
+export type { NavigationState } from "./navigationStore";
+export type { ModalState, ModalConfig } from "./modalStore";
+export type { UIPreferencesState } from "./uiPreferencesStore";
+export type { NotificationState, Notification } from "./notificationStore";
