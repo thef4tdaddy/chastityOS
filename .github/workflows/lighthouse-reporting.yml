@@ -2,17 +2,20 @@ name: Lighthouse Performance Reporting
 
 on:
   push:
-    branches:
-      - main
-      - nightly
+    branches: [main, nightly]
   pull_request:
-    branches:
-      - main
-      - nightly
+    branches: [main, nightly]
+  schedule:
+    # Run daily performance audit at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
 
 jobs:
   lighthouse:
-    name: Lighthouse Audit
+    name: Lighthouse Performance Audit
     runs-on: ubuntu-latest
 
     steps:
@@ -22,36 +25,221 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build project
-        run: npm run build
+        run: npm run build:nightly
+        env:
+          VITE_BUILD_ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && 'production' || 'nightly' }}
+
+      - name: Start preview server
+        run: |
+          npm run preview &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+          # Wait for server to be ready
+          timeout 30 sh -c 'until nc -z localhost 4173; do sleep 1; done' || echo "Server may not be ready"
 
       - name: Run Lighthouse CI
         id: lighthouse_audit
-        run: npm run test:lighthouse || echo "Lighthouse audit failed"
+        run: |
+          echo "Running Lighthouse audit..."
+          npm run test:lighthouse || LIGHTHOUSE_FAILED=true
 
-      - name: Create GitHub issue for Lighthouse regression
-        if: failure() && steps.lighthouse_audit.outcome == 'failure'
-        uses: actions/create-issue@v2
+          if [ "$LIGHTHOUSE_FAILED" = "true" ]; then
+            echo "lighthouse_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "lighthouse_failed=false" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Parse Lighthouse Results
+        id: lighthouse_results
+        run: |
+          if [ -d ".lighthouseci" ] && [ -n "$(find .lighthouseci -name "*.json" 2>/dev/null)" ]; then
+            # Extract metrics from Lighthouse results
+            REPORT_FILE=$(find .lighthouseci -name "*.json" | head -1)
+
+            OVERALL_SCORE=$(jq -r '.categories.performance.score // 0' "$REPORT_FILE")
+            PERF_SCORE=$(jq -r '.categories.performance.score // 0' "$REPORT_FILE")
+            A11Y_SCORE=$(jq -r '.categories.accessibility.score // 0' "$REPORT_FILE")
+            BP_SCORE=$(jq -r '.categories."best-practices".score // 0' "$REPORT_FILE")
+            SEO_SCORE=$(jq -r '.categories.seo.score // 0' "$REPORT_FILE")
+
+            FCP=$(jq -r '.audits."first-contentful-paint".numericValue // 0' "$REPORT_FILE")
+            LCP=$(jq -r '.audits."largest-contentful-paint".numericValue // 0' "$REPORT_FILE")
+            CLS=$(jq -r '.audits."cumulative-layout-shift".numericValue // 0' "$REPORT_FILE")
+            TTI=$(jq -r '.audits.interactive.numericValue // 0' "$REPORT_FILE")
+            SI=$(jq -r '.audits."speed-index".numericValue // 0' "$REPORT_FILE")
+
+            echo "overall_score=$OVERALL_SCORE" >> $GITHUB_OUTPUT
+            echo "performance_score=$PERF_SCORE" >> $GITHUB_OUTPUT
+            echo "accessibility_score=$A11Y_SCORE" >> $GITHUB_OUTPUT
+            echo "best_practices_score=$BP_SCORE" >> $GITHUB_OUTPUT
+            echo "seo_score=$SEO_SCORE" >> $GITHUB_OUTPUT
+            echo "first_contentful_paint=$FCP" >> $GITHUB_OUTPUT
+            echo "largest_contentful_paint=$LCP" >> $GITHUB_OUTPUT
+            echo "cumulative_layout_shift=$CLS" >> $GITHUB_OUTPUT
+            echo "time_to_interactive=$TTI" >> $GITHUB_OUTPUT
+            echo "speed_index=$SI" >> $GITHUB_OUTPUT
+
+            echo "✅ Lighthouse results parsed successfully"
+            echo "Overall Performance Score: $(echo "$OVERALL_SCORE * 100" | bc -l | cut -d. -f1)%"
+          else
+            echo "❌ No Lighthouse results found"
+            echo "results_available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Google Sheets with Performance Data
+        if: steps.lighthouse_results.outputs.results_available != 'false'
+        run: |
+          if [ -n "${{ secrets.GSHEET_CLIENT_EMAIL }}" ] && [ -n "${{ secrets.LIGHTHOUSE_SPREADSHEET_ID }}" ]; then
+            echo "Updating Google Sheets with performance data..."
+
+            PERF_DATA='{
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+              "commit": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "eventType": "${{ github.event_name }}",
+              "overallScore": ${{ steps.lighthouse_results.outputs.overall_score }},
+              "performanceScore": ${{ steps.lighthouse_results.outputs.performance_score }},
+              "accessibilityScore": ${{ steps.lighthouse_results.outputs.accessibility_score }},
+              "bestPracticesScore": ${{ steps.lighthouse_results.outputs.best_practices_score }},
+              "seoScore": ${{ steps.lighthouse_results.outputs.seo_score }},
+              "firstContentfulPaint": ${{ steps.lighthouse_results.outputs.first_contentful_paint }},
+              "largestContentfulPaint": ${{ steps.lighthouse_results.outputs.largest_contentful_paint }},
+              "cumulativeLayoutShift": ${{ steps.lighthouse_results.outputs.cumulative_layout_shift }},
+              "timeToInteractive": ${{ steps.lighthouse_results.outputs.time_to_interactive }},
+              "speedIndex": ${{ steps.lighthouse_results.outputs.speed_index }}
+            }'
+
+            TREND_RESULT=$(node scripts/ci/google-sheets-helper.js performance "$PERF_DATA") || echo "Sheets update failed"
+
+            if echo "$TREND_RESULT" | grep -q "PERF_TREND="; then
+              TREND_JSON=$(echo "$TREND_RESULT" | grep "PERF_TREND=" | cut -d= -f2-)
+              echo "performance_trend=$TREND_JSON" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "ℹ️ Google Sheets integration not configured"
+          fi
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+          LIGHTHOUSE_SPREADSHEET_ID: ${{ secrets.LIGHTHOUSE_SPREADSHEET_ID }}
+
+      - name: Check for Performance Regression
+        id: regression_check
+        if: steps.lighthouse_results.outputs.results_available != 'false'
+        run: |
+          CURRENT_SCORE=${{ steps.lighthouse_results.outputs.overall_score }}
+          REGRESSION_THRESHOLD=0.05  # 5% regression threshold
+
+          # Check if we have trend data from sheets
+          if [ -n "${{ steps.lighthouse_results.outputs.performance_trend }}" ]; then
+            IS_REGRESSION=$(echo '${{ steps.lighthouse_results.outputs.performance_trend }}' | jq -r '.isRegression // false')
+            echo "regression_detected=$IS_REGRESSION" >> $GITHUB_OUTPUT
+          else
+            # Fallback: check against minimum threshold
+            if [ $(echo "$CURRENT_SCORE < 0.8" | bc -l) -eq 1 ]; then
+              echo "regression_detected=true" >> $GITHUB_OUTPUT
+            else
+              echo "regression_detected=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send Discord Performance Notification
+        if: always() && steps.lighthouse_results.outputs.results_available != 'false'
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Sending Discord performance notification..."
+
+            IS_REGRESSION=${{ steps.regression_check.outputs.regression_detected }}
+            TREND_DATA="${{ steps.lighthouse_results.outputs.performance_trend }}"
+
+            DISCORD_DATA='{
+              "overallScore": ${{ steps.lighthouse_results.outputs.overall_score }},
+              "performanceScore": ${{ steps.lighthouse_results.outputs.performance_score }},
+              "firstContentfulPaint": ${{ steps.lighthouse_results.outputs.first_contentful_paint }},
+              "largestContentfulPaint": ${{ steps.lighthouse_results.outputs.largest_contentful_paint }},
+              "cumulativeLayoutShift": ${{ steps.lighthouse_results.outputs.cumulative_layout_shift }},
+              "timeToInteractive": ${{ steps.lighthouse_results.outputs.time_to_interactive }},
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "isRegression": '${IS_REGRESSION}',
+              "trend": '${TREND_DATA:-null}'
+            }'
+
+            node scripts/ci/discord-reporter.js performance "$DISCORD_DATA" || echo "Discord notification failed"
+          else
+            echo "ℹ️ Discord webhook not configured"
+          fi
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Create GitHub issue for Performance Regression
+        if: steps.regression_check.outputs.regression_detected == 'true'
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Performance Regression Detected"
-          body: |
-            A regression in performance has been detected.
-            Please review the Lighthouse report for details.
-          labels: performance, regression
+          script: |
+            const overallScore = ${{ steps.lighthouse_results.outputs.overall_score }};
+            const performanceScore = ${{ steps.lighthouse_results.outputs.performance_score }};
+            const fcp = ${{ steps.lighthouse_results.outputs.first_contentful_paint }};
+            const lcp = ${{ steps.lighthouse_results.outputs.largest_contentful_paint }};
+            const cls = ${{ steps.lighthouse_results.outputs.cumulative_layout_shift }};
+            const tti = ${{ steps.lighthouse_results.outputs.time_to_interactive }};
 
-      # Placeholder for Google Sheets Integration
-      - name: Update Google Sheets
-        if: always()
-        run: echo "TODO: Add Google Sheets integration using secrets."
+            const title = `⚠️ Performance Regression Detected - ${context.ref}`;
+            const body = `## Performance Regression Alert
 
-      # Placeholder for Discord Notification
-      - name: Send Discord Notification
+            A significant performance regression has been detected in the latest changes.
+
+            ### Performance Metrics
+            - **Overall Score**: ${(overallScore * 100).toFixed(1)}%
+            - **Performance Score**: ${(performanceScore * 100).toFixed(1)}%
+            - **First Contentful Paint**: ${fcp}ms
+            - **Largest Contentful Paint**: ${lcp}ms
+            - **Cumulative Layout Shift**: ${cls.toFixed(3)}
+            - **Time to Interactive**: ${tti}ms
+
+            ### Context
+            - **Commit**: ${context.sha}
+            - **Branch**: ${context.ref}
+            - **Triggered by**: ${context.eventName}
+            - **Workflow Run**: [#${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+
+            ### Action Required
+            Please investigate and optimize the performance issues identified above.
+
+            ### Resources
+            - [Web.dev Performance Guide](https://web.dev/performance/)
+            - [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/)
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['performance', 'regression', 'priority-high', 'automated']
+            });
+
+      - name: Upload Lighthouse artifacts
+        uses: actions/upload-artifact@v4
         if: always()
-        run: echo "TODO: Add Discord notification using secrets."
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 30
+
+      - name: Cleanup server
+        if: always()
+        run: |
+          if [ ! -z "$SERVER_PID" ]; then
+            kill $SERVER_PID || echo "Server already stopped"
+          fi
