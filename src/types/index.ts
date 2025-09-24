@@ -6,6 +6,7 @@
 // Core types
 export * from "./core";
 export * from "./events";
+export * from "./achievements";
 
 // Database types - explicitly export to avoid conflicts
 export type {
@@ -27,6 +28,14 @@ export type {
   SessionFilters,
   EventFilters,
   TaskFilters,
+  // New achievement database types
+  DBAchievement,
+  DBUserAchievement,
+  DBAchievementProgress,
+  DBAchievementNotification,
+  DBLeaderboardEntry,
+  AchievementCategory,
+  AchievementDifficulty,
 } from "./database";
 
 // Re-export commonly used Firebase types
