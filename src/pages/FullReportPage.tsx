@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuthState } from '../contexts';
 import { sessionDBService, eventDBService, taskDBService, goalDBService } from '../services/database';
 import type { DBSession, DBEvent, DBTask, DBGoal } from '../types/database';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaClock,
@@ -360,7 +361,7 @@ const FullReportPage: React.FC = () => {
         setTasks(taskData);
         setGoals(goalData);
       } catch (error) {
-        console.error('Error fetching report data:', error);
+        logger.error('Error fetching report data:', error, 'FullReportPage');
       } finally {
         setLoading(false);
       }
