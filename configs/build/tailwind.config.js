@@ -26,14 +26,18 @@ module.exports = {
     extend: {
       colors: {
         nightly: {
-          bg: '#f2f2f2',
-          text: '#111111',
-          border: '#444444',
+          aquamarine: '#57f6b1ff',
+          'spring-green': '#41e688ff',
+          honeydew: '#e0fce7ff',
+          celadon: '#b1f3c1ff',
+          'lavender-floral': '#c691faff',
         },
         prod: {
-          bg: '#0f0f1a',
-          text: '#e5e5e5',
-          border: '#333333',
+            tekhelet: '#581c87ff',
+            'dark-purple': '#282132ff',
+            'lavender-web': '#d7d2eaff',
+            'rose-quartz': '#a39fadff',
+            tangerine: '#e88331ff',
         },
       },
     },
