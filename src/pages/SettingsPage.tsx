@@ -17,7 +17,7 @@ import {
   FaEyeSlash,
   FaSpinner,
   FaLock,
-  FaShield,
+  FaShieldAlt,
 } from "react-icons/fa";
 
 type SettingsTab =
@@ -237,7 +237,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
       <div className="flex items-center gap-3 mb-4">
-        <FaShield className="text-nightly-lavender-floral" />
+        <FaShieldAlt className="text-nightly-lavender-floral" />
         <h3 className="text-lg font-semibold text-nightly-honeydew">
           Privacy & Security
         </h3>
@@ -709,7 +709,7 @@ const SettingsPage: React.FC = () => {
     { id: "account" as SettingsTab, label: "Account", icon: FaUser },
     { id: "display" as SettingsTab, label: "Display", icon: FaPalette },
     { id: "profile" as SettingsTab, label: "Profile", icon: FaGlobe },
-    { id: "privacy" as SettingsTab, label: "Privacy", icon: FaShield },
+    { id: "privacy" as SettingsTab, label: "Privacy", icon: FaShieldAlt },
     { id: "goals" as SettingsTab, label: "Goals", icon: FaBullseye },
     { id: "sessions" as SettingsTab, label: "Sessions", icon: FaCog },
     { id: "data" as SettingsTab, label: "Data", icon: FaDatabase },

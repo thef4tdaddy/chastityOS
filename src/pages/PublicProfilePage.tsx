@@ -12,7 +12,7 @@ import {
   FaShare,
   FaHeart,
   FaGlobe,
-  FaShield,
+  FaShieldAlt,
   FaUserPlus,
 } from "react-icons/fa";
 
@@ -416,7 +416,7 @@ const PublicProfilePage: React.FC = () => {
       <div className="text-nightly-spring-green">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <FaShield className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
+            <FaShieldAlt className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
             <div className="text-nightly-celadon">Private Profile</div>
             <div className="text-sm text-nightly-celadon/70">
               This user has set their profile to private
