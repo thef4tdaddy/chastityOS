@@ -13,6 +13,7 @@ import {
   DBSettings,
   DBSyncMeta,
   SyncStatus,
+  QueuedOperation,
 } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 
@@ -66,7 +67,7 @@ export class ChastityDB extends Dexie {
     });
 
     // Add hooks for automatic timestamp and sync status updates
-    this.sessions.hook("creating", (primKey, obj, trans) => {
+    this.sessions.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
       if (!obj.syncStatus) {
         obj.syncStatus = "pending" as SyncStatus;
@@ -74,7 +75,7 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating session", { id: obj.id, userId: obj.userId });
     });
 
-    this.sessions.hook("updating", (modifications, primKey, obj, trans) => {
+    this.sessions.hook("updating", (modifications, primKey, _obj, _trans) => {
       modifications.lastModified = new Date();
       if (!modifications.syncStatus) {
         modifications.syncStatus = "pending" as SyncStatus;
@@ -82,7 +83,7 @@ export class ChastityDB extends Dexie {
       logger.debug("Updating session", { id: primKey, modifications });
     });
 
-    this.events.hook("creating", (primKey, obj, trans) => {
+    this.events.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
       if (!obj.syncStatus) {
         obj.syncStatus = "pending" as SyncStatus;
@@ -90,14 +91,14 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating event", { id: obj.id, type: obj.type });
     });
 
-    this.events.hook("updating", (modifications, primKey, obj, trans) => {
+    this.events.hook("updating", (modifications, _primKey, _obj, _trans) => {
       modifications.lastModified = new Date();
       if (!modifications.syncStatus) {
         modifications.syncStatus = "pending" as SyncStatus;
       }
     });
 
-    this.tasks.hook("creating", (primKey, obj, trans) => {
+    this.tasks.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
       if (!obj.syncStatus) {
         obj.syncStatus = "pending" as SyncStatus;
@@ -105,14 +106,14 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating task", { id: obj.id, text: obj.text });
     });
 
-    this.tasks.hook("updating", (modifications, primKey, obj, trans) => {
+    this.tasks.hook("updating", (modifications, _primKey, _obj, _trans) => {
       modifications.lastModified = new Date();
       if (!modifications.syncStatus) {
         modifications.syncStatus = "pending" as SyncStatus;
       }
     });
 
-    this.goals.hook("creating", (primKey, obj, trans) => {
+    this.goals.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
       if (!obj.syncStatus) {
         obj.syncStatus = "pending" as SyncStatus;
@@ -120,14 +121,14 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating goal", { id: obj.id, title: obj.title });
     });
 
-    this.goals.hook("updating", (modifications, primKey, obj, trans) => {
+    this.goals.hook("updating", (modifications, _primKey, _obj, _trans) => {
       modifications.lastModified = new Date();
       if (!modifications.syncStatus) {
         modifications.syncStatus = "pending" as SyncStatus;
       }
     });
 
-    this.settings.hook("creating", (primKey, obj, trans) => {
+    this.settings.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
       if (!obj.syncStatus) {
         obj.syncStatus = "pending" as SyncStatus;
@@ -135,7 +136,7 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating settings", { userId: obj.userId });
     });
 
-    this.settings.hook("updating", (modifications, primKey, obj, trans) => {
+    this.settings.hook("updating", (modifications, _primKey, _obj, _trans) => {
       modifications.lastModified = new Date();
       if (!modifications.syncStatus) {
         modifications.syncStatus = "pending" as SyncStatus;
@@ -268,8 +269,3 @@ export class ChastityDB extends Dexie {
 
 // Create and export the singleton database instance
 export const db = new ChastityDB();
-
-// Initialize database when module loads
-db.initialize().catch((error) => {
-  logger.error("Failed to initialize database on startup", { error });
-});

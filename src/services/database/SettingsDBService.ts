@@ -44,9 +44,36 @@ class SettingsDBService extends BaseDBService<DBSettings> {
         const newSettings: Omit<DBSettings, "lastModified" | "syncStatus"> = {
           id: userId, // Use userId as the id for settings
           userId,
+          theme: 'dark',
+          notifications: {
+            enabled: true,
+            sessionReminders: true,
+            taskDeadlines: true,
+            keyholderMessages: true,
+            goalProgress: true,
+          },
+          privacy: {
+            publicProfile: false,
+            shareStatistics: false,
+            allowDataExport: true,
+          },
+          chastity: {
+            allowEmergencyUnlock: true,
+            emergencyUnlockCooldown: 24, // hours
+            requireKeyholderApproval: false,
+            defaultSessionGoal: 0, // seconds
+            hardcoreModeEnabled: false,
+          },
+          display: {
+            language: 'en',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            dateFormat: 'MM/dd/yyyy',
+            timeFormat: '12h',
+            startOfWeek: 'sunday',
+          },
           ...updates,
         };
-        await this.create(newSettings as any);
+        await this.create(newSettings);
       }
       logger.info("Updated settings", { userId, updates: Object.keys(updates) });
     } catch (error) {

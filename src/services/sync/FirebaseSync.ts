@@ -5,8 +5,8 @@
 import { serviceLogger } from "@/utils/logging";
 import { db, sessionDBService, eventDBService, taskDBService, goalDBService, settingsDBService } from "../database";
 import { getFirestore, getFirebaseAuth } from "../firebase";
-import { collection, doc, setDoc, writeBatch, query, where, getDocs, Timestamp } from "firebase/firestore";
-import type { DBEvent, DBGoal, DBSession, DBSettings, DBTask } from "@/types/database";
+import { collection, doc, writeBatch, query, where, getDocs, Timestamp } from "firebase/firestore";
+import type { DBBase, DBSession, DBTask, DBSettings } from "@/types/database";
 import { conflictResolver } from "./ConflictResolver";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
@@ -138,7 +138,7 @@ export class FirebaseSync {
 
     try {
       const querySnapshot = await getDocs(q);
-      const remoteDocs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const remoteDocs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as DBBase));
 
       if (remoteDocs.length === 0) {
         logger.debug(`No new changes to pull for ${collectionName}`, { userId });
@@ -181,7 +181,7 @@ export class FirebaseSync {
     await offlineQueue.clearQueue();
   }
 
-  private async getPendingDocs(collectionName: string, userId: string): Promise<any[]> {
+  private async getPendingDocs(collectionName: string, userId: string): Promise<DBBase[]> {
     switch (collectionName) {
       case "sessions":
         return sessionDBService.getPendingSync(userId);
@@ -218,7 +218,7 @@ export class FirebaseSync {
     }
   }
 
-  public async applyRemoteChanges(collectionName: string, docs: any[]) {
+  public async applyRemoteChanges(collectionName: string, docs: DBBase[]) {
     for (const docData of docs) {
       const localDoc = await this.getLocalDoc(collectionName, docData.id);
 
@@ -226,13 +226,13 @@ export class FirebaseSync {
         let resolvedDoc;
         switch (collectionName) {
           case "sessions":
-            resolvedDoc = conflictResolver.resolveSessionConflict(localDoc, docData);
+            resolvedDoc = conflictResolver.resolveSessionConflict(localDoc as DBSession, docData as DBSession);
             break;
           case "tasks":
-            resolvedDoc = conflictResolver.resolveTaskConflict(localDoc, docData);
+            resolvedDoc = conflictResolver.resolveTaskConflict(localDoc as DBTask, docData as DBTask);
             break;
           case "settings":
-            resolvedDoc = conflictResolver.resolveSettingsConflict(localDoc, docData);
+            resolvedDoc = conflictResolver.resolveSettingsConflict(localDoc as DBSettings, docData as DBSettings);
             break;
           default:
             // Default to server wins
@@ -247,7 +247,7 @@ export class FirebaseSync {
     }
   }
 
-  private async getLocalDoc(collectionName: string, id: string): Promise<any> {
+  private async getLocalDoc(collectionName: string, id: string): Promise<DBBase | null> {
     switch (collectionName) {
       case "sessions":
         return sessionDBService.findById(id);
@@ -264,7 +264,7 @@ export class FirebaseSync {
     }
   }
 
-  private async updateLocalDoc(collectionName: string, id: string, data: any) {
+  private async updateLocalDoc(collectionName: string, id: string, data: DBBase) {
     switch (collectionName) {
       case "sessions":
         await sessionDBService.update(id, data);
@@ -284,22 +284,23 @@ export class FirebaseSync {
     }
   }
 
-  private async createLocalDoc(collectionName: string, data: any) {
+  private async createLocalDoc(collectionName: string, data: DBBase) {
+    const { lastModified, syncStatus, ...rest } = data;
     switch (collectionName) {
       case "sessions":
-        await sessionDBService.create(data);
+        await sessionDBService.create(rest);
         break;
       case "events":
-        await eventDBService.create(data);
+        await eventDBService.create(rest);
         break;
       case "tasks":
-        await taskDBService.create(data);
+        await taskDBService.create(rest);
         break;
       case "goals":
-        await goalDBService.create(data);
+        await goalDBService.create(rest);
         break;
       case "settings":
-        await settingsDBService.create(data);
+        await settingsDBService.create(rest);
         break;
     }
   }
