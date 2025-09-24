@@ -1,7 +1,7 @@
 import React from "react";
 import {
   FaTimes,
-  FaShieldAltAlt,
+  FaShieldAlt,
   FaLock,
   FaDatabase,
   FaUsers,
