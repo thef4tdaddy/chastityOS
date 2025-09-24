@@ -10,6 +10,7 @@
     "build": "vite build --config configs/build/vite.config.js",
     "build:nightly": "vite build --mode nightly --config configs/build/vite.config.js",
     "build:production": "vite build --mode production --config configs/build/vite.config.js",
+    "build:vercel": "node scripts/build/vercel-build.js",
     "preview": "vite preview --config configs/build/vite.config.js",
     "lint": "eslint . --config configs/linting/eslint.config.js",
     "lint:fix": "eslint . --config configs/linting/eslint.config.js --fix",
