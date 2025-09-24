@@ -4,6 +4,7 @@ import { useAuthState } from '../contexts';
 import { useKeyholderStore } from '../stores/keyholderStore';
 import { sessionDBService, taskDBService } from '../services/database';
 import type { DBSession, DBTask, TaskStatus } from '../types/database';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaLock,
@@ -330,7 +331,7 @@ const TaskManagement: React.FC<{ tasks: DBTask[] }> = ({ tasks }) => {
       await taskDBService.updateTaskStatus(taskId, newStatus, feedback);
       // In real app, this would refresh the tasks
     } catch (error) {
-      console.error('Error updating task:', error);
+      logger.error('Error updating task:', error, 'KeyholderPage');
     }
   };
 
@@ -459,7 +460,7 @@ const KeyholderPage: React.FC = () => {
         setCurrentSession(session || null);
         setTasks(userTasks);
       } catch (error) {
-        console.error('Error fetching keyholder data:', error);
+        logger.error('Error fetching keyholder data:', error, 'KeyholderPage');
       } finally {
         setLoading(false);
       }

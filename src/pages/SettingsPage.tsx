@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuthState } from '../contexts';
 import { settingsDBService } from '../services/database';
 import type { DBSettings } from '../types/database';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaUser,
@@ -578,7 +579,7 @@ const SettingsPage: React.FC = () => {
         const userSettings = await settingsDBService.findByUserId(user.uid);
         setSettings(userSettings[0] || null);
       } catch (error) {
-        console.error('Error fetching settings:', error);
+        logger.error('Error fetching settings:', error, 'SettingsPage');
       } finally {
         setLoading(false);
       }

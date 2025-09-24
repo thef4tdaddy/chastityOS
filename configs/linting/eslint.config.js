@@ -134,8 +134,9 @@ export default [
       ],
       "max-nested-callbacks": ["warn", 4], // Warn on nested callbacks
 
-      // Block all console statements - use logger instead
-      "no-console": "error",
+      // Phase 3 COMPLETE: Block all console statements - use logger instead  
+      // All console.* statements have been migrated to centralized logger utility
+      "no-console": "error", // Zero tolerance - all logging must go through src/utils/logging.ts
 
       // 🏗️ Zustand Store Safety Rules - Prevent React error #185
       "zustand-safe-patterns/zustand-no-getstate-in-useeffect": "error", // CRITICAL: Prevent React error #185

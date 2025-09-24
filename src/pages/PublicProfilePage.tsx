@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuthState } from '../contexts';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaUser,
@@ -334,7 +335,7 @@ const PublicProfilePage: React.FC = () => {
           setIsOwnProfile(true);
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        logger.error('Error fetching profile:', error, 'PublicProfilePage');
       } finally {
         setLoading(false);
       }
