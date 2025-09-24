@@ -1,16 +1,22 @@
 import React, { useState } from "react";
 import type { DBTask, TaskStatus } from "../../types/database";
-import { taskDBService } from "../../services/database";
+import { useTasksQuery, useTaskMutations } from "../../hooks/api";
+import { useNotificationActions } from "../../stores";
 import { FaTasks, FaPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
-  tasks: DBTask[];
+  userId: string; // Changed to accept userId instead of tasks array
 }
 
-export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
+export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   const [newTaskText, setNewTaskText] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
+  
+  // Use TanStack Query hooks instead of direct service calls
+  const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
+  const { updateTaskStatus, createTask } = useTaskMutations();
+  const { showSuccess, showError } = useNotificationActions();
 
   const pendingTasks = tasks.filter((t) =>
     ["pending", "submitted"].includes(t.status),
@@ -24,12 +30,51 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
     try {
       const newStatus: TaskStatus =
         action === "approve" ? "approved" : "rejected";
-      await taskDBService.updateTaskStatus(taskId, newStatus, feedback);
-      // In real app, this would refresh the tasks
+      
+      await updateTaskStatus.mutateAsync({
+        taskId,
+        userId,
+        status: newStatus,
+        feedback,
+      });
+      
+      showSuccess(
+        `Task ${action === "approve" ? "approved" : "rejected"} successfully`,
+        "Task Updated"
+      );
     } catch (error) {
-      console.error("Error updating task:", error);
+      showError(
+        `Failed to ${action} task. Please try again.`,
+        "Task Update Failed"
+      );
     }
   };
+
+  const handleAddTask = async () => {
+    if (!newTaskText.trim()) return;
+
+    try {
+      await createTask.mutateAsync({
+        userId,
+        title: newTaskText.trim(),
+        description: "",
+      });
+      
+      setNewTaskText("");
+      setShowAddTask(false);
+      showSuccess("Task created successfully", "Task Added");
+    } catch (error) {
+      showError("Failed to create task. Please try again.", "Task Creation Failed");
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        Failed to load tasks. Please refresh the page.
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -64,15 +109,11 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
             />
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  // In real app, would call taskDBService.create
-                  setNewTaskText("");
-                  setShowAddTask(false);
-                }}
-                disabled={!newTaskText.trim()}
+                onClick={handleAddTask}
+                disabled={!newTaskText.trim() || createTask.isPending}
                 className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 py-2 rounded font-medium transition-colors"
               >
-                Create Task
+                {createTask.isPending ? "Creating..." : "Create Task"}
               </button>
               <button
                 onClick={() => setShowAddTask(false)}
@@ -85,27 +126,44 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
         </div>
       )}
 
+      {/* Loading state */}
+      {isLoading && (
+        <div className="text-center text-nightly-celadon py-4">
+          Loading tasks...
+        </div>
+      )}
+
+      {/* Tasks list */}
       <div className="space-y-3">
-        {pendingTasks.length === 0 ? (
+        {!isLoading && pendingTasks.length === 0 ? (
           <p className="text-nightly-celadon">No pending tasks</p>
         ) : (
           pendingTasks.map((task) => (
             <div key={task.id} className="bg-white/5 rounded-lg p-4">
               <div className="mb-3">
                 <h4 className="font-medium text-nightly-honeydew mb-1">
-                  {task.text}
+                  {task.title}
                 </h4>
                 <div className="flex items-center gap-2 text-sm text-nightly-celadon">
                   <span>Status: {task.status}</span>
-                  <span>•</span>
-                  <span>Priority: {task.priority}</span>
-                  {task.dueDate && (
+                  {task.priority && (
                     <>
                       <span>•</span>
-                      <span>Due: {task.dueDate.toLocaleDateString()}</span>
+                      <span>Priority: {task.priority}</span>
+                    </>
+                  )}
+                  {task.deadline && (
+                    <>
+                      <span>•</span>
+                      <span>Due: {task.deadline.toLocaleDateString()}</span>
                     </>
                   )}
                 </div>
+                {task.description && (
+                  <p className="text-sm text-nightly-celadon mt-1">
+                    {task.description}
+                  </p>
+                )}
               </div>
 
               {task.submissiveNote && (
@@ -123,17 +181,19 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleTaskAction(task.id, "approve")}
-                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+                    disabled={updateTaskStatus.isPending}
+                    className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
                   >
                     <FaCheckCircle />
-                    Approve
+                    {updateTaskStatus.isPending ? "Processing..." : "Approve"}
                   </button>
                   <button
                     onClick={() => handleTaskAction(task.id, "reject")}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+                    disabled={updateTaskStatus.isPending}
+                    className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
                   >
                     <FaTimesCircle />
-                    Reject
+                    {updateTaskStatus.isPending ? "Processing..." : "Reject"}
                   </button>
                 </div>
               )}

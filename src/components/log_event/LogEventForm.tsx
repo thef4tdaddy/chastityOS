@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
-import { eventDBService } from "../../services/database";
-import type { DBEvent, EventType } from "../../types/database";
+import { useEventMutations } from "../../hooks/api";
+import { useNotificationActions } from "../../stores";
+import type { EventType } from "../../types/database";
 import {
   FaPlus,
   FaHeart,
@@ -45,15 +46,16 @@ const EVENT_TYPES = [
 
 // Event Form Component
 interface LogEventFormProps {
-  onEventLogged: (
-    event: Omit<DBEvent, "id" | "lastModified" | "syncStatus">,
-  ) => void;
+  onEventLogged?: () => void; // Simplified callback since TanStack Query handles data updates
 }
 
 export const LogEventForm: React.FC<LogEventFormProps> = ({
   onEventLogged,
 }) => {
   const { user } = useAuthState();
+  const { createEvent } = useEventMutations();
+  const { showSuccess, showError } = useNotificationActions();
+  
   const [formData, setFormData] = useState({
     type: "note" as EventType,
     notes: "",
@@ -63,20 +65,19 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
     tags: "",
     isPrivate: false,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    setIsSubmitting(true);
     try {
-      const eventData: Omit<DBEvent, "id" | "lastModified" | "syncStatus"> = {
+      await createEvent.mutateAsync({
         userId: user.uid,
         type: formData.type,
         timestamp: new Date(formData.timestamp),
-        details: {
-          notes: formData.notes,
+        notes: formData.notes,
+        isPrivate: formData.isPrivate,
+        metadata: {
           mood: formData.mood,
           intensity: formData.intensity,
           tags: formData.tags
@@ -84,15 +85,13 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
             .map((tag) => tag.trim())
             .filter((tag) => tag),
         },
-        isPrivate: formData.isPrivate,
-      };
-
-      await eventDBService.create({
-        ...eventData,
-        id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       });
 
-      onEventLogged(eventData);
+      // Show success notification
+      showSuccess("Event logged successfully", "Event Added");
+      
+      // Call optional callback
+      onEventLogged?.();
 
       // Reset form
       setFormData({
@@ -105,9 +104,7 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
         isPrivate: false,
       });
     } catch (error) {
-      console.error("Error logging event:", error);
-    } finally {
-      setIsSubmitting(false);
+      showError("Failed to log event. Please try again.", "Event Log Failed");
     }
   };
 
