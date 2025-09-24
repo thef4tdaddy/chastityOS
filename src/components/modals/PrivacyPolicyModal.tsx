@@ -1,5 +1,11 @@
 import React from "react";
-import { FaTimes, FaShield, FaLock, FaDatabase, FaUsers } from "react-icons/fa";
+import {
+  FaTimes,
+  FaShieldAltAlt,
+  FaLock,
+  FaDatabase,
+  FaUsers,
+} from "react-icons/fa";
 
 interface PrivacyPolicyModalProps {
   isOpen: boolean;
@@ -18,7 +24,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <FaShield className="text-nightly-aquamarine" />
+            <FaShieldAlt className="text-nightly-aquamarine" />
             <h2 className="text-xl font-bold text-nightly-honeydew">
               Privacy Policy
             </h2>
@@ -41,7 +47,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
           {/* Introduction */}
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <FaShield className="text-nightly-lavender-floral" />
+              <FaShieldAlt className="text-nightly-lavender-floral" />
               <h3 className="text-lg font-semibold text-nightly-honeydew">
                 Introduction
               </h3>
@@ -125,7 +131,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
           {/* Data Security */}
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <FaShield className="text-nightly-lavender-floral" />
+              <FaShieldAlt className="text-nightly-lavender-floral" />
               <h3 className="text-lg font-semibold text-nightly-honeydew">
                 Data Security
               </h3>
@@ -198,7 +204,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
           {/* Your Rights */}
           <section>
             <div className="flex items-center gap-2 mb-3">
-              <FaShield className="text-nightly-aquamarine" />
+              <FaShieldAlt className="text-nightly-aquamarine" />
               <h3 className="text-lg font-semibold text-nightly-honeydew">
                 Your Rights
               </h3>
