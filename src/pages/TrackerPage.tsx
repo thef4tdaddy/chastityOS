@@ -32,7 +32,7 @@ const TrackerPage: React.FC = () => {
   const showEmergencyUnlockModal = false;
 
   return (
-    <div className="bg-nightly-honeydew min-h-screen text-nightly-spring-green p-4">
+    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green p-4">
       {showRestoreSessionPrompt && (
         <div>Restore session prompt</div>
       )}
@@ -44,7 +44,7 @@ const TrackerPage: React.FC = () => {
       )}
 
       {isCageOn && remainingGoalTime > 0 && (
-        <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border bg-blue-800 border-blue-600`}>
+        <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border bg-white/10 backdrop-blur-xs border-white/20`}>
           <p className={`text-lg font-semibold text-blue-200`}>
             Time Remaining on Goal:
           </p>
@@ -55,7 +55,7 @@ const TrackerPage: React.FC = () => {
       )}
 
       {keyholderName && requiredKeyholderDurationSeconds > 0 && (
-        <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border bg-purple-800 border-purple-600`}>
+        <div className={`mb-4 p-3 rounded-lg shadow-sm text-center border bg-white/10 backdrop-blur-xs border-white/20`}>
           <p className={`text-sm font-semibold text-purple-200`}>
             {keyholderName} requires {savedSubmissivesName || 'the submissive'} to be in chastity for {requiredKeyholderDurationSeconds}
           </p>
@@ -67,14 +67,14 @@ const TrackerPage: React.FC = () => {
       )}
 
       <div className="space-y-4 mb-6 md:mb-8">
-        <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm text-center">
+        <div className="bg-white/10 backdrop-blur-xs border-white/20 p-3 md:p-4 rounded-lg shadow-sm text-center">
           <p className="tracker-label text-sm md:text-lg">{topBoxLabel}</p>
           <p className="tracker-value text-2xl md:text-4xl font-semibold">
             {topBoxTime}
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'tracker-box'}`}>
+          <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-white/10 backdrop-blur-xs border-white/20'}`}>
             <p className="tracker-label text-sm md:text-lg">
               Current Session In Chastity {isPaused ? '(Paused)' : ''}:
             </p>
@@ -92,7 +92,7 @@ const TrackerPage: React.FC = () => {
               </p>
             )}
           </div>
-          <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'tracker-box'}`}>
+          <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-white/10 backdrop-blur-xs border-white/20'}`}>
             <p className="tracker-label text-sm md:text-lg">
               Current Session Cage Off:
             </p>
@@ -102,7 +102,7 @@ const TrackerPage: React.FC = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm">
+          <div className="bg-white/10 backdrop-blur-xs border-white/20 p-3 md:p-4 rounded-lg shadow-sm">
             <p className="tracker-label text-sm md:text-lg">
               Total Time In Chastity:
             </p>
@@ -110,7 +110,7 @@ const TrackerPage: React.FC = () => {
               {totalChastityTime}
             </p>
           </div>
-          <div className="tracker-box p-3 md:p-4 rounded-lg shadow-sm">
+          <div className="bg-white/10 backdrop-blur-xs border-white/20 p-3 md:p-4 rounded-lg shadow-sm">
             <p className="tracker-label text-sm md:text-lg">
               Total Time Cage Off:
             </p>

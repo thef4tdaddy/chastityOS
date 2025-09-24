@@ -15,7 +15,7 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({ isOp
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-red-700">
+      <div className="bg-white/10 backdrop-blur-xs border-white/20 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-red-700">
         <h3 className="text-lg md:text-xl font-bold mb-4 text-red-300">
           Emergency Unlock
         </h3>

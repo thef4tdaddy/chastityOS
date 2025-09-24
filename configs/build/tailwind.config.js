@@ -24,6 +24,12 @@ module.exports = {
   darkMode: false,
   theme: {
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
       colors: {
         nightly: {
           aquamarine: '#57f6b1ff',
@@ -31,6 +37,8 @@ module.exports = {
           honeydew: '#e0fce7ff',
           celadon: '#b1f3c1ff',
           'lavender-floral': '#c691faff',
+          'mobile-bg': '#282132ff',
+          'desktop-bg': '#1a1423ff',
         },
         prod: {
             tekhelet: '#581c87ff',
