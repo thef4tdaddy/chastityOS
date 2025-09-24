@@ -35,7 +35,7 @@ const TrackerPage: React.FC = () => {
   const showEmergencyUnlockModal = false;
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green p-4">
+    <div className="text-nightly-spring-green">
       {showRestoreSessionPrompt && (
         <RestoreSessionPrompt onConfirm={() => {}} onDiscard={() => {}} />
       )}

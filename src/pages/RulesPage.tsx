@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { RuleCard, RuleEditor } from "../components/rules";
 import type { ChastityRule } from "../components/rules";
-import { FaArrowLeft, FaBook, FaEdit, FaInfo } from "react-icons/fa";
+import { FaBook, FaEdit, FaInfo } from "react-icons/fa";
 
 // Mock rules data
 const mockRules: ChastityRule[] = [
@@ -147,20 +146,7 @@ const RulesPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">Rules</h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       {/* Content */}
       <div className="p-4 max-w-4xl mx-auto">
         {/* Info Banner */}

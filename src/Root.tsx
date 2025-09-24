@@ -1,12 +1,12 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
+import AppLayout from "./components/layout/AppLayout";
 
 const Root: React.FC = () => {
   return (
-    <div>
-      {/* The header and footer will be part of the layout */}
+    <AppLayout>
       <Outlet />
-    </div>
+    </AppLayout>
   );
 };
 

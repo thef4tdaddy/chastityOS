@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import {
   sessionDBService,
@@ -10,7 +9,6 @@ import {
 import type { DBSession, DBEvent, DBTask, DBGoal } from "../types/database";
 import { logger } from "../utils/logging";
 import {
-  FaArrowLeft,
   FaClock,
   FaPlay,
   FaPause,
@@ -424,20 +422,7 @@ const FullReportPage: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">Full Report</h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       {/* Content */}
       <div className="p-4 max-w-6xl mx-auto">
         {loading ? (

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import {
   LogItem,
@@ -7,7 +6,7 @@ import {
   ManualEntryForm,
 } from "../components/rewards_punishments";
 import type { RewardPunishmentLog } from "../components/rewards_punishments";
-import { FaArrowLeft, FaFilter, FaSpinner, FaTrophy } from "react-icons/fa";
+import { FaFilter, FaSpinner, FaTrophy } from "react-icons/fa";
 // Mock data for demonstration
 const mockRewardsAndPunishments: RewardPunishmentLog[] = [
   {
@@ -73,20 +72,7 @@ const RewardsPunishmentsPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">Rewards & Punishments</h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       {/* Content */}
       <div className="p-4 max-w-4xl mx-auto">
         <RewardPunishmentStats logs={logs} />

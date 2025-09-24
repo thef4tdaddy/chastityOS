@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { settingsDBService } from "../services/database";
 import type { DBSettings } from "../types/database";
 import { logger } from "../utils/logging";
 import {
-  FaArrowLeft,
   FaUser,
   FaPalette,
   FaGlobe,
@@ -739,20 +737,7 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">Settings</h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       <div className="flex flex-col lg:flex-row">
         {/* Tab Navigation */}
         <nav className="lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-white/10">

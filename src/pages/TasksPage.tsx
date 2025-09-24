@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { taskDBService } from "../services/database";
 import type { DBTask, TaskStatus } from "../types/database";
 import { TaskItem } from "../components/tasks";
 import { logger } from "../utils/logging";
-import { FaArrowLeft } from "react-icons/fa";
 
 const TasksPage: React.FC = () => {
   const { user } = useAuthState();
@@ -62,20 +60,7 @@ const TasksPage: React.FC = () => {
   );
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">Tasks</h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       {/* Tab Navigation */}
       <div className="p-4">
         <div className="flex space-x-4 mb-6">
