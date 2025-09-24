@@ -1,42 +1,36 @@
-import React from 'react';
-import type { DBEvent, EventType } from '../../types/database';
-import {
-  FaCalendar,
-  FaHeart,
-  FaFire,
-  FaGamepad,
-  FaTint,
-} from 'react-icons/fa';
+import React from "react";
+import type { DBEvent, EventType } from "../../types/database";
+import { FaCalendar, FaHeart, FaFire, FaGamepad, FaTint } from "react-icons/fa";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [
   {
-    value: 'orgasm' as EventType,
-    label: 'Orgasm',
+    value: "orgasm" as EventType,
+    label: "Orgasm",
     icon: FaHeart,
-    color: 'text-red-400',
-    description: 'Self or partner induced orgasm'
+    color: "text-red-400",
+    description: "Self or partner induced orgasm",
   },
   {
-    value: 'sexual_activity' as EventType,
-    label: 'Sexual Activity',
+    value: "sexual_activity" as EventType,
+    label: "Sexual Activity",
     icon: FaFire,
-    color: 'text-orange-400',
-    description: 'Sexual play or activity'
+    color: "text-orange-400",
+    description: "Sexual play or activity",
   },
   {
-    value: 'milestone' as EventType,
-    label: 'Milestone',
+    value: "milestone" as EventType,
+    label: "Milestone",
     icon: FaGamepad,
-    color: 'text-nightly-aquamarine',
-    description: 'Achievement or milestone reached'
+    color: "text-nightly-aquamarine",
+    description: "Achievement or milestone reached",
   },
   {
-    value: 'note' as EventType,
-    label: 'Note',
+    value: "note" as EventType,
+    label: "Note",
     icon: FaTint,
-    color: 'text-nightly-lavender-floral',
-    description: 'General note or observation'
+    color: "text-nightly-lavender-floral",
+    description: "General note or observation",
   },
 ];
 
@@ -47,11 +41,11 @@ interface EventListProps {
 
 export const EventList: React.FC<EventListProps> = ({ events }) => {
   const getEventTypeInfo = (type: EventType) => {
-    return EVENT_TYPES.find(et => et.value === type) || EVENT_TYPES[3]; // Default to note
+    return EVENT_TYPES.find((et) => et.value === type) || EVENT_TYPES[3]; // Default to note
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
   return (
@@ -60,7 +54,9 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
         <div className="text-center py-8">
           <FaCalendar className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
           <div className="text-nightly-celadon">No events logged yet</div>
-          <div className="text-sm text-nightly-celadon/70">Log your first event above</div>
+          <div className="text-sm text-nightly-celadon/70">
+            Log your first event above
+          </div>
         </div>
       ) : (
         events.map((event) => {
@@ -68,7 +64,10 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
           const Icon = eventTypeInfo.icon;
 
           return (
-            <div key={event.id} className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div
+              key={event.id}
+              className="bg-white/10 backdrop-blur-sm rounded-lg p-4"
+            >
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -91,13 +90,17 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
 
               {/* Content */}
               {event.details.notes && (
-                <p className="text-nighty-honeydew mb-3">{event.details.notes}</p>
+                <p className="text-nighty-honeydew mb-3">
+                  {event.details.notes}
+                </p>
               )}
 
               {/* Details */}
               <div className="flex gap-4 text-xs text-nightly-celadon">
                 {event.details.mood && <span>Mood: {event.details.mood}</span>}
-                {event.details.intensity && <span>Intensity: {event.details.intensity}/10</span>}
+                {event.details.intensity && (
+                  <span>Intensity: {event.details.intensity}/10</span>
+                )}
               </div>
 
               {/* Tags */}

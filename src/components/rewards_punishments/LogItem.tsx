@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   FaAward,
   FaGavel,
@@ -6,16 +6,20 @@ import {
   FaStickyNote,
   FaTrophy,
   FaExclamationTriangle,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Mock reward/punishment log item interface
 export interface RewardPunishmentLog {
   id: string;
-  type: 'reward' | 'punishment';
+  type: "reward" | "punishment";
   title: string;
   description: string;
   timeChangeSeconds: number; // Positive for added time, negative for removed time
-  source: 'task_completion' | 'keyholder_action' | 'rule_violation' | 'milestone';
+  source:
+    | "task_completion"
+    | "keyholder_action"
+    | "rule_violation"
+    | "milestone";
   sourceId?: string; // Reference to task, rule, etc.
   createdAt: Date;
   notes?: string;
@@ -27,7 +31,7 @@ interface LogItemProps {
 }
 
 export const LogItem: React.FC<LogItemProps> = ({ item }) => {
-  const isReward = item.type === 'reward';
+  const isReward = item.type === "reward";
   const timeChange = Math.abs(item.timeChangeSeconds);
 
   const formatDuration = (seconds: number) => {
@@ -43,13 +47,13 @@ export const LogItem: React.FC<LogItemProps> = ({ item }) => {
 
   const getSourceIcon = () => {
     switch (item.source) {
-      case 'task_completion':
+      case "task_completion":
         return <FaTrophy className="text-nightly-aquamarine" />;
-      case 'keyholder_action':
+      case "keyholder_action":
         return <FaGavel className="text-nightly-lavender-floral" />;
-      case 'rule_violation':
+      case "rule_violation":
         return <FaExclamationTriangle className="text-red-400" />;
-      case 'milestone':
+      case "milestone":
         return <FaAward className="text-nightly-spring-green" />;
       default:
         return <FaClock />;
@@ -74,22 +78,29 @@ export const LogItem: React.FC<LogItemProps> = ({ item }) => {
 
         <div className="flex items-center gap-2">
           {getSourceIcon()}
-          <span className={`px-2 py-1 text-xs rounded ${
-            isReward ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
-          }`}>
-            {isReward ? 'REWARD' : 'PUNISHMENT'}
+          <span
+            className={`px-2 py-1 text-xs rounded ${
+              isReward
+                ? "bg-green-500/20 text-green-300"
+                : "bg-red-500/20 text-red-300"
+            }`}
+          >
+            {isReward ? "REWARD" : "PUNISHMENT"}
           </span>
         </div>
       </div>
 
       {/* Time Impact */}
       {item.timeChangeSeconds !== 0 && (
-        <div className={`flex items-center gap-2 mb-3 ${
-          isReward ? 'text-green-400' : 'text-red-400'
-        }`}>
+        <div
+          className={`flex items-center gap-2 mb-3 ${
+            isReward ? "text-green-400" : "text-red-400"
+          }`}
+        >
           <FaClock />
           <span className="font-mono">
-            {formatDuration(timeChange)} {isReward ? 'removed from' : 'added to'} chastity time
+            {formatDuration(timeChange)}{" "}
+            {isReward ? "removed from" : "added to"} chastity time
           </span>
         </div>
       )}
@@ -106,7 +117,8 @@ export const LogItem: React.FC<LogItemProps> = ({ item }) => {
 
       {/* Timestamp */}
       <div className="text-xs text-nightly-celadon text-right">
-        {item.createdAt.toLocaleDateString()} {item.createdAt.toLocaleTimeString()}
+        {item.createdAt.toLocaleDateString()}{" "}
+        {item.createdAt.toLocaleTimeString()}
       </div>
     </div>
   );

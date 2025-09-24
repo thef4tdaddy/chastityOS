@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
-import { ChastityRule } from './RuleCard';
-import {
-  FaEdit,
-  FaSave,
-  FaTimes,
-} from 'react-icons/fa';
+import React, { useState } from "react";
+import { ChastityRule } from "./RuleCard";
+import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
 
 // Rule Editor Component
 interface RuleEditorProps {
   rule: ChastityRule | null;
-  onSave: (rule: Omit<ChastityRule, 'id' | 'createdAt' | 'lastModified'>) => void;
+  onSave: (
+    rule: Omit<ChastityRule, "id" | "createdAt" | "lastModified">,
+  ) => void;
   onCancel: () => void;
 }
 
-export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }) => {
+export const RuleEditor: React.FC<RuleEditorProps> = ({
+  rule,
+  onSave,
+  onCancel,
+}) => {
   const [formData, setFormData] = useState({
-    title: rule?.title || '',
-    content: rule?.content || '',
+    title: rule?.title || "",
+    content: rule?.content || "",
     isActive: rule?.isActive ?? true,
-    createdBy: rule?.createdBy || 'submissive' as 'submissive' | 'keyholder',
+    createdBy: rule?.createdBy || ("submissive" as "submissive" | "keyholder"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,7 +33,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
       <div className="flex items-center gap-3 mb-6">
         <FaEdit className="text-nightly-aquamarine" />
         <h3 className="text-lg font-semibold text-nightly-honeydew">
-          {rule ? 'Edit Rule' : 'Create New Rule'}
+          {rule ? "Edit Rule" : "Create New Rule"}
         </h3>
       </div>
 
@@ -44,7 +46,9 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
             placeholder="Enter a clear, descriptive title"
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
             required
@@ -61,7 +65,9 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
           </label>
           <textarea
             value={formData.content}
-            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, content: e.target.value }))
+            }
             placeholder={`Describe the rule in detail, including:
 
 **Requirements:**
@@ -90,7 +96,12 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
             </label>
             <select
               value={formData.createdBy}
-              onChange={(e) => setFormData(prev => ({ ...prev, createdBy: e.target.value as 'submissive' | 'keyholder' }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  createdBy: e.target.value as "submissive" | "keyholder",
+                }))
+              }
               className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
             >
               <option value="submissive">Submissive</option>
@@ -103,7 +114,12 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
               <input
                 type="checkbox"
                 checked={formData.isActive}
-                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isActive: e.target.checked,
+                  }))
+                }
                 className="mr-2"
               />
               <span className="text-nightly-celadon">Rule is active</span>
@@ -118,7 +134,7 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({ rule, onSave, onCancel }
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaSave />
-            {rule ? 'Update Rule' : 'Create Rule'}
+            {rule ? "Update Rule" : "Create Rule"}
           </button>
           <button
             type="button"
