@@ -1,12 +1,9 @@
 import { db } from "../storage/dexie";
+import { ChastitySession, SessionStatus } from "@/types/core";
+import { serviceLogger } from "@/utils/logging";
 // import { FirebaseAPI } from './firebase'; // This will be used later
-import { ChastitySession } from "@/types/core";
 
-const isDataFresh = (lastUpdated: Date | undefined): boolean => {
-  if (!lastUpdated) return false;
-  const fiveMinutes = 5 * 60 * 1000;
-  return new Date().getTime() - lastUpdated.getTime() < fiveMinutes;
-};
+const logger = serviceLogger("SessionService");
 
 export class SessionService {
   static async getCurrentSession(
@@ -16,18 +13,23 @@ export class SessionService {
     const localSession = await db.sessions
       .where("userId")
       .equals(userId)
-      // .and((session) => session.status === 'active') // `status` is not on ChastitySession yet
+      .and(
+        (session) =>
+          session.status === SessionStatus.ACTIVE ||
+          session.status === SessionStatus.PAUSED,
+      )
       .first();
 
     // 2. Return local data if it exists (freshness check can be added later)
     if (localSession) {
-      console.log("Serving session from local Dexie cache.");
+      logger.debug("Serving session from local Dexie cache", { userId });
       return localSession;
     }
 
     // 3. Fetch from Firebase if stale or missing (placeholder)
-    console.log(
-      "No local session found. Fetching from Firebase would happen here.",
+    logger.info(
+      "No local session found. Fetching from Firebase would happen here",
+      { userId },
     );
     // const firebaseSession = await FirebaseAPI.sessions.getCurrent(userId);
 
