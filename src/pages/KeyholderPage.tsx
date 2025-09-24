@@ -10,7 +10,7 @@ import {
   TaskManagement,
 } from "../components/keyholder";
 import { logger } from "../utils/logging";
-import { FaLock, FaCog, FaEye, FaSpinner } from "react-icons/fa";
+import { FaLock, FaCog, FaEye, FaSpinner } from "../utils/iconImport";
 
 const KeyholderPage: React.FC = () => {
   const { user } = useAuthState();

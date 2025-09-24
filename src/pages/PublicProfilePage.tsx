@@ -14,7 +14,7 @@ import {
   FaGlobe,
   FaShieldAlt,
   FaUserPlus,
-} from "react-icons/fa";
+} from "../utils/iconImport";
 
 // Mock public profile data - in real app would come from API
 interface PublicProfile {
