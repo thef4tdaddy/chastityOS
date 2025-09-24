@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useAuthState } from '../contexts';
-import { logger } from '../utils/logging';
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import { useAuthState } from "../contexts";
+import { logger } from "../utils/logging";
 import {
   FaArrowLeft,
   FaUser,
@@ -15,7 +15,7 @@ import {
   FaGlobe,
   FaShield,
   FaUserPlus,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Mock public profile data - in real app would come from API
 interface PublicProfile {
@@ -42,15 +42,15 @@ interface PublicProfile {
     id: string;
     title: string;
     date: Date;
-    type: 'milestone' | 'streak' | 'goal';
+    type: "milestone" | "streak" | "goal";
   }>;
 }
 
 // Mock profile data
 const mockProfile: PublicProfile = {
-  username: 'dedication_seeker',
-  displayName: 'Alex Thompson',
-  bio: 'On a journey of self-discipline and personal growth. Exploring the intersection of mindfulness and commitment. Always looking to improve and support others on similar paths.',
+  username: "dedication_seeker",
+  displayName: "Alex Thompson",
+  bio: "On a journey of self-discipline and personal growth. Exploring the intersection of mindfulness and commitment. Always looking to improve and support others on similar paths.",
   joinDate: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000), // 120 days ago
   isPublic: true,
   shareStatistics: true,
@@ -62,48 +62,48 @@ const mockProfile: PublicProfile = {
   },
   badges: [
     {
-      id: '1',
-      name: 'First Week',
-      description: 'Completed your first 7-day session',
+      id: "1",
+      name: "First Week",
+      description: "Completed your first 7-day session",
       earnedDate: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000),
-      icon: '🎯',
+      icon: "🎯",
     },
     {
-      id: '2',
-      name: 'Dedication',
-      description: 'Reached 30 total sessions',
+      id: "2",
+      name: "Dedication",
+      description: "Reached 30 total sessions",
       earnedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      icon: '💪',
+      icon: "💪",
     },
     {
-      id: '3',
-      name: 'Consistency',
-      description: 'Maintained a 10-day streak',
+      id: "3",
+      name: "Consistency",
+      description: "Maintained a 10-day streak",
       earnedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      icon: '🔥',
+      icon: "🔥",
     },
   ],
   recentAchievements: [
     {
-      id: '1',
-      title: 'Completed 2-week session',
+      id: "1",
+      title: "Completed 2-week session",
       date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      type: 'milestone',
+      type: "milestone",
     },
     {
-      id: '2',
-      title: '12-day streak achieved',
+      id: "2",
+      title: "12-day streak achieved",
       date: new Date(),
-      type: 'streak',
+      type: "streak",
     },
   ],
 };
 
 // Profile Header Component
-const ProfileHeader: React.FC<{ profile: PublicProfile; isOwnProfile: boolean }> = ({
-  profile,
-  isOwnProfile
-}) => (
+const ProfileHeader: React.FC<{
+  profile: PublicProfile;
+  isOwnProfile: boolean;
+}> = ({ profile, isOwnProfile }) => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
     {/* Avatar and Basic Info */}
     <div className="flex items-start gap-6 mb-6">
@@ -113,9 +113,14 @@ const ProfileHeader: React.FC<{ profile: PublicProfile; isOwnProfile: boolean }>
 
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-2xl font-bold text-nightly-honeydew">{profile.displayName}</h1>
+          <h1 className="text-2xl font-bold text-nightly-honeydew">
+            {profile.displayName}
+          </h1>
           {profile.isPublic && (
-            <FaGlobe className="text-nightly-spring-green" title="Public Profile" />
+            <FaGlobe
+              className="text-nightly-spring-green"
+              title="Public Profile"
+            />
           )}
         </div>
         <div className="text-nightly-celadon mb-3">@{profile.username}</div>
@@ -160,7 +165,9 @@ const ProfileHeader: React.FC<{ profile: PublicProfile; isOwnProfile: boolean }>
 );
 
 // Statistics Section
-const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({ profile }) => {
+const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({
+  profile,
+}) => {
   const formatDuration = (seconds: number) => {
     const days = Math.floor(seconds / (24 * 60 * 60));
     const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
@@ -177,35 +184,37 @@ const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({ profile }) =>
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6 text-center">
         <FaLock className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
         <div className="text-nightly-celadon">Statistics are private</div>
-        <div className="text-sm text-nightly-celadon/70">This user has chosen to keep their statistics private</div>
+        <div className="text-sm text-nightly-celadon/70">
+          This user has chosen to keep their statistics private
+        </div>
       </div>
     );
   }
 
   const statItems = [
     {
-      label: 'Total Sessions',
+      label: "Total Sessions",
       value: profile.stats.totalSessions,
       icon: FaChartBar,
-      color: 'text-nightly-aquamarine'
+      color: "text-nightly-aquamarine",
     },
     {
-      label: 'Longest Session',
+      label: "Longest Session",
       value: formatDuration(profile.stats.longestSession),
       icon: FaTrophy,
-      color: 'text-nightly-lavender-floral'
+      color: "text-nightly-lavender-floral",
     },
     {
-      label: 'Total Time',
+      label: "Total Time",
       value: formatDuration(profile.stats.totalChastityTime),
       icon: FaClock,
-      color: 'text-nightly-spring-green'
+      color: "text-nightly-spring-green",
     },
     {
-      label: 'Current Streak',
+      label: "Current Streak",
       value: `${profile.stats.streakDays} days`,
       icon: FaHeart,
-      color: 'text-red-400'
+      color: "text-red-400",
     },
   ];
 
@@ -213,7 +222,9 @@ const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({ profile }) =>
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaChartBar className="text-nightly-aquamarine" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">Statistics</h2>
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Statistics
+        </h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -225,9 +236,7 @@ const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({ profile }) =>
               <div className="text-lg font-semibold text-nightly-honeydew mb-1">
                 {item.value}
               </div>
-              <div className="text-sm text-nightly-celadon">
-                {item.label}
-              </div>
+              <div className="text-sm text-nightly-celadon">{item.label}</div>
             </div>
           );
         })}
@@ -237,7 +246,9 @@ const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({ profile }) =>
 };
 
 // Badges Section
-const BadgesSection: React.FC<{ badges: PublicProfile['badges'] }> = ({ badges }) => (
+const BadgesSection: React.FC<{ badges: PublicProfile["badges"] }> = ({
+  badges,
+}) => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
     <div className="flex items-center gap-3 mb-6">
       <FaTrophy className="text-nightly-lavender-floral" />
@@ -251,11 +262,18 @@ const BadgesSection: React.FC<{ badges: PublicProfile['badges'] }> = ({ badges }
     ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {badges.map((badge) => (
-          <div key={badge.id} className="bg-white/5 rounded-lg p-4 flex items-center gap-4">
+          <div
+            key={badge.id}
+            className="bg-white/5 rounded-lg p-4 flex items-center gap-4"
+          >
             <div className="text-2xl">{badge.icon}</div>
             <div className="flex-1">
-              <h3 className="font-medium text-nightly-honeydew">{badge.name}</h3>
-              <p className="text-sm text-nightly-celadon mb-1">{badge.description}</p>
+              <h3 className="font-medium text-nightly-honeydew">
+                {badge.name}
+              </h3>
+              <p className="text-sm text-nightly-celadon mb-1">
+                {badge.description}
+              </p>
               <div className="text-xs text-nightly-celadon/70">
                 Earned {badge.earnedDate.toLocaleDateString()}
               </div>
@@ -269,12 +287,14 @@ const BadgesSection: React.FC<{ badges: PublicProfile['badges'] }> = ({ badges }
 
 // Recent Achievements Section
 const RecentAchievementsSection: React.FC<{
-  achievements: PublicProfile['recentAchievements']
+  achievements: PublicProfile["recentAchievements"];
 }> = ({ achievements }) => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
     <div className="flex items-center gap-3 mb-6">
       <FaCalendar className="text-nightly-spring-green" />
-      <h2 className="text-xl font-semibold text-nightly-honeydew">Recent Achievements</h2>
+      <h2 className="text-xl font-semibold text-nightly-honeydew">
+        Recent Achievements
+      </h2>
     </div>
 
     {achievements.length === 0 ? (
@@ -284,26 +304,40 @@ const RecentAchievementsSection: React.FC<{
     ) : (
       <div className="space-y-3">
         {achievements.map((achievement) => (
-          <div key={achievement.id} className="flex items-center justify-between bg-white/5 rounded-lg p-3">
+          <div
+            key={achievement.id}
+            className="flex items-center justify-between bg-white/5 rounded-lg p-3"
+          >
             <div className="flex items-center gap-3">
-              {achievement.type === 'milestone' && <FaTrophy className="text-nightly-aquamarine" />}
-              {achievement.type === 'streak' && <FaHeart className="text-red-400" />}
-              {achievement.type === 'goal' && <FaChartBar className="text-nightly-lavender-floral" />}
+              {achievement.type === "milestone" && (
+                <FaTrophy className="text-nightly-aquamarine" />
+              )}
+              {achievement.type === "streak" && (
+                <FaHeart className="text-red-400" />
+              )}
+              {achievement.type === "goal" && (
+                <FaChartBar className="text-nightly-lavender-floral" />
+              )}
               <div>
-                <div className="text-nightly-honeydew font-medium">{achievement.title}</div>
+                <div className="text-nightly-honeydew font-medium">
+                  {achievement.title}
+                </div>
                 <div className="text-xs text-nightly-celadon/70">
                   {achievement.date.toLocaleDateString()}
                 </div>
               </div>
             </div>
-            <span className={`px-2 py-1 text-xs rounded ${
-              achievement.type === 'milestone'
-                ? 'bg-nightly-aquamarine/20 text-nightly-aquamarine'
-                : achievement.type === 'streak'
-                ? 'bg-red-400/20 text-red-400'
-                : 'bg-nightly-lavender-floral/20 text-nightly-lavender-floral'
-            }`}>
-              {achievement.type.charAt(0).toUpperCase() + achievement.type.slice(1)}
+            <span
+              className={`px-2 py-1 text-xs rounded ${
+                achievement.type === "milestone"
+                  ? "bg-nightly-aquamarine/20 text-nightly-aquamarine"
+                  : achievement.type === "streak"
+                    ? "bg-red-400/20 text-red-400"
+                    : "bg-nightly-lavender-floral/20 text-nightly-lavender-floral"
+              }`}
+            >
+              {achievement.type.charAt(0).toUpperCase() +
+                achievement.type.slice(1)}
             </span>
           </div>
         ))}
@@ -326,16 +360,19 @@ const PublicProfilePage: React.FC = () => {
       try {
         // In real app, would fetch from API using username parameter
         // For now, using mock data
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate loading
 
         setProfile(mockProfile);
 
         // Check if this is the user's own profile
-        if (user && username === user.displayName?.toLowerCase().replace(' ', '_')) {
+        if (
+          user &&
+          username === user.displayName?.toLowerCase().replace(" ", "_")
+        ) {
           setIsOwnProfile(true);
         }
       } catch (error) {
-        logger.error('Error fetching profile:', error, 'PublicProfilePage');
+        logger.error("Error fetching profile:", error, "PublicProfilePage");
       } finally {
         setLoading(false);
       }
@@ -351,7 +388,10 @@ const PublicProfilePage: React.FC = () => {
       <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
         <header className="p-4 border-b border-white/10">
           <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+            <Link
+              to="/dashboard"
+              className="text-nightly-aquamarine hover:text-nightly-spring-green"
+            >
               <FaArrowLeft />
             </Link>
             <h1 className="text-2xl font-bold">Profile</h1>
@@ -373,7 +413,10 @@ const PublicProfilePage: React.FC = () => {
       <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
         <header className="p-4 border-b border-white/10">
           <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+            <Link
+              to="/dashboard"
+              className="text-nightly-aquamarine hover:text-nightly-spring-green"
+            >
               <FaArrowLeft />
             </Link>
             <h1 className="text-2xl font-bold">Profile</h1>
@@ -398,7 +441,10 @@ const PublicProfilePage: React.FC = () => {
       <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
         <header className="p-4 border-b border-white/10">
           <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+            <Link
+              to="/dashboard"
+              className="text-nightly-aquamarine hover:text-nightly-spring-green"
+            >
               <FaArrowLeft />
             </Link>
             <h1 className="text-2xl font-bold">Profile</h1>
@@ -423,11 +469,14 @@ const PublicProfilePage: React.FC = () => {
       {/* Header */}
       <header className="p-4 border-b border-white/10">
         <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+          <Link
+            to="/dashboard"
+            className="text-nightly-aquamarine hover:text-nightly-spring-green"
+          >
             <FaArrowLeft />
           </Link>
           <h1 className="text-2xl font-bold">
-            {isOwnProfile ? 'My Profile' : `${profile.displayName}'s Profile`}
+            {isOwnProfile ? "My Profile" : `${profile.displayName}'s Profile`}
           </h1>
         </div>
       </header>

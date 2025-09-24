@@ -1,4 +1,3 @@
-
 /**
  * Goal Database Service
  * Handles all local database operations for goals
@@ -50,7 +49,11 @@ class GoalDBService extends BaseDBService<DBGoal> {
 
       await this.create(goal);
 
-      logger.info("Added new goal", { goalId, userId: options.userId, title: options.title });
+      logger.info("Added new goal", {
+        goalId,
+        userId: options.userId,
+        title: options.title,
+      });
       return goalId;
     } catch (error) {
       logger.error("Failed to add goal", {
@@ -67,7 +70,10 @@ class GoalDBService extends BaseDBService<DBGoal> {
    */
   async getGoals(userId: string): Promise<DBGoal[]> {
     try {
-      const goals = await this.table.where("userId").equals(userId).sortBy("createdAt");
+      const goals = await this.table
+        .where("userId")
+        .equals(userId)
+        .sortBy("createdAt");
       logger.debug("Get goals", { userId, count: goals.length });
       return goals;
     } catch (error) {
@@ -81,7 +87,7 @@ class GoalDBService extends BaseDBService<DBGoal> {
    */
   async updateGoalProgress(
     goalId: string,
-    currentValue: number
+    currentValue: number,
   ): Promise<void> {
     try {
       const goal = await this.findById(goalId);
@@ -100,7 +106,11 @@ class GoalDBService extends BaseDBService<DBGoal> {
 
       await this.update(goalId, updateData);
 
-      logger.info("Updated goal progress", { goalId, currentValue, isCompleted });
+      logger.info("Updated goal progress", {
+        goalId,
+        currentValue,
+        isCompleted,
+      });
     } catch (error) {
       logger.error("Failed to update goal progress", {
         error: error as Error,
@@ -116,14 +126,18 @@ class GoalDBService extends BaseDBService<DBGoal> {
    */
   async getGoalsByStatus(
     userId: string,
-    isCompleted: boolean
+    isCompleted: boolean,
   ): Promise<DBGoal[]> {
     try {
       const goals = await this.table
         .where({ userId, isCompleted })
         .sortBy("createdAt");
 
-      logger.debug("Get goals by status", { userId, isCompleted, count: goals.length });
+      logger.debug("Get goals by status", {
+        userId,
+        isCompleted,
+        count: goals.length,
+      });
       return goals;
     } catch (error) {
       logger.error("Failed to get goals by status", {

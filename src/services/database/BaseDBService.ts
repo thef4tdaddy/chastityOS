@@ -111,7 +111,10 @@ export abstract class BaseDBService<
         query = query.and((doc) => doc.userId === userId);
       }
       const results = await query.toArray();
-      logger.debug("Found pending sync records", { count: results.length, userId });
+      logger.debug("Found pending sync records", {
+        count: results.length,
+        userId,
+      });
       return results;
     } catch (error) {
       logger.error("Failed to get pending sync records", {

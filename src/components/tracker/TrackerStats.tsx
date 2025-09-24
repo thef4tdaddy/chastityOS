@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 
 interface TrackerStatsProps {
   topBoxLabel: string;
@@ -14,7 +13,18 @@ interface TrackerStatsProps {
   totalTimeCageOff: number;
 }
 
-export const TrackerStats: React.FC<TrackerStatsProps> = ({ topBoxLabel, topBoxTime, mainChastityDisplayTime, isPaused, livePauseDuration, accumulatedPauseTimeThisSession, isCageOn, timeCageOff, totalChastityTime, totalTimeCageOff }) => {
+export const TrackerStats: React.FC<TrackerStatsProps> = ({
+  topBoxLabel,
+  topBoxTime,
+  mainChastityDisplayTime,
+  isPaused,
+  livePauseDuration,
+  accumulatedPauseTimeThisSession,
+  isCageOn,
+  timeCageOff,
+  totalChastityTime,
+  totalTimeCageOff,
+}) => {
   return (
     <div className="space-y-4 mb-6 md:mb-8">
       <div className="bg-white/10 backdrop-blur-xs border-white/20 p-3 md:p-4 rounded-lg shadow-sm text-center">
@@ -24,11 +34,15 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({ topBoxLabel, topBoxT
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? 'bg-yellow-500/20 border-yellow-600' : 'bg-green-500/20 border-green-600') : 'bg-white/10 backdrop-blur-xs border-white/20'}`}>
+        <div
+          className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${isCageOn ? (isPaused ? "bg-yellow-500/20 border-yellow-600" : "bg-green-500/20 border-green-600") : "bg-white/10 backdrop-blur-xs border-white/20"}`}
+        >
           <p className="tracker-label text-sm md:text-lg">
-            Current Session In Chastity {isPaused ? '(Paused)' : ''}:
+            Current Session In Chastity {isPaused ? "(Paused)" : ""}:
           </p>
-          <p className={`tracker-value text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? 'text-yellow-400' : 'text-green-400') : ''}`}>
+          <p
+            className={`tracker-value text-2xl md:text-4xl font-bold ${isCageOn ? (isPaused ? "text-yellow-400" : "text-green-400") : ""}`}
+          >
             {mainChastityDisplayTime}
           </p>
           {isPaused && (
@@ -42,11 +56,15 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({ topBoxLabel, topBoxT
             </p>
           )}
         </div>
-        <div className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? 'bg-red-500/20 border-red-600' : 'bg-white/10 backdrop-blur-xs border-white/20'}`}>
+        <div
+          className={`p-3 md:p-4 rounded-lg shadow-sm transition-colors duration-300 border ${!isCageOn && timeCageOff > 0 ? "bg-red-500/20 border-red-600" : "bg-white/10 backdrop-blur-xs border-white/20"}`}
+        >
           <p className="tracker-label text-sm md:text-lg">
             Current Session Cage Off:
           </p>
-          <p className={`tracker-value text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? 'text-red-400' : ''}`}>
+          <p
+            className={`tracker-value text-2xl md:text-4xl font-bold ${!isCageOn && timeCageOff > 0 ? "text-red-400" : ""}`}
+          >
             {timeCageOff}
           </p>
         </div>

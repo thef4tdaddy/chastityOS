@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuthState } from '../contexts';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuthState } from "../contexts";
 import {
   FaArrowLeft,
   FaBook,
@@ -11,7 +11,7 @@ import {
   FaLock,
   FaUnlock,
   FaInfo,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Mock rules interface
 interface ChastityRule {
@@ -19,7 +19,7 @@ interface ChastityRule {
   title: string;
   content: string;
   isActive: boolean;
-  createdBy: 'submissive' | 'keyholder';
+  createdBy: "submissive" | "keyholder";
   createdAt: Date;
   lastModified: Date;
 }
@@ -27,8 +27,8 @@ interface ChastityRule {
 // Mock rules data
 const mockRules: ChastityRule[] = [
   {
-    id: '1',
-    title: 'Daily Check-ins',
+    id: "1",
+    title: "Daily Check-ins",
     content: `Must complete daily check-in form by 10 PM each night.
 
 **Required information:**
@@ -40,13 +40,13 @@ const mockRules: ChastityRule[] = [
 - +12 hours added to chastity time
 - Extra task assigned for the following day`,
     isActive: true,
-    createdBy: 'keyholder',
+    createdBy: "keyholder",
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     lastModified: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
   },
   {
-    id: '2',
-    title: 'Exercise Requirements',
+    id: "2",
+    title: "Exercise Requirements",
     content: `Minimum 30 minutes of physical activity daily.
 
 **Acceptable activities:**
@@ -65,13 +65,13 @@ const mockRules: ChastityRule[] = [
 - 14 days straight: -8 hours
 - 30 days straight: -24 hours`,
     isActive: true,
-    createdBy: 'keyholder',
+    createdBy: "keyholder",
     createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
     lastModified: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
   },
   {
-    id: '3',
-    title: 'Communication Protocol',
+    id: "3",
+    title: "Communication Protocol",
     content: `Clear communication expectations between keyholder and submissive.
 
 **Response times:**
@@ -84,7 +84,7 @@ const mockRules: ChastityRule[] = [
 - Emergency contact procedures
 - Safe words and their meanings`,
     isActive: false,
-    createdBy: 'submissive',
+    createdBy: "submissive",
     createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
     lastModified: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
   },
@@ -99,32 +99,30 @@ const RuleCard: React.FC<{
 }> = ({ rule, isEditable, onEdit, onToggle }) => {
   const formatMarkdownToReact = (content: string) => {
     // Simple markdown-to-HTML conversion (in real app, use a proper library)
-    return content
-      .split('\n')
-      .map((line, index) => {
-        if (line.startsWith('**') && line.endsWith('**')) {
-          return (
-            <strong key={index} className="text-nightly-honeydew">
-              {line.slice(2, -2)}
-            </strong>
-          );
-        }
-        if (line.startsWith('- ')) {
-          return (
-            <li key={index} className="ml-4 text-nightly-celadon">
-              {line.slice(2)}
-            </li>
-          );
-        }
-        if (line.trim() === '') {
-          return <br key={index} />;
-        }
+    return content.split("\n").map((line, index) => {
+      if (line.startsWith("**") && line.endsWith("**")) {
         return (
-          <p key={index} className="text-nightly-celadon mb-2">
-            {line}
-          </p>
+          <strong key={index} className="text-nightly-honeydew">
+            {line.slice(2, -2)}
+          </strong>
         );
-      });
+      }
+      if (line.startsWith("- ")) {
+        return (
+          <li key={index} className="ml-4 text-nightly-celadon">
+            {line.slice(2)}
+          </li>
+        );
+      }
+      if (line.trim() === "") {
+        return <br key={index} />;
+      }
+      return (
+        <p key={index} className="text-nightly-celadon mb-2">
+          {line}
+        </p>
+      );
+    });
   };
 
   return (
@@ -141,12 +139,14 @@ const RuleCard: React.FC<{
             <h3 className="text-lg font-semibold text-nightly-honeydew">
               {rule.title}
             </h3>
-            <span className={`px-2 py-1 text-xs rounded ${
-              rule.isActive
-                ? 'bg-green-500/20 text-green-300'
-                : 'bg-gray-500/20 text-gray-300'
-            }`}>
-              {rule.isActive ? 'ACTIVE' : 'INACTIVE'}
+            <span
+              className={`px-2 py-1 text-xs rounded ${
+                rule.isActive
+                  ? "bg-green-500/20 text-green-300"
+                  : "bg-gray-500/20 text-gray-300"
+              }`}
+            >
+              {rule.isActive ? "ACTIVE" : "INACTIVE"}
             </span>
           </div>
 
@@ -163,10 +163,10 @@ const RuleCard: React.FC<{
               onClick={() => onToggle?.(rule.id)}
               className={`p-2 rounded transition-colors ${
                 rule.isActive
-                  ? 'bg-gray-500/20 hover:bg-gray-500/30 text-gray-300'
-                  : 'bg-green-500/20 hover:bg-green-500/30 text-green-300'
+                  ? "bg-gray-500/20 hover:bg-gray-500/30 text-gray-300"
+                  : "bg-green-500/20 hover:bg-green-500/30 text-green-300"
               }`}
-              title={rule.isActive ? 'Deactivate rule' : 'Activate rule'}
+              title={rule.isActive ? "Deactivate rule" : "Activate rule"}
             >
               {rule.isActive ? <FaLock /> : <FaUnlock />}
             </button>
@@ -192,14 +192,16 @@ const RuleCard: React.FC<{
 // Rule Editor Component
 const RuleEditor: React.FC<{
   rule: ChastityRule | null;
-  onSave: (rule: Omit<ChastityRule, 'id' | 'createdAt' | 'lastModified'>) => void;
+  onSave: (
+    rule: Omit<ChastityRule, "id" | "createdAt" | "lastModified">,
+  ) => void;
   onCancel: () => void;
 }> = ({ rule, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    title: rule?.title || '',
-    content: rule?.content || '',
+    title: rule?.title || "",
+    content: rule?.content || "",
     isActive: rule?.isActive ?? true,
-    createdBy: rule?.createdBy || 'submissive' as 'submissive' | 'keyholder',
+    createdBy: rule?.createdBy || ("submissive" as "submissive" | "keyholder"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -212,7 +214,7 @@ const RuleEditor: React.FC<{
       <div className="flex items-center gap-3 mb-6">
         <FaEdit className="text-nightly-aquamarine" />
         <h3 className="text-lg font-semibold text-nightly-honeydew">
-          {rule ? 'Edit Rule' : 'Create New Rule'}
+          {rule ? "Edit Rule" : "Create New Rule"}
         </h3>
       </div>
 
@@ -225,7 +227,9 @@ const RuleEditor: React.FC<{
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
             placeholder="Enter a clear, descriptive title"
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
             required
@@ -242,7 +246,9 @@ const RuleEditor: React.FC<{
           </label>
           <textarea
             value={formData.content}
-            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, content: e.target.value }))
+            }
             placeholder={`Describe the rule in detail, including:
 
 **Requirements:**
@@ -271,7 +277,12 @@ const RuleEditor: React.FC<{
             </label>
             <select
               value={formData.createdBy}
-              onChange={(e) => setFormData(prev => ({ ...prev, createdBy: e.target.value as 'submissive' | 'keyholder' }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  createdBy: e.target.value as "submissive" | "keyholder",
+                }))
+              }
               className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
             >
               <option value="submissive">Submissive</option>
@@ -284,7 +295,12 @@ const RuleEditor: React.FC<{
               <input
                 type="checkbox"
                 checked={formData.isActive}
-                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isActive: e.target.checked,
+                  }))
+                }
                 className="mr-2"
               />
               <span className="text-nightly-celadon">Rule is active</span>
@@ -299,7 +315,7 @@ const RuleEditor: React.FC<{
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaSave />
-            {rule ? 'Update Rule' : 'Create Rule'}
+            {rule ? "Update Rule" : "Create Rule"}
           </button>
           <button
             type="button"
@@ -320,48 +336,56 @@ const RulesPage: React.FC = () => {
   const [rules, setRules] = useState<ChastityRule[]>(mockRules);
   const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
 
-  const filteredRules = rules.filter(rule => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return rule.isActive;
-    if (filter === 'inactive') return !rule.isActive;
-    return true;
-  }).sort((a, b) => {
-    // Active rules first, then by last modified
-    if (a.isActive && !b.isActive) return -1;
-    if (!a.isActive && b.isActive) return 1;
-    return b.lastModified.getTime() - a.lastModified.getTime();
-  });
+  const filteredRules = rules
+    .filter((rule) => {
+      if (filter === "all") return true;
+      if (filter === "active") return rule.isActive;
+      if (filter === "inactive") return !rule.isActive;
+      return true;
+    })
+    .sort((a, b) => {
+      // Active rules first, then by last modified
+      if (a.isActive && !b.isActive) return -1;
+      if (!a.isActive && b.isActive) return 1;
+      return b.lastModified.getTime() - a.lastModified.getTime();
+    });
 
   const handleEditRule = (ruleId: string) => {
-    const rule = rules.find(r => r.id === ruleId);
+    const rule = rules.find((r) => r.id === ruleId);
     setEditingRule(rule || null);
     setShowEditor(true);
   };
 
   const handleToggleRule = (ruleId: string) => {
-    setRules(prev => prev.map(rule =>
-      rule.id === ruleId
-        ? { ...rule, isActive: !rule.isActive, lastModified: new Date() }
-        : rule
-    ));
+    setRules((prev) =>
+      prev.map((rule) =>
+        rule.id === ruleId
+          ? { ...rule, isActive: !rule.isActive, lastModified: new Date() }
+          : rule,
+      ),
+    );
   };
 
-  const handleSaveRule = (ruleData: Omit<ChastityRule, 'id' | 'createdAt' | 'lastModified'>) => {
+  const handleSaveRule = (
+    ruleData: Omit<ChastityRule, "id" | "createdAt" | "lastModified">,
+  ) => {
     const now = new Date();
 
     if (editingRule) {
       // Update existing rule
-      setRules(prev => prev.map(rule =>
-        rule.id === editingRule.id
-          ? {
-              ...rule,
-              ...ruleData,
-              lastModified: now,
-            }
-          : rule
-      ));
+      setRules((prev) =>
+        prev.map((rule) =>
+          rule.id === editingRule.id
+            ? {
+                ...rule,
+                ...ruleData,
+                lastModified: now,
+              }
+            : rule,
+        ),
+      );
     } else {
       // Create new rule
       const newRule: ChastityRule = {
@@ -370,7 +394,7 @@ const RulesPage: React.FC = () => {
         createdAt: now,
         lastModified: now,
       };
-      setRules(prev => [newRule, ...prev]);
+      setRules((prev) => [newRule, ...prev]);
     }
 
     setShowEditor(false);
@@ -387,7 +411,10 @@ const RulesPage: React.FC = () => {
       {/* Header */}
       <header className="p-4 border-b border-white/10">
         <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+          <Link
+            to="/dashboard"
+            className="text-nightly-aquamarine hover:text-nightly-spring-green"
+          >
             <FaArrowLeft />
           </Link>
           <h1 className="text-2xl font-bold">Rules</h1>
@@ -401,11 +428,14 @@ const RulesPage: React.FC = () => {
           <div className="flex items-start gap-3">
             <FaInfo className="text-nightly-aquamarine mt-1" />
             <div>
-              <h3 className="font-medium text-nightly-honeydew mb-1">About Rules</h3>
+              <h3 className="font-medium text-nightly-honeydew mb-1">
+                About Rules
+              </h3>
               <p className="text-sm text-nightly-celadon">
-                Rules define the expectations and consequences for your chastity relationship.
-                Both submissives and keyholders can create rules, but only active rules are enforced.
-                Use markdown formatting for better organization.
+                Rules define the expectations and consequences for your chastity
+                relationship. Both submissives and keyholders can create rules,
+                but only active rules are enforced. Use markdown formatting for
+                better organization.
               </p>
             </div>
           </div>
@@ -418,12 +448,18 @@ const RulesPage: React.FC = () => {
               <FaBook className="text-nightly-celadon" />
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                onChange={(e) =>
+                  setFilter(e.target.value as "all" | "active" | "inactive")
+                }
                 className="bg-white/10 border border-white/10 rounded p-2 text-nightly-honeydew"
               >
                 <option value="all">All Rules ({rules.length})</option>
-                <option value="active">Active ({rules.filter(r => r.isActive).length})</option>
-                <option value="inactive">Inactive ({rules.filter(r => !r.isActive).length})</option>
+                <option value="active">
+                  Active ({rules.filter((r) => r.isActive).length})
+                </option>
+                <option value="inactive">
+                  Inactive ({rules.filter((r) => !r.isActive).length})
+                </option>
               </select>
             </div>
 
@@ -457,9 +493,13 @@ const RulesPage: React.FC = () => {
             {filteredRules.length === 0 ? (
               <div className="text-center py-8">
                 <FaBook className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
-                <div className="text-nightly-celadon">No {filter === 'all' ? 'rules' : filter + ' rules'} found</div>
+                <div className="text-nightly-celadon">
+                  No {filter === "all" ? "rules" : filter + " rules"} found
+                </div>
                 <div className="text-sm text-nightly-celadon/70">
-                  {filter === 'all' ? 'Create your first rule to get started' : `Switch to 'All' to see other rules`}
+                  {filter === "all"
+                    ? "Create your first rule to get started"
+                    : `Switch to 'All' to see other rules`}
                 </div>
               </div>
             ) : (
