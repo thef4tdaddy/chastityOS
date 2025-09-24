@@ -27,6 +27,7 @@ export class ChastityDB extends Dexie {
   goals!: Table<DBGoal>;
   settings!: Table<DBSettings>;
   syncMeta!: Table<DBSyncMeta>;
+  offlineQueue!: Table<QueuedOperation>;
 
   constructor() {
     super("ChastityOS");
@@ -57,6 +58,11 @@ export class ChastityDB extends Dexie {
 
       // Sync metadata
       syncMeta: "&collection, lastSync, lastFullSync",
+    });
+
+    // Version 2: Add offlineQueue table
+    this.version(2).stores({
+      offlineQueue: "++id,createdAt",
     });
 
     // Add hooks for automatic timestamp and sync status updates
