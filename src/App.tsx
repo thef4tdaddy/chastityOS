@@ -12,6 +12,7 @@ import {
 } from "./contexts";
 import Dashboard from "./pages/Dashboard";
 import ChastityTracking from "./pages/ChastityTracking";
+import RelationshipsPage from "./pages/RelationshipsPage";
 import Root from "./Root";
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: "/chastity-tracking",
         element: <ChastityTracking />,
+      },
+      {
+        path: "/relationships",
+        element: <RelationshipsPage />,
       },
     ],
   },
