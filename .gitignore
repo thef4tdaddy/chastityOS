@@ -33,6 +33,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Legacy code - no longer maintained
+original-app/
+
 # Playwright
 /test-results/
 /playwright-report/
