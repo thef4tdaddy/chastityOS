@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuthState } from '../contexts';
-import { taskDBService } from '../services/database';
-import type { DBTask, TaskStatus } from '../types/database';
-import { logger } from '../utils/logging';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuthState } from "../contexts";
+import { taskDBService } from "../services/database";
+import type { DBTask, TaskStatus } from "../types/database";
+import { logger } from "../utils/logging";
 import {
   FaCheckCircle,
   FaTimesCircle,
@@ -11,11 +11,11 @@ import {
   FaGavel,
   FaClock,
   FaArrowLeft,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Helper component for countdown timer
 const CountdownTimer: React.FC<{ deadline: Date }> = ({ deadline }) => {
-  const [timeLeft, setTimeLeft] = useState('');
+  const [timeLeft, setTimeLeft] = useState("");
   const [isOverdue, setIsOverdue] = useState(false);
 
   useEffect(() => {
@@ -26,16 +26,20 @@ const CountdownTimer: React.FC<{ deadline: Date }> = ({ deadline }) => {
 
       if (diff <= 0) {
         setIsOverdue(true);
-        setTimeLeft('Overdue');
+        setTimeLeft("Overdue");
         return;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+      );
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      setTimeLeft(`${days}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`);
+      setTimeLeft(
+        `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`,
+      );
     };
 
     updateCountdown();
@@ -45,7 +49,9 @@ const CountdownTimer: React.FC<{ deadline: Date }> = ({ deadline }) => {
   }, [deadline]);
 
   return (
-    <span className={`font-mono ${isOverdue ? 'text-red-400' : 'text-nightly-aquamarine'}`}>
+    <span
+      className={`font-mono ${isOverdue ? "text-red-400" : "text-nightly-aquamarine"}`}
+    >
       {timeLeft}
     </span>
   );
@@ -56,14 +62,14 @@ const TaskItem: React.FC<{
   task: DBTask;
   onSubmit: (taskId: string, note: string) => void;
 }> = ({ task, onSubmit }) => {
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       await onSubmit(task.id, note);
-      setNote('');
+      setNote("");
     } finally {
       setIsSubmitting(false);
     }
@@ -71,41 +77,41 @@ const TaskItem: React.FC<{
 
   const getStatusConfig = (status: TaskStatus) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return {
           icon: <FaClock className="text-nightly-aquamarine" />,
-          text: 'Pending',
-          borderColor: 'border-nightly-aquamarine',
+          text: "Pending",
+          borderColor: "border-nightly-aquamarine",
         };
-      case 'submitted':
+      case "submitted":
         return {
           icon: <FaClock className="text-yellow-400" />,
-          text: 'Submitted',
-          borderColor: 'border-yellow-400',
+          text: "Submitted",
+          borderColor: "border-yellow-400",
         };
-      case 'approved':
+      case "approved":
         return {
           icon: <FaCheckCircle className="text-green-400" />,
-          text: 'Approved',
-          borderColor: 'border-green-400',
+          text: "Approved",
+          borderColor: "border-green-400",
         };
-      case 'rejected':
+      case "rejected":
         return {
           icon: <FaTimesCircle className="text-red-400" />,
-          text: 'Rejected',
-          borderColor: 'border-red-400',
+          text: "Rejected",
+          borderColor: "border-red-400",
         };
-      case 'completed':
+      case "completed":
         return {
           icon: <FaTrophy className="text-nightly-lavender-floral" />,
-          text: 'Completed',
-          borderColor: 'border-nightly-lavender-floral',
+          text: "Completed",
+          borderColor: "border-nightly-lavender-floral",
         };
       default:
         return {
           icon: <FaClock className="text-gray-400" />,
-          text: 'Unknown',
-          borderColor: 'border-gray-400',
+          text: "Unknown",
+          borderColor: "border-gray-400",
         };
     }
   };
@@ -114,7 +120,9 @@ const TaskItem: React.FC<{
   const isOverdue = task.dueDate && new Date() > task.dueDate;
 
   return (
-    <div className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-4 mb-4`}>
+    <div
+      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-4 mb-4`}
+    >
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-2">
@@ -123,12 +131,17 @@ const TaskItem: React.FC<{
             {statusConfig.text}
           </span>
           {task.priority && (
-            <span className={`px-2 py-1 text-xs rounded ${
-              task.priority === 'critical' ? 'bg-red-500/20 text-red-300' :
-              task.priority === 'high' ? 'bg-orange-500/20 text-orange-300' :
-              task.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-              'bg-gray-500/20 text-gray-300'
-            }`}>
+            <span
+              className={`px-2 py-1 text-xs rounded ${
+                task.priority === "critical"
+                  ? "bg-red-500/20 text-red-300"
+                  : task.priority === "high"
+                    ? "bg-orange-500/20 text-orange-300"
+                    : task.priority === "medium"
+                      ? "bg-yellow-500/20 text-yellow-300"
+                      : "bg-gray-500/20 text-gray-300"
+              }`}
+            >
               {task.priority.toUpperCase()}
             </span>
           )}
@@ -170,27 +183,37 @@ const TaskItem: React.FC<{
       {/* Feedback */}
       {task.keyholderFeedback && (
         <div className="bg-nightly-lavender-floral/10 border border-nightly-lavender-floral/20 rounded p-2 mb-3">
-          <div className="text-xs text-nightly-lavender-floral mb-1">Keyholder Feedback:</div>
-          <div className="text-sm text-nightly-honeydew">{task.keyholderFeedback}</div>
+          <div className="text-xs text-nightly-lavender-floral mb-1">
+            Keyholder Feedback:
+          </div>
+          <div className="text-sm text-nightly-honeydew">
+            {task.keyholderFeedback}
+          </div>
         </div>
       )}
 
       {/* Consequence */}
       {task.consequence && (
-        <div className={`rounded p-2 mb-3 ${
-          task.consequence.type === 'reward'
-            ? 'bg-green-500/10 border border-green-500/20'
-            : 'bg-red-500/10 border border-red-500/20'
-        }`}>
+        <div
+          className={`rounded p-2 mb-3 ${
+            task.consequence.type === "reward"
+              ? "bg-green-500/10 border border-green-500/20"
+              : "bg-red-500/10 border border-red-500/20"
+          }`}
+        >
           <div className="flex items-center gap-2">
-            {task.consequence.type === 'reward' ? (
+            {task.consequence.type === "reward" ? (
               <FaTrophy className="text-green-400" />
             ) : (
               <FaGavel className="text-red-400" />
             )}
-            <span className={`text-xs font-medium ${
-              task.consequence.type === 'reward' ? 'text-green-400' : 'text-red-400'
-            }`}>
+            <span
+              className={`text-xs font-medium ${
+                task.consequence.type === "reward"
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
+            >
               {task.consequence.type.toUpperCase()}
             </span>
           </div>
@@ -199,16 +222,15 @@ const TaskItem: React.FC<{
           </div>
           {task.consequence.duration && (
             <div className="text-xs text-nightly-celadon mt-1">
-              Duration: {Math.abs(task.consequence.duration)} seconds {
-                task.consequence.duration > 0 ? 'added' : 'reduced'
-              }
+              Duration: {Math.abs(task.consequence.duration)} seconds{" "}
+              {task.consequence.duration > 0 ? "added" : "reduced"}
             </div>
           )}
         </div>
       )}
 
       {/* Submit section for pending tasks */}
-      {task.status === 'pending' && (
+      {task.status === "pending" && (
         <div className="border-t border-white/10 pt-3">
           <textarea
             value={note}
@@ -222,7 +244,7 @@ const TaskItem: React.FC<{
             disabled={isSubmitting}
             className="mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit for Review'}
+            {isSubmitting ? "Submitting..." : "Submit for Review"}
           </button>
         </div>
       )}
@@ -234,7 +256,7 @@ const TasksPage: React.FC = () => {
   const { user } = useAuthState();
   const [tasks, setTasks] = useState<DBTask[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
+  const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -245,7 +267,7 @@ const TasksPage: React.FC = () => {
         const userTasks = await taskDBService.findByUserId(user.uid);
         setTasks(userTasks);
       } catch (error) {
-        logger.error('Error fetching tasks:', error, 'TasksPage');
+        logger.error("Error fetching tasks:", error, "TasksPage");
       } finally {
         setLoading(false);
       }
@@ -256,30 +278,32 @@ const TasksPage: React.FC = () => {
 
   const handleSubmitTask = async (taskId: string, note: string) => {
     try {
-      await taskDBService.updateTaskStatus(taskId, 'submitted', note);
+      await taskDBService.updateTaskStatus(taskId, "submitted", note);
 
       // Update local state
-      setTasks(prev => prev.map(task =>
-        task.id === taskId
-          ? {
-              ...task,
-              status: 'submitted' as TaskStatus,
-              submittedAt: new Date(),
-              submissiveNote: note
-            }
-          : task
-      ));
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                status: "submitted" as TaskStatus,
+                submittedAt: new Date(),
+                submissiveNote: note,
+              }
+            : task,
+        ),
+      );
     } catch (error) {
-      logger.error('Error submitting task:', error, 'TasksPage');
+      logger.error("Error submitting task:", error, "TasksPage");
     }
   };
 
-  const activeTasks = tasks.filter(task =>
-    ['pending', 'submitted'].includes(task.status)
+  const activeTasks = tasks.filter((task) =>
+    ["pending", "submitted"].includes(task.status),
   );
 
-  const archivedTasks = tasks.filter(task =>
-    ['approved', 'rejected', 'completed', 'cancelled'].includes(task.status)
+  const archivedTasks = tasks.filter((task) =>
+    ["approved", "rejected", "completed", "cancelled"].includes(task.status),
   );
 
   return (
@@ -287,7 +311,10 @@ const TasksPage: React.FC = () => {
       {/* Header */}
       <header className="p-4 border-b border-white/10">
         <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+          <Link
+            to="/dashboard"
+            className="text-nightly-aquamarine hover:text-nightly-spring-green"
+          >
             <FaArrowLeft />
           </Link>
           <h1 className="text-2xl font-bold">Tasks</h1>
@@ -298,21 +325,21 @@ const TasksPage: React.FC = () => {
       <div className="p-4">
         <div className="flex space-x-4 mb-6">
           <button
-            onClick={() => setActiveTab('active')}
+            onClick={() => setActiveTab("active")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'active'
-                ? 'bg-nightly-aquamarine text-black'
-                : 'bg-white/10 text-nightly-celadon hover:bg-white/20'
+              activeTab === "active"
+                ? "bg-nightly-aquamarine text-black"
+                : "bg-white/10 text-nightly-celadon hover:bg-white/20"
             }`}
           >
             Active Tasks ({activeTasks.length})
           </button>
           <button
-            onClick={() => setActiveTab('archived')}
+            onClick={() => setActiveTab("archived")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'archived'
-                ? 'bg-nightly-aquamarine text-black'
-                : 'bg-white/10 text-nightly-celadon hover:bg-white/20'
+              activeTab === "archived"
+                ? "bg-nightly-aquamarine text-black"
+                : "bg-white/10 text-nightly-celadon hover:bg-white/20"
             }`}
           >
             Archived ({archivedTasks.length})
@@ -326,7 +353,7 @@ const TasksPage: React.FC = () => {
           </div>
         ) : (
           <div className="max-w-4xl">
-            {activeTab === 'active' ? (
+            {activeTab === "active" ? (
               activeTasks.length > 0 ? (
                 <div className="space-y-4">
                   {activeTasks.map((task) => (
@@ -342,22 +369,20 @@ const TasksPage: React.FC = () => {
                   <div className="text-nightly-celadon">No active tasks</div>
                 </div>
               )
+            ) : archivedTasks.length > 0 ? (
+              <div className="space-y-4">
+                {archivedTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onSubmit={() => {}} // Archived tasks can't be submitted
+                  />
+                ))}
+              </div>
             ) : (
-              archivedTasks.length > 0 ? (
-                <div className="space-y-4">
-                  {archivedTasks.map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      onSubmit={() => {}} // Archived tasks can't be submitted
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="text-nightly-celadon">No archived tasks</div>
-                </div>
-              )
+              <div className="text-center py-8">
+                <div className="text-nightly-celadon">No archived tasks</div>
+              </div>
             )}
           </div>
         )}

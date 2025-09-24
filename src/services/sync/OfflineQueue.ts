@@ -1,4 +1,3 @@
-
 /**
  * Offline Queue
  * Manages operations that need to be performed when the app is online
@@ -23,7 +22,10 @@ class OfflineQueue {
       createdAt: new Date(),
     };
     await db.offlineQueue.add(queuedOperation as QueuedOperation);
-    logger.debug("Queued operation", { type: operation.type, collection: operation.collectionName });
+    logger.debug("Queued operation", {
+      type: operation.type,
+      collection: operation.collectionName,
+    });
   }
 
   /**

@@ -1,12 +1,14 @@
-
-import React from 'react';
+import React from "react";
 
 interface RestoreSessionPromptProps {
   onConfirm: () => void;
   onDiscard: () => void;
 }
 
-export const RestoreSessionPrompt: React.FC<RestoreSessionPromptProps> = ({ onConfirm, onDiscard }) => {
+export const RestoreSessionPrompt: React.FC<RestoreSessionPromptProps> = ({
+  onConfirm,
+  onDiscard,
+}) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-700 p-6 md:p-8 rounded-xl shadow-lg text-center w-full max-w-md text-gray-50 border border-blue-500">
@@ -14,7 +16,8 @@ export const RestoreSessionPrompt: React.FC<RestoreSessionPromptProps> = ({ onCo
           Restore Previous Session?
         </h3>
         <p className="text-sm text-gray-300 mb-4">
-          An active chastity session was found. Would you like to resume this session or start a new one?
+          An active chastity session was found. Would you like to resume this
+          session or start a new one?
         </p>
         <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
           <button

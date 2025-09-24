@@ -1,4 +1,3 @@
-
 /**
  * Conflict Resolver
  * Implements strategies for resolving data conflicts between local and remote versions
@@ -41,7 +40,8 @@ class ConflictResolver {
     const localStatusIndex = statusOrder.indexOf(local.status);
     const remoteStatusIndex = statusOrder.indexOf(remote.status);
 
-    const resolvedStatus = localStatusIndex > remoteStatusIndex ? local.status : remote.status;
+    const resolvedStatus =
+      localStatusIndex > remoteStatusIndex ? local.status : remote.status;
 
     return {
       ...remote, // remote wins for most fields

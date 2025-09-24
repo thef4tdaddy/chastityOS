@@ -1,9 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuthState } from '../contexts';
-import { sessionDBService, eventDBService, taskDBService, goalDBService } from '../services/database';
-import type { DBSession, DBEvent, DBTask, DBGoal } from '../types/database';
-import { logger } from '../utils/logging';
+import React, { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { useAuthState } from "../contexts";
+import {
+  sessionDBService,
+  eventDBService,
+  taskDBService,
+  goalDBService,
+} from "../services/database";
+import type { DBSession, DBEvent, DBTask, DBGoal } from "../types/database";
+import { logger } from "../utils/logging";
 import {
   FaArrowLeft,
   FaClock,
@@ -15,7 +20,7 @@ import {
   FaChartBar,
   FaHistory,
   FaSpinner,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Current Status Section
 const CurrentStatusSection: React.FC<{
@@ -57,9 +62,15 @@ const CurrentStatusSection: React.FC<{
   };
 
   const getSessionStatus = () => {
-    if (!currentSession) return { status: 'No Active Session', icon: FaStop, color: 'text-gray-400' };
-    if (currentSession.isPaused) return { status: 'Paused', icon: FaPause, color: 'text-yellow-400' };
-    return { status: 'Active', icon: FaPlay, color: 'text-green-400' };
+    if (!currentSession)
+      return {
+        status: "No Active Session",
+        icon: FaStop,
+        color: "text-gray-400",
+      };
+    if (currentSession.isPaused)
+      return { status: "Paused", icon: FaPause, color: "text-yellow-400" };
+    return { status: "Active", icon: FaPlay, color: "text-green-400" };
   };
 
   const sessionStatus = getSessionStatus();
@@ -69,7 +80,9 @@ const CurrentStatusSection: React.FC<{
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaClock className="text-nightly-aquamarine" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">Current Status</h2>
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Current Status
+        </h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -87,7 +100,8 @@ const CurrentStatusSection: React.FC<{
                 {formatDuration(getCurrentSessionDuration())}
               </div>
               <div className="text-sm text-nightly-celadon">
-                Started: {currentSession.startTime.toLocaleDateString()} {currentSession.startTime.toLocaleTimeString()}
+                Started: {currentSession.startTime.toLocaleDateString()}{" "}
+                {currentSession.startTime.toLocaleTimeString()}
               </div>
               {currentSession.goalDuration && (
                 <div className="text-sm text-nightly-celadon">
@@ -105,7 +119,7 @@ const CurrentStatusSection: React.FC<{
               <div className="flex justify-between">
                 <span className="text-nightly-celadon">Mode:</span>
                 <span className="text-nightly-honeydew">
-                  {currentSession.isHardcoreMode ? 'Hardcore' : 'Normal'}
+                  {currentSession.isHardcoreMode ? "Hardcore" : "Normal"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -115,9 +129,13 @@ const CurrentStatusSection: React.FC<{
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-nightly-celadon">Keyholder Approval:</span>
+                <span className="text-nightly-celadon">
+                  Keyholder Approval:
+                </span>
                 <span className="text-nightly-honeydew">
-                  {currentSession.keyholderApprovalRequired ? 'Required' : 'Not Required'}
+                  {currentSession.keyholderApprovalRequired
+                    ? "Required"
+                    : "Not Required"}
                 </span>
               </div>
             </>
@@ -136,26 +154,36 @@ const StatisticsSection: React.FC<{
   goals: DBGoal[];
 }> = ({ sessions, events, tasks, goals }) => {
   const stats = useMemo(() => {
-    const completedSessions = sessions.filter(s => s.endTime);
+    const completedSessions = sessions.filter((s) => s.endTime);
     const totalChastityTime = completedSessions.reduce((acc, session) => {
       if (session.endTime) {
-        const duration = Math.floor((session.endTime.getTime() - session.startTime.getTime()) / 1000);
+        const duration = Math.floor(
+          (session.endTime.getTime() - session.startTime.getTime()) / 1000,
+        );
         return acc + Math.max(0, duration - session.accumulatedPauseTime);
       }
       return acc;
     }, 0);
 
-    const totalPauseTime = sessions.reduce((acc, session) => acc + session.accumulatedPauseTime, 0);
-    const completedTasks = tasks.filter(t => t.status === 'completed').length;
-    const completedGoals = goals.filter(g => g.isCompleted).length;
+    const totalPauseTime = sessions.reduce(
+      (acc, session) => acc + session.accumulatedPauseTime,
+      0,
+    );
+    const completedTasks = tasks.filter((t) => t.status === "completed").length;
+    const completedGoals = goals.filter((g) => g.isCompleted).length;
 
-    const longestSession = Math.max(...completedSessions.map(s => {
-      if (s.endTime) {
-        const duration = Math.floor((s.endTime.getTime() - s.startTime.getTime()) / 1000);
-        return Math.max(0, duration - s.accumulatedPauseTime);
-      }
-      return 0;
-    }), 0);
+    const longestSession = Math.max(
+      ...completedSessions.map((s) => {
+        if (s.endTime) {
+          const duration = Math.floor(
+            (s.endTime.getTime() - s.startTime.getTime()) / 1000,
+          );
+          return Math.max(0, duration - s.accumulatedPauseTime);
+        }
+        return 0;
+      }),
+      0,
+    );
 
     return {
       totalSessions: sessions.length,
@@ -184,21 +212,39 @@ const StatisticsSection: React.FC<{
   };
 
   const statItems = [
-    { label: 'Total Sessions', value: stats.totalSessions, icon: FaPlay },
-    { label: 'Completed Sessions', value: stats.completedSessions, icon: FaStop },
-    { label: 'Total Chastity Time', value: formatDuration(stats.totalChastityTime), icon: FaClock },
-    { label: 'Total Pause Time', value: formatDuration(stats.totalPauseTime), icon: FaPause },
-    { label: 'Longest Session', value: formatDuration(stats.longestSession), icon: FaTrophy },
-    { label: 'Completed Tasks', value: stats.completedTasks, icon: FaChartBar },
-    { label: 'Completed Goals', value: stats.completedGoals, icon: FaTrophy },
-    { label: 'Total Events', value: stats.totalEvents, icon: FaHistory },
+    { label: "Total Sessions", value: stats.totalSessions, icon: FaPlay },
+    {
+      label: "Completed Sessions",
+      value: stats.completedSessions,
+      icon: FaStop,
+    },
+    {
+      label: "Total Chastity Time",
+      value: formatDuration(stats.totalChastityTime),
+      icon: FaClock,
+    },
+    {
+      label: "Total Pause Time",
+      value: formatDuration(stats.totalPauseTime),
+      icon: FaPause,
+    },
+    {
+      label: "Longest Session",
+      value: formatDuration(stats.longestSession),
+      icon: FaTrophy,
+    },
+    { label: "Completed Tasks", value: stats.completedTasks, icon: FaChartBar },
+    { label: "Completed Goals", value: stats.completedGoals, icon: FaTrophy },
+    { label: "Total Events", value: stats.totalEvents, icon: FaHistory },
   ];
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaChartBar className="text-nightly-lavender-floral" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">Statistics</h2>
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Statistics
+        </h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -210,9 +256,7 @@ const StatisticsSection: React.FC<{
               <div className="text-lg font-semibold text-nightly-honeydew mb-1">
                 {item.value}
               </div>
-              <div className="text-sm text-nightly-celadon">
-                {item.label}
-              </div>
+              <div className="text-sm text-nightly-celadon">{item.label}</div>
             </div>
           );
         })}
@@ -222,14 +266,20 @@ const StatisticsSection: React.FC<{
 };
 
 // Session History Section
-const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({ sessions }) => {
+const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
+  sessions,
+}) => {
   const [showAll, setShowAll] = useState(false);
 
   const sortedSessions = useMemo(() => {
-    return [...sessions].sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+    return [...sessions].sort(
+      (a, b) => b.startTime.getTime() - a.startTime.getTime(),
+    );
   }, [sessions]);
 
-  const displaySessions = showAll ? sortedSessions : sortedSessions.slice(0, 10);
+  const displaySessions = showAll
+    ? sortedSessions
+    : sortedSessions.slice(0, 10);
 
   const formatDuration = (seconds: number) => {
     const days = Math.floor(seconds / (24 * 60 * 60));
@@ -247,7 +297,9 @@ const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({ sessions }
 
   const getSessionDuration = (session: DBSession) => {
     if (!session.endTime) return 0;
-    const totalDuration = Math.floor((session.endTime.getTime() - session.startTime.getTime()) / 1000);
+    const totalDuration = Math.floor(
+      (session.endTime.getTime() - session.startTime.getTime()) / 1000,
+    );
     return Math.max(0, totalDuration - session.accumulatedPauseTime);
   };
 
@@ -256,14 +308,16 @@ const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({ sessions }
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FaHistory className="text-nightly-spring-green" />
-          <h2 className="text-xl font-semibold text-nightly-honeydew">Session History</h2>
+          <h2 className="text-xl font-semibold text-nightly-honeydew">
+            Session History
+          </h2>
         </div>
         {sessions.length > 10 && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="text-nightly-aquamarine hover:text-nightly-spring-green transition-colors"
           >
-            {showAll ? 'Show Less' : `Show All (${sessions.length})`}
+            {showAll ? "Show Less" : `Show All (${sessions.length})`}
           </button>
         )}
       </div>
@@ -280,23 +334,27 @@ const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({ sessions }
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium text-nightly-honeydew">
-                    {session.startTime.toLocaleDateString()} {session.startTime.toLocaleTimeString()}
+                    {session.startTime.toLocaleDateString()}{" "}
+                    {session.startTime.toLocaleTimeString()}
                   </div>
                   <div className="text-sm text-nightly-celadon">
                     {session.endTime ? (
                       <>
-                        Ended: {session.endTime.toLocaleDateString()} {session.endTime.toLocaleTimeString()}
+                        Ended: {session.endTime.toLocaleDateString()}{" "}
+                        {session.endTime.toLocaleTimeString()}
                         {session.endReason && ` (${session.endReason})`}
                       </>
                     ) : (
-                      'Active Session'
+                      "Active Session"
                     )}
                   </div>
                 </div>
 
                 <div className="text-right">
                   <div className="font-mono text-nightly-honeydew">
-                    {session.endTime ? formatDuration(getSessionDuration(session)) : 'Ongoing'}
+                    {session.endTime
+                      ? formatDuration(getSessionDuration(session))
+                      : "Ongoing"}
                   </div>
                   {session.accumulatedPauseTime > 0 && (
                     <div className="text-xs text-yellow-400">
@@ -341,19 +399,14 @@ const FullReportPage: React.FC = () => {
       try {
         setLoading(true);
 
-        const [
-          currentSessionData,
-          sessionData,
-          eventData,
-          taskData,
-          goalData,
-        ] = await Promise.all([
-          sessionDBService.getCurrentSession(user.uid),
-          sessionDBService.findByUserId(user.uid),
-          eventDBService.findByUserId(user.uid),
-          taskDBService.findByUserId(user.uid),
-          goalDBService.findByUserId(user.uid),
-        ]);
+        const [currentSessionData, sessionData, eventData, taskData, goalData] =
+          await Promise.all([
+            sessionDBService.getCurrentSession(user.uid),
+            sessionDBService.findByUserId(user.uid),
+            eventDBService.findByUserId(user.uid),
+            taskDBService.findByUserId(user.uid),
+            goalDBService.findByUserId(user.uid),
+          ]);
 
         setCurrentSession(currentSessionData || null);
         setSessions(sessionData);
@@ -361,7 +414,7 @@ const FullReportPage: React.FC = () => {
         setTasks(taskData);
         setGoals(goalData);
       } catch (error) {
-        logger.error('Error fetching report data:', error, 'FullReportPage');
+        logger.error("Error fetching report data:", error, "FullReportPage");
       } finally {
         setLoading(false);
       }
@@ -375,7 +428,10 @@ const FullReportPage: React.FC = () => {
       {/* Header */}
       <header className="p-4 border-b border-white/10">
         <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-nightly-aquamarine hover:text-nightly-spring-green">
+          <Link
+            to="/dashboard"
+            className="text-nightly-aquamarine hover:text-nightly-spring-green"
+          >
             <FaArrowLeft />
           </Link>
           <h1 className="text-2xl font-bold">Full Report</h1>
@@ -392,7 +448,12 @@ const FullReportPage: React.FC = () => {
         ) : (
           <>
             <CurrentStatusSection currentSession={currentSession} />
-            <StatisticsSection sessions={sessions} events={events} tasks={tasks} goals={goals} />
+            <StatisticsSection
+              sessions={sessions}
+              events={events}
+              tasks={tasks}
+              goals={goals}
+            />
             <SessionHistorySection sessions={sessions} />
           </>
         )}
