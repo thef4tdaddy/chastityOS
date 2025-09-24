@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { logger } from "../utils/logging";
 import {
-  FaArrowLeft,
   FaUser,
   FaCalendar,
   FaClock,
@@ -385,19 +384,7 @@ const PublicProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-        <header className="p-4 border-b border-white/10">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard"
-              className="text-nightly-aquamarine hover:text-nightly-spring-green"
-            >
-              <FaArrowLeft />
-            </Link>
-            <h1 className="text-2xl font-bold">Profile</h1>
-          </div>
-        </header>
-
+      <div className="text-nightly-spring-green">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin w-8 h-8 border-2 border-nightly-aquamarine border-t-transparent rounded-full mb-4 mx-auto"></div>
@@ -410,19 +397,7 @@ const PublicProfilePage: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-        <header className="p-4 border-b border-white/10">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard"
-              className="text-nightly-aquamarine hover:text-nightly-spring-green"
-            >
-              <FaArrowLeft />
-            </Link>
-            <h1 className="text-2xl font-bold">Profile</h1>
-          </div>
-        </header>
-
+      <div className="text-nightly-spring-green">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <FaUser className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
@@ -438,19 +413,7 @@ const PublicProfilePage: React.FC = () => {
 
   if (!profile.isPublic && !isOwnProfile) {
     return (
-      <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-        <header className="p-4 border-b border-white/10">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard"
-              className="text-nightly-aquamarine hover:text-nightly-spring-green"
-            >
-              <FaArrowLeft />
-            </Link>
-            <h1 className="text-2xl font-bold">Profile</h1>
-          </div>
-        </header>
-
+      <div className="text-nightly-spring-green">
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <FaShield className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
@@ -465,22 +428,7 @@ const PublicProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">
-            {isOwnProfile ? "My Profile" : `${profile.displayName}'s Profile`}
-          </h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       {/* Content */}
       <div className="p-4 max-w-4xl mx-auto">
         <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />

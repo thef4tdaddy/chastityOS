@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { eventDBService } from "../services/database";
 import type { DBEvent, EventType } from "../types/database";
 import { LogEventForm, EventList } from "../components/log_event";
 import { logger } from "../utils/logging";
-import { FaArrowLeft, FaSpinner } from "react-icons/fa";
+import { FaSpinner } from "react-icons/fa";
 
 const LogEventPage: React.FC = () => {
   const { user } = useAuthState();
@@ -48,20 +47,7 @@ const LogEventPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green">
-      {/* Header */}
-      <header className="p-4 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-nightly-aquamarine hover:text-nightly-spring-green"
-          >
-            <FaArrowLeft />
-          </Link>
-          <h1 className="text-2xl font-bold">Log Event</h1>
-        </div>
-      </header>
-
+    <div className="text-nightly-spring-green">
       {/* Content */}
       <div className="p-4 max-w-4xl">
         <LogEventForm onEventLogged={handleEventLogged} />

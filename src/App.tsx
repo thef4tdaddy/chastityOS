@@ -6,8 +6,18 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./hooks/api/queryClient";
 import { AuthProvider, AppProvider } from "./contexts";
+
+// Pages
 import Dashboard from "./pages/Dashboard";
 import ChastityTracking from "./pages/ChastityTracking";
+import TasksPage from "./pages/TasksPage";
+import LogEventPage from "./pages/LogEventPage";
+import RewardsPunishmentsPage from "./pages/RewardsPunishmentsPage";
+import RulesPage from "./pages/RulesPage";
+import FullReportPage from "./pages/FullReportPage";
+import SettingsPage from "./pages/SettingsPage";
+import KeyholderPage from "./pages/KeyholderPage";
+import PublicProfilePage from "./pages/PublicProfilePage";
 import Root from "./Root";
 
 const router = createBrowserRouter([
@@ -22,6 +32,38 @@ const router = createBrowserRouter([
       {
         path: "/chastity-tracking",
         element: <ChastityTracking />,
+      },
+      {
+        path: "/tasks",
+        element: <TasksPage />,
+      },
+      {
+        path: "/log-event",
+        element: <LogEventPage />,
+      },
+      {
+        path: "/rewards-punishments",
+        element: <RewardsPunishmentsPage />,
+      },
+      {
+        path: "/rules",
+        element: <RulesPage />,
+      },
+      {
+        path: "/full-report",
+        element: <FullReportPage />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsPage />,
+      },
+      {
+        path: "/keyholder",
+        element: <KeyholderPage />,
+      },
+      {
+        path: "/public-profile/:userId",
+        element: <PublicProfilePage />,
       },
     ],
   },
