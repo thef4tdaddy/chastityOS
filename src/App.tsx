@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { firebaseListeners } from "./services/sync";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -66,6 +67,13 @@ const AppContent: React.FC = () => {
 };
 
 function App(): React.ReactElement {
+  useEffect(() => {
+    firebaseListeners.start();
+    return () => {
+      firebaseListeners.stop();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>

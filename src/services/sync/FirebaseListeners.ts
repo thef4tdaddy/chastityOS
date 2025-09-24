@@ -6,13 +6,16 @@
 import { serviceLogger } from "@/utils/logging";
 import { getFirestore, getFirebaseAuth } from "../firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
+import type { FirebaseSync } from "./FirebaseSync";
 
 const logger = serviceLogger("FirebaseListeners");
 
-class FirebaseListeners {
+export class FirebaseListeners {
   private unsubscribes: (() => void)[] = [];
+  private firebaseSync: FirebaseSync;
 
-  constructor() {
+  constructor(firebaseSync: FirebaseSync) {
+    this.firebaseSync = firebaseSync;
     logger.info("FirebaseListeners initialized");
   }
 
@@ -55,15 +58,14 @@ class FirebaseListeners {
         );
     
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            querySnapshot.docChanges().forEach(change => {
-            logger.debug(`Received real-time update for ${collectionName}`, { type: change.type, docId: change.doc.id });
-            // TODO: Handle the change (update Dexie, invalidate TanStack Query cache)
-            });
+            const changes = querySnapshot.docChanges().map(change => ({ id: change.doc.id, ...change.doc.data() }));
+            if (changes.length > 0) {
+                logger.debug(`Received ${changes.length} real-time updates for ${collectionName}`);
+                this.firebaseSync.applyRemoteChanges(collectionName, changes);
+            }
         });
     
         this.unsubscribes.push(unsubscribe);
     });
   }
 }
-
-export const firebaseListeners = new FirebaseListeners();
