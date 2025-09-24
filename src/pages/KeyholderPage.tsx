@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { useAuthState } from '../contexts';
 import { useKeyholderStore } from '../stores/keyholderStore';
 import { sessionDBService, taskDBService } from '../services/database';
-import type { DBSession, DBTask } from '../types/database';
+import type { DBSession, DBTask, TaskStatus } from '../types/database';
 import {
   KeyholderPasswordUnlock,
   AccountLinkingPreview,
   SessionControls,
   TaskManagement
 } from '../components/keyholder';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaLock,
@@ -17,7 +18,6 @@ import {
   FaEye,
   FaSpinner,
 } from 'react-icons/fa';
-
 
 
 const KeyholderPage: React.FC = () => {
@@ -41,7 +41,7 @@ const KeyholderPage: React.FC = () => {
         setCurrentSession(session || null);
         setTasks(userTasks);
       } catch (error) {
-        console.error('Error fetching keyholder data:', error);
+        logger.error('Error fetching keyholder data:', error, 'KeyholderPage');
       } finally {
         setLoading(false);
       }

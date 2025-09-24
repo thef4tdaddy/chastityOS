@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthState } from '../contexts';
 import { eventDBService } from '../services/database';
-import type { DBEvent } from '../types/database';
+import type { DBEvent, EventType } from '../types/database';
 import { LogEventForm, EventList } from '../components/log_event';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaSpinner,
@@ -25,7 +26,7 @@ const LogEventPage: React.FC = () => {
         userEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         setEvents(userEvents);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        logger.error('Error fetching events:', error, 'LogEventPage');
       } finally {
         setLoading(false);
       }

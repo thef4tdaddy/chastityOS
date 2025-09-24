@@ -4,6 +4,7 @@ import { useAuthState } from '../contexts';
 import { taskDBService } from '../services/database';
 import type { DBTask, TaskStatus } from '../types/database';
 import { TaskItem } from '../components/tasks';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
 } from 'react-icons/fa';
@@ -23,7 +24,7 @@ const TasksPage: React.FC = () => {
         const userTasks = await taskDBService.findByUserId(user.uid);
         setTasks(userTasks);
       } catch (error) {
-        console.error('Error fetching tasks:', error);
+        logger.error('Error fetching tasks:', error, 'TasksPage');
       } finally {
         setLoading(false);
       }
@@ -48,7 +49,7 @@ const TasksPage: React.FC = () => {
           : task
       ));
     } catch (error) {
-      console.error('Error submitting task:', error);
+      logger.error('Error submitting task:', error, 'TasksPage');
     }
   };
 
