@@ -9,7 +9,7 @@ import {
   FaGamepad,
   FaTint,
   FaSpinner,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [

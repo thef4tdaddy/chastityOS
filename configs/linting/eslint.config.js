@@ -97,7 +97,7 @@ export default [
       // Block React Context usage for server data - enforce TanStack Query + Zustand architecture
       // Block direct icon imports - enforce centralized icon utility
       "no-restricted-imports": [
-        "warn", // Start with warn to allow gradual migration
+        "error", // Changed from warn to error after migration complete
         {
           paths: [
             {
