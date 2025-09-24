@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FeatureCard } from '../components/dashboard/FeatureCard';
 import { sessionDBService } from '../services/database';
 import { useAuthState } from '../contexts';
@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
         <div className="text-2xl font-bold">ChastityOS</div>
         {/* Hamburger menu for mobile, full nav for desktop */}
         <nav className="hidden md:flex space-x-4">
-          <a href="#" className="hover:text-nightly-celadon">Chastity Tracking</a>
+          <Link to="/chastity-tracking" className="hover:text-nightly-celadon">Chastity Tracking</Link>
           <a href="#" className="hover:text-nightly-celadon">Tasks</a>
           <a href="#" className="hover:text-nightly-celadon">Rewards/Punishments</a>
           <a href="#" className="hover:text-nightly-celadon">Full Report</a>
@@ -42,11 +42,13 @@ const Dashboard: React.FC = () => {
         <h1 className="text-4xl font-bold text-center mb-8">Welcome to ChastityOS Dashboard</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <FeatureCard
-            title="Chastity Tracker"
-            description={`Current Session: ${sessionDuration}`}
-            accentColor="aquamarine"
-          />
+          <Link to="/chastity-tracking">
+            <FeatureCard
+              title="Chastity Tracker"
+              description={`Current Session: ${sessionDuration}`}
+              accentColor="aquamarine"
+            />
+          </Link>
           <FeatureCard
             title="Log Event"
             description="Record new events"

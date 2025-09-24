@@ -1,4 +1,6 @@
+
 import React, { useEffect } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { firebaseListeners } from "./services/sync";
 
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -9,6 +11,25 @@ import {
   AppProvider,
 } from "./contexts";
 import Dashboard from "./pages/Dashboard";
+import ChastityTracking from "./pages/ChastityTracking";
+import Root from "./Root";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    children: [
+      {
+        path: "/",
+        element: <Dashboard />,
+      },
+      {
+        path: "/chastity-tracking",
+        element: <ChastityTracking />,
+      },
+    ],
+  },
+]);
 
 function App(): React.ReactElement {
   useEffect(() => {
@@ -22,7 +43,7 @@ function App(): React.ReactElement {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <AuthProvider>
-          <Dashboard />
+          <RouterProvider router={router} />
           <ReactQueryDevtools initialIsOpen={false} />
         </AuthProvider>
       </AppProvider>
