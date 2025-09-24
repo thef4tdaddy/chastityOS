@@ -21,8 +21,14 @@ export type TaskStatus =
   | "completed"
   | "cancelled";
 
-export interface DBUser {
-  uid: string;
+export interface DBBase {
+  id: string;
+  userId: string;
+  syncStatus: SyncStatus;
+  lastModified: Date;
+}
+
+export interface DBUser extends DBBase {
   email?: string;
   displayName?: string;
   role: "submissive" | "keyholder" | "both";
@@ -45,9 +51,7 @@ export interface DBUser {
   createdAt: Date;
 }
 
-export interface DBSession {
-  id: string;
-  userId: string;
+export interface DBSession extends DBBase {
   startTime: Date;
   endTime?: Date;
   isPaused: boolean;
@@ -58,13 +62,9 @@ export interface DBSession {
   keyholderApprovalRequired: boolean;
   endReason?: string;
   notes?: string;
-  syncStatus: SyncStatus;
-  lastModified: Date;
 }
 
-export interface DBEvent {
-  id: string;
-  userId: string;
+export interface DBEvent extends DBBase {
   sessionId?: string;
   type: EventType;
   timestamp: Date;
@@ -78,13 +78,9 @@ export interface DBEvent {
     tags?: string[];
   };
   isPrivate: boolean;
-  syncStatus: SyncStatus;
-  lastModified: Date;
 }
 
-export interface DBTask {
-  id: string;
-  userId: string;
+export interface DBTask extends DBBase {
   text: string;
   description?: string;
   status: TaskStatus;
@@ -102,13 +98,9 @@ export interface DBTask {
     duration?: number; // Additional/reduced chastity time in seconds
     description?: string;
   };
-  syncStatus: SyncStatus;
-  lastModified: Date;
 }
 
-export interface DBGoal {
-  id: string;
-  userId: string;
+export interface DBGoal extends DBBase {
   type: "duration" | "task_completion" | "behavioral" | "milestone";
   title: string;
   description?: string;
@@ -121,13 +113,9 @@ export interface DBGoal {
   dueDate?: Date;
   createdBy: "submissive" | "keyholder";
   isPublic: boolean;
-  syncStatus: SyncStatus;
-  lastModified: Date;
 }
 
-export interface DBSettings {
-  id: string;
-  userId: string;
+export interface DBSettings extends DBBase {
   theme: "light" | "dark" | "auto";
   notifications: {
     enabled: boolean;
@@ -155,8 +143,6 @@ export interface DBSettings {
     timeFormat: "12h" | "24h";
     startOfWeek: "monday" | "sunday";
   };
-  syncStatus: SyncStatus;
-  lastModified: Date;
 }
 
 export interface SyncOperation {
@@ -237,10 +223,10 @@ export interface TaskFilters {
   hasConsequence?: boolean;
 }
 
-export interface QueuedOperation {
+export interface QueuedOperation<T extends DBBase> {
   id?: number;
   type: "create" | "update" | "delete";
   collectionName: string;
-  payload: any;
+  payload: T;
   createdAt: Date;
 }

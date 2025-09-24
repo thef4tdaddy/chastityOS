@@ -5,7 +5,7 @@
  */
 import { serviceLogger } from "@/utils/logging";
 import { getFirestore, getFirebaseAuth } from "../firebase";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query } from "firebase/firestore";
 import type { FirebaseSync } from "./FirebaseSync";
 
 const logger = serviceLogger("FirebaseListeners");

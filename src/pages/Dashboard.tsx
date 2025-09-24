@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { FeatureCard } from '../components/dashboard/FeatureCard';
 import { sessionDBService } from '../services/database';
 import { useAuthState } from '../contexts';
-import { DBSession } from '@/types';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthState();
-  const [sessionDuration, setSessionDuration] = useState('0s';
+  const [sessionDuration, setSessionDuration] = useState('0s');
 
   useEffect(() => {
     if (user) {

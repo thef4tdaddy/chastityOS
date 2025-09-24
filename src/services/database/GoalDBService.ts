@@ -19,29 +19,27 @@ class GoalDBService extends BaseDBService<DBGoal> {
   /**
    * Add a new goal
    */
-  async addGoal(
-    userId: string,
-    title: string,
-    type: DBGoal["type"],
-    targetValue: number,
-    unit: string,
-    options: {
-      description?: string;
-      dueDate?: Date;
-      isPublic?: boolean;
-      createdBy?: DBGoal["createdBy"];
-    } = {}
-  ): Promise<string> {
+  async addGoal(options: {
+    userId: string;
+    title: string;
+    type: DBGoal["type"];
+    targetValue: number;
+    unit: string;
+    description?: string;
+    dueDate?: Date;
+    isPublic?: boolean;
+    createdBy?: DBGoal["createdBy"];
+  }): Promise<string> {
     try {
       const goalId = generateUUID();
       const goal: Omit<DBGoal, "lastModified" | "syncStatus"> = {
         id: goalId,
-        userId,
-        title,
-        type,
-        targetValue,
+        userId: options.userId,
+        title: options.title,
+        type: options.type,
+        targetValue: options.targetValue,
         currentValue: 0,
-        unit,
+        unit: options.unit,
         isCompleted: false,
         createdAt: new Date(),
         description: options.description,
@@ -52,13 +50,13 @@ class GoalDBService extends BaseDBService<DBGoal> {
 
       await this.create(goal);
 
-      logger.info("Added new goal", { goalId, userId, title });
+      logger.info("Added new goal", { goalId, userId: options.userId, title: options.title });
       return goalId;
     } catch (error) {
       logger.error("Failed to add goal", {
         error: error as Error,
-        userId,
-        title,
+        userId: options.userId,
+        title: options.title,
       });
       throw error;
     }
