@@ -1,11 +1,6 @@
-import React from 'react';
-import { useKeyholderStore } from '../../stores/keyholderStore';
-import {
-  FaLock,
-  FaUnlock,
-  FaKey,
-  FaSpinner,
-} from 'react-icons/fa';
+import React from "react";
+import { useKeyholderStore } from "../../stores/keyholderStore";
+import { FaLock, FaUnlock, FaKey, FaSpinner } from "react-icons/fa";
 
 // Password Unlock Component
 export const KeyholderPasswordUnlock: React.FC = () => {
@@ -26,7 +21,7 @@ export const KeyholderPasswordUnlock: React.FC = () => {
     if (!passwordAttempt.trim()) return;
 
     // For demo - in real app this would come from settings
-    const storedHash = 'demo_password_hash'; // This would be from user settings
+    const storedHash = "demo_password_hash"; // This would be from user settings
     await checkPassword(passwordAttempt, storedHash);
   };
 
@@ -35,7 +30,9 @@ export const KeyholderPasswordUnlock: React.FC = () => {
       <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
         <div className="flex items-center gap-3">
           <FaUnlock className="text-green-400" />
-          <span className="text-green-400 font-medium">Keyholder Controls Unlocked</span>
+          <span className="text-green-400 font-medium">
+            Keyholder Controls Unlocked
+          </span>
         </div>
         <p className="text-nightly-celadon text-sm mt-2">
           You have temporary admin access to this account's chastity controls.
@@ -48,12 +45,14 @@ export const KeyholderPasswordUnlock: React.FC = () => {
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
       <div className="flex items-center gap-3 mb-4">
         <FaLock className="text-nightly-aquamarine" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">Temporary Keyholder Access</h2>
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Temporary Keyholder Access
+        </h2>
       </div>
 
       <p className="text-nightly-celadon mb-4">
-        This is the current temporary password-based keyholder system. In the future,
-        this will be replaced with secure account linking.
+        This is the current temporary password-based keyholder system. In the
+        future, this will be replaced with secure account linking.
       </p>
 
       {!isPasswordDialogOpen ? (

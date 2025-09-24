@@ -1,24 +1,23 @@
-import React from 'react';
-import type { DBSession } from '../../types/database';
-import {
-  FaClock,
-  FaPlay,
-  FaPause,
-  FaStop,
-} from 'react-icons/fa';
+import React from "react";
+import type { DBSession } from "../../types/database";
+import { FaClock, FaPlay, FaPause, FaStop } from "react-icons/fa";
 
 // Current Session Control (for unlocked keyholder mode)
 interface SessionControlsProps {
   session: DBSession | null;
 }
 
-export const SessionControls: React.FC<SessionControlsProps> = ({ session }) => {
+export const SessionControls: React.FC<SessionControlsProps> = ({
+  session,
+}) => {
   if (!session) {
     return (
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
         <div className="flex items-center gap-3 mb-4">
           <FaClock className="text-nightly-aquamarine" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">Session Control</h3>
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Session Control
+          </h3>
         </div>
         <p className="text-nightly-celadon">No active session to control.</p>
       </div>
@@ -35,7 +34,9 @@ export const SessionControls: React.FC<SessionControlsProps> = ({ session }) => 
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
       <div className="flex items-center gap-3 mb-4">
         <FaClock className="text-nightly-aquamarine" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">Session Control</h3>
+        <h3 className="text-lg font-semibold text-nightly-honeydew">
+          Session Control
+        </h3>
       </div>
 
       <div className="space-y-4">
@@ -59,7 +60,8 @@ export const SessionControls: React.FC<SessionControlsProps> = ({ session }) => 
         <div className="flex items-center justify-between">
           <span className="text-nightly-celadon">Started:</span>
           <span className="text-nightly-honeydew">
-            {session.startTime.toLocaleDateString()} {session.startTime.toLocaleTimeString()}
+            {session.startTime.toLocaleDateString()}{" "}
+            {session.startTime.toLocaleTimeString()}
           </span>
         </div>
 

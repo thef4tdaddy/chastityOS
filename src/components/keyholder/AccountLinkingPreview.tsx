@@ -1,30 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   FaUserShield,
   FaLink,
   FaUsers,
   FaQrcode,
   FaClipboard,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 // Future Account Linking Preview Component
 export const AccountLinkingPreview: React.FC = () => {
   const [showLinkingDemo, setShowLinkingDemo] = useState(false);
-  const [linkCode] = useState('CHY-X9K2-P7M4'); // Demo code
+  const [linkCode] = useState("CHY-X9K2-P7M4"); // Demo code
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
       <div className="flex items-center gap-3 mb-4">
         <FaUserShield className="text-nightly-lavender-floral" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">Account Linking (Coming Soon)</h2>
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Account Linking (Coming Soon)
+        </h2>
         <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded">
           PREVIEW
         </span>
       </div>
 
       <p className="text-nightly-celadon mb-4">
-        The future keyholder system will use secure account linking instead of shared passwords.
-        This provides better security and proper multi-user support.
+        The future keyholder system will use secure account linking instead of
+        shared passwords. This provides better security and proper multi-user
+        support.
       </p>
 
       <div className="space-y-4">
@@ -60,17 +63,23 @@ export const AccountLinkingPreview: React.FC = () => {
           onClick={() => setShowLinkingDemo(!showLinkingDemo)}
           className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors"
         >
-          {showLinkingDemo ? 'Hide Demo' : 'Preview Linking Process'}
+          {showLinkingDemo ? "Hide Demo" : "Preview Linking Process"}
         </button>
 
         {showLinkingDemo && (
           <div className="bg-white/5 rounded-lg p-4 space-y-4">
-            <h4 className="font-medium text-nightly-honeydew">Demo: Link Code Generation</h4>
+            <h4 className="font-medium text-nightly-honeydew">
+              Demo: Link Code Generation
+            </h4>
 
             <div className="bg-black/20 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-nightly-celadon text-sm">Your Link Code:</span>
-                <span className="text-xs text-nightly-celadon">Expires in 23h 45m</span>
+                <span className="text-nightly-celadon text-sm">
+                  Your Link Code:
+                </span>
+                <span className="text-xs text-nightly-celadon">
+                  Expires in 23h 45m
+                </span>
               </div>
 
               <div className="flex items-center gap-3 mb-3">
@@ -95,12 +104,12 @@ export const AccountLinkingPreview: React.FC = () => {
 
             <div className="text-sm text-nightly-celadon">
               <p className="mb-2">
-                <strong>Secure Sharing:</strong> Share this code privately with your keyholder via text,
-                voice, QR code, or encrypted email.
+                <strong>Secure Sharing:</strong> Share this code privately with
+                your keyholder via text, voice, QR code, or encrypted email.
               </p>
               <p>
-                <strong>One-Time Use:</strong> Code expires in 24 hours or after first use.
-                You can disconnect the keyholder anytime.
+                <strong>One-Time Use:</strong> Code expires in 24 hours or after
+                first use. You can disconnect the keyholder anytime.
               </p>
             </div>
           </div>

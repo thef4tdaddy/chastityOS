@@ -1,9 +1,5 @@
-import React from 'react';
-import {
-  FaEdit,
-  FaLock,
-  FaUnlock,
-} from 'react-icons/fa';
+import React from "react";
+import { FaEdit, FaLock, FaUnlock } from "react-icons/fa";
 
 // Mock rules interface
 export interface ChastityRule {
@@ -11,7 +7,7 @@ export interface ChastityRule {
   title: string;
   content: string;
   isActive: boolean;
-  createdBy: 'submissive' | 'keyholder';
+  createdBy: "submissive" | "keyholder";
   createdAt: Date;
   lastModified: Date;
 }
@@ -24,35 +20,38 @@ interface RuleCardProps {
   onToggle?: (ruleId: string) => void;
 }
 
-export const RuleCard: React.FC<RuleCardProps> = ({ rule, isEditable, onEdit, onToggle }) => {
+export const RuleCard: React.FC<RuleCardProps> = ({
+  rule,
+  isEditable,
+  onEdit,
+  onToggle,
+}) => {
   const formatMarkdownToReact = (content: string) => {
     // Simple markdown-to-HTML conversion (in real app, use a proper library)
-    return content
-      .split('\n')
-      .map((line, index) => {
-        if (line.startsWith('**') && line.endsWith('**')) {
-          return (
-            <strong key={index} className="text-nightly-honeydew">
-              {line.slice(2, -2)}
-            </strong>
-          );
-        }
-        if (line.startsWith('- ')) {
-          return (
-            <li key={index} className="ml-4 text-nightly-celadon">
-              {line.slice(2)}
-            </li>
-          );
-        }
-        if (line.trim() === '') {
-          return <br key={index} />;
-        }
+    return content.split("\n").map((line, index) => {
+      if (line.startsWith("**") && line.endsWith("**")) {
         return (
-          <p key={index} className="text-nightly-celadon mb-2">
-            {line}
-          </p>
+          <strong key={index} className="text-nightly-honeydew">
+            {line.slice(2, -2)}
+          </strong>
         );
-      });
+      }
+      if (line.startsWith("- ")) {
+        return (
+          <li key={index} className="ml-4 text-nightly-celadon">
+            {line.slice(2)}
+          </li>
+        );
+      }
+      if (line.trim() === "") {
+        return <br key={index} />;
+      }
+      return (
+        <p key={index} className="text-nightly-celadon mb-2">
+          {line}
+        </p>
+      );
+    });
   };
 
   return (
@@ -69,12 +68,14 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule, isEditable, onEdit, on
             <h3 className="text-lg font-semibold text-nightly-honeydew">
               {rule.title}
             </h3>
-            <span className={`px-2 py-1 text-xs rounded ${
-              rule.isActive
-                ? 'bg-green-500/20 text-green-300'
-                : 'bg-gray-500/20 text-gray-300'
-            }`}>
-              {rule.isActive ? 'ACTIVE' : 'INACTIVE'}
+            <span
+              className={`px-2 py-1 text-xs rounded ${
+                rule.isActive
+                  ? "bg-green-500/20 text-green-300"
+                  : "bg-gray-500/20 text-gray-300"
+              }`}
+            >
+              {rule.isActive ? "ACTIVE" : "INACTIVE"}
             </span>
           </div>
 
@@ -91,10 +92,10 @@ export const RuleCard: React.FC<RuleCardProps> = ({ rule, isEditable, onEdit, on
               onClick={() => onToggle?.(rule.id)}
               className={`p-2 rounded transition-colors ${
                 rule.isActive
-                  ? 'bg-gray-500/20 hover:bg-gray-500/30 text-gray-300'
-                  : 'bg-green-500/20 hover:bg-green-500/30 text-green-300'
+                  ? "bg-gray-500/20 hover:bg-gray-500/30 text-gray-300"
+                  : "bg-green-500/20 hover:bg-green-500/30 text-green-300"
               }`}
-              title={rule.isActive ? 'Deactivate rule' : 'Activate rule'}
+              title={rule.isActive ? "Deactivate rule" : "Activate rule"}
             >
               {rule.isActive ? <FaLock /> : <FaUnlock />}
             </button>

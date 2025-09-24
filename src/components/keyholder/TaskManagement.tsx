@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
-import type { DBTask, TaskStatus } from '../../types/database';
-import { taskDBService } from '../../services/database';
-import {
-  FaTasks,
-  FaPlus,
-  FaCheckCircle,
-  FaTimesCircle,
-} from 'react-icons/fa';
+import React, { useState } from "react";
+import type { DBTask, TaskStatus } from "../../types/database";
+import { taskDBService } from "../../services/database";
+import { FaTasks, FaPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
@@ -14,18 +9,25 @@ interface TaskManagementProps {
 }
 
 export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
-  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskText, setNewTaskText] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
 
-  const pendingTasks = tasks.filter(t => ['pending', 'submitted'].includes(t.status));
+  const pendingTasks = tasks.filter((t) =>
+    ["pending", "submitted"].includes(t.status),
+  );
 
-  const handleTaskAction = async (taskId: string, action: 'approve' | 'reject', feedback?: string) => {
+  const handleTaskAction = async (
+    taskId: string,
+    action: "approve" | "reject",
+    feedback?: string,
+  ) => {
     try {
-      const newStatus: TaskStatus = action === 'approve' ? 'approved' : 'rejected';
+      const newStatus: TaskStatus =
+        action === "approve" ? "approved" : "rejected";
       await taskDBService.updateTaskStatus(taskId, newStatus, feedback);
       // In real app, this would refresh the tasks
     } catch (error) {
-      console.error('Error updating task:', error);
+      console.error("Error updating task:", error);
     }
   };
 
@@ -34,7 +36,9 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <FaTasks className="text-nightly-lavender-floral" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">Task Management</h3>
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Task Management
+          </h3>
         </div>
         <button
           onClick={() => setShowAddTask(!showAddTask)}
@@ -47,7 +51,9 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
 
       {showAddTask && (
         <div className="mb-6 bg-white/5 rounded-lg p-4">
-          <h4 className="font-medium text-nightly-honeydew mb-3">Create New Task</h4>
+          <h4 className="font-medium text-nightly-honeydew mb-3">
+            Create New Task
+          </h4>
           <div className="space-y-3">
             <textarea
               value={newTaskText}
@@ -60,7 +66,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
               <button
                 onClick={() => {
                   // In real app, would call taskDBService.create
-                  setNewTaskText('');
+                  setNewTaskText("");
                   setShowAddTask(false);
                 }}
                 disabled={!newTaskText.trim()}
@@ -86,7 +92,9 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
           pendingTasks.map((task) => (
             <div key={task.id} className="bg-white/5 rounded-lg p-4">
               <div className="mb-3">
-                <h4 className="font-medium text-nightly-honeydew mb-1">{task.text}</h4>
+                <h4 className="font-medium text-nightly-honeydew mb-1">
+                  {task.text}
+                </h4>
                 <div className="flex items-center gap-2 text-sm text-nightly-celadon">
                   <span>Status: {task.status}</span>
                   <span>•</span>
@@ -102,22 +110,26 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
 
               {task.submissiveNote && (
                 <div className="bg-white/5 rounded p-2 mb-3">
-                  <div className="text-xs text-nightly-celadon mb-1">Submissive Note:</div>
-                  <div className="text-sm text-nightly-honeydew">{task.submissiveNote}</div>
+                  <div className="text-xs text-nightly-celadon mb-1">
+                    Submissive Note:
+                  </div>
+                  <div className="text-sm text-nightly-honeydew">
+                    {task.submissiveNote}
+                  </div>
                 </div>
               )}
 
-              {task.status === 'submitted' && (
+              {task.status === "submitted" && (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleTaskAction(task.id, 'approve')}
+                    onClick={() => handleTaskAction(task.id, "approve")}
                     className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
                   >
                     <FaCheckCircle />
                     Approve
                   </button>
                   <button
-                    onClick={() => handleTaskAction(task.id, 'reject')}
+                    onClick={() => handleTaskAction(task.id, "reject")}
                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
                   >
                     <FaTimesCircle />

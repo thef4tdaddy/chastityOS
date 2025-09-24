@@ -1,15 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FeatureCard } from './FeatureCard';
+import React from "react";
+import { Link } from "react-router-dom";
+import { FeatureCard } from "./FeatureCard";
 
 interface DashboardMainProps {
   sessionDuration: string;
 }
 
-export const DashboardMain: React.FC<DashboardMainProps> = ({ sessionDuration }) => {
+export const DashboardMain: React.FC<DashboardMainProps> = ({
+  sessionDuration,
+}) => {
   return (
     <main>
-      <h1 className="text-4xl font-bold text-center mb-8">Welcome to ChastityOS Dashboard</h1>
+      <h1 className="text-4xl font-bold text-center mb-8">
+        Welcome to ChastityOS Dashboard
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Link to="/chastity-tracking">

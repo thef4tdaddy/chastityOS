@@ -1,21 +1,23 @@
-import React from 'react';
-import { RewardPunishmentLog } from './LogItem';
-import { FaTrophy } from 'react-icons/fa';
+import React from "react";
+import { RewardPunishmentLog } from "./LogItem";
+import { FaTrophy } from "react-icons/fa";
 
 // Statistics Component
 interface RewardPunishmentStatsProps {
   logs: RewardPunishmentLog[];
 }
 
-export const RewardPunishmentStats: React.FC<RewardPunishmentStatsProps> = ({ logs }) => {
+export const RewardPunishmentStats: React.FC<RewardPunishmentStatsProps> = ({
+  logs,
+}) => {
   const stats = {
-    totalRewards: logs.filter(l => l.type === 'reward').length,
-    totalPunishments: logs.filter(l => l.type === 'punishment').length,
+    totalRewards: logs.filter((l) => l.type === "reward").length,
+    totalPunishments: logs.filter((l) => l.type === "punishment").length,
     timeReduced: logs
-      .filter(l => l.type === 'reward')
+      .filter((l) => l.type === "reward")
       .reduce((acc, l) => acc + Math.abs(l.timeChangeSeconds), 0),
     timeAdded: logs
-      .filter(l => l.type === 'punishment')
+      .filter((l) => l.type === "punishment")
       .reduce((acc, l) => acc + Math.abs(l.timeChangeSeconds), 0),
   };
 

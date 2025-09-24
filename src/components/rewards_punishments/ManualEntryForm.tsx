@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
-import { RewardPunishmentLog } from './LogItem';
-import { FaPlus } from 'react-icons/fa';
+import React, { useState } from "react";
+import { RewardPunishmentLog } from "./LogItem";
+import { FaPlus } from "react-icons/fa";
 
 // Manual Entry Form Component
 interface ManualEntryFormProps {
-  onSubmit: (entry: Omit<RewardPunishmentLog, 'id' | 'createdAt'>) => void;
+  onSubmit: (entry: Omit<RewardPunishmentLog, "id" | "createdAt">) => void;
 }
 
-export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) => {
+export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
+  onSubmit,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
-    type: 'reward' as 'reward' | 'punishment',
-    title: '',
-    description: '',
+    type: "reward" as "reward" | "punishment",
+    title: "",
+    description: "",
     timeChangeSeconds: 3600, // Default 1 hour
-    notes: '',
+    notes: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,17 +24,20 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
 
     onSubmit({
       ...formData,
-      timeChangeSeconds: formData.type === 'reward' ? -Math.abs(formData.timeChangeSeconds) : Math.abs(formData.timeChangeSeconds),
-      source: 'keyholder_action',
+      timeChangeSeconds:
+        formData.type === "reward"
+          ? -Math.abs(formData.timeChangeSeconds)
+          : Math.abs(formData.timeChangeSeconds),
+      source: "keyholder_action",
     });
 
     // Reset form
     setFormData({
-      type: 'reward',
-      title: '',
-      description: '',
+      type: "reward",
+      title: "",
+      description: "",
       timeChangeSeconds: 3600,
-      notes: '',
+      notes: "",
     });
     setIsOpen(false);
   };
@@ -51,7 +56,9 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">Manual Reward/Punishment</h3>
+      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+        Manual Reward/Punishment
+      </h3>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Type Selection */}
@@ -64,8 +71,13 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
               <input
                 type="radio"
                 value="reward"
-                checked={formData.type === 'reward'}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'reward' | 'punishment' }))}
+                checked={formData.type === "reward"}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: e.target.value as "reward" | "punishment",
+                  }))
+                }
                 className="mr-2"
               />
               <span className="text-green-400">Reward</span>
@@ -74,8 +86,13 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
               <input
                 type="radio"
                 value="punishment"
-                checked={formData.type === 'punishment'}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as 'reward' | 'punishment' }))}
+                checked={formData.type === "punishment"}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: e.target.value as "reward" | "punishment",
+                  }))
+                }
                 className="mr-2"
               />
               <span className="text-red-400">Punishment</span>
@@ -91,7 +108,9 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
+            }
             placeholder="Brief title for this entry"
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
             required
@@ -105,7 +124,9 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
           </label>
           <textarea
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
             placeholder="Detailed description of the reason"
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
             rows={3}
@@ -124,11 +145,17 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
             max="168"
             step="0.5"
             value={formData.timeChangeSeconds / 3600}
-            onChange={(e) => setFormData(prev => ({ ...prev, timeChangeSeconds: parseFloat(e.target.value) * 3600 }))}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                timeChangeSeconds: parseFloat(e.target.value) * 3600,
+              }))
+            }
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
           />
           <div className="text-xs text-nightly-celadon mt-1">
-            This will {formData.type === 'reward' ? 'reduce' : 'add'} chastity time
+            This will {formData.type === "reward" ? "reduce" : "add"} chastity
+            time
           </div>
         </div>
 
@@ -139,7 +166,9 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({ onSubmit }) =>
           </label>
           <textarea
             value={formData.notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, notes: e.target.value }))
+            }
             placeholder="Additional notes or comments"
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
             rows={2}
