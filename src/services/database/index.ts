@@ -15,3 +15,7 @@ export { eventDBService } from './EventDBService';
 export { taskDBService } from './TaskDBService';
 export { goalDBService } from './GoalDBService';
 export { settingsDBService } from './SettingsDBService';
+
+// Relationship-based services
+export { relationshipService } from './RelationshipService';
+export { relationshipChastityService } from './RelationshipChastityService';
