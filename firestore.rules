@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==================== AUTHENTICATION HELPER FUNCTIONS ====================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestamp(timestamp) {
+      return timestamp is timestamp && timestamp == request.time;
+    }
+
+    // ==================== ACCOUNT LINKING RULES ====================
+    
+    // Link codes - temporary codes for account linking
+    match /linkCodes/{codeId} {
+      // Only creator can read their own codes
+      allow read: if isAuthenticated() && 
+        request.auth.uid == resource.data.wearerId;
+      
+      // Anyone can create a link code (for their own account)
+      allow create: if isAuthenticated() && 
+        request.resource.data.wearerId == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.usedBy == null &&
+        request.resource.data.createdAt == request.time;
+      
+      // Link codes can be updated to mark as used
+      allow update: if isAuthenticated() && 
+        resource.data.status == 'pending' &&
+        request.resource.data.status == 'used' &&
+        request.resource.data.usedBy == request.auth.uid &&
+        request.resource.data.usedAt == request.time;
+    }
+    
+    // Admin relationships between keyholders and wearers
+    match /adminRelationships/{relationshipId} {
+      // Both parties can read the relationship
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.keyholderId ||
+        request.auth.uid == resource.data.wearerId
+      );
+      
+      // Relationships are created during link code usage
+      allow create: if isAuthenticated() &&
+        request.resource.data.keyholderId == request.auth.uid &&
+        request.resource.data.status == 'active' &&
+        request.resource.data.establishedAt == request.time;
+      
+      // Both parties can update the relationship (mainly for termination)
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.keyholderId ||
+        request.auth.uid == resource.data.wearerId
+      );
+    }
+    
+    // Admin sessions for time-limited admin access
+    match /adminSessions/{sessionId} {
+      // Only the keyholder can read their own sessions
+      allow read: if isAuthenticated() && 
+        request.auth.uid == resource.data.keyholderId;
+      
+      // Only keyholders can create sessions
+      allow create: if isAuthenticated() &&
+        request.resource.data.keyholderId == request.auth.uid &&
+        request.resource.data.startedAt == request.time &&
+        request.resource.data.isActive == true;
+      
+      // Sessions can be updated to mark as inactive
+      allow update: if isAuthenticated() && 
+        request.auth.uid == resource.data.keyholderId;
+    }
+
+    // ==================== USER DATA WITH ADMIN ACCESS ====================
+    
+    // Helper function to check if user has admin access to another user's data
+    function hasAdminAccess(userId) {
+      return exists(/databases/$(database)/documents/adminRelationships/$(getAdminRelationshipId(request.auth.uid, userId))) &&
+        get(/databases/$(database)/documents/adminRelationships/$(getAdminRelationshipId(request.auth.uid, userId))).data.status == 'active' &&
+        get(/databases/$(database)/documents/adminRelationships/$(getAdminRelationshipId(request.auth.uid, userId))).data.keyholderId == request.auth.uid;
+    }
+    
+    // Helper to find admin relationship ID (simplified - in practice would need proper lookup)
+    function getAdminRelationshipId(keyholderId, wearerId) {
+      // This is a simplified version - real implementation would need to query the collection
+      return keyholderId + '_' + wearerId;
+    }
+
+    // User documents with admin access support
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || hasAdminAccess(userId);
+      
+      // User data subcollections
+      match /{collection}/{docId} {
+        allow read, write: if isOwner(userId) || hasAdminAccess(userId);
+      }
+    }
+
+    // ==================== EXISTING RULES (PRESERVED) ====================
+    
+    // Feedback collection (existing rule)
+    match /feedback/{docId} {
+      allow create: if isAuthenticated() && 
+        request.resource.data.submittedBy == request.auth.uid &&
+        request.resource.data.submittedAt == request.time;
+    }
+
+    // Default rule for other collections
+    match /{document=**} {
+      allow read, write: if false; // Deny by default
+    }
+  }
+}
