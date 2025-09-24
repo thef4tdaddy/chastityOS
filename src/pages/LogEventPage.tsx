@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuthState } from '../contexts';
 import { eventDBService } from '../services/database';
 import type { DBEvent, EventType } from '../types/database';
+import { logger } from '../utils/logging';
 import {
   FaArrowLeft,
   FaPlus,
@@ -99,7 +100,7 @@ const LogEventForm: React.FC<{
         isPrivate: false,
       });
     } catch (error) {
-      console.error('Error logging event:', error);
+      logger.error('Error logging event:', error, 'LogEventPage');
     } finally {
       setIsSubmitting(false);
     }
@@ -352,7 +353,7 @@ const LogEventPage: React.FC = () => {
         userEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
         setEvents(userEvents);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        logger.error('Error fetching events:', error, 'LogEventPage');
       } finally {
         setLoading(false);
       }
