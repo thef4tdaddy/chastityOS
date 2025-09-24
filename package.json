@@ -35,8 +35,7 @@
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build",
     "health-check": "./scripts/deployment/health-check.sh",
     "test:full": "./scripts/testing/run-tests.sh",
-    "start": "npm run dev",
-    "prepare": "husky"
+    "start": "npm run dev"
   },
   "dependencies": {
     "@sentry/react": "^10.14.0",
