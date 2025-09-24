@@ -3,7 +3,7 @@
  * Provides state management and actions for the dual-account keyholder system
  */
 import { useState, useEffect, useCallback } from "react";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthState } from "@/contexts/AuthContext";
 import { relationshipService } from "@/services/database/RelationshipService";
 import { relationshipChastityService } from "@/services/database/RelationshipChastityService";
 import { dataMigrationService } from "@/services/migration/DataMigrationService";
@@ -100,7 +100,7 @@ export interface RelationshipActions {
 }
 
 export function useRelationships(): RelationshipState & RelationshipActions {
-  const { user } = useAuthContext();
+  const { user } = useAuthState();
   const userId = user?.uid;
 
   // State
