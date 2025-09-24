@@ -7,8 +7,27 @@
 export * from "./core";
 export * from "./events";
 
-// Database types
-export * from "./database";
+// Database types - explicitly export to avoid conflicts
+export type {
+  SyncStatus,
+  DBBase,
+  DBUser,
+  DBSession,
+  DBEvent,
+  DBTask,
+  DBGoal,
+  DBSettings,
+  SyncOperation,
+  ConflictRecord,
+  DBSyncMeta,
+  QueuedOperation,
+  SessionWithDuration,
+  TaskWithStatus,
+  GoalWithProgress,
+  SessionFilters,
+  EventFilters,
+  TaskFilters,
+} from "./database";
 
 // Re-export commonly used Firebase types
 export type { Timestamp } from "firebase/firestore";

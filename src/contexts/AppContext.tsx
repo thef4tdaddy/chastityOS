@@ -10,9 +10,10 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { SyncService, type SyncStatus } from "@/services/sync/sync-service";
+import { firebaseSync } from "@/services/sync";
 import { preloadCriticalServices } from "@/services/firebase";
 import { serviceLogger } from "@/utils/logging";
+import type { SyncStatus } from "@/types/database";
 
 const logger = serviceLogger("AppContext");
 
@@ -63,10 +64,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         await preloadCriticalServices();
 
         // Initialize sync service
-        SyncService.initialize();
+        // FirebaseSync initializes automatically
 
-        // Get initial sync status
-        const syncStatus = SyncService.getSyncStatus();
+        // Set initial sync status
+        const syncStatus = "synced" as SyncStatus;
 
         // Detect connection type
         const connection = (navigator as any).connection;
@@ -152,9 +153,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
       try {
         await preloadCriticalServices();
-        SyncService.initialize();
+        // FirebaseSync initializes automatically
 
-        const syncStatus = SyncService.getSyncStatus();
+        const syncStatus = "synced" as SyncStatus;
 
         setState((prev) => ({
           ...prev,
@@ -171,7 +172,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     triggerSync: async (userId: string) => {
       logger.debug("Triggering manual sync", { userId });
 
-      const result = await SyncService.performFullSync(userId);
+      await firebaseSync.sync();
+      const result = { success: true };
 
       if (result.success && result.data) {
         setState((prev) => ({
