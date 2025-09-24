@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FeatureCard } from '../components/dashboard/FeatureCard';
 import { sessionDBService } from '../services/database';
@@ -6,7 +7,7 @@ import { DBSession } from '@/types';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthState();
-  const [sessionDuration, setSessionDuration] = useState('0s');
+  const [sessionDuration, setSessionDuration] = useState('0s';
 
   useEffect(() => {
     if (user) {
@@ -23,17 +24,17 @@ const Dashboard: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="bg-gray-900 min-h-screen text-white p-4">
+    <div className="bg-nightly-honeydew min-h-screen text-nightly-spring-green p-4">
       <header className="flex justify-between items-center mb-8">
         <div className="text-2xl font-bold">ChastityOS</div>
         {/* Hamburger menu for mobile, full nav for desktop */}
         <nav className="hidden md:flex space-x-4">
-          <a href="#" className="hover:text-gray-300">Chastity Tracking</a>
-          <a href="#" className="hover:text-gray-300">Tasks</a>
-          <a href="#" className="hover:text-gray-300">Rewards/Punishments</a>
-          <a href="#" className="hover:text-gray-300">Full Report</a>
-          <a href="#" className="hover:text-gray-300">Settings</a>
-          <a href="#" className="bg-purple-600 px-3 py-1 rounded">KH Access</a>
+          <a href="#" className="hover:text-nightly-celadon">Chastity Tracking</a>
+          <a href="#" className="hover:text-nightly-celadon">Tasks</a>
+          <a href="#" className="hover:text-nightly-celadon">Rewards/Punishments</a>
+          <a href="#" className="hover:text-nightly-celadon">Full Report</a>
+          <a href="#" className="hover:text-nightly-celadon">Settings</a>
+          <a href="#" className="bg-nightly-lavender-floral px-3 py-1 rounded">KH Access</a>
         </nav>
         <div className="md:hidden">☰</div>
       </header>
@@ -45,28 +46,28 @@ const Dashboard: React.FC = () => {
           <FeatureCard
             title="Chastity Tracker"
             description={`Current Session: ${sessionDuration}`}
-            accentColor="orange"
+            accentColor="aquamarine"
           />
           <FeatureCard
             title="Log Event"
             description="Record new events"
-            accentColor="purple"
+            accentColor="lavender-floral"
           />
           <FeatureCard
             title="Tasks"
             description="View upcoming tasks"
-            accentColor="purple"
+            accentColor="lavender-floral"
             className="hidden md:block"
           />
           <FeatureCard
             title="Full Report"
             description="Analyze your journey"
-            accentColor="orange"
+            accentColor="aquamarine"
           />
         </div>
 
         <div className="text-center mt-8">
-            <button className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold">View Keyholder Dashboard</button>
+            <button className="bg-nightly-lavender-floral text-white px-6 py-2 rounded-lg font-bold">View Keyholder Dashboard</button>
         </div>
       </main>
 
