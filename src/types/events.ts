@@ -126,8 +126,18 @@ export const PAUSE_REASONS = [
   "Other",
 ] as const;
 
+// Emergency unlock reason categories
+export const EMERGENCY_UNLOCK_REASONS = [
+  "Medical Emergency",
+  "Safety Concern", 
+  "Equipment Malfunction",
+  "Urgent Situation",
+  "Other",
+] as const;
+
 export type RemovalReason = (typeof REMOVAL_REASONS)[number];
 export type PauseReason = (typeof PAUSE_REASONS)[number];
+export type EmergencyUnlockReason = (typeof EMERGENCY_UNLOCK_REASONS)[number];
 
 // Event categories for organization
 export interface EventCategory {
