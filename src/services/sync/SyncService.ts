@@ -174,25 +174,81 @@ class SyncService {
 
   private async applyRemoteChanges(collectionName: string, docs: any[]) {
     for (const docData of docs) {
-      // Basic conflict resolution: last write wins (Firebase > local)
-      // A more robust solution would compare timestamps and handle conflicts gracefully
-      switch (collectionName) {
-        case "sessions":
-          await sessionDBService.update(docData.id, docData);
-          break;
-        case "events":
-          await eventDBService.update(docData.id, docData);
-          break;
-        case "tasks":
-          await taskDBService.update(docData.id, docData);
-          break;
-        case "goals":
-          await goalDBService.update(docData.id, docData);
-          break;
-        case "settings":
-          await settingsDBService.update(docData.userId, docData);
-          break;
+      const localDoc = await this.getLocalDoc(collectionName, docData.id);
+
+      if (localDoc) {
+        // Conflict resolution logic
+        const remoteTimestamp = (docData.lastModified as Timestamp).toDate();
+        if (remoteTimestamp > localDoc.lastModified) {
+          // Server wins
+          logger.debug(`Conflict detected for ${collectionName}:${docData.id}. Server wins.`);
+          await this.updateLocalDoc(collectionName, docData.id, docData);
+        } else {
+          // Local is newer, what to do?
+          // For now, we do nothing, but we could push the local changes again
+          logger.warn(`Conflict detected for ${collectionName}:${docData.id}. Local is newer. Ignoring remote change.`);
+        }
+      } else {
+        // New document from server
+        await this.createLocalDoc(collectionName, docData);
       }
+    }
+  }
+
+  private async getLocalDoc(collectionName: string, id: string): Promise<any> {
+    switch (collectionName) {
+      case "sessions":
+        return sessionDBService.findById(id);
+      case "events":
+        return eventDBService.findById(id);
+      case "tasks":
+        return taskDBService.findById(id);
+      case "goals":
+        return goalDBService.findById(id);
+      case "settings":
+        return settingsDBService.findById(id);
+      default:
+        return null;
+    }
+  }
+
+  private async updateLocalDoc(collectionName: string, id: string, data: any) {
+    switch (collectionName) {
+      case "sessions":
+        await sessionDBService.update(id, data);
+        break;
+      case "events":
+        await eventDBService.update(id, data);
+        break;
+      case "tasks":
+        await taskDBService.update(id, data);
+        break;
+      case "goals":
+        await goalDBService.update(id, data);
+        break;
+      case "settings":
+        await settingsDBService.update(id, data);
+        break;
+    }
+  }
+
+  private async createLocalDoc(collectionName: string, data: any) {
+    switch (collectionName) {
+      case "sessions":
+        await sessionDBService.create(data);
+        break;
+      case "events":
+        await eventDBService.create(data);
+        break;
+      case "tasks":
+        await taskDBService.create(data);
+        break;
+      case "goals":
+        await goalDBService.create(data);
+        break;
+      case "settings":
+        await settingsDBService.create(data);
+        break;
     }
   }
 }
