@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="bg-nightly-honeydew min-h-screen text-nightly-spring-green p-4">
+    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green p-4">
       <header className="flex justify-between items-center mb-8">
         <div className="text-2xl font-bold">ChastityOS</div>
         {/* Hamburger menu for mobile, full nav for desktop */}

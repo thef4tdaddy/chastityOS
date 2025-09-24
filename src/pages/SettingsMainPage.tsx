@@ -8,7 +8,7 @@ import { PublicProfileSection } from '../components/settings/PublicProfileSectio
 
 const SettingsMainPage: React.FC = () => {
   return (
-    <div className="bg-nightly-honeydew min-h-screen text-nightly-spring-green p-4 space-y-6">
+    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green p-4 space-y-6">
       <AccountSection />
       <DisplaySettingsSection />
       <PublicProfileSection />
