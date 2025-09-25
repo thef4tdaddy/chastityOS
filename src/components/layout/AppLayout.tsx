@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { SyncStatusIndicator } from "@/components/common";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -25,10 +26,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <header className="border-b border-gray-700 bg-gray-800/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            {/* Logo */}
-            <Link to="/" className="text-2xl font-bold text-white">
-              ChastityOS
-            </Link>
+            {/* Logo and Sync Status */}
+            <div className="flex items-center space-x-4">
+              <Link to="/" className="text-2xl font-bold text-white">
+                ChastityOS
+              </Link>
+              <SyncStatusIndicator />
+            </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-6">

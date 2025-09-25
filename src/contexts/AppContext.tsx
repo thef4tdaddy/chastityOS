@@ -13,6 +13,7 @@ import React, {
 import { firebaseSync } from "@/services/sync";
 import { preloadCriticalServices } from "@/services/firebase";
 import { serviceLogger } from "@/utils/logging";
+import { db } from "@/services/database";
 import type { SyncStatus } from "@/types/database";
 
 const logger = serviceLogger("AppContext");
@@ -59,6 +60,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const initializeApp = async () => {
       try {
         logger.info("Initializing application");
+
+        // Initialize Dexie database first
+        await db.initialize();
+        logger.info("Dexie database initialized");
 
         // Preload critical Firebase services
         await preloadCriticalServices();
@@ -152,6 +157,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setState((prev) => ({ ...prev, isInitialized: false }));
 
       try {
+        // Initialize Dexie database first
+        await db.initialize();
+        logger.info("Dexie database re-initialized");
+
         await preloadCriticalServices();
         // FirebaseSync initializes automatically
 
