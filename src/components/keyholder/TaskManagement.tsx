@@ -12,7 +12,7 @@ interface TaskManagementProps {
 export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   const [newTaskText, setNewTaskText] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
-  
+
   // Use TanStack Query hooks instead of direct service calls
   const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
   const { updateTaskStatus, createTask } = useTaskMutations();
@@ -30,22 +30,22 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
     try {
       const newStatus: TaskStatus =
         action === "approve" ? "approved" : "rejected";
-      
+
       await updateTaskStatus.mutateAsync({
         taskId,
         userId,
         status: newStatus,
         feedback,
       });
-      
+
       showSuccess(
         `Task ${action === "approve" ? "approved" : "rejected"} successfully`,
-        "Task Updated"
+        "Task Updated",
       );
     } catch (error) {
       showError(
         `Failed to ${action} task. Please try again.`,
-        "Task Update Failed"
+        "Task Update Failed",
       );
     }
   };
@@ -59,12 +59,15 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
         title: newTaskText.trim(),
         description: "",
       });
-      
+
       setNewTaskText("");
       setShowAddTask(false);
       showSuccess("Task created successfully", "Task Added");
     } catch (error) {
-      showError("Failed to create task. Please try again.", "Task Creation Failed");
+      showError(
+        "Failed to create task. Please try again.",
+        "Task Creation Failed",
+      );
     }
   };
 

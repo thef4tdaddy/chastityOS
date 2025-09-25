@@ -16,17 +16,17 @@ export function useTasksQuery(userId: string | undefined) {
     queryKey: ["tasks", "user", userId],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       // Always read from local Dexie first for instant response
       const tasks = await taskDBService.findByUserId(userId);
-      
+
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(userId).catch((error) => {
           console.warn("Background task sync failed:", error);
         });
       }
-      
+
       return tasks;
     },
     ...cacheConfig.tasks, // Apply specific cache settings
@@ -37,15 +37,18 @@ export function useTasksQuery(userId: string | undefined) {
 /**
  * Query for getting pending tasks that need keyholder attention
  */
-export function usePendingTasksQuery(userId: string | undefined, enabled = true) {
+export function usePendingTasksQuery(
+  userId: string | undefined,
+  enabled = true,
+) {
   return useQuery({
     queryKey: ["tasks", "pending", userId],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       const allTasks = await taskDBService.findByUserId(userId);
-      return allTasks.filter((task) => 
-        ["pending", "submitted"].includes(task.status)
+      return allTasks.filter((task) =>
+        ["pending", "submitted"].includes(task.status),
       );
     },
     ...cacheConfig.tasks,
@@ -83,8 +86,12 @@ export function useTaskMutations() {
     },
     onSuccess: (data, variables) => {
       // Invalidate and refetch tasks queries
-      queryClient.invalidateQueries({ queryKey: ["tasks", "user", variables.userId] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "pending", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "user", variables.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to create task:", error);
@@ -102,7 +109,7 @@ export function useTaskMutations() {
       const updatedTask = await taskDBService.updateTaskStatus(
         params.taskId,
         params.status,
-        params.feedback
+        params.feedback,
       );
 
       // 2. Trigger Firebase sync in background
@@ -121,13 +128,15 @@ export function useTaskMutations() {
         (oldTasks: DBTask[] | undefined) => {
           if (!oldTasks) return oldTasks;
           return oldTasks.map((task) =>
-            task.id === variables.taskId ? { ...task, ...data } : task
+            task.id === variables.taskId ? { ...task, ...data } : task,
           );
-        }
+        },
       );
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["tasks", "pending", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to update task status:", error);
@@ -155,11 +164,13 @@ export function useTaskMutations() {
         (oldTasks: DBTask[] | undefined) => {
           if (!oldTasks) return oldTasks;
           return oldTasks.filter((task) => task.id !== taskId);
-        }
+        },
       );
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["tasks", "pending", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to delete task:", error);
@@ -176,7 +187,7 @@ export function useTaskMutations() {
       const updatedTask = await taskDBService.updateTaskStatus(
         params.taskId,
         "submitted",
-        params.note
+        params.note,
       );
 
       // 2. Trigger Firebase sync in background
@@ -195,13 +206,15 @@ export function useTaskMutations() {
         (oldTasks: DBTask[] | undefined) => {
           if (!oldTasks) return oldTasks;
           return oldTasks.map((task) =>
-            task.id === variables.taskId ? { ...task, ...data } : task
+            task.id === variables.taskId ? { ...task, ...data } : task,
           );
-        }
+        },
       );
-      
+
       // Invalidate pending tasks since this affects that query
-      queryClient.invalidateQueries({ queryKey: ["tasks", "pending", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to submit task for review:", error);

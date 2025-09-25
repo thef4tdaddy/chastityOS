@@ -22,13 +22,15 @@ export interface Notification {
 export interface NotificationState {
   // Notifications list
   notifications: Notification[];
-  
+
   // Actions
-  addNotification: (notification: Omit<Notification, "id" | "timestamp">) => string;
+  addNotification: (
+    notification: Omit<Notification, "id" | "timestamp">,
+  ) => string;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
   updateNotification: (id: string, updates: Partial<Notification>) => void;
-  
+
   // Convenience methods
   showSuccess: (message: string, title?: string, duration?: number) => string;
   showError: (message: string, title?: string, duration?: number) => string;
@@ -66,7 +68,7 @@ export const useNotificationStore = create<NotificationState>()(
             notifications: [...state.notifications, newNotification],
           }),
           false,
-          `addNotification:${notification.type}`
+          `addNotification:${notification.type}`,
         );
 
         // Auto-remove notification after duration if specified
@@ -85,7 +87,7 @@ export const useNotificationStore = create<NotificationState>()(
             notifications: state.notifications.filter((n) => n.id !== id),
           }),
           false,
-          `removeNotification:${id}`
+          `removeNotification:${id}`,
         ),
 
       clearAllNotifications: () =>
@@ -95,11 +97,11 @@ export const useNotificationStore = create<NotificationState>()(
         set(
           (state) => ({
             notifications: state.notifications.map((n) =>
-              n.id === id ? { ...n, ...updates } : n
+              n.id === id ? { ...n, ...updates } : n,
             ),
           }),
           false,
-          `updateNotification:${id}`
+          `updateNotification:${id}`,
         ),
 
       // Convenience methods
@@ -141,15 +143,15 @@ export const useNotificationStore = create<NotificationState>()(
     }),
     {
       name: "notification-store",
-    }
-  )
+    },
+  ),
 );
 
 // Selector hooks for better performance
-export const useNotifications = () => 
+export const useNotifications = () =>
   useNotificationStore((state) => state.notifications);
 
-export const useNotificationActions = () => 
+export const useNotificationActions = () =>
   useNotificationStore((state) => ({
     addNotification: state.addNotification,
     removeNotification: state.removeNotification,

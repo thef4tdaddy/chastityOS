@@ -21,13 +21,13 @@ export interface ModalConfig {
 export interface ModalState {
   // Modal registry
   modals: Record<string, ModalConfig>;
-  
+
   // Actions
   openModal: (id: string, config?: Partial<ModalConfig>) => void;
   closeModal: (id: string) => void;
   closeAllModals: () => void;
   updateModal: (id: string, updates: Partial<ModalConfig>) => void;
-  
+
   // Utility methods
   isModalOpen: (id: string) => boolean;
   getModal: (id: string) => ModalConfig | undefined;
@@ -54,7 +54,7 @@ export const useModalStore = create<ModalState>()(
             },
           }),
           false,
-          `openModal:${id}`
+          `openModal:${id}`,
         ),
 
       closeModal: (id: string) =>
@@ -69,7 +69,7 @@ export const useModalStore = create<ModalState>()(
             },
           }),
           false,
-          `closeModal:${id}`
+          `closeModal:${id}`,
         ),
 
       closeAllModals: () =>
@@ -85,7 +85,7 @@ export const useModalStore = create<ModalState>()(
             return { modals: updatedModals };
           },
           false,
-          "closeAllModals"
+          "closeAllModals",
         ),
 
       updateModal: (id: string, updates: Partial<ModalConfig>) =>
@@ -100,7 +100,7 @@ export const useModalStore = create<ModalState>()(
             },
           }),
           false,
-          `updateModal:${id}`
+          `updateModal:${id}`,
         ),
 
       // Utility methods
@@ -115,8 +115,8 @@ export const useModalStore = create<ModalState>()(
     }),
     {
       name: "modal-store",
-    }
-  )
+    },
+  ),
 );
 
 // Common modal IDs as constants to prevent typos
@@ -133,10 +133,10 @@ export const MODAL_IDS = {
 } as const;
 
 // Selector hooks for better performance
-export const useModal = (id: string) => 
+export const useModal = (id: string) =>
   useModalStore((state) => state.modals[id]);
 
-export const useIsModalOpen = (id: string) => 
+export const useIsModalOpen = (id: string) =>
   useModalStore((state) => state.isModalOpen(id));
 
 // Utility hooks for common modal patterns
@@ -148,7 +148,7 @@ export const useConfirmModal = () => {
     message: string,
     onConfirm: () => void,
     confirmText = "Confirm",
-    cancelText = "Cancel"
+    cancelText = "Cancel",
   ) => {
     openModal(MODAL_IDS.CONFIRM_DELETE, {
       title,

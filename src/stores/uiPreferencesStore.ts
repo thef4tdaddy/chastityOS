@@ -9,22 +9,22 @@ import { persist, devtools } from "zustand/middleware";
 export interface UIPreferencesState {
   // Theme settings
   theme: "light" | "dark";
-  
+
   // Animation preferences
   animations: boolean;
-  
+
   // Layout preferences
   compactMode: boolean;
   sidebarCollapsed: boolean;
-  
+
   // Accessibility preferences
   highContrast: boolean;
   fontSize: "sm" | "md" | "lg";
-  
+
   // Debug/development preferences
   showDebugInfo: boolean;
   showPerformanceMetrics: boolean;
-  
+
   // Actions
   setTheme: (theme: "light" | "dark") => void;
   toggleAnimations: () => void;
@@ -35,7 +35,7 @@ export interface UIPreferencesState {
   setFontSize: (size: "sm" | "md" | "lg") => void;
   toggleDebugInfo: () => void;
   togglePerformanceMetrics: () => void;
-  
+
   // Utility actions
   resetToDefaults: () => void;
   applySystemTheme: () => void;
@@ -67,7 +67,7 @@ export const useUIPreferencesStore = create<UIPreferencesState>()(
           set(
             (state) => ({ animations: !state.animations }),
             false,
-            "toggleAnimations"
+            "toggleAnimations",
           ),
 
         setCompactMode: (compact: boolean) =>
@@ -77,7 +77,7 @@ export const useUIPreferencesStore = create<UIPreferencesState>()(
           set(
             (state) => ({ sidebarCollapsed: !state.sidebarCollapsed }),
             false,
-            "toggleSidebar"
+            "toggleSidebar",
           ),
 
         setSidebarCollapsed: (collapsed: boolean) =>
@@ -87,7 +87,7 @@ export const useUIPreferencesStore = create<UIPreferencesState>()(
           set(
             (state) => ({ highContrast: !state.highContrast }),
             false,
-            "toggleHighContrast"
+            "toggleHighContrast",
           ),
 
         setFontSize: (size: "sm" | "md" | "lg") =>
@@ -97,7 +97,7 @@ export const useUIPreferencesStore = create<UIPreferencesState>()(
           set(
             (state) => ({ showDebugInfo: !state.showDebugInfo }),
             false,
-            "toggleDebugInfo"
+            "toggleDebugInfo",
           ),
 
         togglePerformanceMetrics: () =>
@@ -106,21 +106,20 @@ export const useUIPreferencesStore = create<UIPreferencesState>()(
               showPerformanceMetrics: !state.showPerformanceMetrics,
             }),
             false,
-            "togglePerformanceMetrics"
+            "togglePerformanceMetrics",
           ),
 
         // Utility actions
-        resetToDefaults: () =>
-          set(defaultState, false, "resetToDefaults"),
+        resetToDefaults: () => set(defaultState, false, "resetToDefaults"),
 
         applySystemTheme: () => {
           const systemPrefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)"
+            "(prefers-color-scheme: dark)",
           ).matches;
           set(
             { theme: systemPrefersDark ? "dark" : "light" },
             false,
-            "applySystemTheme"
+            "applySystemTheme",
           );
         },
       }),
@@ -135,58 +134,59 @@ export const useUIPreferencesStore = create<UIPreferencesState>()(
           highContrast: state.highContrast,
           fontSize: state.fontSize,
         }),
-      }
+      },
     ),
     {
       name: "ui-preferences-store",
-    }
-  )
+    },
+  ),
 );
 
 // Selector hooks for better performance
-export const useTheme = () => 
-  useUIPreferencesStore((state) => state.theme);
+export const useTheme = () => useUIPreferencesStore((state) => state.theme);
 
-export const useAnimations = () => 
+export const useAnimations = () =>
   useUIPreferencesStore((state) => state.animations);
 
-export const useCompactMode = () => 
+export const useCompactMode = () =>
   useUIPreferencesStore((state) => state.compactMode);
 
-export const useSidebarCollapsed = () => 
+export const useSidebarCollapsed = () =>
   useUIPreferencesStore((state) => state.sidebarCollapsed);
 
-export const useHighContrast = () => 
+export const useHighContrast = () =>
   useUIPreferencesStore((state) => state.highContrast);
 
-export const useFontSize = () => 
+export const useFontSize = () =>
   useUIPreferencesStore((state) => state.fontSize);
 
-export const useShowDebugInfo = () => 
+export const useShowDebugInfo = () =>
   useUIPreferencesStore((state) => state.showDebugInfo);
 
-export const useShowPerformanceMetrics = () => 
+export const useShowPerformanceMetrics = () =>
   useUIPreferencesStore((state) => state.showPerformanceMetrics);
 
 // Theme effect hook to apply theme to document
 export const useThemeEffect = () => {
   const theme = useTheme();
-  
+
   React.useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.remove("light", "dark");
     document.documentElement.classList.add(theme);
   }, [theme]);
 };
 
 // System theme listener hook
 export const useSystemThemeListener = () => {
-  const applySystemTheme = useUIPreferencesStore((state) => state.applySystemTheme);
-  
+  const applySystemTheme = useUIPreferencesStore(
+    (state) => state.applySystemTheme,
+  );
+
   React.useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => applySystemTheme();
-    
+
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [applySystemTheme]);

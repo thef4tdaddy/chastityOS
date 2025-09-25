@@ -8,23 +8,23 @@ import { devtools } from "zustand/middleware";
 export interface NavigationState {
   // Current page/route
   currentPage: string;
-  
+
   // Breadcrumbs for navigation
   breadcrumbs: string[];
-  
+
   // Mobile menu state
   isMobileMenuOpen: boolean;
-  
+
   // Page loading state
   isPageLoading: boolean;
-  
+
   // Actions
   setCurrentPage: (page: string) => void;
   setBreadcrumbs: (breadcrumbs: string[]) => void;
   toggleMobileMenu: () => void;
   setMobileMenuOpen: (isOpen: boolean) => void;
   setPageLoading: (isLoading: boolean) => void;
-  
+
   // Utility actions
   addBreadcrumb: (breadcrumb: string) => void;
   removeBreadcrumb: () => void;
@@ -41,7 +41,7 @@ export const useNavigationStore = create<NavigationState>()(
       isPageLoading: false,
 
       // Actions
-      setCurrentPage: (page: string) => 
+      setCurrentPage: (page: string) =>
         set({ currentPage: page }, false, "setCurrentPage"),
 
       setBreadcrumbs: (breadcrumbs: string[]) =>
@@ -51,7 +51,7 @@ export const useNavigationStore = create<NavigationState>()(
         set(
           (state) => ({ isMobileMenuOpen: !state.isMobileMenuOpen }),
           false,
-          "toggleMobileMenu"
+          "toggleMobileMenu",
         ),
 
       setMobileMenuOpen: (isOpen: boolean) =>
@@ -67,7 +67,7 @@ export const useNavigationStore = create<NavigationState>()(
             breadcrumbs: [...state.breadcrumbs, breadcrumb],
           }),
           false,
-          "addBreadcrumb"
+          "addBreadcrumb",
         ),
 
       removeBreadcrumb: () =>
@@ -76,7 +76,7 @@ export const useNavigationStore = create<NavigationState>()(
             breadcrumbs: state.breadcrumbs.slice(0, -1),
           }),
           false,
-          "removeBreadcrumb"
+          "removeBreadcrumb",
         ),
 
       clearBreadcrumbs: () =>
@@ -84,19 +84,19 @@ export const useNavigationStore = create<NavigationState>()(
     }),
     {
       name: "navigation-store",
-    }
-  )
+    },
+  ),
 );
 
 // Selector hooks for better performance
-export const useCurrentPage = () => 
+export const useCurrentPage = () =>
   useNavigationStore((state) => state.currentPage);
 
-export const useBreadcrumbs = () => 
+export const useBreadcrumbs = () =>
   useNavigationStore((state) => state.breadcrumbs);
 
-export const useIsMobileMenuOpen = () => 
+export const useIsMobileMenuOpen = () =>
   useNavigationStore((state) => state.isMobileMenuOpen);
 
-export const useIsPageLoading = () => 
+export const useIsPageLoading = () =>
   useNavigationStore((state) => state.isPageLoading);
