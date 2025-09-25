@@ -5,10 +5,9 @@
 import { sessionDBService } from "./SessionDBService";
 import { eventDBService } from "./EventDBService";
 import { settingsDBService } from "./SettingsDBService";
-import { SystemEventType } from "@/types/events";
-import type { EmergencyUnlockReason } from "@/types/events";
-import { serviceLogger } from "@/utils/logging";
-import { generateUUID } from "@/utils";
+import type { EmergencyUnlockReason } from "../../types/events";
+import { serviceLogger } from "../../utils/logging";
+import { generateUUID } from "../../utils/helpers/hash";
 
 const logger = serviceLogger("EmergencyService");
 
@@ -30,11 +29,17 @@ class EmergencyService {
   /**
    * Perform emergency unlock with complete audit trail
    */
-  async performEmergencyUnlock(options: EmergencyUnlockOptions): Promise<EmergencyUnlockResult> {
+  async performEmergencyUnlock(
+    options: EmergencyUnlockOptions,
+  ): Promise<EmergencyUnlockResult> {
     const { sessionId, userId, reason, additionalNotes } = options;
 
     try {
-      logger.info("Starting emergency unlock process", { sessionId, userId, reason });
+      logger.info("Starting emergency unlock process", {
+        sessionId,
+        userId,
+        reason,
+      });
 
       // 1. Validate session exists and is active
       const session = await sessionDBService.findById(sessionId);
@@ -53,7 +58,10 @@ class EmergencyService {
       // 2. Check cooldown if enabled
       const cooldownCheck = await this.checkEmergencyUnlockCooldown(userId);
       if (!cooldownCheck.allowed) {
-        logger.warn("Emergency unlock blocked by cooldown", { userId, cooldownUntil: cooldownCheck.cooldownUntil });
+        logger.warn("Emergency unlock blocked by cooldown", {
+          userId,
+          cooldownUntil: cooldownCheck.cooldownUntil,
+        });
         return {
           success: false,
           message: `Emergency unlock on cooldown until ${cooldownCheck.cooldownUntil?.toLocaleString()}`,
@@ -74,7 +82,9 @@ class EmergencyService {
       });
 
       // 4. Calculate session duration for logging
-      const sessionDuration = Math.floor((endTime.getTime() - session.startTime.getTime()) / 1000);
+      const sessionDuration = Math.floor(
+        (endTime.getTime() - session.startTime.getTime()) / 1000,
+      );
 
       // 5. Log emergency event with detailed information
       await eventDBService.create({
@@ -136,23 +146,19 @@ class EmergencyService {
     cooldownUntil?: Date;
   }> {
     try {
-      const settings = await settingsDBService.findByUserId(userId);
+      const settings = await settingsDBService.getSettings(userId);
       if (!settings || !settings.chastity.emergencyUnlockCooldown) {
         return { allowed: true };
       }
 
-      // Check for recent emergency unlocks
-      const recentEvents = await eventDBService.findByFilters({
-        userId,
-        type: "session_end",
-        dateRange: {
-          start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-          end: new Date(),
-        },
-      });
+      // Check for recent emergency unlocks by getting all events for user
+      const recentEvents = await eventDBService.getEvents(userId, {}, 100, 0);
 
       const recentEmergencyUnlocks = recentEvents.filter(
-        (event) => event.details?.endReason === "emergency_unlock"
+        (event) =>
+          event.type === "session_end" &&
+          event.details?.endReason === "emergency_unlock" &&
+          event.timestamp.getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000, // Last 7 days
       );
 
       if (recentEmergencyUnlocks.length === 0) {
@@ -161,12 +167,13 @@ class EmergencyService {
 
       // Find most recent emergency unlock
       const lastEmergencyUnlock = recentEmergencyUnlocks.sort(
-        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
       )[0];
 
       const cooldownHours = settings.chastity.emergencyUnlockCooldown;
       const cooldownUntil = new Date(
-        lastEmergencyUnlock.timestamp.getTime() + cooldownHours * 60 * 60 * 1000
+        lastEmergencyUnlock.timestamp.getTime() +
+          cooldownHours * 60 * 60 * 1000,
       );
 
       const isOnCooldown = new Date() < cooldownUntil;
@@ -176,7 +183,10 @@ class EmergencyService {
         cooldownUntil: isOnCooldown ? cooldownUntil : undefined,
       };
     } catch (error) {
-      logger.error("Failed to check emergency unlock cooldown", { error: error as Error, userId });
+      logger.error("Failed to check emergency unlock cooldown", {
+        error: error as Error,
+        userId,
+      });
       // If we can't check cooldown, allow the unlock for safety
       return { allowed: true };
     }
@@ -188,17 +198,20 @@ class EmergencyService {
   private async clearActiveRestrictions(userId: string): Promise<void> {
     try {
       logger.debug("Clearing active restrictions", { userId });
-      
+
       // For now, this is a placeholder for future restriction clearing logic
       // This could include:
       // - Temporarily disabling hardcore mode restrictions
       // - Clearing keyholder locks
       // - Resetting any temporary blocks
-      
+
       // The actual implementation would depend on how restrictions are stored
       // and managed in the application
     } catch (error) {
-      logger.error("Failed to clear restrictions", { error: error as Error, userId });
+      logger.error("Failed to clear restrictions", {
+        error: error as Error,
+        userId,
+      });
       // Don't throw - restriction clearing is nice-to-have, not critical
     }
   }
@@ -208,16 +221,21 @@ class EmergencyService {
    */
   private async setEmergencyCooldown(userId: string): Promise<void> {
     try {
-      const settings = await settingsDBService.findByUserId(userId);
+      const settings = await settingsDBService.getSettings(userId);
       if (!settings || !settings.chastity.emergencyUnlockCooldown) {
         return; // No cooldown configured
       }
 
-      logger.debug("Emergency cooldown already handled by event logging", { userId });
+      logger.debug("Emergency cooldown already handled by event logging", {
+        userId,
+      });
       // Cooldown is handled by checking recent emergency unlock events
       // No additional storage needed
     } catch (error) {
-      logger.error("Failed to set emergency cooldown", { error: error as Error, userId });
+      logger.error("Failed to set emergency cooldown", {
+        error: error as Error,
+        userId,
+      });
       // Don't throw - cooldown is a secondary safety feature
     }
   }
@@ -225,7 +243,10 @@ class EmergencyService {
   /**
    * Get emergency unlock usage statistics for a user
    */
-  async getEmergencyUnlockStats(userId: string, daysPeriod: number = 30): Promise<{
+  async getEmergencyUnlockStats(
+    userId: string,
+    daysPeriod: number = 30,
+  ): Promise<{
     totalEmergencyUnlocks: number;
     lastEmergencyUnlock?: Date;
     reasonBreakdown: Record<string, number>;
@@ -233,28 +254,28 @@ class EmergencyService {
     cooldownUntil?: Date;
   }> {
     try {
+      const events = await eventDBService.getEvents(userId, {}, 200, 0);
+
       const startDate = new Date(Date.now() - daysPeriod * 24 * 60 * 60 * 1000);
-      const endDate = new Date();
-
-      const events = await eventDBService.findByFilters({
-        userId,
-        type: "session_end",
-        dateRange: { start: startDate, end: endDate },
-      });
-
       const emergencyUnlocks = events.filter(
-        (event) => event.details?.endReason === "emergency_unlock"
+        (event) =>
+          event.type === "session_end" &&
+          event.details?.endReason === "emergency_unlock" &&
+          event.timestamp >= startDate,
       );
 
       const reasonBreakdown: Record<string, number> = {};
       emergencyUnlocks.forEach((event) => {
-        const reason = event.details?.emergencyReason as string || "Unknown";
+        const reason = (event.details?.emergencyReason as string) || "Unknown";
         reasonBreakdown[reason] = (reasonBreakdown[reason] || 0) + 1;
       });
 
-      const lastEmergencyUnlock = emergencyUnlocks.length > 0
-        ? emergencyUnlocks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0].timestamp
-        : undefined;
+      const lastEmergencyUnlock =
+        emergencyUnlocks.length > 0
+          ? emergencyUnlocks.sort(
+              (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+            )[0].timestamp
+          : undefined;
 
       const cooldownCheck = await this.checkEmergencyUnlockCooldown(userId);
 
@@ -266,7 +287,10 @@ class EmergencyService {
         cooldownUntil: cooldownCheck.cooldownUntil,
       };
     } catch (error) {
-      logger.error("Failed to get emergency unlock stats", { error: error as Error, userId });
+      logger.error("Failed to get emergency unlock stats", {
+        error: error as Error,
+        userId,
+      });
       throw error;
     }
   }
