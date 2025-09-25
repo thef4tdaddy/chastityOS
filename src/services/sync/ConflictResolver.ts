@@ -3,7 +3,13 @@
  * Implements strategies for resolving data conflicts between local and remote versions
  */
 import { serviceLogger } from "@/utils/logging";
-import type { DBSession, DBTask, DBSettings } from "@/types/database";
+import type { 
+  DBSession, 
+  DBTask, 
+  DBSettings, 
+  ConflictInfo, 
+  SettingsConflict 
+} from "@/types/database";
 
 const logger = serviceLogger("ConflictResolver");
 
@@ -58,8 +64,107 @@ class ConflictResolver {
    */
   resolveSettingsConflict(local: DBSettings, remote: DBSettings): DBSettings {
     logger.debug(`Resolving settings conflict for ${local.userId}`);
-    // TODO: Implement settings conflict resolution
-    return remote;
+    
+    // Start with the remote settings as base
+    const merged: DBSettings = { ...remote };
+    const conflicts: SettingsConflict[] = [];
+    
+    // System fields that should use latest timestamp
+    const systemFields = ['lastModified', 'syncStatus', 'userId'];
+    
+    // Check each field for conflicts
+    Object.keys(local).forEach(key => {
+      if (local[key as keyof DBSettings] !== remote[key as keyof DBSettings]) {
+        if (systemFields.includes(key)) {
+          // System fields: latest timestamp wins
+          if (local.lastModified > remote.lastModified) {
+            (merged as any)[key] = (local as any)[key];
+          }
+        } else {
+          // For complex objects, do deep comparison
+          const localVal = (local as any)[key];
+          const remoteVal = (remote as any)[key];
+          
+          if (typeof localVal === 'object' && typeof remoteVal === 'object') {
+            // Merge objects recursively where possible
+            if (key === 'notifications' || key === 'privacy' || key === 'chastity' || key === 'display') {
+              (merged as any)[key] = this.mergeSettingsObject(localVal, remoteVal, local.lastModified, remote.lastModified);
+            } else {
+              // For other objects, use timestamp rule
+              (merged as any)[key] = local.lastModified > remote.lastModified ? localVal : remoteVal;
+            }
+          } else {
+            // Simple values: use timestamp rule for automatic resolution
+            (merged as any)[key] = local.lastModified > remote.lastModified ? localVal : remoteVal;
+          }
+        }
+      }
+    });
+    
+    // Update metadata
+    merged.lastModified = new Date();
+    merged.syncStatus = "synced";
+    
+    logger.info(`Settings conflict resolved for ${local.userId}`, {
+      conflictsFound: conflicts.length,
+      resolvedAutomatically: true
+    });
+    
+    return merged;
+  }
+
+  /**
+   * Merge settings objects intelligently
+   */
+  private mergeSettingsObject(
+    local: Record<string, any>, 
+    remote: Record<string, any>, 
+    localTimestamp: Date, 
+    remoteTimestamp: Date
+  ): Record<string, any> {
+    const merged = { ...remote };
+    
+    Object.keys(local).forEach(key => {
+      if (local[key] !== remote[key]) {
+        // Use latest timestamp for individual settings
+        merged[key] = localTimestamp > remoteTimestamp ? local[key] : remote[key];
+      }
+    });
+    
+    return merged;
+  }
+
+  /**
+   * Check if two documents have a conflict
+   */
+  hasConflict<T extends { lastModified: Date; syncStatus: string }>(
+    local: T, 
+    remote: T
+  ): boolean {
+    // If both have been modified since last sync, there's a potential conflict
+    return local.syncStatus === "pending" && 
+           Math.abs(local.lastModified.getTime() - remote.lastModified.getTime()) > 1000; // 1 second tolerance
+  }
+
+  /**
+   * Create conflict info for manual resolution
+   */
+  createConflictInfo(
+    type: ConflictInfo['type'],
+    collection: string,
+    documentId: string,
+    localData: Record<string, unknown>,
+    remoteData: Record<string, unknown>
+  ): ConflictInfo {
+    return {
+      type,
+      collection,
+      documentId,
+      localData,
+      remoteData,
+      detectedAt: new Date(),
+      resolution: "pending"
+    };
   }
 }
 

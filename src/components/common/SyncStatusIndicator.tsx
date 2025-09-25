@@ -3,33 +3,42 @@
  * Shows the current sync status and connection state
  */
 import React from "react";
-import { useSyncStatus, useConnectionStatus } from "@/contexts/AppContext";
+import { useSyncContext } from "@/contexts/SyncContext";
+import { connectionStatus } from "@/services/sync/connectionStatus";
 
 export const SyncStatusIndicator: React.FC = () => {
-  const { syncStatus, lastSyncTime } = useSyncStatus();
-  const { isOnline, connectionType } = useConnectionStatus();
+  const { syncStatus, lastSyncTime, isSyncing, hasConflicts } = useSyncContext();
+  const [isOnline, setIsOnline] = React.useState(connectionStatus.getIsOnline());
+
+  React.useEffect(() => {
+    const unsubscribe = connectionStatus.subscribe(setIsOnline);
+    return unsubscribe;
+  }, []);
 
   const getStatusColor = () => {
     if (!isOnline) return "text-red-400";
+    if (hasConflicts) return "text-orange-400";
     if (syncStatus === "synced") return "text-green-400";
-    if (syncStatus === "pending") return "text-yellow-400";
-    if (syncStatus === "conflict") return "text-orange-400";
+    if (syncStatus === "pending" || isSyncing) return "text-yellow-400";
+    if (syncStatus === "error") return "text-red-400";
     return "text-gray-400";
   };
 
   const getStatusIcon = () => {
     if (!isOnline) return "⚠️";
+    if (hasConflicts) return "⚠️";
+    if (isSyncing) return "🔄";
     if (syncStatus === "synced") return "✅";
-    if (syncStatus === "pending") return "🔄";
-    if (syncStatus === "conflict") return "⚠️";
+    if (syncStatus === "error") return "❌";
     return "⭕";
   };
 
   const getStatusText = () => {
     if (!isOnline) return "Offline";
+    if (hasConflicts) return "Conflicts";
+    if (isSyncing) return "Syncing...";
     if (syncStatus === "synced") return "Synced";
-    if (syncStatus === "pending") return "Syncing...";
-    if (syncStatus === "conflict") return "Conflict";
+    if (syncStatus === "error") return "Error";
     return "Unknown";
   };
 
@@ -55,9 +64,9 @@ export const SyncStatusIndicator: React.FC = () => {
           • Last: {formatLastSync()}
         </span>
       )}
-      {connectionType && connectionType !== "unknown" && (
+      {!isOnline && (
         <span className="text-gray-500">
-          • {connectionType.toUpperCase()}
+          • Changes will sync when online
         </span>
       )}
     </div>
