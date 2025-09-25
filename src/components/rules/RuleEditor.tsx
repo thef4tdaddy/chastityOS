@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ChastityRule } from "./RuleCard";
-import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
+import { FaEdit, FaSave, FaTimes } from "../../utils/iconImport";
 
 // Rule Editor Component
 interface RuleEditorProps {

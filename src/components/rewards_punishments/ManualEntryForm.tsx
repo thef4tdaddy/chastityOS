@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { RewardPunishmentLog } from "./LogItem";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus } from "../../utils/iconImport";
 
 // Manual Entry Form Component
 interface ManualEntryFormProps {

@@ -7,7 +7,7 @@ import {
   FaTrophy,
   FaGavel,
   FaClock,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 
 // Task item component
 interface TaskItemProps {

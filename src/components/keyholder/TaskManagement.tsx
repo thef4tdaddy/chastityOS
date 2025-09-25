@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import type { DBTask, TaskStatus } from "../../types/database";
 import { taskDBService } from "../../services/database";
-import { FaTasks, FaPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import {
+  FaTasks,
+  FaPlus,
+  FaCheckCircle,
+  FaTimesCircle,
+} from "../../utils/iconImport";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
