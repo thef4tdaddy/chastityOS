@@ -1,4 +1,3 @@
-
 import { FirebaseSync } from "./FirebaseSync";
 import { FirebaseListeners } from "./FirebaseListeners";
 

@@ -1,4 +1,3 @@
-
 /**
  * Event Database Service
  * Handles all local database operations for events
@@ -27,7 +26,7 @@ class EventDBService extends BaseDBService<DBEvent> {
       sessionId?: string;
       isPrivate?: boolean;
       timestamp?: Date;
-    } = {}
+    } = {},
   ): Promise<string> {
     try {
       const eventId = generateUUID();
@@ -62,7 +61,7 @@ class EventDBService extends BaseDBService<DBEvent> {
     userId: string,
     filters: EventFilters = {},
     limit: number = 50,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<DBEvent[]> {
     try {
       let query = this.table.where("userId").equals(userId);
@@ -77,7 +76,7 @@ class EventDBService extends BaseDBService<DBEvent> {
         query = query.and(
           (event) =>
             event.timestamp >= filters.dateRange.start &&
-            event.timestamp <= filters.dateRange.end
+            event.timestamp <= filters.dateRange.end,
         );
       }
       if (typeof filters.isPrivate === "boolean") {

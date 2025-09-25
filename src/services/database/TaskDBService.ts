@@ -1,4 +1,3 @@
-
 /**
  * Task Database Service
  * Handles all local database operations for tasks
@@ -27,7 +26,7 @@ class TaskDBService extends BaseDBService<DBTask> {
       priority?: DBTask["priority"];
       assignedBy?: DBTask["assignedBy"];
       dueDate?: Date;
-    } = {}
+    } = {},
   ): Promise<string> {
     try {
       const taskId = generateUUID();
@@ -64,7 +63,7 @@ class TaskDBService extends BaseDBService<DBTask> {
     userId: string,
     filters: TaskFilters = {},
     limit: number = 50,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<DBTask[]> {
     try {
       let query = this.table.where("userId").equals(userId);
@@ -119,7 +118,7 @@ class TaskDBService extends BaseDBService<DBTask> {
     options: {
       submissiveNote?: string;
       keyholderFeedback?: string;
-    } = {}
+    } = {},
   ): Promise<void> {
     try {
       const updateData: Partial<DBTask> = { status };
@@ -153,14 +152,18 @@ class TaskDBService extends BaseDBService<DBTask> {
    */
   async getTasksByStatus(
     userId: string,
-    status: TaskStatus
+    status: TaskStatus,
   ): Promise<DBTask[]> {
     try {
       const tasks = await this.table
         .where({ userId, status })
         .sortBy("createdAt");
 
-      logger.debug("Get tasks by status", { userId, status, count: tasks.length });
+      logger.debug("Get tasks by status", {
+        userId,
+        status,
+        count: tasks.length,
+      });
       return tasks;
     } catch (error) {
       logger.error("Failed to get tasks by status", {
@@ -181,7 +184,11 @@ class TaskDBService extends BaseDBService<DBTask> {
       const tasks = await this.table
         .where("userId")
         .equals(userId)
-        .and((task) => task.dueDate ? task.dueDate < now && task.status === 'pending' : false)
+        .and((task) =>
+          task.dueDate
+            ? task.dueDate < now && task.status === "pending"
+            : false,
+        )
         .sortBy("dueDate");
 
       logger.debug("Get overdue tasks", { userId, count: tasks.length });

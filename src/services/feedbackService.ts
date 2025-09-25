@@ -1,7 +1,7 @@
 // src/services/feedbackService.ts
 
-import axios from 'axios';
-import type { FeedbackData } from '../types/feedback';
+import axios from "axios";
+import type { FeedbackData } from "../types/feedback";
 
 export class FeedbackService {
   // Submit to GitHub Issues (or other bug tracking system)
@@ -13,25 +13,26 @@ export class FeedbackService {
         body: this.formatFeedbackForGitHub(feedback),
         labels: this.getLabelsForFeedback(feedback),
       };
-      
+
       // Submit to GitHub if credentials are available
       await this.submitToGitHub(issueData);
-      
+
       // Submit to Discord webhook if available
       await this.submitToDiscord(feedback);
-      
+
       // Also store locally for analytics
       await this.storeLocalFeedback(feedback);
-      
     } catch (error) {
-      console.error('Failed to submit feedback:', error);
-      
+      console.error("Failed to submit feedback:", error);
+
       // Store locally if submission fails
       await this.storeLocalFeedback(feedback);
-      throw new Error('Feedback submission failed. We\'ve saved it locally and will retry.');
+      throw new Error(
+        "Feedback submission failed. We've saved it locally and will retry.",
+      );
     }
   }
-  
+
   private static formatFeedbackForGitHub(feedback: FeedbackData): string {
     return `
 ## ${feedback.type.toUpperCase()}: ${feedback.title}
@@ -39,20 +40,26 @@ export class FeedbackService {
 **Description:**
 ${feedback.description}
 
-${feedback.type === 'bug' ? `
+${
+  feedback.type === "bug"
+    ? `
 **Steps to Reproduce:**
-${feedback.steps || 'Not provided'}
+${feedback.steps || "Not provided"}
 
 **Expected Behavior:**
-${feedback.expected || 'Not provided'}
+${feedback.expected || "Not provided"}
 
 **Actual Behavior:**
-${feedback.actual || 'Not provided'}
+${feedback.actual || "Not provided"}
 
 **Priority:** ${feedback.priority}
-` : ''}
+`
+    : ""
+}
 
-${feedback.systemInfo ? `
+${
+  feedback.systemInfo
+    ? `
 **System Information:**
 - User Agent: ${feedback.systemInfo.userAgent}
 - Platform: ${feedback.systemInfo.platform}
@@ -62,30 +69,32 @@ ${feedback.systemInfo ? `
 - URL: ${feedback.systemInfo.url}
 - Language: ${feedback.systemInfo.language}
 - Features: localStorage(${feedback.systemInfo.localStorage}), sessionStorage(${feedback.systemInfo.sessionStorage}), indexedDB(${feedback.systemInfo.indexedDB}), serviceWorker(${feedback.systemInfo.serviceWorker})
-` : ''}
+`
+    : ""
+}
 
-**Contact:** ${feedback.contactEmail || 'Not provided'}
+**Contact:** ${feedback.contactEmail || "Not provided"}
 **Timestamp:** ${feedback.timestamp.toISOString()}
     `.trim();
   }
 
   private static getLabelsForFeedback(feedback: FeedbackData): string[] {
-    const labels = ['user-feedback'];
-    
+    const labels = ["user-feedback"];
+
     switch (feedback.type) {
-      case 'bug':
-        labels.push('bug');
-        if (feedback.priority === 'high') labels.push('priority-high');
-        if (feedback.priority === 'low') labels.push('priority-low');
+      case "bug":
+        labels.push("bug");
+        if (feedback.priority === "high") labels.push("priority-high");
+        if (feedback.priority === "low") labels.push("priority-low");
         break;
-      case 'feature':
-        labels.push('enhancement');
+      case "feature":
+        labels.push("enhancement");
         break;
-      case 'general':
-        labels.push('feedback');
+      case "general":
+        labels.push("feedback");
         break;
     }
-    
+
     return labels;
   }
 
@@ -94,7 +103,9 @@ ${feedback.systemInfo ? `
     const githubRepo = import.meta.env.VITE_GITHUB_REPO;
 
     if (!githubRepo || !githubToken) {
-      console.warn('GitHub environment variables are missing. Skipping GitHub issue creation.');
+      console.warn(
+        "GitHub environment variables are missing. Skipping GitHub issue creation.",
+      );
       return;
     }
 
@@ -104,46 +115,53 @@ ${feedback.systemInfo ? `
       {
         headers: {
           Authorization: `token ${githubToken}`,
-          Accept: 'application/vnd.github.v3+json',
+          Accept: "application/vnd.github.v3+json",
         },
-      }
+      },
     );
-    
-    console.log('✅ GitHub issue created:', response.data.html_url);
+
+    console.log("✅ GitHub issue created:", response.data.html_url);
   }
 
   private static async submitToDiscord(feedback: FeedbackData): Promise<void> {
-    const webhookUrl = feedback.type === 'bug' 
-      ? import.meta.env.VITE_DISCORD_WEBHOOK_BUG
-      : import.meta.env.VITE_DISCORD_WEBHOOK_SUGGESTION;
+    const webhookUrl =
+      feedback.type === "bug"
+        ? import.meta.env.VITE_DISCORD_WEBHOOK_BUG
+        : import.meta.env.VITE_DISCORD_WEBHOOK_SUGGESTION;
 
     if (!webhookUrl) {
-      console.warn('Discord webhook URL not configured. Skipping Discord notification.');
+      console.warn(
+        "Discord webhook URL not configured. Skipping Discord notification.",
+      );
       return;
     }
 
-    const appVersion = `${import.meta.env.VITE_APP_VERSION || 'dev'} (${import.meta.env.VITE_ENV || 'local'})`;
-    
+    const appVersion = `${import.meta.env.VITE_APP_VERSION || "dev"} (${import.meta.env.VITE_ENV || "local"})`;
+
     const discordPayload = {
-      content: `**New ${feedback.type.toUpperCase()}**\n${feedback.title}\n\n${feedback.description}\n\n**Contact:** ${feedback.contactEmail || 'N/A'}\n**App Version:** ${appVersion}\n**Time:** ${feedback.timestamp.toISOString()}\n**Priority:** ${feedback.priority}`
+      content: `**New ${feedback.type.toUpperCase()}**\n${feedback.title}\n\n${feedback.description}\n\n**Contact:** ${feedback.contactEmail || "N/A"}\n**App Version:** ${appVersion}\n**Time:** ${feedback.timestamp.toISOString()}\n**Priority:** ${feedback.priority}`,
     };
 
     await axios.post(webhookUrl, discordPayload);
-    console.log('✅ Discord notification sent');
+    console.log("✅ Discord notification sent");
   }
 
-  private static async storeLocalFeedback(feedback: FeedbackData): Promise<void> {
+  private static async storeLocalFeedback(
+    feedback: FeedbackData,
+  ): Promise<void> {
     try {
-      const stored = JSON.parse(localStorage.getItem('pendingFeedback') || '[]');
+      const stored = JSON.parse(
+        localStorage.getItem("pendingFeedback") || "[]",
+      );
       stored.push({
         ...feedback,
         timestamp: feedback.timestamp.toISOString(),
         localStorageId: Date.now(),
       });
-      localStorage.setItem('pendingFeedback', JSON.stringify(stored));
-      console.log('📱 Feedback stored locally');
+      localStorage.setItem("pendingFeedback", JSON.stringify(stored));
+      console.log("📱 Feedback stored locally");
     } catch (error) {
-      console.error('Failed to store feedback locally:', error);
+      console.error("Failed to store feedback locally:", error);
     }
   }
 }

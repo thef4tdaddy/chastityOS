@@ -1,4 +1,3 @@
-
 /**
  * Settings Database Service
  * Handles all local database operations for user settings
@@ -34,7 +33,7 @@ class SettingsDBService extends BaseDBService<DBSettings> {
    */
   async updateSettings(
     userId: string,
-    updates: Partial<DBSettings>
+    updates: Partial<DBSettings>,
   ): Promise<void> {
     try {
       const settings = await this.getSettings(userId);
@@ -44,7 +43,7 @@ class SettingsDBService extends BaseDBService<DBSettings> {
         const newSettings: Omit<DBSettings, "lastModified" | "syncStatus"> = {
           id: userId, // Use userId as the id for settings
           userId,
-          theme: 'dark',
+          theme: "dark",
           notifications: {
             enabled: true,
             sessionReminders: true,
@@ -65,17 +64,20 @@ class SettingsDBService extends BaseDBService<DBSettings> {
             hardcoreModeEnabled: false,
           },
           display: {
-            language: 'en',
+            language: "en",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            dateFormat: 'MM/dd/yyyy',
-            timeFormat: '12h',
-            startOfWeek: 'sunday',
+            dateFormat: "MM/dd/yyyy",
+            timeFormat: "12h",
+            startOfWeek: "sunday",
           },
           ...updates,
         };
         await this.create(newSettings);
       }
-      logger.info("Updated settings", { userId, updates: Object.keys(updates) });
+      logger.info("Updated settings", {
+        userId,
+        updates: Object.keys(updates),
+      });
     } catch (error) {
       logger.error("Failed to update settings", {
         error: error as Error,

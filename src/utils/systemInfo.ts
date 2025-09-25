@@ -1,6 +1,6 @@
 // src/utils/systemInfo.ts
 
-import type { SystemInfo } from '../types/feedback';
+import type { SystemInfo } from "../types/feedback";
 
 export async function collectSystemInfo(): Promise<SystemInfo> {
   return {
@@ -13,7 +13,7 @@ export async function collectSystemInfo(): Promise<SystemInfo> {
     localStorage: !!window.localStorage,
     sessionStorage: !!window.sessionStorage,
     indexedDB: !!window.indexedDB,
-    serviceWorker: 'serviceWorker' in navigator,
+    serviceWorker: "serviceWorker" in navigator,
     timestamp: new Date().toISOString(),
     url: window.location.href,
     referrer: document.referrer,

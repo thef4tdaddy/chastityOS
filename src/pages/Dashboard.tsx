@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FeatureCard } from '../components/dashboard/FeatureCard';
-import { sessionDBService } from '../services/database';
-import { useAuthState } from '../contexts';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { FeatureCard } from "../components/dashboard/FeatureCard";
+import { sessionDBService } from "../services/database";
+import { useAuthState } from "../contexts";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthState();
-  const [sessionDuration, setSessionDuration] = useState('0s');
+  const [sessionDuration, setSessionDuration] = useState("0s");
 
   useEffect(() => {
     if (user) {
@@ -14,7 +14,9 @@ const Dashboard: React.FC = () => {
         const session = await sessionDBService.getCurrentSession(user.uid);
         if (session) {
           // This is a simplified duration calculation. A more robust solution would be needed.
-          const duration = Math.floor((new Date().getTime() - session.startTime.getTime()) / 1000);
+          const duration = Math.floor(
+            (new Date().getTime() - session.startTime.getTime()) / 1000,
+          );
           setSessionDuration(`${duration}s`);
         }
       };
@@ -23,23 +25,11 @@ const Dashboard: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green p-4">
-      <header className="flex justify-between items-center mb-8">
-        <div className="text-2xl font-bold">ChastityOS</div>
-        {/* Hamburger menu for mobile, full nav for desktop */}
-        <nav className="hidden md:flex space-x-4">
-          <Link to="/chastity-tracking" className="hover:text-nightly-celadon">Chastity Tracking</Link>
-          <a href="#" className="hover:text-nightly-celadon">Tasks</a>
-          <a href="#" className="hover:text-nightly-celadon">Rewards/Punishments</a>
-          <a href="#" className="hover:text-nightly-celadon">Full Report</a>
-          <a href="#" className="hover:text-nightly-celadon">Settings</a>
-          <a href="#" className="bg-nightly-lavender-floral px-3 py-1 rounded">KH Access</a>
-        </nav>
-        <div className="md:hidden">☰</div>
-      </header>
-
+    <>
       <main>
-        <h1 className="text-4xl font-bold text-center mb-8">Welcome to ChastityOS Dashboard</h1>
+        <h1 className="text-4xl font-bold text-center mb-8">
+          Welcome to ChastityOS Dashboard
+        </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Link to="/chastity-tracking">
@@ -49,33 +39,39 @@ const Dashboard: React.FC = () => {
               accentColor="aquamarine"
             />
           </Link>
-          <FeatureCard
-            title="Log Event"
-            description="Record new events"
-            accentColor="lavender-floral"
-          />
-          <FeatureCard
-            title="Tasks"
-            description="View upcoming tasks"
-            accentColor="lavender-floral"
-            className="hidden md:block"
-          />
-          <FeatureCard
-            title="Full Report"
-            description="Analyze your journey"
-            accentColor="aquamarine"
-          />
+          <Link to="/log-event">
+            <FeatureCard
+              title="Log Event"
+              description="Record new events"
+              accentColor="lavender-floral"
+            />
+          </Link>
+          <Link to="/tasks">
+            <FeatureCard
+              title="Tasks"
+              description="View upcoming tasks"
+              accentColor="lavender-floral"
+              className="hidden md:block"
+            />
+          </Link>
+          <Link to="/full-report">
+            <FeatureCard
+              title="Full Report"
+              description="Analyze your journey"
+              accentColor="aquamarine"
+            />
+          </Link>
         </div>
 
         <div className="text-center mt-8">
-            <button className="bg-nightly-lavender-floral text-white px-6 py-2 rounded-lg font-bold">View Keyholder Dashboard</button>
+          <Link to="/keyholder">
+            <button className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-6 py-2 rounded-lg font-bold transition-colors">
+              View Keyholder Dashboard
+            </button>
+          </Link>
         </div>
       </main>
-
-      <footer className="text-center text-gray-500 mt-8">
-        <p>vX.X.X | Privacy | Terms | Support</p>
-      </footer>
-    </div>
+    </>
   );
 };
 

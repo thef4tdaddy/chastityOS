@@ -3,9 +3,24 @@
  * Handles bidirectional data sync between Dexie and Firebase
  */
 import { serviceLogger } from "@/utils/logging";
-import { db, sessionDBService, eventDBService, taskDBService, goalDBService, settingsDBService } from "../database";
+import {
+  db,
+  sessionDBService,
+  eventDBService,
+  taskDBService,
+  goalDBService,
+  settingsDBService,
+} from "../database";
 import { getFirestore, getFirebaseAuth } from "../firebase";
-import { collection, doc, writeBatch, query, where, getDocs, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  writeBatch,
+  query,
+  where,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
 import type { DBBase, DBSession, DBTask, DBSettings } from "@/types/database";
 import { conflictResolver } from "./ConflictResolver";
 import { connectionStatus } from "./connectionStatus";
@@ -18,7 +33,7 @@ export class FirebaseSync {
 
   constructor() {
     logger.info("FirebaseSync initialized");
-    connectionStatus.subscribe(isOnline => {
+    connectionStatus.subscribe((isOnline) => {
       if (isOnline) {
         this.processOfflineQueue();
       }
@@ -35,8 +50,8 @@ export class FirebaseSync {
     }
 
     if (!connectionStatus.getIsOnline()) {
-        logger.warn("App is offline, skipping sync");
-        return;
+      logger.warn("App is offline, skipping sync");
+      return;
     }
 
     const auth = await getFirebaseAuth();
@@ -62,7 +77,10 @@ export class FirebaseSync {
 
       logger.info("Synchronization process completed", { userId: user.uid });
     } catch (error) {
-      logger.error("Synchronization process failed", { error: error as Error, userId: user.uid });
+      logger.error("Synchronization process failed", {
+        error: error as Error,
+        userId: user.uid,
+      });
     } finally {
       this.isSyncing = false;
     }
@@ -78,7 +96,10 @@ export class FirebaseSync {
       await this.pushChangesToFirebase(collectionName, userId);
       await this.pullChangesFromFirebase(collectionName, userId);
     } catch (error) {
-      logger.error(`Failed to sync collection: ${collectionName}`, { error: error as Error, userId });
+      logger.error(`Failed to sync collection: ${collectionName}`, {
+        error: error as Error,
+        userId,
+      });
     }
   }
 
@@ -93,21 +114,34 @@ export class FirebaseSync {
     }
 
     if (!connectionStatus.getIsOnline()) {
-        logger.debug(`App is offline, queueing ${pendingDocs.length} changes for ${collectionName}`);
-        for (const docData of pendingDocs) {
-            await offlineQueue.queueOperation({ type: "update", collectionName, payload: docData });
-        }
-        return;
+      logger.debug(
+        `App is offline, queueing ${pendingDocs.length} changes for ${collectionName}`,
+      );
+      for (const docData of pendingDocs) {
+        await offlineQueue.queueOperation({
+          type: "update",
+          collectionName,
+          payload: docData,
+        });
+      }
+      return;
     }
 
-    logger.debug(`Pushing ${pendingDocs.length} pending changes for ${collectionName}`, { userId });
+    logger.debug(
+      `Pushing ${pendingDocs.length} pending changes for ${collectionName}`,
+      { userId },
+    );
 
     const firestore = await getFirestore();
     const batch = writeBatch(firestore);
     const syncedIds: string[] = [];
 
     for (const docData of pendingDocs) {
-      const docRef = doc(firestore, `users/${userId}/${collectionName}`, docData.id);
+      const docRef = doc(
+        firestore,
+        `users/${userId}/${collectionName}`,
+        docData.id,
+      );
       batch.set(docRef, docData, { merge: true });
       syncedIds.push(docData.id);
     }
@@ -115,43 +149,65 @@ export class FirebaseSync {
     try {
       await batch.commit();
       await this.markDocsAsSynced(collectionName, syncedIds);
-      logger.debug(`Successfully pushed ${syncedIds.length} changes for ${collectionName}`, { userId });
+      logger.debug(
+        `Successfully pushed ${syncedIds.length} changes for ${collectionName}`,
+        { userId },
+      );
     } catch (error) {
-      logger.error(`Failed to push changes for ${collectionName}`, { error: error as Error, userId });
+      logger.error(`Failed to push changes for ${collectionName}`, {
+        error: error as Error,
+        userId,
+      });
     }
   }
 
   /**
    * Pull remote changes from Firebase
    */
-  private async pullChangesFromFirebase(collectionName: string, userId: string) {
+  private async pullChangesFromFirebase(
+    collectionName: string,
+    userId: string,
+  ) {
     const firestore = await getFirestore();
     const syncMeta = await db.syncMeta.get(collectionName);
     const lastSync = syncMeta ? syncMeta.lastSync : new Date(0);
 
-    logger.debug(`Pulling changes for ${collectionName} since ${lastSync.toISOString()}`, { userId });
+    logger.debug(
+      `Pulling changes for ${collectionName} since ${lastSync.toISOString()}`,
+      { userId },
+    );
 
     const q = query(
       collection(firestore, `users/${userId}/${collectionName}`),
-      where("lastModified", ">", Timestamp.fromDate(lastSync))
+      where("lastModified", ">", Timestamp.fromDate(lastSync)),
     );
 
     try {
       const querySnapshot = await getDocs(q);
-      const remoteDocs = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as DBBase));
+      const remoteDocs = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as DBBase,
+      );
 
       if (remoteDocs.length === 0) {
-        logger.debug(`No new changes to pull for ${collectionName}`, { userId });
+        logger.debug(`No new changes to pull for ${collectionName}`, {
+          userId,
+        });
         return;
       }
 
-      logger.debug(`Pulled ${remoteDocs.length} new changes for ${collectionName}`, { userId });
+      logger.debug(
+        `Pulled ${remoteDocs.length} new changes for ${collectionName}`,
+        { userId },
+      );
 
       await this.applyRemoteChanges(collectionName, remoteDocs);
 
       await db.syncMeta.update(collectionName, { lastSync: new Date() });
     } catch (error) {
-      logger.error(`Failed to pull changes for ${collectionName}`, { error: error as Error, userId });
+      logger.error(`Failed to pull changes for ${collectionName}`, {
+        error: error as Error,
+        userId,
+      });
     }
   }
 
@@ -170,18 +226,21 @@ export class FirebaseSync {
     const user = auth.currentUser;
 
     if (!user) {
-        logger.warn("No user authenticated, cannot process offline queue");
-        return;
+      logger.warn("No user authenticated, cannot process offline queue");
+      return;
     }
 
     for (const op of operations) {
-        await this.pushChangesToFirebase(op.collectionName, user.uid);
+      await this.pushChangesToFirebase(op.collectionName, user.uid);
     }
 
     await offlineQueue.clearQueue();
   }
 
-  private async getPendingDocs(collectionName: string, userId: string): Promise<DBBase[]> {
+  private async getPendingDocs(
+    collectionName: string,
+    userId: string,
+  ): Promise<DBBase[]> {
     switch (collectionName) {
       case "sessions":
         return sessionDBService.getPendingSync(userId);
@@ -226,13 +285,22 @@ export class FirebaseSync {
         let resolvedDoc;
         switch (collectionName) {
           case "sessions":
-            resolvedDoc = conflictResolver.resolveSessionConflict(localDoc as DBSession, docData as DBSession);
+            resolvedDoc = conflictResolver.resolveSessionConflict(
+              localDoc as DBSession,
+              docData as DBSession,
+            );
             break;
           case "tasks":
-            resolvedDoc = conflictResolver.resolveTaskConflict(localDoc as DBTask, docData as DBTask);
+            resolvedDoc = conflictResolver.resolveTaskConflict(
+              localDoc as DBTask,
+              docData as DBTask,
+            );
             break;
           case "settings":
-            resolvedDoc = conflictResolver.resolveSettingsConflict(localDoc as DBSettings, docData as DBSettings);
+            resolvedDoc = conflictResolver.resolveSettingsConflict(
+              localDoc as DBSettings,
+              docData as DBSettings,
+            );
             break;
           default:
             // Default to server wins
@@ -247,7 +315,10 @@ export class FirebaseSync {
     }
   }
 
-  private async getLocalDoc(collectionName: string, id: string): Promise<DBBase | null> {
+  private async getLocalDoc(
+    collectionName: string,
+    id: string,
+  ): Promise<DBBase | null> {
     switch (collectionName) {
       case "sessions":
         return sessionDBService.findById(id);
@@ -264,7 +335,11 @@ export class FirebaseSync {
     }
   }
 
-  private async updateLocalDoc(collectionName: string, id: string, data: DBBase) {
+  private async updateLocalDoc(
+    collectionName: string,
+    id: string,
+    data: DBBase,
+  ) {
     switch (collectionName) {
       case "sessions":
         await sessionDBService.update(id, data);

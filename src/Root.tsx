@@ -1,17 +1,14 @@
-
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { FeedbackFAB } from './components/feedback';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import AppLayout from "./components/layout/AppLayout";
+import { FeedbackFAB } from "./components/feedback";
 
 const Root: React.FC = () => {
   return (
-    <div>
-      {/* The header and footer will be part of the layout */}
+    <AppLayout>
       <Outlet />
-      
-      {/* Persistent Feedback FAB available on all pages */}
       <FeedbackFAB />
-    </div>
+    </AppLayout>
   );
 };
 

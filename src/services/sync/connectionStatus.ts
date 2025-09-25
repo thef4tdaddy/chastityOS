@@ -1,4 +1,3 @@
-
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("ConnectionStatus");
@@ -16,8 +15,10 @@ class ConnectionStatus {
     if (this.isOnline === isOnline) return;
 
     this.isOnline = isOnline;
-    logger.info(`Connection status changed: ${isOnline ? "Online" : "Offline"}`);
-    this.listeners.forEach(listener => listener(isOnline));
+    logger.info(
+      `Connection status changed: ${isOnline ? "Online" : "Offline"}`,
+    );
+    this.listeners.forEach((listener) => listener(isOnline));
   }
 
   public getIsOnline(): boolean {
@@ -30,7 +31,7 @@ class ConnectionStatus {
     listener(this.isOnline);
 
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 }

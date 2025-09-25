@@ -1,24 +1,24 @@
-import React from 'react';
-import { EmergencyUnlockModal } from '../components/tracker/EmergencyUnlockModal';
-import { RestoreSessionPrompt } from '../components/tracker/RestoreSessionPrompt';
-import { TrackerStats } from '../components/tracker/TrackerStats';
-import { ActionButtons } from '../components/tracker/ActionButtons';
-import { PauseResumeButtons } from '../components/tracker/PauseResumeButtons';
-import { ReasonModals } from '../components/tracker/ReasonModals';
+import React from "react";
+import { EmergencyUnlockModal } from "../components/tracker/EmergencyUnlockModal";
+import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
+import { TrackerStats } from "../components/tracker/TrackerStats";
+import { ActionButtons } from "../components/tracker/ActionButtons";
+import { PauseResumeButtons } from "../components/tracker/PauseResumeButtons";
+import { ReasonModals } from "../components/tracker/ReasonModals";
 
-import { TrackerHeader } from '../components/tracker/TrackerHeader';
+import { TrackerHeader } from "../components/tracker/TrackerHeader";
 
 const TrackerPage: React.FC = () => {
   // Mock data
   const isCageOn = true;
   const isPaused = false;
   const remainingGoalTime = 3600;
-  const keyholderName = 'Keyholder';
-  const savedSubmissivesName = 'Submissive';
+  const keyholderName = "Keyholder";
+  const savedSubmissivesName = "Submissive";
   const requiredKeyholderDurationSeconds = 7200;
   const mainChastityDisplayTime = 3600;
-  const topBoxLabel = 'Total Locked Time';
-  const topBoxTime = '1d 2h 3m';
+  const topBoxLabel = "Total Locked Time";
+  const topBoxTime = "1d 2h 3m";
   const livePauseDuration = 0;
   const accumulatedPauseTimeThisSession = 0;
   const timeCageOff = 0;
@@ -35,7 +35,7 @@ const TrackerPage: React.FC = () => {
   const showEmergencyUnlockModal = false;
 
   return (
-    <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg min-h-screen text-nightly-spring-green p-4">
+    <div className="text-nightly-spring-green">
       {showRestoreSessionPrompt && (
         <RestoreSessionPrompt onConfirm={() => {}} onDiscard={() => {}} />
       )}

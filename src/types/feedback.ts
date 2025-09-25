@@ -1,6 +1,6 @@
 // src/types/feedback.ts
 
-export type FeedbackType = 'bug' | 'feature' | 'general';
+export type FeedbackType = "bug" | "feature" | "general";
 
 export interface SystemInfo {
   userAgent: string;
@@ -23,9 +23,9 @@ export interface FeedbackData {
   title: string;
   description: string;
   steps?: string; // For bug reports
-  expected?: string; // For bug reports  
+  expected?: string; // For bug reports
   actual?: string; // For bug reports
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   category?: string;
   contactEmail?: string;
   includeSystemInfo: boolean;

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
@@ -10,7 +9,14 @@ interface EmergencyUnlockModalProps {
   unlockMessage: string;
 }
 
-export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({ isOpen, onClose, onSubmit, backupCode, setBackupCode, unlockMessage }) => {
+export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  backupCode,
+  setBackupCode,
+  unlockMessage,
+}) => {
   if (!isOpen) return null;
 
   return (
