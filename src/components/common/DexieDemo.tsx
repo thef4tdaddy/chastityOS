@@ -18,7 +18,7 @@ export const DexieDemo: React.FC = () => {
     findByUserId,
     isOnline,
     syncStatus,
-    triggerSync
+    triggerSync,
   } = useDexieSync();
 
   const { simulateOffline, simulateOnline, forceOffline } = useOfflineDemo();
@@ -32,7 +32,7 @@ export const DexieDemo: React.FC = () => {
   useEffect(() => {
     const loadTasks = async () => {
       if (!user?.uid) return;
-      
+
       try {
         setLoading(true);
         const userTasks = await findByUserId("tasks", user.uid);
@@ -64,7 +64,7 @@ export const DexieDemo: React.FC = () => {
       };
 
       await createWithSync("tasks", taskData);
-      
+
       // Reload tasks to show the new one
       const updatedTasks = await findByUserId("tasks", user.uid);
       setTasks(updatedTasks as DBTask[]);
@@ -78,12 +78,10 @@ export const DexieDemo: React.FC = () => {
     try {
       setError(null);
       await updateWithSync("tasks", taskId, { status });
-      
+
       // Update local state
-      setTasks(prev => 
-        prev.map(task => 
-          task.id === taskId ? { ...task, status } : task
-        )
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskId ? { ...task, status } : task)),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update task");
@@ -94,9 +92,9 @@ export const DexieDemo: React.FC = () => {
     try {
       setError(null);
       await deleteWithSync("tasks", taskId);
-      
+
       // Remove from local state
-      setTasks(prev => prev.filter(task => task.id !== taskId));
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete task");
     }
@@ -125,25 +123,32 @@ export const DexieDemo: React.FC = () => {
         🗄️ Dexie Offline Demo
       </h2>
       <p className="text-sm text-gray-400 mb-4">
-        Test offline functionality: Tasks are saved locally first, then synced to Firebase when online.
-        Try creating tasks while "offline" to see them queue for sync!
+        Test offline functionality: Tasks are saved locally first, then synced
+        to Firebase when online. Try creating tasks while "offline" to see them
+        queue for sync!
       </p>
-      
+
       {/* Status indicators */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4 text-sm">
-          <span className={`px-2 py-1 rounded ${isOnline ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
-            {isOnline ? '🌐 Online' : '📱 Offline'}
+          <span
+            className={`px-2 py-1 rounded ${isOnline ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"}`}
+          >
+            {isOnline ? "🌐 Online" : "📱 Offline"}
           </span>
-          <span className={`px-2 py-1 rounded ${
-            syncStatus === 'synced' ? 'bg-green-900 text-green-300' :
-            syncStatus === 'pending' ? 'bg-yellow-900 text-yellow-300' :
-            'bg-gray-700 text-gray-300'
-          }`}>
-            Sync: {syncStatus || 'unknown'}
+          <span
+            className={`px-2 py-1 rounded ${
+              syncStatus === "synced"
+                ? "bg-green-900 text-green-300"
+                : syncStatus === "pending"
+                  ? "bg-yellow-900 text-yellow-300"
+                  : "bg-gray-700 text-gray-300"
+            }`}
+          >
+            Sync: {syncStatus || "unknown"}
           </span>
         </div>
-        
+
         {/* Offline simulation buttons */}
         <div className="flex space-x-2">
           <button
@@ -178,7 +183,7 @@ export const DexieDemo: React.FC = () => {
             onChange={(e) => setNewTaskText(e.target.value)}
             placeholder="Enter a task description..."
             className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400"
-            onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
+            onKeyPress={(e) => e.key === "Enter" && handleAddTask()}
           />
           <button
             onClick={handleAddTask}
@@ -201,17 +206,21 @@ export const DexieDemo: React.FC = () => {
           <p className="text-gray-400">No tasks yet. Add one above!</p>
         ) : (
           tasks.map((task) => (
-            <div key={task.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
+            <div
+              key={task.id}
+              className="flex items-center justify-between p-3 bg-gray-700 rounded"
+            >
               <div className="flex-1">
                 <p className="text-white">{task.text}</p>
                 <p className="text-xs text-gray-400">
-                  Status: {task.status} • Created: {task.createdAt.toLocaleString()}
+                  Status: {task.status} • Created:{" "}
+                  {task.createdAt.toLocaleString()}
                 </p>
               </div>
               <div className="flex space-x-2">
-                {task.status === 'pending' && (
+                {task.status === "pending" && (
                   <button
-                    onClick={() => handleUpdateTask(task.id, 'completed')}
+                    onClick={() => handleUpdateTask(task.id, "completed")}
                     className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
                   >
                     Complete
@@ -232,7 +241,8 @@ export const DexieDemo: React.FC = () => {
       {/* Manual sync button */}
       <div className="flex justify-between items-center">
         <p className="text-xs text-gray-400">
-          Tasks: {tasks.length} • Pending sync: {tasks.filter(t => t.syncStatus === 'pending').length}
+          Tasks: {tasks.length} • Pending sync:{" "}
+          {tasks.filter((t) => t.syncStatus === "pending").length}
         </p>
         <button
           onClick={handleManualSync}
