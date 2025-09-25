@@ -5,6 +5,7 @@ import { FaPlus, FaBug, FaLightbulb, FaComment } from "../../utils/iconImport";
 import FeedbackModal from "./FeedbackModal";
 import { FeedbackService } from "../../services/feedbackService";
 import type { FeedbackType, FeedbackData } from "../../types/feedback";
+import { logger } from "../../utils/logging";
 
 const FeedbackFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -21,9 +22,9 @@ const FeedbackFAB: React.FC = () => {
     try {
       await FeedbackService.submitFeedback(feedback);
       // Success feedback could be shown here
-      console.log("Feedback submitted successfully");
+      logger.info("Feedback submitted successfully");
     } catch (error) {
-      console.error("Failed to submit feedback:", error);
+      logger.error("Failed to submit feedback", error);
       // Error handling - could show a toast notification
       throw error;
     }
