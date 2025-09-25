@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import {
   FaTrophy,
   FaFire,
-  FaTarget,
+  FaBullseye,
   FaClock,
   FaStar,
   FaArrowRight,
@@ -118,7 +118,7 @@ export const AchievementDashboard: React.FC = () => {
                 {achievementStats.completionPercentage.toFixed(0)}%
               </p>
             </div>
-            <FaTarget className="text-2xl text-nightly-spring-green" />
+            <FaBullseye className="text-2xl text-nightly-spring-green" />
           </div>
         </div>
 
@@ -232,7 +232,7 @@ function getCategoryIcon(category: AchievementCategory) {
     case AchievementCategory.SESSION_MILESTONES:
       return <FaClock className="text-nightly-aquamarine" />;
     case AchievementCategory.CONSISTENCY_BADGES:
-      return <FaTarget className="text-nightly-lavender-floral" />;
+      return <FaBullseye className="text-nightly-lavender-floral" />;
     case AchievementCategory.STREAK_ACHIEVEMENTS:
       return <FaFire className="text-red-400" />;
     case AchievementCategory.GOAL_BASED:
