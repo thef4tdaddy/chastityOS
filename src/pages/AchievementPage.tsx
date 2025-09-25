@@ -6,7 +6,10 @@
 import React, { useState } from "react";
 import { useAuthState } from "../contexts";
 import { useAchievements } from "../hooks/useAchievements";
-import { AchievementGallery, AchievementDashboard } from "../components/achievements";
+import {
+  AchievementGallery,
+  AchievementDashboard,
+} from "../components/achievements";
 import { FaTrophy, FaList, FaChartBar } from "../utils/iconImport";
 
 type ViewMode = "dashboard" | "gallery";
@@ -28,7 +31,9 @@ export const AchievementPage: React.FC = () => {
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <FaTrophy className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
-            <div className="text-nightly-celadon">Please sign in to view achievements</div>
+            <div className="text-nightly-celadon">
+              Please sign in to view achievements
+            </div>
           </div>
         </div>
       </div>
@@ -57,7 +62,9 @@ export const AchievementPage: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <FaTrophy className="text-3xl text-nightly-lavender-floral" />
-            <h1 className="text-3xl font-bold text-nightly-honeydew">Achievements</h1>
+            <h1 className="text-3xl font-bold text-nightly-honeydew">
+              Achievements
+            </h1>
           </div>
 
           {/* View Mode Toggle */}

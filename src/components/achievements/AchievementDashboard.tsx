@@ -47,21 +47,23 @@ export const AchievementDashboard: React.FC = () => {
     .sort((a, b) => b.earnedAt.getTime() - a.earnedAt.getTime())
     .slice(0, 3);
 
-  const categoryProgress = Object.values(AchievementCategory).map(category => {
-    const categoryAchievements = getAchievementsByCategory(category);
-    const earned = achievementStats.categoryCounts[category] || 0;
-    const total = categoryAchievements.length;
-    const percentage = total > 0 ? (earned / total) * 100 : 0;
+  const categoryProgress = Object.values(AchievementCategory).map(
+    (category) => {
+      const categoryAchievements = getAchievementsByCategory(category);
+      const earned = achievementStats.categoryCounts[category] || 0;
+      const total = categoryAchievements.length;
+      const percentage = total > 0 ? (earned / total) * 100 : 0;
 
-    return {
-      category,
-      earned,
-      total,
-      percentage,
-      name: getCategoryDisplayName(category),
-      icon: getCategoryIcon(category),
-    };
-  });
+      return {
+        category,
+        earned,
+        total,
+        percentage,
+        name: getCategoryDisplayName(category),
+        icon: getCategoryIcon(category),
+      };
+    },
+  );
 
   return (
     <div className="space-y-6">
@@ -69,7 +71,9 @@ export const AchievementDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <FaTrophy className="text-2xl text-nightly-lavender-floral" />
-          <h2 className="text-2xl font-bold text-nightly-honeydew">Achievements</h2>
+          <h2 className="text-2xl font-bold text-nightly-honeydew">
+            Achievements
+          </h2>
         </div>
         <Link
           to="/achievements"
@@ -140,7 +144,7 @@ export const AchievementDashboard: React.FC = () => {
           <div className="space-y-3">
             {recentAchievements.map((userAchievement) => {
               const achievement = allAchievements.find(
-                (a) => a.id === userAchievement.achievementId
+                (a) => a.id === userAchievement.achievementId,
               );
               if (!achievement) return null;
 
