@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
   return (
     <>
       <main>
-        <h1 className="text-4xl font-bold text-center mb-8">
+        <h1 className="text-4xl font-bold text-center mb-8 text-white">
           Welcome to ChastityOS Dashboard
         </h1>
 
@@ -36,21 +36,21 @@ const Dashboard: React.FC = () => {
             <FeatureCard
               title="Chastity Tracker"
               description={`Current Session: ${sessionDuration}`}
-              accentColor="aquamarine"
+              accentColor="orange"
             />
           </Link>
           <Link to="/log-event">
             <FeatureCard
               title="Log Event"
               description="Record new events"
-              accentColor="lavender-floral"
+              accentColor="purple"
             />
           </Link>
           <Link to="/tasks">
             <FeatureCard
               title="Tasks"
               description="View upcoming tasks"
-              accentColor="lavender-floral"
+              accentColor="purple"
               className="hidden md:block"
             />
           </Link>
@@ -58,14 +58,14 @@ const Dashboard: React.FC = () => {
             <FeatureCard
               title="Full Report"
               description="Analyze your journey"
-              accentColor="aquamarine"
+              accentColor="orange"
             />
           </Link>
         </div>
 
         <div className="text-center mt-8">
           <Link to="/keyholder">
-            <button className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-6 py-2 rounded-lg font-bold transition-colors">
+            <button className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-colors">
               View Keyholder Dashboard
             </button>
           </Link>
