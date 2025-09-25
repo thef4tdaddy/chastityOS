@@ -7,9 +7,10 @@ import {
   FaComment,
   FaTimes,
   FaPaperPlane,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 import type { FeedbackModalProps, FeedbackData } from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
+import { logger } from "../../utils/logging";
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({
   type,
@@ -52,7 +53,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
       await onSubmit(feedbackData);
       onClose();
     } catch (error) {
-      console.error("Failed to submit feedback:", error);
+      logger.error("Failed to submit feedback", error);
       // Error handling is done in the service
     } finally {
       setIsSubmitting(false);

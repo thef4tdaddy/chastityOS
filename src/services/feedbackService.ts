@@ -2,8 +2,11 @@
 
 import axios from "axios";
 import type { FeedbackData } from "../types/feedback";
+import { serviceLogger } from "../utils/logging";
 
 export class FeedbackService {
+  private static logger = serviceLogger("FeedbackService");
+
   // Submit to GitHub Issues (or other bug tracking system)
   static async submitFeedback(feedback: FeedbackData): Promise<void> {
     try {
@@ -23,7 +26,7 @@ export class FeedbackService {
       // Also store locally for analytics
       await this.storeLocalFeedback(feedback);
     } catch (error) {
-      console.error("Failed to submit feedback:", error);
+      this.logger.error("Failed to submit feedback", error);
 
       // Store locally if submission fails
       await this.storeLocalFeedback(feedback);
@@ -103,7 +106,7 @@ ${
     const githubRepo = import.meta.env.VITE_GITHUB_REPO;
 
     if (!githubRepo || !githubToken) {
-      console.warn(
+      this.logger.warn(
         "GitHub environment variables are missing. Skipping GitHub issue creation.",
       );
       return;
@@ -120,7 +123,7 @@ ${
       },
     );
 
-    console.log("✅ GitHub issue created:", response.data.html_url);
+    this.logger.info("GitHub issue created", { url: response.data.html_url });
   }
 
   private static async submitToDiscord(feedback: FeedbackData): Promise<void> {
@@ -130,7 +133,7 @@ ${
         : import.meta.env.VITE_DISCORD_WEBHOOK_SUGGESTION;
 
     if (!webhookUrl) {
-      console.warn(
+      this.logger.warn(
         "Discord webhook URL not configured. Skipping Discord notification.",
       );
       return;
@@ -143,7 +146,7 @@ ${
     };
 
     await axios.post(webhookUrl, discordPayload);
-    console.log("✅ Discord notification sent");
+    this.logger.info("Discord notification sent");
   }
 
   private static async storeLocalFeedback(
@@ -159,9 +162,9 @@ ${
         localStorageId: Date.now(),
       });
       localStorage.setItem("pendingFeedback", JSON.stringify(stored));
-      console.log("📱 Feedback stored locally");
+      this.logger.info("Feedback stored locally");
     } catch (error) {
-      console.error("Failed to store feedback locally:", error);
+      this.logger.error("Failed to store feedback locally", error);
     }
   }
 }
