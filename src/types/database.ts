@@ -233,3 +233,40 @@ export interface QueuedOperation<T extends DBBase> {
   payload: T;
   createdAt: Date;
 }
+
+// Sync operation types and interfaces
+export interface SyncOptions {
+  force?: boolean;
+  collections?: string[];
+  conflictResolution?: "auto" | "manual";
+}
+
+export interface SyncResult {
+  success: boolean;
+  operations: {
+    uploaded: number;
+    downloaded: number;
+    conflicts: number;
+  };
+  conflicts: ConflictInfo[];
+  error?: Error;
+  timestamp: Date;
+}
+
+export interface ConflictInfo {
+  type: "upload_conflict" | "download_conflict" | "settings_conflict";
+  collection: string;
+  documentId: string;
+  localData: Record<string, unknown>;
+  remoteData: Record<string, unknown>;
+  detectedAt: Date;
+  resolution?: "local" | "remote" | "merge" | "pending";
+}
+
+export interface SettingsConflict {
+  field: string;
+  localValue: unknown;
+  remoteValue: unknown;
+  localTimestamp: Date;
+  remoteTimestamp: Date;
+}
