@@ -129,6 +129,50 @@ class EventDBService extends BaseDBService<DBEvent> {
       throw error;
     }
   }
+
+  /**
+   * Find events by filter criteria
+   */
+  async findByFilter(filters: Partial<EventFilters>): Promise<DBEvent[]> {
+    try {
+      let query = this.table.toCollection();
+
+      if (filters.userId) {
+        query = this.table.where("userId").equals(filters.userId);
+      }
+      if (filters.sessionId) {
+        query = query.and ? query.and((event) => event.sessionId === filters.sessionId) 
+          : this.table.where("sessionId").equals(filters.sessionId);
+      }
+      if (filters.type) {
+        query = query.and ? query.and((event) => event.type === filters.type)
+          : this.table.where("type").equals(filters.type);
+      }
+      if (filters.dateRange) {
+        query = query.and((event) =>
+          event.timestamp >= filters.dateRange!.start &&
+          event.timestamp <= filters.dateRange!.end,
+        );
+      }
+      if (typeof filters.isPrivate === "boolean") {
+        query = query.and((event) => event.isPrivate === filters.isPrivate);
+      }
+
+      const events = await query.reverse().sortBy("timestamp");
+
+      logger.debug("Find by filter", {
+        filters,
+        returned: events.length,
+      });
+      return events;
+    } catch (error) {
+      logger.error("Failed to find events by filter", {
+        error: error as Error,
+        filters,
+      });
+      throw error;
+    }
+  }
 }
 
 export const eventDBService = new EventDBService();

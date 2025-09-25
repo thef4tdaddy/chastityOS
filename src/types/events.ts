@@ -120,9 +120,10 @@ export const REMOVAL_REASONS = [
   "Other",
 ] as const;
 export const PAUSE_REASONS = [
-  "Cleaning",
+  "Bathroom Break",
+  "Emergency", 
   "Medical",
-  "Exercise",
+  "Work/Social",
   "Other",
 ] as const;
 
