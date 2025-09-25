@@ -6,7 +6,7 @@ import {
   ManualEntryForm,
 } from "../components/rewards_punishments";
 import type { RewardPunishmentLog } from "../components/rewards_punishments";
-import { FaFilter, FaSpinner, FaTrophy } from "react-icons/fa";
+import { FaFilter, FaSpinner, FaTrophy } from "../utils/iconImport";
 // Mock data for demonstration
 const mockRewardsAndPunishments: RewardPunishmentLog[] = [
   {

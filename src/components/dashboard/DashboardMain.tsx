@@ -11,7 +11,7 @@ export const DashboardMain: React.FC<DashboardMainProps> = ({
 }) => {
   return (
     <main>
-      <h1 className="text-4xl font-bold text-center mb-8">
+      <h1 className="text-4xl font-bold text-center mb-8 text-white">
         Welcome to ChastityOS Dashboard
       </h1>
 
@@ -20,48 +20,40 @@ export const DashboardMain: React.FC<DashboardMainProps> = ({
           <FeatureCard
             title="Chastity Tracker"
             description={`Current Session: ${sessionDuration}`}
-            accentColor="aquamarine"
+            accentColor="orange"
           />
         </Link>
 
         <Link to="/log-event">
           <FeatureCard
             title="Log Event"
-            description="Record your experiences and milestones"
-            accentColor="lavender-floral"
+            description="Record new events"
+            accentColor="purple"
           />
         </Link>
 
         <Link to="/tasks">
           <FeatureCard
             title="Tasks"
-            description="View and manage your assigned tasks"
-            accentColor="spring-green"
-          />
-        </Link>
-
-        <Link to="/rewards">
-          <FeatureCard
-            title="Rewards & Punishments"
-            description="Track your progress and consequences"
-            accentColor="celadon"
+            description="View upcoming tasks"
+            accentColor="purple"
           />
         </Link>
 
         <Link to="/full-report">
           <FeatureCard
             title="Full Report"
-            description="Comprehensive view of your journey"
-            accentColor="honeydew"
+            description="Analyze your journey"
+            accentColor="orange"
           />
         </Link>
+      </div>
 
+      <div className="text-center mt-8">
         <Link to="/keyholder">
-          <FeatureCard
-            title="Keyholder Access"
-            description="Administrative controls for keyholders"
-            accentColor="lavender-floral"
-          />
+          <button className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+            View Keyholder Dashboard
+          </button>
         </Link>
       </div>
     </main>
