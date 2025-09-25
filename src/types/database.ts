@@ -320,5 +320,6 @@ export interface DBLeaderboardEntry extends DBBase {
   value: number;
   rank: number;
   displayName: string;
+  displayNameType: "real" | "username" | "anonymous";
   isAnonymous: boolean;
 }
