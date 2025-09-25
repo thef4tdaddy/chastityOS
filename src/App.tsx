@@ -18,6 +18,7 @@ import FullReportPage from "./pages/FullReportPage";
 import SettingsPage from "./pages/SettingsPage";
 import KeyholderPage from "./pages/KeyholderPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
+import AchievementPage from "./pages/AchievementPage";
 import Root from "./Root";
 
 const router = createBrowserRouter([
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: "/keyholder",
         element: <KeyholderPage />,
+      },
+      {
+        path: "/achievements",
+        element: <AchievementPage />,
       },
       {
         path: "/public-profile/:userId",

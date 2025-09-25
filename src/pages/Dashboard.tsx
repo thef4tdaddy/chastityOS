@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FeatureCard } from "../components/dashboard/FeatureCard";
+import { AchievementDashboard } from "../components/achievements";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
 
@@ -62,6 +63,13 @@ const Dashboard: React.FC = () => {
             />
           </Link>
         </div>
+
+        {/* Achievement Dashboard */}
+        {user && (
+          <div className="mt-12">
+            <AchievementDashboard />
+          </div>
+        )}
 
         <div className="text-center mt-8">
           <Link to="/keyholder">
