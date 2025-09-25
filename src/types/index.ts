@@ -36,6 +36,14 @@ export type {
   DBLeaderboardEntry,
 } from "./database";
 
+// Import and re-export achievement types
+export type {
+  AchievementCategory,
+  AchievementDifficulty,
+  LeaderboardCategory,
+  LeaderboardPeriod,
+} from "./achievements";
+
 // Feedback types
 export * from "./feedback";
 

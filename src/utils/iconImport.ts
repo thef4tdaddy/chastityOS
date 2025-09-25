@@ -24,6 +24,7 @@ export {
   FaClipboard,
   FaClock,
   FaCog,
+  FaCrown,
   FaDatabase,
   FaDownload,
   FaEdit,
@@ -42,6 +43,7 @@ export {
   FaLink,
   FaList,
   FaLock,
+  FaMedal,
   FaPalette,
   FaPause,
   FaPlay,
@@ -72,6 +74,7 @@ export {
   FaLightbulb,
   FaComment,
   FaPaperPlane,
+} from "react-icons/fa";
 
 // Lucide React imports (placeholder for future use)
 // Add lucide-react icons here as needed:

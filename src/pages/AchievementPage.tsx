@@ -10,9 +10,11 @@ import {
   AchievementGallery,
   AchievementDashboard,
 } from "../components/achievements";
-import { FaTrophy, FaList, FaChartBar } from "../utils/iconImport";
+import LeaderboardView from "../components/achievements/LeaderboardView";
+import AchievementPrivacySettings from "../components/achievements/AchievementPrivacySettings";
+import { FaTrophy, FaList, FaChartBar, FaUsers, FaCog } from "../utils/iconImport";
 
-type ViewMode = "dashboard" | "gallery";
+type ViewMode = "dashboard" | "gallery" | "leaderboards" | "privacy";
 
 export const AchievementPage: React.FC = () => {
   const { user } = useAuthState();
@@ -71,7 +73,7 @@ export const AchievementPage: React.FC = () => {
           <div className="flex items-center bg-white/10 rounded-lg p-1">
             <button
               onClick={() => setViewMode("dashboard")}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
                 viewMode === "dashboard"
                   ? "bg-nightly-aquamarine text-black font-semibold"
                   : "text-nightly-celadon hover:text-nightly-honeydew"
@@ -82,7 +84,7 @@ export const AchievementPage: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode("gallery")}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
                 viewMode === "gallery"
                   ? "bg-nightly-aquamarine text-black font-semibold"
                   : "text-nightly-celadon hover:text-nightly-honeydew"
@@ -91,18 +93,46 @@ export const AchievementPage: React.FC = () => {
               <FaList />
               <span>Gallery</span>
             </button>
+            <button
+              onClick={() => setViewMode("leaderboards")}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                viewMode === "leaderboards"
+                  ? "bg-nightly-aquamarine text-black font-semibold"
+                  : "text-nightly-celadon hover:text-nightly-honeydew"
+              }`}
+            >
+              <FaUsers />
+              <span>Leaderboards</span>
+            </button>
+            <button
+              onClick={() => setViewMode("privacy")}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                viewMode === "privacy"
+                  ? "bg-nightly-aquamarine text-black font-semibold"
+                  : "text-nightly-celadon hover:text-nightly-honeydew"
+              }`}
+            >
+              <FaCog />
+              <span>Privacy</span>
+            </button>
           </div>
         </div>
 
         {/* Content */}
-        {viewMode === "dashboard" ? (
-          <AchievementDashboard />
-        ) : (
+        {viewMode === "dashboard" && <AchievementDashboard />}
+        
+        {viewMode === "gallery" && (
           <AchievementGallery
             achievementsWithProgress={achievementsWithProgress}
             onToggleVisibility={toggleAchievementVisibility}
             isOwnGallery={true}
           />
+        )}
+        
+        {viewMode === "leaderboards" && <LeaderboardView />}
+        
+        {viewMode === "privacy" && (
+          <AchievementPrivacySettings onClose={() => setViewMode("dashboard")} />
         )}
       </div>
     </div>
