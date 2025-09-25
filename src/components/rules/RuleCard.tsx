@@ -1,5 +1,5 @@
 import React from "react";
-import { FaEdit, FaLock, FaUnlock } from "react-icons/fa";
+import { FaEdit, FaLock, FaUnlock } from "../../utils/iconImport";
 
 // Mock rules interface
 export interface ChastityRule {

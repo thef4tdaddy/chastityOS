@@ -18,7 +18,7 @@ import {
   FaSpinner,
   FaLock,
   FaShieldAlt,
-} from "react-icons/fa";
+} from "../utils/iconImport";
 
 type SettingsTab =
   | "account"
