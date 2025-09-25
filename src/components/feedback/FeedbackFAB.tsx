@@ -1,7 +1,7 @@
 // src/components/feedback/FeedbackFAB.tsx
 
 import React, { useState } from "react";
-import { FaPlus, FaBug, FaLightbulb, FaComment } from "react-icons/fa";
+import { FaPlus, FaBug, FaLightbulb, FaComment } from "../../utils/iconImport";
 import FeedbackModal from "./FeedbackModal";
 import { FeedbackService } from "../../services/feedbackService";
 import type { FeedbackType, FeedbackData } from "../../types/feedback";
