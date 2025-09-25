@@ -257,7 +257,8 @@ export interface QueuedOperation<T extends DBBase> {
 
 // ==================== ACHIEVEMENT DATABASE TYPES ====================
 
-export interface DBAchievement extends DBBase {
+export interface DBAchievement {
+  id: string;
   name: string;
   description: string;
   category: AchievementCategory;
@@ -279,6 +280,8 @@ export interface DBAchievement extends DBBase {
   isHidden: boolean;
   rarity?: number;
   isActive: boolean; // Can be disabled/enabled
+  syncStatus: SyncStatus;
+  lastModified: Date;
 }
 
 export interface DBUserAchievement extends DBBase {

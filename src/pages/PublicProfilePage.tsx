@@ -19,7 +19,9 @@ import {
 } from "../utils/iconImport";
 
 // Helper functions for achievement type mapping
-const getAchievementType = (category: AchievementCategory): "milestone" | "streak" | "goal" => {
+const getAchievementType = (
+  category: AchievementCategory,
+): "milestone" | "streak" | "goal" => {
   switch (category) {
     case AchievementCategory.SESSION_MILESTONES:
     case AchievementCategory.CONSISTENCY_BADGES:
@@ -38,7 +40,7 @@ const getTypeStyles = (type: string): string => {
   switch (type) {
     case "milestone":
       return "bg-nightly-aquamarine/20 text-nightly-aquamarine";
-    case "streak": 
+    case "streak":
       return "bg-red-400/20 text-red-400";
     case "goal":
       return "bg-nightly-lavender-floral/20 text-nightly-lavender-floral";
@@ -276,22 +278,21 @@ const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({
 };
 
 // Badges Section - Now using real achievement data
-const BadgesSection: React.FC<{ 
-  userId: string; 
+const BadgesSection: React.FC<{
+  userId: string;
   isOwnProfile: boolean;
 }> = ({ userId, isOwnProfile }) => {
-  const { 
-    visibleAchievements, 
-    allAchievements,
-    isLoading 
-  } = useAchievements(userId);
+  const { visibleAchievements, allAchievements, isLoading } =
+    useAchievements(userId);
 
   if (isLoading) {
     return (
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
         <div className="flex items-center gap-3 mb-6">
           <FaTrophy className="text-nightly-lavender-floral" />
-          <h2 className="text-xl font-semibold text-nightly-honeydew">Badges</h2>
+          <h2 className="text-xl font-semibold text-nightly-honeydew">
+            Badges
+          </h2>
         </div>
         <div className="animate-pulse">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -305,23 +306,31 @@ const BadgesSection: React.FC<{
   }
 
   // Get achievements to display (visible ones for public, all for own profile)
-  const achievementsToShow = isOwnProfile 
-    ? allAchievements.filter(a => {
-        const userAchievement = visibleAchievements.find(ua => ua.achievementId === a.id);
+  const achievementsToShow = isOwnProfile
+    ? allAchievements.filter((a) => {
+        const userAchievement = visibleAchievements.find(
+          (ua) => ua.achievementId === a.id,
+        );
         return userAchievement !== undefined;
       })
     : visibleAchievements;
 
-  const badges = achievementsToShow.map(userAchievement => {
-    const achievement = allAchievements.find(a => a.id === userAchievement.achievementId);
-    return achievement ? {
-      id: achievement.id,
-      name: achievement.name,
-      description: achievement.description,
-      earnedDate: userAchievement.earnedAt,
-      icon: achievement.icon,
-    } : null;
-  }).filter(Boolean);
+  const badges = achievementsToShow
+    .map((userAchievement) => {
+      const achievement = allAchievements.find(
+        (a) => a.id === userAchievement.achievementId,
+      );
+      return achievement
+        ? {
+            id: achievement.id,
+            name: achievement.name,
+            description: achievement.description,
+            earnedDate: userAchievement.earnedAt,
+            icon: achievement.icon,
+          }
+        : null;
+    })
+    .filter(Boolean);
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
@@ -329,14 +338,18 @@ const BadgesSection: React.FC<{
         <FaTrophy className="text-nightly-lavender-floral" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">Badges</h2>
         {badges.length > 0 && (
-          <span className="text-sm text-nightly-celadon">({badges.length})</span>
+          <span className="text-sm text-nightly-celadon">
+            ({badges.length})
+          </span>
         )}
       </div>
 
       {badges.length === 0 ? (
         <div className="text-center py-4">
           <div className="text-nightly-celadon">
-            {isOwnProfile ? "No badges earned yet" : "No public badges to display"}
+            {isOwnProfile
+              ? "No badges earned yet"
+              : "No public badges to display"}
           </div>
         </div>
       ) : (
@@ -371,11 +384,8 @@ const RecentAchievementsSection: React.FC<{
   userId: string;
   isOwnProfile: boolean;
 }> = ({ userId, isOwnProfile }) => {
-  const { 
-    visibleAchievements, 
-    allAchievements,
-    isLoading 
-  } = useAchievements(userId);
+  const { visibleAchievements, allAchievements, isLoading } =
+    useAchievements(userId);
 
   if (isLoading) {
     return (
@@ -399,15 +409,19 @@ const RecentAchievementsSection: React.FC<{
   const recentAchievements = visibleAchievements
     .sort((a, b) => b.earnedAt.getTime() - a.earnedAt.getTime())
     .slice(0, 5)
-    .map(userAchievement => {
-      const achievement = allAchievements.find(a => a.id === userAchievement.achievementId);
-      return achievement ? {
-        id: achievement.id,
-        title: achievement.name,
-        date: userAchievement.earnedAt,
-        type: getAchievementType(achievement.category),
-        icon: achievement.icon,
-      } : null;
+    .map((userAchievement) => {
+      const achievement = allAchievements.find(
+        (a) => a.id === userAchievement.achievementId,
+      );
+      return achievement
+        ? {
+            id: achievement.id,
+            title: achievement.name,
+            date: userAchievement.earnedAt,
+            type: getAchievementType(achievement.category),
+            icon: achievement.icon,
+          }
+        : null;
     })
     .filter(Boolean);
 
@@ -419,14 +433,18 @@ const RecentAchievementsSection: React.FC<{
           Recent Achievements
         </h2>
         {recentAchievements.length > 0 && (
-          <span className="text-sm text-nightly-celadon">({recentAchievements.length})</span>
+          <span className="text-sm text-nightly-celadon">
+            ({recentAchievements.length})
+          </span>
         )}
       </div>
 
       {recentAchievements.length === 0 ? (
         <div className="text-center py-4">
           <div className="text-nightly-celadon">
-            {isOwnProfile ? "No recent achievements" : "No recent public achievements"}
+            {isOwnProfile
+              ? "No recent achievements"
+              : "No recent public achievements"}
           </div>
         </div>
       ) : (
@@ -450,7 +468,8 @@ const RecentAchievementsSection: React.FC<{
               <span
                 className={`px-2 py-1 text-xs rounded ${getTypeStyles(achievement.type)}`}
               >
-                {achievement.type.charAt(0).toUpperCase() + achievement.type.slice(1)}
+                {achievement.type.charAt(0).toUpperCase() +
+                  achievement.type.slice(1)}
               </span>
             </div>
           ))}
@@ -549,7 +568,10 @@ const PublicProfilePage: React.FC = () => {
         <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
         <StatisticsSection profile={profile} />
         <BadgesSection userId={user?.uid || ""} isOwnProfile={isOwnProfile} />
-        <RecentAchievementsSection userId={user?.uid || ""} isOwnProfile={isOwnProfile} />
+        <RecentAchievementsSection
+          userId={user?.uid || ""}
+          isOwnProfile={isOwnProfile}
+        />
       </div>
     </div>
   );

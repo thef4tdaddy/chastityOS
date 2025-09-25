@@ -566,12 +566,13 @@ td {
 
 /* Custom styles for achievement toasts */
 .achievement-toast {
-  background: linear-gradient(135deg, 
-    theme('colors.amber.600') 0%, 
-    theme('colors.yellow.500') 50%, 
-    theme('colors.orange.500') 100%
+  background: linear-gradient(
+    135deg,
+    theme("colors.amber.600") 0%,
+    theme("colors.yellow.500") 50%,
+    theme("colors.orange.500") 100%
   ) !important;
-  border: 2px solid theme('colors.yellow.400') !important;
+  border: 2px solid theme("colors.yellow.400") !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3) !important;
   min-height: 80px !important;
@@ -592,7 +593,7 @@ td {
     left: 50% !important;
     transform: translateX(-50%) !important;
   }
-  
+
   .achievement-toast {
     margin: 0 !important;
   }
@@ -616,8 +617,9 @@ td {
 
 /* Progress bar for achievement toasts */
 .achievement-toast .Toastify__progress-bar {
-  background: linear-gradient(90deg, 
-    theme('colors.yellow.300'), 
-    theme('colors.amber.300')
+  background: linear-gradient(
+    90deg,
+    theme("colors.yellow.300"),
+    theme("colors.amber.300")
   ) !important;
 }

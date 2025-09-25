@@ -53,23 +53,20 @@ interface AchievementNotificationProps {
   autoShow?: boolean;
 }
 
-export const AchievementNotification: React.FC<AchievementNotificationProps> = ({
-  notifications,
-  achievements,
-  onMarkRead,
-  autoShow = true,
-}) => {
+export const AchievementNotification: React.FC<
+  AchievementNotificationProps
+> = ({ notifications, achievements, onMarkRead, autoShow = true }) => {
   useEffect(() => {
     if (!autoShow) return;
 
     // Show toasts for unread "earned" notifications
     const earnedNotifications = notifications.filter(
-      (n) => n.type === "earned" && !n.isRead
+      (n) => n.type === "earned" && !n.isRead,
     );
 
     earnedNotifications.forEach((notification) => {
       const achievement = achievements.find(
-        (a) => a.id === notification.achievementId
+        (a) => a.id === notification.achievementId,
       );
 
       if (achievement) {
@@ -89,7 +86,7 @@ export const AchievementNotification: React.FC<AchievementNotificationProps> = (
             className: "achievement-toast",
             bodyClassName: "achievement-toast-body",
             onClose: () => onMarkRead(notification.id),
-          }
+          },
         );
       }
     });

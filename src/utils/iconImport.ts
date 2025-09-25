@@ -64,6 +64,11 @@ export {
   FaUserPlus,
   FaUsers,
   FaUserShield,
+  // Additional icons for achievements
+  FaSearch,
+  FaArrowRight,
+  FaTarget,
+  FaStar,
 } from "react-icons/fa";
 
 // Lucide React imports (placeholder for future use)

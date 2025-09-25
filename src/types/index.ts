@@ -34,8 +34,6 @@ export type {
   DBAchievementProgress,
   DBAchievementNotification,
   DBLeaderboardEntry,
-  AchievementCategory,
-  AchievementDifficulty,
 } from "./database";
 
 // Re-export commonly used Firebase types

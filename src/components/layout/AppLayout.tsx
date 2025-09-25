@@ -13,13 +13,10 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { user } = useAuthState();
-  
+
   // Achievement notifications
-  const {
-    unreadNotifications,
-    allAchievements,
-    markNotificationRead,
-  } = useAchievements(user?.uid);
+  const { unreadNotifications, allAchievements, markNotificationRead } =
+    useAchievements(user?.uid);
 
   const navItems = [
     { path: "/", label: "Dashboard" },

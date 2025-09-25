@@ -12,7 +12,11 @@ import {
   FaFilter,
   FaSearch,
 } from "../../utils/iconImport";
-import { DBAchievement, AchievementCategory, AchievementDifficulty } from "../../types";
+import {
+  DBAchievement,
+  AchievementCategory,
+  AchievementDifficulty,
+} from "../../types";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -74,8 +78,12 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
   onToggleVisibility,
   isOwnGallery = false,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | "all">("all");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<AchievementDifficulty | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState<
+    AchievementCategory | "all"
+  >("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<
+    AchievementDifficulty | "all"
+  >("all");
   const [showOnlyEarned, setShowOnlyEarned] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -85,12 +93,18 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
       const { achievement, isEarned } = item;
 
       // Category filter
-      if (selectedCategory !== "all" && achievement.category !== selectedCategory) {
+      if (
+        selectedCategory !== "all" &&
+        achievement.category !== selectedCategory
+      ) {
         return false;
       }
 
       // Difficulty filter
-      if (selectedDifficulty !== "all" && achievement.difficulty !== selectedDifficulty) {
+      if (
+        selectedDifficulty !== "all" &&
+        achievement.difficulty !== selectedDifficulty
+      ) {
         return false;
       }
 
@@ -100,8 +114,13 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
       }
 
       // Search filter
-      if (searchTerm && !achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !achievement.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (
+        searchTerm &&
+        !achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !achievement.description
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      ) {
         return false;
       }
 
@@ -112,12 +131,18 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
 
       return true;
     });
-  }, [achievementsWithProgress, selectedCategory, selectedDifficulty, showOnlyEarned, searchTerm]);
+  }, [
+    achievementsWithProgress,
+    selectedCategory,
+    selectedDifficulty,
+    showOnlyEarned,
+    searchTerm,
+  ]);
 
   // Group by category
   const groupedAchievements = useMemo(() => {
     const groups: Record<string, AchievementWithProgress[]> = {};
-    
+
     filteredAchievements.forEach((item) => {
       const categoryName = getCategoryName(item.achievement.category);
       if (!groups[categoryName]) {
@@ -130,17 +155,22 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
   }, [filteredAchievements]);
 
   const stats = useMemo(() => {
-    const totalEarned = achievementsWithProgress.filter(a => a.isEarned).length;
-    const totalVisible = achievementsWithProgress.filter(a => !a.achievement.isHidden).length;
+    const totalEarned = achievementsWithProgress.filter(
+      (a) => a.isEarned,
+    ).length;
+    const totalVisible = achievementsWithProgress.filter(
+      (a) => !a.achievement.isHidden,
+    ).length;
     const totalPoints = achievementsWithProgress
-      .filter(a => a.isEarned)
+      .filter((a) => a.isEarned)
       .reduce((sum, a) => sum + a.achievement.points, 0);
 
     return {
       totalEarned,
       totalVisible,
       totalPoints,
-      completionPercentage: totalVisible > 0 ? (totalEarned / totalVisible) * 100 : 0,
+      completionPercentage:
+        totalVisible > 0 ? (totalEarned / totalVisible) * 100 : 0,
     };
   }, [achievementsWithProgress]);
 
@@ -149,7 +179,9 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
       {/* Stats Header */}
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-nightly-honeydew">Achievement Gallery</h2>
+          <h2 className="text-2xl font-bold text-nightly-honeydew">
+            Achievement Gallery
+          </h2>
           <div className="flex items-center space-x-4 text-sm">
             <span className="text-nightly-celadon">
               {stats.totalEarned} / {stats.totalVisible} Earned
@@ -190,7 +222,9 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
           {/* Category Filter */}
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value as AchievementCategory | "all")}
+            onChange={(e) =>
+              setSelectedCategory(e.target.value as AchievementCategory | "all")
+            }
             className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
           >
             <option value="all">All Categories</option>
@@ -204,7 +238,11 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
           {/* Difficulty Filter */}
           <select
             value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value as AchievementDifficulty | "all")}
+            onChange={(e) =>
+              setSelectedDifficulty(
+                e.target.value as AchievementDifficulty | "all",
+              )
+            }
             className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
           >
             <option value="all">All Difficulties</option>
@@ -230,24 +268,26 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
 
       {/* Achievement Groups */}
       <div className="space-y-6">
-        {Object.entries(groupedAchievements).map(([categoryName, achievements]) => (
-          <div key={categoryName} className="space-y-4">
-            <h3 className="text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
-              {categoryName} ({achievements.length})
-            </h3>
+        {Object.entries(groupedAchievements).map(
+          ([categoryName, achievements]) => (
+            <div key={categoryName} className="space-y-4">
+              <h3 className="text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
+                {categoryName} ({achievements.length})
+              </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {achievements.map((item) => (
-                <AchievementCard
-                  key={item.achievement.id}
-                  item={item}
-                  onToggleVisibility={onToggleVisibility}
-                  isOwnGallery={isOwnGallery}
-                />
-              ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {achievements.map((item) => (
+                  <AchievementCard
+                    key={item.achievement.id}
+                    item={item}
+                    onToggleVisibility={onToggleVisibility}
+                    isOwnGallery={isOwnGallery}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ),
+        )}
       </div>
 
       {filteredAchievements.length === 0 && (
@@ -296,12 +336,16 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         <div className="text-3xl">{achievement.icon}</div>
         <div className="flex-1">
           {/* Achievement Name */}
-          <h4 className={`font-bold ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`}>
+          <h4
+            className={`font-bold ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`}
+          >
             {achievement.name}
           </h4>
 
           {/* Achievement Description */}
-          <p className={`text-sm mt-1 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`}>
+          <p
+            className={`text-sm mt-1 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`}
+          >
             {achievement.description}
           </p>
 
@@ -310,14 +354,18 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
             <div className="flex items-center space-x-2">
               <span
                 className={`text-xs px-2 py-1 rounded font-semibold ${
-                  isEarned ? "bg-yellow-200 text-yellow-800" : "bg-gray-700 text-gray-300"
+                  isEarned
+                    ? "bg-yellow-200 text-yellow-800"
+                    : "bg-gray-700 text-gray-300"
                 }`}
               >
                 {achievement.points} pts
               </span>
               <span
                 className={`text-xs px-2 py-1 rounded capitalize ${
-                  isEarned ? "bg-blue-200 text-blue-800" : "bg-gray-700 text-gray-300"
+                  isEarned
+                    ? "bg-blue-200 text-blue-800"
+                    : "bg-gray-700 text-gray-300"
                 }`}
               >
                 {achievement.difficulty}
@@ -325,7 +373,10 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
             </div>
 
             {isEarned && (
-              <FaTrophy className="text-yellow-600" title="Achievement Earned!" />
+              <FaTrophy
+                className="text-yellow-600"
+                title="Achievement Earned!"
+              />
             )}
           </div>
 

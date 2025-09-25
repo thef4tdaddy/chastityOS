@@ -11,7 +11,7 @@ import {
 
 export const PREDEFINED_ACHIEVEMENTS: Omit<
   DBAchievement,
-  "id" | "syncStatus" | "lastModified" | "userId"
+  "id" | "syncStatus" | "lastModified"
 >[] = [
   // ==================== SESSION MILESTONES ====================
   {
