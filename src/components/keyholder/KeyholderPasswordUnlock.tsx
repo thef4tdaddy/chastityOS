@@ -1,6 +1,6 @@
 import React from "react";
 import { useKeyholderStore } from "../../stores/keyholderStore";
-import { FaLock, FaUnlock, FaKey, FaSpinner } from "react-icons/fa";
+import { FaLock, FaUnlock, FaKey, FaSpinner } from "../../utils/iconImport";
 
 // Password Unlock Component
 export const KeyholderPasswordUnlock: React.FC = () => {

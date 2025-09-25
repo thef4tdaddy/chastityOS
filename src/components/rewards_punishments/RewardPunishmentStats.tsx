@@ -1,6 +1,6 @@
 import React from "react";
 import { RewardPunishmentLog } from "./LogItem";
-import { FaTrophy } from "react-icons/fa";
+import { FaTrophy } from "../../utils/iconImport";
 
 // Statistics Component
 interface RewardPunishmentStatsProps {
