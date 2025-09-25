@@ -19,35 +19,43 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-nightly-mobile-bg to-nightly-desktop-bg max-w-4xl w-full max-h-[90vh] rounded-lg border border-white/10 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <FaShieldAlt className="text-nightly-aquamarine" />
-            <h2 className="text-xl font-bold text-nightly-honeydew">
-              Privacy Policy
-            </h2>
+    <div className="glass-modal fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="glass-modal-content max-w-4xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up">
+        {/* Enhanced Header with Glass Effect */}
+        <div className="glass-card-primary border-b border-white/20 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-400/30">
+                <FaShieldAlt className="text-blue-300 text-xl" />
+              </div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                Privacy Policy
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="glass-button p-3 hover:bg-red-500/20 text-gray-300 hover:text-white transition-all duration-300"
+            >
+              <FaTimes />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-nightly-celadon hover:text-nightly-honeydew"
-          >
-            <FaTimes />
-          </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6 text-nightly-celadon">
+        {/* Enhanced Content with Glass Styling */}
+        <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
           {/* Last Updated */}
-          <div className="text-sm text-nightly-celadon/70">
-            Last updated: {new Date().toLocaleDateString()}
+          <div className="glass-card bg-blue-500/10 border-blue-400/20 p-3 text-center">
+            <span className="text-sm text-blue-200">
+              Last updated: {new Date().toLocaleDateString()}
+            </span>
           </div>
 
           {/* Introduction */}
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <FaShieldAlt className="text-nightly-lavender-floral" />
+          <section className="glass-card glass-hover">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-400/30">
+                <FaShieldAlt className="text-purple-300" />
+              </div>
               <h3 className="text-lg font-semibold text-nightly-honeydew">
                 Introduction
               </h3>

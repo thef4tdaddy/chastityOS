@@ -38,7 +38,7 @@ export const SyncStatusIndicator: React.FC = () => {
     const now = new Date();
     const diff = now.getTime() - lastSyncTime.getTime();
     const minutes = Math.floor(diff / 60000);
-    
+
     if (minutes < 1) return "Just now";
     if (minutes < 60) return `${minutes}m ago`;
     if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
@@ -51,14 +51,10 @@ export const SyncStatusIndicator: React.FC = () => {
         {getStatusIcon()} {getStatusText()}
       </span>
       {isOnline && lastSyncTime && (
-        <span className="text-gray-500">
-          • Last: {formatLastSync()}
-        </span>
+        <span className="text-gray-500">• Last: {formatLastSync()}</span>
       )}
       {connectionType && connectionType !== "unknown" && (
-        <span className="text-gray-500">
-          • {connectionType.toUpperCase()}
-        </span>
+        <span className="text-gray-500">• {connectionType.toUpperCase()}</span>
       )}
     </div>
   );

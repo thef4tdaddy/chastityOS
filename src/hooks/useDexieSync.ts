@@ -53,16 +53,13 @@ export const useDexieSync = () => {
    * Create a record with automatic sync queuing
    */
   const createWithSync = useCallback(
-    async <T>(
-      service: keyof typeof services,
-      data: T,
-    ): Promise<string> => {
+    async <T>(service: keyof typeof services, data: T): Promise<string> => {
       if (!user?.uid) {
         throw new Error("No authenticated user");
       }
 
       const id = await services[service].create(data as any);
-      
+
       // Trigger background sync if online
       if (appState.isOnline) {
         try {
@@ -92,7 +89,7 @@ export const useDexieSync = () => {
       }
 
       await services[service].update(id, updates as any);
-      
+
       // Trigger background sync if online
       if (appState.isOnline) {
         try {
@@ -116,7 +113,7 @@ export const useDexieSync = () => {
       }
 
       await services[service].delete(id);
-      
+
       // Trigger background sync if online
       if (appState.isOnline) {
         try {
@@ -133,34 +130,43 @@ export const useDexieSync = () => {
   return {
     // Services
     services,
-    
+
     // Sync control
     triggerSync,
     syncStatus: appState.syncStatus,
     lastSyncTime: appState.lastSyncTime,
     isOnline: appState.isOnline,
-    
+
     // CRUD operations with sync
     createWithSync,
     updateWithSync,
     deleteWithSync,
-    
+
     // Direct service access for read operations
-    findById: useCallback(async (service: keyof typeof services, id: string) => {
-      return services[service].findById(id);
-    }, [services]),
-    
-    findByUserId: useCallback(async (service: keyof typeof services, userId: string) => {
-      return services[service].findByUserId(userId);
-    }, [services]),
-    
-    paginate: useCallback(async (
-      service: keyof typeof services,
-      userId: string,
-      offset: number = 0,
-      limit: number = 50,
-    ) => {
-      return services[service].paginate(userId, offset, limit);
-    }, [services]),
+    findById: useCallback(
+      async (service: keyof typeof services, id: string) => {
+        return services[service].findById(id);
+      },
+      [services],
+    ),
+
+    findByUserId: useCallback(
+      async (service: keyof typeof services, userId: string) => {
+        return services[service].findByUserId(userId);
+      },
+      [services],
+    ),
+
+    paginate: useCallback(
+      async (
+        service: keyof typeof services,
+        userId: string,
+        offset: number = 0,
+        limit: number = 50,
+      ) => {
+        return services[service].paginate(userId, offset, limit);
+      },
+      [services],
+    ),
   };
 };
