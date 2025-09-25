@@ -40,6 +40,7 @@ export {
   FaInfo,
   FaKey,
   FaLink,
+  FaList,
   FaLock,
   FaPalette,
   FaPause,
@@ -67,7 +68,6 @@ export {
   // Additional icons for achievements
   FaSearch,
   FaArrowRight,
-  FaTarget,
   FaStar,
 } from "react-icons/fa";
 
