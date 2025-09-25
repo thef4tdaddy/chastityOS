@@ -12,6 +12,8 @@ import {
   settingsDBService,
 } from "../database";
 import { getFirestore, getFirebaseAuth } from "../firebase";
+import type { Auth } from "firebase/auth";
+import type { Firestore } from "firebase/firestore";
 import {
   collection,
   doc,
@@ -21,7 +23,14 @@ import {
   getDocs,
   Timestamp,
 } from "firebase/firestore";
-import type { DBBase, DBSession, DBTask, DBSettings } from "@/types/database";
+import type {
+  DBBase,
+  DBSession,
+  DBTask,
+  DBSettings,
+  DBEvent,
+  DBGoal,
+} from "@/types/database";
 import { conflictResolver } from "./ConflictResolver";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
@@ -54,7 +63,7 @@ export class FirebaseSync {
       return;
     }
 
-    const auth = await getFirebaseAuth();
+    const auth = (await getFirebaseAuth()) as Auth;
     const user = auth.currentUser;
 
     if (!user) {
@@ -132,13 +141,13 @@ export class FirebaseSync {
       { userId },
     );
 
-    const firestore = await getFirestore();
+    const firestore = (await getFirestore()) as Firestore;
     const batch = writeBatch(firestore);
     const syncedIds: string[] = [];
 
     for (const docData of pendingDocs) {
       const docRef = doc(
-        firestore,
+        firestore as Firestore,
         `users/${userId}/${collectionName}`,
         docData.id,
       );
@@ -178,7 +187,7 @@ export class FirebaseSync {
     );
 
     const q = query(
-      collection(firestore, `users/${userId}/${collectionName}`),
+      collection(firestore as Firestore, `users/${userId}/${collectionName}`),
       where("lastModified", ">", Timestamp.fromDate(lastSync)),
     );
 
@@ -222,7 +231,7 @@ export class FirebaseSync {
 
     logger.debug(`Processing ${operations.length} queued operations`);
 
-    const auth = await getFirebaseAuth();
+    const auth = (await getFirebaseAuth()) as Auth;
     const user = auth.currentUser;
 
     if (!user) {
@@ -321,15 +330,15 @@ export class FirebaseSync {
   ): Promise<DBBase | null> {
     switch (collectionName) {
       case "sessions":
-        return sessionDBService.findById(id);
+        return (await sessionDBService.findById(id)) || null;
       case "events":
-        return eventDBService.findById(id);
+        return (await eventDBService.findById(id)) || null;
       case "tasks":
-        return taskDBService.findById(id);
+        return (await taskDBService.findById(id)) || null;
       case "goals":
-        return goalDBService.findById(id);
+        return (await goalDBService.findById(id)) || null;
       case "settings":
-        return settingsDBService.findById(id);
+        return (await settingsDBService.findById(id)) || null;
       default:
         return null;
     }
@@ -363,19 +372,29 @@ export class FirebaseSync {
     const { lastModified, syncStatus, ...rest } = data;
     switch (collectionName) {
       case "sessions":
-        await sessionDBService.create(rest);
+        await sessionDBService.create(
+          rest as Omit<DBSession, "lastModified" | "syncStatus">,
+        );
         break;
       case "events":
-        await eventDBService.create(rest);
+        await eventDBService.create(
+          rest as Omit<DBEvent, "lastModified" | "syncStatus">,
+        );
         break;
       case "tasks":
-        await taskDBService.create(rest);
+        await taskDBService.create(
+          rest as Omit<DBTask, "lastModified" | "syncStatus">,
+        );
         break;
       case "goals":
-        await goalDBService.create(rest);
+        await goalDBService.create(
+          rest as Omit<DBGoal, "lastModified" | "syncStatus">,
+        );
         break;
       case "settings":
-        await settingsDBService.create(rest);
+        await settingsDBService.create(
+          rest as Omit<DBSettings, "lastModified" | "syncStatus">,
+        );
         break;
     }
   }
