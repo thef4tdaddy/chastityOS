@@ -64,6 +64,10 @@ export {
   FaUserPlus,
   FaUsers,
   FaUserShield,
+  FaBug,
+  FaLightbulb,
+  FaComment,
+  FaPaperPlane,
 } from "react-icons/fa";
 
 // Lucide React imports (placeholder for future use)

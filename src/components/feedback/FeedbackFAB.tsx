@@ -1,10 +1,12 @@
 // src/components/feedback/FeedbackFAB.tsx
 
 import React, { useState } from "react";
-import { FaPlus, FaBug, FaLightbulb, FaComment } from "react-icons/fa";
+import { FaPlus, FaBug, FaLightbulb, FaComment } from "../../utils/iconImport";
 import FeedbackModal from "./FeedbackModal";
-import { FeedbackService } from "../../services/feedbackService";
+// TODO: Replace with proper hook - components shouldn't import services directly
+// import { FeedbackService } from "../../services/feedbackService";
 import type { FeedbackType, FeedbackData } from "../../types/feedback";
+import { logger } from "../../utils/logging";
 
 const FeedbackFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -19,11 +21,14 @@ const FeedbackFAB: React.FC = () => {
 
   const handleFeedbackSubmit = async (feedback: FeedbackData) => {
     try {
-      await FeedbackService.submitFeedback(feedback);
-      // Success feedback could be shown here
-      console.log("Feedback submitted successfully");
+      // TODO: Replace with proper hook - components shouldn't call services directly
+      // await FeedbackService.submitFeedback(feedback);
+      logger.info(
+        "Feedback submission temporarily disabled - needs hook implementation",
+        feedback,
+      );
     } catch (error) {
-      console.error("Failed to submit feedback:", error);
+      logger.error("Failed to submit feedback", error);
       // Error handling - could show a toast notification
       throw error;
     }

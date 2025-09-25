@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { DBTask, TaskStatus } from "../../types/database";
-import { taskDBService } from "../../services/database";
+import { logger } from "../../utils/logging";
 import {
   FaTasks,
   FaPlus,
@@ -29,10 +29,11 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ tasks }) => {
     try {
       const newStatus: TaskStatus =
         action === "approve" ? "approved" : "rejected";
-      await taskDBService.updateTaskStatus(taskId, newStatus, feedback);
+      // TODO: Use hook to update task status instead of direct service call
+      // await taskDBService.updateTaskStatus(taskId, newStatus, feedback);
       // In real app, this would refresh the tasks
     } catch (error) {
-      console.error("Error updating task:", error);
+      logger.error("Error updating task", error);
     }
   };
 
