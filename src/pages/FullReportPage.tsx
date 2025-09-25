@@ -18,7 +18,7 @@ import {
   FaChartBar,
   FaHistory,
   FaSpinner,
-} from "react-icons/fa";
+} from "../utils/iconImport";
 
 // Current Status Section
 const CurrentStatusSection: React.FC<{

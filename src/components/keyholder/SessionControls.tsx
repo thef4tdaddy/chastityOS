@@ -1,6 +1,6 @@
 import React from "react";
 import type { DBSession } from "../../types/database";
-import { FaClock, FaPlay, FaPause, FaStop } from "react-icons/fa";
+import { FaClock, FaPlay, FaPause, FaStop } from "../../utils/iconImport";
 
 // Current Session Control (for unlocked keyholder mode)
 interface SessionControlsProps {
