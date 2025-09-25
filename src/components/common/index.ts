@@ -4,3 +4,4 @@
  */
 
 export { SyncStatusIndicator } from "./SyncStatusIndicator";
+export { DexieDemo } from "./DexieDemo";
