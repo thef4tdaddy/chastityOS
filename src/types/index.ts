@@ -36,5 +36,8 @@ export type {
   DBLeaderboardEntry,
 } from "./database";
 
+// Feedback types
+export * from "./feedback";
+
 // Re-export commonly used Firebase types
 export type { Timestamp } from "firebase/firestore";
