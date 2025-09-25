@@ -384,15 +384,15 @@ export class FirebaseSync {
    * Public methods for specific entity synchronization
    * These are used by TanStack Query hooks for targeted sync
    */
-  
+
   async syncUserTasks(userId: string): Promise<void> {
     try {
       await this.syncCollection("tasks", userId);
       logger.debug("User tasks synced successfully", { userId });
     } catch (error) {
-      logger.error("Failed to sync user tasks", { 
-        error: error as Error, 
-        userId 
+      logger.error("Failed to sync user tasks", {
+        error: error as Error,
+        userId,
       });
       throw error;
     }
@@ -403,9 +403,9 @@ export class FirebaseSync {
       await this.syncCollection("settings", userId);
       logger.debug("User settings synced successfully", { userId });
     } catch (error) {
-      logger.error("Failed to sync user settings", { 
-        error: error as Error, 
-        userId 
+      logger.error("Failed to sync user settings", {
+        error: error as Error,
+        userId,
       });
       throw error;
     }
@@ -416,9 +416,9 @@ export class FirebaseSync {
       await this.syncCollection("events", userId);
       logger.debug("User events synced successfully", { userId });
     } catch (error) {
-      logger.error("Failed to sync user events", { 
-        error: error as Error, 
-        userId 
+      logger.error("Failed to sync user events", {
+        error: error as Error,
+        userId,
       });
       throw error;
     }
@@ -429,9 +429,9 @@ export class FirebaseSync {
       await this.syncCollection("sessions", userId);
       logger.debug("User sessions synced successfully", { userId });
     } catch (error) {
-      logger.error("Failed to sync user sessions", { 
-        error: error as Error, 
-        userId 
+      logger.error("Failed to sync user sessions", {
+        error: error as Error,
+        userId,
       });
       throw error;
     }
@@ -442,9 +442,9 @@ export class FirebaseSync {
       await this.syncCollection("goals", userId);
       logger.debug("User goals synced successfully", { userId });
     } catch (error) {
-      logger.error("Failed to sync user goals", { 
-        error: error as Error, 
-        userId 
+      logger.error("Failed to sync user goals", {
+        error: error as Error,
+        userId,
       });
       throw error;
     }

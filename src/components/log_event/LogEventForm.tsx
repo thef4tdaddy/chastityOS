@@ -55,7 +55,7 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
   const { user } = useAuthState();
   const { createEvent } = useEventMutations();
   const { showSuccess, showError } = useNotificationActions();
-  
+
   const [formData, setFormData] = useState({
     type: "note" as EventType,
     notes: "",
@@ -89,7 +89,7 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
 
       // Show success notification
       showSuccess("Event logged successfully", "Event Added");
-      
+
       // Call optional callback
       onEventLogged?.();
 

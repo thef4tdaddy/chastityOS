@@ -16,22 +16,22 @@ export function useSettingsQuery(userId: string | undefined) {
     queryKey: ["settings", "user", userId],
     queryFn: async () => {
       if (!userId) return null;
-      
+
       // Always read from local Dexie first for instant response
       let settings = await settingsDBService.getUserSettings(userId);
-      
+
       // If no settings exist, create default settings
       if (!settings) {
         settings = await settingsDBService.createDefaultSettings(userId);
       }
-      
+
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserSettings(userId).catch((error) => {
           console.warn("Background settings sync failed:", error);
         });
       }
-      
+
       return settings;
     },
     ...cacheConfig.userSettings, // Apply specific cache settings
@@ -53,7 +53,7 @@ export function useSettingsMutations() {
       // 1. Update local Dexie immediately for optimistic update
       const updatedSettings = await settingsDBService.updateSettings(
         params.userId,
-        params.settings
+        params.settings,
       );
 
       // 2. Trigger Firebase sync in background
@@ -67,17 +67,14 @@ export function useSettingsMutations() {
     },
     onSuccess: (data, variables) => {
       // Update the settings cache immediately
-      queryClient.setQueryData(
-        ["settings", "user", variables.userId],
-        data
-      );
+      queryClient.setQueryData(["settings", "user", variables.userId], data);
     },
     onError: (error) => {
       console.error("Failed to update settings:", error);
-      
+
       // Invalidate cache to refetch from server in case of error
-      queryClient.invalidateQueries({ 
-        queryKey: ["settings", "user"] 
+      queryClient.invalidateQueries({
+        queryKey: ["settings", "user"],
       });
     },
   });
@@ -86,7 +83,7 @@ export function useSettingsMutations() {
     mutationFn: async (params: { userId: string }) => {
       // 1. Reset to defaults in local Dexie
       const defaultSettings = await settingsDBService.createDefaultSettings(
-        params.userId
+        params.userId,
       );
 
       // 2. Trigger Firebase sync in background
@@ -100,10 +97,7 @@ export function useSettingsMutations() {
     },
     onSuccess: (data, variables) => {
       // Update the settings cache with default values
-      queryClient.setQueryData(
-        ["settings", "user", variables.userId],
-        data
-      );
+      queryClient.setQueryData(["settings", "user", variables.userId], data);
     },
     onError: (error) => {
       console.error("Failed to reset settings:", error);
@@ -111,14 +105,11 @@ export function useSettingsMutations() {
   });
 
   const updateTheme = useMutation({
-    mutationFn: async (params: {
-      userId: string;
-      theme: "light" | "dark";
-    }) => {
+    mutationFn: async (params: { userId: string; theme: "light" | "dark" }) => {
       // Quick theme update
       const updatedSettings = await settingsDBService.updateSettings(
         params.userId,
-        { theme: params.theme }
+        { theme: params.theme },
       );
 
       // Background sync
@@ -132,10 +123,7 @@ export function useSettingsMutations() {
     },
     onSuccess: (data, variables) => {
       // Update settings cache
-      queryClient.setQueryData(
-        ["settings", "user", variables.userId],
-        data
-      );
+      queryClient.setQueryData(["settings", "user", variables.userId], data);
     },
   });
 
@@ -146,7 +134,7 @@ export function useSettingsMutations() {
     }) => {
       const updatedSettings = await settingsDBService.updateSettings(
         params.userId,
-        { eventDisplayMode: params.eventDisplayMode }
+        { eventDisplayMode: params.eventDisplayMode },
       );
 
       // Background sync
@@ -159,10 +147,7 @@ export function useSettingsMutations() {
       return updatedSettings;
     },
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(
-        ["settings", "user", variables.userId],
-        data
-      );
+      queryClient.setQueryData(["settings", "user", variables.userId], data);
     },
   });
 

@@ -16,17 +16,17 @@ export function useEventsQuery(userId: string | undefined) {
     queryKey: ["events", "user", userId],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       // Always read from local Dexie first for instant response
       const events = await eventDBService.findByUserId(userId);
-      
+
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserEvents(userId).catch((error) => {
           console.warn("Background events sync failed:", error);
         });
       }
-      
+
       return events;
     },
     ...cacheConfig.events, // Apply specific cache settings
@@ -37,19 +37,22 @@ export function useEventsQuery(userId: string | undefined) {
 /**
  * Query for getting recent events (last 30 days)
  */
-export function useRecentEventsQuery(userId: string | undefined, enabled = true) {
+export function useRecentEventsQuery(
+  userId: string | undefined,
+  enabled = true,
+) {
   return useQuery({
     queryKey: ["events", "recent", userId],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+
       const allEvents = await eventDBService.findByUserId(userId);
-      return allEvents.filter((event) => 
-        event.timestamp >= thirtyDaysAgo
-      ).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      return allEvents
+        .filter((event) => event.timestamp >= thirtyDaysAgo)
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     },
     ...cacheConfig.events,
     enabled: !!userId && enabled,
@@ -60,15 +63,15 @@ export function useRecentEventsQuery(userId: string | undefined, enabled = true)
  * Query for getting events by type
  */
 export function useEventsByTypeQuery(
-  userId: string | undefined, 
+  userId: string | undefined,
   eventType: EventType,
-  enabled = true
+  enabled = true,
 ) {
   return useQuery({
     queryKey: ["events", "type", userId, eventType],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       const allEvents = await eventDBService.findByUserId(userId);
       return allEvents.filter((event) => event.type === eventType);
     },
@@ -113,14 +116,18 @@ export function useEventMutations() {
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return [data];
           return [data, ...oldEvents].sort(
-            (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+            (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
           );
-        }
+        },
       );
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["events", "recent", variables.userId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "type", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "recent", variables.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "type", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to create event:", error);
@@ -136,7 +143,7 @@ export function useEventMutations() {
       // 1. Update local Dexie immediately
       const updatedEvent = await eventDBService.updateEvent(
         params.eventId,
-        params.updates
+        params.updates,
       );
 
       // 2. Trigger Firebase sync in background
@@ -155,14 +162,18 @@ export function useEventMutations() {
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return oldEvents;
           return oldEvents.map((event) =>
-            event.id === variables.eventId ? { ...event, ...data } : event
+            event.id === variables.eventId ? { ...event, ...data } : event,
           );
-        }
+        },
       );
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["events", "recent", variables.userId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "type", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "recent", variables.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "type", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to update event:", error);
@@ -190,12 +201,16 @@ export function useEventMutations() {
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return oldEvents;
           return oldEvents.filter((event) => event.id !== eventId);
-        }
+        },
       );
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["events", "recent", variables.userId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "type", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "recent", variables.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "type", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to delete event:", error);
@@ -221,8 +236,8 @@ export function useEventMutations() {
           eventDBService.createEvent({
             ...eventData,
             userId: params.userId,
-          })
-        )
+          }),
+        ),
       );
 
       // 2. Trigger Firebase sync in background
@@ -241,14 +256,18 @@ export function useEventMutations() {
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return data;
           return [...data, ...oldEvents].sort(
-            (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+            (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
           );
-        }
+        },
       );
-      
+
       // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ["events", "recent", variables.userId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "type", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "recent", variables.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["events", "type", variables.userId],
+      });
     },
     onError: (error) => {
       console.error("Failed to bulk create events:", error);

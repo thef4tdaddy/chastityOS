@@ -25,6 +25,15 @@ export {
   MODAL_IDS,
 } from "./modalStore";
 
+// Form Store - Form state, validation, dirty tracking
+export {
+  useFormStore,
+  useForm,
+  useFormField,
+  useFormActions,
+  useFormManager,
+} from "./formStore";
+
 // UI Preferences Store - Theme, animations, layout settings
 export {
   useUIPreferencesStore,
@@ -60,5 +69,6 @@ export type {
 // Types
 export type { NavigationState } from "./navigationStore";
 export type { ModalState, ModalConfig } from "./modalStore";
+export type { FormState, FormField } from "./formStore";
 export type { UIPreferencesState } from "./uiPreferencesStore";
 export type { NotificationState, Notification } from "./notificationStore";
