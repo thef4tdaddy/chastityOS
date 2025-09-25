@@ -7,7 +7,7 @@ import {
   FaComment,
   FaTimes,
   FaPaperPlane,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 import type { FeedbackModalProps, FeedbackData } from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
 
