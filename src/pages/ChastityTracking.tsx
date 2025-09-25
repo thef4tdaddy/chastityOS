@@ -1,5 +1,4 @@
 import React from "react";
-import { EmergencyUnlockModal } from "../components/tracker/EmergencyUnlockModal";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { TrackerStats } from "../components/tracker/TrackerStats";
 import { ActionButtons } from "../components/tracker/ActionButtons";
@@ -32,7 +31,15 @@ const TrackerPage: React.FC = () => {
   const isHardcoreGoal = false;
   const showReasonModal = false;
   const showPauseReasonModal = false;
-  const showEmergencyUnlockModal = false;
+
+  // Mock session and user data for emergency unlock
+  const sessionId = "mock-session-123";
+  const userId = "mock-user-456";
+
+  const handleEmergencyUnlock = () => {
+    // This would typically refresh the session state or redirect
+    console.log("Emergency unlock completed - refreshing session state");
+  };
 
   return (
     <div className="text-nightly-spring-green">
@@ -69,6 +76,9 @@ const TrackerPage: React.FC = () => {
         isHardcoreGoal={isHardcoreGoal}
         requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
         hasPendingReleaseRequest={hasPendingReleaseRequest}
+        sessionId={sessionId}
+        userId={userId}
+        onEmergencyUnlock={handleEmergencyUnlock}
       />
 
       {isCageOn && <PauseResumeButtons isPaused={isPaused} />}
@@ -76,15 +86,6 @@ const TrackerPage: React.FC = () => {
       <ReasonModals
         showReasonModal={showReasonModal}
         showPauseReasonModal={showPauseReasonModal}
-      />
-
-      <EmergencyUnlockModal
-        isOpen={showEmergencyUnlockModal}
-        onClose={() => {}}
-        onSubmit={() => {}}
-        backupCode=""
-        setBackupCode={() => {}}
-        unlockMessage=""
       />
     </div>
   );
