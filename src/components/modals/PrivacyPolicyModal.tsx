@@ -5,7 +5,7 @@ import {
   FaLock,
   FaDatabase,
   FaUsers,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 
 interface PrivacyPolicyModalProps {
   isOpen: boolean;

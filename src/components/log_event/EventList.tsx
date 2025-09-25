@@ -1,6 +1,12 @@
 import React from "react";
 import type { DBEvent, EventType } from "../../types/database";
-import { FaCalendar, FaHeart, FaFire, FaGamepad, FaTint } from "react-icons/fa";
+import {
+  FaCalendar,
+  FaHeart,
+  FaFire,
+  FaGamepad,
+  FaTint,
+} from "../../utils/iconImport";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [

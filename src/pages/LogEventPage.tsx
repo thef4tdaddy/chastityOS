@@ -4,7 +4,7 @@ import { eventDBService } from "../services/database";
 import type { DBEvent, EventType } from "../types/database";
 import { LogEventForm, EventList } from "../components/log_event";
 import { logger } from "../utils/logging";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner } from "../utils/iconImport";
 
 const LogEventPage: React.FC = () => {
   const { user } = useAuthState();
