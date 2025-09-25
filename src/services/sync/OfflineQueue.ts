@@ -4,7 +4,7 @@
  */
 import { serviceLogger } from "@/utils/logging";
 import { db } from "../database";
-import type { QueuedOperation } from "@/types/database";
+import type { QueuedOperation, DBBase } from "@/types/database";
 
 const logger = serviceLogger("OfflineQueue");
 
@@ -16,12 +16,14 @@ class OfflineQueue {
   /**
    * Add an operation to the queue
    */
-  async queueOperation(operation: Omit<QueuedOperation, "createdAt" | "id">) {
-    const queuedOperation: Omit<QueuedOperation, "id"> = {
+  async queueOperation(
+    operation: Omit<QueuedOperation<DBBase>, "createdAt" | "id">,
+  ) {
+    const queuedOperation: Omit<QueuedOperation<DBBase>, "id"> = {
       ...operation,
       createdAt: new Date(),
     };
-    await db.offlineQueue.add(queuedOperation as QueuedOperation);
+    await db.offlineQueue.add(queuedOperation as QueuedOperation<DBBase>);
     logger.debug("Queued operation", {
       type: operation.type,
       collection: operation.collectionName,
@@ -46,7 +48,7 @@ class OfflineQueue {
   /**
    * Process the queue
    */
-  async processQueue() {
+  async processQueue(): Promise<QueuedOperation<DBBase>[]> {
     logger.info("Processing offline queue");
     const operations = await this.getQueuedOperations();
 
