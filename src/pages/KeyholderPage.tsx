@@ -5,7 +5,7 @@ import { sessionDBService, taskDBService } from "../services/database";
 import type { DBSession, DBTask, TaskStatus } from "../types/database";
 import {
   KeyholderPasswordUnlock,
-  AccountLinkingPreview,
+  AccountLinking,
   SessionControls,
   TaskManagement,
 } from "../components/keyholder";
@@ -65,8 +65,8 @@ const KeyholderPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Account Linking Preview - Always visible */}
-            <AccountLinkingPreview />
+            {/* Account Linking - Always visible */}
+            <AccountLinking />
 
             {/* Current Password System */}
             <KeyholderPasswordUnlock />
