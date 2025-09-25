@@ -1,5 +1,5 @@
 import React from "react";
-import { FaLock } from "react-icons/fa";
+import { FaLock } from "../../utils/iconImport";
 
 interface ActionButtonsProps {
   isCageOn: boolean;
