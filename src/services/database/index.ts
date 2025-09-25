@@ -15,3 +15,4 @@ export { eventDBService } from "./EventDBService";
 export { taskDBService } from "./TaskDBService";
 export { goalDBService } from "./GoalDBService";
 export { settingsDBService } from "./SettingsDBService";
+export { emergencyService } from "./EmergencyService";
