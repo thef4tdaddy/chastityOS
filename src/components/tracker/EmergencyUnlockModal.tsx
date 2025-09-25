@@ -1,12 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaTimes, FaExclamationTriangle, FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import {
+  FaTimes,
+  FaExclamationTriangle,
+  FaArrowLeft,
+  FaArrowRight,
+} from "react-icons/fa";
 import type { EmergencyUnlockReason } from "@/types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "@/types/events";
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEmergencyUnlock: (reason: EmergencyUnlockReason, additionalNotes?: string) => Promise<void>;
+  onEmergencyUnlock: (
+    reason: EmergencyUnlockReason,
+    additionalNotes?: string,
+  ) => Promise<void>;
   sessionId: string;
   isProcessing?: boolean;
 }
@@ -65,16 +73,21 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
     }
   };
 
-  const canProceedFromReason = reason && (reason !== "Other" || customReason.trim());
+  const canProceedFromReason =
+    reason && (reason !== "Other" || customReason.trim());
   const canConfirm = confirmText === requiredText && canProceedFromReason;
 
   const WarningStage = () => (
     <div className="text-center">
       <FaExclamationTriangle className="text-6xl text-red-400 mx-auto mb-6" />
-      <h3 className="text-xl font-bold mb-4 text-red-300">🚨 Emergency Unlock</h3>
-      
+      <h3 className="text-xl font-bold mb-4 text-red-300">
+        🚨 Emergency Unlock
+      </h3>
+
       <div className="bg-red-900/30 border border-red-600 rounded-lg p-4 mb-6 text-left">
-        <h4 className="font-semibold text-red-300 mb-2">⚠️ Warning: Emergency Use Only</h4>
+        <h4 className="font-semibold text-red-300 mb-2">
+          ⚠️ Warning: Emergency Use Only
+        </h4>
         <ul className="text-sm text-red-200 space-y-1">
           <li>• This will immediately end your current session</li>
           <li>• All session goals and restrictions will be bypassed</li>
@@ -85,8 +98,9 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
       </div>
 
       <p className="text-sm text-gray-300 mb-6">
-        This feature is designed for medical emergencies, safety concerns, equipment malfunctions, 
-        or other urgent situations that genuinely require immediate unlock.
+        This feature is designed for medical emergencies, safety concerns,
+        equipment malfunctions, or other urgent situations that genuinely
+        require immediate unlock.
       </p>
 
       <div className="flex flex-col space-y-3">
@@ -117,12 +131,14 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
         >
           <FaArrowLeft />
         </button>
-        <h3 className="text-xl font-bold text-red-300">Select Emergency Reason</h3>
+        <h3 className="text-xl font-bold text-red-300">
+          Select Emergency Reason
+        </h3>
       </div>
 
       <p className="text-sm text-gray-300 mb-4">
-        Please select the reason for your emergency unlock. This information helps ensure the 
-        feature is used appropriately and safely.
+        Please select the reason for your emergency unlock. This information
+        helps ensure the feature is used appropriately and safely.
       </p>
 
       <div className="space-y-3 mb-6">
@@ -140,17 +156,24 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
               name="emergency-reason"
               value={emergencyReason}
               checked={reason === emergencyReason}
-              onChange={(e) => setReason(e.target.value as EmergencyUnlockReason)}
+              onChange={(e) =>
+                setReason(e.target.value as EmergencyUnlockReason)
+              }
               className="mt-1 mr-3 text-red-600"
             />
             <div>
               <div className="font-medium text-white">{emergencyReason}</div>
               <div className="text-xs text-gray-400 mt-1">
-                {emergencyReason === "Medical Emergency" && "Health-related emergencies requiring immediate unlock"}
-                {emergencyReason === "Safety Concern" && "Physical safety or security situations"}
-                {emergencyReason === "Equipment Malfunction" && "Device failure or malfunction"}
-                {emergencyReason === "Urgent Situation" && "Other urgent circumstances requiring unlock"}
-                {emergencyReason === "Other" && "Custom reason with additional details"}
+                {emergencyReason === "Medical Emergency" &&
+                  "Health-related emergencies requiring immediate unlock"}
+                {emergencyReason === "Safety Concern" &&
+                  "Physical safety or security situations"}
+                {emergencyReason === "Equipment Malfunction" &&
+                  "Device failure or malfunction"}
+                {emergencyReason === "Urgent Situation" &&
+                  "Other urgent circumstances requiring unlock"}
+                {emergencyReason === "Other" &&
+                  "Custom reason with additional details"}
               </div>
             </div>
           </label>
@@ -217,7 +240,9 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
           <li>• Will immediately end session #{sessionId.slice(-8)}</li>
           <li>• Cannot be undone</li>
           <li>• Will be permanently logged</li>
-          <li>• Reason: <strong>{reason}</strong></li>
+          <li>
+            • Reason: <strong>{reason}</strong>
+          </li>
         </ul>
       </div>
 
@@ -249,7 +274,9 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
           disabled={!canConfirm || isSubmitting}
           className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition"
         >
-          {isSubmitting ? "Processing Emergency Unlock..." : "🚨 EMERGENCY UNLOCK 🚨"}
+          {isSubmitting
+            ? "Processing Emergency Unlock..."
+            : "🚨 EMERGENCY UNLOCK 🚨"}
         </button>
         <button
           onClick={() => setStage("reason")}

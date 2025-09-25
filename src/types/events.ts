@@ -129,7 +129,7 @@ export const PAUSE_REASONS = [
 // Emergency unlock reason categories
 export const EMERGENCY_UNLOCK_REASONS = [
   "Medical Emergency",
-  "Safety Concern", 
+  "Safety Concern",
   "Equipment Malfunction",
   "Urgent Situation",
   "Other",
