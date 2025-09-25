@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuthState } from "../contexts";
 import { RuleCard, RuleEditor } from "../components/rules";
 import type { ChastityRule } from "../components/rules";
-import { FaBook, FaEdit, FaInfo } from "react-icons/fa";
+import { FaBook, FaEdit, FaInfo } from "../utils/iconImport";
 
 // Mock rules data
 const mockRules: ChastityRule[] = [

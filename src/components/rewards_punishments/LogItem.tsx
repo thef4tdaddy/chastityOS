@@ -6,7 +6,7 @@ import {
   FaStickyNote,
   FaTrophy,
   FaExclamationTriangle,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 
 // Mock reward/punishment log item interface
 export interface RewardPunishmentLog {

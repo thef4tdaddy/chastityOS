@@ -5,7 +5,7 @@ import {
   FaUsers,
   FaQrcode,
   FaClipboard,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 
 // Future Account Linking Preview Component
 export const AccountLinkingPreview: React.FC = () => {
