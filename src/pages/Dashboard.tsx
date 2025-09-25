@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FeatureCard } from "../components/dashboard/FeatureCard";
+import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
 
@@ -61,6 +62,11 @@ const Dashboard: React.FC = () => {
               accentColor="orange"
             />
           </Link>
+        </div>
+
+        {/* Dexie Offline Demo */}
+        <div className="mt-8">
+          <DexieDemo />
         </div>
 
         <div className="text-center mt-8">
