@@ -1,0 +1,302 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for relationship access control
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    function relationshipExists(relationshipId) {
+      return exists(/databases/$(database)/documents/relationships/$(relationshipId));
+    }
+    
+    function getRelationship(relationshipId) {
+      return get(/databases/$(database)/documents/relationships/$(relationshipId)).data;
+    }
+    
+    function hasRelationshipAccess(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.submissiveId == getUserId() || relationship.keyholderId == getUserId();
+    }
+    
+    function isRelationshipActive(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.status == 'active';
+    }
+    
+    function isSubmissiveInRelationship(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.submissiveId == getUserId();
+    }
+    
+    function isKeyholderInRelationship(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.keyholderId == getUserId();
+    }
+    
+    function hasKeyholderPermission(relationshipId, permission) {
+      let relationship = getRelationship(relationshipId);
+      return isKeyholderInRelationship(relationshipId) && 
+             relationship.permissions.keyholderCanEdit[permission] == true;
+    }
+    
+    function canSubmissivePause(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return isSubmissiveInRelationship(relationshipId) && 
+             relationship.permissions.submissiveCanPause == true;
+    }
+    
+    // ==================== USER COLLECTION ====================
+    
+    match /users/{userId} {
+      // Users can read/write their own data
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+      
+      // Allow reading basic profile for relationship discovery
+      allow read: if isAuthenticated() && 
+                     resource.data.profile.preferences.publicProfile == true &&
+                     resource.data.profile.preferences.allowLinking == true;
+    }
+    
+    // ==================== RELATIONSHIP REQUESTS ====================
+    
+    match /relationshipRequests/{requestId} {
+      // Users can read requests sent to them or by them
+      allow read: if isAuthenticated() && (
+        resource.data.fromUserId == getUserId() ||
+        resource.data.toUserId == getUserId()
+      );
+      
+      // Users can create requests (sending to others)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.fromUserId == getUserId();
+      
+      // Only the target user can update request (accept/reject)
+      allow update: if isAuthenticated() && 
+                       resource.data.toUserId == getUserId() &&
+                       resource.data.status == 'pending';
+      
+      // Users can delete their own outgoing requests (if still pending)
+      allow delete: if isAuthenticated() && 
+                       resource.data.fromUserId == getUserId() &&
+                       resource.data.status == 'pending';
+    }
+    
+    // ==================== RELATIONSHIPS ====================
+    
+    match /relationships/{relationshipId} {
+      // Relationship participants can read their relationship
+      allow read: if isAuthenticated() && (
+        resource.data.submissiveId == getUserId() ||
+        resource.data.keyholderId == getUserId()
+      );
+      
+      // Relationship can be created during request acceptance
+      allow create: if isAuthenticated() && (
+        request.resource.data.submissiveId == getUserId() ||
+        request.resource.data.keyholderId == getUserId()
+      );
+      
+      // Participants can update relationship (permissions, status, etc.)
+      allow update: if isAuthenticated() && (
+        resource.data.submissiveId == getUserId() ||
+        resource.data.keyholderId == getUserId()
+      );
+      
+      // Participants can delete/end relationships
+      allow delete: if isAuthenticated() && (
+        resource.data.submissiveId == getUserId() ||
+        resource.data.keyholderId == getUserId()
+      );
+    }
+    
+    // ==================== CHASTITY DATA ====================
+    
+    match /chastityData/{relationshipId} {
+      // Basic read access for relationship participants
+      allow read: if isAuthenticated() && 
+                     relationshipExists(relationshipId) &&
+                     hasRelationshipAccess(relationshipId) &&
+                     isRelationshipActive(relationshipId);
+      
+      // Write permissions based on role and relationship settings
+      allow write: if isAuthenticated() && 
+                      relationshipExists(relationshipId) &&
+                      hasRelationshipAccess(relationshipId) &&
+                      isRelationshipActive(relationshipId) && (
+                        // Submissive can write basic data
+                        isSubmissiveInRelationship(relationshipId) ||
+                        // Keyholder can write if they have permission
+                        (isKeyholderInRelationship(relationshipId) && 
+                         hasKeyholderPermission(relationshipId, 'sessions'))
+                      );
+      
+      // ==================== SESSION DATA ====================
+      
+      match /sessions/{sessionId} {
+        // Session participants can read
+        allow read: if isAuthenticated() && 
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId);
+        
+        // Session creation and control
+        allow create, update: if isAuthenticated() && 
+                                 relationshipExists(relationshipId) &&
+                                 hasRelationshipAccess(relationshipId) &&
+                                 isRelationshipActive(relationshipId) && (
+                                   // Submissive can control sessions (with restrictions)
+                                   isSubmissiveInRelationship(relationshipId) ||
+                                   // Keyholder can control if they have permission
+                                   hasKeyholderPermission(relationshipId, 'sessions')
+                                 );
+        
+        // Session deletion only by keyholder or system
+        allow delete: if isAuthenticated() && 
+                         relationshipExists(relationshipId) &&
+                         hasKeyholderPermission(relationshipId, 'sessions');
+      }
+      
+      // ==================== TASKS ====================
+      
+      match /tasks/{taskId} {
+        // Task participants can read
+        allow read: if isAuthenticated() && 
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId);
+        
+        // Task creation
+        allow create: if isAuthenticated() && 
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) &&
+                         isRelationshipActive(relationshipId);
+        
+        // Task updates based on role
+        allow update: if isAuthenticated() && 
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) &&
+                         isRelationshipActive(relationshipId) && (
+                           // Submissive can update task status, notes
+                           (isSubmissiveInRelationship(relationshipId) && 
+                            request.resource.data.assignedTo == 'submissive') ||
+                           // Keyholder can update if they have permission
+                           hasKeyholderPermission(relationshipId, 'tasks')
+                         );
+        
+        // Task deletion only by creator or keyholder
+        allow delete: if isAuthenticated() && 
+                         relationshipExists(relationshipId) && (
+                           hasKeyholderPermission(relationshipId, 'tasks') ||
+                           (resource.data.assignedBy == 'submissive' && 
+                            isSubmissiveInRelationship(relationshipId))
+                         );
+      }
+      
+      // ==================== EVENTS ====================
+      
+      match /events/{eventId} {
+        // Event reading with privacy controls
+        allow read: if isAuthenticated() && 
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId) && (
+                         // Public events visible to both
+                         resource.data.isPrivate == false ||
+                         // Private events only visible to logger
+                         (resource.data.isPrivate == true && 
+                          ((resource.data.loggedBy == 'submissive' && isSubmissiveInRelationship(relationshipId)) ||
+                           (resource.data.loggedBy == 'keyholder' && isKeyholderInRelationship(relationshipId))))
+                       );
+        
+        // Event creation
+        allow create: if isAuthenticated() && 
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) &&
+                         isRelationshipActive(relationshipId);
+        
+        // Event updates only by original logger
+        allow update: if isAuthenticated() && 
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) && (
+                           (resource.data.loggedBy == 'submissive' && isSubmissiveInRelationship(relationshipId)) ||
+                           (resource.data.loggedBy == 'keyholder' && isKeyholderInRelationship(relationshipId))
+                         );
+        
+        // Event deletion only by logger or keyholder
+        allow delete: if isAuthenticated() && 
+                         relationshipExists(relationshipId) && (
+                           (resource.data.loggedBy == 'submissive' && isSubmissiveInRelationship(relationshipId)) ||
+                           (resource.data.loggedBy == 'keyholder' && isKeyholderInRelationship(relationshipId)) ||
+                           hasKeyholderPermission(relationshipId, 'sessions')
+                         );
+      }
+      
+      // ==================== GOALS ====================
+      
+      match /goals/{goalId} {
+        // Goal reading
+        allow read: if isAuthenticated() && 
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId);
+        
+        // Goal creation and updates
+        allow create, update: if isAuthenticated() && 
+                                 relationshipExists(relationshipId) &&
+                                 hasRelationshipAccess(relationshipId) &&
+                                 isRelationshipActive(relationshipId) && (
+                                   // Submissive can manage personal goals
+                                   isSubmissiveInRelationship(relationshipId) ||
+                                   // Keyholder can manage if they have permission
+                                   hasKeyholderPermission(relationshipId, 'goals')
+                                 );
+        
+        // Goal deletion
+        allow delete: if isAuthenticated() && 
+                         relationshipExists(relationshipId) && (
+                           hasKeyholderPermission(relationshipId, 'goals') ||
+                           (isSubmissiveInRelationship(relationshipId) && 
+                            resource.data.setBy == 'submissive')
+                         );
+      }
+    }
+    
+    // ==================== LEGACY SINGLE-USER DATA ====================
+    // Maintain backward compatibility for existing single-user data
+    
+    match /users/{userId}/sessions/{sessionId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    match /users/{userId}/events/{eventId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    match /users/{userId}/goals/{goalId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    match /users/{userId}/eventLog/{eventId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    // ==================== ADMIN AND SYSTEM ====================
+    
+    match /system/{document=**} {
+      // Only system processes can access system documents
+      allow read, write: if false;
+    }
+    
+    match /admin/{document=**} {
+      // Admin access would require custom claims
+      allow read, write: if isAuthenticated() && 
+                            request.auth.token.admin == true;
+    }
+  }
+}

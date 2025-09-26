@@ -17,3 +17,7 @@ export { goalDBService } from "./GoalDBService";
 export { settingsDBService } from "./SettingsDBService";
 export { emergencyService } from "./EmergencyService";
 export { keyholderRelationshipDBService } from "./KeyholderRelationshipDBService";
+
+// Relationship-based services
+export { relationshipService } from "./RelationshipService";
+export { relationshipChastityService } from "./RelationshipChastityService";

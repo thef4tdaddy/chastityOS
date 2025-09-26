@@ -19,6 +19,7 @@ import SettingsPage from "./pages/SettingsPage";
 import KeyholderPage from "./pages/KeyholderPage";
 import KeyholderDemo from "./pages/KeyholderDemo";
 import PublicProfilePage from "./pages/PublicProfilePage";
+import RelationshipsPage from "./pages/RelationshipsPage";
 import Root from "./Root";
 
 const router = createBrowserRouter([
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
       {
         path: "/public-profile/:userId",
         element: <PublicProfilePage />,
+      },
+      {
+        path: "/relationships",
+        element: <RelationshipsPage />,
       },
     ],
   },
