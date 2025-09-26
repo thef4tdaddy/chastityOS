@@ -8,9 +8,405 @@ import {
   FaTimes,
   FaPaperPlane,
 } from "../../utils/iconImport";
-import type { FeedbackModalProps, FeedbackData } from "../../types/feedback";
+import type {
+  FeedbackModalProps,
+  FeedbackData,
+  FeedbackType,
+} from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
 import { logger } from "../../utils/logging";
+
+// Form field components
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}
+
+const FormField: React.FC<FormFieldProps> = ({ label, required, children }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-300 mb-2">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    {children}
+  </div>
+);
+
+interface TextInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+  required?: boolean;
+}
+
+const TextInput: React.FC<TextInputProps> = ({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  required,
+}) => (
+  <input
+    type="text"
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder={placeholder}
+    required={required}
+    disabled={disabled}
+  />
+);
+
+interface TextAreaProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  rows?: number;
+  disabled?: boolean;
+  required?: boolean;
+}
+
+const TextArea: React.FC<TextAreaProps> = ({
+  value,
+  onChange,
+  placeholder,
+  rows = 4,
+  disabled,
+  required,
+}) => (
+  <textarea
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+    rows={rows}
+    placeholder={placeholder}
+    required={required}
+    disabled={disabled}
+  />
+);
+
+// Priority selector component
+interface PrioritySelectorProps {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}
+
+const PrioritySelector: React.FC<PrioritySelectorProps> = ({
+  value,
+  onChange,
+  disabled,
+}) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    disabled={disabled}
+  >
+    <option value="low">Low - Minor inconvenience</option>
+    <option value="medium">Medium - Affects functionality</option>
+    <option value="high">High - Prevents core features</option>
+  </select>
+);
+
+// Bug-specific fields component
+interface BugFieldsProps {
+  formData: {
+    steps: string;
+    expected: string;
+    actual: string;
+    priority: string;
+  };
+  onUpdateField: (field: string, value: string) => void;
+  disabled: boolean;
+}
+
+const BugFields: React.FC<BugFieldsProps> = ({
+  formData,
+  onUpdateField,
+  disabled,
+}) => (
+  <>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField label="Steps to Reproduce">
+        <TextArea
+          value={formData.steps}
+          onChange={(value) => onUpdateField("steps", value)}
+          placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"
+          rows={3}
+          disabled={disabled}
+        />
+      </FormField>
+
+      <FormField label="Priority">
+        <PrioritySelector
+          value={formData.priority}
+          onChange={(value) => onUpdateField("priority", value)}
+          disabled={disabled}
+        />
+      </FormField>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormField label="Expected Behavior">
+        <TextArea
+          value={formData.expected}
+          onChange={(value) => onUpdateField("expected", value)}
+          placeholder="What should have happened?"
+          rows={2}
+          disabled={disabled}
+        />
+      </FormField>
+
+      <FormField label="Actual Behavior">
+        <TextArea
+          value={formData.actual}
+          onChange={(value) => onUpdateField("actual", value)}
+          placeholder="What actually happened?"
+          rows={2}
+          disabled={disabled}
+        />
+      </FormField>
+    </div>
+  </>
+);
+
+// Helper functions extracted from main component
+const getModalTitle = (type: FeedbackType): string => {
+  switch (type) {
+    case "bug":
+      return "Report a Bug";
+    case "feature":
+      return "Suggest a Feature";
+    case "general":
+      return "General Feedback";
+    default:
+      return "Feedback";
+  }
+};
+
+const getModalIcon = (type: FeedbackType): React.ReactElement => {
+  switch (type) {
+    case "bug":
+      return <FaBug className="text-red-400" />;
+    case "feature":
+      return <FaLightbulb className="text-blue-400" />;
+    case "general":
+      return <FaComment className="text-green-400" />;
+    default:
+      return <FaComment className="text-green-400" />;
+  }
+};
+
+const getTitlePlaceholder = (type: FeedbackType): string => {
+  switch (type) {
+    case "bug":
+      return "Brief description of the bug";
+    case "feature":
+      return "Short title for your feature request";
+    case "general":
+      return "Summary of your feedback";
+    default:
+      return "Brief title";
+  }
+};
+
+const getDescriptionPlaceholder = (type: FeedbackType): string => {
+  switch (type) {
+    case "bug":
+      return "Describe what happened and what you expected to happen";
+    case "feature":
+      return "Describe your feature idea and how it would help";
+    case "general":
+      return "Share your thoughts and suggestions";
+    default:
+      return "Describe your feedback";
+  }
+};
+
+const getTitleLabel = (type: FeedbackType): string => {
+  switch (type) {
+    case "bug":
+      return "Bug Summary";
+    case "feature":
+      return "Feature Title";
+    default:
+      return "Feedback Title";
+  }
+};
+
+// Form content component
+interface FeedbackFormProps {
+  type: FeedbackType;
+  formData: {
+    title: string;
+    description: string;
+    steps: string;
+    expected: string;
+    actual: string;
+    priority: string;
+    contactEmail: string;
+    includeSystemInfo: boolean;
+  };
+  updateField: (field: string, value: string | boolean | File | null) => void;
+  isSubmitting: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onClose: () => void;
+}
+
+// Form actions component (toggle and buttons)
+interface FormActionsProps {
+  type: FeedbackType;
+  formData: { includeSystemInfo: boolean };
+  updateField: (field: string, value: boolean | File | null) => void;
+  isSubmitting: boolean;
+  onClose: () => void;
+}
+
+const FormActions: React.FC<FormActionsProps> = ({
+  type,
+  formData,
+  updateField,
+  isSubmitting,
+  onClose,
+}) => (
+  <>
+    {/* System Info Toggle */}
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-sm font-medium text-gray-300">
+          Include System Information
+        </div>
+        <div className="text-xs text-gray-500">
+          Helps us debug technical issues
+        </div>
+      </div>
+      <label className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={formData.includeSystemInfo}
+          onChange={(e) => updateField("includeSystemInfo", e.target.checked)}
+          className="sr-only peer"
+          disabled={isSubmitting}
+        />
+        <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+
+    {/* Submit Buttons */}
+    <div className="flex gap-3 pt-4">
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-3 rounded font-medium transition-colors flex items-center gap-2"
+      >
+        <FaPaperPlane />
+        {getSubmitButtonText(type, isSubmitting)}
+      </button>
+      <button
+        type="button"
+        onClick={onClose}
+        disabled={isSubmitting}
+        className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-gray-300 px-6 py-3 rounded font-medium transition-colors"
+      >
+        Cancel
+      </button>
+    </div>
+  </>
+);
+
+const FeedbackForm: React.FC<FeedbackFormProps> = ({
+  type,
+  formData,
+  updateField,
+  isSubmitting,
+  onSubmit,
+  onClose,
+}) => (
+  <form
+    onSubmit={onSubmit}
+    className="p-6 overflow-y-auto max-h-[70vh] space-y-4"
+  >
+    {/* Title */}
+    <FormField label={getTitleLabel(type)} required>
+      <TextInput
+        value={formData.title}
+        onChange={(value) => updateField("title", value)}
+        placeholder={getTitlePlaceholder(type)}
+        disabled={isSubmitting}
+        required
+      />
+    </FormField>
+
+    {/* Description */}
+    <FormField label="Description" required>
+      <TextArea
+        value={formData.description}
+        onChange={(value) => updateField("description", value)}
+        placeholder={getDescriptionPlaceholder(type)}
+        disabled={isSubmitting}
+        required
+      />
+    </FormField>
+
+    {/* Bug-specific fields */}
+    {type === "bug" && (
+      <BugFields
+        formData={formData}
+        onUpdateField={updateField}
+        disabled={isSubmitting}
+      />
+    )}
+
+    {/* Screenshot Upload */}
+    <FormField label="Screenshot (Optional)">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => updateField("screenshot", e.target.files?.[0] || null)}
+        className="w-full bg-white/5 border border-white/10 rounded p-3 text-white file:mr-4 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
+        disabled={isSubmitting}
+      />
+    </FormField>
+
+    {/* Contact Email */}
+    <FormField label="Contact Email (Optional)">
+      <input
+        type="email"
+        value={formData.contactEmail}
+        onChange={(e) => updateField("contactEmail", e.target.value)}
+        className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="your@email.com (if you want updates)"
+        disabled={isSubmitting}
+      />
+    </FormField>
+
+    <FormActions
+      type={type}
+      formData={formData}
+      updateField={updateField}
+      isSubmitting={isSubmitting}
+      onClose={onClose}
+    />
+  </form>
+);
+
+const getSubmitButtonText = (
+  type: FeedbackType,
+  isSubmitting: boolean,
+): string => {
+  if (isSubmitting) return "Submitting...";
+
+  switch (type) {
+    case "bug":
+      return "Submit Bug Report";
+    case "feature":
+      return "Submit Feature Request";
+    default:
+      return "Submit Feedback";
+  }
+};
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({
   type,
@@ -34,6 +430,13 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
   if (!type) return null;
 
+  const updateField = (
+    field: string,
+    value: string | boolean | File | null,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -54,61 +457,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
       onClose();
     } catch (error) {
       logger.error("Failed to submit feedback", error);
-      // Error handling is done in the service
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const getModalTitle = () => {
-    switch (type) {
-      case "bug":
-        return "Report a Bug";
-      case "feature":
-        return "Suggest a Feature";
-      case "general":
-        return "General Feedback";
-      default:
-        return "Feedback";
-    }
-  };
-
-  const getModalIcon = () => {
-    switch (type) {
-      case "bug":
-        return <FaBug className="text-red-400" />;
-      case "feature":
-        return <FaLightbulb className="text-blue-400" />;
-      case "general":
-        return <FaComment className="text-green-400" />;
-      default:
-        return <FaComment className="text-green-400" />;
-    }
-  };
-
-  const getTitlePlaceholder = () => {
-    switch (type) {
-      case "bug":
-        return "Brief description of the bug";
-      case "feature":
-        return "Short title for your feature request";
-      case "general":
-        return "Summary of your feedback";
-      default:
-        return "Brief title";
-    }
-  };
-
-  const getDescriptionPlaceholder = () => {
-    switch (type) {
-      case "bug":
-        return "Describe what happened and what you expected to happen";
-      case "feature":
-        return "Describe your feature idea and how it would help";
-      case "general":
-        return "Share your thoughts and suggestions";
-      default:
-        return "Describe your feedback";
     }
   };
 
@@ -118,8 +468,10 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-600">
           <div className="flex items-center gap-3">
-            {getModalIcon()}
-            <h2 className="text-xl font-bold text-white">{getModalTitle()}</h2>
+            {getModalIcon(type)}
+            <h2 className="text-xl font-bold text-white">
+              {getModalTitle(type)}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -130,231 +482,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
           </button>
         </div>
 
-        {/* Form */}
-        <form
+        <FeedbackForm
+          type={type}
+          formData={formData}
+          updateField={updateField}
+          isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
-          className="p-6 overflow-y-auto max-h-[70vh] space-y-4"
-        >
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              {type === "bug"
-                ? "Bug Summary"
-                : type === "feature"
-                  ? "Feature Title"
-                  : "Feedback Title"}
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
-              }
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={getTitlePlaceholder()}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={4}
-              placeholder={getDescriptionPlaceholder()}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Bug-specific fields */}
-          {type === "bug" && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Steps to Reproduce
-                  </label>
-                  <textarea
-                    value={formData.steps}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        steps: e.target.value,
-                      }))
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Priority
-                  </label>
-                  <select
-                    value={formData.priority}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        priority: e.target.value as any,
-                      }))
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={isSubmitting}
-                  >
-                    <option value="low">Low - Minor inconvenience</option>
-                    <option value="medium">
-                      Medium - Affects functionality
-                    </option>
-                    <option value="high">High - Prevents core features</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Expected Behavior
-                  </label>
-                  <textarea
-                    value={formData.expected}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        expected: e.target.value,
-                      }))
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={2}
-                    placeholder="What should have happened?"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Actual Behavior
-                  </label>
-                  <textarea
-                    value={formData.actual}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        actual: e.target.value,
-                      }))
-                    }
-                    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={2}
-                    placeholder="What actually happened?"
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Screenshot Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Screenshot (Optional)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  screenshot: e.target.files?.[0] || null,
-                }))
-              }
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-white file:mr-4 file:rounded file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Contact Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Contact Email (Optional)
-            </label>
-            <input
-              type="email"
-              value={formData.contactEmail}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  contactEmail: e.target.value,
-                }))
-              }
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="your@email.com (if you want updates)"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* System Info Toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-gray-300">
-                Include System Information
-              </div>
-              <div className="text-xs text-gray-500">
-                Helps us debug technical issues
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.includeSystemInfo}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    includeSystemInfo: e.target.checked,
-                  }))
-                }
-                className="sr-only peer"
-                disabled={isSubmitting}
-              />
-              <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          {/* Submit Buttons */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-3 rounded font-medium transition-colors flex items-center gap-2"
-            >
-              <FaPaperPlane />
-              {isSubmitting
-                ? "Submitting..."
-                : `Submit ${type === "bug" ? "Bug Report" : type === "feature" ? "Feature Request" : "Feedback"}`}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-gray-300 px-6 py-3 rounded font-medium transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+          onClose={onClose}
+        />
       </div>
     </div>
   );
