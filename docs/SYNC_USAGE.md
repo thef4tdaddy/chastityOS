@@ -60,13 +60,13 @@ export const SettingsPage = () => {
 
   return (
     <div>
-      <button 
-        onClick={handleManualSync} 
+      <button
+        onClick={handleManualSync}
         disabled={isSyncing}
       >
         {isSyncing ? 'Syncing...' : 'Sync Now'}
       </button>
-      
+
       {hasConflicts && (
         <div className="alert alert-warning">
           Data conflicts detected. Please resolve them.
@@ -98,7 +98,7 @@ export const DataManagementPage = () => {
 
     console.log('Sync result:', result);
     // result.operations.uploaded - number of uploaded items
-    // result.operations.downloaded - number of downloaded items  
+    // result.operations.downloaded - number of downloaded items
     // result.operations.conflicts - number of conflicts detected
   };
 
@@ -114,11 +114,11 @@ export const DataManagementPage = () => {
     <div>
       <button onClick={handleFullSync}>Full Sync</button>
       <button onClick={handlePartialSync}>Sync Settings Only</button>
-      
+
       {error && (
         <div className="error">Sync Error: {error.message}</div>
       )}
-      
+
       {lastSyncResult && (
         <div className="sync-stats">
           <p>Last sync: {lastSyncResult.timestamp.toLocaleString()}</p>
@@ -164,12 +164,12 @@ export const ConflictManager = () => {
   return (
     <div>
       <h2>Pending Conflicts ({pendingConflicts.length})</h2>
-      
+
       {pendingConflicts.map((conflict, index) => (
         <div key={index} className="conflict-item">
           <h3>{conflict.collection} - {conflict.documentId}</h3>
           <p>Detected: {conflict.detectedAt.toLocaleString()}</p>
-          
+
           <button onClick={() => handleResolveSpecific(index, 'local')}>
             Keep Local
           </button>
@@ -178,7 +178,7 @@ export const ConflictManager = () => {
           </button>
         </div>
       ))}
-      
+
       {pendingConflicts.length > 1 && (
         <button onClick={handleAutoResolveAll}>
           Resolve All (Keep Local)
@@ -209,7 +209,7 @@ export const SyncMonitor = () => {
       // Track sync metrics
       const duration = Date.now() - lastSyncResult.timestamp.getTime();
       const hasConflicts = lastSyncResult.operations.conflicts > 0;
-      
+
       setSyncMetrics(prev => ({
         totalSyncs: prev.totalSyncs + 1,
         averageDuration: (prev.averageDuration + duration) / 2,
@@ -233,7 +233,7 @@ export const SyncMonitor = () => {
       <p>Total Syncs: {syncMetrics.totalSyncs}</p>
       <p>Average Duration: {syncMetrics.averageDuration.toFixed(0)}ms</p>
       <p>Conflict Rate: {(syncMetrics.conflictRate * 100).toFixed(1)}%</p>
-      
+
       {isSyncing && <div className="sync-indicator">Syncing...</div>}
     </div>
   );
@@ -282,22 +282,24 @@ export const TasksPage = () => {
 The sync system works with existing database services. Ensure you mark data as pending sync:
 
 ```typescript
-import { taskDBService } from '@/services/database';
-import { useSyncContext } from '@/contexts/SyncContext';
+import { taskDBService } from "@/services/database";
+import { useSyncContext } from "@/contexts/SyncContext";
 
 export const useTaskManager = () => {
   const { triggerSync } = useSyncContext();
 
-  const createTask = async (taskData: Omit<DBTask, 'id' | 'lastModified' | 'syncStatus'>) => {
+  const createTask = async (
+    taskData: Omit<DBTask, "id" | "lastModified" | "syncStatus">,
+  ) => {
     // Create task locally
     const taskId = await taskDBService.create(taskData);
-    
+
     // Trigger sync to upload to Firebase
     try {
       await triggerSync();
     } catch (error) {
       // Sync will retry automatically or when back online
-      console.warn('Failed to sync immediately, will retry later:', error);
+      console.warn("Failed to sync immediately, will retry later:", error);
     }
 
     return taskId;
@@ -305,7 +307,7 @@ export const useTaskManager = () => {
 
   const updateTask = async (taskId: string, updates: Partial<DBTask>) => {
     await taskDBService.update(taskId, updates);
-    
+
     // Trigger sync
     await triggerSync().catch(console.warn);
   };
@@ -389,21 +391,27 @@ export const OfflineIndicator = () => {
 ## Best Practices
 
 ### 1. Minimize Manual Syncs
+
 Let the automatic sync handle most scenarios. Only trigger manual syncs for critical operations.
 
 ### 2. Handle Conflicts Gracefully
+
 Design your UI to handle conflicts smoothly without disrupting user workflow.
 
 ### 3. Provide Sync Feedback
+
 Always show sync status to users so they understand what's happening.
 
 ### 4. Test Offline Scenarios
+
 Test your app thoroughly in offline mode to ensure good user experience.
 
 ### 5. Monitor Performance
+
 Track sync performance and user conflict resolution patterns to improve the system.
 
 ### 6. Graceful Degradation
+
 Ensure your app works even if sync fails temporarily.
 
 ## Common Patterns
@@ -415,7 +423,7 @@ const useAutoSave = (data: any, userId: string) => {
   const { sync } = useSync();
   const debouncedSync = useMemo(
     () => debounce(() => sync(userId).catch(console.warn), 1000),
-    [sync, userId]
+    [sync, userId],
   );
 
   useEffect(() => {
@@ -429,7 +437,7 @@ const useAutoSave = (data: any, userId: string) => {
 ```typescript
 const TaskForm = () => {
   const { isSyncing } = useSyncContext();
-  
+
   return (
     <form>
       {/* form fields */}
