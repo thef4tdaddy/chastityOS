@@ -3,20 +3,19 @@ import { settingsDBService } from "../../services/database/SettingsDBService";
 import { UserSettings } from "../../types/database";
 import { logger } from "../../utils/logging";
 
-/**
- * Settings Management Hooks - TanStack Query Integration
- *
- * Integrates with:
- * - settingsDBService → Dexie → Firebase sync
- * - SettingsPage.tsx (critical fix - entire 780-line page non-functional)
- *
- * Fixes:
- * - SettingsPage.tsx:696 (settingsDBService.findByUserId)
- * - Impact: Entire 780-line settings page becomes functional
- * - All 7 settings sections: Account, Display, Profile, Goals, Privacy, Data, Security
- *
- * Strategy: Dexie-first write, Firebase background sync
- */
+// Types for data import operations
+interface ImportUserData {
+  settings?: Partial<UserSettings>;
+  sessions?: unknown[];
+  events?: unknown[];
+  tasks?: unknown[];
+  goals?: unknown[];
+  metadata?: {
+    version: string;
+    exportedAt: string;
+    format: "json" | "csv" | "xlsx";
+  };
+}
 
 // Query Keys
 export const settingsKeys = {
@@ -413,7 +412,7 @@ export function useDataImport() {
       importData,
     }: {
       userId: string;
-      importData: any; // Would be properly typed based on import format
+      importData: ImportUserData;
     }) => {
       logger.info("Importing user data", { userId });
 

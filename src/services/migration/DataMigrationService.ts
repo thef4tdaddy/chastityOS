@@ -10,9 +10,10 @@ import {
   writeBatch,
   query,
   serverTimestamp,
+  Firestore,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
-import { relationshipService } from "@/services/database/RelationshipService";
+import { relationshipService } from "@/services/database/relationships";
 import {
   Relationship,
   RelationshipStatus,
@@ -20,7 +21,8 @@ import {
   RelationshipSession,
   RelationshipTask,
   RelationshipEvent,
-} from "@/types/relationships";
+} from "@/types";
+import type { TaskStatus, EventType } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 
@@ -36,7 +38,7 @@ export interface MigrationResult {
 }
 
 class DataMigrationService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -559,8 +561,8 @@ class DataMigrationService {
   /**
    * Map legacy task status to new status
    */
-  private mapTaskStatus(oldStatus: any): any {
-    const statusMap: Record<string, any> = {
+  private mapTaskStatus(oldStatus: string | unknown): TaskStatus {
+    const statusMap: Record<string, TaskStatus> = {
       pending: "pending",
       in_progress: "pending",
       submitted: "submitted",
@@ -570,14 +572,18 @@ class DataMigrationService {
       overdue: "pending", // Reset overdue to pending
     };
 
-    return statusMap[oldStatus] || "pending";
+    if (typeof oldStatus === "string" && statusMap[oldStatus]) {
+      return statusMap[oldStatus];
+    }
+
+    return "pending"; // Default fallback
   }
 
   /**
    * Map legacy event type to new event type
    */
-  private mapEventType(oldType: any): any {
-    const typeMap: Record<string, any> = {
+  private mapEventType(oldType: string | unknown): EventType {
+    const typeMap: Record<string, EventType> = {
       orgasm: "orgasm",
       sexual_activity: "sexual_activity",
       milestone: "milestone",
@@ -588,7 +594,11 @@ class DataMigrationService {
       session_resume: "note", // Convert to note
     };
 
-    return typeMap[oldType] || "note";
+    if (typeof oldType === "string" && typeMap[oldType]) {
+      return typeMap[oldType];
+    }
+
+    return "note"; // Default fallback
   }
 
   /**
