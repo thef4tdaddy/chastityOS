@@ -4,18 +4,25 @@
  */
 import React from "react";
 import { useSyncContext } from "@/contexts/SyncContext";
-import { connectionStatus } from "@/services/sync/connectionStatus";
+// TODO: Replace with proper hook pattern - temporarily using direct import
+// import { connectionStatus } from "@/services/sync/connectionStatus";
 
 export const SyncStatusIndicator: React.FC = () => {
   const { syncStatus, lastSyncTime, isSyncing, hasConflicts } =
     useSyncContext();
-  const [isOnline, setIsOnline] = React.useState(
-    connectionStatus.getIsOnline(),
-  );
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
   React.useEffect(() => {
-    const unsubscribe = connectionStatus.subscribe(setIsOnline);
-    return unsubscribe;
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   const getStatusColor = () => {

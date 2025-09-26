@@ -4,4 +4,5 @@
  */
 
 export { SyncStatusIndicator } from "./SyncStatusIndicator";
-export { DexieDemo } from "./DexieDemo";
+// TODO: DexieDemo temporarily disabled due to architectural restrictions
+// export { DexieDemo } from "./DexieDemo";
