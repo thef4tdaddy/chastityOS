@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
-import { useCreateEvent } from "../../hooks/api/useEvents";
+import { useEventMutations } from "../../hooks/api";
+import { useNotificationActions } from "../../stores";
 import type { DBEvent, EventType } from "../../types/database";
 import {
   FaPlus,
@@ -45,16 +46,15 @@ const EVENT_TYPES = [
 
 // Event Form Component
 interface LogEventFormProps {
-  onEventLogged: (
-    event: Omit<DBEvent, "id" | "lastModified" | "syncStatus">,
-  ) => void;
+  onEventLogged?: () => void; // Simplified callback since TanStack Query handles data updates
 }
 
 export const LogEventForm: React.FC<LogEventFormProps> = ({
   onEventLogged,
 }) => {
   const { user } = useAuthState();
-  const createEvent = useCreateEvent();
+  const { createEvent } = useEventMutations();
+  const { showSuccess, showError } = useNotificationActions();
   const [formData, setFormData] = useState({
     type: "note" as EventType,
     notes: "",
@@ -72,24 +72,25 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
     try {
       await createEvent.mutateAsync({
         userId: user.uid,
-        eventData: {
-          type: formData.type,
-          timestamp: new Date(formData.timestamp),
-          details: {
-            notes: formData.notes,
-            mood: formData.mood,
-            intensity: formData.intensity,
-            tags: formData.tags
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter((tag) => tag),
-            isPrivate: formData.isPrivate,
-          },
+        type: formData.type,
+        timestamp: new Date(formData.timestamp),
+        notes: formData.notes,
+        isPrivate: formData.isPrivate,
+        metadata: {
+          mood: formData.mood,
+          intensity: formData.intensity,
+          tags: formData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag),
         },
       });
 
-      // Notify parent component (though TanStack Query handles cache updates automatically)
-      onEventLogged();
+      // Show success notification
+      showSuccess("Event logged successfully", "Event Added");
+
+      // Call optional callback
+      onEventLogged?.();
 
       // Reset form on success
       setFormData({
@@ -102,8 +103,7 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
         isPrivate: false,
       });
     } catch (error) {
-      // Error is already logged in the hook
-      // TODO: Add toast notification for user feedback on error
+      showError("Failed to log event. Please try again.", "Event Log Failed");
     }
   };
 
