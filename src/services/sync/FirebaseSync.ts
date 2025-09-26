@@ -22,6 +22,7 @@ import {
   where,
   getDocs,
   Timestamp,
+  getDoc,
 } from "firebase/firestore";
 import type {
   DBBase,
@@ -30,6 +31,9 @@ import type {
   DBSettings,
   DBEvent,
   DBGoal,
+  SyncOptions,
+  SyncResult,
+  ConflictInfo,
 } from "@/types/database";
 import { conflictResolver } from "./ConflictResolver";
 import { connectionStatus } from "./connectionStatus";
@@ -39,6 +43,7 @@ const logger = serviceLogger("FirebaseSync");
 
 export class FirebaseSync {
   private isSyncing = false;
+  private conflictQueue: ConflictInfo[] = [];
 
   constructor() {
     logger.info("FirebaseSync initialized");
@@ -50,72 +55,129 @@ export class FirebaseSync {
   }
 
   /**
-   * Main entry point for the synchronization process
+   * Main entry point for user data synchronization
    */
-  async sync() {
+  async syncUserData(
+    userId: string,
+    options: SyncOptions = {},
+  ): Promise<SyncResult> {
     if (this.isSyncing) {
       logger.warn("Sync already in progress");
-      return;
+      throw new Error("Sync already in progress");
     }
 
     if (!connectionStatus.getIsOnline()) {
       logger.warn("App is offline, skipping sync");
-      return;
+      throw new Error("App is offline");
     }
 
     const auth = (await getFirebaseAuth()) as Auth;
     const user = auth.currentUser;
 
-    if (!user) {
-      logger.warn("No user authenticated, skipping sync");
-      return;
+    if (!user || user.uid !== userId) {
+      logger.warn("User not authenticated or mismatch", {
+        userId,
+        currentUser: user?.uid,
+      });
+      throw new Error("User not authenticated");
     }
 
     this.isSyncing = true;
-    logger.info("Starting synchronization process", { userId: user.uid });
+    logger.info("Starting user data synchronization", { userId, options });
+
+    const result: SyncResult = {
+      success: true,
+      operations: {
+        uploaded: 0,
+        downloaded: 0,
+        conflicts: 0,
+      },
+      conflicts: [],
+      timestamp: new Date(),
+    };
 
     try {
+      // Process any pending offline operations first
       await this.processOfflineQueue();
 
-      // Sync all collections
-      await this.syncCollection("sessions", user.uid);
-      await this.syncCollection("events", user.uid);
-      await this.syncCollection("tasks", user.uid);
-      await this.syncCollection("goals", user.uid);
-      await this.syncCollection("settings", user.uid);
+      // Determine which collections to sync
+      const collections = options.collections || [
+        "sessions",
+        "events",
+        "tasks",
+        "goals",
+        "settings",
+      ];
 
-      logger.info("Synchronization process completed", { userId: user.uid });
+      // Sync each collection
+      for (const collection of collections) {
+        await this.syncCollection(collection, userId, result, options);
+      }
+
+      // Handle any conflicts that were detected
+      if (result.conflicts.length > 0) {
+        await this.handleConflicts(
+          result.conflicts,
+          options.conflictResolution || "auto",
+        );
+      }
+
+      logger.info("User data synchronization completed", {
+        userId,
+        result: {
+          uploaded: result.operations.uploaded,
+          downloaded: result.operations.downloaded,
+          conflicts: result.operations.conflicts,
+        },
+      });
     } catch (error) {
-      logger.error("Synchronization process failed", {
+      result.success = false;
+      result.error = error as Error;
+      logger.error("User data synchronization failed", {
         error: error as Error,
-        userId: user.uid,
+        userId,
       });
     } finally {
       this.isSyncing = false;
     }
+
+    return result;
   }
 
   /**
    * Synchronize a specific collection
    */
-  private async syncCollection(collectionName: string, userId: string) {
+  private async syncCollection(
+    collectionName: string,
+    userId: string,
+    result: SyncResult,
+    options: SyncOptions,
+  ) {
     logger.debug(`Syncing collection: ${collectionName}`, { userId });
 
     try {
-      await this.pushChangesToFirebase(collectionName, userId);
-      await this.pullChangesFromFirebase(collectionName, userId);
+      // 1. Upload pending local changes to Firebase
+      await this.uploadLocalChanges(collectionName, userId, result);
+
+      // 2. Download Firebase changes to local
+      await this.downloadFirebaseChanges(collectionName, userId, result);
     } catch (error) {
       logger.error(`Failed to sync collection: ${collectionName}`, {
         error: error as Error,
         userId,
       });
+      throw error;
     }
   }
 
   /**
-   * Push local changes to Firebase
+   * Upload local changes to Firebase
    */
-  private async pushChangesToFirebase(collectionName: string, userId: string) {
+  private async uploadLocalChanges(
+    collectionName: string,
+    userId: string,
+    result: SyncResult,
+  ): Promise<void> {
     const pendingDocs = await this.getPendingDocs(collectionName, userId);
 
     if (pendingDocs.length === 0) {
@@ -137,7 +199,7 @@ export class FirebaseSync {
     }
 
     logger.debug(
-      `Pushing ${pendingDocs.length} pending changes for ${collectionName}`,
+      `Uploading ${pendingDocs.length} pending changes for ${collectionName}`,
       { userId },
     );
 
@@ -146,43 +208,81 @@ export class FirebaseSync {
     const syncedIds: string[] = [];
 
     for (const docData of pendingDocs) {
-      const docRef = doc(
-        firestore as Firestore,
-        `users/${userId}/${collectionName}`,
-        docData.id,
-      );
-      batch.set(docRef, docData, { merge: true });
-      syncedIds.push(docData.id);
+      try {
+        // Check for conflicts before uploading
+        const remoteDoc = await this.getRemoteDoc(
+          collectionName,
+          userId,
+          docData.id,
+        );
+
+        if (remoteDoc && conflictResolver.hasConflict(docData, remoteDoc)) {
+          // Conflict detected - add to results for resolution
+          const conflictInfo = conflictResolver.createConflictInfo(
+            "upload_conflict",
+            collectionName,
+            docData.id,
+            docData as Record<string, unknown>,
+            remoteDoc as Record<string, unknown>,
+          );
+          result.conflicts.push(conflictInfo);
+          result.operations.conflicts++;
+          continue;
+        }
+
+        const docRef = doc(
+          firestore as Firestore,
+          `users/${userId}/${collectionName}`,
+          docData.id,
+        );
+        batch.set(
+          docRef,
+          { ...docData, lastModified: new Date() },
+          { merge: true },
+        );
+        syncedIds.push(docData.id);
+        result.operations.uploaded++;
+      } catch (error) {
+        logger.error(`Failed to prepare upload for ${docData.id}`, {
+          error: error as Error,
+          collectionName,
+        });
+        throw error;
+      }
     }
 
-    try {
-      await batch.commit();
-      await this.markDocsAsSynced(collectionName, syncedIds);
-      logger.debug(
-        `Successfully pushed ${syncedIds.length} changes for ${collectionName}`,
-        { userId },
-      );
-    } catch (error) {
-      logger.error(`Failed to push changes for ${collectionName}`, {
-        error: error as Error,
-        userId,
-      });
+    if (syncedIds.length > 0) {
+      try {
+        await batch.commit();
+        await this.markDocsAsSynced(collectionName, syncedIds);
+        logger.debug(
+          `Successfully uploaded ${syncedIds.length} changes for ${collectionName}`,
+          { userId },
+        );
+      } catch (error) {
+        logger.error(`Failed to upload changes for ${collectionName}`, {
+          error: error as Error,
+          userId,
+        });
+        throw error;
+      }
     }
   }
 
   /**
-   * Pull remote changes from Firebase
+   * Download Firebase changes to local
    */
-  private async pullChangesFromFirebase(
+  private async downloadFirebaseChanges(
     collectionName: string,
     userId: string,
+    result: SyncResult,
   ) {
     const firestore = await getFirestore();
     const syncMeta = await db.syncMeta.get(collectionName);
     const lastSync = syncMeta ? syncMeta.lastSync : new Date(0);
 
     logger.debug(
-      `Pulling changes for ${collectionName} since ${lastSync.toISOString()}`,
+      `Downloading changes for ${collectionName} since ${lastSync.toISOString()}`,
       { userId },
     );
 
@@ -198,25 +298,140 @@ export class FirebaseSync {
       );
 
       if (remoteDocs.length === 0) {
-        logger.debug(`No new changes to pull for ${collectionName}`, {
+        logger.debug(`No new changes to download for ${collectionName}`, {
           userId,
         });
         return;
       }
 
       logger.debug(
-        `Pulled ${remoteDocs.length} new changes for ${collectionName}`,
+        `Downloaded ${remoteDocs.length} new changes for ${collectionName}`,
         { userId },
       );
 
-      await this.applyRemoteChanges(collectionName, remoteDocs);
+      await this.applyRemoteChanges(collectionName, remoteDocs, result);
 
+      // Update sync metadata
       await db.syncMeta.update(collectionName, { lastSync: new Date() });
     } catch (error) {
-      logger.error(`Failed to pull changes for ${collectionName}`, {
+      logger.error(`Failed to download changes for ${collectionName}`, {
         error: error as Error,
         userId,
       });
+      throw error;
+    }
+  }
+
+  /**
+   * Handle conflicts based on resolution strategy
+   */
+  private async handleConflicts(
+    conflicts: ConflictInfo[],
+    strategy: "auto" | "manual",
+  ): Promise<void> {
+    if (strategy === "auto") {
+      // Auto-resolve conflicts using built-in strategies
+      for (const conflict of conflicts) {
+        try {
+          await this.autoResolveConflict(conflict);
+        } catch (error) {
+          logger.error("Failed to auto-resolve conflict", {
+            error: error as Error,
+            conflict: conflict.documentId,
+          });
+          // Convert to manual resolution on auto-resolve failure
+          this.conflictQueue.push(conflict);
+        }
+      }
+    } else {
+      // Queue for manual resolution
+      this.conflictQueue.push(...conflicts);
+    }
+  }
+
+  /**
+   * Auto-resolve conflict using resolver strategies
+   */
+  private async autoResolveConflict(conflict: ConflictInfo): Promise<void> {
+    const { collection: collectionName, localData, remoteData } = conflict;
+
+    let resolvedDoc: DBBase;
+
+    switch (collectionName) {
+      case "sessions":
+        resolvedDoc = conflictResolver.resolveSessionConflict(
+          localData as DBSession,
+          remoteData as DBSession,
+        );
+        break;
+      case "tasks":
+        resolvedDoc = conflictResolver.resolveTaskConflict(
+          localData as DBTask,
+          remoteData as DBTask,
+        );
+        break;
+      case "settings":
+        resolvedDoc = conflictResolver.resolveSettingsConflict(
+          localData as DBSettings,
+          remoteData as DBSettings,
+        );
+        break;
+      default:
+        // Default to remote wins for other collections
+        resolvedDoc = remoteData as DBBase;
+        break;
+    }
+
+    // Apply the resolved document to both local and remote
+    await this.updateLocalDoc(collectionName, conflict.documentId, resolvedDoc);
+    await this.updateRemoteDoc(
+      collectionName,
+      conflict.documentId,
+      resolvedDoc,
+    );
+
+    logger.info("Auto-resolved conflict", {
+      collection: collectionName,
+      documentId: conflict.documentId,
+    });
+  }
+
+  /**
+   * Get pending conflicts for manual resolution
+   */
+  getPendingConflicts(): ConflictInfo[] {
+    return [...this.conflictQueue];
+  }
+
+  /**
+   * Clear resolved conflicts from queue
+   */
+  clearResolvedConflicts(resolvedConflictIds: string[]): void {
+    this.conflictQueue = this.conflictQueue.filter(
+      (conflict) =>
+        !resolvedConflictIds.includes(
+          `${conflict.collection}-${conflict.documentId}`,
+        ),
+    );
+  }
+
+  /**
+   * Backward-compatible sync method
+   */
+  async sync(): Promise<void> {
+    const auth = (await getFirebaseAuth()) as Auth;
+    const user = auth.currentUser;
+
+    if (!user) {
+      logger.warn("No user authenticated, skipping sync");
+      return;
+    }
+
+    try {
+      await this.syncUserData(user.uid);
+    } catch (error) {
+      logger.error("Sync failed", { error: error as Error });
+      throw error;
     }
   }
 
@@ -286,41 +501,110 @@ export class FirebaseSync {
     }
   }
 
-  public async applyRemoteChanges(collectionName: string, docs: DBBase[]) {
+  public async applyRemoteChanges(
+    collectionName: string,
+    docs: DBBase[],
+    result?: SyncResult,
+  ) {
     for (const docData of docs) {
       const localDoc = await this.getLocalDoc(collectionName, docData.id);
 
       if (localDoc) {
-        let resolvedDoc;
-        switch (collectionName) {
-          case "sessions":
-            resolvedDoc = conflictResolver.resolveSessionConflict(
-              localDoc as DBSession,
-              docData as DBSession,
-            );
-            break;
-          case "tasks":
-            resolvedDoc = conflictResolver.resolveTaskConflict(
-              localDoc as DBTask,
-              docData as DBTask,
-            );
-            break;
-          case "settings":
-            resolvedDoc = conflictResolver.resolveSettingsConflict(
-              localDoc as DBSettings,
-              docData as DBSettings,
-            );
-            break;
-          default:
-            // Default to server wins
-            resolvedDoc = docData;
-            break;
+        // Check for conflicts
+        if (conflictResolver.hasConflict(localDoc, docData)) {
+          const conflictInfo = conflictResolver.createConflictInfo(
+            "download_conflict",
+            collectionName,
+            docData.id,
+            localDoc as Record<string, unknown>,
+            docData as Record<string, unknown>,
+          );
+
+          if (result) {
+            result.conflicts.push(conflictInfo);
+            result.operations.conflicts++;
+          } else {
+            // Auto-resolve if no result tracking
+            await this.autoResolveConflict(conflictInfo);
+          }
+        } else {
+          // No conflict, apply remote changes
+          await this.updateLocalDoc(collectionName, docData.id, docData);
+          if (result) result.operations.downloaded++;
         }
-        await this.updateLocalDoc(collectionName, docData.id, resolvedDoc);
       } else {
         // New document from server
         await this.createLocalDoc(collectionName, docData);
+        if (result) result.operations.downloaded++;
       }
+    }
+  }
+
+  /**
+   * Get remote document from Firebase
+   */
+  private async getRemoteDoc(
+    collectionName: string,
+    userId: string,
+    docId: string,
+  ): Promise<DBBase | null> {
+    try {
+      const firestore = await getFirestore();
+      const docRef = doc(
+        firestore as Firestore,
+        `users/${userId}/${collectionName}`,
+        docId,
+      );
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        return null;
+      }
+
+      const docData = docSnap.data();
+      return { id: docId, ...docData } as DBBase;
+    } catch (error) {
+      logger.error("Failed to get remote document", {
+        error: error as Error,
+        collectionName,
+        docId,
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Update remote document in Firebase
+   */
+  private async updateRemoteDoc(
+    collectionName: string,
+    docId: string,
+    data: DBBase,
+  ): Promise<void> {
+    try {
+      const firestore = await getFirestore();
+      const auth = await getFirebaseAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      const docRef = doc(
+        firestore as Firestore,
+        `users/${user.uid}/${collectionName}`,
+        docId,
+      );
+      const batch = writeBatch(firestore as Firestore);
+      batch.set(docRef, data, { merge: true });
+      await batch.commit();
+    } catch (error) {
+      logger.error("Failed to update remote document", {
+        error: error as Error,
+        collectionName,
+        docId,
+      });
+      throw error;
     }
   }
 

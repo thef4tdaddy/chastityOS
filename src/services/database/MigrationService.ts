@@ -21,67 +21,91 @@ export class DBMigrationService {
       version: 2,
       description: "Add sync status to existing records",
       migrate: async () => {
-        logger.info("Running migration v2: Add sync status to existing records");
-        
-        await db.transaction('rw', db.sessions, db.events, db.tasks, db.goals, async () => {
-          // Update sessions without sync status
-          const sessions = await db.sessions.where('syncStatus').equals(undefined).toArray();
-          for (const session of sessions) {
-            await db.sessions.update(session.id, {
-              syncStatus: 'synced',
-              lastModified: new Date()
-            });
-          }
+        logger.info(
+          "Running migration v2: Add sync status to existing records",
+        );
 
-          // Update events without sync status
-          const events = await db.events.where('syncStatus').equals(undefined).toArray();
-          for (const event of events) {
-            await db.events.update(event.id, {
-              syncStatus: 'synced',
-              lastModified: new Date()
-            });
-          }
+        await db.transaction(
+          "rw",
+          db.sessions,
+          db.events,
+          db.tasks,
+          db.goals,
+          async () => {
+            // Update sessions without sync status
+            const sessions = await db.sessions
+              .where("syncStatus")
+              .equals(undefined)
+              .toArray();
+            for (const session of sessions) {
+              await db.sessions.update(session.id, {
+                syncStatus: "synced",
+                lastModified: new Date(),
+              });
+            }
 
-          // Update tasks without sync status
-          const tasks = await db.tasks.where('syncStatus').equals(undefined).toArray();
-          for (const task of tasks) {
-            await db.tasks.update(task.id, {
-              syncStatus: 'synced',
-              lastModified: new Date()
-            });
-          }
+            // Update events without sync status
+            const events = await db.events
+              .where("syncStatus")
+              .equals(undefined)
+              .toArray();
+            for (const event of events) {
+              await db.events.update(event.id, {
+                syncStatus: "synced",
+                lastModified: new Date(),
+              });
+            }
 
-          // Update goals without sync status
-          const goals = await db.goals.where('syncStatus').equals(undefined).toArray();
-          for (const goal of goals) {
-            await db.goals.update(goal.id, {
-              syncStatus: 'synced',
-              lastModified: new Date()
-            });
-          }
-        });
+            // Update tasks without sync status
+            const tasks = await db.tasks
+              .where("syncStatus")
+              .equals(undefined)
+              .toArray();
+            for (const task of tasks) {
+              await db.tasks.update(task.id, {
+                syncStatus: "synced",
+                lastModified: new Date(),
+              });
+            }
+
+            // Update goals without sync status
+            const goals = await db.goals
+              .where("syncStatus")
+              .equals(undefined)
+              .toArray();
+            for (const goal of goals) {
+              await db.goals.update(goal.id, {
+                syncStatus: "synced",
+                lastModified: new Date(),
+              });
+            }
+          },
+        );
 
         logger.info("Migration v2 completed successfully");
-      }
+      },
     },
     {
       version: 3,
       description: "Add isPrivate field to events",
       migrate: async () => {
         logger.info("Running migration v3: Add isPrivate field to events");
-        
-        await db.transaction('rw', db.events, async () => {
-          const events = await db.events.where('isPrivate').equals(undefined).toArray();
+
+        await db.transaction("rw", db.events, async () => {
+          const events = await db.events
+            .where("isPrivate")
+            .equals(undefined)
+            .toArray();
           for (const event of events) {
             await db.events.update(event.id, {
-              isPrivate: false // Default to public for existing events
+              isPrivate: false, // Default to public for existing events
             });
           }
         });
 
         logger.info("Migration v3 completed successfully");
-      }
-    }
+      },
+    },
   ];
 
   /**
@@ -90,13 +114,13 @@ export class DBMigrationService {
   static async runMigrations(): Promise<void> {
     try {
       logger.info("Starting database migrations");
-      
+
       const currentVersion = db.verno;
       logger.debug("Current database version", { version: currentVersion });
 
       // Find migrations that need to be run
       const pendingMigrations = this.migrations.filter(
-        migration => migration.version > currentVersion
+        (migration) => migration.version > currentVersion,
       );
 
       if (pendingMigrations.length === 0) {
@@ -104,25 +128,25 @@ export class DBMigrationService {
         return;
       }
 
-      logger.info("Running migrations", { 
+      logger.info("Running migrations", {
         count: pendingMigrations.length,
-        versions: pendingMigrations.map(m => m.version)
+        versions: pendingMigrations.map((m) => m.version),
       });
 
       // Run migrations in order
       for (const migration of pendingMigrations) {
-        logger.info("Running migration", { 
-          version: migration.version, 
-          description: migration.description 
+        logger.info("Running migration", {
+          version: migration.version,
+          description: migration.description,
         });
-        
+
         try {
           await migration.migrate();
           logger.info("Migration completed", { version: migration.version });
         } catch (error) {
-          logger.error("Migration failed", { 
-            version: migration.version, 
-            error: error as Error 
+          logger.error("Migration failed", {
+            version: migration.version,
+            error: error as Error,
           });
           throw error;
         }
@@ -140,7 +164,9 @@ export class DBMigrationService {
    */
   static async checkMigrationsNeeded(): Promise<boolean> {
     const currentVersion = db.verno;
-    const maxMigrationVersion = Math.max(...this.migrations.map(m => m.version));
+    const maxMigrationVersion = Math.max(
+      ...this.migrations.map((m) => m.version),
+    );
     return currentVersion < maxMigrationVersion;
   }
 
@@ -154,16 +180,16 @@ export class DBMigrationService {
     migrationsNeeded: boolean;
   }> {
     const currentVersion = db.verno;
-    const latestVersion = Math.max(...this.migrations.map(m => m.version));
+    const latestVersion = Math.max(...this.migrations.map((m) => m.version));
     const pendingMigrations = this.migrations.filter(
-      m => m.version > currentVersion
+      (m) => m.version > currentVersion,
     ).length;
 
     return {
       currentVersion,
       latestVersion,
       pendingMigrations,
-      migrationsNeeded: pendingMigrations > 0
+      migrationsNeeded: pendingMigrations > 0,
     };
   }
 
@@ -188,7 +214,7 @@ export class DBMigrationService {
       tasks: await db.tasks.toArray(),
       goals: await db.goals.toArray(),
       settings: await db.settings.toArray(),
-      syncMeta: await db.syncMeta.toArray()
+      syncMeta: await db.syncMeta.toArray(),
     };
 
     logger.info("Database backup created", {
@@ -197,7 +223,7 @@ export class DBMigrationService {
       events: backup.events.length,
       tasks: backup.tasks.length,
       goals: backup.goals.length,
-      settings: backup.settings.length
+      settings: backup.settings.length,
     });
 
     return backup;
@@ -217,25 +243,35 @@ export class DBMigrationService {
   }): Promise<void> {
     logger.info("Restoring database from backup");
 
-    await db.transaction('rw', db.users, db.sessions, db.events, db.tasks, db.goals, db.settings, db.syncMeta, async () => {
-      // Clear existing data
-      await db.users.clear();
-      await db.sessions.clear();
-      await db.events.clear();
-      await db.tasks.clear();
-      await db.goals.clear();
-      await db.settings.clear();
-      await db.syncMeta.clear();
+    await db.transaction(
+      "rw",
+      db.users,
+      db.sessions,
+      db.events,
+      db.tasks,
+      db.goals,
+      db.settings,
+      db.syncMeta,
+      async () => {
+        // Clear existing data
+        await db.users.clear();
+        await db.sessions.clear();
+        await db.events.clear();
+        await db.tasks.clear();
+        await db.goals.clear();
+        await db.settings.clear();
+        await db.syncMeta.clear();
 
-      // Restore from backup
-      await db.users.bulkAdd(backup.users);
-      await db.sessions.bulkAdd(backup.sessions);
-      await db.events.bulkAdd(backup.events);
-      await db.tasks.bulkAdd(backup.tasks);
-      await db.goals.bulkAdd(backup.goals);
-      await db.settings.bulkAdd(backup.settings);
-      await db.syncMeta.bulkAdd(backup.syncMeta);
-    });
+        // Restore from backup
+        await db.users.bulkAdd(backup.users);
+        await db.sessions.bulkAdd(backup.sessions);
+        await db.events.bulkAdd(backup.events);
+        await db.tasks.bulkAdd(backup.tasks);
+        await db.goals.bulkAdd(backup.goals);
+        await db.settings.bulkAdd(backup.settings);
+        await db.syncMeta.bulkAdd(backup.syncMeta);
+      },
+    );
 
     logger.info("Database restored from backup successfully");
   }
@@ -293,27 +329,31 @@ export class DBMigrationService {
         if (event.sessionId) {
           const session = await db.sessions.get(event.sessionId);
           if (!session) {
-            warnings.push(`Event ${event.id} references non-existent session ${event.sessionId}`);
+            warnings.push(
+              `Event ${event.id} references non-existent session ${event.sessionId}`,
+            );
           }
         }
       }
 
       logger.info("Database integrity check completed", {
         errors: errors.length,
-        warnings: warnings.length
+        warnings: warnings.length,
       });
 
       return {
         isValid: errors.length === 0,
         errors,
-        warnings
+        warnings,
       };
     } catch (error) {
-      logger.error("Database integrity check failed", { error: error as Error });
+      logger.error("Database integrity check failed", {
+        error: error as Error,
+      });
       return {
         isValid: false,
         errors: [`Integrity check failed: ${(error as Error).message}`],
-        warnings
+        warnings,
       };
     }
   }

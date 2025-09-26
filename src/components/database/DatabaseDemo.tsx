@@ -32,13 +32,16 @@ export const DatabaseDemo: React.FC = () => {
 
       <div className="min-h-[200px]">
         <p className="text-gray-300 mb-4">
-          This demo component shows how to integrate the Dexie database services with React components.
-          It provides a comprehensive interface for testing all database operations.
+          This demo component shows how to integrate the Dexie database services
+          with React components. It provides a comprehensive interface for
+          testing all database operations.
         </p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-gray-700 rounded">
-            <h3 className="text-white font-semibold mb-2">Available Services</h3>
+            <h3 className="text-white font-semibold mb-2">
+              Available Services
+            </h3>
             <ul className="space-y-1 text-gray-300 text-sm">
               <li>• Session Management</li>
               <li>• Event Logging</li>
@@ -47,7 +50,7 @@ export const DatabaseDemo: React.FC = () => {
               <li>• Settings Storage</li>
             </ul>
           </div>
-          
+
           <div className="p-4 bg-gray-700 rounded">
             <h3 className="text-white font-semibold mb-2">Key Features</h3>
             <ul className="space-y-1 text-gray-300 text-sm">
@@ -61,11 +64,16 @@ export const DatabaseDemo: React.FC = () => {
         </div>
 
         <div className="mt-4 p-4 bg-blue-900 border border-blue-700 rounded">
-          <h3 className="text-blue-200 font-semibold mb-2">Integration Status</h3>
+          <h3 className="text-blue-200 font-semibold mb-2">
+            Integration Status
+          </h3>
           <p className="text-blue-300 text-sm">
-            ✅ Database schema and services are fully implemented<br/>
-            ✅ All CRUD operations are available<br/>
-            ✅ Performance monitoring is active<br/>
+            ✅ Database schema and services are fully implemented
+            <br />
+            ✅ All CRUD operations are available
+            <br />
+            ✅ Performance monitoring is active
+            <br />
             📝 Ready for integration with existing ChastityOS components
           </p>
         </div>
