@@ -9,9 +9,7 @@ import { RelationshipPermissions } from "@/types/relationships";
 import { BaseHookState, BaseHookActions } from "./types";
 import { withErrorHandling, createBaseActions } from "./utils";
 
-interface RelationshipPermissionsState extends BaseHookState {
-  // Additional state can be added here in the future
-}
+type RelationshipPermissionsState = BaseHookState;
 
 interface RelationshipPermissionsActions extends BaseHookActions {
   updatePermissions: (

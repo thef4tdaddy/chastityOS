@@ -4,6 +4,7 @@
  */
 
 import { useCallback } from "react";
+import { logger } from "@/utils/logging";
 
 export const useProfileSharing = (username?: string) => {
   const generateProfileUrl = useCallback(() => {
@@ -26,10 +27,10 @@ export const useProfileSharing = (username?: string) => {
         // Fallback to clipboard
         await navigator.clipboard.writeText(url);
         // Could trigger a toast notification here
-        console.log("Profile URL copied to clipboard");
+        logger.info("Profile URL copied to clipboard");
       }
     } catch (error) {
-      console.error("Error sharing profile:", error);
+      logger.error("Error sharing profile:", error);
     }
   }, [username, generateProfileUrl]);
 
@@ -38,9 +39,9 @@ export const useProfileSharing = (username?: string) => {
     try {
       await navigator.clipboard.writeText(url);
       // Could trigger a toast notification here
-      console.log("Profile URL copied to clipboard");
+      logger.info("Profile URL copied to clipboard");
     } catch (error) {
-      console.error("Error copying profile URL:", error);
+      logger.error("Error copying profile URL:", error);
     }
   }, [generateProfileUrl]);
 
