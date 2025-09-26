@@ -136,7 +136,10 @@ export function useUserSettings(userId: string) {
 
         return settings;
       } catch (error) {
-        logger.error("Failed to fetch user settings", error, { userId });
+        logger.error("Failed to fetch user settings", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -216,7 +219,10 @@ export function useUpdateSettings() {
 
         return updatedSettings;
       } catch (error) {
-        logger.error("Failed to update settings", error, { userId });
+        logger.error("Failed to update settings", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -232,7 +238,10 @@ export function useUpdateSettings() {
       });
     },
     onError: (error, { userId }) => {
-      logger.error("Settings update failed", error, { userId });
+      logger.error("Settings update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
     },
   });
 }
@@ -392,7 +401,10 @@ export function useDataExport() {
 
         return exportData;
       } catch (error) {
-        logger.error("Data export failed", error, { userId });
+        logger.error("Data export failed", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -424,7 +436,10 @@ export function useDataImport() {
 
         return { success: true, importedRecords: 0 };
       } catch (error) {
-        logger.error("Data import failed", error, { userId });
+        logger.error("Data import failed", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -460,7 +475,10 @@ export function useResetAllData() {
 
         return { success: true };
       } catch (error) {
-        logger.error("Data reset failed", error, { userId });
+        logger.error("Data reset failed", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },

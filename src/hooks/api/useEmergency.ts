@@ -54,7 +54,8 @@ export function useEmergencyUnlock() {
             reason: params.reason,
           });
         } else {
-          logger.error("Emergency unlock failed", new Error(result.message), {
+          logger.error("Emergency unlock failed", {
+            error: result.message,
             sessionId: params.sessionId,
             userId: params.userId,
             reason: params.reason,
@@ -63,7 +64,8 @@ export function useEmergencyUnlock() {
 
         return result;
       } catch (error) {
-        logger.error("Emergency unlock error", error, {
+        logger.error("Emergency unlock error", {
+          error: error instanceof Error ? error.message : String(error),
           sessionId: params.sessionId,
           userId: params.userId,
           reason: params.reason,
@@ -102,7 +104,8 @@ export function useEmergencyUnlock() {
       }
     },
     onError: (error, params) => {
-      logger.error("Emergency unlock mutation failed", error, {
+      logger.error("Emergency unlock mutation failed", {
+        error: error instanceof Error ? error.message : String(error),
         sessionId: params.sessionId,
         userId: params.userId,
         reason: params.reason,

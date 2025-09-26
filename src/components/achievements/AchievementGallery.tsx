@@ -15,8 +15,7 @@ import {
   DBAchievement,
   DBUserAchievement,
   AchievementCategory,
-  AchievementDifficulty,
-} from "../../types";
+} from "../../types/database";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -37,17 +36,17 @@ interface AchievementGalleryProps {
   isOwnGallery?: boolean;
 }
 
-const getDifficultyColor = (difficulty: AchievementDifficulty): string => {
+const getDifficultyColor = (difficulty: DBAchievement["difficulty"]): string => {
   switch (difficulty) {
-    case AchievementDifficulty.COMMON:
+    case "common":
       return "border-gray-400 bg-gray-50";
-    case AchievementDifficulty.UNCOMMON:
+    case "uncommon":
       return "border-green-400 bg-green-50";
-    case AchievementDifficulty.RARE:
+    case "rare":
       return "border-blue-400 bg-blue-50";
-    case AchievementDifficulty.EPIC:
+    case "epic":
       return "border-purple-400 bg-purple-50";
-    case AchievementDifficulty.LEGENDARY:
+    case "legendary":
       return "border-yellow-400 bg-yellow-50";
     default:
       return "border-gray-400 bg-gray-50";
