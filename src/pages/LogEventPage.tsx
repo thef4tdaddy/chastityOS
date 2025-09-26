@@ -1,49 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useAuthState } from "../contexts";
-import { eventDBService } from "../services/database";
-import type { DBEvent, EventType } from "../types/database";
+import { useEventHistory } from "../hooks/api/useEvents";
+import type { DBEvent } from "../types/database";
 import { LogEventForm, EventList } from "../components/log_event";
-import { logger } from "../utils/logging";
 import { FaSpinner } from "../utils/iconImport";
 
 const LogEventPage: React.FC = () => {
   const { user } = useAuthState();
-  const [events, setEvents] = useState<DBEvent[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (!user) return;
+  // Use TanStack Query hook for event history
+  const {
+    data: events = [],
+    isLoading: loading,
+    error,
+  } = useEventHistory(user?.uid || "", { limit: 50 });
 
-      try {
-        setLoading(true);
-        const userEvents = await eventDBService.findByUserId(user.uid);
-        // Sort by timestamp descending (newest first)
-        userEvents.sort(
-          (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
-        );
-        setEvents(userEvents);
-      } catch (error) {
-        logger.error("Error fetching events:", error, "LogEventPage");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, [user]);
-
-  const handleEventLogged = (
-    newEvent: Omit<DBEvent, "id" | "lastModified" | "syncStatus">,
-  ) => {
-    // Add the new event to the top of the list
-    const eventWithDefaults: DBEvent = {
-      ...newEvent,
-      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      lastModified: new Date(),
-      syncStatus: "pending",
-    };
-    setEvents((prev) => [eventWithDefaults, ...prev]);
+  const handleEventLogged = () => {
+    // Event creation now handled by LogEventForm using useCreateEvent hook
+    // No need for manual state updates - TanStack Query will handle cache updates
   };
 
   return (
@@ -61,6 +35,12 @@ const LogEventPage: React.FC = () => {
             <div className="text-center py-8">
               <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
               <div className="text-nightly-celadon">Loading events...</div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <div className="text-red-400">
+                Error loading events. Please try again.
+              </div>
             </div>
           ) : (
             <EventList events={events} />

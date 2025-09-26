@@ -6,6 +6,7 @@ import { PauseResumeButtons } from "../components/tracker/PauseResumeButtons";
 import { ReasonModals } from "../components/tracker/ReasonModals";
 
 import { TrackerHeader } from "../components/tracker/TrackerHeader";
+import { logger } from "../utils/logging";
 
 const TrackerPage: React.FC = () => {
   // Mock data
@@ -38,7 +39,10 @@ const TrackerPage: React.FC = () => {
 
   const handleEmergencyUnlock = () => {
     // This would typically refresh the session state or redirect
-    console.log("Emergency unlock completed - refreshing session state");
+    logger.info("Emergency unlock completed - refreshing session state", {
+      sessionId,
+      userId,
+    });
   };
 
   return (
