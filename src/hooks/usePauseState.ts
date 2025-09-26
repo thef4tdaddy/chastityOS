@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   PauseCooldownService,
   PauseState,
@@ -30,6 +30,7 @@ export const usePauseState = ({
   const [pauseState, setPauseState] = useState<PauseState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const refreshPauseStateRef = useRef<() => Promise<void>>();
 
   const refreshPauseState = useCallback(async () => {
     if (!userId) return;
@@ -54,7 +55,7 @@ export const usePauseState = ({
   // Initial load
   useEffect(() => {
     refreshPauseState();
-  }, [refreshPauseState]);
+  }, []); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
 
   // Auto-refresh for cooldown countdown
   useEffect(() => {
@@ -62,7 +63,7 @@ export const usePauseState = ({
 
     const interval = setInterval(refreshPauseState, refreshInterval);
     return () => clearInterval(interval);
-  }, [pauseState, refreshInterval]);
+  }, [pauseState, refreshInterval]); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
 
   // Real-time cooldown countdown
   useEffect(() => {
@@ -89,7 +90,7 @@ export const usePauseState = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [pauseState]);
+  }, [pauseState]); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
 
   return {
     pauseState,

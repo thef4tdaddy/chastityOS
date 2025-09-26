@@ -8,9 +8,7 @@ import { relationshipService } from "@/services/database/RelationshipService";
 import { BaseHookState, BaseHookActions } from "./types";
 import { withErrorHandling, createBaseActions } from "./utils";
 
-interface RelationshipActionsState extends BaseHookState {
-  // Additional state can be added here in the future
-}
+type RelationshipActionsState = BaseHookState;
 
 interface RelationshipActionsActions extends BaseHookActions {
   acceptRelationshipRequest: (requestId: string) => Promise<void>;
