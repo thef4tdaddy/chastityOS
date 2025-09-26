@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FeatureCard } from "../components/dashboard/FeatureCard";
 import { AchievementDashboard } from "../components/achievements";
+import { SessionPersistenceDemo } from "../components/demo/SessionPersistenceDemo";
 // TODO: DexieDemo temporarily disabled due to architectural restrictions
 // import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
@@ -88,6 +89,11 @@ const Dashboard: React.FC = () => {
             <AchievementDashboard />
           </div>
         )}
+
+        {/* Session Persistence Demo */}
+        <div className="mt-12">
+          <SessionPersistenceDemo />
+        </div>
 
         {/* TODO: Dexie Offline Demo temporarily disabled due to architectural restrictions */}
         {/* <div className="mb-8">
