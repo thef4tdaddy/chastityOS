@@ -213,6 +213,31 @@ interface PauseResumeButtonsProps {
   onResume?: () => void;
 }
 
+// Helper functions for async operations
+const executeWithLoadingState = async (
+  setIsLoading: (loading: boolean) => void,
+  operation: () => Promise<void>,
+) => {
+  setIsLoading(true);
+  try {
+    await operation();
+  } catch (error) {
+    logger.error("Operation failed", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+const resetModalState = (
+  setShowPauseModal: (show: boolean) => void,
+  setSelectedReason: (reason: EnhancedPauseReason) => void,
+  setCustomReason: (reason: string) => void,
+) => {
+  setShowPauseModal(false);
+  setSelectedReason("Bathroom Break");
+  setCustomReason("");
+};
+
 // Custom hook to manage pause/resume logic
 const usePauseResumeLogic = (
   sessionId: string,
@@ -227,41 +252,27 @@ const usePauseResumeLogic = (
 
   const handleConfirmPause = async () => {
     if (!sessionId) return;
-    setIsLoading(true);
-    try {
+    await executeWithLoadingState(setIsLoading, async () => {
       // TODO: Replace with proper service hook call
       await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
-      setShowPauseModal(false);
-      setSelectedReason("Bathroom Break");
-      setCustomReason("");
+      resetModalState(setShowPauseModal, setSelectedReason, setCustomReason);
       onPause?.();
       logger.info("Session paused successfully (mocked)", { sessionId });
-    } catch (error) {
-      logger.error("Failed to pause session", error);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleResumeClick = async () => {
     if (!sessionId) return;
-    setIsLoading(true);
-    try {
+    await executeWithLoadingState(setIsLoading, async () => {
       // TODO: Replace with proper service hook call
       await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
       onResume?.();
       logger.info("Session resumed successfully (mocked)", { sessionId });
-    } catch (error) {
-      logger.error("Failed to resume session", error);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleModalCancel = () => {
-    setShowPauseModal(false);
-    setSelectedReason("Bathroom Break");
-    setCustomReason("");
+    resetModalState(setShowPauseModal, setSelectedReason, setCustomReason);
   };
 
   return {
