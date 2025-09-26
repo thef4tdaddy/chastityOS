@@ -36,8 +36,8 @@ export type {
   DBLeaderboardEntry,
 } from "./database";
 
-// Import and re-export achievement types
-export type {
+// Import and re-export achievement enums (as values for runtime usage)
+export {
   AchievementCategory,
   AchievementDifficulty,
   LeaderboardCategory,
