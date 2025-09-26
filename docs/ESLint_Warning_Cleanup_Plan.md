@@ -1,222 +1,289 @@
-# ESLint Warning Cleanup Plan
+# ESLint Error & Warning Cleanup Plan
 
-*Generated: 2025-09-25 - Total: 79 warnings (up from 0)*
+*Updated: 2025-09-26 - Total: 392 problems (66 errors, 326 warnings)*
 
-## 📊 Warning Categories (Priority Order)
+**Status**: MAJOR REGRESSION - Updated from 79 warnings to 392 problems after PR merges
 
-### **Priority 1: Code Quality Issues (37 warnings)**
-#### **max-lines-per-function: 36 warnings**
-- **Impact**: High - Functions over 75 lines reduce readability and maintainability
+---
+
+## 🚨 **CRITICAL: Error Categories (Must Fix First)**
+
+### **Priority 1: Architectural Violations (Critical Errors)**
+#### **no-restricted-imports: ~15 errors**
+- **Impact**: CRITICAL - Breaks architectural patterns
+- **Issue**: Components importing services/storage directly
+- **Strategy**: Move service calls to hooks, use proper patterns
+- **Files**: SyncStatusIndicator, PauseResumeButtons, ChastityTracking
+- **Timeline**: Phase 1A (2 hours)
+
+#### **react-hooks/rules-of-hooks: ~5 errors**
+- **Impact**: CRITICAL - React violations causing runtime errors
+- **Issue**: Hooks called in wrong contexts
+- **Strategy**: Refactor hook usage to follow React rules
+- **Timeline**: Phase 1A (1 hour)
+
+#### **zustand-safe-patterns: ~8 errors**
+- **Issue**: Dangerous store patterns causing infinite renders
+- **Impact**: CRITICAL - Runtime performance issues
+- **Strategy**: Fix store action dependencies, subscription patterns
+- **Timeline**: Phase 1A (1 hour)
+
+### **Priority 2: Code Quality Violations (Blocking Errors)**
+#### **no-console: ~8 errors**
+- **Impact**: HIGH - Production code issues
+- **Strategy**: Replace with logger utility calls
+- **Timeline**: Phase 1B (30 minutes)
+
+#### **no-restricted-globals: ~3 errors**
+- **Impact**: HIGH - Browser confirm() usage
+- **Strategy**: Replace with ConfirmModal components
+- **Timeline**: Phase 1B (1 hour)
+
+#### **max-lines: ~5 errors**
+- **Impact**: HIGH - Files over 500 lines
+- **Strategy**: Break large files into smaller modules
+- **Timeline**: Phase 2A (3 hours)
+
+---
+
+## ⚠️ **WARNING Categories (Fix After Errors)**
+
+### **Priority 3: Function Complexity (High Impact Warnings)**
+#### **max-lines-per-function: ~150 warnings**
+- **Impact**: High - Functions over 75 lines reduce maintainability
 - **Strategy**: Break large functions into smaller, focused functions
-- **Timeline**: Phase 1 (3-4 hours)
+- **Timeline**: Phase 2B (8 hours)
 
-#### **complexity: 1 warning**
-- **Impact**: High - Complex functions are hard to test and maintain
-- **Strategy**: Reduce cyclomatic complexity through function decomposition
-- **Timeline**: Phase 1 (30 minutes)
+#### **complexity: ~5 warnings**
+- **Impact**: High - Complex functions hard to test and maintain
+- **Strategy**: Reduce cyclomatic complexity through decomposition
+- **Timeline**: Phase 2B (2 hours)
 
-### **Priority 2: TypeScript Issues (31 warnings)**
-#### **no-unused-vars: 21 warnings**
-- **Impact**: Medium - Dead code that should be removed or prefixed with _
-- **Strategy**: Remove unused vars or rename to start with _ if intentional
-- **Timeline**: Phase 2 (1 hour)
+### **Priority 4: TypeScript Safety (Medium Impact)**
+#### **@typescript-eslint/no-unused-vars: ~50 warnings**
+- **Impact**: Medium - Dead code cleanup needed
+- **Strategy**: Remove unused vars or prefix with _ if intentional
+- **Timeline**: Phase 3A (2 hours)
 
-#### **no-explicit-any: 10 warnings**
+#### **@typescript-eslint/no-explicit-any: ~30 warnings**
 - **Impact**: Medium - Type safety violations
 - **Strategy**: Add proper TypeScript types
-- **Timeline**: Phase 2 (2 hours)
+- **Timeline**: Phase 3A (4 hours)
 
-### **Priority 3: React/Hook Issues (6 warnings)**
-#### **exhaustive-deps: 6 warnings**
+### **Priority 5: React/Hook Issues (Medium Impact)**
+#### **react-hooks/exhaustive-deps: ~20 warnings**
 - **Impact**: Medium - Missing dependencies can cause bugs
-- **Strategy**: Add missing dependencies or use ESLint disable if intentional
-- **Timeline**: Phase 3 (1 hour)
+- **Strategy**: Add missing dependencies or ESLint disable if intentional
+- **Timeline**: Phase 3B (2 hours)
 
-### **Priority 4: Zustand Performance (4 warnings)**
-#### **zustand-selective-subscriptions: 2 warnings**
-#### **zustand-no-conditional-subscriptions: 2 warnings**
-- **Impact**: Low-Medium - Performance optimization for Zustand stores
-- **Strategy**: Use selective subscriptions to prevent unnecessary re-renders
-- **Timeline**: Phase 3 (1 hour)
-
-### **Priority 5: Code Style (1 warning)**
-#### **max-statements: 1 warning**
-- **Impact**: Low - Function has too many statements
-- **Strategy**: Break function into smaller functions
-- **Timeline**: Phase 3 (15 minutes)
+### **Priority 6: Performance Patterns (Low-Medium Impact)**
+#### **zustand-selective-subscriptions: ~10 warnings**
+- **Impact**: Low-Medium - Performance optimization
+- **Strategy**: Use selective subscriptions to prevent re-renders
+- **Timeline**: Phase 4 (2 hours)
 
 ---
 
-## 🏗️ **File-by-File Cleanup Plan**
+## 🏗️ **File-by-File Critical Issues**
 
-### **Tier 1: Critical Components (High Impact)**
+### **Tier 1: BROKEN FILES (Errors - Fix Immediately)**
 
-#### **src/pages/SettingsPage.tsx** - 10 warnings
-- 1× max-lines-per-function (192 lines, 108 lines, 89 lines)
-- 7× no-unused-vars (settings parameter unused in multiple functions)
-- 2× FaEye/FaEyeSlash unused imports
-- **Strategy**: Break large functions, remove unused vars, clean imports
+#### **src/components/tracker/PauseResumeButtons.tsx** - CRITICAL
+- ❌ no-restricted-imports: Service imports
+- ❌ Direct service usage in component
+- **Strategy**: Create usePauseActions hook to encapsulate service calls
 
-#### **src/components/feedback/FeedbackModal.tsx** - 3 warnings
-- 1× max-lines-per-function (326 lines)
-- 1× no-explicit-any
-- **Strategy**: Split modal into smaller components, add proper typing
+#### **src/components/common/SyncStatusIndicator.tsx** - CRITICAL
+- ❌ no-restricted-imports: connectionStatus import
+- **Strategy**: Move connection logic to context or hook
 
-#### **src/components/log_event/LogEventForm.tsx** - 1 warning
-- 1× max-lines-per-function (235 lines)
-- **Strategy**: Extract form sections into separate components
+#### **src/pages/ChastityTracking.tsx** - CRITICAL
+- ❌ react-hooks/rules-of-hooks: Hook called incorrectly
+- **Strategy**: Fix hook call location in component
 
-### **Tier 2: Store & Service Layer**
+#### **src/stores/notificationStore.ts** - CRITICAL
+- ❌ zustand-safe-patterns: Store reference pattern violations
+- **Strategy**: Fix dangerous async store patterns
 
-#### **src/stores/keyholderStore.ts** - 1 warning
-- 1× max-lines-per-function (185 lines)
-- **Strategy**: Break large store methods into smaller functions
+### **Tier 2: HIGH IMPACT FILES (Mix of Errors & Many Warnings)**
 
-#### **src/services/database/EmergencyService.ts** - 1 warning
-- 1× max-lines-per-function (88 lines)
-- **Strategy**: Extract helper functions from main method
+#### **src/components/feedback/FeedbackModal.tsx** - HIGH
+- ❌ no-console statements
+- ⚠️ max-lines-per-function (326 lines)
+- ⚠️ no-explicit-any usage
+- **Strategy**: Split into smaller components, add logging
 
-### **Tier 3: Component Library**
+#### **src/pages/SettingsPage.tsx** - HIGH
+- ⚠️ max-lines-per-function (Multiple large functions)
+- ⚠️ Many unused variables
+- **Strategy**: Component decomposition
 
-#### **src/components/keyholder/*.tsx** - 6 warnings total
-- Multiple max-lines-per-function warnings
-- Zustand subscription pattern warnings
-- **Strategy**: Component refactoring and Zustand optimization
-
-#### **src/components/common/DexieDemo.tsx** - 2 warnings
-- max-lines-per-function + unused variables
-- **Strategy**: Split demo into smaller components
+#### **src/stores/keyholderStore.ts** - HIGH
+- ❌ Zustand pattern violations
+- ⚠️ max-lines-per-function (185 lines)
+- **Strategy**: Store method refactoring
 
 ---
 
-## ⚡ **Execution Timeline**
+## ⚡ **EXECUTION PHASES**
 
-### **Phase 1: Critical Code Quality (4 hours)**
-**Target: Eliminate max-lines-per-function warnings**
+### **Phase 1A: CRITICAL ERROR FIXES (4 hours) - MUST DO FIRST**
+**Target: Fix all errors that break functionality**
 
-**Week 1:**
-- [ ] **Day 1**: SettingsPage.tsx refactor (2 hours)
-  - Break 3 large functions into smaller components
-  - Remove unused `settings` parameters
-  - Clean unused icon imports
+**Day 1 (4 hours):**
+- [ ] **Hour 1**: Fix no-restricted-imports errors
+  - Remove direct service imports from components
+  - Create proper hook patterns for PauseResumeButtons
+  - Fix SyncStatusIndicator connection logic
 
-- [ ] **Day 2**: FeedbackModal.tsx refactor (1 hour)
-  - Split into FeedbackForm, FeedbackPreview components
-  - Add proper TypeScript types for any usage
+- [ ] **Hour 2**: Fix react-hooks/rules-of-hooks errors
+  - Move hook calls to proper component contexts
+  - Fix ChastityTracking hook usage
 
-- [ ] **Day 3**: LogEventForm.tsx refactor (1 hour)
-  - Extract EventTypeSelector, EventDetailsForm components
-  - Break 235-line function into logical sections
+- [ ] **Hour 3**: Fix zustand-safe-patterns errors
+  - Remove store actions from useEffect dependencies
+  - Fix dangerous async store patterns in notificationStore
 
-### **Phase 2: TypeScript Safety (3 hours)**
-**Target: Eliminate type safety issues**
+- [ ] **Hour 4**: Fix no-console and no-restricted-globals
+  - Replace console.log with logger utility
+  - Replace confirm() with ConfirmModal components
 
-**Week 1:**
-- [ ] **Day 4**: Fix no-unused-vars (1 hour)
-  - Review all 21 unused variables
-  - Remove dead code or prefix with _ if intentional
-  - Update import statements
+### **Phase 1B: FILE SIZE ERRORS (3 hours)**
+**Target: Fix max-lines errors blocking builds**
 
-- [ ] **Day 5**: Fix no-explicit-any (2 hours)
-  - Add proper types for FeedbackService
-  - Replace any types in component props
-  - Add interface definitions where needed
+**Day 2 (3 hours):**
+- [ ] **Files over 500 lines**: Break into smaller modules
+- [ ] **Critical**: SettingsPage, FeedbackModal, KeyholderStore
 
-### **Phase 3: Performance & Hooks (2 hours)**
-**Target: Optimize performance and fix hook dependencies**
+### **Phase 2A: HIGH IMPACT WARNINGS (6 hours)**
+**Target: Fix function complexity issues**
 
 **Week 2:**
-- [ ] **Day 1**: Fix exhaustive-deps (1 hour)
-  - Review 6 useEffect dependencies
-  - Add missing deps or disable rule where appropriate
+- [ ] **max-lines-per-function**: Break functions over 75 lines
+- [ ] **complexity**: Reduce cyclomatic complexity
+- [ ] **Focus**: Components with 100+ warnings each
 
-- [ ] **Day 2**: Optimize Zustand patterns (1 hour)
-  - Fix selective subscription patterns
-  - Remove conditional store subscriptions
-  - Update performance documentation
+### **Phase 2B: TYPE SAFETY (4 hours)**
+**Target: Eliminate TypeScript violations**
+
+**Week 2:**
+- [ ] **no-unused-vars**: Clean up dead code (2 hours)
+- [ ] **no-explicit-any**: Add proper types (2 hours)
+
+### **Phase 3: PERFORMANCE & HOOKS (3 hours)**
+**Target: Optimize patterns and fix dependencies**
+
+**Week 3:**
+- [ ] **exhaustive-deps**: Fix useEffect dependencies (1.5 hours)
+- [ ] **zustand patterns**: Optimize store subscriptions (1.5 hours)
 
 ---
 
-## 📋 **Immediate Actions (Can be done now)**
+## 📋 **IMMEDIATE EMERGENCY ACTIONS**
 
-### **Quick Wins (30 minutes each):**
+### **Before Any Other Work:**
 
-1. **Remove unused imports** - 5 files affected
+1. **Fix Import Restrictions** (Critical - 30 min)
    ```bash
-   # Files to fix:
-   # - src/pages/SettingsPage.tsx (FaEye, FaEyeSlash)
-   # - src/pages/LogEventPage.tsx (EventType)
-   # - src/pages/KeyholderPage.tsx (TaskStatus)
+   # These files MUST be fixed to prevent build failures:
+   # - src/components/common/SyncStatusIndicator.tsx
+   # - src/components/tracker/PauseResumeButtons.tsx
+   # - src/pages/ChastityTracking.tsx
    ```
 
-2. **Rename unused parameters** - Prefix with underscore
+2. **Fix Hook Violations** (Critical - 30 min)
+   ```bash
+   # React rules violations that cause runtime errors:
+   # - Move hooks to component level
+   # - Fix conditional hook calls
+   ```
+
+3. **Fix Store Patterns** (Critical - 45 min)
+   ```bash
+   # Zustand patterns causing infinite renders:
+   # - Remove store actions from dependency arrays
+   # - Fix async store reference patterns
+   ```
+
+### **Quick Wins (Can parallelize):**
+
+4. **Remove Console Statements** (15 min)
    ```typescript
-   // Change: settings => _settings
-   // In functions where settings parameter isn't used
+   // Replace: console.log()
+   // With: logger.info()
    ```
 
-3. **Fix simple max-statements** - 1 file
+5. **Replace confirm() Calls** (30 min)
    ```typescript
-   // src/pages/ChastityTracking.tsx
-   // Break function with 26 statements into 2 functions
+   // Replace: confirm("Are you sure?")
+   // With: <ConfirmModal />
    ```
-
-### **Configuration Changes:**
-```javascript
-// Consider adjusting ESLint rules if needed:
-{
-  "max-lines-per-function": ["warn", { "max": 100 }], // Increase from 75 to 100
-  "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
-}
-```
 
 ---
 
-## 🎯 **Success Metrics**
+## 🎯 **SUCCESS METRICS**
 
-**Phase 1 Success**: ≤ 40 warnings (50% reduction)
-- All functions under 100 lines
-- Critical components refactored
+**Phase 1A Success**: 0 errors ✅
+- All architectural violations fixed
+- No runtime breaking issues
+- Build passes without critical errors
 
-**Phase 2 Success**: ≤ 20 warnings (75% reduction)
-- Type-safe codebase
-- No unused code
+**Phase 1B Success**: ≤ 10 errors
+- All file size issues resolved
+- Core components refactored
 
-**Phase 3 Success**: ≤ 10 warnings (87% reduction)
-- Optimized performance patterns
+**Phase 2 Success**: ≤ 200 warnings (50% reduction)
+- Major function complexity addressed
+- TypeScript safety improved
+
+**Phase 3 Success**: ≤ 100 warnings (75% reduction)
+- Performance patterns optimized
 - Hook dependencies correct
 
-**Final Goal**: ≤ 5 warnings (93% reduction)
-- Only non-critical style warnings remain
+**Final Goal**: ≤ 50 warnings (87% reduction)
 - Production-ready code quality
+- Only minor style issues remain
 
 ---
 
-## 🔧 **Tools & Automation**
+## 🔧 **AUTOMATED FIXES**
 
-### **Automated Fixes:**
+### **Safe Auto-fixes:**
 ```bash
-# Auto-fix simple issues
+# Run these AFTER manual critical fixes:
 npm run lint -- --fix
 
-# Remove unused imports
-npx eslint --fix --rule '@typescript-eslint/no-unused-vars: error'
+# Specific auto-fixes:
+npx eslint src/ --fix --rule '@typescript-eslint/no-unused-vars: error'
 ```
 
-### **Pre-commit Hook Update:**
+### **Pre-commit Protection:**
 ```bash
-# Block commits if warnings > 20
-# Update .husky/pre-commit to enforce warning limits
+# Update .husky/pre-commit to block commits with > 10 errors
+# Allow warnings but block critical errors
 ```
 
 ---
 
-## 📝 **Notes**
+## 📝 **ROOT CAUSE ANALYSIS**
 
-- **Current State**: 79 warnings (regression from 0)
-- **Root Cause**: Recent PR merges introduced warnings
-- **Strategy**: Systematic cleanup prioritizing impact over ease
-- **Timeline**: 9 hours total over 2 weeks
-- **Maintainability**: Focus on sustainable patterns, not quick fixes
+- **Previous State**: 79 warnings (manageable)
+- **Current State**: 392 problems (66 errors, 326 warnings)
+- **Root Cause**: PR merge integration issues
+- **Key Problems**:
+  1. Architectural pattern violations introduced
+  2. Direct service imports bypassing hook patterns
+  3. Zustand store pattern regressions
+  4. Function size explosion from feature additions
+  5. TypeScript safety regressions
 
-**Implementation Order**: Code Quality → Type Safety → Performance → Style
+**Strategy**: Fix errors first (blocking), then systematic warning cleanup
+
+---
+
+## ⚠️ **CRITICAL NOTES**
+
+- **DO NOT** continue feature development until Phase 1A is complete
+- **Phase 1A errors WILL BREAK** the application in production
+- **Estimated Total Time**: 20 hours over 2-3 weeks
+- **Priority**: Stability > Features > Performance > Style

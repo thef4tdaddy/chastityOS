@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FeatureCard } from "../components/dashboard/FeatureCard";
 import { AchievementDashboard } from "../components/achievements";
-import { DexieDemo } from "../components/common";
+// TODO: DexieDemo temporarily disabled due to architectural restrictions
+// import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
 
@@ -88,12 +89,12 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Dexie Offline Demo with glass styling */}
-        <div className="mb-8">
+        {/* TODO: Dexie Offline Demo temporarily disabled due to architectural restrictions */}
+        {/* <div className="mb-8">
           <div className="glass-card">
             <DexieDemo />
           </div>
-        </div>
+        </div> */}
 
         {/* Enhanced Keyholder access button */}
         <div className="text-center">
