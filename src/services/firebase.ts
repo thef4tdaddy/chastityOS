@@ -84,7 +84,7 @@ export const getFirebaseAuth = async () => {
       ),
     );
   }
-  return serviceCache.get("auth");
+  return serviceCache.get("auth") as Promise<Auth>;
 };
 
 /**
@@ -114,7 +114,7 @@ export const getFirestore = async () => {
       ),
     );
   }
-  return serviceCache.get("firestore");
+  return serviceCache.get("firestore") as Promise<Firestore>;
 };
 
 /**
