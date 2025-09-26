@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuthState } from "../contexts";
+import { useAchievements } from "../hooks/useAchievements";
+import { AchievementCategory } from "../types";
 import { logger } from "../utils/logging";
 import {
   FaUser,
@@ -15,6 +17,37 @@ import {
   FaShieldAlt,
   FaUserPlus,
 } from "../utils/iconImport";
+
+// Helper functions for achievement type mapping
+const getAchievementType = (
+  category: AchievementCategory,
+): "milestone" | "streak" | "goal" => {
+  switch (category) {
+    case AchievementCategory.SESSION_MILESTONES:
+    case AchievementCategory.CONSISTENCY_BADGES:
+      return "milestone";
+    case AchievementCategory.STREAK_ACHIEVEMENTS:
+      return "streak";
+    case AchievementCategory.GOAL_BASED:
+    case AchievementCategory.TASK_COMPLETION:
+      return "goal";
+    default:
+      return "milestone";
+  }
+};
+
+const getTypeStyles = (type: string): string => {
+  switch (type) {
+    case "milestone":
+      return "bg-nightly-aquamarine/20 text-nightly-aquamarine";
+    case "streak":
+      return "bg-red-400/20 text-red-400";
+    case "goal":
+      return "bg-nightly-lavender-floral/20 text-nightly-lavender-floral";
+    default:
+      return "bg-gray-400/20 text-gray-400";
+  }
+};
 
 // Mock public profile data - in real app would come from API
 interface PublicProfile {
@@ -244,106 +277,207 @@ const StatisticsSection: React.FC<{ profile: PublicProfile }> = ({
   );
 };
 
-// Badges Section
-const BadgesSection: React.FC<{ badges: PublicProfile["badges"] }> = ({
-  badges,
-}) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-    <div className="flex items-center gap-3 mb-6">
-      <FaTrophy className="text-nightly-lavender-floral" />
-      <h2 className="text-xl font-semibold text-nightly-honeydew">Badges</h2>
-    </div>
+// Badges Section - Now using real achievement data
+const BadgesSection: React.FC<{
+  userId: string;
+  isOwnProfile: boolean;
+}> = ({ userId, isOwnProfile }) => {
+  const { visibleAchievements, allAchievements, isLoading } =
+    useAchievements(userId);
 
-    {badges.length === 0 ? (
-      <div className="text-center py-4">
-        <div className="text-nightly-celadon">No badges earned yet</div>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {badges.map((badge) => (
-          <div
-            key={badge.id}
-            className="bg-white/5 rounded-lg p-4 flex items-center gap-4"
-          >
-            <div className="text-2xl">{badge.icon}</div>
-            <div className="flex-1">
-              <h3 className="font-medium text-nightly-honeydew">
-                {badge.name}
-              </h3>
-              <p className="text-sm text-nightly-celadon mb-1">
-                {badge.description}
-              </p>
-              <div className="text-xs text-nightly-celadon/70">
-                Earned {badge.earnedDate.toLocaleDateString()}
-              </div>
-            </div>
+  if (isLoading) {
+    return (
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+        <div className="flex items-center gap-3 mb-6">
+          <FaTrophy className="text-nightly-lavender-floral" />
+          <h2 className="text-xl font-semibold text-nightly-honeydew">
+            Badges
+          </h2>
+        </div>
+        <div className="animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white/5 rounded-lg p-4 h-20"></div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
-    )}
-  </div>
-);
+    );
+  }
 
-// Recent Achievements Section
-const RecentAchievementsSection: React.FC<{
-  achievements: PublicProfile["recentAchievements"];
-}> = ({ achievements }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-    <div className="flex items-center gap-3 mb-6">
-      <FaCalendar className="text-nightly-spring-green" />
-      <h2 className="text-xl font-semibold text-nightly-honeydew">
-        Recent Achievements
-      </h2>
-    </div>
+  // Get achievements to display (visible ones for public, all for own profile)
+  const achievementsToShow = isOwnProfile
+    ? allAchievements.filter((a) => {
+        const userAchievement = visibleAchievements.find(
+          (ua) => ua.achievementId === a.id,
+        );
+        return userAchievement !== undefined;
+      })
+    : visibleAchievements;
 
-    {achievements.length === 0 ? (
-      <div className="text-center py-4">
-        <div className="text-nightly-celadon">No recent achievements</div>
+  const badges = achievementsToShow
+    .map((userAchievement) => {
+      const achievement = allAchievements.find(
+        (a) => a.id === userAchievement.achievementId,
+      );
+      return achievement
+        ? {
+            id: achievement.id,
+            name: achievement.name,
+            description: achievement.description,
+            earnedDate: userAchievement.earnedAt,
+            icon: achievement.icon,
+          }
+        : null;
+    })
+    .filter(Boolean);
+
+  return (
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+      <div className="flex items-center gap-3 mb-6">
+        <FaTrophy className="text-nightly-lavender-floral" />
+        <h2 className="text-xl font-semibold text-nightly-honeydew">Badges</h2>
+        {badges.length > 0 && (
+          <span className="text-sm text-nightly-celadon">
+            ({badges.length})
+          </span>
+        )}
       </div>
-    ) : (
-      <div className="space-y-3">
-        {achievements.map((achievement) => (
-          <div
-            key={achievement.id}
-            className="flex items-center justify-between bg-white/5 rounded-lg p-3"
-          >
-            <div className="flex items-center gap-3">
-              {achievement.type === "milestone" && (
-                <FaTrophy className="text-nightly-aquamarine" />
-              )}
-              {achievement.type === "streak" && (
-                <FaHeart className="text-red-400" />
-              )}
-              {achievement.type === "goal" && (
-                <FaChartBar className="text-nightly-lavender-floral" />
-              )}
-              <div>
-                <div className="text-nightly-honeydew font-medium">
-                  {achievement.title}
-                </div>
-                <div className="text-xs text-nightly-celadon/70">
-                  {achievement.date.toLocaleDateString()}
-                </div>
-              </div>
-            </div>
-            <span
-              className={`px-2 py-1 text-xs rounded ${
-                achievement.type === "milestone"
-                  ? "bg-nightly-aquamarine/20 text-nightly-aquamarine"
-                  : achievement.type === "streak"
-                    ? "bg-red-400/20 text-red-400"
-                    : "bg-nightly-lavender-floral/20 text-nightly-lavender-floral"
-              }`}
+
+      {badges.length === 0 ? (
+        <div className="text-center py-4">
+          <div className="text-nightly-celadon">
+            {isOwnProfile
+              ? "No badges earned yet"
+              : "No public badges to display"}
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {badges.map((badge) => (
+            <div
+              key={badge.id}
+              className="bg-white/5 rounded-lg p-4 flex items-center gap-4"
             >
-              {achievement.type.charAt(0).toUpperCase() +
-                achievement.type.slice(1)}
-            </span>
-          </div>
-        ))}
+              <div className="text-2xl">{badge.icon}</div>
+              <div className="flex-1">
+                <h3 className="font-medium text-nightly-honeydew">
+                  {badge.name}
+                </h3>
+                <p className="text-sm text-nightly-celadon mb-1">
+                  {badge.description}
+                </p>
+                <div className="text-xs text-nightly-celadon/70">
+                  Earned {badge.earnedDate.toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Recent Achievements Section - Now using real achievement data
+const RecentAchievementsSection: React.FC<{
+  userId: string;
+  isOwnProfile: boolean;
+}> = ({ userId, isOwnProfile }) => {
+  const { visibleAchievements, allAchievements, isLoading } =
+    useAchievements(userId);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <FaCalendar className="text-nightly-spring-green" />
+          <h2 className="text-xl font-semibold text-nightly-honeydew">
+            Recent Achievements
+          </h2>
+        </div>
+        <div className="animate-pulse space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white/5 rounded-lg p-3 h-16"></div>
+          ))}
+        </div>
       </div>
-    )}
-  </div>
-);
+    );
+  }
+
+  // Get recent achievements (last 5, sorted by earned date)
+  const recentAchievements = visibleAchievements
+    .sort((a, b) => b.earnedAt.getTime() - a.earnedAt.getTime())
+    .slice(0, 5)
+    .map((userAchievement) => {
+      const achievement = allAchievements.find(
+        (a) => a.id === userAchievement.achievementId,
+      );
+      return achievement
+        ? {
+            id: achievement.id,
+            title: achievement.name,
+            date: userAchievement.earnedAt,
+            type: getAchievementType(achievement.category),
+            icon: achievement.icon,
+          }
+        : null;
+    })
+    .filter(Boolean);
+
+  return (
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <FaCalendar className="text-nightly-spring-green" />
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Recent Achievements
+        </h2>
+        {recentAchievements.length > 0 && (
+          <span className="text-sm text-nightly-celadon">
+            ({recentAchievements.length})
+          </span>
+        )}
+      </div>
+
+      {recentAchievements.length === 0 ? (
+        <div className="text-center py-4">
+          <div className="text-nightly-celadon">
+            {isOwnProfile
+              ? "No recent achievements"
+              : "No recent public achievements"}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {recentAchievements.map((achievement) => (
+            <div
+              key={achievement.id}
+              className="flex items-center justify-between bg-white/5 rounded-lg p-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">{achievement.icon}</div>
+                <div>
+                  <div className="text-nightly-honeydew font-medium">
+                    {achievement.title}
+                  </div>
+                  <div className="text-xs text-nightly-celadon/70">
+                    {achievement.date.toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              <span
+                className={`px-2 py-1 text-xs rounded ${getTypeStyles(achievement.type)}`}
+              >
+                {achievement.type.charAt(0).toUpperCase() +
+                  achievement.type.slice(1)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const PublicProfilePage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -433,8 +567,11 @@ const PublicProfilePage: React.FC = () => {
       <div className="p-4 max-w-4xl mx-auto">
         <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
         <StatisticsSection profile={profile} />
-        <BadgesSection badges={profile.badges} />
-        <RecentAchievementsSection achievements={profile.recentAchievements} />
+        <BadgesSection userId={user?.uid || ""} isOwnProfile={isOwnProfile} />
+        <RecentAchievementsSection
+          userId={user?.uid || ""}
+          isOwnProfile={isOwnProfile}
+        />
       </div>
     </div>
   );

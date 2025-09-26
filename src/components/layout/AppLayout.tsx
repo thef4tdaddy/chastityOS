@@ -2,6 +2,11 @@ import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
 import { useNavigationStore } from "@/stores";
+import { ToastContainer } from "react-toastify";
+import { useAuthState } from "../../contexts";
+import { useAchievements } from "../../hooks/useAchievements";
+import { AchievementNotification } from "../achievements";
+import "react-toastify/dist/ReactToastify.css";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -9,6 +14,11 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const { user } = useAuthState();
+
+  // Achievement notifications
+  const { unreadNotifications, allAchievements, markNotificationRead } =
+    useAchievements(user?.uid);
 
   // Use navigation store for mobile menu state
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, setPageTitle } =
@@ -18,6 +28,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { path: "/", label: "Dashboard" },
     { path: "/chastity-tracking", label: "Tracker" },
     { path: "/tasks", label: "Tasks" },
+    { path: "/achievements", label: "Achievements" },
     { path: "/log-event", label: "Log Event" },
     { path: "/rewards-punishments", label: "Rewards" },
     { path: "/rules", label: "Rules" },
@@ -166,6 +177,30 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
         </div>
       </footer>
+
+      {/* Achievement Notifications */}
+      {user && (
+        <AchievementNotification
+          notifications={unreadNotifications}
+          achievements={allAchievements}
+          onMarkRead={markNotificationRead}
+        />
+      )}
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={8000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        toastClassName="achievement-toast"
+      />
     </div>
   );
 };

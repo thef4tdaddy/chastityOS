@@ -12,6 +12,7 @@ import React, {
 } from "react";
 import { firebaseSync } from "@/services/sync";
 import { preloadCriticalServices } from "@/services/firebase";
+import { achievementIntegration } from "@/services/AchievementIntegration";
 import { serviceLogger } from "@/utils/logging";
 import { db } from "@/services/database";
 import type { SyncStatus } from "@/types/database";
@@ -67,6 +68,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
         // Preload critical Firebase services
         await preloadCriticalServices();
+
+        // Initialize achievement system
+        await achievementIntegration.initialize();
 
         // Initialize sync service
         // FirebaseSync initializes automatically
