@@ -97,7 +97,7 @@ export const useAchievements = (userId?: string) => {
 
       // Get recent achievements (last 5)
       const recentAchievements = achievements
-        .sort((a, b) => b.earnedAt.getTime() - a.earnedAt.getTime())
+        .sort((a: DBUserAchievement, b: DBUserAchievement) => b.earnedAt.getTime() - a.earnedAt.getTime())
         .slice(0, 5);
 
       return {
@@ -179,7 +179,7 @@ export const useAchievements = (userId?: string) => {
    */
   const getAchievementById = useCallback(
     (achievementId: string): DBAchievement | undefined => {
-      return allAchievements.find((a) => a.id === achievementId);
+      return allAchievements.find((a: DBAchievement) => a.id === achievementId);
     },
     [allAchievements],
   );
@@ -189,7 +189,7 @@ export const useAchievements = (userId?: string) => {
    */
   const hasAchievement = useCallback(
     (achievementId: string): boolean => {
-      return userAchievements.some((ua) => ua.achievementId === achievementId);
+      return userAchievements.some((ua: DBUserAchievement) => ua.achievementId === achievementId);
     },
     [userAchievements],
   );
@@ -200,7 +200,7 @@ export const useAchievements = (userId?: string) => {
   const getProgressForAchievement = useCallback(
     (achievementId: string): DBAchievementProgress | undefined => {
       return achievementProgress.find(
-        (ap) => ap.achievementId === achievementId,
+        (ap: DBAchievementProgress) => ap.achievementId === achievementId,
       );
     },
     [achievementProgress],
@@ -211,7 +211,7 @@ export const useAchievements = (userId?: string) => {
    */
   const getAchievementsByCategory = useCallback(
     (category: AchievementCategory): DBAchievement[] => {
-      return allAchievements.filter((a) => a.category === category);
+      return allAchievements.filter((a: DBAchievement) => a.category === category);
     },
     [allAchievements],
   );
@@ -222,10 +222,10 @@ export const useAchievements = (userId?: string) => {
   const getUserAchievementsByCategory = useCallback(
     (category: AchievementCategory): DBUserAchievement[] => {
       const categoryAchievementIds = allAchievements
-        .filter((a) => a.category === category)
-        .map((a) => a.id);
+        .filter((a: DBAchievement) => a.category === category)
+        .map((a: DBAchievement) => a.id);
 
-      return userAchievements.filter((ua) =>
+      return userAchievements.filter((ua: DBUserAchievement) =>
         categoryAchievementIds.includes(ua.achievementId),
       );
     },
@@ -236,12 +236,12 @@ export const useAchievements = (userId?: string) => {
    * Get achievements with progress information
    */
   const getAchievementsWithProgress = useCallback(() => {
-    return allAchievements.map((achievement) => {
+    return allAchievements.map((achievement: DBAchievement) => {
       const userAchievement = userAchievements.find(
-        (ua) => ua.achievementId === achievement.id,
+        (ua: DBUserAchievement) => ua.achievementId === achievement.id,
       );
       const progress = achievementProgress.find(
-        (ap) => ap.achievementId === achievement.id,
+        (ap: DBAchievementProgress) => ap.achievementId === achievement.id,
       );
 
       return {

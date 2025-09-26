@@ -15,7 +15,7 @@ import {
 } from "../../utils/iconImport";
 import { useAchievements } from "../../hooks/useAchievements";
 import { useAuthState } from "../../contexts";
-import { AchievementCategory } from "../../types";
+import { AchievementCategory, UserAchievement, Achievement } from "../../types";
 
 export const AchievementDashboard: React.FC = () => {
   const { user } = useAuthState();
@@ -44,7 +44,10 @@ export const AchievementDashboard: React.FC = () => {
   }
 
   const recentAchievements = userAchievements
-    .sort((a: any, b: any) => b.earnedAt.getTime() - a.earnedAt.getTime())
+    .sort(
+      (a: UserAchievement, b: UserAchievement) =>
+        b.earnedAt.getTime() - a.earnedAt.getTime(),
+    )
     .slice(0, 3);
 
   const categories: AchievementCategory[] = [
@@ -149,9 +152,9 @@ export const AchievementDashboard: React.FC = () => {
             Recent Achievements
           </h3>
           <div className="space-y-3">
-            {recentAchievements.map((userAchievement) => {
+            {recentAchievements.map((userAchievement: UserAchievement) => {
               const achievement = allAchievements.find(
-                (a) => a.id === userAchievement.achievementId,
+                (a: Achievement) => a.id === userAchievement.achievementId,
               );
               if (!achievement) return null;
 

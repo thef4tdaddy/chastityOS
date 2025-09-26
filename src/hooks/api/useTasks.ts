@@ -203,7 +203,7 @@ export function useTasksAssignedBy(keyholderUid: string) {
       // Note: This would require a different query method in the future
       // For now, we'll need to scan all tasks (inefficient but works)
       const allTasks = await taskDBService.getAll();
-      return allTasks.filter((task) => task.assignedBy === keyholderUid);
+      return allTasks.filter((task: Task) => task.assignedBy === keyholderUid);
     },
     staleTime: 5 * 60 * 1000,
     enabled: !!keyholderUid,
