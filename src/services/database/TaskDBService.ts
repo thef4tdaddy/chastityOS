@@ -201,6 +201,29 @@ class TaskDBService extends BaseDBService<DBTask> {
       throw error;
     }
   }
+
+  /**
+   * Create a new task (alias for addTask method)
+   */
+  async createTask(
+    taskData: Omit<DBTask, "id" | "lastModified" | "syncStatus" | "createdAt">,
+  ): Promise<string> {
+    try {
+      const taskId = generateUUID();
+      const task: Omit<DBTask, "lastModified" | "syncStatus"> = {
+        id: taskId,
+        createdAt: new Date(),
+        ...taskData,
+      };
+
+      await this.create(task);
+      logger.info("Created new task", { taskId, userId: taskData.userId });
+      return taskId;
+    } catch (error) {
+      logger.error("Failed to create task", { error: error as Error });
+      throw error;
+    }
+  }
 }
 
 export const taskDBService = new TaskDBService();

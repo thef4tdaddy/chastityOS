@@ -78,6 +78,11 @@ export enum LeaderboardCategory {
   ACHIEVEMENT_POINTS = "achievement_points",
   SESSION_COUNT = "session_count",
   GOAL_ACHIEVEMENTS = "goal_achievements",
+  // Additional categories referenced in components
+  TOTAL_POINTS = "total_points",
+  ACHIEVEMENTS_EARNED = "achievements_earned",
+  LONGEST_STREAK = "longest_streak",
+  TOTAL_TIME = "total_time",
 }
 
 export enum LeaderboardPeriod {

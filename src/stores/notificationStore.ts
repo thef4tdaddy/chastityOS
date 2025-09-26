@@ -12,6 +12,13 @@ export interface Notification {
   message: string;
   duration?: number; // in milliseconds, 0 means persistent
   dismissible?: boolean;
+  position?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right"
+    | "top-center"
+    | "bottom-center";
   action?: {
     label: string;
     onClick: () => void;
@@ -22,6 +29,9 @@ export interface Notification {
 export interface NotificationState {
   // Notifications list
   notifications: Notification[];
+
+  // Configuration
+  pauseOnHover?: boolean;
 
   // Actions
   addNotification: (
@@ -51,6 +61,7 @@ export const useNotificationStore = create<NotificationState>()(
     (set, get) => ({
       // Initial state
       notifications: [],
+      pauseOnHover: true,
 
       // Actions
       addNotification: (notification) => {
