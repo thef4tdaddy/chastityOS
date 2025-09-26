@@ -76,7 +76,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     const interval = setInterval(performSync, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [userId, sync]);
+  }, [userId]);
 
   // Show conflict modal when conflicts are detected
   useEffect(() => {

@@ -253,4 +253,4 @@ export const useLeaderboards = (
   };
 };
 
-export default useLeaderboards;
+// Named export only - hook files should only export hooks starting with 'use'
