@@ -9,20 +9,8 @@
  */
 import React from "react";
 import { useTasksQuery, useTaskMutations } from "../../hooks/api";
-import {
-  useModal,
-  useNotificationActions,
-  useFormManager,
-  MODAL_IDS,
-} from "../../stores";
-import {
-  FaTasks,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaCheck,
-  FaTimes,
-} from "react-icons/fa";
+import { useNotificationActions, useFormManager } from "../../stores";
+import { FaTasks } from "react-icons/fa";
 
 interface IntegratedTaskManagerProps {
   userId: string;
@@ -32,11 +20,10 @@ export const IntegratedTaskManager: React.FC<IntegratedTaskManagerProps> = ({
   userId,
 }) => {
   // Server state via TanStack Query
-  const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
-  const { createTask, updateTaskStatus, deleteTask } = useTaskMutations();
+  const { error } = useTasksQuery(userId);
+  const { createTask } = useTaskMutations();
 
   // UI state via Zustand stores
-  const taskModal = useModal(MODAL_IDS.TASK_DETAILS);
   const { showSuccess, showError } = useNotificationActions();
 
   // Form state for new task form
@@ -47,7 +34,7 @@ export const IntegratedTaskManager: React.FC<IntegratedTaskManagerProps> = ({
     priority: "medium",
   });
 
-  const handleCreateTask = async () => {
+  const _handleCreateTask = async () => {
     const isValid = newTaskForm.validateForm("newTaskForm", {
       title: (value) => (!value?.trim() ? "Title is required" : undefined),
       description: (value) =>

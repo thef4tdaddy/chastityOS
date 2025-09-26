@@ -11,7 +11,6 @@ import type { DBTask } from "@/types/database";
 export const DexieDemo: React.FC = () => {
   const { user } = useAuth();
   const {
-    services,
     createWithSync,
     updateWithSync,
     deleteWithSync,

@@ -1,21 +1,18 @@
-
-
-
 # ChastityOS: Nightly vs Production Environments
 
 This document outlines the key differences between the Nightly and Production versions of ChastityOS.
 
-| Feature              | Nightly                          | Production                         |
-|----------------------|-----------------------------------|-------------------------------------|
-| **Firebase Database**| `chastityos-nightly`             | `chastityos-prod`                  |
-| **Visual Theme**     | Light background, dark borders   | Dark background, light text        |
-| **Release Frequency**| Frequent experimental builds     | Manual merges, stable releases     |
-| **URL**              | `nightly.chastityOS.io`          | `app.chastityOS.io`                |
-| **PWA Icon**         | Bright variant with “Nightly”    | Default logo                       |
-| **Data Risk**        | 🔄 Subject to resets & migrations| ✅ Persistent & backed              |
-| **Feedback Channel** | `#nightly-feedback`              | `#bug-reports`, GitHub issues      |
-| **Version Tagging**  | e.g. `3.6.3-nightly.2`           | e.g. `3.6.1`                        |
-| **Use Case**         | Testing new features and fixes   | Day-to-day tracking                |
+| Feature               | Nightly                           | Production                     |
+| --------------------- | --------------------------------- | ------------------------------ |
+| **Firebase Database** | `chastityos-nightly`              | `chastityos-prod`              |
+| **Visual Theme**      | Light background, dark borders    | Dark background, light text    |
+| **Release Frequency** | Frequent experimental builds      | Manual merges, stable releases |
+| **URL**               | `nightly.chastityOS.io`           | `app.chastityOS.io`            |
+| **PWA Icon**          | Bright variant with “Nightly”     | Default logo                   |
+| **Data Risk**         | 🔄 Subject to resets & migrations | ✅ Persistent & backed         |
+| **Feedback Channel**  | `#nightly-feedback`               | `#bug-reports`, GitHub issues  |
+| **Version Tagging**   | e.g. `3.6.3-nightly.2`            | e.g. `3.6.1`                   |
+| **Use Case**          | Testing new features and fixes    | Day-to-day tracking            |
 
 ---
 

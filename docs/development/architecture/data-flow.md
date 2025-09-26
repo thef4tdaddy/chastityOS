@@ -29,11 +29,13 @@ Understanding how data flows through ChastityOS is crucial for maintaining consi
 ### 1. Read Operations (Query Flow)
 
 #### Optimistic Local-First Reading
+
 ```
 Component Request → TanStack Query → Check Cache → Dexie (Local) → Firebase (if needed) → Update Cache → Component
 ```
 
 **Implementation Example:**
+
 ```javascript
 export function useCurrentSession(userId: string) {
   return useQuery({
@@ -69,11 +71,13 @@ export function useCurrentSession(userId: string) {
 ### 2. Write Operations (Mutation Flow)
 
 #### Optimistic Updates with Background Sync
+
 ```
 User Action → Local Update → UI Update → Background Firebase Sync → Conflict Resolution
 ```
 
 **Implementation Example:**
+
 ```javascript
 export function useStartSessionMutation() {
   const queryClient = useQueryClient();
@@ -149,11 +153,13 @@ export function useStartSessionMutation() {
 ### 3. Real-time Updates Flow
 
 #### Firebase → Local → Cache → Components
+
 ```
 Firebase Change → Real-time Listener → Update Dexie → Invalidate Cache → Component Re-render
 ```
 
 **Implementation Example:**
+
 ```javascript
 export class RealtimeService {
   private unsubscribeFunctions = new Map<string, () => void>();
@@ -382,6 +388,7 @@ export function useInvalidationStrategy() {
 ## 📈 Performance Optimizations
 
 ### 1. Selective Sync
+
 Only sync changed fields to reduce bandwidth:
 
 ```javascript
@@ -425,6 +432,7 @@ export class OptimizedSyncService {
 ```
 
 ### 2. Batch Operations
+
 Group multiple operations for efficiency:
 
 ```javascript
@@ -481,6 +489,7 @@ export class BatchOperationService {
 ## 🔍 Monitoring and Debugging
 
 ### Data Flow Tracing
+
 ```javascript
 export class DataFlowTracer {
   private static traces: DataFlowTrace[] = [];
@@ -530,6 +539,7 @@ interface DataFlowTrace {
 ```
 
 This data flow architecture ensures:
+
 - **Consistency**: Single source of truth with predictable updates
 - **Performance**: Optimistic updates with background sync
 - **Reliability**: Conflict resolution and retry mechanisms
