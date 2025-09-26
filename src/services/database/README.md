@@ -7,7 +7,7 @@ This directory contains the complete Dexie-based local database implementation f
 The database layer follows a service-oriented architecture with:
 
 - **ChastityDB**: Main Dexie database instance with schema definition
-- **BaseDBService**: Abstract base class providing common CRUD operations  
+- **BaseDBService**: Abstract base class providing common CRUD operations
 - **Specialized Services**: Domain-specific services for each data type
 - **Migration Service**: Handles schema migrations and data transformations
 - **Performance Service**: Monitors and optimizes database performance
@@ -24,7 +24,7 @@ The main database class extends Dexie and defines:
 - **Utilities**: Initialization, statistics, and cleanup methods
 
 ```typescript
-import { db } from '@/services/database';
+import { db } from "@/services/database";
 
 // Database is automatically initialized
 await db.initialize();
@@ -54,13 +54,13 @@ await service.paginate(userId, offset, limit);
 ### Session Management
 
 ```typescript
-import { sessionDBService } from '@/services/database';
+import { sessionDBService } from "@/services/database";
 
 // Start a new session
 const sessionId = await sessionDBService.startSession(userId, {
   goalDuration: 3600, // 1 hour
   isHardcoreMode: false,
-  notes: 'Weekly goal session'
+  notes: "Weekly goal session",
 });
 
 // Get current active session
@@ -71,7 +71,7 @@ await sessionDBService.pauseSession(sessionId);
 await sessionDBService.resumeSession(sessionId);
 
 // End session
-await sessionDBService.endSession(sessionId, new Date(), 'Goal completed');
+await sessionDBService.endSession(sessionId, new Date(), "Goal completed");
 
 // Get session statistics
 const stats = await sessionDBService.getSessionStats(userId);
@@ -80,43 +80,43 @@ const stats = await sessionDBService.getSessionStats(userId);
 ### Event Logging
 
 ```typescript
-import { eventDBService } from '@/services/database';
+import { eventDBService } from "@/services/database";
 
 // Log a new event
 const eventId = await eventDBService.logEvent(
   userId,
-  'orgasm',
-  { intensity: 8, notes: 'Post-session reward' },
-  { sessionId, isPrivate: false }
+  "orgasm",
+  { intensity: 8, notes: "Post-session reward" },
+  { sessionId, isPrivate: false },
 );
 
 // Get events by type
-const orgasmEvents = await eventDBService.getEventsByType(userId, 'orgasm');
+const orgasmEvents = await eventDBService.getEventsByType(userId, "orgasm");
 
 // Get events in date range
 const events = await eventDBService.getEventsInDateRange(
   userId,
-  new Date('2024-01-01'),
-  new Date('2024-01-31')
+  new Date("2024-01-01"),
+  new Date("2024-01-31"),
 );
 ```
 
 ### Task Management
 
 ```typescript
-import { taskDBService } from '@/services/database';
+import { taskDBService } from "@/services/database";
 
 // Add a new task
-const taskId = await taskDBService.addTask(userId, 'Complete daily exercises', {
-  description: 'Physical fitness routine',
-  priority: 'high',
-  assignedBy: 'keyholder',
-  dueDate: new Date('2024-12-31')
+const taskId = await taskDBService.addTask(userId, "Complete daily exercises", {
+  description: "Physical fitness routine",
+  priority: "high",
+  assignedBy: "keyholder",
+  dueDate: new Date("2024-12-31"),
 });
 
 // Update task status
-await taskDBService.updateTaskStatus(taskId, 'submitted', {
-  submissiveNote: 'Completed as requested'
+await taskDBService.updateTaskStatus(taskId, "submitted", {
+  submissiveNote: "Completed as requested",
 });
 
 // Get overdue tasks
@@ -126,15 +126,15 @@ const overdueTasks = await taskDBService.getOverdueTasks(userId);
 ### Goal Tracking
 
 ```typescript
-import { goalDBService } from '@/services/database';
+import { goalDBService } from "@/services/database";
 
 // Create a new goal
 const goalId = await goalDBService.addGoal(userId, {
-  type: 'duration',
-  title: 'Complete 7 days locked',
+  type: "duration",
+  title: "Complete 7 days locked",
   targetValue: 604800, // 7 days in seconds
-  unit: 'seconds',
-  createdBy: 'submissive'
+  unit: "seconds",
+  createdBy: "submissive",
 });
 
 // Update progress
@@ -147,19 +147,19 @@ const activeGoals = await goalDBService.getActiveGoals(userId);
 ### Settings Management
 
 ```typescript
-import { settingsDBService } from '@/services/database';
+import { settingsDBService } from "@/services/database";
 
 // Get user settings (creates defaults if none exist)
 const settings = await settingsDBService.getUserSettings(userId);
 
 // Update settings
 await settingsDBService.updateSettings(userId, {
-  theme: 'light',
+  theme: "light",
   notifications: {
     enabled: true,
     sessionReminders: true,
-    taskDeadlines: true
-  }
+    taskDeadlines: true,
+  },
 });
 ```
 
@@ -168,7 +168,7 @@ await settingsDBService.updateSettings(userId, {
 The migration service handles schema changes and data transformations:
 
 ```typescript
-import { DBMigrationService } from '@/services/database';
+import { DBMigrationService } from "@/services/database";
 
 // Check if migrations are needed
 const needed = await DBMigrationService.checkMigrationsNeeded();
@@ -188,7 +188,7 @@ const validation = await DBMigrationService.validateDatabaseIntegrity();
 Monitor and optimize database performance:
 
 ```typescript
-import { DBPerformanceService } from '@/services/database';
+import { DBPerformanceService } from "@/services/database";
 
 // Generate performance report
 const report = DBPerformanceService.generateReport();
@@ -201,9 +201,9 @@ const sizeAnalysis = await DBPerformanceService.analyzeDatabaseSize();
 
 // Wrap operations for automatic monitoring
 const result = await DBPerformanceService.wrapOperation(
-  'query',
-  'sessions',
-  () => sessionDBService.getSessionHistory(userId)
+  "query",
+  "sessions",
+  () => sessionDBService.getSessionHistory(userId),
 );
 ```
 
@@ -212,7 +212,7 @@ const result = await DBPerformanceService.wrapOperation(
 All database records include sync status tracking:
 
 - **pending**: Record has local changes not yet synced
-- **synced**: Record is synchronized with remote storage  
+- **synced**: Record is synchronized with remote storage
 - **conflict**: Conflicting changes detected during sync
 
 ```typescript
@@ -232,7 +232,7 @@ try {
   await sessionDBService.startSession(userId);
 } catch (error) {
   // Detailed error logging is handled automatically
-  console.error('Failed to start session:', error);
+  console.error("Failed to start session:", error);
 }
 ```
 
@@ -245,6 +245,7 @@ npm test -- tests/database.test.ts
 ```
 
 Tests cover:
+
 - All CRUD operations
 - Specialized service methods
 - Error handling
