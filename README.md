@@ -9,19 +9,23 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 ## 🔑 Key Features
 
 ### 💠 Chastity Tracker
+
 - Start and end chastity sessions manually
 - Live timer and session tracking (including paused state)
 - View effective vs total time in chastity (subtracting pauses)
 
 ### ⏸ Pause Sessions
+
 - Optional pause mid-session with reason logging
 - Built-in cooldown logic to prevent abuse of pause function
 
 ### 📆 Edit Session Start Time
+
 - Adjust the start date/time of the current session via Settings
 - All changes are logged as "Session Edit" events in your log
 
 ### 🧠 Keyholder Mode
+
 - Set a keyholder with a name and secure password preview
 - Keyholder can set a required minimum chastity duration
 - Locked controls unless the user enters the correct 8-character password preview
@@ -30,32 +34,39 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Denials show a message on the tracker and you must wait 4 hours before begging again
 
 ### 🎯 Goal Tracking
+
 - Set a personal chastity goal duration (optional)
 - Real-time countdown toward your goal
 - Highlights when you meet or exceed your goal
 
 ### 📊 Full Report
+
 - Summary of all past sessions: raw time, paused time, effective time, reasons
 - Tracker includes goal performance (met/not met)
 - Separate log of sexual activity and orgasm stats
 
 ### 📝 Sexual Event Logging
+
 - Log orgasms (self or partner), durations, notes, and other events
 - Personalize orgasm labels using the Submissive’s and Keyholder’s names
 
 ### 🧾 Export Data
+
 - Export full tracker history (.csv)
 - Export sexual event log (.csv)
 - Generate a full text report for journaling or backup
 
 ### ☁️ Import/Export JSON
+
 - Allow users to backup and migrate data manually between devices or browsers via JSON file import/export.
 
 ### 📶 Offline Mode
+
 - Works as a PWA with data cached locally
 - Changes sync to Firebase automatically once you reconnect
 
 ### 🔐 Authentication Options
+
 - Default anonymous sign-in (no setup required)
 - Optional upgrade to sign in with Google account
 - Once linked to Google, your data syncs automatically and you no longer need to remember your User ID
@@ -103,6 +114,7 @@ ChastityOS uses a modern, scalable architecture with offline-first data manageme
 ## 📚 Documentation
 
 For comprehensive guides, API documentation, and architecture details:
+
 - **Developer Setup:** `docs/development/getting-started.md`
 - **Architecture Overview:** `docs/development/architecture/`
 - **API Documentation:** `docs/api/`
@@ -113,6 +125,7 @@ For comprehensive guides, API documentation, and architecture details:
 ## 🔒 Privacy First
 
 ChastityOS prioritizes your privacy:
+
 - No sensitive content (name, notes, orgasm logs) is shared externally
 - Analytics are anonymous and used only to improve app usability
 - Your Firebase User ID (anonymous or Google-linked) is never used for tracking—only for data storage
@@ -132,9 +145,9 @@ You can view the full Privacy & Analytics statement in the app’s footer modal.
 
 ## 🚀 Deployment
 
-- **Stable:** https://app.chastityOS.io  
-- **Nightly Preview:** https://nightly.chastityOS.io  
-- **Source Code:** [GitHub Repo](https://github.com/thef4tdaddy/chastityOS)  
+- **Stable:** https://app.chastityOS.io
+- **Nightly Preview:** https://nightly.chastityOS.io
+- **Source Code:** [GitHub Repo](https://github.com/thef4tdaddy/chastityOS)
 - **Support:** [Ko-fi Page](https://ko-fi.com/chastityos)
 
 ---

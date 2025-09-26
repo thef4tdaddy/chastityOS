@@ -4,14 +4,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  FaTrophy,
-  FaUsers,
-  FaCalendar,
-  FaGlobe,
-  FaEye,
-  FaEyeSlash,
-} from "../../utils/iconImport";
+import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
 import { useLeaderboards } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
@@ -39,7 +32,6 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
     error,
     optInToLeaderboards,
     optOutFromLeaderboards,
-    updateLeaderboardPrivacy,
   } = useLeaderboards(user?.uid, selectedCategory, selectedPeriod);
 
   const handleOptIn = async () => {
