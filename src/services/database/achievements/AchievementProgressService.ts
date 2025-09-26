@@ -3,12 +3,12 @@
  * Handles progress tracking and updates for achievements
  */
 
-import { ChastityDB } from "../../storage/ChastityDB";
+import { ChastityDB, db } from "../../storage/ChastityDB";
 import { DBAchievementProgress } from "../../../types";
 import { logger } from "../../../utils/logging";
 
 export class AchievementProgressService {
-  private achievementProgressTable = ChastityDB.achievementProgress;
+  private achievementProgressTable = db.achievementProgress;
 
   private generateId(): string {
     return `ap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

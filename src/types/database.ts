@@ -101,12 +101,14 @@ export interface DBEvent extends DBBase {
 
 export interface DBTask extends DBBase {
   text: string;
+  title?: string; // Optional title field for tasks
   description?: string;
   status: TaskStatus;
   priority: "low" | "medium" | "high" | "critical";
   assignedBy: "submissive" | "keyholder";
   createdAt: Date;
   dueDate?: Date;
+  deadline?: Date; // Alternative deadline field name
   submittedAt?: Date;
   approvedAt?: Date;
   completedAt?: Date;
