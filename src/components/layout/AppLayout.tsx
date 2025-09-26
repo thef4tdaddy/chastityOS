@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
+import { useNavigationStore } from "@/stores";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -8,6 +9,10 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
+
+  // Use navigation store for mobile menu state
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, setPageTitle } =
+    useNavigationStore();
 
   const navItems = [
     { path: "/", label: "Dashboard" },
@@ -19,6 +24,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { path: "/full-report", label: "Report" },
     { path: "/settings", label: "Settings" },
   ];
+
+  // Update page title based on current route
+  useEffect(() => {
+    const currentItem = navItems.find(
+      (item) => item.path === location.pathname,
+    );
+    const title = currentItem
+      ? `${currentItem.label} - ChastityOS`
+      : "ChastityOS";
+    setPageTitle(title);
+  }, [location.pathname, setPageTitle]);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    closeMobileMenu();
+  }, [location.pathname, closeMobileMenu]);
 
   return (
     <div className="bg-gray-900 min-h-screen text-white">
@@ -72,7 +93,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </nav>
 
             {/* Mobile Menu Button */}
-            <button className="md:hidden text-white">
+            <button
+              className="md:hidden text-nightly-spring-green"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle mobile menu"
+            >
               <svg
                 className="h-6 w-6"
                 fill="none"
@@ -83,11 +108,46 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
+                  d={
+                    isMobileMenuOpen
+                      ? "M6 18L18 6M6 6l12 12"
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
                 />
               </svg>
             </button>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden">
+              <div className="px-2 pt-2 pb-3 space-y-1 bg-black/20 backdrop-blur-sm rounded-lg mt-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                      location.pathname === item.path
+                        ? "bg-nightly-aquamarine/20 text-nightly-aquamarine"
+                        : "text-nightly-celadon hover:text-nightly-spring-green hover:bg-white/10"
+                    }`}
+                    onClick={closeMobileMenu}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+
+                {/* Mobile Keyholder Access */}
+                <Link
+                  to="/keyholder"
+                  className="block bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-2 rounded-md text-base font-medium transition-colors"
+                  onClick={closeMobileMenu}
+                >
+                  KH Access
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
