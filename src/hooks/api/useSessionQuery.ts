@@ -7,6 +7,9 @@ import { sessionDBService } from "@/services/database";
 import { cacheConfig } from "@/services/cache-config";
 import { firebaseSync } from "@/services/sync";
 import type { DBSession } from "@/types/database";
+import { serviceLogger } from "@/utils/logging";
+
+const logger = serviceLogger("useSessionQuery");
 
 /**
  * Query for getting current active session
@@ -23,7 +26,7 @@ export function useCurrentSession(userId: string | undefined) {
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(userId).catch((error) => {
-          console.warn("Background session sync failed:", error);
+          logger.warn("Background session sync failed:", { error });
         });
       }
 
@@ -48,7 +51,7 @@ export function useSessionHistory(userId: string | undefined, enabled = true) {
       // Trigger background sync if online
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(userId).catch((error) => {
-          console.warn("Background session history sync failed:", error);
+          logger.warn("Background session history sync failed:", { error });
         });
       }
 
@@ -83,7 +86,7 @@ export function useSessionMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(params.userId).catch((error) => {
-          console.warn("Session start sync failed:", error);
+          logger.warn("Session start sync failed:", { error });
         });
       }
 
@@ -99,7 +102,7 @@ export function useSessionMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to start session:", error);
+      logger.error("Failed to start session:", { error });
     },
   });
 
@@ -119,7 +122,7 @@ export function useSessionMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(params.userId).catch((error) => {
-          console.warn("Session end sync failed:", error);
+          logger.warn("Session end sync failed:", { error });
         });
       }
 
@@ -135,7 +138,7 @@ export function useSessionMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to end session:", error);
+      logger.error("Failed to end session:", { error });
     },
   });
 
@@ -150,7 +153,7 @@ export function useSessionMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(params.userId).catch((error) => {
-          console.warn("Session pause sync failed:", error);
+          logger.warn("Session pause sync failed:", { error });
         });
       }
 
@@ -161,7 +164,7 @@ export function useSessionMutations() {
       queryClient.setQueryData(["session", "current", variables.userId], data);
     },
     onError: (error) => {
-      console.error("Failed to pause session:", error);
+      logger.error("Failed to pause session:", { error });
     },
   });
 
@@ -175,7 +178,7 @@ export function useSessionMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(params.userId).catch((error) => {
-          console.warn("Session resume sync failed:", error);
+          logger.warn("Session resume sync failed:", { error });
         });
       }
 
@@ -186,7 +189,7 @@ export function useSessionMutations() {
       queryClient.setQueryData(["session", "current", variables.userId], data);
     },
     onError: (error) => {
-      console.error("Failed to resume session:", error);
+      logger.error("Failed to resume session:", { error });
     },
   });
 

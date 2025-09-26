@@ -7,6 +7,9 @@ import { taskDBService } from "@/services/database";
 import { cacheConfig } from "@/services/cache-config";
 import { firebaseSync } from "@/services/sync";
 import type { DBTask, TaskStatus } from "@/types/database";
+import { serviceLogger } from "@/utils/logging";
+
+const logger = serviceLogger("useTaskQuery");
 
 /**
  * Query for getting all tasks for a user
@@ -23,7 +26,7 @@ export function useTasksQuery(userId: string | undefined) {
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(userId).catch((error) => {
-          console.warn("Background task sync failed:", error);
+          logger.warn("Background task sync failed", { error });
         });
       }
 
@@ -78,7 +81,7 @@ export function useTaskMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(params.userId).catch((error) => {
-          console.warn("Task creation sync failed:", error);
+          logger.warn("Task creation sync failed", { error });
         });
       }
 
@@ -94,7 +97,7 @@ export function useTaskMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to create task:", error);
+      logger.error("Failed to create task", { error });
     },
   });
 
@@ -115,7 +118,7 @@ export function useTaskMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(params.userId).catch((error) => {
-          console.warn("Task status update sync failed:", error);
+          logger.warn("Task status update sync failed", { error });
         });
       }
 
@@ -139,7 +142,7 @@ export function useTaskMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to update task status:", error);
+      logger.error("Failed to update task status", { error });
     },
   });
 
@@ -151,7 +154,7 @@ export function useTaskMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(params.userId).catch((error) => {
-          console.warn("Task deletion sync failed:", error);
+          logger.warn("Task deletion sync failed", { error });
         });
       }
 
@@ -173,7 +176,7 @@ export function useTaskMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to delete task:", error);
+      logger.error("Failed to delete task", { error });
     },
   });
 
@@ -193,7 +196,7 @@ export function useTaskMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(params.userId).catch((error) => {
-          console.warn("Task submission sync failed:", error);
+          logger.warn("Task submission sync failed", { error });
         });
       }
 
@@ -217,7 +220,7 @@ export function useTaskMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to submit task for review:", error);
+      logger.error("Failed to submit task for review", { error });
     },
   });
 

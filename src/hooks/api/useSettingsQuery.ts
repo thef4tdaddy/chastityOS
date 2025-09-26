@@ -7,6 +7,9 @@ import { settingsDBService } from "@/services/database";
 import { cacheConfig } from "@/services/cache-config";
 import { firebaseSync } from "@/services/sync";
 import type { DBSettings } from "@/types/database";
+import { serviceLogger } from "@/utils/logging";
+
+const logger = serviceLogger("useSettingsQuery");
 
 /**
  * Query for getting user settings
@@ -28,7 +31,7 @@ export function useSettingsQuery(userId: string | undefined) {
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserSettings(userId).catch((error) => {
-          console.warn("Background settings sync failed:", error);
+          logger.warn("Background settings sync failed:", { error });
         });
       }
 
@@ -59,7 +62,7 @@ export function useSettingsMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSettings(params.userId).catch((error) => {
-          console.warn("Settings update sync failed:", error);
+          logger.warn("Settings update sync failed:", { error });
         });
       }
 
@@ -70,7 +73,7 @@ export function useSettingsMutations() {
       queryClient.setQueryData(["settings", "user", variables.userId], data);
     },
     onError: (error) => {
-      console.error("Failed to update settings:", error);
+      logger.error("Failed to update settings:", { error });
 
       // Invalidate cache to refetch from server in case of error
       queryClient.invalidateQueries({
@@ -89,7 +92,7 @@ export function useSettingsMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSettings(params.userId).catch((error) => {
-          console.warn("Settings reset sync failed:", error);
+          logger.warn("Settings reset sync failed:", { error });
         });
       }
 
@@ -100,7 +103,7 @@ export function useSettingsMutations() {
       queryClient.setQueryData(["settings", "user", variables.userId], data);
     },
     onError: (error) => {
-      console.error("Failed to reset settings:", error);
+      logger.error("Failed to reset settings:", { error });
     },
   });
 
@@ -115,7 +118,7 @@ export function useSettingsMutations() {
       // Background sync
       if (navigator.onLine) {
         firebaseSync.syncUserSettings(params.userId).catch((error) => {
-          console.warn("Theme update sync failed:", error);
+          logger.warn("Theme update sync failed:", { error });
         });
       }
 
@@ -140,7 +143,7 @@ export function useSettingsMutations() {
       // Background sync
       if (navigator.onLine) {
         firebaseSync.syncUserSettings(params.userId).catch((error) => {
-          console.warn("Event display mode sync failed:", error);
+          logger.warn("Event display mode sync failed:", { error });
         });
       }
 
