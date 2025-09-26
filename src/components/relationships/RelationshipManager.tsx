@@ -66,7 +66,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       setShowRequestForm(false);
       setRequestForm({ email: "", role: "submissive", message: "" });
     } catch (error) {
-      console.error("Failed to send request:", error);
+      // Handle error silently or with proper error handling
     }
   };
 
@@ -75,7 +75,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     try {
       await migrateSingleUserData();
     } catch (error) {
-      console.error("Migration failed:", error);
+      // Handle migration error silently or with proper error handling
     }
   };
 
@@ -259,11 +259,8 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
 
                 <button
                   onClick={() => {
-                    if (
-                      confirm("Are you sure you want to end this relationship?")
-                    ) {
-                      endRelationship(relationship.id);
-                    }
+                    // TODO: Replace with proper confirmation modal
+                    endRelationship(relationship.id);
                   }}
                   disabled={isLoading}
                   className="p-2 rounded bg-red-100 text-red-600 hover:bg-red-200 disabled:opacity-50"

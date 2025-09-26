@@ -3,20 +3,8 @@
  * Displays achievement-based leaderboards and competitive features
  */
 
-import React, { useState, useMemo } from "react";
-import {
-  FaTrophy,
-  FaCrown,
-  FaMedal,
-  FaAward,
-  FaUsers,
-  FaStar,
-  FaChartBar,
-  FaCalendar,
-  FaGlobe,
-  FaEye,
-  FaEyeSlash,
-} from "../../utils/iconImport";
+import React, { useState } from "react";
+import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
 import { useLeaderboards } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
@@ -44,7 +32,6 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
     error,
     optInToLeaderboards,
     optOutFromLeaderboards,
-    updateLeaderboardPrivacy,
   } = useLeaderboards(user?.uid, selectedCategory, selectedPeriod);
 
   const handleOptIn = async () => {

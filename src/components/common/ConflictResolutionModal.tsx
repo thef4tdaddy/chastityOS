@@ -3,7 +3,7 @@
  * User interface for resolving data sync conflicts
  */
 import React, { useState } from "react";
-import type { ConflictInfo, SettingsConflict } from "@/types/database";
+import type { ConflictInfo } from "@/types/database";
 
 interface ConflictResolutionProps {
   conflicts: ConflictInfo[];

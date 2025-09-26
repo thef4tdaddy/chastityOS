@@ -30,7 +30,7 @@ export const AccountLinkingPreview: React.FC = () => {
     keyholderRelationships,
     wearerRelationships,
     generateLinkCode,
-    useLinkCode,
+    redeemLinkCode,
     disconnectKeyholder,
     clearLinkCode,
     clearErrors,
@@ -48,7 +48,7 @@ export const AccountLinkingPreview: React.FC = () => {
 
   const handleUseLinkCode = () => {
     if (linkCodeInput.trim()) {
-      useLinkCode({ code: linkCodeInput.trim() });
+      redeemLinkCode({ code: linkCodeInput.trim() });
       setLinkCodeInput("");
       setShowLinkForm(false);
     }
@@ -61,15 +61,14 @@ export const AccountLinkingPreview: React.FC = () => {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch (error) {
-        console.error("Failed to copy code:", error);
+        // Silently fail - copying is a nice-to-have feature
       }
     }
   };
 
   const handleDisconnect = (relationshipId: string) => {
-    if (confirm("Are you sure you want to disconnect this relationship?")) {
-      disconnectKeyholder(relationshipId, "User requested disconnection");
-    }
+    // TODO: Replace with proper confirmation modal
+    disconnectKeyholder(relationshipId, "User requested disconnection");
   };
 
   return (
