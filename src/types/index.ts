@@ -6,6 +6,7 @@
 // Core types
 export * from "./core";
 export * from "./events";
+export * from "./relationships";
 
 // Database types - explicitly export to avoid conflicts
 export type {
