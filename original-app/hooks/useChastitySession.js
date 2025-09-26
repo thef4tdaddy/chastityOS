@@ -421,10 +421,10 @@ export const useChastitySession = (
   const handleInitiatePause = useCallback(() => {
     if (
       lastPauseEndTime &&
-      new Date().getTime() - lastPauseEndTime.getTime() < 12 * 3600 * 1000
+      new Date().getTime() - lastPauseEndTime.getTime() < 4 * 3600 * 1000
     ) {
       const remainingCooldown =
-        12 * 3600 * 1000 - (new Date().getTime() - lastPauseEndTime.getTime());
+        4 * 3600 * 1000 - (new Date().getTime() - lastPauseEndTime.getTime());
       setPauseCooldownMessage(
         `You can pause again in ${formatElapsedTime(Math.ceil(remainingCooldown / 1000))}.`,
       );
