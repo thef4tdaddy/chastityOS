@@ -16,3 +16,4 @@ export { taskDBService } from "./TaskDBService";
 export { goalDBService } from "./GoalDBService";
 export { settingsDBService } from "./SettingsDBService";
 export { emergencyService } from "./EmergencyService";
+export { keyholderRelationshipDBService } from "./KeyholderRelationshipDBService";

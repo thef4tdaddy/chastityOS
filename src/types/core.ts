@@ -178,9 +178,9 @@ export interface KeyholderRelationship {
   keyholderUserId: string;
   status: "pending" | "active" | "suspended" | "ended";
   permissions: KeyholderPermissions;
-  createdAt: Timestamp;
-  acceptedAt?: Timestamp;
-  endedAt?: Timestamp;
+  createdAt: Date;
+  acceptedAt?: Date;
+  endedAt?: Date;
 }
 
 export interface KeyholderPermissions {
