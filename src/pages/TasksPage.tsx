@@ -42,36 +42,49 @@ const TasksPage: React.FC = () => {
   );
 
   return (
-    <div className="text-nightly-spring-green">
-      {/* Tab Navigation */}
-      <div className="p-4">
-        <div className="flex space-x-4 mb-6">
-          <button
-            onClick={() => setActiveTab("active")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === "active"
-                ? "bg-nightly-aquamarine text-black"
-                : "bg-white/10 text-nightly-celadon hover:bg-white/20"
-            }`}
-          >
-            Active Tasks ({activeTasks.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("archived")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === "archived"
-                ? "bg-nightly-aquamarine text-black"
-                : "bg-white/10 text-nightly-celadon hover:bg-white/20"
-            }`}
-          >
-            Archived ({archivedTasks.length})
-          </button>
-        </div>
+    <div className="p-6">
+      {/* Enhanced Header with Glass Effect */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+          Task Management
+        </h1>
+        <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
+      </div>
 
-        {/* Content */}
+      {/* Tab Navigation with Glass Pills */}
+      <div className="flex justify-center space-x-4 mb-8">
+        <button
+          onClick={() => setActiveTab("active")}
+          className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+            activeTab === "active"
+              ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+              : "text-gray-300 hover:text-white glass-hover"
+          }`}
+        >
+          Active Tasks ({activeTasks.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("archived")}
+          className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+            activeTab === "archived"
+              ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+              : "text-gray-300 hover:text-white glass-hover"
+          }`}
+        >
+          Archived ({archivedTasks.length})
+        </button>
+      </div>
+
+      {/* Content with Glass Container */}
+      <div className="max-w-4xl mx-auto">
         {loading ? (
-          <div className="text-center py-8">
-            <div className="text-nightly-celadon">Loading tasks...</div>
+          <div className="glass-card text-center py-12">
+            <div className="glass-float">
+              <div className="inline-flex items-center space-x-2">
+                <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-blue-200 text-lg">Loading tasks...</span>
+              </div>
+            </div>
           </div>
         ) : error ? (
           <div className="text-center py-8">
@@ -80,39 +93,61 @@ const TasksPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="max-w-4xl">
+          <>
             {activeTab === "active" ? (
               activeTasks.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {activeTasks.map((task) => (
-                    <TaskItem
+                    <div
                       key={task.id}
-                      task={task}
-                      onSubmit={handleSubmitTask}
-                    />
+                      className="glass-card glass-hover transform transition-all duration-300 hover:scale-[1.02]"
+                    >
+                      <TaskItem task={task} onSubmit={handleSubmitTask} />
+                    </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <div className="text-nightly-celadon">No active tasks</div>
+                <div className="glass-card text-center py-12">
+                  <div className="glass-float">
+                    <div className="text-6xl mb-4">📝</div>
+                    <h3 className="text-xl font-semibold text-gray-200 mb-2">
+                      No Active Tasks
+                    </h3>
+                    <p className="text-gray-400">
+                      You're all caught up! New tasks will appear here when
+                      assigned.
+                    </p>
+                  </div>
                 </div>
               )
             ) : archivedTasks.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {archivedTasks.map((task) => (
-                  <TaskItem
+                  <div
                     key={task.id}
-                    task={task}
-                    onSubmit={() => {}} // Archived tasks can't be submitted
-                  />
+                    className="glass-card opacity-75 hover:opacity-100 transition-opacity duration-300"
+                  >
+                    <TaskItem
+                      task={task}
+                      onSubmit={() => {}} // Archived tasks can't be submitted
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <div className="text-nightly-celadon">No archived tasks</div>
+              <div className="glass-card text-center py-12">
+                <div className="glass-float">
+                  <div className="text-6xl mb-4">📚</div>
+                  <h3 className="text-xl font-semibold text-gray-200 mb-2">
+                    No Archived Tasks
+                  </h3>
+                  <p className="text-gray-400">
+                    Completed and reviewed tasks will appear here.
+                  </p>
+                </div>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
