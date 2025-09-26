@@ -26,14 +26,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   const navItems = [
     { path: "/", label: "Dashboard" },
-    { path: "/chastity-tracking", label: "Tracker" },
+    { path: "/chastity-tracking", label: "Chastity Tracking" },
     { path: "/tasks", label: "Tasks" },
+    { path: "/rewards-punishments", label: "Rewards/Punishments" },
+    { path: "/full-report", label: "Full Report" },
+    { path: "/settings", label: "Settings" },
     { path: "/achievements", label: "Achievements" },
     { path: "/log-event", label: "Log Event" },
-    { path: "/rewards-punishments", label: "Rewards" },
-    { path: "/rules", label: "Rules" },
-    { path: "/full-report", label: "Report" },
-    { path: "/settings", label: "Settings" },
   ];
 
   // Update page title based on current route
@@ -53,54 +52,58 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [location.pathname, closeMobileMenu]);
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen text-white">
-      {/* Top Navigation with Glass Morphism */}
-      <header className="glass-header sticky top-0 z-50">
+    <div className="bg-dark_purple min-h-screen text-white font-inter">
+      {/* Top Header */}
+      <header className="sticky top-0 z-50 bg-dark_purple border-b border-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            {/* Logo and Sync Status */}
+            {/* Logo */}
             <div className="flex items-center space-x-4">
               <Link
                 to="/"
-                className="text-2xl font-bold text-white glass-float"
+                className="text-2xl font-bold text-white flex items-center space-x-2"
               >
-                ChastityOS
+                <span className="text-tekhelet">🔐</span>
+                <span>ChastityOS</span>
               </Link>
               <SyncStatusIndicator />
             </div>
 
-            {/* Desktop Navigation with Glass Pills */}
-            <nav className="hidden md:flex space-x-3">
-              {navItems.slice(1, -1).map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`glass-nav text-sm font-medium transition-all duration-300 ${
-                    location.pathname === item.path
-                      ? "glass-card-primary text-blue-200 shadow-liquid"
-                      : "text-gray-300 hover:text-white glass-hover"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-1">
+              {navItems
+                .filter((item) => item.path !== "/")
+                .slice(0, 5)
+                .map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                      location.pathname === item.path
+                        ? "text-white border-b-2 border-tekhelet bg-tekhelet/10"
+                        : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
 
               {/* Settings */}
               <Link
                 to="/settings"
-                className={`glass-nav text-sm font-medium transition-all duration-300 ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                   location.pathname === "/settings"
-                    ? "glass-card-primary text-blue-200 shadow-liquid"
-                    : "text-gray-300 hover:text-white glass-hover"
+                    ? "text-white border-b-2 border-tekhelet bg-tekhelet/10"
+                    : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
                 }`}
               >
                 Settings
               </Link>
 
-              {/* Keyholder Access - Special Glass Button */}
+              {/* KH Access Button */}
               <Link
                 to="/keyholder"
-                className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 text-white font-medium transition-all duration-300 hover:from-purple-500/90 hover:to-pink-500/90 shadow-lg hover:shadow-purple-500/25"
+                className="bg-tekhelet hover:bg-tekhelet-600 text-white px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
               >
                 KH Access
               </Link>
@@ -108,7 +111,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden text-white glass-button p-2"
+              className="md:hidden text-white p-2 hover:bg-tekhelet/20 rounded-md"
               onClick={toggleMobileMenu}
               aria-label="Toggle mobile menu"
             >
@@ -135,15 +138,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {/* Mobile Navigation Menu */}
           {isMobileMenuOpen && (
             <div className="md:hidden">
-              <div className="px-2 pt-2 pb-3 space-y-1 bg-black/20 backdrop-blur-sm rounded-lg mt-2">
+              <div className="px-2 pt-2 pb-3 space-y-1 bg-lavender_web-500/10 backdrop-blur rounded-lg mt-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                       location.pathname === item.path
-                        ? "bg-nightly-aquamarine/20 text-nightly-aquamarine"
-                        : "text-nightly-celadon hover:text-nightly-spring-green hover:bg-white/10"
+                        ? "bg-tekhelet text-white"
+                        : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
                     }`}
                     onClick={closeMobileMenu}
                   >
@@ -154,7 +157,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 {/* Mobile Keyholder Access */}
                 <Link
                   to="/keyholder"
-                  className="block bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-2 rounded-md text-base font-medium transition-colors"
+                  className="block bg-tekhelet hover:bg-tekhelet-600 text-white px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
                   onClick={closeMobileMenu}
                 >
                   KH Access
@@ -165,22 +168,36 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </header>
 
-      {/* Main Content Area with Enhanced Glass Container */}
+      {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="glass-morphism p-8 min-h-[calc(100vh-12rem)] relative overflow-hidden">
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 opacity-20 blur-3xl"></div>
-          </div>
-          <div className="relative z-10">{children}</div>
-        </div>
+        <div className="min-h-[calc(100vh-12rem)]">{children}</div>
       </main>
 
-      {/* Footer with Glass Effect */}
-      <footer className="glass-header mt-8">
+      {/* Footer */}
+      <footer className="border-t border-black bg-dark_purple">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center text-gray-400 text-sm">
-            <p>ChastityOS v4.0.0 | Privacy | Terms | Support</p>
+          <div className="text-center text-rose_quartz text-sm">
+            <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <span>v4.0.0</span>
+              <span className="hidden sm:inline">|</span>
+              <Link
+                to="/privacy"
+                className="hover:text-white transition-colors"
+              >
+                Privacy
+              </Link>
+              <span className="hidden sm:inline">|</span>
+              <Link to="#" className="hover:text-white transition-colors">
+                Terms
+              </Link>
+              <span className="hidden sm:inline">|</span>
+              <Link
+                to="/feedback"
+                className="hover:text-white transition-colors"
+              >
+                Support
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
