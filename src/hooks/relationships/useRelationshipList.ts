@@ -83,7 +83,7 @@ export function useRelationshipList(): RelationshipListState &
 
     const unsubscribe = relationshipService.subscribeToUserRelationships(
       userId,
-      (relationships) => {
+      (relationships: Relationship[]) => {
         setState((prev) => ({ ...prev, relationships }));
       },
     );

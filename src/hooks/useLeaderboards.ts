@@ -39,7 +39,7 @@ export interface LeaderboardPrivacySettings {
 
 export const useLeaderboards = (
   userId?: string,
-  category: LeaderboardCategory = LeaderboardCategory.TOTAL_POINTS,
+  category: LeaderboardCategory = LeaderboardCategory.ACHIEVEMENT_POINTS,
   period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
 ) => {
   const queryClient = useQueryClient();
@@ -88,12 +88,14 @@ export const useLeaderboards = (
     queryKey: ["leaderboards", "privacy", userId],
     queryFn: () => achievementDBService.getLeaderboardPrivacy(userId!),
     enabled: Boolean(userId),
-    onSuccess: (data) => {
-      if (data) {
-        setPrivacySettings(data);
-      }
-    },
   });
+
+  // Update privacy settings when data changes
+  useEffect(() => {
+    if (userPrivacySettings) {
+      setPrivacySettings(userPrivacySettings);
+    }
+  }, [userPrivacySettings]);
 
   // ==================== MUTATIONS ====================
 
@@ -198,7 +200,7 @@ export const useLeaderboards = (
    * Process raw leaderboard data into displayable format
    */
   const leaderboardData: LeaderboardEntry[] = rawLeaderboardData.map(
-    (entry, index) => ({
+    (entry: DBLeaderboardEntry, index: number) => ({
       id: entry.id,
       displayName: getDisplayName(entry),
       value: entry.value,
