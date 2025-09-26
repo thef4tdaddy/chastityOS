@@ -108,7 +108,7 @@ export const useAccountLinking = () => {
   // Use link code
   const useLinkCodeMutation = useMutation({
     mutationFn: (request: UseLinkCodeRequest) =>
-      AccountLinkingService.useLinkCode(request),
+      AccountLinkingService.redeemLinkCode(request),
     onMutate: () => {
       setState((prev) => ({
         ...prev,
@@ -198,7 +198,7 @@ export const useAccountLinking = () => {
     [user, generateLinkCodeMutation],
   );
 
-  const useLinkCode = useCallback(
+  const redeemLinkCode = useCallback(
     (request: UseLinkCodeRequest) => {
       if (!user) {
         setState((prev) => ({
@@ -313,7 +313,7 @@ export const useAccountLinking = () => {
 
     // Actions
     generateLinkCode,
-    useLinkCode,
+    redeemLinkCode,
     updateRelationship,
     startAdminSession,
     disconnectKeyholder,

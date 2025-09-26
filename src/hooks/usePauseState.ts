@@ -62,7 +62,7 @@ export const usePauseState = ({
 
     const interval = setInterval(refreshPauseState, refreshInterval);
     return () => clearInterval(interval);
-  }, [pauseState, refreshInterval, refreshPauseState]);
+  }, [pauseState, refreshInterval]);
 
   // Real-time cooldown countdown
   useEffect(() => {
@@ -89,7 +89,7 @@ export const usePauseState = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [pauseState, refreshPauseState]);
+  }, [pauseState]);
 
   return {
     pauseState,
