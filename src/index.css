@@ -417,6 +417,47 @@ td {
   border-color: theme("colors.yellow.700");
   color: theme("colors.yellow.200");
 }
+
+/* --- Special Challenge Goals --- */
+.special-challenge-section {
+  @apply space-y-6;
+}
+.challenge-card {
+  @apply p-4 rounded-lg border transition-all duration-200;
+}
+.challenge-card.locktober {
+  @apply bg-orange-900/20 border-orange-500/50 text-orange-100;
+}
+.challenge-card.no-nut-november {
+  @apply bg-blue-900/20 border-blue-500/50 text-blue-100;
+}
+.challenge-card:hover {
+  @apply shadow-lg transform scale-105;
+}
+.challenge-progress-bar {
+  @apply w-full bg-gray-700 rounded-full h-2 overflow-hidden;
+}
+.challenge-progress-fill {
+  @apply h-2 rounded-full transition-all duration-300;
+}
+.challenge-progress-fill.locktober {
+  @apply bg-gradient-to-r from-orange-400 to-red-500;
+}
+.challenge-progress-fill.no-nut-november {
+  @apply bg-gradient-to-r from-blue-400 to-indigo-500;
+}
+.challenge-join-button {
+  @apply w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center;
+}
+.challenge-active-indicator {
+  @apply flex items-center justify-center text-green-400;
+}
+.challenge-completed-indicator {
+  @apply flex items-center justify-center text-yellow-400;
+}
+.text-gold-400 {
+  color: #fbbf24;
+}
 .self-lock-input-box h4 {
   @apply text-lg font-semibold mb-3 pb-2 border-b;
   color: theme("colors.yellow.300");
