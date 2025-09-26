@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa";
 import type { EmergencyUnlockReason } from "@/types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "@/types/events";
+import { logger } from "../../utils/logging";
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
@@ -67,7 +68,7 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
       await onEmergencyUnlock(finalReason, additionalNotes);
       onClose();
     } catch (error) {
-      console.error("Emergency unlock failed:", error);
+      logger.error("Emergency unlock failed in modal", error, { sessionId });
     } finally {
       setIsSubmitting(false);
     }

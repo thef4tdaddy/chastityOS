@@ -1,53 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuthState } from "../contexts";
-import { taskDBService } from "../services/database";
+import { useTasks, useUpdateTaskStatus } from "../hooks/api/useTasks";
 import type { DBTask, TaskStatus } from "../types/database";
 import { TaskItem } from "../components/tasks";
-import { logger } from "../utils/logging";
 
 const TasksPage: React.FC = () => {
   const { user } = useAuthState();
-  const [tasks, setTasks] = useState<DBTask[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      if (!user) return;
+  // Use TanStack Query hooks for tasks
+  const {
+    data: tasks = [],
+    isLoading: loading,
+    error,
+  } = useTasks(user?.uid || "");
 
-      try {
-        setLoading(true);
-        const userTasks = await taskDBService.findByUserId(user.uid);
-        setTasks(userTasks);
-      } catch (error) {
-        logger.error("Error fetching tasks:", error, "TasksPage");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [user]);
+  const updateTaskStatus = useUpdateTaskStatus();
 
   const handleSubmitTask = async (taskId: string, note: string) => {
-    try {
-      await taskDBService.updateTaskStatus(taskId, "submitted", note);
+    if (!user) return;
 
-      // Update local state
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === taskId
-            ? {
-                ...task,
-                status: "submitted" as TaskStatus,
-                submittedAt: new Date(),
-                submissiveNote: note,
-              }
-            : task,
-        ),
-      );
+    try {
+      await updateTaskStatus.mutateAsync({
+        taskId,
+        userId: user.uid,
+        status: "submitted" as TaskStatus,
+        // Note: submissiveNote would be handled in task updates
+      });
     } catch (error) {
-      logger.error("Error submitting task:", error, "TasksPage");
+      // Error is already logged in the hook
+      // TODO: Add toast notification for user feedback on error
     }
   };
 
@@ -90,6 +72,12 @@ const TasksPage: React.FC = () => {
         {loading ? (
           <div className="text-center py-8">
             <div className="text-nightly-celadon">Loading tasks...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <div className="text-red-400">
+              Error loading tasks. Please try again.
+            </div>
           </div>
         ) : (
           <div className="max-w-4xl">

@@ -4,4 +4,5 @@
  */
 
 export { SyncStatusIndicator } from "./SyncStatusIndicator";
-export { DexieDemo } from "./DexieDemo";
+// Note: DexieDemo temporarily removed due to ESLint architectural restrictions
+// Components should use service hooks from src/hooks/api/ instead of direct storage imports

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { FaExclamationTriangle } from "react-icons/fa";
 import { EmergencyUnlockModal } from "./EmergencyUnlockModal";
-import { emergencyService } from "../../services/database/EmergencyService";
+import { useEmergencyUnlock } from "../../hooks/api/useEmergency";
 import type { EmergencyUnlockReason } from "../../types/events";
+import { logger } from "../../utils/logging";
 
 interface EmergencyUnlockButtonProps {
   sessionId: string;
@@ -18,16 +19,14 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
   onEmergencyUnlock,
 }) => {
   const [showModal, setShowModal] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const emergencyUnlock = useEmergencyUnlock();
 
   const handleEmergencyUnlock = async (
     reason: EmergencyUnlockReason,
     additionalNotes?: string,
   ) => {
-    setIsProcessing(true);
-
     try {
-      const result = await emergencyService.performEmergencyUnlock({
+      const result = await emergencyUnlock.mutateAsync({
         sessionId,
         userId,
         reason,
@@ -38,16 +37,21 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
         // Notify parent component that emergency unlock was successful
         onEmergencyUnlock?.();
         setShowModal(false);
+        logger.info("Emergency unlock completed successfully");
       } else {
-        // Handle error - could show toast notification or error state
-        console.error("Emergency unlock failed:", result.message);
-        alert(`Emergency unlock failed: ${result.message}`);
+        // Error handling with proper logging - no console.error or alert
+        logger.error("Emergency unlock failed", new Error(result.message), {
+          sessionId,
+          userId,
+          reason,
+        });
       }
     } catch (error) {
-      console.error("Emergency unlock error:", error);
-      alert("An unexpected error occurred during emergency unlock.");
-    } finally {
-      setIsProcessing(false);
+      logger.error("Emergency unlock error", error, {
+        sessionId,
+        userId,
+        reason,
+      });
     }
   };
 
@@ -56,7 +60,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
       <button
         type="button"
         onClick={() => setShowModal(true)}
-        disabled={isProcessing}
+        disabled={emergencyUnlock.isPending}
         className={`bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white px-4 py-2 rounded font-medium border-2 border-red-700 transition-colors flex items-center justify-center ${className}`}
         aria-label="Emergency unlock - use only in genuine emergencies"
       >
@@ -69,7 +73,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
         onClose={() => setShowModal(false)}
         onEmergencyUnlock={handleEmergencyUnlock}
         sessionId={sessionId}
-        isProcessing={isProcessing}
+        isProcessing={emergencyUnlock.isPending}
       />
     </>
   );

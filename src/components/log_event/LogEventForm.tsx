@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
-// TODO: Replace with proper hook - components shouldn't import services directly
-// import { eventDBService } from "../../services/database";
-import { logger } from "../../utils/logging";
+import { useCreateEvent } from "../../hooks/api/useEvents";
 import type { DBEvent, EventType } from "../../types/database";
 import {
   FaPlus,
@@ -56,6 +54,7 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
   onEventLogged,
 }) => {
   const { user } = useAuthState();
+  const createEvent = useCreateEvent();
   const [formData, setFormData] = useState({
     type: "note" as EventType,
     notes: "",
@@ -65,43 +64,34 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
     tags: "",
     isPrivate: false,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    setIsSubmitting(true);
     try {
-      const eventData: Omit<DBEvent, "id" | "lastModified" | "syncStatus"> = {
+      await createEvent.mutateAsync({
         userId: user.uid,
-        type: formData.type,
-        timestamp: new Date(formData.timestamp),
-        details: {
-          notes: formData.notes,
-          mood: formData.mood,
-          intensity: formData.intensity,
-          tags: formData.tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter((tag) => tag),
+        eventData: {
+          type: formData.type,
+          timestamp: new Date(formData.timestamp),
+          details: {
+            notes: formData.notes,
+            mood: formData.mood,
+            intensity: formData.intensity,
+            tags: formData.tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter((tag) => tag),
+            isPrivate: formData.isPrivate,
+          },
         },
-        isPrivate: formData.isPrivate,
-      };
+      });
 
-      // TODO: Replace with proper hook - components shouldn't call services directly
-      // await eventDBService.create({
-      //   ...eventData,
-      //   id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      // });
-      logger.info(
-        "Event logging temporarily disabled - needs hook implementation",
-        eventData,
-      );
+      // Notify parent component (though TanStack Query handles cache updates automatically)
+      onEventLogged();
 
-      onEventLogged(eventData);
-
-      // Reset form
+      // Reset form on success
       setFormData({
         type: "note" as EventType,
         notes: "",
@@ -112,9 +102,8 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
         isPrivate: false,
       });
     } catch (error) {
-      logger.error("Error logging event", error);
-    } finally {
-      setIsSubmitting(false);
+      // Error is already logged in the hook
+      // TODO: Add toast notification for user feedback on error
     }
   };
 
@@ -288,10 +277,10 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={createEvent.isPending}
           className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2"
         >
-          {isSubmitting ? (
+          {createEvent.isPending ? (
             <>
               <FaSpinner className="animate-spin" />
               Logging Event...
