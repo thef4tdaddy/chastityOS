@@ -44,26 +44,33 @@ export const AchievementDashboard: React.FC = () => {
   }
 
   const recentAchievements = userAchievements
-    .sort((a, b) => b.earnedAt.getTime() - a.earnedAt.getTime())
+    .sort((a: any, b: any) => b.earnedAt.getTime() - a.earnedAt.getTime())
     .slice(0, 3);
 
-  const categoryProgress = Object.values(AchievementCategory).map(
-    (category) => {
-      const categoryAchievements = getAchievementsByCategory(category);
-      const earned = achievementStats.categoryCounts[category] || 0;
-      const total = categoryAchievements.length;
-      const percentage = total > 0 ? (earned / total) * 100 : 0;
+  const categories: AchievementCategory[] = [
+    "session_milestones",
+    "consistency_badges",
+    "streak_achievements",
+    "goal_based",
+    "task_completion",
+    "special_achievements",
+  ];
 
-      return {
-        category,
-        earned,
-        total,
-        percentage,
-        name: getCategoryDisplayName(category),
-        icon: getCategoryIcon(category),
-      };
-    },
-  );
+  const categoryProgress = categories.map((category) => {
+    const categoryAchievements = getAchievementsByCategory(category);
+    const earned = achievementStats.categoryCounts[category] || 0;
+    const total = categoryAchievements.length;
+    const percentage = total > 0 ? (earned / total) * 100 : 0;
+
+    return {
+      category,
+      earned,
+      total,
+      percentage,
+      name: getCategoryDisplayName(category),
+      icon: getCategoryIcon(category),
+    };
+  });
 
   return (
     <div className="space-y-6">
@@ -210,17 +217,17 @@ export const AchievementDashboard: React.FC = () => {
 
 function getCategoryDisplayName(category: AchievementCategory): string {
   switch (category) {
-    case AchievementCategory.SESSION_MILESTONES:
+    case "session_milestones":
       return "Session Milestones";
-    case AchievementCategory.CONSISTENCY_BADGES:
+    case "consistency_badges":
       return "Consistency";
-    case AchievementCategory.STREAK_ACHIEVEMENTS:
+    case "streak_achievements":
       return "Streaks";
-    case AchievementCategory.GOAL_BASED:
+    case "goal_based":
       return "Goals";
-    case AchievementCategory.TASK_COMPLETION:
+    case "task_completion":
       return "Tasks";
-    case AchievementCategory.SPECIAL_ACHIEVEMENTS:
+    case "special_achievements":
       return "Special";
     default:
       return "Unknown";
@@ -229,17 +236,17 @@ function getCategoryDisplayName(category: AchievementCategory): string {
 
 function getCategoryIcon(category: AchievementCategory) {
   switch (category) {
-    case AchievementCategory.SESSION_MILESTONES:
+    case "session_milestones":
       return <FaClock className="text-nightly-aquamarine" />;
-    case AchievementCategory.CONSISTENCY_BADGES:
+    case "consistency_badges":
       return <FaBullseye className="text-nightly-lavender-floral" />;
-    case AchievementCategory.STREAK_ACHIEVEMENTS:
+    case "streak_achievements":
       return <FaFire className="text-red-400" />;
-    case AchievementCategory.GOAL_BASED:
+    case "goal_based":
       return <FaTrophy className="text-yellow-400" />;
-    case AchievementCategory.TASK_COMPLETION:
+    case "task_completion":
       return <FaStar className="text-green-400" />;
-    case AchievementCategory.SPECIAL_ACHIEVEMENTS:
+    case "special_achievements":
       return <FaStar className="text-purple-400" />;
     default:
       return <FaTrophy className="text-gray-400" />;
