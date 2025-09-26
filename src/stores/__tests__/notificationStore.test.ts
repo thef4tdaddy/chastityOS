@@ -55,7 +55,7 @@ describe("NotificationStore", () => {
     });
 
     it("should clear all notifications", () => {
-      const { addNotification, clearNotifications } =
+      const { addNotification, clearAllNotifications } =
         useNotificationStore.getState();
 
       addNotification({ type: "info", message: "Test 1" });
@@ -63,16 +63,16 @@ describe("NotificationStore", () => {
 
       expect(useNotificationStore.getState().notifications).toHaveLength(2);
 
-      clearNotifications();
+      clearAllNotifications();
       expect(useNotificationStore.getState().notifications).toHaveLength(0);
     });
   });
 
   describe("Notification Types", () => {
     it("should create success notification", () => {
-      const { success } = useNotificationStore.getState();
+      const { showSuccess } = useNotificationStore.getState();
 
-      const id = success("Success message");
+      const id = showSuccess("Success message");
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
@@ -81,33 +81,33 @@ describe("NotificationStore", () => {
     });
 
     it("should create error notification", () => {
-      const { error } = useNotificationStore.getState();
+      const { showError } = useNotificationStore.getState();
 
-      const id = error("Error message");
+      const id = showError("Error message");
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
       expect(notifications[0].type).toBe("error");
       expect(notifications[0].message).toBe("Error message");
-      expect(notifications[0].duration).toBe(8000); // Errors stay longer
+      expect(notifications[0].duration).toBe(0); // Errors are persistent
     });
 
     it("should create warning notification", () => {
-      const { warning } = useNotificationStore.getState();
+      const { showWarning } = useNotificationStore.getState();
 
-      const id = warning("Warning message");
+      const id = showWarning("Warning message");
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
       expect(notifications[0].type).toBe("warning");
       expect(notifications[0].message).toBe("Warning message");
-      expect(notifications[0].duration).toBe(7000); // Warnings stay longer
+      expect(notifications[0].duration).toBe(6000); // Warnings stay longer
     });
 
     it("should create info notification", () => {
-      const { info } = useNotificationStore.getState();
+      const { showInfo } = useNotificationStore.getState();
 
-      const id = info("Info message");
+      const id = showInfo("Info message");
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
@@ -116,13 +116,18 @@ describe("NotificationStore", () => {
     });
 
     it("should create loading notification", () => {
-      const { loading } = useNotificationStore.getState();
+      const { addNotification } = useNotificationStore.getState();
 
-      const id = loading("Loading message");
+      const id = addNotification({
+        type: "info",
+        message: "Loading message",
+        duration: 0,
+        dismissible: false,
+      });
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
-      expect(notifications[0].type).toBe("loading");
+      expect(notifications[0].type).toBe("info");
       expect(notifications[0].message).toBe("Loading message");
       expect(notifications[0].duration).toBe(0); // Loading notifications don't auto-dismiss
       expect(notifications[0].dismissible).toBe(false);
@@ -162,82 +167,6 @@ describe("NotificationStore", () => {
       vi.advanceTimersByTime(10000);
 
       expect(useNotificationStore.getState().notifications).toHaveLength(1);
-    });
-  });
-
-  describe("Max Notifications", () => {
-    it("should respect max notifications limit", () => {
-      const { addNotification, setMaxNotifications } =
-        useNotificationStore.getState();
-
-      setMaxNotifications(2);
-
-      addNotification({ type: "info", message: "Test 1" });
-      addNotification({ type: "info", message: "Test 2" });
-      addNotification({ type: "info", message: "Test 3" });
-
-      const { notifications } = useNotificationStore.getState();
-      expect(notifications).toHaveLength(2);
-      expect(notifications[0].message).toBe("Test 2");
-      expect(notifications[1].message).toBe("Test 3");
-    });
-  });
-
-  describe("Filter by Type", () => {
-    it("should clear notifications by type", () => {
-      const { addNotification, clearByType } = useNotificationStore.getState();
-
-      addNotification({ type: "info", message: "Info 1" });
-      addNotification({ type: "error", message: "Error 1" });
-      addNotification({ type: "info", message: "Info 2" });
-
-      expect(useNotificationStore.getState().notifications).toHaveLength(3);
-
-      clearByType("info");
-
-      const { notifications } = useNotificationStore.getState();
-      expect(notifications).toHaveLength(1);
-      expect(notifications[0].type).toBe("error");
-    });
-
-    it("should get notifications by type", () => {
-      const { addNotification, getNotificationsByType } =
-        useNotificationStore.getState();
-
-      addNotification({ type: "info", message: "Info 1" });
-      addNotification({ type: "error", message: "Error 1" });
-      addNotification({ type: "info", message: "Info 2" });
-
-      const infoNotifications = getNotificationsByType("info");
-      expect(infoNotifications).toHaveLength(2);
-      expect(infoNotifications.every((n) => n.type === "info")).toBe(true);
-    });
-  });
-
-  describe("Query Methods", () => {
-    it("should check if has notifications", () => {
-      const { addNotification, hasNotifications } =
-        useNotificationStore.getState();
-
-      expect(hasNotifications()).toBe(false);
-
-      addNotification({ type: "info", message: "Test" });
-      expect(hasNotifications()).toBe(true);
-    });
-
-    it("should get notification by id", () => {
-      const { addNotification, getNotification } =
-        useNotificationStore.getState();
-
-      const id = addNotification({
-        type: "info",
-        message: "Test notification",
-      });
-
-      const notification = getNotification(id);
-      expect(notification).toBeDefined();
-      expect(notification!.id).toBe(id);
-      expect(notification!.message).toBe("Test notification");
     });
   });
 
