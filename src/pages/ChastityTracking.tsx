@@ -80,12 +80,12 @@ const TrackerPage: React.FC = () => {
   }, []);
 
   const handlePause = () => {
-    console.log("Session paused");
+    logger.info("Session paused", { sessionId: currentSession?.id, userId });
     refreshPauseState();
   };
 
   const handleResume = () => {
-    console.log("Session resumed");
+    logger.info("Session resumed", { sessionId: currentSession?.id, userId });
     refreshPauseState();
   };
 

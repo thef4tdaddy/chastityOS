@@ -7,6 +7,9 @@ import { eventDBService } from "@/services/database";
 import { cacheConfig } from "@/services/cache-config";
 import { firebaseSync } from "@/services/sync";
 import type { DBEvent, EventType } from "@/types/database";
+import { serviceLogger } from "@/utils/logging";
+
+const logger = serviceLogger("useEventsQuery");
 
 /**
  * Query for getting all events for a user
@@ -23,7 +26,7 @@ export function useEventsQuery(userId: string | undefined) {
       // Trigger background sync if online to ensure data freshness
       if (navigator.onLine) {
         firebaseSync.syncUserEvents(userId).catch((error) => {
-          console.warn("Background events sync failed:", error);
+          logger.warn("Background events sync failed", { error });
         });
       }
 
@@ -103,7 +106,7 @@ export function useEventMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserEvents(params.userId).catch((error) => {
-          console.warn("Event creation sync failed:", error);
+          logger.warn("Event creation sync failed", { error });
         });
       }
 
@@ -130,7 +133,7 @@ export function useEventMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to create event:", error);
+      logger.error("Failed to create event", { error });
     },
   });
 
@@ -149,7 +152,7 @@ export function useEventMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserEvents(params.userId).catch((error) => {
-          console.warn("Event update sync failed:", error);
+          logger.warn("Event update sync failed", { error });
         });
       }
 
@@ -176,7 +179,7 @@ export function useEventMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to update event:", error);
+      logger.error("Failed to update event", { error });
     },
   });
 
@@ -188,7 +191,7 @@ export function useEventMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserEvents(params.userId).catch((error) => {
-          console.warn("Event deletion sync failed:", error);
+          logger.warn("Event deletion sync failed", { error });
         });
       }
 
@@ -213,7 +216,7 @@ export function useEventMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to delete event:", error);
+      logger.error("Failed to delete event", { error });
     },
   });
 
@@ -243,7 +246,7 @@ export function useEventMutations() {
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserEvents(params.userId).catch((error) => {
-          console.warn("Bulk event creation sync failed:", error);
+          logger.warn("Bulk event creation sync failed", { error });
         });
       }
 
@@ -270,7 +273,7 @@ export function useEventMutations() {
       });
     },
     onError: (error) => {
-      console.error("Failed to bulk create events:", error);
+      logger.error("Failed to bulk create events", { error });
     },
   });
 

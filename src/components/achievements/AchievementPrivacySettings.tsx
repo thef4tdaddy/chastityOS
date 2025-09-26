@@ -14,6 +14,9 @@ import {
 } from "../../utils/iconImport";
 import { useLeaderboards } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
+import { serviceLogger } from "../../utils/logging";
+
+const logger = serviceLogger("AchievementPrivacySettings");
 
 export interface AchievementPrivacySettingsProps {
   onClose?: () => void;
@@ -43,7 +46,7 @@ export const AchievementPrivacySettings: React.FC<
       setHasChanges(false);
       if (onClose) onClose();
     } catch (error) {
-      console.error("Failed to save privacy settings:", error);
+      logger.error("Failed to save privacy settings", { error });
     }
   };
 
