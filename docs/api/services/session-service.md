@@ -17,12 +17,15 @@ Component → Hook → SessionService → Dexie ↔ Firebase
 Gets the current active session for a user with local-first optimization.
 
 **Parameters:**
+
 - `userId: string` - The user's Firebase UID
 
 **Returns:**
+
 - `Promise<ChastitySession | null>` - The active session or null if no active session
 
 **Behavior:**
+
 1. Checks local Dexie storage first for speed
 2. Returns local data if fresh (within 5 minutes)
 3. Fetches from Firebase if stale or missing
@@ -30,11 +33,12 @@ Gets the current active session for a user with local-first optimization.
 5. Automatically handles offline scenarios
 
 **Example:**
+
 ```typescript
-const session = await SessionService.getCurrentSession('user123');
+const session = await SessionService.getCurrentSession("user123");
 if (session) {
-  console.log('Session started:', session.startTime);
-  console.log('Duration:', session.getEffectiveDuration());
+  console.log("Session started:", session.startTime);
+  console.log("Duration:", session.getEffectiveDuration());
 }
 ```
 
@@ -43,6 +47,7 @@ if (session) {
 Starts a new chastity session with optimistic updates.
 
 **Parameters:**
+
 ```typescript
 interface StartSessionData {
   userId: string;
@@ -53,9 +58,11 @@ interface StartSessionData {
 ```
 
 **Returns:**
+
 - `Promise<ChastitySession>` - The created session
 
 **Behavior:**
+
 1. Creates optimistic session immediately in Dexie
 2. Updates UI instantly with temporary ID
 3. Syncs to Firebase in background
@@ -63,12 +70,13 @@ interface StartSessionData {
 5. Handles conflicts and errors gracefully
 
 **Example:**
+
 ```typescript
 const session = await SessionService.startSession({
-  userId: 'user123',
+  userId: "user123",
   goalDuration: 24 * 60 * 60 * 1000, // 24 hours
   keyholderRequired: true,
-  notes: 'Starting new challenge'
+  notes: "Starting new challenge",
 });
 ```
 
@@ -77,17 +85,20 @@ const session = await SessionService.startSession({
 Ends an active session.
 
 **Parameters:**
+
 - `sessionId: string` - ID of the session to end
 - `reason?: string` - Optional reason for ending
 
 **Returns:**
+
 - `Promise<ChastitySession>` - The ended session
 
 **Example:**
+
 ```typescript
 const endedSession = await SessionService.endSession(
-  'session456',
-  'Completed goal duration'
+  "session456",
+  "Completed goal duration",
 );
 ```
 
@@ -96,22 +107,26 @@ const endedSession = await SessionService.endSession(
 Pauses an active session with cooldown protection.
 
 **Parameters:**
+
 - `sessionId: string` - ID of the session to pause
 - `reason: string` - Required reason for pausing
 
 **Returns:**
+
 - `Promise<ChastitySession>` - The paused session
 
 **Cooldown Logic:**
+
 - First pause: Immediate
 - Subsequent pauses: 4-hour cooldown
 - Emergency pauses: Available with longer cooldown
 
 **Example:**
+
 ```typescript
 const pausedSession = await SessionService.pauseSession(
-  'session456',
-  'Medical appointment'
+  "session456",
+  "Medical appointment",
 );
 ```
 
@@ -120,14 +135,17 @@ const pausedSession = await SessionService.pauseSession(
 Resumes a paused session.
 
 **Parameters:**
+
 - `sessionId: string` - ID of the session to resume
 
 **Returns:**
+
 - `Promise<ChastitySession>` - The resumed session
 
 **Example:**
+
 ```typescript
-const resumedSession = await SessionService.resumeSession('session456');
+const resumedSession = await SessionService.resumeSession("session456");
 ```
 
 ### `getSessionHistory(userId: string, options?: HistoryOptions): Promise<ChastitySession[]>`
@@ -135,6 +153,7 @@ const resumedSession = await SessionService.resumeSession('session456');
 Retrieves session history with pagination and filtering.
 
 **Parameters:**
+
 ```typescript
 interface HistoryOptions {
   limit?: number;
@@ -148,16 +167,18 @@ interface HistoryOptions {
 ```
 
 **Returns:**
+
 - `Promise<ChastitySession[]>` - Array of sessions
 
 **Example:**
+
 ```typescript
-const recentSessions = await SessionService.getSessionHistory('user123', {
+const recentSessions = await SessionService.getSessionHistory("user123", {
   limit: 10,
   dateRange: {
-    start: new Date('2024-01-01'),
-    end: new Date()
-  }
+    start: new Date("2024-01-01"),
+    end: new Date(),
+  },
 });
 ```
 
@@ -166,22 +187,26 @@ const recentSessions = await SessionService.getSessionHistory('user123', {
 Updates session data with validation.
 
 **Parameters:**
+
 - `sessionId: string` - ID of the session to update
 - `updates: Partial<ChastitySession>` - Fields to update
 
 **Returns:**
+
 - `Promise<ChastitySession>` - The updated session
 
 **Validation:**
+
 - Immutable fields cannot be changed (id, userId, startTime)
 - Status transitions must be valid
 - End time must be after start time
 
 **Example:**
+
 ```typescript
-const updatedSession = await SessionService.updateSession('session456', {
-  notes: 'Updated notes',
-  goalDuration: 48 * 60 * 60 * 1000 // Extended to 48 hours
+const updatedSession = await SessionService.updateSession("session456", {
+  notes: "Updated notes",
+  goalDuration: 48 * 60 * 60 * 1000, // Extended to 48 hours
 });
 ```
 
@@ -190,19 +215,23 @@ const updatedSession = await SessionService.updateSession('session456', {
 Deletes a session (admin only, with confirmation).
 
 **Parameters:**
+
 - `sessionId: string` - ID of the session to delete
 
 **Returns:**
+
 - `Promise<void>`
 
 **Security:**
+
 - Only session owner can delete
 - Confirmation required for active sessions
 - Audit log entry created
 
 **Example:**
+
 ```typescript
-await SessionService.deleteSession('session456');
+await SessionService.deleteSession("session456");
 ```
 
 ## 📈 Analytics Methods
@@ -212,8 +241,9 @@ await SessionService.deleteSession('session456');
 Gets aggregated session statistics.
 
 **Parameters:**
+
 ```typescript
-type StatsPeriod = 'week' | 'month' | 'quarter' | 'year' | 'all';
+type StatsPeriod = "week" | "month" | "quarter" | "year" | "all";
 
 interface SessionStats {
   totalSessions: number;
@@ -231,8 +261,9 @@ interface SessionStats {
 ```
 
 **Example:**
+
 ```typescript
-const stats = await SessionService.getSessionStats('user123', 'month');
+const stats = await SessionService.getSessionStats("user123", "month");
 console.log(`Completion rate: ${stats.goalCompletionRate}%`);
 ```
 
@@ -241,8 +272,9 @@ console.log(`Completion rate: ${stats.goalCompletionRate}%`);
 Gets session trend data for charts.
 
 **Parameters:**
+
 ```typescript
-type TrendGranularity = 'daily' | 'weekly' | 'monthly';
+type TrendGranularity = "daily" | "weekly" | "monthly";
 
 interface TrendData {
   date: Date;
@@ -260,6 +292,7 @@ interface TrendData {
 Manually triggers sync of pending local changes.
 
 **Returns:**
+
 ```typescript
 interface SyncResult {
   success: boolean;
@@ -270,10 +303,11 @@ interface SyncResult {
 ```
 
 **Example:**
+
 ```typescript
 const result = await SessionService.syncPendingChanges();
 if (!result.success) {
-  console.error('Sync errors:', result.errors);
+  console.error("Sync errors:", result.errors);
 }
 ```
 
@@ -282,12 +316,13 @@ if (!result.success) {
 Resolves data conflicts between local and Firebase.
 
 **Parameters:**
+
 ```typescript
 interface SyncConflict {
   sessionId: string;
   localData: ChastitySession;
   firebaseData: ChastitySession;
-  conflictType: 'timestamp' | 'status' | 'data';
+  conflictType: "timestamp" | "status" | "data";
 }
 ```
 
@@ -298,6 +333,7 @@ interface SyncConflict {
 Generates consistent query keys for caching.
 
 **Returns:**
+
 - Current session: `['session', 'current', userId]`
 - Specific session: `['session', sessionId]`
 - Session history: `['sessions', 'history', userId]`
@@ -308,6 +344,7 @@ Generates consistent query keys for caching.
 Pre-configured query options for session data.
 
 **Configuration:**
+
 ```typescript
 {
   staleTime: 1000 * 60 * 5, // 5 minutes
@@ -344,35 +381,35 @@ export function useStartSessionMutation() {
     mutationFn: SessionService.startSession,
     onMutate: async (variables) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries(['session', 'current', variables.userId]);
+      await queryClient.cancelQueries(["session", "current", variables.userId]);
 
       // Optimistic update
       const optimisticSession = {
         id: generateTempId(),
         ...variables,
         startTime: new Date(),
-        status: 'active' as const,
-        syncStatus: 'pending' as const,
+        status: "active" as const,
+        syncStatus: "pending" as const,
       };
 
       queryClient.setQueryData(
-        ['session', 'current', variables.userId],
-        optimisticSession
+        ["session", "current", variables.userId],
+        optimisticSession,
       );
 
       return { optimisticSession };
     },
     onSuccess: (data, variables) => {
       // Update with real data
-      queryClient.setQueryData(['session', 'current', variables.userId], data);
-      queryClient.invalidateQueries(['sessions', 'history', variables.userId]);
-      queryClient.invalidateQueries(['sessions', 'stats', variables.userId]);
+      queryClient.setQueryData(["session", "current", variables.userId], data);
+      queryClient.invalidateQueries(["sessions", "history", variables.userId]);
+      queryClient.invalidateQueries(["sessions", "stats", variables.userId]);
     },
     onError: (error, variables, context) => {
       // Rollback optimistic update
       queryClient.setQueryData(
-        ['session', 'current', variables.userId],
-        context?.previousSession
+        ["session", "current", variables.userId],
+        context?.previousSession,
       );
     },
   });
@@ -388,10 +425,10 @@ class SessionServiceError extends Error {
   constructor(
     message: string,
     public code: string,
-    public details?: any
+    public details?: any,
   ) {
     super(message);
-    this.name = 'SessionServiceError';
+    this.name = "SessionServiceError";
   }
 }
 
@@ -413,18 +450,18 @@ try {
 } catch (error) {
   if (error instanceof SessionServiceError) {
     switch (error.code) {
-      case 'session-already-active':
-        toast.error('You already have an active session');
+      case "session-already-active":
+        toast.error("You already have an active session");
         break;
-      case 'sync-failed':
-        toast.warning('Session saved locally, will sync when online');
+      case "sync-failed":
+        toast.warning("Session saved locally, will sync when online");
         break;
       default:
         toast.error(`Failed to start session: ${error.message}`);
     }
   } else {
-    logger.error('Unexpected error starting session', error);
-    toast.error('An unexpected error occurred');
+    logger.error("Unexpected error starting session", error);
+    toast.error("An unexpected error occurred");
   }
 }
 ```
@@ -459,8 +496,10 @@ const SessionServiceConfig = {
   },
   validation: {
     maxPausesPerDay: 5,
-    pauseCooldown: Number(import.meta.env.VITE_SESSION_PAUSE_COOLDOWN) || 14400000,
-    maxSessionDuration: Number(import.meta.env.VITE_SESSION_MAX_DURATION) || 2592000000,
+    pauseCooldown:
+      Number(import.meta.env.VITE_SESSION_PAUSE_COOLDOWN) || 14400000,
+    maxSessionDuration:
+      Number(import.meta.env.VITE_SESSION_MAX_DURATION) || 2592000000,
   },
 };
 ```

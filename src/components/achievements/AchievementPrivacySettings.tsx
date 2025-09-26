@@ -4,14 +4,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  FaEye,
-  FaEyeSlash,
-  FaUsers,
-  FaGlobe,
-  FaShieldAlt,
-  FaSave,
-} from "../../utils/iconImport";
+import { FaEye, FaGlobe, FaShieldAlt, FaSave } from "../../utils/iconImport";
 import { useLeaderboards } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { serviceLogger } from "../../utils/logging";

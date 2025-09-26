@@ -1,5 +1,3 @@
-
-
 # 🔢 Versioning Strategy – ChastityOS
 
 This document outlines the versioning workflow and branching strategy for ChastityOS.
@@ -18,29 +16,31 @@ This document outlines the versioning workflow and branching strategy for Chasti
 ChastityOS uses [Semantic Versioning](https://semver.org/):  
 `MAJOR.MINOR.PATCH` (e.g., `4.1.2`)
 
-| Type     | Description                                       |
-|----------|---------------------------------------------------|
-| `MAJOR`  | Breaking changes                                  |
-| `MINOR`  | New features that are backward-compatible         |
-| `PATCH`  | Bug fixes and small changes (no new features)     |
+| Type    | Description                                   |
+| ------- | --------------------------------------------- |
+| `MAJOR` | Breaking changes                              |
+| `MINOR` | New features that are backward-compatible     |
+| `PATCH` | Bug fixes and small changes (no new features) |
 
 ---
 
 ## 🚀 Release Flow
 
 ### 🔁 Nightly Development
+
 - Use the task: **Release • Nightly Pre-release**
 - Bumps versions like `3.6.3-nightly.0`, `3.6.3-nightly.1`
 - Used for development and testing snapshots
 
 ### 🔁 After Merging to `main`
 
-| Situation               | Task Name                                | Version Result   |
-|-------------------------|-------------------------------------------|------------------|
-| New features added      | Release • Stable After Merge (minor)      | `3.6.0 → 3.7.0`  |
-| Breaking changes        | Release • Stable After Merge (major)      | `3.7.0 → 4.0.0`  |
+| Situation          | Task Name                            | Version Result  |
+| ------------------ | ------------------------------------ | --------------- |
+| New features added | Release • Stable After Merge (minor) | `3.6.0 → 3.7.0` |
+| Breaking changes   | Release • Stable After Merge (major) | `3.7.0 → 4.0.0` |
 
 ### 🩹 Direct Patch Fixes on Main
+
 - Use the task: **Release • Patch on Main (direct fix)**
 - For hotfixes that don’t need to go through `nightly`
 - Bumps versions like `3.6.2 → 3.6.3`
@@ -68,6 +68,7 @@ chore: update eslint config
 ```
 
 Each type maps to a semantic version bump:
+
 - `feat:` → Minor
 - `fix:` → Patch
 - `chore:`, `docs:`, `style:` → No version bump (unless configured)

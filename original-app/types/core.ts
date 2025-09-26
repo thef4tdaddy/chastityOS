@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from "firebase/firestore";
 
 export interface User {
   uid: string;
@@ -39,7 +39,7 @@ export interface Task {
   userId: string;
   text: string;
   status: TaskStatus;
-  assignedBy: 'submissive' | 'keyholder';
+  assignedBy: "submissive" | "keyholder";
   createdAt: Timestamp;
   dueDate?: Timestamp;
   submittedAt?: Timestamp;
@@ -52,6 +52,17 @@ export interface Task {
 // Define dummy interface for missing type
 export interface TaskConsequence {}
 
-export type TaskStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'completed';
-export type UserRole = 'submissive' | 'keyholder' | 'both';
-export type EventType = 'cage_on' | 'cage_off' | 'pause_start' | 'pause_end' | 'orgasm' | 'sexual_activity';
+export type TaskStatus =
+  | "pending"
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "completed";
+export type UserRole = "submissive" | "keyholder" | "both";
+export type EventType =
+  | "cage_on"
+  | "cage_off"
+  | "pause_start"
+  | "pause_end"
+  | "orgasm"
+  | "sexual_activity";

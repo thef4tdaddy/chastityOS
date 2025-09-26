@@ -1,6 +1,7 @@
 /**
  * Achievement Database Service
- * Handles CRUD operations for achievements, user achievements, and progress tracking
+ * Backward compatibility wrapper for the new modular achievement services
+ * @deprecated Use individual services from './achievements/' for new code
  */
 
 import { BaseDBService } from "./BaseDBService";
@@ -10,6 +11,7 @@ import {
   DBUserAchievement,
   DBAchievementProgress,
   DBAchievementNotification,
+  DBLeaderboardEntry,
   AchievementCategory,
   AchievementDifficulty,
   LeaderboardPrivacy,
@@ -17,11 +19,12 @@ import {
 import { logger } from "../../utils/logging";
 
 export class AchievementDBService extends BaseDBService {
-  private achievementsTable = ChastityDB.achievements;
-  private userAchievementsTable = ChastityDB.userAchievements;
-  private achievementProgressTable = ChastityDB.achievementProgress;
-  private achievementNotificationsTable = ChastityDB.achievementNotifications;
-
+  protected db = ChastityDB.getInstance();
+  protected achievementsTable = this.db.achievements;
+  protected userAchievementsTable = this.db.userAchievements;
+  protected achievementProgressTable = this.db.achievementProgress;
+  protected achievementNotificationsTable = this.db.achievementNotifications;
+  protected leaderboardEntriesTable = this.db.leaderboardEntries;
   // ==================== ACHIEVEMENT CRUD ====================
 
   /**
@@ -616,8 +619,8 @@ export class AchievementDBService extends BaseDBService {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
         userId,
-        category: category as any,
-        period: period as any,
+        category: category as AchievementCategory,
+        period: period as "daily" | "weekly" | "monthly" | "yearly" | "allTime",
         value,
         rank: 0, // Will be calculated by ranking algorithm
         displayName,
@@ -654,7 +657,7 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Get user's leaderboard privacy settings
    */
-  async getLeaderboardPrivacy(userId: string): Promise<any> {
+  async getLeaderboardPrivacy(userId: string): Promise<LeaderboardPrivacy> {
     // This would typically be stored in user settings
     // For now, return default settings
     return {

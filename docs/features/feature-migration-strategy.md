@@ -5,6 +5,7 @@ This document outlines how to migrate each ChastityOS feature from the current i
 ## 🎯 Migration Principles
 
 ### Core Requirements
+
 1. **Zero Feature Loss** - Every feature must work identically after migration
 2. **Zero Downtime** - Features remain functional during migration process
 3. **Incremental Migration** - Migrate one feature at a time for safety
@@ -12,6 +13,7 @@ This document outlines how to migrate each ChastityOS feature from the current i
 5. **Feature Validation** - Comprehensive testing after each migration
 
 ### Migration Approach
+
 ```
 Current Implementation → Adapter Layer → New Implementation → Remove Adapter
                       (Feature works)  (Feature works)    (Feature works)
@@ -22,6 +24,7 @@ Current Implementation → Adapter Layer → New Implementation → Remove Adapt
 ### Phase 1: Session Management Migration
 
 #### Current State
+
 ```javascript
 // Current: useChastitySession.js (150+ lines, mixed concerns)
 const {
@@ -35,15 +38,17 @@ const {
 ```
 
 #### Target State
+
 ```javascript
 // New: Separated concerns with clean interfaces
-const session = useCurrentSession(userId);              // TanStack Query
+const session = useCurrentSession(userId); // TanStack Query
 const { startSession, endSession } = useSessionMutations(); // Mutations
 const { pauseSession, resumeSession } = usePauseControls(); // Pause logic
-const { isModalOpen, openModal } = useUIStore();        // UI state only
+const { isModalOpen, openModal } = useUIStore(); // UI state only
 ```
 
 #### Migration Steps
+
 1. **Create SessionService** - Pure business logic for session operations
 2. **Create useSessionQuery** - TanStack Query hook for session data
 3. **Create useSessionMutations** - Session CRUD operations
@@ -54,6 +59,7 @@ const { isModalOpen, openModal } = useUIStore();        // UI state only
 8. **Remove Adapter** - Clean up bridging code
 
 #### Implementation Example
+
 ```javascript
 // Step 1: SessionService (business logic)
 export class SessionService {
@@ -114,6 +120,7 @@ export function useChastitySessionAdapter() {
 ### Phase 2: Task Management Migration
 
 #### Current State
+
 ```javascript
 // Current: useTasks.js (complex state management)
 const {
@@ -127,14 +134,16 @@ const {
 ```
 
 #### Target State
+
 ```javascript
 // New: Clean separation of concerns
-const tasks = useTasksQuery(userId);                    // TanStack Query
+const tasks = useTasksQuery(userId); // TanStack Query
 const { createTask, updateTask } = useTaskMutations(); // Mutations
-const { isCreating, setCreating } = useTaskUIStore();  // UI state
+const { isCreating, setCreating } = useTaskUIStore(); // UI state
 ```
 
 #### Migration Steps
+
 1. **Create TaskService** - CRUD operations and business logic
 2. **Create useTasksQuery** - Data fetching with TanStack Query
 3. **Create useTaskMutations** - Task creation, updates, approvals
@@ -147,6 +156,7 @@ const { isCreating, setCreating } = useTaskUIStore();  // UI state
 ### Phase 3: Event Logging Migration
 
 #### Current State
+
 ```javascript
 // Current: useEventLog.js (event management)
 const {
@@ -159,14 +169,16 @@ const {
 ```
 
 #### Target State
+
 ```javascript
 // New: Event system with better organization
-const events = useEventsQuery(userId, filters);        // TanStack Query
+const events = useEventsQuery(userId, filters); // TanStack Query
 const { logEvent, updateEvent } = useEventMutations(); // Mutations
-const { selectedFilters } = useEventUIStore();         // UI state
+const { selectedFilters } = useEventUIStore(); // UI state
 ```
 
 #### Migration Steps
+
 1. **Create EventService** - Event CRUD and categorization logic
 2. **Create useEventsQuery** - Event fetching with filtering
 3. **Create useEventMutations** - Event logging and updates
@@ -178,6 +190,7 @@ const { selectedFilters } = useEventUIStore();         // UI state
 ### Phase 4: Authentication & Settings Migration
 
 #### Current State
+
 ```javascript
 // Current: useAuth.js and useSettings.js
 const { user, signIn, signOut } = useAuth();
@@ -185,15 +198,17 @@ const { settings, updateSettings } = useSettings();
 ```
 
 #### Target State
+
 ```javascript
 // New: Separated auth and settings
-const auth = useAuthQuery();                          // TanStack Query
-const { signIn, signOut } = useAuthMutations();      // Auth mutations
-const settings = useSettingsQuery(userId);           // Settings data
-const { updateSettings } = useSettingsMutations();   // Settings updates
+const auth = useAuthQuery(); // TanStack Query
+const { signIn, signOut } = useAuthMutations(); // Auth mutations
+const settings = useSettingsQuery(userId); // Settings data
+const { updateSettings } = useSettingsMutations(); // Settings updates
 ```
 
 #### Migration Steps
+
 1. **Create AuthService** - Authentication logic (Firebase Auth)
 2. **Create SettingsService** - Settings CRUD operations
 3. **Create Auth Hooks** - Authentication queries and mutations
@@ -205,6 +220,7 @@ const { updateSettings } = useSettingsMutations();   // Settings updates
 ### Phase 5: Data Export Migration
 
 #### Current State
+
 ```javascript
 // Current: useDataManagement.js (large, complex hook)
 const {
@@ -216,15 +232,17 @@ const {
 ```
 
 #### Target State
+
 ```javascript
 // New: Focused export system
-const { exportSessions } = useSessionExport();        // Session exports
-const { exportEvents } = useEventExport();            // Event exports
-const { importData } = useDataImport();               // Data import
-const { isExporting } = useExportUIStore();           // UI state
+const { exportSessions } = useSessionExport(); // Session exports
+const { exportEvents } = useEventExport(); // Event exports
+const { importData } = useDataImport(); // Data import
+const { isExporting } = useExportUIStore(); // UI state
 ```
 
 #### Migration Steps
+
 1. **Create ExportService** - Data export logic for all formats
 2. **Create ImportService** - Data import and validation
 3. **Create Export Hooks** - Export mutations for different data types
@@ -236,33 +254,35 @@ const { isExporting } = useExportUIStore();           // UI state
 ## 🔧 Migration Tools & Utilities
 
 ### Feature Migration Checklist
+
 ```typescript
 interface FeatureMigrationChecklist {
   feature: string;
   steps: {
-    serviceLayer: boolean;      // Business logic extracted
-    queryHooks: boolean;        // TanStack Query implemented
-    mutationHooks: boolean;     // Mutations implemented
-    uiComponents: boolean;      // Pure UI components created
-    uiState: boolean;          // Zustand stores for UI state
-    adapterCreated: boolean;    // Temporary adapter for compatibility
-    featureTested: boolean;     // Comprehensive testing completed
-    oldCodeRemoved: boolean;    // Legacy code cleaned up
+    serviceLayer: boolean; // Business logic extracted
+    queryHooks: boolean; // TanStack Query implemented
+    mutationHooks: boolean; // Mutations implemented
+    uiComponents: boolean; // Pure UI components created
+    uiState: boolean; // Zustand stores for UI state
+    adapterCreated: boolean; // Temporary adapter for compatibility
+    featureTested: boolean; // Comprehensive testing completed
+    oldCodeRemoved: boolean; // Legacy code cleaned up
   };
-  parityValidated: boolean;     // Feature works identically
+  parityValidated: boolean; // Feature works identically
 }
 ```
 
 ### Automated Testing Strategy
+
 ```typescript
 // Feature parity tests to run during migration
-describe('Feature Migration Tests', () => {
-  describe('Session Management', () => {
-    it('should start sessions identically to old implementation', () => {
+describe("Feature Migration Tests", () => {
+  describe("Session Management", () => {
+    it("should start sessions identically to old implementation", () => {
       // Compare new vs old behavior
     });
 
-    it('should handle pause/resume with same timing logic', () => {
+    it("should handle pause/resume with same timing logic", () => {
       // Verify timing calculations remain identical
     });
   });
@@ -270,6 +290,7 @@ describe('Feature Migration Tests', () => {
 ```
 
 ### Migration Monitoring
+
 ```typescript
 // Track migration progress and validate functionality
 class MigrationMonitor {
@@ -279,7 +300,7 @@ class MigrationMonitor {
     const userExperience = await this.validateUX(featureName);
 
     return {
-      passing: tests.every(t => t.passed),
+      passing: tests.every((t) => t.passed),
       performance: performance.isAcceptable,
       ux: userExperience.isIdentical,
     };
@@ -290,6 +311,7 @@ class MigrationMonitor {
 ## 🎯 Migration Success Criteria
 
 ### Per-Feature Success Criteria
+
 1. **Functional Parity** - Feature works exactly the same way
 2. **Performance Parity** - Same or better performance
 3. **UI Consistency** - User experience unchanged
@@ -297,6 +319,7 @@ class MigrationMonitor {
 5. **Error Handling** - Same error handling behavior
 
 ### Overall Success Criteria
+
 1. **All Features Migrated** - No features left in old architecture
 2. **Code Quality Improved** - Better separation of concerns
 3. **Type Safety Added** - Full TypeScript coverage
@@ -306,23 +329,27 @@ class MigrationMonitor {
 ## 🚀 Migration Timeline
 
 ### Phase 1: Foundation (Weeks 1-2)
+
 - Set up new architecture patterns
 - Create first service layer (SessionService)
 - Implement first TanStack Query hooks
 - Create adapter patterns
 
 ### Phase 2: Core Features (Weeks 3-6)
+
 - Migrate session management
 - Migrate task system
 - Migrate event logging
 - Validate each feature before proceeding
 
 ### Phase 3: Supporting Features (Weeks 7-8)
+
 - Migrate authentication system
 - Migrate settings management
 - Migrate data export/import
 
 ### Phase 4: Polish & Cleanup (Weeks 9-10)
+
 - Remove all adapter code
 - Clean up legacy implementations
 - Complete testing and documentation

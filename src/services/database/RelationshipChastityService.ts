@@ -1,6 +1,9 @@
 /**
  * Relationship Chastity Service
- * Handles chastity data operations for relationship-based system
+ * REFACTORED: Now uses domain-focused services for better maintainability
+ *
+ * This file maintains backward compatibility by re-exporting the facade service
+ * that delegates to the appropriate domain services.
  */
 import {
   collection,
