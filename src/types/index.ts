@@ -8,6 +8,9 @@ export * from "./core";
 export * from "./events";
 export * from "./relationships";
 
+// Account linking types
+export * from "./account-linking";
+
 // Database types - explicitly export to avoid conflicts
 export type {
   SyncStatus,
