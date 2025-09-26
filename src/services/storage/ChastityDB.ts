@@ -14,9 +14,13 @@ import {
   DBSyncMeta,
   SyncStatus,
   QueuedOperation,
+  // New achievement types
+  DBAchievement,
+  DBUserAchievement,
+  DBAchievementProgress,
+  DBAchievementNotification,
+  DBLeaderboardEntry,
 } from "@/types/database";
-import { KeyholderRelationship } from "@/types/core";
-import { InviteCode } from "../database/KeyholderRelationshipDBService";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("ChastityDB");
@@ -31,8 +35,13 @@ export class ChastityDB extends Dexie {
   settings!: Table<DBSettings>;
   syncMeta!: Table<DBSyncMeta>;
   offlineQueue!: Table<QueuedOperation>;
-  keyholderRelationships!: Table<KeyholderRelationship>;
-  inviteCodes!: Table<InviteCode>;
+
+  // New achievement tables
+  achievements!: Table<DBAchievement>;
+  userAchievements!: Table<DBUserAchievement>;
+  achievementProgress!: Table<DBAchievementProgress>;
+  achievementNotifications!: Table<DBAchievementNotification>;
+  leaderboardEntries!: Table<DBLeaderboardEntry>;
 
   constructor() {
     super("ChastityOS");
@@ -70,11 +79,27 @@ export class ChastityDB extends Dexie {
       offlineQueue: "++id,createdAt",
     });
 
-    // Version 3: Add keyholder relationship tables
+    // Version 3: Add achievement system tables
     this.version(3).stores({
-      keyholderRelationships:
-        "&id, submissiveUserId, keyholderUserId, [submissiveUserId+status], [keyholderUserId+status], status, createdAt",
-      inviteCodes: "&id, &code, submissiveUserId, isUsed, expiresAt, createdAt",
+      // Master achievements list (system-wide)
+      achievements:
+        "&id, category, difficulty, isActive, isHidden, syncStatus, lastModified",
+
+      // User-specific earned achievements
+      userAchievements:
+        "++id, &[userId+achievementId], userId, achievementId, isVisible, earnedAt, syncStatus, lastModified",
+
+      // Achievement progress tracking
+      achievementProgress:
+        "++id, &[userId+achievementId], userId, achievementId, isCompleted, syncStatus, lastModified",
+
+      // Achievement notifications
+      achievementNotifications:
+        "++id, userId, achievementId, isRead, type, createdAt, syncStatus, lastModified",
+
+      // Leaderboard entries
+      leaderboardEntries:
+        "++id, &[userId+category+period], userId, category, period, rank, isAnonymous, syncStatus, lastModified",
     });
 
     // Add hooks for automatic timestamp and sync status updates
@@ -154,6 +179,109 @@ export class ChastityDB extends Dexie {
       }
     });
 
+    // Achievement table hooks
+    this.achievements.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating achievement", { id: obj.id, name: obj.name });
+    });
+
+    this.achievements.hook(
+      "updating",
+      (modifications, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
+    this.userAchievements.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating user achievement", {
+        userId: obj.userId,
+        achievementId: obj.achievementId,
+      });
+    });
+
+    this.userAchievements.hook(
+      "updating",
+      (modifications, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
+    this.achievementProgress.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating achievement progress", {
+        userId: obj.userId,
+        achievementId: obj.achievementId,
+      });
+    });
+
+    this.achievementProgress.hook(
+      "updating",
+      (modifications, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
+    this.achievementNotifications.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating achievement notification", {
+        userId: obj.userId,
+        type: obj.type,
+      });
+    });
+
+    this.achievementNotifications.hook(
+      "updating",
+      (modifications, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
+    this.leaderboardEntries.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating leaderboard entry", {
+        userId: obj.userId,
+        category: obj.category,
+      });
+    });
+
+    this.leaderboardEntries.hook(
+      "updating",
+      (modifications, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
     // Global error handler
     this.on("ready", () => {
       logger.info("ChastityOS database ready", {
@@ -193,8 +321,12 @@ export class ChastityDB extends Dexie {
         "tasks",
         "goals",
         "settings",
-        "keyholderRelationships",
-        "inviteCodes",
+        // New achievement collections
+        "achievements",
+        "userAchievements",
+        "achievementProgress",
+        "achievementNotifications",
+        "leaderboardEntries",
       ];
 
       for (const collection of collections) {
@@ -225,8 +357,12 @@ export class ChastityDB extends Dexie {
       tasks: await this.tasks.count(),
       goals: await this.goals.count(),
       settings: await this.settings.count(),
-      keyholderRelationships: await this.keyholderRelationships.count(),
-      inviteCodes: await this.inviteCodes.count(),
+      // New achievement stats
+      achievements: await this.achievements.count(),
+      userAchievements: await this.userAchievements.count(),
+      achievementProgress: await this.achievementProgress.count(),
+      achievementNotifications: await this.achievementNotifications.count(),
+      leaderboardEntries: await this.leaderboardEntries.count(),
       pendingSync: {
         sessions: await this.sessions
           .where("syncStatus")
@@ -236,6 +372,27 @@ export class ChastityDB extends Dexie {
         tasks: await this.tasks.where("syncStatus").equals("pending").count(),
         goals: await this.goals.where("syncStatus").equals("pending").count(),
         settings: await this.settings
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
+        // Achievement sync status
+        achievements: await this.achievements
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
+        userAchievements: await this.userAchievements
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
+        achievementProgress: await this.achievementProgress
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
+        achievementNotifications: await this.achievementNotifications
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
+        leaderboardEntries: await this.leaderboardEntries
           .where("syncStatus")
           .equals("pending")
           .count(),
@@ -261,8 +418,10 @@ export class ChastityDB extends Dexie {
         this.tasks,
         this.goals,
         this.settings,
-        this.keyholderRelationships,
-        this.inviteCodes,
+        this.userAchievements,
+        this.achievementProgress,
+        this.achievementNotifications,
+        this.leaderboardEntries,
         async () => {
           await this.users.where("uid").equals(userId).delete();
           await this.sessions.where("userId").equals(userId).delete();
@@ -270,18 +429,17 @@ export class ChastityDB extends Dexie {
           await this.tasks.where("userId").equals(userId).delete();
           await this.goals.where("userId").equals(userId).delete();
           await this.settings.where("userId").equals(userId).delete();
-          await this.keyholderRelationships
-            .where("submissiveUserId")
+          // Clear user-specific achievement data
+          await this.userAchievements.where("userId").equals(userId).delete();
+          await this.achievementProgress
+            .where("userId")
             .equals(userId)
             .delete();
-          await this.keyholderRelationships
-            .where("keyholderUserId")
+          await this.achievementNotifications
+            .where("userId")
             .equals(userId)
             .delete();
-          await this.inviteCodes
-            .where("submissiveUserId")
-            .equals(userId)
-            .delete();
+          await this.leaderboardEntries.where("userId").equals(userId).delete();
         },
       );
 

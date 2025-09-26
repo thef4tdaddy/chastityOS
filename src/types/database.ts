@@ -21,6 +21,22 @@ export type TaskStatus =
   | "completed"
   | "cancelled";
 
+// Achievement-related enums
+export type AchievementCategory =
+  | "session_milestones"
+  | "consistency_badges"
+  | "streak_achievements"
+  | "goal_based"
+  | "task_completion"
+  | "special_achievements";
+
+export type AchievementDifficulty =
+  | "common"
+  | "uncommon"
+  | "rare"
+  | "epic"
+  | "legendary";
+
 export interface DBBase {
   id: string;
   userId: string;
@@ -126,11 +142,13 @@ export interface DBSettings extends DBBase {
     taskDeadlines: boolean;
     keyholderMessages: boolean;
     goalProgress: boolean;
+    achievements: boolean; // New: Achievement notifications
   };
   privacy: {
     publicProfile: boolean;
     shareStatistics: boolean;
     allowDataExport: boolean;
+    shareAchievements: boolean; // New: Achievement sharing
   };
   chastity: {
     allowEmergencyUnlock: boolean;
@@ -145,6 +163,12 @@ export interface DBSettings extends DBBase {
     dateFormat: string;
     timeFormat: "12h" | "24h";
     startOfWeek: "monday" | "sunday";
+  };
+  // New: Achievement settings
+  achievements: {
+    enableTracking: boolean;
+    showProgress: boolean;
+    enableNotifications: boolean;
   };
 }
 
@@ -269,4 +293,73 @@ export interface SettingsConflict {
   remoteValue: unknown;
   localTimestamp: Date;
   remoteTimestamp: Date;
+}
+
+// ==================== ACHIEVEMENT DATABASE TYPES ====================
+
+export interface DBAchievement {
+  id: string;
+  name: string;
+  description: string;
+  category: AchievementCategory;
+  icon: string;
+  difficulty: AchievementDifficulty;
+  points: number;
+  requirements: Array<{
+    type:
+      | "session_duration"
+      | "session_count"
+      | "streak_days"
+      | "goal_completion"
+      | "task_completion"
+      | "special_condition";
+    value: number;
+    unit?: "seconds" | "days" | "count";
+    condition?: string;
+  }>;
+  isHidden: boolean;
+  rarity?: number;
+  isActive: boolean; // Can be disabled/enabled
+  syncStatus: SyncStatus;
+  lastModified: Date;
+}
+
+export interface DBUserAchievement extends DBBase {
+  achievementId: string;
+  earnedAt: Date;
+  progress: number;
+  metadata?: Record<string, unknown>;
+  isVisible: boolean;
+}
+
+export interface DBAchievementProgress extends DBBase {
+  achievementId: string;
+  currentValue: number;
+  targetValue: number;
+  isCompleted: boolean;
+}
+
+export interface DBAchievementNotification extends DBBase {
+  achievementId: string;
+  type: "earned" | "progress" | "milestone";
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+export interface DBLeaderboardEntry extends DBBase {
+  category:
+    | "total_chastity_time"
+    | "longest_single_session"
+    | "current_streak"
+    | "achievement_points"
+    | "session_count"
+    | "goal_achievements";
+  period: "this_week" | "this_month" | "this_year" | "all_time";
+  value: number;
+  rank: number;
+  displayName: string;
+  displayNameType: "real" | "username" | "anonymous";
+  isAnonymous: boolean;
 }

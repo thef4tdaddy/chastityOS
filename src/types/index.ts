@@ -6,10 +6,7 @@
 // Core types
 export * from "./core";
 export * from "./events";
-export * from "./relationships";
-
-// Account linking types
-export * from "./account-linking";
+export * from "./achievements";
 
 // Database types - explicitly export to avoid conflicts
 export type {
@@ -31,7 +28,21 @@ export type {
   SessionFilters,
   EventFilters,
   TaskFilters,
+  // New achievement database types
+  DBAchievement,
+  DBUserAchievement,
+  DBAchievementProgress,
+  DBAchievementNotification,
+  DBLeaderboardEntry,
 } from "./database";
+
+// Import and re-export achievement types
+export type {
+  AchievementCategory,
+  AchievementDifficulty,
+  LeaderboardCategory,
+  LeaderboardPeriod,
+} from "./achievements";
 
 // Feedback types
 export * from "./feedback";

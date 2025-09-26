@@ -20,6 +20,7 @@ import KeyholderPage from "./pages/KeyholderPage";
 import KeyholderDemo from "./pages/KeyholderDemo";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import RelationshipsPage from "./pages/RelationshipsPage";
+import AchievementPage from "./pages/AchievementPage";
 import Root from "./Root";
 
 const router = createBrowserRouter([
@@ -66,6 +67,10 @@ const router = createBrowserRouter([
       {
         path: "/keyholder-demo",
         element: <KeyholderDemo />,
+      },
+      {
+        path: "/achievements",
+        element: <AchievementPage />,
       },
       {
         path: "/public-profile/:userId",

@@ -558,3 +558,68 @@ td {
     animation: logo-spin infinite 20s linear;
   }
 }
+
+/* =============================================
+   === 7. ACHIEVEMENT TOAST STYLES           ===
+   =============================================
+*/
+
+/* Custom styles for achievement toasts */
+.achievement-toast {
+  background: linear-gradient(
+    135deg,
+    theme("colors.amber.600") 0%,
+    theme("colors.yellow.500") 50%,
+    theme("colors.orange.500") 100%
+  ) !important;
+  border: 2px solid theme("colors.yellow.400") !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3) !important;
+  min-height: 80px !important;
+}
+
+.achievement-toast-body {
+  padding: 0 !important;
+}
+
+/* Toast container positioning */
+.Toastify__toast-container {
+  width: 400px !important;
+}
+
+@media (max-width: 768px) {
+  .Toastify__toast-container {
+    width: 95vw !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .achievement-toast {
+    margin: 0 !important;
+  }
+}
+
+/* Toast animation */
+.Toastify__toast--success.achievement-toast {
+  animation: achievementSlideIn 0.5s ease-out;
+}
+
+@keyframes achievementSlideIn {
+  from {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Progress bar for achievement toasts */
+.achievement-toast .Toastify__progress-bar {
+  background: linear-gradient(
+    90deg,
+    theme("colors.yellow.300"),
+    theme("colors.amber.300")
+  ) !important;
+}
