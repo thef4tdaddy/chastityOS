@@ -17,6 +17,7 @@ import RulesPage from "./pages/RulesPage";
 import FullReportPage from "./pages/FullReportPage";
 import SettingsPage from "./pages/SettingsPage";
 import KeyholderPage from "./pages/KeyholderPage";
+import KeyholderDemo from "./pages/KeyholderDemo";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import Root from "./Root";
 
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: "/keyholder",
         element: <KeyholderPage />,
+      },
+      {
+        path: "/keyholder-demo",
+        element: <KeyholderDemo />,
       },
       {
         path: "/public-profile/:userId",

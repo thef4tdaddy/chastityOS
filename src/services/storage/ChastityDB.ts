@@ -15,6 +15,8 @@ import {
   SyncStatus,
   QueuedOperation,
 } from "@/types/database";
+import { KeyholderRelationship } from "@/types/core";
+import { InviteCode } from "../database/KeyholderRelationshipDBService";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("ChastityDB");
@@ -29,6 +31,8 @@ export class ChastityDB extends Dexie {
   settings!: Table<DBSettings>;
   syncMeta!: Table<DBSyncMeta>;
   offlineQueue!: Table<QueuedOperation>;
+  keyholderRelationships!: Table<KeyholderRelationship>;
+  inviteCodes!: Table<InviteCode>;
 
   constructor() {
     super("ChastityOS");
@@ -64,6 +68,13 @@ export class ChastityDB extends Dexie {
     // Version 2: Add offlineQueue table
     this.version(2).stores({
       offlineQueue: "++id,createdAt",
+    });
+
+    // Version 3: Add keyholder relationship tables
+    this.version(3).stores({
+      keyholderRelationships:
+        "&id, submissiveUserId, keyholderUserId, [submissiveUserId+status], [keyholderUserId+status], status, createdAt",
+      inviteCodes: "&id, &code, submissiveUserId, isUsed, expiresAt, createdAt",
     });
 
     // Add hooks for automatic timestamp and sync status updates
@@ -182,6 +193,8 @@ export class ChastityDB extends Dexie {
         "tasks",
         "goals",
         "settings",
+        "keyholderRelationships",
+        "inviteCodes",
       ];
 
       for (const collection of collections) {
@@ -212,6 +225,8 @@ export class ChastityDB extends Dexie {
       tasks: await this.tasks.count(),
       goals: await this.goals.count(),
       settings: await this.settings.count(),
+      keyholderRelationships: await this.keyholderRelationships.count(),
+      inviteCodes: await this.inviteCodes.count(),
       pendingSync: {
         sessions: await this.sessions
           .where("syncStatus")
@@ -246,6 +261,8 @@ export class ChastityDB extends Dexie {
         this.tasks,
         this.goals,
         this.settings,
+        this.keyholderRelationships,
+        this.inviteCodes,
         async () => {
           await this.users.where("uid").equals(userId).delete();
           await this.sessions.where("userId").equals(userId).delete();
@@ -253,6 +270,18 @@ export class ChastityDB extends Dexie {
           await this.tasks.where("userId").equals(userId).delete();
           await this.goals.where("userId").equals(userId).delete();
           await this.settings.where("userId").equals(userId).delete();
+          await this.keyholderRelationships
+            .where("submissiveUserId")
+            .equals(userId)
+            .delete();
+          await this.keyholderRelationships
+            .where("keyholderUserId")
+            .equals(userId)
+            .delete();
+          await this.inviteCodes
+            .where("submissiveUserId")
+            .equals(userId)
+            .delete();
         },
       );
 
