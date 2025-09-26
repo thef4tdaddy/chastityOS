@@ -3,15 +3,10 @@
  * Displays achievement-based leaderboards and competitive features
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   FaTrophy,
-  FaCrown,
-  FaMedal,
-  FaAward,
   FaUsers,
-  FaStar,
-  FaChartBar,
   FaCalendar,
   FaGlobe,
   FaEye,

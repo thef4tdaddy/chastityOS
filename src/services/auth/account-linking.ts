@@ -110,7 +110,7 @@ export class AccountLinkingService {
   /**
    * Use a link code to establish admin relationship
    */
-  static async useLinkCode(
+  static async redeemLinkCode(
     request: UseLinkCodeRequest,
   ): Promise<ApiResponse<AdminRelationship>> {
     try {
