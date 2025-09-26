@@ -7,6 +7,4 @@ if [ -f ~/.nvm/nvm.sh ]; then
   . ~/.nvm/nvm.sh
 fi
 
-. "$(dirname "$0")/_/husky.sh"
-
 npx --no -- commitlint --edit "$1" --config configs/linting/commitlint.config.cjs
