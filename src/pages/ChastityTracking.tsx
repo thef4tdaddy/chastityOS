@@ -9,14 +9,16 @@ import { PauseResumeButtons } from "../components/tracker/PauseResumeButtons";
 import { ReasonModals } from "../components/tracker/ReasonModals";
 import { TrackerHeader } from "../components/tracker/TrackerHeader";
 import { logger } from "../utils/logging";
+import type { DBSession } from "../types/database";
 // TODO: Replace with proper hook pattern
 // import { usePauseState } from "../hooks/usePauseState";
 // import { SessionService } from "../services/api/session-service";
 
 const TrackerPage: React.FC = () => {
   // Mock data - in a real app this would come from context/hooks
-  const [currentSession, setCurrentSession] = useState<any>(null);
+  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
   const [userId] = useState("user123"); // This would come from auth context
+  const [useRealTimeTimer, setUseRealTimeTimer] = useState(false);
 
   // TODO: Replace with proper hook pattern
   // const {
@@ -68,15 +70,23 @@ const TrackerPage: React.FC = () => {
     });
   };
 
-  // Initialize mock session
+  // Initialize mock session with real DBSession structure
   useEffect(() => {
-    setCurrentSession({
+    const mockSession: DBSession = {
       id: "session123",
       userId: "user123",
       startTime: new Date(Date.now() - 86400000), // 1 day ago
+      endTime: undefined,
       isPaused: false,
-      accumulatedPauseTime: 0,
-    });
+      pauseStartTime: undefined,
+      accumulatedPauseTime: 3600, // 1 hour of accumulated pause time
+      goalDuration: 172800, // 48 hour goal
+      isHardcoreMode: false,
+      keyholderApprovalRequired: false,
+      syncStatus: "synced" as const,
+      lastModified: new Date(),
+    };
+    setCurrentSession(mockSession);
   }, []);
 
   const handlePause = () => {
@@ -99,6 +109,29 @@ const TrackerPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
+      {/* Real-time Timer Demo Toggle */}
+      <div className="p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg mb-4 mx-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-blue-300">
+              🚀 Real-time Timer Demo
+            </h3>
+            <p className="text-sm text-gray-300">
+              Toggle to see the new real-time timer functionality in action
+            </p>
+          </div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={useRealTimeTimer}
+              onChange={(e) => setUseRealTimeTimer(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-blue-300">Use Real-time Timer</span>
+          </label>
+        </div>
+      </div>
+
       {showRestoreSessionPrompt && (
         <RestoreSessionPrompt onConfirm={() => {}} onDiscard={() => {}} />
       )}
@@ -114,15 +147,23 @@ const TrackerPage: React.FC = () => {
       />
 
       <TrackerStats
-        mainChastityDisplayTime={mainChastityDisplayTime}
+        // Pass the real session when using real-time timer
+        currentSession={useRealTimeTimer ? currentSession : undefined}
+        // Legacy props for backward compatibility
+        mainChastityDisplayTime={
+          useRealTimeTimer ? undefined : mainChastityDisplayTime
+        }
         topBoxLabel={topBoxLabel}
-        topBoxTime={topBoxTime}
-        livePauseDuration={livePauseDuration}
-        accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession}
+        topBoxTime={useRealTimeTimer ? undefined : topBoxTime}
+        livePauseDuration={useRealTimeTimer ? undefined : livePauseDuration}
+        accumulatedPauseTimeThisSession={
+          useRealTimeTimer ? undefined : accumulatedPauseTimeThisSession
+        }
         timeCageOff={timeCageOff}
         isCageOn={isCageOn}
         totalChastityTime={totalChastityTime}
         totalTimeCageOff={totalTimeCageOff}
+        isPaused={isPaused}
       />
 
       {/* Enhanced Pause Controls with 4-hour cooldown */}
