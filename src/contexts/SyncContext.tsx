@@ -3,11 +3,11 @@
  * Provides sync state and conflict resolution across the app
  */
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useSync } from "@/hooks/useSync";
-import { useAuth } from "@/hooks/useAuth";
-import { ConflictResolutionModal } from "@/components/common/ConflictResolutionModal";
-import type { ConflictInfo } from "@/types/database";
-import { serviceLogger } from "@/utils/logging";
+import { useSync } from "../hooks/useSync";
+import { useCurrentUser } from "../hooks/api/useAuth";
+import { ConflictResolutionModal } from "../components/common/ConflictResolutionModal";
+import type { ConflictInfo } from "../types/database";
+import { serviceLogger } from "../utils/logging";
 
 const logger = serviceLogger("SyncContext");
 
@@ -35,7 +35,8 @@ interface SyncProviderProps {
 }
 
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
-  const { userId } = useAuth();
+  const { data: user } = useCurrentUser();
+  const userId = user?.uid;
   const {
     isSyncing,
     lastSyncResult,

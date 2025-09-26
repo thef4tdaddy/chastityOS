@@ -10,12 +10,13 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { firebaseSync } from "@/services/sync";
-import { preloadCriticalServices } from "@/services/firebase";
-import { achievementIntegration } from "@/services/AchievementIntegration";
-import { serviceLogger } from "@/utils/logging";
-import { db } from "@/services/database";
-import type { SyncStatus } from "@/types/database";
+import { firebaseSync } from "../services/sync";
+import { preloadCriticalServices } from "../services/firebase";
+import { achievementIntegration } from "../services/AchievementIntegration";
+import { sessionPersistenceService } from "../services";
+import { serviceLogger } from "../utils/logging";
+import { db } from "../services/database";
+import type { SyncStatus } from "../types/database";
 
 const logger = serviceLogger("AppContext");
 
@@ -26,6 +27,7 @@ export interface AppState {
   lastSyncTime: Date | null;
   hasUnreadNotifications: boolean;
   connectionType: string | null;
+  sessionPersistenceReady: boolean;
 }
 
 export interface AppActions {
@@ -54,6 +56,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     lastSyncTime: null,
     hasUnreadNotifications: false,
     connectionType: null,
+    sessionPersistenceReady: false,
   });
 
   // Initialize app on mount
@@ -71,6 +74,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
         // Initialize achievement system
         await achievementIntegration.initialize();
+
+        // Initialize session persistence service
+        // The service initializes automatically as a singleton
+        logger.info("Session persistence service ready");
+        setState((prev) => ({ ...prev, sessionPersistenceReady: true }));
 
         // Initialize sync service
         // FirebaseSync initializes automatically

@@ -416,6 +416,65 @@ export class FirebaseSync {
   }
 
   /**
+   * Sync a single session to Firebase
+   */
+  async syncSingleSession(session: DBSession): Promise<void> {
+    if (!connectionStatus.getIsOnline()) {
+      logger.debug("Offline, queuing session sync");
+      await offlineQueue.queueOperation({
+        type: "update",
+        collectionName: "sessions",
+        payload: session,
+      });
+      return;
+    }
+
+    const auth = (await getFirebaseAuth()) as Auth;
+    const user = auth.currentUser;
+
+    if (!user || user.uid !== session.userId) {
+      logger.warn("User not authenticated or mismatch for session sync", {
+        sessionUserId: session.userId,
+        currentUser: user?.uid,
+      });
+      return;
+    }
+
+    try {
+      const firestore = (await getFirestore()) as Firestore;
+      const sessionRef = doc(
+        firestore,
+        `users/${user.uid}/sessions`,
+        session.id,
+      );
+
+      // Convert dates to Firestore timestamps
+      const firestoreSession = {
+        ...session,
+        startTime: Timestamp.fromDate(session.startTime),
+        endTime: session.endTime ? Timestamp.fromDate(session.endTime) : null,
+        pauseStartTime: session.pauseStartTime
+          ? Timestamp.fromDate(session.pauseStartTime)
+          : null,
+        lastModified: Timestamp.fromDate(session.lastModified),
+      };
+
+      await sessionRef.set(firestoreSession);
+
+      // Mark as synced in local DB
+      await sessionDBService.update(session.id, { syncStatus: "synced" });
+
+      logger.debug("Session synced to Firebase", { sessionId: session.id });
+    } catch (error) {
+      logger.error("Failed to sync single session", {
+        error: error as Error,
+        sessionId: session.id,
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Backward-compatible sync method
    */
   async sync(): Promise<void> {
