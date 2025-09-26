@@ -5,7 +5,8 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export interface ModalConfig {
+// Define specific prop types for different modal types
+export interface BaseModalProps {
   isOpen: boolean;
   title?: string;
   content?: React.ReactNode;
@@ -15,8 +16,44 @@ export interface ModalConfig {
   cancelText?: string;
   size?: "sm" | "md" | "lg" | "xl";
   closable?: boolean;
-  [key: string]: any; // Additional props for specific modals
 }
+
+export interface ConfirmModalProps extends BaseModalProps {
+  message?: string;
+  confirmButtonStyle?: "primary" | "danger" | "warning";
+}
+
+export interface TaskDetailsModalProps extends BaseModalProps {
+  taskId?: string;
+  taskData?: {
+    title: string;
+    description?: string;
+    dueDate?: Date;
+    status?: string;
+  };
+}
+
+export interface EventDetailsModalProps extends BaseModalProps {
+  eventId?: string;
+  eventData?: {
+    type: string;
+    timestamp: Date;
+    details?: Record<string, unknown>;
+  };
+}
+
+export interface AccountLinkingModalProps extends BaseModalProps {
+  linkingCode?: string;
+  qrCodeData?: string;
+}
+
+// Union type for all possible modal configurations
+export type ModalConfig =
+  | ConfirmModalProps
+  | TaskDetailsModalProps
+  | EventDetailsModalProps
+  | AccountLinkingModalProps
+  | BaseModalProps;
 
 export interface ModalState {
   // Modal registry

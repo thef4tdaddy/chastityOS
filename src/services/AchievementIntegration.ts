@@ -7,6 +7,27 @@ import { achievementEngine } from "./AchievementEngine";
 import { achievementDBService } from "./database";
 import { sessionDBService, taskDBService, goalDBService } from "./database";
 import { logger } from "../utils/logging";
+import type { DBSession, DBGoal } from "../types/database";
+
+// Type for session event data used in achievements
+export interface SessionEventData {
+  sessionId?: string;
+  duration?: number;
+  startTime?: Date;
+  endTime?: Date;
+  isHardcoreMode?: boolean;
+  goalDuration?: number;
+  actualDuration?: number;
+}
+
+// Type for goal event data used in achievements
+export interface GoalEventData {
+  goalId?: string;
+  type?: string;
+  targetValue?: number;
+  currentValue?: number;
+  completedAt?: Date;
+}
 
 export class AchievementIntegrationService {
   private initialized = false;
@@ -51,7 +72,10 @@ export class AchievementIntegrationService {
   /**
    * Handle session start event
    */
-  async onSessionStart(userId: string, sessionData: any): Promise<void> {
+  async onSessionStart(
+    userId: string,
+    sessionData: SessionEventData,
+  ): Promise<void> {
     try {
       await achievementEngine.processSessionEvent(
         userId,
@@ -74,7 +98,10 @@ export class AchievementIntegrationService {
   /**
    * Handle session end event
    */
-  async onSessionEnd(userId: string, sessionData?: any): Promise<void> {
+  async onSessionEnd(
+    userId: string,
+    sessionData?: SessionEventData,
+  ): Promise<void> {
     try {
       await achievementEngine.processSessionEvent(
         userId,
@@ -154,7 +181,10 @@ export class AchievementIntegrationService {
   /**
    * Handle goal completion event
    */
-  async onGoalCompleted(userId: string, goalData?: any): Promise<void> {
+  async onGoalCompleted(
+    userId: string,
+    goalData?: GoalEventData,
+  ): Promise<void> {
     try {
       await achievementEngine.processGoalEvent(
         userId,

@@ -25,7 +25,10 @@ export const AchievementPrivacySettings: React.FC<
   const [settings, setSettings] = useState(privacySettings);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const handleSettingChange = (key: keyof typeof settings, value: any) => {
+  const handleSettingChange = (
+    key: keyof typeof settings,
+    value: boolean | string,
+  ) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
