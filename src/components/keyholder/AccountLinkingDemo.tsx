@@ -69,25 +69,13 @@ interface AccountLinkingDemoProps {
     | "keyholder-with-submissives";
 }
 
-export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
-  className = "",
-  scenario = "submissive-no-keyholder",
-}) => {
-  const [showCreateInvite, setShowCreateInvite] = useState(false);
-  const [showAcceptInvite, setShowAcceptInvite] = useState(false);
-  const [showPermissions, setShowPermissions] = useState<string | null>(null);
-  const [inviteCodeInput, setInviteCodeInput] = useState("");
-  const [keyholderNameInput, setKeyholderNameInput] = useState("");
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | "info">(
-    "info",
-  );
-
-  // Adjust mock data based on scenario
+// Utility functions to reduce complexity
+const getScenarioData = (scenario: string) => {
   const activeKeyholder =
     scenario === "submissive-with-keyholder" ? mockActiveKeyholder : null;
   const activeInviteCodes =
     scenario === "submissive-no-keyholder" ? mockInviteCodes : [];
+
   const relationshipSummary =
     scenario === "submissive-with-keyholder"
       ? mockRelationshipSummary
@@ -132,16 +120,196 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
         }
       : { asSubmissive: [], asKeyholder: [] };
 
+  return {
+    activeKeyholder,
+    activeInviteCodes,
+    relationshipSummary,
+    relationships,
+  };
+};
+
+// Custom hook for message handling
+const useMessageState = () => {
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error" | "info">(
+    "info",
+  );
+
+  const showMessage = (
+    text: string,
+    type: "success" | "error" | "info" = "info",
+  ) => {
+    setMessage(text);
+    setMessageType(type);
+  };
+
+  const clearMessage = () => {
+    setMessage("");
+    setMessageType("info");
+  };
+
+  return { message, messageType, showMessage, clearMessage };
+};
+
+// Render helper functions to reduce complexity
+const renderMessageDisplay = (
+  message: string,
+  messageType: string,
+  clearMessage: () => void,
+) => {
+  if (!message) return null;
+  return (
+    <div
+      className={`p-3 rounded-lg border ${
+        messageType === "success"
+          ? "bg-green-900/50 border-green-500 text-green-300"
+          : messageType === "error"
+            ? "bg-red-900/50 border-red-500 text-red-300"
+            : "bg-blue-900/50 border-blue-500 text-blue-300"
+      }`}
+    >
+      <div className="flex justify-between items-start">
+        <p className="text-sm">{message}</p>
+        <button
+          onClick={clearMessage}
+          className="text-current opacity-70 hover:opacity-100 ml-2"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const renderActiveKeyholder = (
+  activeKeyholder: any,
+  showPermissions: string | null,
+  setShowPermissions: (id: string | null) => void,
+) => {
+  if (!activeKeyholder) return null;
+  return (
+    <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-lg p-4 border border-purple-500">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-purple-300 flex items-center">
+          <FaKey className="mr-2" />
+          Your Keyholder
+        </h3>
+        <button
+          onClick={() =>
+            setShowPermissions(
+              showPermissions === activeKeyholder.id
+                ? null
+                : activeKeyholder.id,
+            )
+          }
+          className="text-purple-400 hover:text-purple-300 text-sm"
+        >
+          {showPermissions === activeKeyholder.id ? "Hide" : "View"} Permissions
+        </button>
+      </div>
+      <div className="text-sm text-gray-300 mb-3">
+        <p>
+          Connected:{" "}
+          {formatDistanceToNow(
+            activeKeyholder.acceptedAt || activeKeyholder.createdAt,
+          )}{" "}
+          ago
+        </p>
+        <p>
+          Status: <span className="text-green-400">Active</span>
+        </p>
+      </div>
+      {showPermissions === activeKeyholder.id && (
+        <div className="mt-3 p-3 bg-gray-700 rounded border">
+          <h4 className="font-medium text-purple-300 mb-2">
+            Keyholder Permissions
+          </h4>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {Object.entries(activeKeyholder.permissions).map(([key, value]) => (
+              <div key={key} className="flex items-center">
+                <span className={value ? "text-green-400" : "text-red-400"}>
+                  {value ? "✓" : "✗"}
+                </span>
+                <span className="ml-2 text-gray-300">
+                  {key
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (str) => str.toUpperCase())}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="mt-3 flex gap-2">
+        <button className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 transition-colors">
+          End Relationship
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const renderCreateInviteSection = (
+  hasActiveKeyholder: boolean,
+  showCreateInvite: boolean,
+  setShowCreateInvite: (show: boolean) => void,
+  handleCreateInvite: () => void,
+) => {
+  if (hasActiveKeyholder) return null;
+  return (
+    <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-purple-300">Create Invite Code</h3>
+        <button
+          onClick={() => setShowCreateInvite(!showCreateInvite)}
+          className="text-purple-400 hover:text-purple-300 text-sm"
+        >
+          {showCreateInvite ? "Cancel" : "Create Code"}
+        </button>
+      </div>
+      {showCreateInvite && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-400">
+            Generate an invite code for a keyholder to link to your account.
+          </p>
+          <button
+            onClick={handleCreateInvite}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors"
+          >
+            Generate Invite Code
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
+  className = "",
+  scenario = "submissive-no-keyholder",
+}) => {
+  const [showCreateInvite, setShowCreateInvite] = useState(false);
+  const [showAcceptInvite, setShowAcceptInvite] = useState(false);
+  const [showPermissions, setShowPermissions] = useState<string | null>(null);
+  const [inviteCodeInput, setInviteCodeInput] = useState("");
+  const [keyholderNameInput, setKeyholderNameInput] = useState("");
+
+  const { message, messageType, showMessage, clearMessage } = useMessageState();
+  const {
+    activeKeyholder,
+    activeInviteCodes,
+    relationshipSummary,
+    relationships,
+  } = getScenarioData(scenario);
+
   const handleCreateInvite = () => {
-    setMessage("Invite code created: DEF456");
-    setMessageType("success");
+    showMessage("Invite code created: DEF456", "success");
     setShowCreateInvite(false);
   };
 
   const handleAcceptInvite = () => {
     if (inviteCodeInput.length === 6) {
-      setMessage("Successfully linked with submissive!");
-      setMessageType("success");
+      showMessage("Successfully linked with submissive!", "success");
       setShowAcceptInvite(false);
       setInviteCodeInput("");
       setKeyholderNameInput("");
@@ -150,13 +318,7 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard?.writeText(text);
-    setMessage(`Copied ${text} to clipboard`);
-    setMessageType("success");
-  };
-
-  const clearMessage = () => {
-    setMessage("");
-    setMessageType("info");
+    showMessage(`Copied ${text} to clipboard`, "success");
   };
 
   return (
@@ -174,31 +336,10 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
       </div>
 
       {/* Messages */}
-      {message && (
-        <div
-          className={`p-3 rounded-lg border ${
-            messageType === "success"
-              ? "bg-green-900/50 border-green-500 text-green-300"
-              : messageType === "error"
-                ? "bg-red-900/50 border-red-500 text-red-300"
-                : "bg-blue-900/50 border-blue-500 text-blue-300"
-          }`}
-        >
-          <div className="flex justify-between items-start">
-            <p className="text-sm">{message}</p>
-            <button
-              onClick={clearMessage}
-              className="text-current opacity-70 hover:opacity-100 ml-2"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+      {renderMessageDisplay(message, messageType, clearMessage)}
 
       {/* Relationship Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* As Submissive */}
         <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
           <div className="flex items-center mb-2">
             <FaUser className="text-purple-400 mr-2" />
@@ -212,8 +353,6 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
             <div className="text-gray-400 text-sm">No active keyholder</div>
           )}
         </div>
-
-        {/* As Keyholder */}
         <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
           <div className="flex items-center mb-2">
             <FaUserShield className="text-purple-400 mr-2" />
@@ -226,104 +365,18 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
       </div>
 
       {/* Active Keyholder Relationship */}
-      {activeKeyholder && (
-        <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-lg p-4 border border-purple-500">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-purple-300 flex items-center">
-              <FaKey className="mr-2" />
-              Your Keyholder
-            </h3>
-            <button
-              onClick={() =>
-                setShowPermissions(
-                  showPermissions === activeKeyholder.id
-                    ? null
-                    : activeKeyholder.id,
-                )
-              }
-              className="text-purple-400 hover:text-purple-300 text-sm"
-            >
-              {showPermissions === activeKeyholder.id ? "Hide" : "View"}{" "}
-              Permissions
-            </button>
-          </div>
-
-          <div className="text-sm text-gray-300 mb-3">
-            <p>
-              Connected:{" "}
-              {formatDistanceToNow(
-                activeKeyholder.acceptedAt || activeKeyholder.createdAt,
-              )}{" "}
-              ago
-            </p>
-            <p>
-              Status: <span className="text-green-400">Active</span>
-            </p>
-          </div>
-
-          {showPermissions === activeKeyholder.id && (
-            <div className="mt-3 p-3 bg-gray-700 rounded border">
-              <h4 className="font-medium text-purple-300 mb-2">
-                Keyholder Permissions
-              </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {Object.entries(activeKeyholder.permissions).map(
-                  ([key, value]) => (
-                    <div key={key} className="flex items-center">
-                      <span
-                        className={value ? "text-green-400" : "text-red-400"}
-                      >
-                        {value ? "✓" : "✗"}
-                      </span>
-                      <span className="ml-2 text-gray-300">
-                        {key
-                          .replace(/([A-Z])/g, " $1")
-                          .replace(/^./, (str) => str.toUpperCase())}
-                      </span>
-                    </div>
-                  ),
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-3 flex gap-2">
-            <button className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 transition-colors">
-              End Relationship
-            </button>
-          </div>
-        </div>
+      {renderActiveKeyholder(
+        activeKeyholder,
+        showPermissions,
+        setShowPermissions,
       )}
 
       {/* Create Invite Code Section */}
-      {!relationshipSummary.hasActiveKeyholder && (
-        <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-purple-300">
-              Create Invite Code
-            </h3>
-            <button
-              onClick={() => setShowCreateInvite(!showCreateInvite)}
-              className="text-purple-400 hover:text-purple-300 text-sm"
-            >
-              {showCreateInvite ? "Cancel" : "Create Code"}
-            </button>
-          </div>
-
-          {showCreateInvite && (
-            <div className="space-y-3">
-              <p className="text-sm text-gray-400">
-                Generate an invite code for a keyholder to link to your account.
-              </p>
-              <button
-                onClick={handleCreateInvite}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors"
-              >
-                Generate Invite Code
-              </button>
-            </div>
-          )}
-        </div>
+      {renderCreateInviteSection(
+        relationshipSummary.hasActiveKeyholder,
+        showCreateInvite,
+        setShowCreateInvite,
+        handleCreateInvite,
       )}
 
       {/* Active Invite Codes */}
@@ -378,7 +431,6 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
             {showAcceptInvite ? "Cancel" : "Enter Code"}
           </button>
         </div>
-
         {showAcceptInvite && (
           <div className="space-y-3">
             <p className="text-sm text-gray-400">
@@ -389,8 +441,8 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
               value={inviteCodeInput}
               onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
               placeholder="Enter 6-character code"
-              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 font-mono text-center tracking-wider"
               maxLength={6}
+              className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 font-mono text-center tracking-wider"
             />
             <input
               type="text"
@@ -417,7 +469,7 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
             Your Submissives
           </h3>
           <div className="space-y-2">
-            {relationships.asKeyholder.map((relationship) => (
+            {relationships.asKeyholder.map((relationship: any) => (
               <div
                 key={relationship.id}
                 className="p-3 bg-gray-700 rounded border"
