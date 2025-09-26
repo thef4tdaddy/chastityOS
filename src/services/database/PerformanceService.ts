@@ -14,7 +14,13 @@ export interface QueryMetrics {
   duration: number;
   recordCount: number;
   timestamp: Date;
-  queryDetails?: any;
+  queryDetails?: {
+    filter?: Record<string, unknown>;
+    sort?: string;
+    limit?: number;
+    index?: string;
+    error?: string;
+  };
 }
 
 export interface PerformanceReport {
@@ -45,7 +51,7 @@ export class DBPerformanceService {
     table: string,
     duration: number,
     recordCount: number,
-    queryDetails?: any,
+    queryDetails?: QueryMetrics["queryDetails"],
   ): void {
     const metric: QueryMetrics = {
       operation,

@@ -14,13 +14,14 @@ import {
 } from "../../utils/iconImport";
 import {
   DBAchievement,
+  DBUserAchievement,
   AchievementCategory,
   AchievementDifficulty,
 } from "../../types";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
-  userAchievement?: any;
+  userAchievement?: DBUserAchievement;
   progress: {
     currentValue: number;
     targetValue: number;

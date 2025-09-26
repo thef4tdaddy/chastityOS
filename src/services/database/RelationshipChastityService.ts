@@ -18,6 +18,7 @@ import {
   writeBatch,
   onSnapshot,
   Unsubscribe,
+  Firestore,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -35,7 +36,7 @@ import { generateUUID } from "@/utils";
 const logger = serviceLogger("RelationshipChastityService");
 
 class RelationshipChastityService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -562,7 +563,7 @@ class RelationshipChastityService {
     try {
       const db = await this.ensureDb();
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status,
         updatedAt: serverTimestamp(),
       };

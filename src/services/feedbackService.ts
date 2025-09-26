@@ -4,6 +4,14 @@ import axios from "axios";
 import type { FeedbackData } from "../types/feedback";
 import { serviceLogger } from "../utils/logging";
 
+// GitHub Issues API data structure
+interface GitHubIssueData {
+  title: string;
+  body: string;
+  labels: string[];
+  assignees?: string[];
+}
+
 export class FeedbackService {
   private static logger = serviceLogger("FeedbackService");
 
@@ -101,7 +109,9 @@ ${
     return labels;
   }
 
-  private static async submitToGitHub(issueData: any): Promise<void> {
+  private static async submitToGitHub(
+    issueData: GitHubIssueData,
+  ): Promise<void> {
     const githubToken = import.meta.env.VITE_GITHUB_TOKEN;
     const githubRepo = import.meta.env.VITE_GITHUB_REPO;
 

@@ -17,6 +17,8 @@ import {
   writeBatch,
   onSnapshot,
   Unsubscribe,
+  Firestore,
+  WriteBatch,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -54,7 +56,7 @@ export const getDefaultPermissions = (): DefaultRelationshipPermissions => ({
 });
 
 class RelationshipService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -568,7 +570,7 @@ class RelationshipService {
     relationshipId: string,
     submissiveId: string,
     keyholderId: string,
-    batch?: any,
+    batch?: WriteBatch,
   ): Promise<void> {
     try {
       const db = await this.ensureDb();

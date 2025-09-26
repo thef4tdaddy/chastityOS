@@ -12,6 +12,7 @@ import {
   DBAchievementNotification,
   AchievementCategory,
   AchievementDifficulty,
+  LeaderboardPrivacy,
 } from "../../types";
 import { logger } from "../../utils/logging";
 
@@ -670,7 +671,10 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Update user's leaderboard privacy settings
    */
-  async updateLeaderboardPrivacy(userId: string, settings: any): Promise<void> {
+  async updateLeaderboardPrivacy(
+    userId: string,
+    settings: LeaderboardPrivacy,
+  ): Promise<void> {
     try {
       // This would typically update user settings
       // For now, just log the action

@@ -4,7 +4,16 @@
  */
 
 import { db } from "../storage/ChastityDB";
-import { serviceLogger } from "@/utils/logging";
+import { serviceLogger } from "../../utils/logging";
+import type {
+  DBUser,
+  DBSession,
+  DBEvent,
+  DBTask,
+  DBGoal,
+  DBSettings,
+  DBSyncMeta,
+} from "../../types/database";
 
 const logger = serviceLogger("MigrationService");
 
@@ -197,13 +206,13 @@ export class DBMigrationService {
    * Backup database before running migrations
    */
   static async createBackup(): Promise<{
-    users: any[];
-    sessions: any[];
-    events: any[];
-    tasks: any[];
-    goals: any[];
-    settings: any[];
-    syncMeta: any[];
+    users: DBUser[];
+    sessions: DBSession[];
+    events: DBEvent[];
+    tasks: DBTask[];
+    goals: DBGoal[];
+    settings: DBSettings[];
+    syncMeta: DBSyncMeta[];
   }> {
     logger.info("Creating database backup");
 
@@ -233,13 +242,13 @@ export class DBMigrationService {
    * Restore database from backup
    */
   static async restoreFromBackup(backup: {
-    users: any[];
-    sessions: any[];
-    events: any[];
-    tasks: any[];
-    goals: any[];
-    settings: any[];
-    syncMeta: any[];
+    users: DBUser[];
+    sessions: DBSession[];
+    events: DBEvent[];
+    tasks: DBTask[];
+    goals: DBGoal[];
+    settings: DBSettings[];
+    syncMeta: DBSyncMeta[];
   }): Promise<void> {
     logger.info("Restoring database from backup");
 
