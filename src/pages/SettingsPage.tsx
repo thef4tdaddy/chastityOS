@@ -13,8 +13,6 @@ import {
   FaDownload,
   FaUpload,
   FaTrash,
-  FaEye,
-  FaEyeSlash,
   FaSpinner,
   FaLock,
   FaShieldAlt,
@@ -31,7 +29,7 @@ type SettingsTab =
 
 // Account Settings Section
 const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => (
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -89,7 +87,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
 
 // Display Settings Section
 const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => (
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -157,7 +155,7 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
 
 // Public Profile Section
 const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => (
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -232,7 +230,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
 
 // Privacy Settings Section
 const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => (
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -437,7 +435,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
 
 // Goals Section
 const GoalsSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => (
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -487,7 +485,7 @@ const GoalsSection: React.FC<{ settings: DBSettings | null }> = ({
 
 // Session Settings Section
 const SessionSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => (
   <div className="space-y-6">
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -563,7 +561,7 @@ const SessionSection: React.FC<{ settings: DBSettings | null }> = ({
 
 // Data Management Section
 const DataSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings,
+  settings: _settings,
 }) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetStatus, setResetStatus] = useState<

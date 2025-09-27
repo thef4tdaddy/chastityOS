@@ -55,7 +55,7 @@ export const AccountLinkingPreview: React.FC = () => {
         await navigator.clipboard.writeText(currentLinkCode.code);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
-      } catch (_error) {
+      } catch {
         // Silently fail - copying is a nice-to-have feature
       }
     }

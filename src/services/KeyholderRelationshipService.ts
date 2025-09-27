@@ -4,8 +4,6 @@
  */
 import {
   keyholderRelationshipDBService,
-  CreateInviteCodeData,
-  AcceptInviteCodeData,
   InviteCode,
 } from "./database/KeyholderRelationshipDBService";
 import { KeyholderRelationship, KeyholderPermissions } from "../types/core";
