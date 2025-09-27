@@ -20,9 +20,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { unreadNotifications, allAchievements, markNotificationRead } =
     useAchievements(user?.uid);
 
-  // Use navigation store for mobile menu state
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, setPageTitle } =
-    useNavigationStore();
+  // Use navigation store with selective subscriptions for mobile menu state
+  const isMobileMenuOpen = useNavigationStore(
+    (state) => state.isMobileMenuOpen,
+  );
+  const toggleMobileMenu = useNavigationStore(
+    (state) => state.toggleMobileMenu,
+  );
+  const closeMobileMenu = useNavigationStore((state) => state.closeMobileMenu);
+  const setPageTitle = useNavigationStore((state) => state.setPageTitle);
 
   const navItems = [
     { path: "/", label: "Dashboard" },
