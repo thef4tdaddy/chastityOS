@@ -61,12 +61,12 @@ export const AchievementNotification: React.FC<
 
     // Show toasts for unread "earned" notifications
     const earnedNotifications = notifications.filter(
-      (n) => n.type === "earned" && !n.isRead,
+      (n: DBAchievementNotification) => n.type === "earned" && !n.isRead,
     );
 
-    earnedNotifications.forEach((notification) => {
+    earnedNotifications.forEach((notification: DBAchievementNotification) => {
       const achievement = achievements.find(
-        (a) => a.id === notification.achievementId,
+        (a: DBAchievement) => a.id === notification.achievementId,
       );
 
       if (achievement) {

@@ -3,7 +3,14 @@
  * Displays toast notifications using NotificationStore
  */
 import React, { useEffect } from "react";
-import { useNotificationStore } from "@/stores";
+import { useNotificationStore, Notification } from "@/stores";
+
+// Interface for notification actions used in this component
+interface NotificationAction {
+  label: string;
+  handler: () => void;
+  style?: "danger" | "secondary" | "primary";
+}
 
 // Simple icons for notification types
 const NotificationIcon: React.FC<{ type: string }> = ({ type }) => {
@@ -99,15 +106,15 @@ const NotificationContainer: React.FC = () => {
 
   // Group notifications by position
   const notificationsByPosition = notifications.reduce(
-    (acc, notification) => {
-      const position = notification.position || "top-right";
+    (acc: Record<string, Notification[]>, notification: Notification) => {
+      const position = (notification as any).position || "top-right";
       if (!acc[position]) {
         acc[position] = [];
       }
       acc[position].push(notification);
       return acc;
     },
-    {} as Record<string, typeof notifications>,
+    {} as Record<string, Notification[]>,
   );
 
   const getPositionClasses = (position: string) => {
@@ -152,7 +159,7 @@ const NotificationContainer: React.FC = () => {
             key={position}
             className={`fixed z-50 ${getPositionClasses(position)} space-y-2 max-w-sm w-full`}
           >
-            {positionNotifications.map((notification) => (
+            {positionNotifications.map((notification: Notification) => (
               <div
                 key={notification.id}
                 className={`
@@ -176,16 +183,17 @@ const NotificationContainer: React.FC = () => {
 
                   {notification.actions && notification.actions.length > 0 && (
                     <div className="mt-3 flex space-x-2">
-                      {notification.actions.map((action, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            action.handler();
-                            if (notification.dismissible !== false) {
-                              removeNotification(notification.id);
-                            }
-                          }}
-                          className={`
+                      {notification.actions.map(
+                        (action: NotificationAction, index: number) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              action.handler();
+                              if (notification.dismissible !== false) {
+                                removeNotification(notification.id);
+                              }
+                            }}
+                            className={`
                           text-xs px-2 py-1 rounded border transition-colors
                           ${
                             action.style === "danger"
@@ -195,10 +203,11 @@ const NotificationContainer: React.FC = () => {
                                 : "border-current text-current hover:bg-current hover:bg-opacity-10"
                           }
                         `}
-                        >
-                          {action.label}
-                        </button>
-                      ))}
+                          >
+                            {action.label}
+                          </button>
+                        ),
+                      )}
                     </div>
                   )}
                 </div>

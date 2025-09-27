@@ -3,7 +3,7 @@
  * Unit tests for NotificationStore functionality
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { useNotificationStore } from "../notificationStore";
+import { useNotificationStore, Notification } from "../notificationStore";
 
 // Mock timers
 vi.useFakeTimers();
@@ -194,7 +194,7 @@ describe("NotificationStore", () => {
       });
 
       const { notifications } = useNotificationStore.getState();
-      const notification = notifications.find((n) => n.id === id);
+      const notification = notifications.find((n: Notification) => n.id === id);
       expect(notification).toBeDefined();
       expect(notification?.id).toBe(id);
       expect(notification?.message).toBe("Test notification");

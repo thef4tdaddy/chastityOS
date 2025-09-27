@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { DBUserAchievement } from "../../types";
+import { DBAchievement, DBUserAchievement } from "../../types";
 import { useAchievementGallery, getCategoryName, getDifficultyColor } from "../../hooks/useAchievementGallery";
 import {
   StatsHeader,
@@ -14,7 +14,7 @@ import {
 } from "./AchievementGallerySubComponents";
 
 interface AchievementWithProgress {
-  achievement: any;
+  achievement: DBAchievement;
   userAchievement?: DBUserAchievement;
   progress: {
     currentValue: number;
