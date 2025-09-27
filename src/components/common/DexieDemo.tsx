@@ -123,6 +123,82 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onClearError }) => {
   );
 };
 
+// Login Prompt Component
+const LoginPrompt: React.FC = () => (
+  <div className="p-6 bg-gray-800 rounded-lg border border-gray-700 text-center">
+    <h2 className="text-xl font-bold mb-2 text-white">
+      🔐 Authentication Required
+    </h2>
+    <p className="text-gray-400">
+      Please log in to use the Dexie Demo functionality.
+    </p>
+  </div>
+);
+
+// Task List Component
+interface TaskListProps {
+  tasks: DBTask[];
+  onUpdateTask: (taskId: string, updates: Partial<DBTask>) => Promise<void>;
+  onDeleteTask: (taskId: string) => Promise<void>;
+  loading: boolean;
+}
+
+const TaskList: React.FC<TaskListProps> = ({
+  tasks,
+  onUpdateTask,
+  onDeleteTask,
+  loading,
+}) => (
+  <div className="space-y-2">
+    <h3 className="text-lg font-semibold text-white mb-3">
+      Tasks ({tasks.length})
+    </h3>
+    {tasks.length === 0 ? (
+      <p className="text-gray-400 text-center py-4">
+        No tasks yet. Add one above!
+      </p>
+    ) : (
+      tasks.map((task) => (
+        <div
+          key={task.id}
+          className="flex items-center justify-between p-3 bg-gray-700 rounded border border-gray-600"
+        >
+          <div className="flex-1">
+            <span
+              className={`${task.status === "completed" ? "line-through text-gray-400" : "text-white"}`}
+            >
+              {task.text}
+            </span>
+            <div className="text-xs text-gray-400 mt-1">
+              Status: {task.status} | Sync: {task.syncStatus}
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() =>
+                onUpdateTask(task.id, {
+                  status: task.status === "completed" ? "pending" : "completed",
+                })
+              }
+              disabled={loading}
+              className="px-2 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-xs rounded transition-colors"
+            >
+              {task.status === "completed" ? "Undo" : "Done"}
+            </button>
+            <button
+              onClick={() => onDeleteTask(task.id)}
+              disabled={loading}
+              className="px-2 py-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white text-xs rounded transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+);
+
 // Custom hook for task management
 const useTaskManagement = (
   user: any,
@@ -165,10 +241,13 @@ const useTaskManagement = (
         text: newTaskText.trim(),
         description: newTaskText.trim(),
         status: "pending",
+        priority: "medium",
+        assignedBy: "submissive",
         createdAt: new Date(),
-        updatedAt: new Date(),
         category: "general",
         type: "manual",
+        syncStatus: "pending",
+        lastModified: new Date(),
       };
 
       const createdTask = await createWithSync("tasks", newTask);
