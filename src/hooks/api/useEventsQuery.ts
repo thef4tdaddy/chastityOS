@@ -118,9 +118,11 @@ export function useEventMutations() {
         ["events", "user", variables.userId],
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return [data];
-          return [data, ...oldEvents].sort(
-            (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
-          );
+          return [data, ...oldEvents].sort((a, b) => {
+            // Type guard to ensure we have DBEvent objects with timestamp
+            if (typeof a === "string" || typeof b === "string") return 0;
+            return b.timestamp.getTime() - a.timestamp.getTime();
+          });
         },
       );
 
@@ -258,9 +260,11 @@ export function useEventMutations() {
         ["events", "user", variables.userId],
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return data;
-          return [...data, ...oldEvents].sort(
-            (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
-          );
+          return [...data, ...oldEvents].sort((a, b) => {
+            // Type guard to ensure we have DBEvent objects with timestamp
+            if (typeof a === "string" || typeof b === "string") return 0;
+            return b.timestamp.getTime() - a.timestamp.getTime();
+          });
         },
       );
 

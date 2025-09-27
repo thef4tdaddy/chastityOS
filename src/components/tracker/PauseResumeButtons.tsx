@@ -291,7 +291,7 @@ const usePauseResumeLogic = (
 
 export const PauseResumeButtons: React.FC<PauseResumeButtonsProps> = ({
   sessionId,
-  _userId, // Mark as unused with underscore prefix
+  userId: _userId, // Mark as unused with underscore prefix
   isPaused,
   pauseState,
   onPause,

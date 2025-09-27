@@ -7,8 +7,13 @@ import { useNavigationStore } from "../navigationStore";
 
 describe("NavigationStore", () => {
   beforeEach(() => {
-    // Reset store before each test
-    useNavigationStore.getState().resetStore();
+    // Reset store before each test by setting to initial state
+    const store = useNavigationStore.getState();
+    store.setCurrentPage("dashboard");
+    store.setBreadcrumbs([]);
+    store.setMobileMenuOpen(false);
+    store.setPageLoading(false);
+    store.setPageTitle("");
   });
 
   describe("Mobile Menu", () => {
@@ -28,16 +33,17 @@ describe("NavigationStore", () => {
     });
 
     it("should open mobile menu", () => {
-      const { openMobileMenu } = useNavigationStore.getState();
+      const { setMobileMenuOpen } = useNavigationStore.getState();
 
-      openMobileMenu();
+      setMobileMenuOpen(true);
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
     });
 
     it("should close mobile menu", () => {
-      const { openMobileMenu, closeMobileMenu } = useNavigationStore.getState();
+      const { setMobileMenuOpen, closeMobileMenu } =
+        useNavigationStore.getState();
 
-      openMobileMenu();
+      setMobileMenuOpen(true);
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
 
       closeMobileMenu();
@@ -46,26 +52,25 @@ describe("NavigationStore", () => {
   });
 
   describe("Page Title Management", () => {
-    it("should start with default page title", () => {
-      const { currentPageTitle } = useNavigationStore.getState();
-      expect(currentPageTitle).toBe("ChastityOS");
+    it("should start with undefined page title", () => {
+      const { pageTitle } = useNavigationStore.getState();
+      expect(pageTitle).toBe("");
     });
 
     it("should update page title", () => {
       const { setPageTitle } = useNavigationStore.getState();
 
       setPageTitle("Test Page");
-      expect(useNavigationStore.getState().currentPageTitle).toBe("Test Page");
+      expect(useNavigationStore.getState().pageTitle).toBe("Test Page");
     });
 
-    it("should set page metadata", () => {
-      const { setPageMetadata } = useNavigationStore.getState();
+    it("should set current page", () => {
+      const { setCurrentPage } = useNavigationStore.getState();
 
-      setPageMetadata("Test Page", "Test Description");
+      setCurrentPage("settings");
       const state = useNavigationStore.getState();
 
-      expect(state.currentPageTitle).toBe("Test Page");
-      expect(state.currentPageDescription).toBe("Test Description");
+      expect(state.currentPage).toBe("settings");
     });
   });
 
@@ -77,10 +82,7 @@ describe("NavigationStore", () => {
 
     it("should set breadcrumbs", () => {
       const { setBreadcrumbs } = useNavigationStore.getState();
-      const testBreadcrumbs = [
-        { label: "Home", path: "/" },
-        { label: "Settings", path: "/settings" },
-      ];
+      const testBreadcrumbs = ["Home", "Settings"];
 
       setBreadcrumbs(testBreadcrumbs);
       expect(useNavigationStore.getState().breadcrumbs).toEqual(
@@ -90,7 +92,7 @@ describe("NavigationStore", () => {
 
     it("should add breadcrumb", () => {
       const { addBreadcrumb } = useNavigationStore.getState();
-      const breadcrumb = { label: "Home", path: "/" };
+      const breadcrumb = "Home";
 
       addBreadcrumb(breadcrumb);
       expect(useNavigationStore.getState().breadcrumbs).toEqual([breadcrumb]);
@@ -100,7 +102,7 @@ describe("NavigationStore", () => {
       const { setBreadcrumbs, clearBreadcrumbs } =
         useNavigationStore.getState();
 
-      setBreadcrumbs([{ label: "Home", path: "/" }]);
+      setBreadcrumbs(["Home"]);
       expect(useNavigationStore.getState().breadcrumbs).toHaveLength(1);
 
       clearBreadcrumbs();
@@ -108,53 +110,34 @@ describe("NavigationStore", () => {
     });
   });
 
-  describe("Navigation Loading", () => {
-    it("should start with navigation not loading", () => {
-      const { isNavigating } = useNavigationStore.getState();
-      expect(isNavigating).toBe(false);
+  describe("Page Loading", () => {
+    it("should start with page not loading", () => {
+      const { isPageLoading } = useNavigationStore.getState();
+      expect(isPageLoading).toBe(false);
     });
 
-    it("should set navigation loading state", () => {
-      const { setNavigating } = useNavigationStore.getState();
+    it("should set page loading state", () => {
+      const { setPageLoading } = useNavigationStore.getState();
 
-      setNavigating(true);
-      expect(useNavigationStore.getState().isNavigating).toBe(true);
+      setPageLoading(true);
+      expect(useNavigationStore.getState().isPageLoading).toBe(true);
 
-      setNavigating(false);
-      expect(useNavigationStore.getState().isNavigating).toBe(false);
+      setPageLoading(false);
+      expect(useNavigationStore.getState().isPageLoading).toBe(false);
     });
   });
 
-  describe("Store Reset", () => {
-    it("should reset store to initial state", () => {
-      const {
-        openMobileMenu,
-        setPageTitle,
-        setBreadcrumbs,
-        setNavigating,
-        resetStore,
-      } = useNavigationStore.getState();
+  describe("Current Page Management", () => {
+    it("should start with default current page", () => {
+      const { currentPage } = useNavigationStore.getState();
+      expect(currentPage).toBe("dashboard");
+    });
 
-      // Change state
-      openMobileMenu();
-      setPageTitle("Test Page");
-      setBreadcrumbs([{ label: "Test" }]);
-      setNavigating(true);
+    it("should update current page", () => {
+      const { setCurrentPage } = useNavigationStore.getState();
 
-      // Verify state changed
-      let state = useNavigationStore.getState();
-      expect(state.isMobileMenuOpen).toBe(true);
-      expect(state.currentPageTitle).toBe("Test Page");
-      expect(state.breadcrumbs).toHaveLength(1);
-      expect(state.isNavigating).toBe(true);
-
-      // Reset and verify
-      resetStore();
-      state = useNavigationStore.getState();
-      expect(state.isMobileMenuOpen).toBe(false);
-      expect(state.currentPageTitle).toBe("ChastityOS");
-      expect(state.breadcrumbs).toEqual([]);
-      expect(state.isNavigating).toBe(false);
+      setCurrentPage("profile");
+      expect(useNavigationStore.getState().currentPage).toBe("profile");
     });
   });
 });
