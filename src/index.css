@@ -370,6 +370,128 @@ html {
   to { transform: translateX(-50%) rotate(360deg); }
 }
 
+/* Mobile-first card variants */
+.card-elevated {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-elevated:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Swipe animations */
+.swipe-left-enter {
+  transform: translateX(100%);
+}
+
+.swipe-left-enter-active {
+  transform: translateX(0);
+  transition: transform var(--animation-duration-normal) var(--animation-easing);
+}
+
+.swipe-right-enter {
+  transform: translateX(-100%);
+}
+
+.swipe-right-enter-active {
+  transform: translateX(0);
+  transition: transform var(--animation-duration-normal) var(--animation-easing);
+}
+
+/* Page transitions for mobile */
+.page-slide-enter {
+  transform: translateX(100%);
+}
+
+.page-slide-enter-active {
+  transform: translateX(0);
+  transition: transform var(--animation-duration-slow) var(--animation-easing);
+}
+
+.page-slide-exit {
+  transform: translateX(0);
+}
+
+.page-slide-exit-active {
+  transform: translateX(-100%);
+  transition: transform var(--animation-duration-slow) var(--animation-easing);
+}
+
+/* Mobile loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, 
+    var(--color-bg-secondary) 25%, 
+    var(--color-bg-tertiary) 50%, 
+    var(--color-bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 2s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mobile-specific utility classes */
+.ios-bounce-fix {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.hardware-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Accessibility improvements for mobile */
+@media (prefers-reduced-motion: reduce) {
+  .touch-target:active,
+  .btn-mobile:active,
+  .card-mobile:hover,
+  .swipe-left-enter-active,
+  .swipe-right-enter-active,
+  .page-slide-enter-active,
+  .page-slide-exit-active {
+    transform: none;
+    transition: none;
+  }
+  
+  .loading-skeleton {
+    animation: none;
+  }
+  
+  .pull-refresh-indicator.loading {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-mobile,
+  .input-mobile,
+  .card-mobile {
+    border-width: 2px;
+  }
+  
+  .bottom-nav-item.active {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
+/* Dark mode refinements for mobile */
+@media (prefers-color-scheme: dark) {
+  .card-elevated {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-elevated:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+}
+
 /* =============================================
    === 3. SHARED COMPONENT & ELEMENT STYLES  ===
    =============================================
