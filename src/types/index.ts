@@ -8,6 +8,12 @@ export * from "./core";
 export * from "./events";
 export * from "./achievements";
 
+// Account linking types
+export * from "./account-linking";
+
+// Relationship types
+export * from "./relationships";
+
 // Database types - explicitly export to avoid conflicts
 export type {
   SyncStatus,
@@ -34,6 +40,9 @@ export type {
   DBAchievementProgress,
   DBAchievementNotification,
   DBLeaderboardEntry,
+  // Compatibility aliases
+  UserSettings,
+  Task,
 } from "./database";
 
 // Import and re-export achievement enums (as values for runtime usage)

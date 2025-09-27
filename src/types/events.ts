@@ -241,3 +241,14 @@ export interface SessionEvent {
   userId: string;
   sessionId?: string;
 }
+
+// Main Event interface for database storage
+export interface Event {
+  id: string;
+  userId: string;
+  type: EventType;
+  timestamp: Date;
+  details: Record<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+}
