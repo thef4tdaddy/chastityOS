@@ -2,7 +2,7 @@
  * Modal Store - UI Interaction State
  * Manages modal visibility, content, and confirmation dialogs
  */
-import React from "react";
+import * as React from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -128,13 +128,13 @@ export const useModalStore = create<ModalState>()(
 
       updateModal: (id: string, updates: Partial<ModalConfig>) =>
         set(
-          (state) => ({
+          (state: ModalState): Partial<ModalState> => ({
             modals: {
               ...state.modals,
               [id]: {
                 ...state.modals[id],
                 ...updates,
-              },
+              } as ModalConfig,
             },
           }),
           false,

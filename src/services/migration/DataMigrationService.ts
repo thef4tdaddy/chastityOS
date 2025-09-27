@@ -11,8 +11,8 @@ import {
   serverTimestamp,
   Firestore,
 } from "firebase/firestore";
-import { getFirestore } from "@/services/firebase";
-import { relationshipService } from "@/services/database/relationships";
+import { getFirestore } from "../firebase";
+import { relationshipService } from "../database/relationships";
 import {
   Relationship,
   RelationshipStatus,
@@ -20,10 +20,11 @@ import {
   RelationshipSession,
   RelationshipTask,
   RelationshipEvent,
-} from "@/types";
-import type { TaskStatus, EventType } from "@/types/database";
-import { serviceLogger } from "@/utils/logging";
-import { generateUUID } from "@/utils";
+  RelationshipTaskStatus,
+} from "../../types/relationships";
+import type { TaskStatus, EventType } from "../../types/database";
+import { serviceLogger } from "../../utils/logging";
+import { generateUUID } from "../../utils";
 
 const logger = serviceLogger("DataMigrationService");
 
@@ -47,9 +48,12 @@ class DataMigrationService {
     this.db = await getFirestore();
   }
 
-  private async ensureDb() {
+  private async ensureDb(): Promise<Firestore> {
     if (!this.db) {
       await this.initializeDb();
+    }
+    if (!this.db) {
+      throw new Error("Failed to initialize Firestore database");
     }
     return this.db;
   }
@@ -560,29 +564,34 @@ class DataMigrationService {
   /**
    * Map legacy task status to new status
    */
-  private mapTaskStatus(oldStatus: string | unknown): TaskStatus {
-    const statusMap: Record<string, TaskStatus> = {
-      pending: "pending",
-      in_progress: "pending",
-      submitted: "submitted",
-      approved: "approved",
-      rejected: "rejected",
-      completed: "completed",
-      overdue: "pending", // Reset overdue to pending
+  private mapTaskStatus(oldStatus: string | unknown): RelationshipTaskStatus {
+    const statusMap: Record<string, RelationshipTaskStatus> = {
+      pending: RelationshipTaskStatus.PENDING,
+      in_progress: RelationshipTaskStatus.PENDING,
+      submitted: RelationshipTaskStatus.SUBMITTED,
+      approved: RelationshipTaskStatus.APPROVED,
+      rejected: RelationshipTaskStatus.REJECTED,
+      completed: RelationshipTaskStatus.COMPLETED,
+      overdue: RelationshipTaskStatus.PENDING, // Reset overdue to pending
     };
 
     if (typeof oldStatus === "string" && statusMap[oldStatus]) {
       return statusMap[oldStatus];
     }
 
-    return "pending"; // Default fallback
+    return RelationshipTaskStatus.PENDING; // Default fallback
   }
 
   /**
    * Map legacy event type to new event type
    */
-  private mapEventType(oldType: string | unknown): EventType {
-    const typeMap: Record<string, EventType> = {
+  private mapEventType(
+    oldType: string | unknown,
+  ): "orgasm" | "sexual_activity" | "milestone" | "note" {
+    const typeMap: Record<
+      string,
+      "orgasm" | "sexual_activity" | "milestone" | "note"
+    > = {
       orgasm: "orgasm",
       sexual_activity: "sexual_activity",
       milestone: "milestone",
