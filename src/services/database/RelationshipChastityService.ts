@@ -21,7 +21,7 @@ import {
   Unsubscribe,
   Firestore,
 } from "firebase/firestore";
-import { getFirestore } from "@/services/firebase";
+import { getFirestore } from "../firebase";
 import {
   RelationshipChastityData,
   RelationshipSession,
@@ -29,10 +29,10 @@ import {
   RelationshipEvent,
   SessionEvent,
   RelationshipTaskStatus,
-} from "@/types/relationships";
+} from "../../types/relationships";
 import { relationshipService } from "./relationships/RelationshipService";
-import { serviceLogger } from "@/utils/logging";
-import { generateUUID } from "@/utils";
+import { serviceLogger } from "../../utils/logging";
+import { generateUUID } from "../../utils";
 
 const logger = serviceLogger("RelationshipChastityService");
 
@@ -47,9 +47,12 @@ class RelationshipChastityService {
     this.db = await getFirestore();
   }
 
-  private async ensureDb() {
+  private async ensureDb(): Promise<Firestore> {
     if (!this.db) {
       await this.initializeDb();
+    }
+    if (!this.db) {
+      throw new Error("Failed to initialize Firestore database");
     }
     return this.db;
   }
@@ -522,7 +525,7 @@ class RelationshipChastityService {
         text: taskData.text,
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
-        dueDate: taskData.dueDate ? serverTimestamp() : undefined,
+        dueDate: taskData.dueDate ? (taskData.dueDate as any) : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
       };
