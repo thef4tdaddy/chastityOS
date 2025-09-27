@@ -95,6 +95,9 @@ export interface DBEvent extends DBBase {
     intensity?: number;
     location?: string;
     tags?: string[];
+    // Additional properties for emergency/session events
+    endReason?: string;
+    emergencyReason?: string;
   };
   isPrivate: boolean;
 }

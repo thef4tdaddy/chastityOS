@@ -48,6 +48,7 @@ export class ChastityDB extends Dexie {
   declare on: (eventName: string, callback: (...args: any[]) => void) => void;
   declare verno: number;
   declare tables: Table<any>[];
+  declare version: (versionNumber: number) => any;
 
   constructor() {
     super("ChastityOS");
