@@ -6,11 +6,8 @@
 import { useEffect, useCallback, useMemo } from "react";
 import { relationshipChastityService } from "@/services/database/RelationshipChastityService";
 import {
-  RelationshipStatus,
-  RelationshipChastityData,
   RelationshipTask,
   RelationshipEvent,
-  RelationshipSession,
   RelationshipPermissions,
 } from "@/types/relationships";
 import {
@@ -132,7 +129,7 @@ export function useRelationships() {
     const unsubscribeChastityData =
       relationshipChastityService.subscribeToChastityData(
         relationshipId,
-        (chastityData) => {
+        (_chastityData) => {
           // Update the status hook with new data
           relationshipStatus.loadRelationshipData(relationshipId);
         },
@@ -140,7 +137,7 @@ export function useRelationships() {
 
     const unsubscribeTasks = relationshipChastityService.subscribeToTasks(
       relationshipId,
-      (tasks) => {
+      (_tasks) => {
         // Update the tasks hook with new data
         relationshipTasks.loadRelationshipData(relationshipId);
       },

@@ -5,25 +5,21 @@ import {
   FaCog,
   FaUsers,
   FaTasks,
-  FaChartLine,
   FaLock,
   FaHistory,
   FaShieldAlt,
   FaSpinner,
 } from "react-icons/fa";
 import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking";
-import { useAuthState } from "../../contexts";
 import { AdminRelationship } from "../../types/account-linking";
 
 export const AdminDashboard: React.FC = () => {
-  const { user } = useAuthState();
   const {
     relationships,
     keyholderRelationships,
     selectedWearerId,
     setSelectedWearer,
     startAdminSession,
-    currentAdminSession,
     isAdminSessionActive,
     isLoadingRelationships,
   } = useAccountLinking();

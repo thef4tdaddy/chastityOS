@@ -38,7 +38,7 @@ export interface NavigationState {
 
 export const useNavigationStore = create<NavigationState>()(
   devtools(
-    (set, get) => ({
+    (set, _get) => ({
       // Initial state
       currentPage: "dashboard",
       breadcrumbs: [],
