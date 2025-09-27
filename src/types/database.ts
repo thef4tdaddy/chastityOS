@@ -179,6 +179,12 @@ export interface DBSettings extends DBBase {
   };
 }
 
+// Alias for compatibility
+export type UserSettings = DBSettings;
+
+// Alias for Task compatibility
+export type Task = DBTask;
+
 export interface SyncOperation {
   id: string;
   collection: string;

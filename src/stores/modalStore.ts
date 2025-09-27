@@ -56,19 +56,18 @@ export type ModalConfig =
   | AccountLinkingModalProps
   | BaseModalProps;
 
-export interface ModalState {
-  // Modal registry
-  modals: Record<string, ModalConfig>;
-
-  // Actions
+export interface ModalActions {
   openModal: (id: string, config?: Partial<ModalConfig>) => void;
   closeModal: (id: string) => void;
   closeAllModals: () => void;
   updateModal: (id: string, updates: Partial<ModalConfig>) => void;
-
-  // Utility methods
   isModalOpen: (id: string) => boolean;
   getModal: (id: string) => ModalConfig | undefined;
+}
+
+export interface ModalState extends ModalActions {
+  // Modal registry
+  modals: Record<string, ModalConfig>;
 }
 
 export const useModalStore = create<ModalState>()(
@@ -156,6 +155,9 @@ export const useModalStore = create<ModalState>()(
     },
   ),
 );
+
+// Type aliases for compatibility
+export type ModalStore = ModalState;
 
 // Common modal IDs as constants to prevent typos
 export const MODAL_IDS = {
