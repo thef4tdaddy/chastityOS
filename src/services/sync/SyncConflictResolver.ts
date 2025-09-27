@@ -38,39 +38,39 @@ export class SyncConflictResolver {
     switch (collectionName) {
       case "sessions":
         resolvedDoc = conflictResolver.resolveSessionConflict(
-          localData as DBSession,
-          remoteData as DBSession,
+          localData as unknown as DBSession,
+          remoteData as unknown as DBSession,
         );
         break;
       case "tasks":
         resolvedDoc = conflictResolver.resolveTaskConflict(
-          localData as DBTask,
-          remoteData as DBTask,
+          localData as unknown as DBTask,
+          remoteData as unknown as DBTask,
         );
         break;
       case "settings":
         resolvedDoc = conflictResolver.resolveSettingsConflict(
-          localData as DBSettings,
-          remoteData as DBSettings,
+          localData as unknown as DBSettings,
+          remoteData as unknown as DBSettings,
         );
         break;
       case "events":
         // Events: latest timestamp wins
         resolvedDoc = this.resolveEventConflict(
-          localData as DBEvent,
-          remoteData as DBEvent,
+          localData as unknown as DBEvent,
+          remoteData as unknown as DBEvent,
         );
         break;
       case "goals":
         // Goals: merge progress intelligently
         resolvedDoc = this.resolveGoalConflict(
-          localData as DBGoal,
-          remoteData as DBGoal,
+          localData as unknown as DBGoal,
+          remoteData as unknown as DBGoal,
         );
         break;
       default:
         // Default: remote wins for unknown collections
-        resolvedDoc = remoteData as DBBase;
+        resolvedDoc = remoteData as unknown as DBBase;
         logger.warn(
           `Using default resolution (remote wins) for ${collectionName}`,
         );

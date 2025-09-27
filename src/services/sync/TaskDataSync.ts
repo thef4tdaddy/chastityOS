@@ -213,8 +213,8 @@ export class TaskDataSync extends FirebaseSyncCore {
             "upload_conflict",
             collectionName,
             docData.id,
-            docData as Record<string, unknown>,
-            remoteDoc as Record<string, unknown>,
+            docData as unknown as Record<string, unknown>,
+            remoteDoc as unknown as Record<string, unknown>,
           );
           result.conflicts.push(conflictInfo);
           this.updateSyncResult(result, "conflicts");
@@ -307,8 +307,8 @@ export class TaskDataSync extends FirebaseSyncCore {
             "download_conflict",
             collectionName,
             docData.id,
-            localDoc as Record<string, unknown>,
-            docData as Record<string, unknown>,
+            localDoc as unknown as Record<string, unknown>,
+            docData as unknown as Record<string, unknown>,
           );
 
           result.conflicts.push(conflictInfo);
