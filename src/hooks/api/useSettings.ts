@@ -500,65 +500,48 @@ function createDefaultSettings(userId: string): UserSettings {
   return {
     id: userId,
     userId,
-    // Account defaults
-    displayName: "",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    language: "en",
+    syncStatus: "synced",
+    lastModified: new Date(),
 
     // Display defaults
     theme: "system",
-    fontSize: "medium",
-    animations: true,
-    notifications: true,
-
-    // Profile defaults
-    publicProfile: false,
-    profileVisibility: "private",
-    showStats: true,
-    showAchievements: true,
-
-    // Goal defaults
-    defaultGoalDuration: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-    allowKeyholderOverride: false,
-    goalReminders: true,
-    progressSharing: "private",
-
-    // Privacy defaults
-    dataCollection: true,
-    analytics: false,
-    crashReporting: true,
-    locationTracking: false,
-
-    // Security defaults
-    twoFactorEnabled: false,
-    sessionTimeout: 60 * 60 * 1000, // 1 hour
-    requirePasswordForSensitive: true,
-    emergencyContacts: [],
-
-    // Data defaults
-    autoBackup: true,
-    backupFrequency: "weekly",
-    dataRetention: 365, // 1 year
-    exportFormat: "json",
-
-    // Advanced defaults
-    advancedLogging: false,
-    betaFeatures: false,
-    developmentMode: false,
-
-    // Keyholder defaults
-    keyholderLinked: false,
-    keyholderPermissions: {
-      viewTasks: false,
-      assignTasks: false,
-      viewSessions: false,
-      controlSessions: false,
-      viewEvents: false,
-      viewSettings: false,
-      modifySettings: false,
+    notifications: {
+      enabled: true,
+      sessionReminders: true,
+      taskDeadlines: true,
+      keyholderMessages: true,
+      goalProgress: true,
+      achievements: true,
+    },
+    privacy: {
+      publicProfile: false,
+      shareStatistics: false,
+      allowDataExport: true,
+      shareAchievements: false,
+    },
+    chastity: {
+      allowEmergencyUnlock: true,
+      emergencyUnlockCooldown: 24, // hours
+      requireKeyholderApproval: false,
+      defaultSessionGoal: 7 * 24 * 60 * 60, // 7 days in seconds
+      hardcoreModeEnabled: false,
+    },
+    display: {
+      language: "en",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      dateFormat: "MM/DD/YYYY",
+      timeFormat: "12h",
+      startOfWeek: "monday",
+    },
+    achievements: {
+      enableTracking: true,
+      showProgress: true,
+      enableNotifications: true,
     },
 
-    createdAt: new Date(),
+    // Optional fields
+    eventDisplayMode: "kinky",
+    twoFactorEnabled: false,
     updatedAt: new Date(),
   };
 }
