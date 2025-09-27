@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { sessionDBService } from "@/services/database";
 import { cacheConfig } from "@/services/cache-config";
 import { firebaseSync } from "@/services/sync";
-import type { DBSession } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useSessionQuery");

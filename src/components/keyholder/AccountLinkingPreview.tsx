@@ -12,20 +12,15 @@ import {
   FaCheck,
 } from "../../utils/iconImport";
 import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking";
-import { useAuthState } from "../../contexts";
 
 // Account Linking Component - Now functional!
 export const AccountLinkingPreview: React.FC = () => {
-  const { user } = useAuthState();
   const {
     currentLinkCode,
     linkCodeError,
     isGeneratingCode,
     isUsingCode,
     codeUsageError,
-    relationships,
-    isKeyholder,
-    isWearer,
     hasActiveRelationships,
     keyholderRelationships,
     wearerRelationships,
@@ -60,7 +55,7 @@ export const AccountLinkingPreview: React.FC = () => {
         await navigator.clipboard.writeText(currentLinkCode.code);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
-      } catch (error) {
+      } catch (_error) {
         // Silently fail - copying is a nice-to-have feature
       }
     }

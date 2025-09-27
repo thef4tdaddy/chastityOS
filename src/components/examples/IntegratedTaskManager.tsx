@@ -58,7 +58,7 @@ export const IntegratedTaskManager: React.FC<IntegratedTaskManagerProps> = ({
       // Reset form and show success
       newTaskForm.resetForm("newTaskForm");
       showSuccess("Task created successfully!");
-    } catch (error) {
+    } catch (_error) {
       showError("Failed to create task. Please try again.");
     } finally {
       newTaskForm.setSubmitting("newTaskForm", false);
