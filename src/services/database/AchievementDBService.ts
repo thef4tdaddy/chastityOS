@@ -119,7 +119,7 @@ export class AchievementDBService extends BaseDBService {
       return await this.achievementsTable
         .where("category")
         .equals(category)
-        .and((achievement) => achievement.isActive)
+        .and((achievement: DBAchievement) => achievement.isActive)
         .toArray();
     } catch (error) {
       logger.error(
@@ -147,7 +147,7 @@ export class AchievementDBService extends BaseDBService {
       const existing = await this.userAchievementsTable
         .where("userId")
         .equals(userId)
-        .and((ua) => ua.achievementId === achievementId)
+        .and((ua: DBUserAchievement) => ua.achievementId === achievementId)
         .first();
 
       if (existing) {
@@ -222,7 +222,7 @@ export class AchievementDBService extends BaseDBService {
       return await this.userAchievementsTable
         .where("userId")
         .equals(userId)
-        .and((ua) => ua.isVisible)
+        .and((ua: DBUserAchievement) => ua.isVisible)
         .toArray();
     } catch (error) {
       logger.error(
@@ -245,7 +245,7 @@ export class AchievementDBService extends BaseDBService {
       const userAchievement = await this.userAchievementsTable
         .where("userId")
         .equals(userId)
-        .and((ua) => ua.achievementId === achievementId)
+        .and((ua: DBUserAchievement) => ua.achievementId === achievementId)
         .first();
 
       if (!userAchievement) {
@@ -293,7 +293,7 @@ export class AchievementDBService extends BaseDBService {
       const existing = await this.achievementProgressTable
         .where("userId")
         .equals(userId)
-        .and((ap) => ap.achievementId === achievementId)
+        .and((ap: DBAchievementProgress) => ap.achievementId === achievementId)
         .first();
 
       const progressData: DBAchievementProgress = {

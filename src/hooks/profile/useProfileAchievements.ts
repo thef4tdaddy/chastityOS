@@ -5,7 +5,7 @@
 
 import { useMemo } from "react";
 import { useAchievements } from "../useAchievements";
-import type { AchievementCategory } from "../../types";
+import { AchievementCategory, UserAchievement, Achievement } from "../../types";
 
 // Helper function for achievement type mapping
 const getAchievementType = (
@@ -64,18 +64,18 @@ export const useProfileAchievements = (
   // Process badges
   const badges: ProfileBadge[] = useMemo(() => {
     const achievementsToShow = isOwnProfile
-      ? allAchievements.filter((a) => {
+      ? allAchievements.filter((a: Achievement) => {
           const userAchievement = visibleAchievements.find(
-            (ua) => ua.achievementId === a.id,
+            (ua: UserAchievement) => ua.achievementId === a.id,
           );
           return userAchievement !== undefined;
         })
       : visibleAchievements;
 
     return achievementsToShow
-      .map((userAchievement) => {
+      .map((userAchievement: UserAchievement) => {
         const achievement = allAchievements.find(
-          (a) => a.id === userAchievement.achievementId,
+          (a: Achievement) => a.id === userAchievement.achievementId,
         );
         return achievement
           ? {
@@ -87,17 +87,20 @@ export const useProfileAchievements = (
             }
           : null;
       })
-      .filter((item): item is ProfileBadge => item !== null);
+      .filter((item: ProfileBadge | null): item is ProfileBadge => item !== null);
   }, [visibleAchievements, allAchievements, isOwnProfile]);
 
   // Process recent achievements
   const recentAchievements: ProfileAchievement[] = useMemo(() => {
     return visibleAchievements
-      .sort((a, b) => b.earnedAt.getTime() - a.earnedAt.getTime())
+      .sort(
+        (a: UserAchievement, b: UserAchievement) =>
+          b.earnedAt.getTime() - a.earnedAt.getTime(),
+      )
       .slice(0, 5)
-      .map((userAchievement) => {
+      .map((userAchievement: UserAchievement) => {
         const achievement = allAchievements.find(
-          (a) => a.id === userAchievement.achievementId,
+          (a: Achievement) => a.id === userAchievement.achievementId,
         );
         return achievement
           ? {
@@ -109,7 +112,7 @@ export const useProfileAchievements = (
             }
           : null;
       })
-      .filter((item): item is ProfileAchievement => item !== null);
+      .filter((item: ProfileAchievement | null): item is ProfileAchievement => item !== null);
   }, [visibleAchievements, allAchievements]);
 
   return {

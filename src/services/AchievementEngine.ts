@@ -9,7 +9,7 @@ import {
   taskDBService,
   goalDBService,
 } from "./database";
-import { DBSession, DBGoal, AchievementCategory } from "../types";
+import { DBSession, DBGoal, DBTask, AchievementCategory } from "../types";
 import { ACHIEVEMENTS_WITH_IDS } from "../constants/achievements";
 import { logger } from "../utils/logging";
 
@@ -128,7 +128,7 @@ export class AchievementEngine {
    */
   private async checkSessionMilestones(userId: string): Promise<void> {
     const sessions = await sessionDBService.getUserSessions(userId);
-    const completedSessions = sessions.filter((s) => s.endTime);
+    const completedSessions = sessions.filter((s: DBSession) => s.endTime);
 
     if (completedSessions.length === 0) return;
 
@@ -147,7 +147,7 @@ export class AchievementEngine {
         }
       } else if (requirement.type === "session_duration") {
         // Check if any session meets the duration requirement
-        const hasLongSession = completedSessions.some((session) => {
+        const hasLongSession = completedSessions.some((session: DBSession) => {
           if (!session.startTime || !session.endTime) return false;
           const duration =
             (session.endTime.getTime() - session.startTime.getTime()) / 1000;
@@ -166,7 +166,7 @@ export class AchievementEngine {
    */
   private async checkConsistencyBadges(userId: string): Promise<void> {
     const sessions = await sessionDBService.getUserSessions(userId);
-    const completedSessions = sessions.filter((s) => s.endTime);
+    const completedSessions = sessions.filter((s: DBSession) => s.endTime);
 
     const consistencyAchievements =
       await achievementDBService.getAchievementsByCategory(
@@ -191,8 +191,8 @@ export class AchievementEngine {
   private async checkStreakAchievements(userId: string): Promise<void> {
     const sessions = await sessionDBService.getUserSessions(userId);
     const completedSessions = sessions
-      .filter((s) => s.endTime)
-      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+      .filter((s: DBSession) => s.endTime)
+      .sort((a: DBSession, b: DBSession) => a.startTime.getTime() - b.startTime.getTime());
 
     if (completedSessions.length === 0) return;
 
@@ -224,7 +224,7 @@ export class AchievementEngine {
     goalData?: DBGoal,
   ): Promise<void> {
     const goals = await goalDBService.getUserGoals(userId);
-    const completedGoals = goals.filter((g) => g.isCompleted);
+    const completedGoals = goals.filter((g: DBGoal) => g.isCompleted);
 
     const goalAchievements =
       await achievementDBService.getAchievementsByCategory(
@@ -264,9 +264,9 @@ export class AchievementEngine {
   private async checkTaskAchievements(userId: string): Promise<void> {
     const tasks = await taskDBService.getUserTasks(userId);
     const completedTasks = tasks.filter(
-      (t) => t.status === "completed" || t.status === "approved",
+      (t: DBTask) => t.status === "completed" || t.status === "approved",
     );
-    const approvedTasks = tasks.filter((t) => t.status === "approved");
+    const approvedTasks = tasks.filter((t: DBTask) => t.status === "approved");
 
     const taskAchievements =
       await achievementDBService.getAchievementsByCategory(
@@ -282,7 +282,7 @@ export class AchievementEngine {
         }
       } else if (requirement.type === "special_condition") {
         if (requirement.condition === "task_approval_rate") {
-          const submittedTasks = tasks.filter((t) => t.status !== "pending");
+          const submittedTasks = tasks.filter((t: DBTask) => t.status !== "pending");
           if (submittedTasks.length > 0) {
             const approvalRate =
               (approvedTasks.length / submittedTasks.length) * 100;

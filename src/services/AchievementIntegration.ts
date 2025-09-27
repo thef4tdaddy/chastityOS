@@ -7,7 +7,7 @@ import { achievementEngine } from "./AchievementEngine";
 import { achievementDBService } from "./database";
 import { sessionDBService, taskDBService, goalDBService } from "./database";
 import { logger } from "../utils/logging";
-import type { DBSession, DBGoal } from "../types/database";
+import type { DBSession, DBGoal, DBAchievement } from "../types/database";
 
 // Type for session event data used in achievements
 export interface SessionEventData {
@@ -249,7 +249,7 @@ export class AchievementIntegrationService {
       // This would be called for beta users
       const achievements = await achievementDBService.getAllAchievements();
       const betaAchievement = achievements.find(
-        (a) => a.name === "Beta Tester",
+        (a: DBAchievement) => a.name === "Beta Tester",
       );
 
       if (betaAchievement) {
