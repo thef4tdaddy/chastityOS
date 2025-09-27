@@ -466,7 +466,7 @@ export function useDeleteTask() {
 
       logger.info("Task deleted successfully", { taskId, userId });
     },
-    onSuccess: (_, { taskId, userId }) => {
+    onSuccess: (_: void, { taskId, userId }: { taskId: string; userId: string }) => {
       logger.info("Task deletion successful", { taskId, userId });
 
       // Remove from detail cache
@@ -490,7 +490,7 @@ export function useDeleteTask() {
         },
       );
     },
-    onError: (error, { taskId, userId }) => {
+    onError: (error: Error, { taskId, userId }: { taskId: string; userId: string }) => {
       logger.error("Task deletion failed", error, { taskId, userId });
     },
   });
