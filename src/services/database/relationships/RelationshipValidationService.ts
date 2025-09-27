@@ -167,7 +167,7 @@ export class RelationshipValidationService {
     currentStatus: RelationshipStatus,
     newStatus: RelationshipStatus,
   ): { valid: boolean; error?: string } {
-    const validTransitions = {
+    const validTransitions: Record<RelationshipStatus, RelationshipStatus[]> = {
       [RelationshipStatus.PENDING]: [
         RelationshipStatus.ACTIVE,
         RelationshipStatus.ENDED,
