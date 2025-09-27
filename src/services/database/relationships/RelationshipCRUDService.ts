@@ -158,9 +158,14 @@ export class RelationshipCRUDService {
         return null;
       }
 
+      const firstDoc = relationships.docs[0];
+      if (!firstDoc) {
+        return null;
+      }
+
       const relationship = {
-        ...relationships.docs[0].data(),
-        id: relationships.docs[0].id,
+        ...firstDoc.data(),
+        id: firstDoc.id,
       } as Relationship;
 
       logger.debug("Retrieved relationship between users", {
