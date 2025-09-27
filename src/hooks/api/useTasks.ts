@@ -151,7 +151,11 @@ export function useTasks(userId: string, filters?: TaskFilters) {
 
         return filteredTasks;
       } catch (error) {
-        logger.error("Failed to fetch tasks", error, { userId, filters });
+        logger.error("Failed to fetch tasks", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+          filters,
+        });
         throw error;
       }
     },
@@ -274,7 +278,8 @@ export function useCreateTask() {
       );
     },
     onError: (error, { userId, taskData }) => {
-      logger.error("Task creation failed", error, {
+      logger.error("Task creation failed", {
+        error: error instanceof Error ? error.message : String(error),
         userId,
         title: taskData.title,
       });
@@ -380,7 +385,11 @@ export function useUpdateTaskStatus() {
       }
     },
     onError: (error, { taskId, userId }, context) => {
-      logger.error("Task status update failed", error, { taskId, userId });
+      logger.error("Task status update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
 
       // Rollback optimistic updates
       if (context?.previousTask) {
@@ -441,7 +450,11 @@ export function useUpdateTask() {
       });
     },
     onError: (error, { taskId, userId }) => {
-      logger.error("Task update failed", error, { taskId, userId });
+      logger.error("Task update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
     },
   });
 }
@@ -491,7 +504,11 @@ export function useDeleteTask() {
       );
     },
     onError: (error, { taskId, userId }) => {
-      logger.error("Task deletion failed", error, { taskId, userId });
+      logger.error("Task deletion failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
     },
   });
 }

@@ -86,6 +86,43 @@ class SettingsDBService extends BaseDBService<DBSettings> {
       throw error;
     }
   }
+
+  /**
+   * Create default settings for a user
+   */
+  async createDefaultSettings(userId: string): Promise<string> {
+    try {
+      const defaultSettings: Omit<DBSettings, "lastModified" | "syncStatus"> = {
+        id: userId, // Use userId as the id for settings
+        userId,
+        theme: "dark",
+        notifications: {
+          enabled: true,
+          sessionReminders: true,
+          taskDeadlines: true,
+          achievementAlerts: true,
+          soundEnabled: true,
+        },
+        display: {
+          language: "en",
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          dateFormat: "MM/dd/yyyy",
+          timeFormat: "12h",
+          startOfWeek: "sunday",
+        },
+      };
+
+      await this.create(defaultSettings);
+      logger.info("Created default settings", { userId });
+      return userId;
+    } catch (error) {
+      logger.error("Failed to create default settings", {
+        error: error as Error,
+        userId,
+      });
+      throw error;
+    }
+  }
 }
 
 export const settingsDBService = new SettingsDBService();

@@ -2,7 +2,7 @@
  * Relationship Permission Service
  * Handles access control and permission checking for chastity operations
  */
-import { relationshipService } from "../RelationshipService";
+import { relationshipService } from "../relationships/RelationshipService";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("RelationshipPermissionService");

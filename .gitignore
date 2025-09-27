@@ -17,6 +17,7 @@ dist-ssr
 # Build artifacts and temporary files
 .trigger
 .last-nightly-version
+.eslintcache
 
 # Environment variable files
 .env

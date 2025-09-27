@@ -75,14 +75,120 @@ export default defineConfig(({ mode }) => {
         : []),
       VitePWA({
         registerType: "autoUpdate",
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.destination === "document",
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "documents",
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
+              },
+            },
+            {
+              urlPattern: ({ request }) =>
+                ["style", "script", "worker"].includes(request.destination),
+              handler: "StaleWhileRevalidate",
+              options: {
+                cacheName: "static-resources",
+              },
+            },
+            {
+              urlPattern: ({ request }) => request.destination === "image",
+              handler: "CacheFirst",
+              options: {
+                cacheName: "images",
+                expiration: {
+                  maxEntries: 60,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
+                },
+                cacheKeyWillBeUsed: async ({ request }) => {
+                  return `${request.url}?${request.headers.get('font-display') || 'auto'}`;
+                },
+              },
+            },
+          ],
+        },
         manifest: {
           name: "ChastityOS",
           short_name: "ChastityOS",
+          description: "Modern chastity tracking and FLR management app",
           start_url: "/",
           display: "standalone",
-          background_color: "#000000",
-          theme_color: "#000000",
+          background_color: "#282132",
+          theme_color: "#581c87",
+          orientation: "portrait-primary",
+          categories: ["productivity", "utilities"],
+          lang: "en-US",
+          shortcuts: [
+            {
+              name: "Quick Log Event",
+              short_name: "Log Event",
+              description: "Quickly log a new chastity event",
+              url: "/?shortcut=log-event",
+              icons: [{ src: "/icons/shortcut-log.png", sizes: "96x96" }]
+            },
+            {
+              name: "View Tracker",
+              short_name: "Tracker", 
+              description: "View current chastity tracking dashboard",
+              url: "/?shortcut=tracker",
+              icons: [{ src: "/icons/shortcut-tracker.png", sizes: "96x96" }]
+            },
+            {
+              name: "Keyholder Dashboard",
+              short_name: "Keyholder",
+              description: "Access keyholder controls and tasks", 
+              url: "/?shortcut=keyholder",
+              icons: [{ src: "/icons/shortcut-keyholder.png", sizes: "96x96" }]
+            }
+          ],
           icons: [
+            {
+              src: "/icons/icon-72x72.png",
+              sizes: "72x72",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "/icons/icon-96x96.png",
+              sizes: "96x96", 
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "/icons/icon-128x128.png",
+              sizes: "128x128",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
+              src: "/icons/icon-144x144.png",
+              sizes: "144x144",
+              type: "image/png", 
+              purpose: "any",
+            },
+            {
+              src: "/icons/icon-152x152.png",
+              sizes: "152x152",
+              type: "image/png",
+              purpose: "any",
+            },
             {
               src: "/icons/icon-192x192.png",
               sizes: "192x192",
@@ -90,48 +196,54 @@ export default defineConfig(({ mode }) => {
               purpose: "any",
             },
             {
+              src: "/icons/icon-384x384.png", 
+              sizes: "384x384",
+              type: "image/png",
+              purpose: "any",
+            },
+            {
               src: "/icons/icon-512x512.png",
               sizes: "512x512",
               type: "image/png",
-              purpose: "any maskable",
+              purpose: "any",
+            },
+            {
+              src: "/icons/icon-maskable-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
             },
           ],
           screenshots: [
             {
-              src: "/screenshots/screenshot-desktop-1.png",
-              sizes: "1280x720",
+              src: "/screenshots/screenshot-mobile-1.png",
+              sizes: "390x844",
               type: "image/png",
+              form_factor: "narrow",
+              label: "Mobile view of the chastity tracker dashboard"
+            },
+            {
+              src: "/screenshots/screenshot-mobile-2.png", 
+              sizes: "390x844",
+              type: "image/png",
+              form_factor: "narrow",
+              label: "Mobile view of event logging interface"
             },
             {
               src: "/screenshots/screenshot-desktop-1.png",
               sizes: "1280x720",
               type: "image/png",
               form_factor: "wide",
-            },
-            {
-              src: "/screenshots/screenshot-mobile-1.png",
-              sizes: "540x1027",
-              type: "image/png",
-              form_factor: "narrow",
-            },
+              label: "Desktop view of the main dashboard"
+            }
           ],
-        },
-        workbox: {
-          runtimeCaching: [
-            {
-              urlPattern: ({ request }) => request.destination === "document",
-              handler: "NetworkFirst",
-            },
-            {
-              urlPattern: ({ request }) =>
-                ["style", "script", "worker"].includes(request.destination),
-              handler: "StaleWhileRevalidate",
-            },
-            {
-              urlPattern: ({ request }) => request.destination === "image",
-              handler: "CacheFirst",
-            },
-          ],
+          prefer_related_applications: false,
+          edge_side_panel: {
+            preferred_width: 400
+          },
+          launch_handler: {
+            client_mode: "focus-existing"
+          }
         },
         devOptions: {
           enabled: mode !== "development",

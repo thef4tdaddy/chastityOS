@@ -54,7 +54,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
   return (
     <div className="space-y-6">
       <StatsHeader stats={stats} />
-      
+
       <Filters
         searchTerm={searchTerm}
         selectedCategory={selectedCategory}
@@ -66,7 +66,6 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
         onEarnedFilterChange={setShowOnlyEarned}
         getCategoryName={getCategoryName}
       />
-
       <div className="space-y-6">
         {Object.entries(groupedAchievements).map(([categoryName, achievements]) => (
           <div key={categoryName} className="space-y-4">
