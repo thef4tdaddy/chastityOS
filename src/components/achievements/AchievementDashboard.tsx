@@ -51,12 +51,12 @@ export const AchievementDashboard: React.FC = () => {
     .slice(0, 3);
 
   const categories: AchievementCategory[] = [
-    "session_milestones",
-    "consistency_badges",
-    "streak_achievements",
-    "goal_based",
-    "task_completion",
-    "special_achievements",
+    AchievementCategory.SESSION_MILESTONES,
+    AchievementCategory.CONSISTENCY_BADGES,
+    AchievementCategory.STREAK_ACHIEVEMENTS,
+    AchievementCategory.GOAL_BASED,
+    AchievementCategory.TASK_COMPLETION,
+    AchievementCategory.SPECIAL_ACHIEVEMENTS,
   ];
 
   const categoryProgress = categories.map((category) => {

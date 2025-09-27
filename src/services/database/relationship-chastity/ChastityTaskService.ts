@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   onSnapshot,
   Unsubscribe,
+  Timestamp,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -84,7 +85,9 @@ class ChastityTaskService {
         text: taskData.text,
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
-        dueDate: taskData.dueDate ? serverTimestamp() : undefined,
+        dueDate: taskData.dueDate
+          ? (serverTimestamp() as unknown as Timestamp)
+          : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
       };

@@ -365,7 +365,7 @@ export class DBPerformanceService {
 
     const stats = await db.getStats();
     const totalRecords = Object.values(stats).reduce(
-      (sum, count) => sum + count,
+      (sum, count) => sum + (typeof count === "number" ? count : 0),
       0,
     );
 
@@ -373,7 +373,7 @@ export class DBPerformanceService {
 
     // Check for large tables
     Object.entries(stats).forEach(([table, count]) => {
-      if (count > 10000) {
+      if (typeof count === "number" && count > 10000) {
         sizeRecommendations.push(
           `${table} table has ${count} records. Consider archiving old data.`,
         );
@@ -401,7 +401,9 @@ export class DBPerformanceService {
 
     const results = {
       totalRecords,
-      tableBreakdown: stats,
+      tableBreakdown: Object.fromEntries(
+        Object.entries(stats).filter(([_, count]) => typeof count === "number"),
+      ) as Record<string, number>,
       sizeRecommendations,
     };
 

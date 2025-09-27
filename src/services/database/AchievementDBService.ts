@@ -635,8 +635,14 @@ export class AchievementDBService extends BaseDBService {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
         userId,
-        category: category as AchievementCategory,
-        period: period as "daily" | "weekly" | "monthly" | "yearly" | "allTime",
+        category: category as
+          | "session_count"
+          | "total_chastity_time"
+          | "longest_single_session"
+          | "current_streak"
+          | "achievement_points"
+          | "goal_achievements",
+        period: period as "this_week" | "this_month" | "this_year" | "all_time",
         value,
         rank: 0, // Will be calculated by ranking algorithm
         displayName,
