@@ -2,6 +2,7 @@
  * Modal Store - UI Interaction State
  * Manages modal visibility, content, and confirmation dialogs
  */
+import React from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
