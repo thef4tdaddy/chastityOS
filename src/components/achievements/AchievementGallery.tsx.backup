@@ -17,11 +17,6 @@ import {
   AchievementCategory,
   AchievementDifficulty,
 } from "../../types";
-import {
-  StatsHeader,
-  Filters,
-  EmptyState,
-} from "./AchievementGalleryComponents";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -79,15 +74,9 @@ const getCategoryName = (category: AchievementCategory): string => {
 };
 
 // Custom hook for achievement filtering
-const useAchievementFilters = (
-  achievementsWithProgress: AchievementWithProgress[],
-) => {
-  const [selectedCategory, setSelectedCategory] = useState<
-    AchievementCategory | "all"
-  >("all");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<
-    AchievementDifficulty | "all"
-  >("all");
+const useAchievementFilters = (achievementsWithProgress: AchievementWithProgress[]) => {
+  const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | "all">("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<AchievementDifficulty | "all">("all");
   const [showOnlyEarned, setShowOnlyEarned] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -95,17 +84,11 @@ const useAchievementFilters = (
     return achievementsWithProgress.filter((item) => {
       const { achievement, isEarned } = item;
 
-      if (
-        selectedCategory !== "all" &&
-        achievement.category !== selectedCategory
-      ) {
+      if (selectedCategory !== "all" && achievement.category !== selectedCategory) {
         return false;
       }
 
-      if (
-        selectedDifficulty !== "all" &&
-        achievement.difficulty !== selectedDifficulty
-      ) {
+      if (selectedDifficulty !== "all" && achievement.difficulty !== selectedDifficulty) {
         return false;
       }
 
@@ -113,25 +96,15 @@ const useAchievementFilters = (
         return false;
       }
 
-      if (
-        searchTerm &&
-        !achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !achievement.description
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      ) {
+      if (searchTerm && 
+          !achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !achievement.description.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
 
       return true;
     });
-  }, [
-    achievementsWithProgress,
-    selectedCategory,
-    selectedDifficulty,
-    showOnlyEarned,
-    searchTerm,
-  ]);
+  }, [achievementsWithProgress, selectedCategory, selectedDifficulty, showOnlyEarned, searchTerm]);
 
   return {
     selectedCategory,
@@ -146,17 +119,11 @@ const useAchievementFilters = (
   };
 };
 
-// Custom hook for stats calculation
-const useAchievementStats = (
-  achievementsWithProgress: AchievementWithProgress[],
-) => {
+// Custom hook for achievement stats
+const useAchievementStats = (achievementsWithProgress: AchievementWithProgress[]) => {
   return useMemo(() => {
-    const totalEarned = achievementsWithProgress.filter(
-      (a) => a.isEarned,
-    ).length;
-    const totalVisible = achievementsWithProgress.filter(
-      (a) => !a.achievement.isHidden,
-    ).length;
+    const totalEarned = achievementsWithProgress.filter((a) => a.isEarned).length;
+    const totalVisible = achievementsWithProgress.filter((a) => !a.achievement.isHidden).length;
     const totalPoints = achievementsWithProgress
       .filter((a) => a.isEarned)
       .reduce((sum, a) => sum + a.achievement.points, 0);
@@ -165,16 +132,13 @@ const useAchievementStats = (
       totalEarned,
       totalVisible,
       totalPoints,
-      completionPercentage:
-        totalVisible > 0 ? (totalEarned / totalVisible) * 100 : 0,
+      completionPercentage: totalVisible > 0 ? (totalEarned / totalVisible) * 100 : 0,
     };
   }, [achievementsWithProgress]);
 };
 
-// Custom hook for grouping achievements by category
-const useGroupedAchievements = (
-  filteredAchievements: AchievementWithProgress[],
-) => {
+// Custom hook for grouping achievements
+const useGroupedAchievements = (filteredAchievements: AchievementWithProgress[]) => {
   return useMemo(() => {
     const groups: Record<string, AchievementWithProgress[]> = {};
 
@@ -189,6 +153,95 @@ const useGroupedAchievements = (
     return groups;
   }, [filteredAchievements]);
 };
+
+// Stats Header Component
+interface StatsHeaderProps {
+  stats: ReturnType<typeof useAchievementStats>;
+}
+
+const StatsHeader: React.FC<StatsHeaderProps> = ({ stats }) => (
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-2xl font-bold text-nightly-honeydew">Achievement Gallery</h2>
+      <div className="flex items-center space-x-4 text-sm">
+        <span className="text-nightly-celadon">
+          {stats.totalEarned} / {stats.totalVisible} Earned
+        </span>
+        <span className="text-nightly-aquamarine font-semibold">
+          {stats.totalPoints} Points
+        </span>
+        <span className="text-nightly-lavender-floral">
+          {stats.completionPercentage.toFixed(1)}% Complete
+        </span>
+      </div>
+    </div>
+
+    <div className="w-full bg-gray-700 rounded-full h-2">
+      <div
+        className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full transition-all duration-300"
+        style={{ width: `${Math.min(stats.completionPercentage, 100)}%` }}
+      />
+    </div>
+  </div>
+);
+
+// Filters Component
+interface FiltersProps {
+  filters: ReturnType<typeof useAchievementFilters>;
+}
+
+const Filters: React.FC<FiltersProps> = ({ filters }) => (
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="relative">
+        <FaSearch className="absolute left-3 top-3 text-nightly-celadon" />
+        <input
+          type="text"
+          value={filters.searchTerm}
+          onChange={(e) => filters.setSearchTerm(e.target.value)}
+          placeholder="Search achievements..."
+          className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-nightly-honeydew placeholder-nightly-celadon focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
+        />
+      </div>
+
+      <select
+        value={filters.selectedCategory}
+        onChange={(e) => filters.setSelectedCategory(e.target.value as AchievementCategory | "all")}
+        className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-nightly-honeydew focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
+      >
+        <option value="all">All Categories</option>
+        {Object.values(AchievementCategory).map((category) => (
+          <option key={category} value={category}>
+            {getCategoryName(category)}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={filters.selectedDifficulty}
+        onChange={(e) => filters.setSelectedDifficulty(e.target.value as AchievementDifficulty | "all")}
+        className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-nightly-honeydew focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
+      >
+        <option value="all">All Difficulties</option>
+        {Object.values(AchievementDifficulty).map((difficulty) => (
+          <option key={difficulty} value={difficulty}>
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+          </option>
+        ))}
+      </select>
+
+      <label className="flex items-center space-x-2 text-nightly-celadon">
+        <input
+          type="checkbox"
+          checked={filters.showOnlyEarned}
+          onChange={(e) => filters.setShowOnlyEarned(e.target.checked)}
+          className="rounded border-white/20 bg-white/10 text-nightly-aquamarine focus:ring-nightly-aquamarine"
+        />
+        <span>Earned Only</span>
+      </label>
+    </div>
+  </div>
+);
 
 export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
   achievementsWithProgress,
