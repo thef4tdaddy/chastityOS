@@ -448,16 +448,18 @@ export class ChastityDB extends Dexie {
 
       await this.transaction(
         "rw",
-        this.users,
-        this.sessions,
-        this.events,
-        this.tasks,
-        this.goals,
-        this.settings,
-        this.userAchievements,
-        this.achievementProgress,
-        this.achievementNotifications,
-        this.leaderboardEntries,
+        [
+          this.users,
+          this.sessions,
+          this.events,
+          this.tasks,
+          this.goals,
+          this.settings,
+          this.userAchievements,
+          this.achievementProgress,
+          this.achievementNotifications,
+          this.leaderboardEntries,
+        ],
         async () => {
           await this.users.where("uid").equals(userId).delete();
           await this.sessions.where("userId").equals(userId).delete();
