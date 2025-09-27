@@ -197,7 +197,10 @@ export default [
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: false, // Disable project-wide type checking for performance
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
       },
     },
     plugins: {
