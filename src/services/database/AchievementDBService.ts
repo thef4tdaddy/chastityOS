@@ -5,7 +5,7 @@
  */
 
 import { BaseDBService } from "./BaseDBService";
-import { ChastityDB } from "../storage/ChastityDB";
+import { ChastityDB, db } from "../storage/ChastityDB";
 import {
   DBAchievement,
   DBUserAchievement,
@@ -19,12 +19,28 @@ import {
 import { logger } from "../../utils/logging";
 
 export class AchievementDBService extends BaseDBService {
-  protected db = ChastityDB.getInstance();
+  protected db = db; // Use the db instance instead of ChastityDB.getInstance()
   protected achievementsTable = this.db.achievements;
   protected userAchievementsTable = this.db.userAchievements;
   protected achievementProgressTable = this.db.achievementProgress;
   protected achievementNotificationsTable = this.db.achievementNotifications;
   protected leaderboardEntriesTable = this.db.leaderboardEntries;
+
+  /**
+   * Generate a unique ID for achievement-related records
+   */
+  private generateId(): string {
+    return `ach_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Queue sync operation (placeholder for sync functionality)
+   */
+  private queueSync(operation: string, data: any): void {
+    // TODO: Implement sync queue functionality
+    logger.debug("Queuing sync operation", { operation, data });
+  }
+
   // ==================== ACHIEVEMENT CRUD ====================
 
   /**
