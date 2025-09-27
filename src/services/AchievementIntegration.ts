@@ -77,10 +77,16 @@ export class AchievementIntegrationService {
     sessionData: SessionEventData,
   ): Promise<void> {
     try {
+      // Get the full session data if sessionId is provided
+      let fullSessionData: DBSession | undefined = undefined;
+      if (sessionData.sessionId) {
+        fullSessionData = await sessionDBService.findById(sessionData.sessionId);
+      }
+
       await achievementEngine.processSessionEvent(
         userId,
         "session_start",
-        sessionData,
+        fullSessionData,
       );
       logger.debug(
         `Processed session start for user ${userId}`,
@@ -103,10 +109,16 @@ export class AchievementIntegrationService {
     sessionData?: SessionEventData,
   ): Promise<void> {
     try {
+      // Get the full session data if sessionId is provided
+      let fullSessionData: DBSession | undefined = undefined;
+      if (sessionData?.sessionId) {
+        fullSessionData = await sessionDBService.findById(sessionData.sessionId);
+      }
+
       await achievementEngine.processSessionEvent(
         userId,
         "session_end",
-        sessionData,
+        fullSessionData,
       );
       logger.debug(
         `Processed session end for user ${userId}`,
@@ -186,10 +198,16 @@ export class AchievementIntegrationService {
     goalData?: GoalEventData,
   ): Promise<void> {
     try {
+      // Get the full goal data if goalId is provided
+      let fullGoalData: DBGoal | undefined = undefined;
+      if (goalData?.goalId) {
+        fullGoalData = await goalDBService.findById(goalData.goalId);
+      }
+
       await achievementEngine.processGoalEvent(
         userId,
         "goal_completed",
-        goalData,
+        fullGoalData,
       );
       logger.debug(
         `Processed goal completion for user ${userId}`,

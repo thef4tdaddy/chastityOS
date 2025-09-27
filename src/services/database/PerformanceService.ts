@@ -86,7 +86,7 @@ export class DBPerformanceService {
   /**
    * Create a performance wrapper for database operations
    */
-  static wrapOperation<T>(
+  static async wrapOperation<T>(
     operation: string,
     table: string,
     queryFn: () => Promise<T>,

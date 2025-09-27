@@ -364,6 +364,27 @@ class SessionDBService extends BaseDBService<DBSession> {
       throw error;
     }
   }
+
+  /**
+   * Get all sessions for a user (alias for getSessionHistory)
+   */
+  async getUserSessions(userId: string): Promise<DBSession[]> {
+    try {
+      const sessions = await this.table
+        .where("userId")
+        .equals(userId)
+        .sortBy("startTime");
+      
+      logger.debug("Get user sessions", { userId, count: sessions.length });
+      return sessions;
+    } catch (error) {
+      logger.error("Failed to get user sessions", {
+        error: error as Error,
+        userId,
+      });
+      throw error;
+    }
+  }
 }
 
 export const sessionDBService = new SessionDBService();

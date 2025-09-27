@@ -112,7 +112,9 @@ export function useTaskMutations() {
       const updatedTask = await taskDBService.updateTaskStatus(
         params.taskId,
         params.status,
-        params.feedback,
+        {
+          keyholderFeedback: params.feedback,
+        }
       );
 
       // 2. Trigger Firebase sync in background
@@ -190,7 +192,9 @@ export function useTaskMutations() {
       const updatedTask = await taskDBService.updateTaskStatus(
         params.taskId,
         "submitted",
-        params.note,
+        {
+          submissiveNote: params.note,
+        }
       );
 
       // 2. Trigger Firebase sync in background

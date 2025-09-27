@@ -3,12 +3,12 @@
  * Handles leaderboard operations and rankings
  */
 
-import { ChastityDB } from "../../storage/ChastityDB";
+import { ChastityDB, db } from "../../storage/ChastityDB";
 import { DBLeaderboardEntry } from "../../../types";
 import { logger } from "../../../utils/logging";
 
 export class AchievementLeaderboardService {
-  private leaderboardEntriesTable = ChastityDB.leaderboardEntries;
+  private leaderboardEntriesTable = db.leaderboardEntries;
 
   private generateId(): string {
     return `le_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
