@@ -6,11 +6,7 @@
 import React, { useState } from "react";
 import { useOfflineQueueStats } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
-import {
-  FaWifi,
-  FaWifiSlash,
-  FaSync,
-} from "react-icons/fa";
+import { FaWifi, FaWifiSlash, FaSync } from "react-icons/fa";
 
 export const OfflineStatus: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);

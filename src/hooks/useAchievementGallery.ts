@@ -23,16 +23,26 @@ interface AchievementWithProgress {
   isVisible: boolean;
 }
 
-export const useAchievementGallery = (achievementsWithProgress: AchievementWithProgress[]) => {
-  const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | "all">("all");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<AchievementDifficulty | "all">("all");
+export const useAchievementGallery = (
+  achievementsWithProgress: AchievementWithProgress[],
+) => {
+  const [selectedCategory, setSelectedCategory] = useState<
+    AchievementCategory | "all"
+  >("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<
+    AchievementDifficulty | "all"
+  >("all");
   const [showOnlyEarned, setShowOnlyEarned] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Calculate stats
   const stats = useMemo(() => {
-    const totalEarned = achievementsWithProgress.filter((a) => a.isEarned).length;
-    const totalVisible = achievementsWithProgress.filter((a) => !a.achievement.isHidden).length;
+    const totalEarned = achievementsWithProgress.filter(
+      (a) => a.isEarned,
+    ).length;
+    const totalVisible = achievementsWithProgress.filter(
+      (a) => !a.achievement.isHidden,
+    ).length;
     const totalPoints = achievementsWithProgress
       .filter((a) => a.isEarned)
       .reduce((sum, a) => sum + a.achievement.points, 0);
@@ -41,7 +51,8 @@ export const useAchievementGallery = (achievementsWithProgress: AchievementWithP
       totalEarned,
       totalVisible,
       totalPoints,
-      completionPercentage: totalVisible > 0 ? (totalEarned / totalVisible) * 100 : 0,
+      completionPercentage:
+        totalVisible > 0 ? (totalEarned / totalVisible) * 100 : 0,
     };
   }, [achievementsWithProgress]);
 
@@ -51,12 +62,18 @@ export const useAchievementGallery = (achievementsWithProgress: AchievementWithP
       const { achievement, isEarned } = item;
 
       // Category filter
-      if (selectedCategory !== "all" && achievement.category !== selectedCategory) {
+      if (
+        selectedCategory !== "all" &&
+        achievement.category !== selectedCategory
+      ) {
         return false;
       }
 
       // Difficulty filter
-      if (selectedDifficulty !== "all" && achievement.difficulty !== selectedDifficulty) {
+      if (
+        selectedDifficulty !== "all" &&
+        achievement.difficulty !== selectedDifficulty
+      ) {
         return false;
       }
 
@@ -69,7 +86,9 @@ export const useAchievementGallery = (achievementsWithProgress: AchievementWithP
       if (
         searchTerm &&
         !achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !achievement.description.toLowerCase().includes(searchTerm.toLowerCase())
+        !achievement.description
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
       ) {
         return false;
       }
@@ -81,7 +100,13 @@ export const useAchievementGallery = (achievementsWithProgress: AchievementWithP
 
       return true;
     });
-  }, [achievementsWithProgress, selectedCategory, selectedDifficulty, showOnlyEarned, searchTerm]);
+  }, [
+    achievementsWithProgress,
+    selectedCategory,
+    selectedDifficulty,
+    showOnlyEarned,
+    searchTerm,
+  ]);
 
   // Group by category
   const groupedAchievements = useMemo(() => {
@@ -104,13 +129,13 @@ export const useAchievementGallery = (achievementsWithProgress: AchievementWithP
     selectedDifficulty,
     showOnlyEarned,
     searchTerm,
-    
+
     // Setters
     setSelectedCategory,
     setSelectedDifficulty,
     setShowOnlyEarned,
     setSearchTerm,
-    
+
     // Computed values
     stats,
     filteredAchievements,
@@ -137,7 +162,9 @@ export const getCategoryName = (category: AchievementCategory): string => {
 };
 
 // Helper function to get difficulty color styling
-export const getDifficultyColor = (difficulty: AchievementDifficulty): string => {
+export const getDifficultyColor = (
+  difficulty: AchievementDifficulty,
+): string => {
   switch (difficulty) {
     case AchievementDifficulty.COMMON:
       return "border-gray-400 bg-gray-50";

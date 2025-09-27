@@ -76,13 +76,10 @@ export function useSessionMutations() {
       requiredDuration?: number;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
-      const sessionId = await sessionDBService.startSession(
-        params.userId,
-        {
-          goalDuration: params.requiredDuration,
-          notes: `Session started at ${params.startTime || new Date()}`,
-        }
-      );
+      const sessionId = await sessionDBService.startSession(params.userId, {
+        goalDuration: params.requiredDuration,
+        notes: `Session started at ${params.startTime || new Date()}`,
+      });
 
       // Get the created session
       const session = await sessionDBService.findById(sessionId);
@@ -152,16 +149,15 @@ export function useSessionMutations() {
   const pauseSession = useMutation({
     mutationFn: async (params: { userId: string; reason?: string }) => {
       // 1. Get current session first
-      const currentSession = await sessionDBService.getCurrentSession(params.userId);
+      const currentSession = await sessionDBService.getCurrentSession(
+        params.userId,
+      );
       if (!currentSession) {
         throw new Error("No active session to pause");
       }
-      
+
       // 2. Update local Dexie immediately
-      await sessionDBService.pauseSession(
-        currentSession.id,
-        new Date(),
-      );
+      await sessionDBService.pauseSession(currentSession.id, new Date());
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -171,7 +167,9 @@ export function useSessionMutations() {
       }
 
       // Return the updated session
-      const updatedSession = await sessionDBService.getCurrentSession(params.userId);
+      const updatedSession = await sessionDBService.getCurrentSession(
+        params.userId,
+      );
       return updatedSession;
     },
     onSuccess: (data, variables) => {

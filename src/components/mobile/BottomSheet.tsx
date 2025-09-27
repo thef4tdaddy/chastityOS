@@ -2,11 +2,11 @@
  * Bottom Sheet Component
  * Mobile-optimized modal that slides up from the bottom
  */
-import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { useViewport } from '../../hooks/mobile/useViewport';
-import { useHapticFeedback } from '../../hooks/mobile/useHapticFeedback';
-import { useTouchGestures } from '../../hooks/mobile/useTouchGestures';
+import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useViewport } from "../../hooks/mobile/useViewport";
+import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
+import { useTouchGestures } from "../../hooks/mobile/useTouchGestures";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -23,46 +23,49 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   onClose,
   children,
   title,
-  maxHeight = '80vh',
+  maxHeight = "80vh",
   preventClose = false,
-  className = ''
+  className = "",
 }) => {
   const { isMobile, safeAreaInsets } = useViewport();
   const { light } = useHapticFeedback();
 
   // Handle swipe down to close
-  const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures({
-    onSwipeDown: () => {
-      if (!preventClose) {
-        light();
-        onClose();
-      }
-    }
-  }, {
-    threshold: 50,
-    minDistance: 100
-  });
+  const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures(
+    {
+      onSwipeDown: () => {
+        if (!preventClose) {
+          light();
+          onClose();
+        }
+      },
+    },
+    {
+      threshold: 50,
+      minDistance: 100,
+    },
+  );
 
   // Handle escape key
   useEffect(() => {
     if (!isOpen) return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !preventClose) {
+      if (e.key === "Escape" && !preventClose) {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose, preventClose]);
 
   // Prevent body scroll when open
   useEffect(() => {
     if (isOpen && isMobile) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       return () => {
-        document.body.style.overflow = '';
+        document.body.style.overflow = "";
       };
     }
   }, [isOpen, isMobile]);
@@ -72,25 +75,25 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const bottomSheetContent = (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
         onClick={!preventClose ? onClose : undefined}
         style={{
-          paddingBottom: safeAreaInsets.bottom
+          paddingBottom: safeAreaInsets.bottom,
         }}
       />
-      
+
       {/* Bottom Sheet */}
       <div
         className={`
           relative w-full bg-white dark:bg-gray-900 
           rounded-t-3xl shadow-xl transform transition-transform duration-300 ease-out
-          ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+          ${isOpen ? "translate-y-0" : "translate-y-full"}
           ${className}
         `}
         style={{
           maxHeight,
-          paddingBottom: safeAreaInsets.bottom
+          paddingBottom: safeAreaInsets.bottom,
         }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -132,10 +135,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         )}
 
         {/* Content */}
-        <div className="overflow-auto" style={{ maxHeight: 'calc(80vh - 120px)' }}>
-          <div className="px-6 pb-6">
-            {children}
-          </div>
+        <div
+          className="overflow-auto"
+          style={{ maxHeight: "calc(80vh - 120px)" }}
+        >
+          <div className="px-6 pb-6">{children}</div>
         </div>
       </div>
     </div>

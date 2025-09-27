@@ -187,12 +187,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
       try {
         await firebaseSync.sync();
-        const result = { 
-          success: true, 
-          data: { 
+        const result = {
+          success: true,
+          data: {
             syncStatus: "synced" as SyncStatus,
-            lastSyncTime: new Date()
-          }
+            lastSyncTime: new Date(),
+          },
         };
 
         if (result.success && result.data) {
@@ -204,9 +204,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           logger.info("Manual sync completed", { userId });
         }
       } catch (error) {
-        const result = { 
-          success: false, 
-          error: error instanceof Error ? error.message : "Sync failed"
+        const result = {
+          success: false,
+          error: error instanceof Error ? error.message : "Sync failed",
         };
         logger.warn("Manual sync failed", { userId, error: result.error });
       }

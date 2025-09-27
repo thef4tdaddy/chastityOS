@@ -5,7 +5,11 @@
 
 import React from "react";
 import { DBAchievement, DBUserAchievement } from "../../types";
-import { useAchievementGallery, getCategoryName, getDifficultyColor } from "../../hooks/useAchievementGallery";
+import {
+  useAchievementGallery,
+  getCategoryName,
+  getDifficultyColor,
+} from "../../hooks/useAchievementGallery";
 import {
   StatsHeader,
   Filters,
@@ -67,25 +71,27 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
         getCategoryName={getCategoryName}
       />
       <div className="space-y-6">
-        {Object.entries(groupedAchievements).map(([categoryName, achievements]) => (
-          <div key={categoryName} className="space-y-4">
-            <h3 className="text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
-              {categoryName} ({achievements.length})
-            </h3>
+        {Object.entries(groupedAchievements).map(
+          ([categoryName, achievements]) => (
+            <div key={categoryName} className="space-y-4">
+              <h3 className="text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
+                {categoryName} ({achievements.length})
+              </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {achievements.map((item) => (
-                <AchievementCard
-                  key={item.achievement.id}
-                  item={item}
-                  onToggleVisibility={onToggleVisibility}
-                  isOwnGallery={isOwnGallery}
-                  getDifficultyColor={getDifficultyColor}
-                />
-              ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {achievements.map((item) => (
+                  <AchievementCard
+                    key={item.achievement.id}
+                    item={item}
+                    onToggleVisibility={onToggleVisibility}
+                    isOwnGallery={isOwnGallery}
+                    getDifficultyColor={getDifficultyColor}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ),
+        )}
       </div>
 
       {filteredAchievements.length === 0 && <EmptyState />}

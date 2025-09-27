@@ -38,7 +38,7 @@ export interface AcceptInviteCodeData {
 class KeyholderRelationshipDBService extends BaseDBService {
   protected tableName = "keyholderRelationships";
   protected inviteCodesTable = "inviteCodes";
-  
+
   // Database instance access
   protected db = db;
 

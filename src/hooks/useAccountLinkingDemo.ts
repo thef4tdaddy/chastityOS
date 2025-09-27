@@ -43,7 +43,10 @@ const mockActiveKeyholder = {
   acceptedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
 };
 
-type DemoScenario = "submissive-no-keyholder" | "submissive-with-keyholder" | "keyholder-mode";
+type DemoScenario =
+  | "submissive-no-keyholder"
+  | "submissive-with-keyholder"
+  | "keyholder-mode";
 
 export const useAccountLinkingDemo = (scenario: DemoScenario) => {
   // UI State
@@ -55,48 +58,52 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
 
   // Message state
   const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | "info">("info");
+  const [messageType, setMessageType] = useState<"success" | "error" | "info">(
+    "info",
+  );
 
   // Generate mock data based on scenario
   const getMockData = () => {
-    const activeKeyholder = 
+    const activeKeyholder =
       scenario === "submissive-with-keyholder" ? mockActiveKeyholder : null;
-    
-    const activeInviteCodes = 
-      scenario === "submissive-no-keyholder" || scenario === "submissive-with-keyholder" 
-        ? mockInviteCodes 
+
+    const activeInviteCodes =
+      scenario === "submissive-no-keyholder" ||
+      scenario === "submissive-with-keyholder"
+        ? mockInviteCodes
         : [];
-    
+
     const relationshipSummary = {
       totalAsSubmissive: scenario === "submissive-with-keyholder" ? 1 : 0,
       totalAsKeyholder: scenario === "keyholder-mode" ? 2 : 0,
     };
 
-    const relationships = scenario === "keyholder-mode"
-      ? {
-          asSubmissive: [],
-          asKeyholder: [
-            {
-              id: "rel-2",
-              submissiveUserId: "sub-1",
-              keyholderUserId: "demo-user-123",
-              status: "active" as const,
-              permissions: mockActiveKeyholder.permissions,
-              createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-              acceptedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-            },
-            {
-              id: "rel-3",
-              submissiveUserId: "sub-2",
-              keyholderUserId: "demo-user-123",
-              status: "active" as const,
-              permissions: mockActiveKeyholder.permissions,
-              createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-              acceptedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-            },
-          ],
-        }
-      : { asSubmissive: [], asKeyholder: [] };
+    const relationships =
+      scenario === "keyholder-mode"
+        ? {
+            asSubmissive: [],
+            asKeyholder: [
+              {
+                id: "rel-2",
+                submissiveUserId: "sub-1",
+                keyholderUserId: "demo-user-123",
+                status: "active" as const,
+                permissions: mockActiveKeyholder.permissions,
+                createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+                acceptedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+              },
+              {
+                id: "rel-3",
+                submissiveUserId: "sub-2",
+                keyholderUserId: "demo-user-123",
+                status: "active" as const,
+                permissions: mockActiveKeyholder.permissions,
+                createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+                acceptedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+              },
+            ],
+          }
+        : { asSubmissive: [], asKeyholder: [] };
 
     return {
       activeKeyholder,
@@ -109,7 +116,10 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
   const mockData = getMockData();
 
   // Message handlers
-  const showMessage = (text: string, type: "success" | "error" | "info" = "info") => {
+  const showMessage = (
+    text: string,
+    type: "success" | "error" | "info" = "info",
+  ) => {
     setMessage(text);
     setMessageType(type);
   };
@@ -159,7 +169,7 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
     setKeyholderNameInput,
     message,
     messageType,
-    
+
     // Actions
     showMessage,
     clearMessage,

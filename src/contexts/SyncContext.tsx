@@ -38,7 +38,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   const { userId } = useAuth();
   const {
     isSyncing,
-    lastSyncResult,
+    lastSyncResult: _lastSyncResult,
     pendingConflicts,
     sync,
     resolveConflicts,

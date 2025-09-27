@@ -15,7 +15,10 @@ import {
   HelpSection,
 } from "./AccountLinkingDemoComponents";
 
-type DemoScenario = "submissive-no-keyholder" | "submissive-with-keyholder" | "keyholder-mode";
+type DemoScenario =
+  | "submissive-no-keyholder"
+  | "submissive-with-keyholder"
+  | "keyholder-mode";
 
 interface AccountLinkingDemoProps {
   className?: string;
@@ -40,13 +43,13 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
     setKeyholderNameInput,
     message,
     messageType,
-    
+
     // Actions
     clearMessage,
     handleCreateInvite,
     handleAcceptInvite,
     copyToClipboard,
-    
+
     // Mock Data
     activeKeyholder,
     activeInviteCodes,

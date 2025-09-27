@@ -96,7 +96,10 @@ export const useAchievements = (userId?: string) => {
 
       // Get recent achievements (last 5)
       const recentAchievements = achievements
-        .sort((a: DBUserAchievement, b: DBUserAchievement) => b.earnedAt.getTime() - a.earnedAt.getTime())
+        .sort(
+          (a: DBUserAchievement, b: DBUserAchievement) =>
+            b.earnedAt.getTime() - a.earnedAt.getTime(),
+        )
         .slice(0, 5);
 
       return {
@@ -188,7 +191,9 @@ export const useAchievements = (userId?: string) => {
    */
   const hasAchievement = useCallback(
     (achievementId: string): boolean => {
-      return userAchievements.some((ua: DBUserAchievement) => ua.achievementId === achievementId);
+      return userAchievements.some(
+        (ua: DBUserAchievement) => ua.achievementId === achievementId,
+      );
     },
     [userAchievements],
   );
@@ -210,7 +215,9 @@ export const useAchievements = (userId?: string) => {
    */
   const getAchievementsByCategory = useCallback(
     (category: AchievementCategory): DBAchievement[] => {
-      return allAchievements.filter((a: DBAchievement) => a.category === category);
+      return allAchievements.filter(
+        (a: DBAchievement) => a.category === category,
+      );
     },
     [allAchievements],
   );

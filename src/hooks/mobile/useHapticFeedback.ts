@@ -2,7 +2,7 @@
  * Haptic Feedback Hook
  * Provides vibration patterns for mobile devices
  */
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 interface HapticFeedbackReturn {
   light: () => void;
@@ -16,17 +16,20 @@ interface HapticFeedbackReturn {
 }
 
 export const useHapticFeedback = (): HapticFeedbackReturn => {
-  const isSupported = 'vibrate' in navigator;
+  const isSupported = "vibrate" in navigator;
 
-  const vibrate = useCallback((pattern: number | number[]) => {
-    if (!isSupported) return;
-    
-    try {
-      navigator.vibrate(pattern);
-    } catch (error) {
-      console.warn('Haptic feedback failed:', error);
-    }
-  }, [isSupported]);
+  const vibrate = useCallback(
+    (pattern: number | number[]) => {
+      if (!isSupported) return;
+
+      try {
+        navigator.vibrate(pattern);
+      } catch (error) {
+        console.warn("Haptic feedback failed:", error);
+      }
+    },
+    [isSupported],
+  );
 
   const light = useCallback(() => {
     vibrate(50);
@@ -55,9 +58,12 @@ export const useHapticFeedback = (): HapticFeedbackReturn => {
     vibrate(75);
   }, [vibrate]);
 
-  const custom = useCallback((pattern: number | number[]) => {
-    vibrate(pattern);
-  }, [vibrate]);
+  const custom = useCallback(
+    (pattern: number | number[]) => {
+      vibrate(pattern);
+    },
+    [vibrate],
+  );
 
   return {
     light,
@@ -67,7 +73,7 @@ export const useHapticFeedback = (): HapticFeedbackReturn => {
     error,
     notification,
     custom,
-    isSupported
+    isSupported,
   };
 };
 

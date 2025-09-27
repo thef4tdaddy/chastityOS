@@ -2,7 +2,7 @@
  * Touch Gestures Hook
  * Provides swipe, tap, and other touch interactions for mobile devices
  */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from "react";
 
 interface TouchPoint {
   x: number;
@@ -34,13 +34,9 @@ interface TouchGestureHandlers {
 
 export const useTouchGestures = (
   handlers: TouchGestureHandlers,
-  options: SwipeOptions = {}
+  options: SwipeOptions = {},
 ): UseTouchGesturesReturn => {
-  const {
-    minDistance = 50,
-    maxTime = 1000,
-    threshold = 30
-  } = options;
+  const { minDistance = 50, maxTime = 1000, threshold = 30 } = options;
 
   const touchStart = useRef<TouchPoint | null>(null);
   const touchCurrent = useRef<TouchPoint | null>(null);
@@ -54,123 +50,132 @@ export const useTouchGestures = (
     }
   }, []);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    if (!touch) return;
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
 
-    const touchPoint: TouchPoint = {
-      x: touch.clientX,
-      y: touch.clientY,
-      timestamp: Date.now()
-    };
+      const touchPoint: TouchPoint = {
+        x: touch.clientX,
+        y: touch.clientY,
+        timestamp: Date.now(),
+      };
 
-    touchStart.current = touchPoint;
-    touchCurrent.current = touchPoint;
-    setIsSwipeActive(false);
+      touchStart.current = touchPoint;
+      touchCurrent.current = touchPoint;
+      setIsSwipeActive(false);
 
-    // Start long press timer
-    if (handlers.onLongPress) {
-      longPressTimer.current = setTimeout(() => {
-        handlers.onLongPress?.();
-      }, 500);
-    }
+      // Start long press timer
+      if (handlers.onLongPress) {
+        longPressTimer.current = setTimeout(() => {
+          handlers.onLongPress?.();
+        }, 500);
+      }
 
-    // Prevent default to avoid iOS bounce
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-  }, [handlers.onLongPress]);
+      // Prevent default to avoid iOS bounce
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    },
+    [handlers.onLongPress],
+  );
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    if (!touch || !touchStart.current) return;
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch || !touchStart.current) return;
 
-    touchCurrent.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      timestamp: Date.now()
-    };
+      touchCurrent.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        timestamp: Date.now(),
+      };
 
-    const deltaX = Math.abs(touch.clientX - touchStart.current.x);
-    const deltaY = Math.abs(touch.clientY - touchStart.current.y);
+      const deltaX = Math.abs(touch.clientX - touchStart.current.x);
+      const deltaY = Math.abs(touch.clientY - touchStart.current.y);
 
-    // Clear long press if we've moved significantly
-    if (deltaX > threshold || deltaY > threshold) {
+      // Clear long press if we've moved significantly
+      if (deltaX > threshold || deltaY > threshold) {
+        clearLongPressTimer();
+
+        // Set swipe active if we've moved enough
+        if (deltaX > minDistance || deltaY > minDistance) {
+          setIsSwipeActive(true);
+        }
+      }
+
+      // Prevent scrolling during horizontal swipes
+      if (deltaX > deltaY && deltaX > threshold) {
+        e.preventDefault();
+      }
+    },
+    [minDistance, threshold, clearLongPressTimer],
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
       clearLongPressTimer();
-      
-      // Set swipe active if we've moved enough
-      if (deltaX > minDistance || deltaY > minDistance) {
-        setIsSwipeActive(true);
+
+      if (!touchStart.current || !touchCurrent.current) {
+        setIsSwipeActive(false);
+        return;
       }
-    }
 
-    // Prevent scrolling during horizontal swipes
-    if (deltaX > deltaY && deltaX > threshold) {
-      e.preventDefault();
-    }
-  }, [minDistance, threshold, clearLongPressTimer]);
+      const startPoint = touchStart.current;
+      const endPoint = touchCurrent.current;
+      const deltaTime = endPoint.timestamp - startPoint.timestamp;
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    clearLongPressTimer();
+      // Check if gesture was too slow
+      if (deltaTime > maxTime) {
+        setIsSwipeActive(false);
+        touchStart.current = null;
+        touchCurrent.current = null;
+        return;
+      }
 
-    if (!touchStart.current || !touchCurrent.current) {
-      setIsSwipeActive(false);
-      return;
-    }
+      const deltaX = endPoint.x - startPoint.x;
+      const deltaY = endPoint.y - startPoint.y;
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(deltaY);
 
-    const startPoint = touchStart.current;
-    const endPoint = touchCurrent.current;
-    const deltaTime = endPoint.timestamp - startPoint.timestamp;
+      // Determine if it's a tap (small movement)
+      if (absDeltaX < threshold && absDeltaY < threshold) {
+        handlers.onTap?.();
+        setIsSwipeActive(false);
+        touchStart.current = null;
+        touchCurrent.current = null;
+        return;
+      }
 
-    // Check if gesture was too slow
-    if (deltaTime > maxTime) {
+      // Determine swipe direction
+      if (absDeltaX > absDeltaY && absDeltaX >= minDistance) {
+        // Horizontal swipe
+        if (deltaX > 0) {
+          handlers.onSwipeRight?.();
+        } else {
+          handlers.onSwipeLeft?.();
+        }
+      } else if (absDeltaY >= minDistance) {
+        // Vertical swipe
+        if (deltaY > 0) {
+          handlers.onSwipeDown?.();
+        } else {
+          handlers.onSwipeUp?.();
+        }
+      }
+
       setIsSwipeActive(false);
       touchStart.current = null;
       touchCurrent.current = null;
-      return;
-    }
-
-    const deltaX = endPoint.x - startPoint.x;
-    const deltaY = endPoint.y - startPoint.y;
-    const absDeltaX = Math.abs(deltaX);
-    const absDeltaY = Math.abs(deltaY);
-
-    // Determine if it's a tap (small movement)
-    if (absDeltaX < threshold && absDeltaY < threshold) {
-      handlers.onTap?.();
-      setIsSwipeActive(false);
-      touchStart.current = null;
-      touchCurrent.current = null;
-      return;
-    }
-
-    // Determine swipe direction
-    if (absDeltaX > absDeltaY && absDeltaX >= minDistance) {
-      // Horizontal swipe
-      if (deltaX > 0) {
-        handlers.onSwipeRight?.();
-      } else {
-        handlers.onSwipeLeft?.();
-      }
-    } else if (absDeltaY >= minDistance) {
-      // Vertical swipe
-      if (deltaY > 0) {
-        handlers.onSwipeDown?.();
-      } else {
-        handlers.onSwipeUp?.();
-      }
-    }
-
-    setIsSwipeActive(false);
-    touchStart.current = null;
-    touchCurrent.current = null;
-  }, [handlers, maxTime, minDistance, threshold, clearLongPressTimer]);
+    },
+    [handlers, maxTime, minDistance, threshold, clearLongPressTimer],
+  );
 
   return {
     onTouchStart: handleTouchStart,
     onTouchMove: handleTouchMove,
     onTouchEnd: handleTouchEnd,
-    isSwipeActive
+    isSwipeActive,
   };
 };
 
@@ -180,14 +185,14 @@ export const useTouchGestures = (
 export const useSwipeGestures = (
   onSwipeLeft?: () => void,
   onSwipeRight?: () => void,
-  options?: SwipeOptions
+  options?: SwipeOptions,
 ) => {
   return useTouchGestures(
     {
       onSwipeLeft,
-      onSwipeRight
+      onSwipeRight,
     },
-    options
+    options,
   );
 };
 

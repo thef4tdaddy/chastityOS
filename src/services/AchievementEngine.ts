@@ -192,7 +192,10 @@ export class AchievementEngine {
     const sessions = await sessionDBService.getUserSessions(userId);
     const completedSessions = sessions
       .filter((s: DBSession) => s.endTime)
-      .sort((a: DBSession, b: DBSession) => a.startTime.getTime() - b.startTime.getTime());
+      .sort(
+        (a: DBSession, b: DBSession) =>
+          a.startTime.getTime() - b.startTime.getTime(),
+      );
 
     if (completedSessions.length === 0) return;
 
@@ -282,7 +285,9 @@ export class AchievementEngine {
         }
       } else if (requirement.type === "special_condition") {
         if (requirement.condition === "task_approval_rate") {
-          const submittedTasks = tasks.filter((t: DBTask) => t.status !== "pending");
+          const submittedTasks = tasks.filter(
+            (t: DBTask) => t.status !== "pending",
+          );
           if (submittedTasks.length > 0) {
             const approvalRate =
               (approvedTasks.length / submittedTasks.length) * 100;

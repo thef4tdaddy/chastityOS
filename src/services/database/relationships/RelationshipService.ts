@@ -13,7 +13,7 @@ import { relationshipSearchService } from "./RelationshipSearchService";
 import { relationshipStatsService } from "./RelationshipStatsService";
 import { serviceLogger } from "@/utils/logging";
 
-const logger = serviceLogger("RelationshipService");
+const _logger = serviceLogger("RelationshipService");
 
 /**
  * Main Relationship Service that delegates to specialized services

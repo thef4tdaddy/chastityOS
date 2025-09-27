@@ -114,7 +114,7 @@ export function useTaskMutations() {
         params.status,
         {
           keyholderFeedback: params.feedback,
-        }
+        },
       );
 
       // 2. Trigger Firebase sync in background
@@ -194,7 +194,7 @@ export function useTaskMutations() {
         "submitted",
         {
           submissiveNote: params.note,
-        }
+        },
       );
 
       // 2. Trigger Firebase sync in background

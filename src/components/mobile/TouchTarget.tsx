@@ -2,8 +2,8 @@
  * Touch Target Component
  * Ensures minimum touch target size for mobile accessibility
  */
-import React from 'react';
-import { useHapticFeedback } from '../../hooks/mobile/useHapticFeedback';
+import React from "react";
+import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface TouchTargetProps {
   children: React.ReactNode;
@@ -11,7 +11,7 @@ interface TouchTargetProps {
   onLongPress?: () => void;
   className?: string;
   disabled?: boolean;
-  hapticFeedback?: 'light' | 'medium' | 'heavy' | 'none';
+  hapticFeedback?: "light" | "medium" | "heavy" | "none";
   as?: keyof JSX.IntrinsicElements;
   [key: string]: any; // For additional props
 }
@@ -20,10 +20,10 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
   children,
   onTap,
   onLongPress,
-  className = '',
+  className = "",
   disabled = false,
-  hapticFeedback = 'light',
-  as: Component = 'button',
+  hapticFeedback = "light",
+  as: Component = "button",
   ...props
 }) => {
   const { light, medium, heavy } = useHapticFeedback();
@@ -32,15 +32,15 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
     if (disabled) return;
 
     // Trigger haptic feedback
-    if (hapticFeedback !== 'none') {
+    if (hapticFeedback !== "none") {
       switch (hapticFeedback) {
-        case 'light':
+        case "light":
           light();
           break;
-        case 'medium':
+        case "medium":
           medium();
           break;
-        case 'heavy':
+        case "heavy":
           heavy();
           break;
       }
@@ -72,7 +72,7 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
     focus-visible:ring-2
     focus-visible:ring-purple-500
     focus-visible:ring-offset-2
-    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-98'}
+    ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-98"}
     ${className}
   `;
 
