@@ -97,7 +97,7 @@ export const useProfileAchievements = (
     return visibleAchievements
       .sort(
         (a: UserAchievement, b: UserAchievement) =>
-          b.earnedAt.getTime() - a.earnedAt.getTime(),
+          b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
       )
       .slice(0, 5)
       .map((userAchievement: UserAchievement) => {

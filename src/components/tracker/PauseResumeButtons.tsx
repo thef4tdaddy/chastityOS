@@ -180,15 +180,6 @@ interface PauseResumeButtonsProps {
   onResume?: () => void;
 }
 
-interface PauseResumeButtonsProps {
-  sessionId: string;
-  userId: string;
-  isPaused: boolean;
-  pauseState?: PauseState;
-  onPause?: () => void;
-  onResume?: () => void;
-}
-
 export const PauseResumeButtons: React.FC<PauseResumeButtonsProps> = ({
   sessionId,
   userId,
