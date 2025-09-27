@@ -4,17 +4,28 @@ import { FaLock, FaUnlock, FaKey, FaSpinner } from "../../utils/iconImport";
 
 // Password Unlock Component
 export const KeyholderPasswordUnlock: React.FC = () => {
-  const {
-    isKeyholderModeUnlocked,
-    isPasswordDialogOpen,
-    passwordAttempt,
-    keyholderMessage,
-    isCheckingPassword,
-    openPasswordDialog,
-    setPasswordAttempt,
-    checkPassword,
-    clearMessage,
-  } = useKeyholderStore();
+  // Selective subscriptions for specific state values
+  const isKeyholderModeUnlocked = useKeyholderStore(
+    (state) => state.isKeyholderModeUnlocked,
+  );
+  const isPasswordDialogOpen = useKeyholderStore(
+    (state) => state.isPasswordDialogOpen,
+  );
+  const passwordAttempt = useKeyholderStore((state) => state.passwordAttempt);
+  const keyholderMessage = useKeyholderStore((state) => state.keyholderMessage);
+  const isCheckingPassword = useKeyholderStore(
+    (state) => state.isCheckingPassword,
+  );
+
+  // Selective subscriptions for actions (stable references)
+  const openPasswordDialog = useKeyholderStore(
+    (state) => state.openPasswordDialog,
+  );
+  const setPasswordAttempt = useKeyholderStore(
+    (state) => state.setPasswordAttempt,
+  );
+  const checkPassword = useKeyholderStore((state) => state.checkPassword);
+  const clearMessage = useKeyholderStore((state) => state.clearMessage);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

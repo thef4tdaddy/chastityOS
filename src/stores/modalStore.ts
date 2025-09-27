@@ -179,7 +179,9 @@ export const useIsModalOpen = (id: string) =>
 
 // Utility hooks for common modal patterns
 export const useConfirmModal = () => {
-  const { openModal, closeModal } = useModalStore();
+  // Selective subscriptions for modal store actions
+  const openModal = useModalStore((state) => state.openModal);
+  const closeModal = useModalStore((state) => state.closeModal);
 
   const openConfirmModal = (
     title: string,
