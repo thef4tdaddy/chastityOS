@@ -8,6 +8,7 @@ import {
 } from "../services/database";
 import type { DBSession, DBEvent, DBTask, DBGoal } from "../types/database";
 import { logger } from "../utils/logging";
+import { useSessionTimer } from "../hooks/useSessionTimer";
 import {
   FaClock,
   FaPlay,
@@ -20,44 +21,12 @@ import {
   FaSpinner,
 } from "../utils/iconImport";
 
-// Current Status Section
+// Current Status Section with Real-time Timer
 const CurrentStatusSection: React.FC<{
   currentSession: DBSession | null;
 }> = ({ currentSession }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const formatDuration = (seconds: number) => {
-    const days = Math.floor(seconds / (24 * 60 * 60));
-    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
-    const minutes = Math.floor((seconds % (60 * 60)) / 60);
-    const secs = seconds % 60;
-
-    if (days > 0) {
-      return `${days}d ${hours}h ${minutes}m ${secs}s`;
-    } else if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    } else {
-      return `${minutes}m ${secs}s`;
-    }
-  };
-
-  const getCurrentSessionDuration = () => {
-    if (!currentSession) return 0;
-
-    const startTime = currentSession.startTime.getTime();
-    const now = currentTime.getTime();
-    const totalDuration = Math.floor((now - startTime) / 1000);
-
-    // Subtract accumulated pause time
-    return Math.max(0, totalDuration - currentSession.accumulatedPauseTime);
-  };
+  // Use the new session timer hook for real-time updates
+  const timerData = useSessionTimer(currentSession);
 
   const getSessionStatus = () => {
     if (!currentSession)
@@ -95,7 +64,7 @@ const CurrentStatusSection: React.FC<{
           {currentSession && (
             <>
               <div className="text-3xl font-mono text-nightly-honeydew mb-2">
-                {formatDuration(getCurrentSessionDuration())}
+                {timerData.effectiveTimeFormatted}
               </div>
               <div className="text-sm text-nightly-celadon">
                 Started: {currentSession.startTime.toLocaleDateString()}{" "}
@@ -103,7 +72,12 @@ const CurrentStatusSection: React.FC<{
               </div>
               {currentSession.goalDuration && (
                 <div className="text-sm text-nightly-celadon">
-                  Goal: {formatDuration(currentSession.goalDuration)}
+                  Goal: {timerData.remainingGoalTimeFormatted} remaining
+                </div>
+              )}
+              {timerData.isPaused && timerData.currentPauseDuration > 0 && (
+                <div className="text-sm text-yellow-400 mt-2">
+                  Current pause: {timerData.currentPauseDurationFormatted}
                 </div>
               )}
             </>
@@ -121,11 +95,37 @@ const CurrentStatusSection: React.FC<{
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-nightly-celadon">Pause Time:</span>
+                <span className="text-nightly-celadon">Total Time:</span>
                 <span className="text-nightly-honeydew">
-                  {formatDuration(currentSession.accumulatedPauseTime)}
+                  {timerData.totalElapsedTimeFormatted}
                 </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-nightly-celadon">Accumulated Pause:</span>
+                <span className="text-nightly-honeydew">
+                  {currentSession.accumulatedPauseTime > 0
+                    ? `${Math.floor(currentSession.accumulatedPauseTime / 60)}m ${currentSession.accumulatedPauseTime % 60}s`
+                    : "0s"}
+                </span>
+              </div>
+              {currentSession.goalDuration && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-nightly-celadon">Goal Progress:</span>
+                    <span className="text-nightly-honeydew">
+                      {timerData.goalProgress.toFixed(1)}%
+                    </span>
+                  </div>
+                  {timerData.isGoalCompleted && (
+                    <div className="text-center mt-2">
+                      <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+                        <FaTrophy />
+                        Goal Completed!
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
               <div className="flex justify-between">
                 <span className="text-nightly-celadon">
                   Keyholder Approval:
