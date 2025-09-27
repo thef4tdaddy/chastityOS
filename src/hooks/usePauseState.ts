@@ -3,7 +3,6 @@ import {
   PauseCooldownService,
   PauseState,
 } from "../services/PauseCooldownService";
-import { PauseService } from "../services/PauseService";
 import { serviceLogger } from "../utils/logging";
 
 const logger = serviceLogger("usePauseState");
@@ -24,13 +23,13 @@ interface UsePauseStateReturn {
 
 export const usePauseState = ({
   userId,
-  sessionId,
+  sessionId: _sessionId,
   refreshInterval = 30000, // 30 seconds
 }: UsePauseStateProps): UsePauseStateReturn => {
   const [pauseState, setPauseState] = useState<PauseState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const refreshPauseStateRef = useRef<() => Promise<void>>();
+  const _refreshPauseStateRef = useRef<() => Promise<void>>();
 
   const refreshPauseState = useCallback(async () => {
     if (!userId) return;

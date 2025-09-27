@@ -27,7 +27,7 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   onClose,
   onEmergencyUnlock,
   sessionId,
-  isProcessing = false,
+  isProcessing: _isProcessing = false,
 }) => {
   const [stage, setStage] = useState<ModalStage>("warning");
   const [reason, setReason] = useState<EmergencyUnlockReason | "">("");

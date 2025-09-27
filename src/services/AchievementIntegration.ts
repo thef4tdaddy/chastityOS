@@ -5,7 +5,7 @@
 
 import { achievementEngine } from "./AchievementEngine";
 import { achievementDBService } from "./database";
-import { sessionDBService, taskDBService, goalDBService } from "./database";
+import { sessionDBService, goalDBService } from "./database";
 import { logger } from "../utils/logging";
 import type { DBSession, DBGoal, DBAchievement } from "../types/database";
 
@@ -80,7 +80,9 @@ export class AchievementIntegrationService {
       // Get the full session data if sessionId is provided
       let fullSessionData: DBSession | undefined = undefined;
       if (sessionData.sessionId) {
-        fullSessionData = await sessionDBService.findById(sessionData.sessionId);
+        fullSessionData = await sessionDBService.findById(
+          sessionData.sessionId,
+        );
       }
 
       await achievementEngine.processSessionEvent(
@@ -112,7 +114,9 @@ export class AchievementIntegrationService {
       // Get the full session data if sessionId is provided
       let fullSessionData: DBSession | undefined = undefined;
       if (sessionData?.sessionId) {
-        fullSessionData = await sessionDBService.findById(sessionData.sessionId);
+        fullSessionData = await sessionDBService.findById(
+          sessionData.sessionId,
+        );
       }
 
       await achievementEngine.processSessionEvent(

@@ -5,7 +5,7 @@
  */
 
 import { BaseDBService } from "./BaseDBService";
-import { ChastityDB, db } from "../storage/ChastityDB";
+import { db } from "../storage/ChastityDB";
 import {
   DBAchievement,
   DBUserAchievement,

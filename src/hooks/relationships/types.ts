@@ -9,7 +9,6 @@ import {
   RelationshipTask,
   RelationshipEvent,
   RelationshipSession,
-  RelationshipPermissions,
 } from "@/types/relationships";
 
 export interface RelationshipState {

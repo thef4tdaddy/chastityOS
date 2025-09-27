@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
 import { useEventMutations } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
-import type { DBEvent, EventType } from "../../types/database";
+import type { EventType } from "../../types/database";
 import {
   FaPlus,
   FaHeart,

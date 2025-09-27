@@ -3,7 +3,7 @@
  * Handles leaderboard operations and rankings
  */
 
-import { ChastityDB, db } from "../../storage/ChastityDB";
+import { db } from "../../storage/ChastityDB";
 import { DBLeaderboardEntry } from "../../../types";
 import { logger } from "../../../utils/logging";
 
