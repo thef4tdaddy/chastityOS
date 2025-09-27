@@ -3,12 +3,12 @@
  * Handles user achievements, badges, and their visibility
  */
 
-import { ChastityDB } from "../../storage/ChastityDB";
+import { ChastityDB, db } from "../../storage/ChastityDB";
 import { DBUserAchievement } from "../../../types";
 import { logger } from "../../../utils/logging";
 
 export class AchievementBadgeService {
-  private userAchievementsTable = ChastityDB.userAchievements;
+  private userAchievementsTable = db.userAchievements;
 
   private generateId(): string {
     return `ua_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

@@ -29,7 +29,12 @@ const TrackerPage: React.FC = () => {
   // } = usePauseState({ userId, sessionId: currentSession?.id });
 
   // Mock pause state data for now
-  const pauseState = { canPause: true, cooldownRemaining: undefined };
+  const pauseState = { 
+    canPause: true, 
+    cooldownRemaining: undefined,
+    lastPauseTime: undefined,
+    nextPauseAvailable: undefined
+  };
   const pauseStateLoading = false;
   const pauseStateError = null;
   const refreshPauseState = () => {};

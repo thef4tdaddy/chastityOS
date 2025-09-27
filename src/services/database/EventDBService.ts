@@ -129,6 +129,60 @@ class EventDBService extends BaseDBService<DBEvent> {
       throw error;
     }
   }
+
+  /**
+   * Create a new event (alias for create method)
+   */
+  async createEvent(
+    eventData: Omit<DBEvent, "id" | "lastModified" | "syncStatus">,
+  ): Promise<string> {
+    try {
+      const eventId = generateUUID();
+      const event: Omit<DBEvent, "lastModified" | "syncStatus"> = {
+        id: eventId,
+        ...eventData,
+      };
+
+      await this.create(event);
+      logger.info("Created new event", { eventId, userId: eventData.userId });
+      return eventId;
+    } catch (error) {
+      logger.error("Failed to create event", { error: error as Error });
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing event (alias for update method)
+   */
+  async updateEvent(eventId: string, updates: Partial<DBEvent>): Promise<void> {
+    try {
+      await this.update(eventId, updates);
+      logger.info("Updated event", { eventId });
+    } catch (error) {
+      logger.error("Failed to update event", {
+        error: error as Error,
+        eventId,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an event (alias for delete method)
+   */
+  async deleteEvent(eventId: string): Promise<void> {
+    try {
+      await this.delete(eventId);
+      logger.info("Deleted event", { eventId });
+    } catch (error) {
+      logger.error("Failed to delete event", {
+        error: error as Error,
+        eventId,
+      });
+      throw error;
+    }
+  }
 }
 
 export const eventDBService = new EventDBService();
