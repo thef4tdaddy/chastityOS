@@ -224,6 +224,33 @@ class TaskDBService extends BaseDBService<DBTask> {
       throw error;
     }
   }
+
+  /**
+   * Delete a task (alias for delete method)
+   */
+  async deleteTask(taskId: string): Promise<void> {
+    try {
+      await this.delete(taskId);
+      logger.info("Deleted task", { taskId });
+    } catch (error) {
+      logger.error("Failed to delete task", { error: error as Error, taskId });
+      throw error;
+    }
+  }
+
+  /**
+   * Get all tasks (alias for getAll method)
+   */
+  async getAll(): Promise<DBTask[]> {
+    try {
+      const tasks = await this.table.toArray();
+      logger.debug("Get all tasks", { count: tasks.length });
+      return tasks;
+    } catch (error) {
+      logger.error("Failed to get all tasks", { error: error as Error });
+      throw error;
+    }
+  }
 }
 
 export const taskDBService = new TaskDBService();

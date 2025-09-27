@@ -106,6 +106,7 @@ export interface DBTask extends DBBase {
   status: TaskStatus;
   priority: "low" | "medium" | "high" | "critical";
   assignedBy: "submissive" | "keyholder";
+  category?: string; // Optional category for task organization
   createdAt: Date;
   dueDate?: Date;
   deadline?: Date; // Alternative deadline field name
@@ -127,6 +128,7 @@ export interface DBGoal extends DBBase {
   description?: string;
   targetValue: number;
   currentValue: number;
+  progress?: number; // Progress as percentage (0-100)
   unit: string; // 'seconds', 'tasks', 'days', 'count'
   isCompleted: boolean;
   completedAt?: Date;
