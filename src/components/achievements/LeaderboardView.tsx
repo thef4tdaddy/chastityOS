@@ -3,11 +3,11 @@
  * Displays achievement-based leaderboards and competitive features
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
-import { useLeaderboards } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
+import { useLeaderboardActions } from "../../hooks/achievements/useLeaderboardActions";
 
 export interface LeaderboardViewProps {
   category?: LeaderboardCategory;
@@ -363,38 +363,25 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   showOptInPrompt = true,
 }) => {
   const { user } = useAuthState();
-  const [selectedCategory, setSelectedCategory] = useState(category);
-  const [selectedPeriod, setSelectedPeriod] = useState(period);
-  const [isOptedIn, setIsOptedIn] = useState(false);
 
   const {
     leaderboardData,
     userRank,
     isLoading,
     error,
-    optInToLeaderboards,
-    optOutFromLeaderboards,
-  } = useLeaderboards(user?.uid, selectedCategory, selectedPeriod);
-
-  const handleOptIn = async () => {
-    if (user) {
-      await optInToLeaderboards();
-      setIsOptedIn(true);
-    }
-  };
-
-  const handleOptOut = async () => {
-    if (user) {
-      await optOutFromLeaderboards();
-      setIsOptedIn(false);
-    }
-  };
+    selectedCategory,
+    selectedPeriod,
+    isOptedIn,
+    handleOptIn,
+    handleOptOut,
+    handleSkipOptIn,
+    handleCategoryChange,
+    handlePeriodChange,
+  } = useLeaderboardActions(user?.uid, category, period);
 
   // If user hasn't opted in and prompt is enabled, show opt-in screen
   if (showOptInPrompt && !isOptedIn && user) {
-    return (
-      <OptInPrompt onOptIn={handleOptIn} onSkip={() => setIsOptedIn(true)} />
-    );
+    return <OptInPrompt onOptIn={handleOptIn} onSkip={handleSkipOptIn} />;
   }
 
   if (isLoading) {
@@ -416,8 +403,8 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
       <LeaderboardFilters
         selectedCategory={selectedCategory}
         selectedPeriod={selectedPeriod}
-        onCategoryChange={setSelectedCategory}
-        onPeriodChange={setSelectedPeriod}
+        onCategoryChange={handleCategoryChange}
+        onPeriodChange={handlePeriodChange}
       />
 
       {userRank && (
