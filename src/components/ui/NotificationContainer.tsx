@@ -97,8 +97,12 @@ const NotificationIcon: React.FC<{ type: string }> = ({ type }) => {
 };
 
 const NotificationContainer: React.FC = () => {
-  const { notifications, removeNotification, pauseOnHover } =
-    useNotificationStore();
+  // Selective subscriptions for specific notification store values
+  const notifications = useNotificationStore((state) => state.notifications);
+  const removeNotification = useNotificationStore(
+    (state) => state.removeNotification,
+  );
+  const pauseOnHover = useNotificationStore((state) => state.pauseOnHover);
 
   // Group notifications by position
   const notificationsByPosition = notifications.reduce(

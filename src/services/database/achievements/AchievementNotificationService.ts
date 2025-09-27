@@ -3,12 +3,12 @@
  * Handles achievement notifications and alerts
  */
 
-import { ChastityDB } from "../../storage/ChastityDB";
+import { ChastityDB, db } from "../../storage/ChastityDB";
 import { DBAchievementNotification } from "../../../types";
 import { logger } from "../../../utils/logging";
 
 export class AchievementNotificationService {
-  private achievementNotificationsTable = ChastityDB.achievementNotifications;
+  private achievementNotificationsTable = db.achievementNotifications;
 
   private generateId(): string {
     return `an_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

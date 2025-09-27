@@ -151,7 +151,11 @@ export function useTasks(userId: string, filters?: TaskFilters) {
 
         return filteredTasks;
       } catch (error) {
-        logger.error("Failed to fetch tasks", error, { userId, filters });
+        logger.error("Failed to fetch tasks", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+          filters,
+        });
         throw error;
       }
     },
@@ -273,8 +277,9 @@ export function useCreateTask() {
         },
       );
     },
-    onError: (error: Error, { userId, taskData }: { userId: string; taskData: any }) => {
-      logger.error("Task creation failed", error, {
+    onError: (error, { userId, taskData }) => {
+      logger.error("Task creation failed", {
+        error: error instanceof Error ? error.message : String(error),
         userId,
         title: taskData.title,
       });
@@ -379,8 +384,12 @@ export function useUpdateTaskStatus() {
         });
       }
     },
-    onError: (error: Error, { taskId, userId }: { taskId: string; userId: string; status: any }, context: any) => {
-      logger.error("Task status update failed", error, { taskId, userId });
+    onError: (error, { taskId, userId }, context) => {
+      logger.error("Task status update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
 
       // Rollback optimistic updates
       if (context?.previousTask) {
@@ -440,8 +449,12 @@ export function useUpdateTask() {
         queryKey: taskKeys.byStatus(userId, updatedTask.status),
       });
     },
-    onError: (error: Error, { taskId, userId }: { userId: string; taskId: string; updatedTask: any }) => {
-      logger.error("Task update failed", error, { taskId, userId });
+    onError: (error, { taskId, userId }) => {
+      logger.error("Task update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
     },
   });
 }
@@ -490,8 +503,12 @@ export function useDeleteTask() {
         },
       );
     },
-    onError: (error: Error, { taskId, userId }: { taskId: string; userId: string }) => {
-      logger.error("Task deletion failed", error, { taskId, userId });
+    onError: (error, { taskId, userId }) => {
+      logger.error("Task deletion failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
     },
   });
 }

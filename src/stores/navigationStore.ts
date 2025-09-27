@@ -18,12 +18,17 @@ export interface NavigationState {
   // Page loading state
   isPageLoading: boolean;
 
+  // Page title state
+  pageTitle?: string;
+
   // Actions
   setCurrentPage: (page: string) => void;
   setBreadcrumbs: (breadcrumbs: string[]) => void;
   toggleMobileMenu: () => void;
   setMobileMenuOpen: (isOpen: boolean) => void;
+  closeMobileMenu: () => void;
   setPageLoading: (isLoading: boolean) => void;
+  setPageTitle: (title: string) => void;
 
   // Utility actions
   addBreadcrumb: (breadcrumb: string) => void;
@@ -39,6 +44,7 @@ export const useNavigationStore = create<NavigationState>()(
       breadcrumbs: [],
       isMobileMenuOpen: false,
       isPageLoading: false,
+      pageTitle: undefined,
 
       // Actions
       setCurrentPage: (page: string) =>
@@ -57,8 +63,14 @@ export const useNavigationStore = create<NavigationState>()(
       setMobileMenuOpen: (isOpen: boolean) =>
         set({ isMobileMenuOpen: isOpen }, false, "setMobileMenuOpen"),
 
+      closeMobileMenu: () =>
+        set({ isMobileMenuOpen: false }, false, "closeMobileMenu"),
+
       setPageLoading: (isLoading: boolean) =>
         set({ isPageLoading: isLoading }, false, "setPageLoading"),
+
+      setPageTitle: (title: string) =>
+        set({ pageTitle: title }, false, "setPageTitle"),
 
       // Utility actions
       addBreadcrumb: (breadcrumb: string) =>

@@ -1,6 +1,6 @@
 import React from "react";
 import { useSessionTimer } from "../../hooks/useSessionTimer";
-import { TimerService } from "../../services/TimerService";
+import { formatElapsedTime } from "../../utils";
 import type { DBSession } from "../../types/database";
 
 interface TrackerStatsProps {
@@ -104,9 +104,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
               <p className="text-xs text-yellow-200 bg-yellow-400/10 px-2 py-1 rounded-md mt-2">
                 Total time paused this session:{" "}
                 {currentSession
-                  ? TimerService.formatDuration(
-                      currentSession.accumulatedPauseTime,
-                    )
+                  ? formatElapsedTime(currentSession.accumulatedPauseTime)
                   : displayData.accumulatedPause}
               </p>
             )}

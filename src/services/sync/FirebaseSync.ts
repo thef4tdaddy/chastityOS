@@ -344,4 +344,34 @@ export class FirebaseSync {
       throw error;
     }
   }
+
+  /**
+   * Apply remote changes to local database
+   */
+  async applyRemoteChanges(changes: any): Promise<void> {
+    try {
+      logger.debug("Applying remote changes", { changes });
+      // TODO: Implement remote changes application logic
+    } catch (error) {
+      logger.error("Failed to apply remote changes", { error: error as Error });
+      throw error;
+    }
+  }
+
+  /**
+   * Sync a specific collection
+   */
+  async syncCollection(collectionName: string, userId: string): Promise<void> {
+    try {
+      logger.debug("Syncing collection", { collectionName, userId });
+      // TODO: Implement collection sync logic
+    } catch (error) {
+      logger.error("Failed to sync collection", { 
+        error: error as Error, 
+        collectionName, 
+        userId 
+      });
+      throw error;
+    }
+  }
 }

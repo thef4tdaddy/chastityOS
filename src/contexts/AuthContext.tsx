@@ -37,6 +37,10 @@ export interface AuthActions {
 export interface AuthContextType {
   state: AuthState;
   actions: AuthActions;
+  // Direct access properties for backwards compatibility
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -290,6 +294,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const contextValue: AuthContextType = {
     state,
     actions,
+    // Direct access properties for backwards compatibility
+    user: state.user,
+    isAuthenticated: state.isAuthenticated,
+    isLoading: state.isLoading,
   };
 
   return (
