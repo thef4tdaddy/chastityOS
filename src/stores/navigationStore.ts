@@ -34,6 +34,9 @@ export interface NavigationState {
   addBreadcrumb: (breadcrumb: string) => void;
   removeBreadcrumb: () => void;
   clearBreadcrumbs: () => void;
+
+  // Reset for testing
+  resetStore: () => void;
 }
 
 export const useNavigationStore = create<NavigationState>()(
@@ -93,6 +96,20 @@ export const useNavigationStore = create<NavigationState>()(
 
       clearBreadcrumbs: () =>
         set({ breadcrumbs: [] }, false, "clearBreadcrumbs"),
+
+      // Reset store to initial state (for testing)
+      resetStore: () =>
+        set(
+          {
+            currentPage: "dashboard",
+            breadcrumbs: [],
+            isMobileMenuOpen: false,
+            isPageLoading: false,
+            pageTitle: undefined,
+          },
+          false,
+          "resetStore",
+        ),
     }),
     {
       name: "navigation-store",
