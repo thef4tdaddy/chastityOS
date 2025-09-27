@@ -197,12 +197,10 @@ const TrackerPage: React.FC = () => {
 
       <ActionButtons
         isCageOn={isCageOn}
-        isPaused={isPaused}
-        denialCooldownActive={denialCooldownActive}
-        hasPendingReleaseRequest={hasPendingReleaseRequest}
         isGoalActive={isGoalActive}
         isHardcoreGoal={isHardcoreGoal}
         requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
+        hasPendingReleaseRequest={hasPendingReleaseRequest}
         sessionId={sessionId}
         userId={userId}
         onEmergencyUnlock={handleEmergencyUnlock}
@@ -211,7 +209,6 @@ const TrackerPage: React.FC = () => {
       <ReasonModals
         showReasonModal={showReasonModal}
         showPauseReasonModal={showPauseReasonModal}
-        showEmergencyUnlockModal={showEmergencyUnlockModal}
       />
 
       {/* Debug info for development */}

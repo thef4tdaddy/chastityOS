@@ -368,16 +368,16 @@ export class DBPerformanceService {
     logger.info("Analyzing database size");
 
     const stats = await db.getStats();
-    const totalRecords = Object.values(stats).reduce(
-      (sum, count) => sum + count,
-      0,
+    const totalRecords: number = Object.values(stats).reduce(
+      (sum: number, count) => sum + (typeof count === "number" ? count : 0),
+      0 as number,
     );
 
     const sizeRecommendations: string[] = [];
 
     // Check for large tables
     Object.entries(stats).forEach(([table, count]) => {
-      if (count > 10000) {
+      if (typeof count === "number" && count > 10000) {
         sizeRecommendations.push(
           `${table} table has ${count} records. Consider archiving old data.`,
         );
@@ -405,7 +405,9 @@ export class DBPerformanceService {
 
     const results = {
       totalRecords,
-      tableBreakdown: stats,
+      tableBreakdown: Object.fromEntries(
+        Object.entries(stats).filter(([_, count]) => typeof count === "number"),
+      ) as Record<string, number>,
       sizeRecommendations,
     };
 

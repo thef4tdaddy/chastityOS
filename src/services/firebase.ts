@@ -77,7 +77,7 @@ export const getFirebaseAuth = async () => {
       "auth",
       Promise.all([getFirebaseApp(), import("firebase/auth")]).then(
         ([app, { getAuth }]) => {
-          const auth = getAuth(app);
+          const auth = getAuth(app as FirebaseApp);
           logger.debug("Firebase Auth loaded");
           return auth;
         },
@@ -184,6 +184,7 @@ export const conditionalPreloadAll = async (): Promise<void> => {
 import type { Auth } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
 import type { FirebaseStorage } from "firebase/storage";
+import type { FirebaseApp } from "firebase/app";
 
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;
@@ -230,7 +231,7 @@ getFirestore().then((dbInstance) => {
   _db = dbInstance;
 });
 getFirebaseStorage().then((storageInstance) => {
-  _storage = storageInstance;
+  _storage = storageInstance as FirebaseStorage;
 });
 
 // Export configuration for debugging
