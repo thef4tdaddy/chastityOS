@@ -227,7 +227,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onSubmit }) => {
         <TaskFeedback feedback={task.keyholderFeedback} />
       )}
 
-      {task.consequence && <TaskConsequence consequence={task.consequence} />}
+      {task.consequence && task.consequence.description && (
+        <TaskConsequence
+          consequence={{
+            ...task.consequence,
+            description: task.consequence.description,
+          }}
+        />
+      )}
 
       {task.status === "pending" && (
         <TaskSubmission

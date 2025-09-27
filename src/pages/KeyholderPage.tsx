@@ -84,7 +84,7 @@ const KeyholderPage: React.FC = () => {
             {isKeyholderModeUnlocked && (
               <>
                 <SessionControls session={currentSession} />
-                <TaskManagement tasks={tasks} />
+                <TaskManagement userId={user?.uid || ""} />
 
                 {/* Additional Controls */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
