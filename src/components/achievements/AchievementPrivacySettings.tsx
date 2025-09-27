@@ -314,8 +314,15 @@ export const AchievementPrivacySettings: React.FC<
   const { privacySettings, updateLeaderboardPrivacy, isUpdatingPrivacy } =
     useLeaderboards(user?.uid);
 
+  // Wrapper function to match expected signature
+  const updatePrivacyWrapper = async (
+    settings: LeaderboardPrivacySettings,
+  ): Promise<void> => {
+    await updateLeaderboardPrivacy(settings);
+  };
+
   const { settings, hasChanges, handleSettingChange, handleSave } =
-    usePrivacySettingsForm(privacySettings, updateLeaderboardPrivacy, onClose);
+    usePrivacySettingsForm(privacySettings, updatePrivacyWrapper, onClose);
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-2xl mx-auto">

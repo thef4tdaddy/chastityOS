@@ -3,12 +3,11 @@
  */
 
 import { useState, useMemo } from "react";
+import { DBAchievement, DBUserAchievement } from "../types";
 import {
-  DBAchievement,
-  DBUserAchievement,
   AchievementCategory,
   AchievementDifficulty,
-} from "../types";
+} from "../types/achievements";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -143,19 +142,39 @@ export const useAchievementGallery = (
   };
 };
 
-// Helper function to get category display name
-export const getCategoryName = (category: AchievementCategory): string => {
+// Helper function to convert string category to enum and get display name
+export const getCategoryName = (
+  category: string | AchievementCategory,
+): string => {
+  // Map string categories to enum values
+  const categoryMap: Record<string, string> = {
+    session_milestones: "Session Milestones",
+    consistency_badges: "Consistency Badges",
+    streak_achievements: "Streak Achievements",
+    goal_based: "Goal Based",
+    task_completion: "Task Completion",
+    special_achievements: "Special Achievements",
+  };
+
+  // If it's already a string literal, use the map
+  if (typeof category === "string") {
+    return categoryMap[category] || "Unknown";
+  }
+
+  // If it's an enum, handle enum cases
   switch (category) {
-    case AchievementCategory.CHASTITY:
-      return "Chastity";
-    case AchievementCategory.TASKS:
-      return "Tasks";
-    case AchievementCategory.SOCIAL:
-      return "Social";
-    case AchievementCategory.MILESTONES:
-      return "Milestones";
-    case AchievementCategory.SPECIAL:
-      return "Special";
+    case AchievementCategory.SESSION_MILESTONES:
+      return "Session Milestones";
+    case AchievementCategory.CONSISTENCY_BADGES:
+      return "Consistency Badges";
+    case AchievementCategory.STREAK_ACHIEVEMENTS:
+      return "Streak Achievements";
+    case AchievementCategory.GOAL_BASED:
+      return "Goal Based";
+    case AchievementCategory.TASK_COMPLETION:
+      return "Task Completion";
+    case AchievementCategory.SPECIAL_ACHIEVEMENTS:
+      return "Special Achievements";
     default:
       return "Unknown";
   }

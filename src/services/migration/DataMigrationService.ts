@@ -13,14 +13,7 @@ import {
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { relationshipService } from "@/services/database/relationships";
-import {
-  Relationship,
-  RelationshipStatus,
-  RelationshipChastityData,
-  RelationshipSession,
-  RelationshipTask,
-  RelationshipEvent,
-} from "@/types";
+import { Relationship, RelationshipStatus } from "@/types/relationships";
 import type { TaskStatus, EventType } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
@@ -69,6 +62,10 @@ class DataMigrationService {
 
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        result.errors.push("Failed to initialize database connection");
+        return result;
+      }
 
       // Check if migration is needed
       const validationResult = await this.validateMigrationEligibility(userId);
@@ -607,6 +604,9 @@ class DataMigrationService {
   async cleanupLegacyData(userId: string): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
       const batch = writeBatch(db);
 
       // Delete legacy collections

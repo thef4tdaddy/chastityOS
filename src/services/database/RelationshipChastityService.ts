@@ -144,6 +144,9 @@ class RelationshipChastityService {
   ): Promise<string> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Check if user has permission to start session
       const hasPermission = await relationshipService.checkPermission(
@@ -244,6 +247,9 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Check permissions
       const hasPermission = await relationshipService.checkPermission(
@@ -337,6 +343,9 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Check if submissive can pause
       const canPause = await relationshipService.checkPermission(
@@ -414,6 +423,9 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Get current chastity data to calculate pause time
       const chastityData = await this.getChastityData(relationshipId);

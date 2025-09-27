@@ -46,7 +46,7 @@ export function useRelationshipList(): RelationshipListState &
         if (relationships.length === 1 && !state.activeRelationship) {
           setState((prev: RelationshipListState) => ({
             ...prev,
-            activeRelationship: relationships[0],
+            activeRelationship: relationships[0] || null,
           }));
         }
       },

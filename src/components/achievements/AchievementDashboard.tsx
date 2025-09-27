@@ -46,17 +46,17 @@ export const AchievementDashboard: React.FC = () => {
   const recentAchievements = userAchievements
     .sort(
       (a: UserAchievement, b: UserAchievement) =>
-        b.earnedAt.getTime() - a.earnedAt.getTime(),
+        b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
     )
     .slice(0, 3);
 
   const categories: AchievementCategory[] = [
-    "session_milestones",
-    "consistency_badges",
-    "streak_achievements",
-    "goal_based",
-    "task_completion",
-    "special_achievements",
+    AchievementCategory.SESSION_MILESTONES,
+    AchievementCategory.CONSISTENCY_BADGES,
+    AchievementCategory.STREAK_ACHIEVEMENTS,
+    AchievementCategory.GOAL_BASED,
+    AchievementCategory.TASK_COMPLETION,
+    AchievementCategory.SPECIAL_ACHIEVEMENTS,
   ];
 
   const categoryProgress = categories.map((category) => {
@@ -176,7 +176,7 @@ export const AchievementDashboard: React.FC = () => {
                         +{achievement.points} points
                       </span>
                       <span className="text-xs text-nightly-celadon">
-                        {formatDate(userAchievement.earnedAt)}
+                        {formatDate(userAchievement.earnedAt.toDate())}
                       </span>
                     </div>
                   </div>

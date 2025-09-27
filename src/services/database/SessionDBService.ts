@@ -77,8 +77,7 @@ class SessionDBService extends BaseDBService<DBSession> {
   async getActiveSessions(): Promise<DBSession[]> {
     try {
       const sessions = await this.table
-        .where("endTime")
-        .equals(undefined)
+        .filter((session) => !session.endTime)
         .toArray();
 
       logger.debug("Get active sessions", { count: sessions.length });

@@ -77,10 +77,7 @@ describe("NavigationStore", () => {
 
     it("should set breadcrumbs", () => {
       const { setBreadcrumbs } = useNavigationStore.getState();
-      const testBreadcrumbs = [
-        { label: "Home", path: "/" },
-        { label: "Settings", path: "/settings" },
-      ];
+      const testBreadcrumbs = ["Home", "Settings"];
 
       setBreadcrumbs(testBreadcrumbs);
       expect(useNavigationStore.getState().breadcrumbs).toEqual(
@@ -90,7 +87,7 @@ describe("NavigationStore", () => {
 
     it("should add breadcrumb", () => {
       const { addBreadcrumb } = useNavigationStore.getState();
-      const breadcrumb = { label: "Home", path: "/" };
+      const breadcrumb = "Home";
 
       addBreadcrumb(breadcrumb);
       expect(useNavigationStore.getState().breadcrumbs).toEqual([breadcrumb]);
@@ -100,7 +97,7 @@ describe("NavigationStore", () => {
       const { setBreadcrumbs, clearBreadcrumbs } =
         useNavigationStore.getState();
 
-      setBreadcrumbs([{ label: "Home", path: "/" }]);
+      setBreadcrumbs(["Home"]);
       expect(useNavigationStore.getState().breadcrumbs).toHaveLength(1);
 
       clearBreadcrumbs();
@@ -138,7 +135,7 @@ describe("NavigationStore", () => {
       // Change state
       openMobileMenu();
       setPageTitle("Test Page");
-      setBreadcrumbs([{ label: "Test" }]);
+      setBreadcrumbs(["Test"]);
       setNavigating(true);
 
       // Verify state changed
