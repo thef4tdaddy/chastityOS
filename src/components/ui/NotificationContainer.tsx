@@ -181,33 +181,19 @@ const NotificationContainer: React.FC = () => {
                   )}
                   <p className="text-sm">{notification.message}</p>
 
-                  {notification.actions && notification.actions.length > 0 && (
-                    <div className="mt-3 flex space-x-2">
-                      {notification.actions.map(
-                        (action: NotificationAction, index: number) => (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              action.handler();
-                              if (notification.dismissible !== false) {
-                                removeNotification(notification.id);
-                              }
-                            }}
-                            className={`
-                          text-xs px-2 py-1 rounded border transition-colors
-                          ${
-                            action.style === "danger"
-                              ? "border-red-300 text-red-700 hover:bg-red-100"
-                              : action.style === "secondary"
-                                ? "border-gray-300 text-gray-700 hover:bg-gray-100"
-                                : "border-current text-current hover:bg-current hover:bg-opacity-10"
+                  {notification.action && (
+                    <div className="mt-3">
+                      <button
+                        onClick={() => {
+                          notification.action!.onClick();
+                          if (notification.dismissible !== false) {
+                            removeNotification(notification.id);
                           }
-                        `}
-                          >
-                            {action.label}
-                          </button>
-                        ),
-                      )}
+                        }}
+                        className="text-xs px-2 py-1 rounded border border-purple-300 text-purple-700 hover:bg-purple-100 transition-colors"
+                      >
+                        {notification.action.label}
+                      </button>
                     </div>
                   )}
                 </div>

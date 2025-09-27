@@ -327,6 +327,7 @@ export function useUpdateEvent() {
       const updatedEvent: Event = {
         ...existingEvent,
         ...updates,
+        createdAt: existingEvent.createdAt || new Date(),
         updatedAt: new Date(),
       };
 

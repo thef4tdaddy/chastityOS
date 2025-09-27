@@ -119,7 +119,10 @@ export function useUserSettings(userId: string) {
       logger.info("Fetching user settings", { userId });
 
       try {
-        const settings = await settingsDBService.findByUserId(userId);
+        const settingsResult = await settingsDBService.findByUserId(userId);
+        const settings = Array.isArray(settingsResult)
+          ? settingsResult[0]
+          : settingsResult;
 
         if (!settings) {
           logger.info("No settings found for user, will create defaults", {
@@ -194,7 +197,10 @@ export function useUpdateSettings() {
 
       try {
         // Get existing settings or create defaults
-        let existingSettings = await settingsDBService.findByUserId(userId);
+        let settingsResult = await settingsDBService.findByUserId(userId);
+        let existingSettings = Array.isArray(settingsResult)
+          ? settingsResult[0]
+          : settingsResult;
 
         if (!existingSettings) {
           // Create default settings if none exist
