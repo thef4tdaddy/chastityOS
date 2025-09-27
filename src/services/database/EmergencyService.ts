@@ -170,6 +170,11 @@ class EmergencyService {
         (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
       )[0];
 
+      if (!lastEmergencyUnlock) {
+        // This should never happen due to the length check above, but TypeScript safety
+        return { allowed: true };
+      }
+
       const cooldownHours = settings.chastity.emergencyUnlockCooldown;
       const cooldownUntil = new Date(
         lastEmergencyUnlock.timestamp.getTime() +
