@@ -257,7 +257,7 @@ export function useAccountMutations() {
     enable2FA: useMutation({
       mutationFn: async ({
         userId,
-        secret,
+        secret: _secret,
       }: {
         userId: string;
         secret: string;
@@ -307,8 +307,8 @@ export function useAccountMutations() {
     updatePassword: useMutation({
       mutationFn: async ({
         userId,
-        currentPassword,
-        newPassword,
+        currentPassword: _currentPassword,
+        newPassword: _newPassword,
       }: {
         userId: string;
         currentPassword: string;
@@ -421,7 +421,7 @@ export function useDataImport() {
   return useMutation({
     mutationFn: async ({
       userId,
-      importData,
+      importData: _importData,
     }: {
       userId: string;
       importData: ImportUserData;

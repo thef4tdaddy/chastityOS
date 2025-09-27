@@ -120,7 +120,7 @@ export const useFormStore = create<FormState>()(
       destroyForm: (formId: string) =>
         set(
           (state) => {
-            const { [formId]: removed, ...rest } = state.forms;
+            const { [formId]: _removed, ...rest } = state.forms;
             return { forms: rest };
           },
           false,

@@ -3,14 +3,13 @@
  * React hook for managing achievements and progress
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { achievementDBService, achievementEngine } from "../services";
 import {
   DBAchievement,
   DBUserAchievement,
   DBAchievementProgress,
-  DBAchievementNotification,
   AchievementCategory,
 } from "../types";
 import { logger } from "../utils/logging";

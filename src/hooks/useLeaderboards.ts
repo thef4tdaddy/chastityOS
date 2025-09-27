@@ -3,7 +3,7 @@
  * React hook for managing leaderboard data and user participation
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { achievementDBService } from "../services";
 import {
@@ -84,7 +84,7 @@ export const useLeaderboards = (
   /**
    * Get user's leaderboard privacy settings
    */
-  const { data: userPrivacySettings } = useQuery({
+  const { data: _userPrivacySettings } = useQuery({
     queryKey: ["leaderboards", "privacy", userId],
     queryFn: () => achievementDBService.getLeaderboardPrivacy(userId!),
     enabled: Boolean(userId),

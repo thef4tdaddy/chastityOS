@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useAuthState } from "../contexts";
 import { useKeyholderStore } from "../stores/keyholderStore";
 import { sessionDBService, taskDBService } from "../services/database";
-import type { DBSession, DBTask, TaskStatus } from "../types/database";
+import type { DBSession, DBTask } from "../types/database";
 import {
   KeyholderPasswordUnlock,
-  AccountLinking,
   AccountLinkingPreview,
   AdminDashboard,
   SessionControls,

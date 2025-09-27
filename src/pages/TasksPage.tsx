@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuthState } from "../contexts";
 import { useTasks, useUpdateTaskStatus } from "../hooks/api/useTasks";
-import type { DBTask, TaskStatus } from "../types/database";
+import type { TaskStatus } from "../types/database";
 import { TaskItem } from "../components/tasks";
 
 const TasksPage: React.FC = () => {

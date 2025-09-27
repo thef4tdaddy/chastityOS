@@ -34,37 +34,6 @@ export const IntegratedTaskManager: React.FC<IntegratedTaskManagerProps> = ({
     priority: "medium",
   });
 
-  const _handleCreateTask = async () => {
-    const isValid = newTaskForm.validateForm("newTaskForm", {
-      title: (value) => (!value?.trim() ? "Title is required" : undefined),
-      description: (value) =>
-        !value?.trim() ? "Description is required" : undefined,
-    });
-
-    if (!isValid) return;
-
-    try {
-      newTaskForm.setSubmitting("newTaskForm", true);
-
-      await createTask.mutateAsync({
-        userId,
-        title: newTaskForm.getFieldValue("newTaskForm", "title"),
-        description: newTaskForm.getFieldValue("newTaskForm", "description"),
-        deadline: newTaskForm.getFieldValue("newTaskForm", "deadline")
-          ? new Date(newTaskForm.getFieldValue("newTaskForm", "deadline"))
-          : undefined,
-      });
-
-      // Reset form and show success
-      newTaskForm.resetForm("newTaskForm");
-      showSuccess("Task created successfully!");
-    } catch (error) {
-      showError("Failed to create task. Please try again.");
-    } finally {
-      newTaskForm.setSubmitting("newTaskForm", false);
-    }
-  };
-
   if (error) {
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

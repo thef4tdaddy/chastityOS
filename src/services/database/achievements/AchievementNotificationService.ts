@@ -3,7 +3,7 @@
  * Handles achievement notifications and alerts
  */
 
-import { ChastityDB, db } from "../../storage/ChastityDB";
+import { db } from "../../storage/ChastityDB";
 import { DBAchievementNotification } from "../../../types";
 import { logger } from "../../../utils/logging";
 
