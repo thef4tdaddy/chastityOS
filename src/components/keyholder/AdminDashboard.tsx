@@ -313,7 +313,7 @@ const AdminTasks: React.FC<{
 const AdminSettings: React.FC<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
-}> = ({ relationship, isSessionActive }) => (
+}> = ({ relationship, isSessionActive: _isSessionActive }) => (
   <div className="space-y-4">
     <div className="bg-white/5 rounded-lg p-4">
       <h4 className="font-medium text-nightly-honeydew mb-3">Admin Settings</h4>

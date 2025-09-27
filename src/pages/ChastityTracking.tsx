@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { EmergencyUnlockModal } from "../components/tracker/EmergencyUnlockModal";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { TrackerStats } from "../components/tracker/TrackerStats";
 import { ActionButtons } from "../components/tracker/ActionButtons";
@@ -29,11 +28,11 @@ const TrackerPage: React.FC = () => {
   // } = usePauseState({ userId, sessionId: currentSession?.id });
 
   // Mock pause state data for now
-  const pauseState = { 
-    canPause: true, 
+  const pauseState = {
+    canPause: true,
     cooldownRemaining: undefined,
     lastPauseTime: undefined,
-    nextPauseAvailable: undefined
+    nextPauseAvailable: undefined,
   };
   const pauseStateLoading = false;
   const pauseStateError = null;

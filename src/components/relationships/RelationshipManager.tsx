@@ -4,11 +4,7 @@
  */
 import React, { useState } from "react";
 import { useRelationships } from "@/hooks/useRelationships";
-import {
-  Relationship,
-  RelationshipRequest,
-  RelationshipStatus,
-} from "@/types/relationships";
+import { RelationshipStatus } from "@/types/relationships";
 import {
   FaUserPlus,
   FaUsers,
@@ -65,7 +61,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       );
       setShowRequestForm(false);
       setRequestForm({ email: "", role: "submissive", message: "" });
-    } catch (error) {
+    } catch (_error) {
       // Handle error silently or with proper error handling
     }
   };
@@ -74,7 +70,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   const handleMigration = async () => {
     try {
       await migrateSingleUserData();
-    } catch (error) {
+    } catch (_error) {
       // Handle migration error silently or with proper error handling
     }
   };

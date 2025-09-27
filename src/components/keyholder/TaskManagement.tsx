@@ -47,7 +47,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
         `Task ${action === "approve" ? "approved" : "rejected"} successfully`,
         "Task Updated",
       );
-    } catch (error) {
+    } catch (_error) {
       showError(
         `Failed to ${action} task. Please try again.`,
         "Task Update Failed",
@@ -68,7 +68,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
       setNewTaskText("");
       setShowAddTask(false);
       showSuccess("Task created successfully", "Task Added");
-    } catch (error) {
+    } catch (_error) {
       showError(
         "Failed to create task. Please try again.",
         "Task Creation Failed",
