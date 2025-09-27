@@ -36,10 +36,7 @@ export class DBMigrationService {
 
         await db.transaction(
           "rw",
-          db.sessions,
-          db.events,
-          db.tasks,
-          db.goals,
+          [db.sessions, db.events, db.tasks, db.goals],
           async () => {
             // Update sessions without sync status
             const sessions = await db.sessions
@@ -254,13 +251,7 @@ export class DBMigrationService {
 
     await db.transaction(
       "rw",
-      db.users,
-      db.sessions,
-      db.events,
-      db.tasks,
-      db.goals,
-      db.settings,
-      db.syncMeta,
+      [db.users, db.sessions, db.events, db.tasks, db.goals, db.settings, db.syncMeta],
       async () => {
         // Clear existing data
         await db.users.clear();
