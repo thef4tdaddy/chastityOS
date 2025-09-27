@@ -37,11 +37,6 @@
     "test:full": "./scripts/testing/run-tests.sh",
     "start": "npm run dev"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,md}": [
-      "prettier --write"
-    ]
-  },
   "dependencies": {
     "@sentry/react": "^10.14.0",
     "@tailwindcss/cli": "^4.1.13",
