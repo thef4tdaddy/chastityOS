@@ -364,9 +364,9 @@ export class DBPerformanceService {
     logger.info("Analyzing database size");
 
     const stats = await db.getStats();
-    const totalRecords = Object.values(stats).reduce(
-      (sum, count) => sum + (typeof count === "number" ? count : 0),
-      0,
+    const totalRecords: number = Object.values(stats).reduce(
+      (sum: number, count) => sum + (typeof count === "number" ? count : 0),
+      0 as number,
     );
 
     const sizeRecommendations: string[] = [];
