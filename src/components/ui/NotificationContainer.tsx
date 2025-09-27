@@ -3,7 +3,8 @@
  * Displays toast notifications using NotificationStore
  */
 import React from "react";
-import { useNotificationStore, Notification } from "@/stores";
+import { useNotificationStore } from "../../stores";
+import { Notification } from "../../stores/notificationStore";
 
 // Interface for notification actions used in this component
 interface NotificationAction {
