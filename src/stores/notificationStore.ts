@@ -48,6 +48,27 @@ export interface NotificationState {
   showInfo: (message: string, title?: string, duration?: number) => string;
 }
 
+// Additional type exports for compatibility with index.ts
+export interface NotificationActions {
+  addNotification: (
+    notification: Omit<Notification, "id" | "timestamp">,
+  ) => string;
+  removeNotification: (id: string) => void;
+  clearAllNotifications: () => void;
+  showSuccess: (message: string, title?: string, duration?: number) => string;
+  showError: (message: string, title?: string, duration?: number) => string;
+  showWarning: (message: string, title?: string, duration?: number) => string;
+  showInfo: (message: string, title?: string, duration?: number) => string;
+}
+
+export type NotificationStore = NotificationState;
+export type NotificationConfig = Omit<Notification, "id" | "timestamp">;
+export type NotificationType = "success" | "error" | "warning" | "info";
+export type NotificationAction = {
+  label: string;
+  onClick: () => void;
+};
+
 // Default durations for different notification types
 const DEFAULT_DURATIONS = {
   success: 4000,
