@@ -475,7 +475,10 @@ export class AccountLinkingService {
     const array = new Uint8Array(this.LINK_CODE_LENGTH);
     crypto.getRandomValues(array);
     for (let i = 0; i < this.LINK_CODE_LENGTH; i++) {
-      result += chars[array[i] % chars.length];
+      const value = array[i];
+      if (value !== undefined) {
+        result += chars[value % chars.length];
+      }
     }
     return result;
   }
