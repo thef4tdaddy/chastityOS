@@ -16,7 +16,6 @@ interface AchievementToastProps {
 
 const AchievementToast: React.FC<AchievementToastProps> = ({
   achievement,
-  _notification,
   onClose,
 }) => (
   <div className="flex items-center space-x-3 p-2">
