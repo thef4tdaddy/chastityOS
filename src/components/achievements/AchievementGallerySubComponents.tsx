@@ -11,11 +11,8 @@ import {
   FaEye,
   FaSearch,
 } from "../../utils/iconImport";
-import {
-  DBAchievement,
-  AchievementCategory,
-  AchievementDifficulty,
-} from "../../types";
+import { DBAchievement, AchievementCategory } from "../../types";
+import { AchievementDifficulty } from "../../types/achievements";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -177,8 +174,18 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
   const getCardClasses = (): string => {
     const baseClasses =
       "relative p-4 rounded-lg border-2 transition-all duration-200";
+
+    // Map string difficulty to enum for getDifficultyColor
+    const difficultyMap: Record<string, AchievementDifficulty> = {
+      common: AchievementDifficulty.COMMON,
+      uncommon: AchievementDifficulty.UNCOMMON,
+      rare: AchievementDifficulty.RARE,
+      epic: AchievementDifficulty.EPIC,
+      legendary: AchievementDifficulty.LEGENDARY,
+    };
+
     const earnedClasses = isEarned
-      ? `${getDifficultyColor(achievement.difficulty)} shadow-lg`
+      ? `${getDifficultyColor(difficultyMap[achievement.difficulty] || AchievementDifficulty.COMMON)} shadow-lg`
       : "border-gray-600 bg-gray-800/50";
     const opacityClass = !isEarned ? "opacity-75" : "";
     return `${baseClasses} ${earnedClasses} ${opacityClass}`;

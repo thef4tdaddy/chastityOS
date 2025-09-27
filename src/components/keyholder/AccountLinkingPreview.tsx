@@ -8,10 +8,11 @@ import {
   QRCodeDisplay,
   type Relationship,
 } from "./AccountLinkingComponents";
+import { GenerateLinkCodeRequest } from "../../types/account-linking";
 
 // Custom hook for account linking handlers
 const useAccountLinkingHandlers = (
-  generateLinkCode: (params: { shareMethod: string }) => void,
+  generateLinkCode: (request?: GenerateLinkCodeRequest) => void,
   redeemLinkCode: (params: { code: string }) => void,
   disconnectKeyholder: (id: string, reason: string) => void,
   clearErrors: () => void,

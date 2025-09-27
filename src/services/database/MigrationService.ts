@@ -40,50 +40,54 @@ export class DBMigrationService {
           async () => {
             // Update sessions without sync status
             const sessions = await db.sessions
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((session) => !session.syncStatus)
               .toArray();
             for (const session of sessions) {
-              await db.sessions.update(session.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (session.id) {
+                await db.sessions.update(session.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
 
             // Update events without sync status
             const events = await db.events
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((event) => !event.syncStatus)
               .toArray();
             for (const event of events) {
-              await db.events.update(event.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (event.id) {
+                await db.events.update(event.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
 
             // Update tasks without sync status
             const tasks = await db.tasks
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((task) => !task.syncStatus)
               .toArray();
             for (const task of tasks) {
-              await db.tasks.update(task.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (task.id) {
+                await db.tasks.update(task.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
 
             // Update goals without sync status
             const goals = await db.goals
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((goal) => !goal.syncStatus)
               .toArray();
             for (const goal of goals) {
-              await db.goals.update(goal.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (goal.id) {
+                await db.goals.update(goal.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
           },
         );
@@ -99,13 +103,14 @@ export class DBMigrationService {
 
         await db.transaction("rw", db.events, async () => {
           const events = await db.events
-            .where("isPrivate")
-            .equals(undefined)
+            .filter((event) => event.isPrivate === undefined)
             .toArray();
           for (const event of events) {
-            await db.events.update(event.id, {
-              isPrivate: false, // Default to public for existing events
-            });
+            if (event.id) {
+              await db.events.update(event.id, {
+                isPrivate: false, // Default to public for existing events
+              });
+            }
           }
         });
 

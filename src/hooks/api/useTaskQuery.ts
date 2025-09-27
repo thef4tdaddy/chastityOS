@@ -76,6 +76,10 @@ export function useTaskMutations() {
       const task = await taskDBService.createTask({
         ...params,
         status: "pending" as TaskStatus,
+        text: params.description || params.title, // Use description or title as text
+        priority: "medium" as const, // Default priority
+        assignedBy: "submissive" as const, // Default assignment source
+        createdAt: new Date(),
       });
 
       // 2. Trigger Firebase sync in background

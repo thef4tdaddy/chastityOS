@@ -176,7 +176,7 @@ export const AchievementDashboard: React.FC = () => {
                         +{achievement.points} points
                       </span>
                       <span className="text-xs text-nightly-celadon">
-                        {formatDate(userAchievement.earnedAt)}
+                        {formatDate(userAchievement.earnedAt.toDate())}
                       </span>
                     </div>
                   </div>
