@@ -23,11 +23,13 @@ ChastityOS uses a modern, scalable architecture designed for offline-first opera
 ## 🔄 Data Flow Architecture
 
 ### Primary Data Flow
+
 ```
 Firebase (Source of Truth) ↔ Dexie (Local Storage) ↔ TanStack Query (Cache) ↔ React Components
 ```
 
 ### State Management Flow
+
 ```
 Server State: Firebase → Dexie → TanStack Query → Components
 UI State:     User Action → Zustand Store → Components
@@ -37,6 +39,7 @@ Auth State:   Firebase Auth → React Context → Components
 ## 📊 Layer Responsibilities
 
 ### 1. Presentation Layer (React Components)
+
 **Location**: `src/components/`
 **Responsibility**: UI rendering and user interaction only
 
@@ -74,12 +77,14 @@ function SessionTracker() {
 ```
 
 **Rules**:
+
 - NO business logic
 - NO direct API calls
 - NO data processing
 - ONLY UI rendering and event handling
 
 ### 2. Business Logic Layer (Services & Hooks)
+
 **Location**: `src/services/`, `src/hooks/`
 **Responsibility**: All business logic, data processing, and API orchestration
 
@@ -129,6 +134,7 @@ export function useSessionMutations() {
 ### 3. Data Layer (Firebase + Dexie + Cache)
 
 #### Firebase (Cloud Database)
+
 **Responsibility**: Source of truth, multi-device sync, real-time updates
 
 ```javascript
@@ -152,6 +158,7 @@ export function useSessionMutations() {
 ```
 
 #### Dexie (Local Database)
+
 **Responsibility**: Offline storage, fast queries, optimistic updates
 
 ```javascript
@@ -173,6 +180,7 @@ export class ChastityDatabase extends Dexie {
 ```
 
 #### TanStack Query (Cache Layer)
+
 **Responsibility**: Server state management, background sync, optimistic updates
 
 ```javascript
@@ -197,24 +205,30 @@ export const sessionQueries = {
 ## 🎛️ State Management Strategy
 
 ### Server State (TanStack Query)
+
 **Use for**: Data from Firebase/API, cached responses, server-driven state
 
 ```javascript
 // ✅ GOOD: Server state management
-const { data: sessions, isLoading, error } = useQuery({
-  queryKey: ['sessions', userId],
+const {
+  data: sessions,
+  isLoading,
+  error,
+} = useQuery({
+  queryKey: ["sessions", userId],
   queryFn: () => SessionService.getSessions(userId),
 });
 
 const startSessionMutation = useMutation({
   mutationFn: SessionService.startSession,
   onSuccess: () => {
-    queryClient.invalidateQueries(['sessions']);
+    queryClient.invalidateQueries(["sessions"]);
   },
 });
 ```
 
 ### UI State (Zustand)
+
 **Use for**: Modal states, form states, UI preferences, temporary client state
 
 ```javascript
@@ -247,6 +261,7 @@ const useUIStore = create<UIStore>((set) => ({
 ```
 
 ### App State (React Context)
+
 **Use for**: Authentication, global app state, theme context
 
 ```javascript
@@ -275,12 +290,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 ## 🔄 Data Synchronization Strategy
 
 ### Offline-First Architecture
+
 1. **Write Local First**: All mutations go to Dexie immediately
 2. **Optimistic Updates**: Update UI immediately with local data
 3. **Background Sync**: Sync to Firebase in background
 4. **Conflict Resolution**: Handle conflicts when coming back online
 
 ### Sync Flow
+
 ```
 User Action → Local Update (Dexie) → UI Update → Background Sync (Firebase)
                      ↓                              ↓
@@ -290,6 +307,7 @@ User Action → Local Update (Dexie) → UI Update → Background Sync (Firebase
 ```
 
 ### Implementation Example
+
 ```javascript
 export class SyncService {
   static async createSession(sessionData: CreateSessionData) {
@@ -338,6 +356,7 @@ export class SyncService {
 ## 🔗 Inter-Layer Communication
 
 ### Component → Service Communication
+
 ```javascript
 // Components call services through hooks
 function SessionTracker() {
@@ -352,6 +371,7 @@ function SessionTracker() {
 ```
 
 ### Service → Data Communication
+
 ```javascript
 // Services coordinate between data sources
 export class SessionService {
@@ -382,6 +402,7 @@ export class SessionService {
 ## 📐 Architectural Patterns
 
 ### Repository Pattern
+
 ```javascript
 export interface SessionRepository {
   findById(id: string): Promise<ChastitySession | null>;
@@ -401,6 +422,7 @@ export class DexieSessionRepository implements SessionRepository {
 ```
 
 ### Service Layer Pattern
+
 ```javascript
 export class SessionService {
   constructor(
@@ -419,6 +441,7 @@ export class SessionService {
 ```
 
 ### Observer Pattern for Real-time Updates
+
 ```javascript
 export class RealtimeService {
   private listeners = new Map<string, (data: any) => void>();
@@ -442,20 +465,24 @@ export class RealtimeService {
 ## 🎯 Architecture Benefits
 
 ### Scalability
+
 - **Horizontal**: Easy to add new features without touching existing code
 - **Vertical**: Clear separation allows independent scaling of each layer
 
 ### Maintainability
+
 - **Single Responsibility**: Each layer has one clear purpose
 - **Dependency Injection**: Easy to swap implementations for testing
 - **Type Safety**: TypeScript ensures contract compliance across layers
 
 ### Performance
+
 - **Offline First**: App works without network connection
 - **Optimistic Updates**: Immediate feedback to users
 - **Smart Caching**: TanStack Query handles cache invalidation
 
 ### Developer Experience
+
 - **Clear Boundaries**: Developers know exactly where code belongs
 - **Predictable Patterns**: Consistent patterns across the application
 - **Easy Testing**: Each layer can be tested independently

@@ -9,18 +9,18 @@ import {
   FaLock,
   FaEyeSlash,
   FaEye,
-  FaFilter,
   FaSearch,
 } from "../../utils/iconImport";
 import {
   DBAchievement,
+  DBUserAchievement,
   AchievementCategory,
   AchievementDifficulty,
 } from "../../types";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
-  userAchievement?: any;
+  userAchievement?: DBUserAchievement;
   progress: {
     currentValue: number;
     targetValue: number;
@@ -306,6 +306,114 @@ interface AchievementCardProps {
   isOwnGallery: boolean;
 }
 
+// Helper function to get card styling classes
+const getCardClasses = (
+  achievement: DBAchievement,
+  isEarned: boolean,
+): string => {
+  const baseClasses =
+    "relative p-4 rounded-lg border-2 transition-all duration-200";
+  const earnedClasses = isEarned
+    ? `${getDifficultyColor(achievement.difficulty)} shadow-lg`
+    : "border-gray-600 bg-gray-800/50";
+  const opacityClass = !isEarned ? "opacity-75" : "";
+
+  return `${baseClasses} ${earnedClasses} ${opacityClass}`;
+};
+
+// Helper function to get text styling classes
+const getTextClasses = (
+  type: "title" | "description",
+  isEarned: boolean,
+): string => {
+  if (type === "title") {
+    return `font-bold ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`;
+  }
+  return `text-sm mt-1 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`;
+};
+
+// Helper function to get badge styling classes
+const getBadgeClasses = (
+  type: "points" | "difficulty",
+  isEarned: boolean,
+): string => {
+  const baseClasses = "text-xs px-2 py-1 rounded font-semibold";
+  const colorClasses = isEarned
+    ? type === "points"
+      ? "bg-yellow-200 text-yellow-800"
+      : "bg-blue-200 text-blue-800"
+    : "bg-gray-700 text-gray-300";
+  const extraClasses = type === "difficulty" ? "capitalize" : "";
+
+  return `${baseClasses} ${colorClasses} ${extraClasses}`;
+};
+
+// Helper function to render visibility toggle
+const renderVisibilityToggle = (
+  achievement: DBAchievement,
+  isEarned: boolean,
+  isVisible: boolean,
+  isOwnGallery: boolean,
+  onToggleVisibility?: (achievementId: string) => void,
+) => {
+  if (!isOwnGallery || !isEarned || !onToggleVisibility) {
+    return null;
+  }
+
+  return (
+    <button
+      onClick={() => onToggleVisibility(achievement.id)}
+      className="absolute top-2 right-2 p-1 rounded text-gray-400 hover:text-white transition-colors"
+    >
+      {isVisible ? <FaEye /> : <FaEyeSlash />}
+    </button>
+  );
+};
+
+// Helper function to render progress bar
+const renderProgressBar = (
+  progress: AchievementWithProgress["progress"],
+  isEarned: boolean,
+) => {
+  if (!progress || isEarned) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3">
+      <div className="flex justify-between text-xs text-nightly-celadon mb-1">
+        <span>Progress</span>
+        <span>
+          {progress.currentValue} / {progress.targetValue}
+        </span>
+      </div>
+      <div className="w-full bg-gray-700 rounded-full h-2">
+        <div
+          className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full transition-all duration-300"
+          style={{ width: `${Math.min(progress.percentage, 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// Helper function to render hidden achievement indicator
+const renderHiddenIndicator = (
+  achievement: DBAchievement,
+  isEarned: boolean,
+) => {
+  if (!achievement.isHidden || isEarned) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center space-x-1 mt-2 text-xs text-gray-500">
+      <FaLock />
+      <span>Hidden Achievement</span>
+    </div>
+  );
+};
+
 const AchievementCard: React.FC<AchievementCardProps> = ({
   item,
   onToggleVisibility,
@@ -314,21 +422,13 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
   const { achievement, progress, isEarned, isVisible } = item;
 
   return (
-    <div
-      className={`relative p-4 rounded-lg border-2 transition-all duration-200 ${
-        isEarned
-          ? `${getDifficultyColor(achievement.difficulty)} shadow-lg`
-          : "border-gray-600 bg-gray-800/50"
-      } ${!isEarned ? "opacity-75" : ""}`}
-    >
-      {/* Visibility Toggle */}
-      {isOwnGallery && isEarned && onToggleVisibility && (
-        <button
-          onClick={() => onToggleVisibility(achievement.id)}
-          className="absolute top-2 right-2 p-1 rounded text-gray-400 hover:text-white transition-colors"
-        >
-          {isVisible ? <FaEye /> : <FaEyeSlash />}
-        </button>
+    <div className={getCardClasses(achievement, isEarned)}>
+      {renderVisibilityToggle(
+        achievement,
+        isEarned,
+        isVisible,
+        isOwnGallery,
+        onToggleVisibility,
       )}
 
       {/* Achievement Icon */}
@@ -336,38 +436,22 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         <div className="text-3xl">{achievement.icon}</div>
         <div className="flex-1">
           {/* Achievement Name */}
-          <h4
-            className={`font-bold ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`}
-          >
+          <h4 className={getTextClasses("title", isEarned)}>
             {achievement.name}
           </h4>
 
           {/* Achievement Description */}
-          <p
-            className={`text-sm mt-1 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`}
-          >
+          <p className={getTextClasses("description", isEarned)}>
             {achievement.description}
           </p>
 
           {/* Points and Difficulty */}
           <div className="flex items-center justify-between mt-3">
             <div className="flex items-center space-x-2">
-              <span
-                className={`text-xs px-2 py-1 rounded font-semibold ${
-                  isEarned
-                    ? "bg-yellow-200 text-yellow-800"
-                    : "bg-gray-700 text-gray-300"
-                }`}
-              >
+              <span className={getBadgeClasses("points", isEarned)}>
                 {achievement.points} pts
               </span>
-              <span
-                className={`text-xs px-2 py-1 rounded capitalize ${
-                  isEarned
-                    ? "bg-blue-200 text-blue-800"
-                    : "bg-gray-700 text-gray-300"
-                }`}
-              >
+              <span className={getBadgeClasses("difficulty", isEarned)}>
                 {achievement.difficulty}
               </span>
             </div>
@@ -380,31 +464,8 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
             )}
           </div>
 
-          {/* Progress Bar */}
-          {progress && !isEarned && (
-            <div className="mt-3">
-              <div className="flex justify-between text-xs text-nightly-celadon mb-1">
-                <span>Progress</span>
-                <span>
-                  {progress.currentValue} / {progress.targetValue}
-                </span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(progress.percentage, 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Hidden Achievement Indicator */}
-          {achievement.isHidden && !isEarned && (
-            <div className="flex items-center space-x-1 mt-2 text-xs text-gray-500">
-              <FaLock />
-              <span>Hidden Achievement</span>
-            </div>
-          )}
+          {renderProgressBar(progress, isEarned)}
+          {renderHiddenIndicator(achievement, isEarned)}
         </div>
       </div>
     </div>

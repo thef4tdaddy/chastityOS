@@ -5,6 +5,7 @@ Welcome to ChastityOS development! This guide will get you up and running in und
 ## 📋 Prerequisites
 
 ### Required Software
+
 - **Node.js 22+** (LTS version)
 - **npm** (comes with Node.js)
 - **Git**
@@ -12,6 +13,7 @@ Welcome to ChastityOS development! This guide will get you up and running in und
 - **Code Editor** (VS Code recommended with extensions below)
 
 ### Recommended VS Code Extensions
+
 - ESLint
 - Prettier
 - Auto Rename Tag
@@ -22,6 +24,7 @@ Welcome to ChastityOS development! This guide will get you up and running in und
 ## 🚀 Quick Start
 
 ### 1. Clone and Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/thef4tdaddy/chastityOS.git
@@ -37,6 +40,7 @@ cp .env.example .env.local
 ### 2. Firebase Configuration
 
 #### Development Setup
+
 ```bash
 # Login to Firebase CLI
 firebase login
@@ -49,7 +53,9 @@ firebase use --add
 ```
 
 #### Environment Variables
+
 Edit `.env.local` with your Firebase configuration:
+
 ```env
 VITE_FIREBASE_API_KEY=your_api_key_here
 VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
@@ -60,6 +66,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 ```
 
 ### 3. Start Development Server
+
 ```bash
 # Start nightly development server
 npm run dev:nightly
@@ -83,6 +90,7 @@ Firebase (Cloud) ↔ Dexie (Local) ↔ TanStack Query (Cache) ↔ React Componen
 ```
 
 ### Key Principles
+
 - **UI Components**: Only contain UI logic (no business logic)
 - **Services Layer**: All business logic lives in `src/services/`
 - **Data Flow**: Firebase is source of truth, Dexie provides offline storage
@@ -123,11 +131,14 @@ src/
 ## 🛠️ Development Workflow
 
 ### Branch Strategy
+
 - **nightly**: Development branch (all PRs go here)
 - **main**: Production branch (only nightly can merge here)
 
 ### Development Process
+
 1. **Create Feature Branch**
+
    ```bash
    git checkout nightly
    git pull origin nightly
@@ -142,6 +153,7 @@ src/
    - Follow ESLint rules strictly
 
 3. **Run Quality Checks**
+
    ```bash
    # Lint code
    npm run lint
@@ -160,6 +172,7 @@ src/
    ```
 
 4. **Test Your Changes**
+
    ```bash
    # Build nightly version
    npm run build:nightly
@@ -172,6 +185,7 @@ src/
    ```
 
 5. **Commit Changes**
+
    ```bash
    # Follow conventional commits
    git add .
@@ -190,6 +204,7 @@ src/
 ## 🎯 Common Development Tasks
 
 ### Adding a New Feature
+
 1. **Create service layer** in `src/services/`
 2. **Create TanStack Query hooks** in `src/hooks/api/`
 3. **Create UI components** in `src/components/`
@@ -197,6 +212,7 @@ src/
 5. **Write tests** (coming in Phase 2)
 
 ### Working with Data
+
 ```javascript
 // ✅ CORRECT: Use service layer
 import { SessionService } from 'src/services/api/session-service';
@@ -219,6 +235,7 @@ function MyComponent() {
 ```
 
 ### State Management Patterns
+
 ```javascript
 // ✅ Server state with TanStack Query
 const { data, isLoading, error } = useSessionQuery();
@@ -236,6 +253,7 @@ const { sessions, setSessions } = useSessionStore(); // Don't do this
 ## 🔧 Useful Commands
 
 ### Development
+
 ```bash
 npm run dev              # Start development server
 npm run dev:nightly      # Start nightly mode
@@ -244,6 +262,7 @@ npm run preview          # Preview production build
 ```
 
 ### Building
+
 ```bash
 npm run build            # Build for development
 npm run build:nightly    # Build nightly version
@@ -252,6 +271,7 @@ npm run clean            # Clean build artifacts
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint             # Run ESLint
 npm run lint:fix         # Fix ESLint issues
@@ -261,6 +281,7 @@ npm run typecheck        # Run TypeScript checks (Phase 2)
 ```
 
 ### Testing
+
 ```bash
 npm run test             # Run tests (Phase 2)
 npm run test:watch       # Watch mode (Phase 2)
@@ -269,6 +290,7 @@ npm run test:full        # Full test suite
 ```
 
 ### Maintenance
+
 ```bash
 npm run deps:check       # Check outdated dependencies
 npm run deps:update      # Update dependencies safely
@@ -281,12 +303,14 @@ npm run health-check     # App health check
 ### Common Issues
 
 #### Build Fails
+
 ```bash
 # Clean everything and reinstall
 npm run clean:all
 ```
 
 #### Firebase Connection Issues
+
 ```bash
 # Check Firebase project
 firebase projects:list
@@ -296,6 +320,7 @@ firebase login:list
 ```
 
 #### Vite Development Server Issues
+
 ```bash
 # Clear Vite cache
 rm -rf node_modules/.vite
@@ -303,6 +328,7 @@ npm run dev
 ```
 
 #### ESLint Errors
+
 ```bash
 # Fix automatically
 npm run lint:fix
@@ -312,6 +338,7 @@ npx eslint --print-config src/App.jsx
 ```
 
 ### Getting Help
+
 - **Documentation**: Check `docs/` directory
 - **Issues**: Create GitHub issue for bugs
 - **Architecture Questions**: See `docs/development/architecture/`

@@ -74,7 +74,7 @@ export const useNotificationStore = create<NotificationState>()(
         // Auto-remove notification after duration if specified
         if (newNotification.duration && newNotification.duration > 0) {
           setTimeout(() => {
-            get().removeNotification(id);
+            useNotificationStore.getState().removeNotification(id);
           }, newNotification.duration);
         }
 

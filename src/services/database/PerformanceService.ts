@@ -14,7 +14,13 @@ export interface QueryMetrics {
   duration: number;
   recordCount: number;
   timestamp: Date;
-  queryDetails?: any;
+  queryDetails?: {
+    filter?: Record<string, unknown>;
+    sort?: string;
+    limit?: number;
+    index?: string;
+    error?: string;
+  };
 }
 
 export interface PerformanceReport {
@@ -45,7 +51,7 @@ export class DBPerformanceService {
     table: string,
     duration: number,
     recordCount: number,
-    queryDetails?: any,
+    queryDetails?: QueryMetrics["queryDetails"],
   ): void {
     const metric: QueryMetrics = {
       operation,
@@ -85,31 +91,29 @@ export class DBPerformanceService {
     table: string,
     queryFn: () => Promise<T>,
   ): Promise<T> {
-    return new Promise(async (resolve, reject) => {
-      const startTime = performance.now();
+    const startTime = performance.now();
 
-      try {
-        const result = await queryFn();
-        const duration = performance.now() - startTime;
+    try {
+      const result = await queryFn();
+      const duration = performance.now() - startTime;
 
-        // Determine record count
-        let recordCount = 0;
-        if (Array.isArray(result)) {
-          recordCount = result.length;
-        } else if (result !== null && result !== undefined) {
-          recordCount = 1;
-        }
-
-        this.recordQuery(operation, table, duration, recordCount);
-        resolve(result);
-      } catch (error) {
-        const duration = performance.now() - startTime;
-        this.recordQuery(`${operation}_ERROR`, table, duration, 0, {
-          error: (error as Error).message,
-        });
-        reject(error);
+      // Determine record count
+      let recordCount = 0;
+      if (Array.isArray(result)) {
+        recordCount = result.length;
+      } else if (result !== null && result !== undefined) {
+        recordCount = 1;
       }
-    });
+
+      this.recordQuery(operation, table, duration, recordCount);
+      return result;
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      this.recordQuery(`${operation}_ERROR`, table, duration, 0, {
+        error: (error as Error).message,
+      });
+      throw error;
+    }
   }
 
   /**
