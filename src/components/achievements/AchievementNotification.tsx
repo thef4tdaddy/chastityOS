@@ -82,8 +82,7 @@ export const AchievementNotification: React.FC<
             closeOnClick: false,
             pauseOnHover: true,
             draggable: true,
-            className: "achievement-toast",
-            bodyClassName: "achievement-toast-body",
+            className: "achievement-toast achievement-toast-body",
             onClose: () => onMarkRead(notification.id),
           },
         );
