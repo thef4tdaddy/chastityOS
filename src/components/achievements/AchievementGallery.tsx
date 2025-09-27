@@ -55,17 +55,17 @@ const getDifficultyColor = (difficulty: DBAchievement["difficulty"]): string => 
 
 const getCategoryName = (category: AchievementCategory): string => {
   switch (category) {
-    case AchievementCategory.SESSION_MILESTONES:
+    case "session_milestones":
       return "Session Milestones";
-    case AchievementCategory.CONSISTENCY_BADGES:
+    case "consistency_badges":
       return "Consistency Badges";
-    case AchievementCategory.STREAK_ACHIEVEMENTS:
+    case "streak_achievements":
       return "Streak Achievements";
-    case AchievementCategory.GOAL_BASED:
+    case "goal_based":
       return "Goal-Based";
-    case AchievementCategory.TASK_COMPLETION:
+    case "task_completion":
       return "Task Completion";
-    case AchievementCategory.SPECIAL_ACHIEVEMENTS:
+    case "special_achievements":
       return "Special Achievements";
     default:
       return "Unknown";
@@ -227,7 +227,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
             className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
           >
             <option value="all">All Categories</option>
-            {Object.values(AchievementCategory).map((category) => (
+            {(["session_milestones", "consistency_badges", "streak_achievements", "goal_based", "task_completion", "special_achievements"] as const).map((category) => (
               <option key={category} value={category}>
                 {getCategoryName(category)}
               </option>
