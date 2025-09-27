@@ -101,7 +101,16 @@ export function useEventMutations() {
       metadata?: Record<string, any>;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
-      const event = await eventDBService.createEvent(params);
+      const { notes, duration, ...restParams } = params;
+      const eventData = {
+        ...restParams,
+        isPrivate: restParams.isPrivate ?? false, // Ensure isPrivate is always defined
+        details: {
+          notes,
+          duration,
+        },
+      };
+      const event = await eventDBService.createEvent(eventData);
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -237,12 +246,18 @@ export function useEventMutations() {
     }) => {
       // 1. Create all events in local Dexie
       const createdEvents = await Promise.all(
-        params.events.map((eventData) =>
-          eventDBService.createEvent({
-            ...eventData,
+        params.events.map((eventData) => {
+          const { notes, duration, ...restEventData } = eventData;
+          return eventDBService.createEvent({
+            ...restEventData,
             userId: params.userId,
-          }),
-        ),
+            isPrivate: restEventData.isPrivate ?? false, // Ensure isPrivate is always defined
+            details: {
+              notes,
+              duration,
+            },
+          });
+        }),
       );
 
       // 2. Trigger Firebase sync in background
