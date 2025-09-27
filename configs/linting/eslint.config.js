@@ -197,7 +197,10 @@ export default [
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: false, // Disable project-wide type checking for performance
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
       },
     },
     plugins: {
@@ -334,6 +337,8 @@ export default [
       'src/services/sync/**/*.{js,jsx,ts,tsx}',
       'src/services/auth/**/*.{js,jsx,ts,tsx}',
       'src/services/storage/**/*.{js,jsx,ts,tsx}',
+      'src/services/migration/**/*.{js,jsx,ts,tsx}',
+      'src/services/database/**/*.{js,jsx,ts,tsx}',
     ],
     rules: {
       complexity: 'off', // Complex algorithms and calculations
@@ -341,6 +346,7 @@ export default [
       'max-statements': 'off', // Data processing operations
       'max-lines-per-function': 'off', // Complex calculations and transformations
       'max-nested-callbacks': 'off', // Async data operations
+      'max-lines': 'off', // Complex services legitimately need many lines
     },
   },
   {

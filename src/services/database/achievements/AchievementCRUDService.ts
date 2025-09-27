@@ -3,12 +3,12 @@
  * Handles basic CRUD operations for achievement definitions
  */
 
-import { ChastityDB } from "../../storage/ChastityDB";
+import { ChastityDB, db } from "../../storage/ChastityDB";
 import { DBAchievement, AchievementCategory } from "../../../types";
 import { logger } from "../../../utils/logging";
 
 export class AchievementCRUDService {
-  private achievementsTable = ChastityDB.achievements;
+  private achievementsTable = db.achievements;
 
   private generateId(): string {
     return `ach_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

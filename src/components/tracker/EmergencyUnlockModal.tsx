@@ -68,7 +68,10 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
       await onEmergencyUnlock(finalReason, additionalNotes);
       onClose();
     } catch (error) {
-      logger.error("Emergency unlock failed in modal", error, { sessionId });
+      logger.error("Emergency unlock failed in modal", {
+        error: error instanceof Error ? error.message : String(error),
+        sessionId,
+      });
     } finally {
       setIsSubmitting(false);
     }

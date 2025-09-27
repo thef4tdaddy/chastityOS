@@ -40,14 +40,16 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
         logger.info("Emergency unlock completed successfully");
       } else {
         // Error handling with proper logging - no console.error or alert
-        logger.error("Emergency unlock failed", new Error(result.message), {
+        logger.error("Emergency unlock failed", {
+          error: result.message,
           sessionId,
           userId,
           reason,
         });
       }
     } catch (error) {
-      logger.error("Emergency unlock error", error, {
+      logger.error("Emergency unlock error", {
+        error: error instanceof Error ? error.message : String(error),
         sessionId,
         userId,
         reason,

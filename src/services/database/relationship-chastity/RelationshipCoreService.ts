@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { RelationshipChastityData } from "@/types/relationships";
-import { relationshipService } from "../RelationshipService";
+import { relationshipService } from "../relationships/RelationshipService";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("RelationshipCoreService");

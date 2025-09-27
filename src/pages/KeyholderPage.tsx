@@ -16,8 +16,13 @@ import { FaLock, FaCog, FaEye, FaSpinner } from "../utils/iconImport";
 
 const KeyholderPage: React.FC = () => {
   const { user } = useAuthState();
-  const { isKeyholderModeUnlocked, lockKeyholderControls } =
-    useKeyholderStore();
+  // Selective subscriptions for specific keyholder store values
+  const isKeyholderModeUnlocked = useKeyholderStore(
+    (state) => state.isKeyholderModeUnlocked,
+  );
+  const lockKeyholderControls = useKeyholderStore(
+    (state) => state.lockKeyholderControls,
+  );
   const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
   const [tasks, setTasks] = useState<DBTask[]>([]);
   const [loading, setLoading] = useState(true);
