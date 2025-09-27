@@ -3,7 +3,7 @@
  * Allows users to control achievement visibility and leaderboard participation
  */
 
-import React, { useState } from "react";
+import React from "react";
 import {
   FaEye,
   FaGlobe,
@@ -14,14 +14,9 @@ import {
   FaClock,
   FaFire,
 } from "../../utils/iconImport";
-import {
-  useLeaderboards,
-  LeaderboardPrivacySettings,
-} from "../../hooks/useLeaderboards";
+import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
-import { serviceLogger } from "../../utils/logging";
-
-const logger = serviceLogger("AchievementPrivacySettings");
+import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -117,46 +112,6 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
     {title}
   </h3>
 );
-
-// Custom hook for form state management
-const usePrivacySettingsForm = (
-  initialSettings: LeaderboardPrivacySettings,
-  updateLeaderboardPrivacy: (
-    settings: LeaderboardPrivacySettings,
-  ) => Promise<void>,
-  onClose?: () => void,
-) => {
-  const [settings, setSettings] = useState(initialSettings);
-  const [hasChanges, setHasChanges] = useState(false);
-
-  const handleSettingChange = (
-    key: keyof LeaderboardPrivacySettings,
-    value: boolean | string,
-  ) => {
-    setSettings((prev: LeaderboardPrivacySettings) => ({
-      ...prev,
-      [key]: value,
-    }));
-    setHasChanges(true);
-  };
-
-  const handleSave = async () => {
-    try {
-      await updateLeaderboardPrivacy(settings);
-      setHasChanges(false);
-      if (onClose) onClose();
-    } catch (error) {
-      logger.error("Failed to save privacy settings", { error });
-    }
-  };
-
-  return {
-    settings,
-    hasChanges,
-    handleSettingChange,
-    handleSave,
-  };
-};
 
 // Component for Achievement Visibility section
 interface AchievementVisibilitySectionProps {
@@ -311,11 +266,8 @@ export const AchievementPrivacySettings: React.FC<
   AchievementPrivacySettingsProps
 > = ({ onClose }) => {
   const { user } = useAuthState();
-  const { privacySettings, updateLeaderboardPrivacy, isUpdatingPrivacy } =
-    useLeaderboards(user?.uid);
-
-  const { settings, hasChanges, handleSettingChange, handleSave } =
-    usePrivacySettingsForm(privacySettings, updateLeaderboardPrivacy, onClose);
+  const { settings, hasChanges, updateSetting, handleSave, isLoading } =
+    usePrivacySettings(user?.uid, onClose);
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-2xl mx-auto">
@@ -339,22 +291,22 @@ export const AchievementPrivacySettings: React.FC<
       <div className="space-y-6">
         <AchievementVisibilitySection
           settings={settings}
-          onSettingChange={handleSettingChange}
+          onSettingChange={updateSetting}
         />
 
         <LeaderboardParticipationSection
           settings={settings}
-          onSettingChange={handleSettingChange}
+          onSettingChange={updateSetting}
         />
 
         <DataSharingSection
           settings={settings}
-          onSettingChange={handleSettingChange}
+          onSettingChange={updateSetting}
         />
 
         <DisplayNameSection
           settings={settings}
-          onSettingChange={handleSettingChange}
+          onSettingChange={updateSetting}
         />
 
         {/* Save Button */}
@@ -369,15 +321,15 @@ export const AchievementPrivacySettings: React.FC<
           )}
           <button
             onClick={handleSave}
-            disabled={!hasChanges || isUpdatingPrivacy}
+            disabled={!hasChanges || isLoading}
             className={`flex items-center space-x-2 px-6 py-2 rounded-lg font-semibold transition-colors ${
-              hasChanges && !isUpdatingPrivacy
+              hasChanges && !isLoading
                 ? "bg-nightly-aquamarine text-black hover:bg-nightly-aquamarine/80"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
           >
             <FaSave />
-            <span>{isUpdatingPrivacy ? "Saving..." : "Save Settings"}</span>
+            <span>{isLoading ? "Saving..." : "Save Settings"}</span>
           </button>
         </div>
       </div>
