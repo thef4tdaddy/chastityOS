@@ -255,7 +255,7 @@ export function useCreateTask() {
 
       return newTask;
     },
-    onSuccess: (newTask, { userId }) => {
+    onSuccess: (newTask: Task, { userId }: { userId: string; taskData: any }) => {
       logger.info("Task creation successful", { taskId: newTask.id, userId });
 
       // Invalidate task lists to trigger refetch
@@ -273,7 +273,7 @@ export function useCreateTask() {
         },
       );
     },
-    onError: (error, { userId, taskData }) => {
+    onError: (error: Error, { userId, taskData }: { userId: string; taskData: any }) => {
       logger.error("Task creation failed", error, {
         userId,
         title: taskData.title,
@@ -360,7 +360,7 @@ export function useUpdateTaskStatus() {
 
       return { previousTask, previousTasks };
     },
-    onSuccess: (updatedTask, { userId, taskId }) => {
+    onSuccess: (updatedTask: Task, { userId, taskId }: { userId: string; taskId: string; status: any }) => {
       logger.info("Task status update successful", {
         taskId,
         userId,
@@ -379,7 +379,7 @@ export function useUpdateTaskStatus() {
         });
       }
     },
-    onError: (error, { taskId, userId }, context) => {
+    onError: (error: Error, { taskId, userId }: { taskId: string; userId: string; status: any }, context: any) => {
       logger.error("Task status update failed", error, { taskId, userId });
 
       // Rollback optimistic updates
@@ -428,7 +428,7 @@ export function useUpdateTask() {
 
       return updatedTask;
     },
-    onSuccess: (updatedTask, { userId, taskId }) => {
+    onSuccess: (updatedTask: Task, { userId, taskId }: { userId: string; taskId: string; updatedTask: any }) => {
       logger.info("Task update successful", { taskId, userId });
 
       // Update detail cache
@@ -440,7 +440,7 @@ export function useUpdateTask() {
         queryKey: taskKeys.byStatus(userId, updatedTask.status),
       });
     },
-    onError: (error, { taskId, userId }) => {
+    onError: (error: Error, { taskId, userId }: { userId: string; taskId: string; updatedTask: any }) => {
       logger.error("Task update failed", error, { taskId, userId });
     },
   });

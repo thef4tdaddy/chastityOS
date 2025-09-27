@@ -3,7 +3,7 @@
  * Displays toast notifications using NotificationStore
  */
 import React, { useEffect } from "react";
-import { useNotificationStore } from "@/stores";
+import { useNotificationStore, Notification } from "@/stores";
 
 // Interface for notification actions used in this component
 interface NotificationAction {
@@ -102,15 +102,15 @@ const NotificationContainer: React.FC = () => {
 
   // Group notifications by position
   const notificationsByPosition = notifications.reduce(
-    (acc, notification) => {
-      const position = notification.position || "top-right";
+    (acc: Record<string, Notification[]>, notification: Notification) => {
+      const position = (notification as any).position || "top-right";
       if (!acc[position]) {
         acc[position] = [];
       }
       acc[position].push(notification);
       return acc;
     },
-    {} as Record<string, typeof notifications>,
+    {} as Record<string, Notification[]>,
   );
 
   const getPositionClasses = (position: string) => {
@@ -155,7 +155,7 @@ const NotificationContainer: React.FC = () => {
             key={position}
             className={`fixed z-50 ${getPositionClasses(position)} space-y-2 max-w-sm w-full`}
           >
-            {positionNotifications.map((notification) => (
+            {positionNotifications.map((notification: Notification) => (
               <div
                 key={notification.id}
                 className={`
