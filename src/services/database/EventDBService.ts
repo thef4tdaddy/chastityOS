@@ -75,8 +75,8 @@ class EventDBService extends BaseDBService<DBEvent> {
       if (filters.dateRange) {
         query = query.and(
           (event) =>
-            event.timestamp >= filters.dateRange.start &&
-            event.timestamp <= filters.dateRange.end,
+            event.timestamp >= filters.dateRange!.start &&
+            event.timestamp <= filters.dateRange!.end,
         );
       }
       if (typeof filters.isPrivate === "boolean") {
