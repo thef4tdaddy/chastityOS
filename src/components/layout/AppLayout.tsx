@@ -44,12 +44,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       ? `${currentItem.label} - ChastityOS`
       : "ChastityOS";
     setPageTitle(title);
-  }, [location.pathname, setPageTitle]);
+  }, [location.pathname]);
 
   // Close mobile menu when route changes
   useEffect(() => {
     closeMobileMenu();
-  }, [location.pathname, closeMobileMenu]);
+  }, [location.pathname]);
 
   return (
     <div className="bg-dark_purple min-h-screen text-white font-inter">

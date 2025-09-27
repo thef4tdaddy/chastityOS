@@ -6,8 +6,18 @@ import React from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
+// Define common form field value types
+export type FormFieldValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | string[]
+  | null
+  | undefined;
+
 export interface FormField {
-  value: any;
+  value: FormFieldValue;
   error?: string;
   touched: boolean;
   dirty: boolean;
@@ -28,12 +38,22 @@ export interface FormState {
   >;
 
   // Actions
-  createForm: (formId: string, initialValues?: Record<string, any>) => void;
+  createForm: (
+    formId: string,
+    initialValues?: Record<string, FormFieldValue>,
+  ) => void;
   destroyForm: (formId: string) => void;
-  setFieldValue: (formId: string, fieldName: string, value: any) => void;
+  setFieldValue: (
+    formId: string,
+    fieldName: string,
+    value: FormFieldValue,
+  ) => void;
   setFieldError: (formId: string, fieldName: string, error?: string) => void;
   touchField: (formId: string, fieldName: string) => void;
-  resetForm: (formId: string, newValues?: Record<string, any>) => void;
+  resetForm: (
+    formId: string,
+    newValues?: Record<string, FormFieldValue>,
+  ) => void;
   setSubmitting: (formId: string, isSubmitting: boolean) => void;
   incrementSubmitCount: (formId: string) => void;
 
@@ -41,16 +61,16 @@ export interface FormState {
   validateField: (
     formId: string,
     fieldName: string,
-    validator: (value: any) => string | undefined,
+    validator: (value: FormFieldValue) => string | undefined,
   ) => void;
   validateForm: (
     formId: string,
-    validators: Record<string, (value: any) => string | undefined>,
+    validators: Record<string, (value: FormFieldValue) => string | undefined>,
   ) => boolean;
 
   // Utility getters
-  getForm: (formId: string) => any;
-  getFieldValue: (formId: string, fieldName: string) => any;
+  getForm: (formId: string) => FormState["forms"][string] | undefined;
+  getFieldValue: (formId: string, fieldName: string) => FormFieldValue;
   getFieldError: (formId: string, fieldName: string) => string | undefined;
   isFieldTouched: (formId: string, fieldName: string) => boolean;
   isFieldDirty: (formId: string, fieldName: string) => boolean;
@@ -107,13 +127,18 @@ export const useFormStore = create<FormState>()(
           `destroyForm:${formId}`,
         ),
 
-      setFieldValue: (formId: string, fieldName: string, value: any) =>
+      setFieldValue: (
+        formId: string,
+        fieldName: string,
+        value: FormFieldValue,
+      ) =>
         set(
           (state) => {
             const form = state.forms[formId];
             if (!form) return state;
 
             const field = form.fields[fieldName] || {
+              value: undefined,
               touched: false,
               dirty: false,
             };
@@ -189,7 +214,11 @@ export const useFormStore = create<FormState>()(
             const form = state.forms[formId];
             if (!form) return state;
 
-            const field = form.fields[fieldName] || { value: "", dirty: false };
+            const field = form.fields[fieldName] || {
+              value: undefined,
+              touched: false,
+              dirty: false,
+            };
 
             return {
               forms: {
@@ -287,7 +316,7 @@ export const useFormStore = create<FormState>()(
       validateField: (
         formId: string,
         fieldName: string,
-        validator: (value: any) => string | undefined,
+        validator: (value: FormFieldValue) => string | undefined,
       ) => {
         const form = get().forms[formId];
         if (!form) return;
@@ -301,7 +330,10 @@ export const useFormStore = create<FormState>()(
 
       validateForm: (
         formId: string,
-        validators: Record<string, (value: any) => string | undefined>,
+        validators: Record<
+          string,
+          (value: FormFieldValue) => string | undefined
+        >,
       ) => {
         const form = get().forms[formId];
         if (!form) return false;

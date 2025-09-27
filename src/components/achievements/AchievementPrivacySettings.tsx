@@ -4,14 +4,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  FaEye,
-  FaEyeSlash,
-  FaUsers,
-  FaGlobe,
-  FaShieldAlt,
-  FaSave,
-} from "../../utils/iconImport";
+import { FaEye, FaGlobe, FaShieldAlt, FaSave } from "../../utils/iconImport";
 import { useLeaderboards } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { serviceLogger } from "../../utils/logging";
@@ -32,7 +25,10 @@ export const AchievementPrivacySettings: React.FC<
   const [settings, setSettings] = useState(privacySettings);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const handleSettingChange = (key: keyof typeof settings, value: any) => {
+  const handleSettingChange = (
+    key: keyof typeof settings,
+    value: boolean | string,
+  ) => {
     setSettings((prev) => ({
       ...prev,
       [key]: value,
