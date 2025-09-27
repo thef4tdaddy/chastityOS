@@ -95,18 +95,24 @@ export interface DBEvent extends DBBase {
     intensity?: number;
     location?: string;
     tags?: string[];
+    // Additional properties for emergency/session events
+    endReason?: string;
+    emergencyReason?: string;
   };
   isPrivate: boolean;
 }
 
 export interface DBTask extends DBBase {
   text: string;
+  title?: string; // Optional title field for tasks
   description?: string;
   status: TaskStatus;
   priority: "low" | "medium" | "high" | "critical";
   assignedBy: "submissive" | "keyholder";
+  category?: string; // Optional category for task organization
   createdAt: Date;
   dueDate?: Date;
+  deadline?: Date; // Alternative deadline field name
   submittedAt?: Date;
   approvedAt?: Date;
   completedAt?: Date;
@@ -125,6 +131,7 @@ export interface DBGoal extends DBBase {
   description?: string;
   targetValue: number;
   currentValue: number;
+  progress?: number; // Progress as percentage (0-100)
   unit: string; // 'seconds', 'tasks', 'days', 'count'
   isCompleted: boolean;
   completedAt?: Date;
