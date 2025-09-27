@@ -4,32 +4,136 @@
  */
 
 import React, { useState } from "react";
-import { FaEye, FaGlobe, FaShieldAlt, FaSave } from "../../utils/iconImport";
-import { useLeaderboards } from "../../hooks/useLeaderboards";
+import {
+  FaEye,
+  FaGlobe,
+  FaShieldAlt,
+  FaSave,
+  FaTrophy,
+  FaCalendar,
+  FaClock,
+  FaFire,
+} from "../../utils/iconImport";
+import {
+  useLeaderboards,
+  LeaderboardPrivacySettings,
+} from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("AchievementPrivacySettings");
 
-export interface AchievementPrivacySettingsProps {
-  onClose?: () => void;
+// Sub-component for toggle switches
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
 }
 
-export const AchievementPrivacySettings: React.FC<
-  AchievementPrivacySettingsProps
-> = ({ onClose }) => {
-  const { user } = useAuthState();
-  const { privacySettings, updateLeaderboardPrivacy, isUpdatingPrivacy } =
-    useLeaderboards(user?.uid);
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
+  checked,
+  onChange,
+  icon,
+  title,
+  description,
+}) => (
+  <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+    <div className="flex items-center space-x-3">
+      {icon}
+      <div>
+        <div className="font-medium text-nightly-honeydew">{title}</div>
+        <div className="text-sm text-nightly-celadon">{description}</div>
+      </div>
+    </div>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="sr-only peer"
+      />
+      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
+    </label>
+  </div>
+);
 
-  const [settings, setSettings] = useState(privacySettings);
+// Sub-component for radio button options
+interface RadioOptionProps {
+  name: string;
+  value: string;
+  checked: boolean;
+  onChange: (value: string) => void;
+  title: string;
+  description: string;
+}
+
+const RadioOption: React.FC<RadioOptionProps> = ({
+  name,
+  value,
+  checked,
+  onChange,
+  title,
+  description,
+}) => (
+  <label className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg cursor-pointer">
+    <input
+      type="radio"
+      name={name}
+      value={value}
+      checked={checked}
+      onChange={(e) => onChange(e.target.value)}
+      className="text-nightly-aquamarine focus:ring-nightly-aquamarine"
+    />
+    <div>
+      <div className="font-medium text-nightly-honeydew">{title}</div>
+      <div className="text-sm text-nightly-celadon">{description}</div>
+    </div>
+  </label>
+);
+
+// Sub-component for privacy notice
+const PrivacyNotice: React.FC = () => (
+  <div className="bg-blue-900/20 p-4 rounded-lg text-sm text-blue-200">
+    <div className="flex items-center space-x-2 mb-2">
+      <FaShieldAlt className="text-blue-300" />
+      <span className="font-semibold text-blue-300">Privacy Note:</span>
+    </div>
+    <p>
+      All leaderboard participation is anonymous by default. No personal
+      information is shared.
+    </p>
+  </div>
+);
+
+// Sub-component for section headers
+interface SectionHeaderProps {
+  title: string;
+}
+
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
+  <h3 className="text-lg font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
+    {title}
+  </h3>
+);
+
+// Custom hook for form state management
+const usePrivacySettingsForm = (
+  initialSettings: LeaderboardPrivacySettings,
+  updateLeaderboardPrivacy: (
+    settings: LeaderboardPrivacySettings,
+  ) => Promise<void>,
+  onClose?: () => void,
+) => {
+  const [settings, setSettings] = useState(initialSettings);
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleSettingChange = (
-    key: keyof typeof settings,
+    key: keyof LeaderboardPrivacySettings,
     value: boolean | string,
   ) => {
-    setSettings((prev) => ({
+    setSettings((prev: LeaderboardPrivacySettings) => ({
       ...prev,
       [key]: value,
     }));
@@ -45,6 +149,173 @@ export const AchievementPrivacySettings: React.FC<
       logger.error("Failed to save privacy settings", { error });
     }
   };
+
+  return {
+    settings,
+    hasChanges,
+    handleSettingChange,
+    handleSave,
+  };
+};
+
+// Component for Achievement Visibility section
+interface AchievementVisibilitySectionProps {
+  settings: LeaderboardPrivacySettings;
+  onSettingChange: (
+    key: keyof LeaderboardPrivacySettings,
+    value: boolean,
+  ) => void;
+}
+
+const AchievementVisibilitySection: React.FC<
+  AchievementVisibilitySectionProps
+> = ({ settings, onSettingChange }) => (
+  <div className="space-y-4">
+    <SectionHeader title="Achievement Visibility" />
+    <div className="space-y-3">
+      <ToggleSwitch
+        checked={settings.showOnPublicProfile}
+        onChange={(checked) => onSettingChange("showOnPublicProfile", checked)}
+        icon={<FaEye className="text-nightly-aquamarine" />}
+        title="Show on Public Profile"
+        description="Display your achievements on your public profile"
+      />
+      <ToggleSwitch
+        checked={settings.shareAchievements}
+        onChange={(checked) => onSettingChange("shareAchievements", checked)}
+        icon={<FaTrophy className="text-yellow-400" />}
+        title="Share Achievements"
+        description="Allow your achievements to be visible to others"
+      />
+    </div>
+  </div>
+);
+
+// Component for Leaderboard Participation section
+interface LeaderboardParticipationSectionProps {
+  settings: LeaderboardPrivacySettings;
+  onSettingChange: (
+    key: keyof LeaderboardPrivacySettings,
+    value: boolean,
+  ) => void;
+}
+
+const LeaderboardParticipationSection: React.FC<
+  LeaderboardParticipationSectionProps
+> = ({ settings, onSettingChange }) => (
+  <div className="space-y-4">
+    <SectionHeader title="Leaderboard Participation" />
+    <PrivacyNotice />
+    <div className="space-y-3">
+      <ToggleSwitch
+        checked={settings.participateInGlobal}
+        onChange={(checked) => onSettingChange("participateInGlobal", checked)}
+        icon={<FaGlobe className="text-green-400" />}
+        title="Global Leaderboards"
+        description="Participate in all-time leaderboards"
+      />
+      <ToggleSwitch
+        checked={settings.participateInMonthly}
+        onChange={(checked) => onSettingChange("participateInMonthly", checked)}
+        icon={<FaCalendar className="text-purple-400" />}
+        title="Monthly Leaderboards"
+        description="Participate in monthly competitive periods"
+      />
+    </div>
+  </div>
+);
+
+// Component for Data Sharing section
+interface DataSharingSectionProps {
+  settings: LeaderboardPrivacySettings;
+  onSettingChange: (
+    key: keyof LeaderboardPrivacySettings,
+    value: boolean,
+  ) => void;
+}
+
+const DataSharingSection: React.FC<DataSharingSectionProps> = ({
+  settings,
+  onSettingChange,
+}) => (
+  <div className="space-y-4">
+    <SectionHeader title="Data Sharing Preferences" />
+    <div className="space-y-3">
+      <ToggleSwitch
+        checked={settings.shareSessionTime}
+        onChange={(checked) => onSettingChange("shareSessionTime", checked)}
+        icon={<FaClock className="text-nightly-aquamarine" />}
+        title="Share Session Time"
+        description="Include your session duration in leaderboards"
+      />
+      <ToggleSwitch
+        checked={settings.shareStreakData}
+        onChange={(checked) => onSettingChange("shareStreakData", checked)}
+        icon={<FaFire className="text-red-400" />}
+        title="Share Streak Data"
+        description="Include your streak achievements in competitions"
+      />
+    </div>
+  </div>
+);
+
+// Component for Display Name section
+interface DisplayNameSectionProps {
+  settings: LeaderboardPrivacySettings;
+  onSettingChange: (
+    key: keyof LeaderboardPrivacySettings,
+    value: string,
+  ) => void;
+}
+
+const DisplayNameSection: React.FC<DisplayNameSectionProps> = ({
+  settings,
+  onSettingChange,
+}) => (
+  <div className="space-y-4">
+    <SectionHeader title="Display Name" />
+    <div className="space-y-3">
+      <RadioOption
+        name="displayName"
+        value="anonymous"
+        checked={settings.displayName === "anonymous"}
+        onChange={(value) => onSettingChange("displayName", value)}
+        title="Anonymous"
+        description='Show as "ChastityUser_XXXX"'
+      />
+      <RadioOption
+        name="displayName"
+        value="username"
+        checked={settings.displayName === "username"}
+        onChange={(value) => onSettingChange("displayName", value)}
+        title="Username"
+        description="Use your username if available"
+      />
+      <RadioOption
+        name="displayName"
+        value="real"
+        checked={settings.displayName === "real"}
+        onChange={(value) => onSettingChange("displayName", value)}
+        title="Real Name"
+        description="Use your real name (not recommended)"
+      />
+    </div>
+  </div>
+);
+
+export interface AchievementPrivacySettingsProps {
+  onClose?: () => void;
+}
+
+export const AchievementPrivacySettings: React.FC<
+  AchievementPrivacySettingsProps
+> = ({ onClose }) => {
+  const { user } = useAuthState();
+  const { privacySettings, updateLeaderboardPrivacy, isUpdatingPrivacy } =
+    useLeaderboards(user?.uid);
+
+  const { settings, hasChanges, handleSettingChange, handleSave } =
+    usePrivacySettingsForm(privacySettings, updateLeaderboardPrivacy, onClose);
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-2xl mx-auto">
@@ -66,268 +337,25 @@ export const AchievementPrivacySettings: React.FC<
       </div>
 
       <div className="space-y-6">
-        {/* Achievement Visibility */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
-            Achievement Visibility
-          </h3>
+        <AchievementVisibilitySection
+          settings={settings}
+          onSettingChange={handleSettingChange}
+        />
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FaEye className="text-nightly-aquamarine" />
-                <div>
-                  <div className="font-medium text-nightly-honeydew">
-                    Show on Public Profile
-                  </div>
-                  <div className="text-sm text-nightly-celadon">
-                    Display your achievements on your public profile
-                  </div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.showOnPublicProfile}
-                  onChange={(e) =>
-                    handleSettingChange("showOnPublicProfile", e.target.checked)
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-              </label>
-            </div>
+        <LeaderboardParticipationSection
+          settings={settings}
+          onSettingChange={handleSettingChange}
+        />
 
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FaTrophy className="text-yellow-400" />
-                <div>
-                  <div className="font-medium text-nightly-honeydew">
-                    Share Achievements
-                  </div>
-                  <div className="text-sm text-nightly-celadon">
-                    Allow your achievements to be visible to others
-                  </div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.shareAchievements}
-                  onChange={(e) =>
-                    handleSettingChange("shareAchievements", e.target.checked)
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-              </label>
-            </div>
-          </div>
-        </div>
+        <DataSharingSection
+          settings={settings}
+          onSettingChange={handleSettingChange}
+        />
 
-        {/* Leaderboard Participation */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
-            Leaderboard Participation
-          </h3>
-
-          <div className="bg-blue-900/20 p-4 rounded-lg text-sm text-blue-200">
-            <div className="flex items-center space-x-2 mb-2">
-              <FaShieldAlt className="text-blue-300" />
-              <span className="font-semibold text-blue-300">Privacy Note:</span>
-            </div>
-            <p>
-              All leaderboard participation is anonymous by default. No personal
-              information is shared.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FaGlobe className="text-green-400" />
-                <div>
-                  <div className="font-medium text-nightly-honeydew">
-                    Global Leaderboards
-                  </div>
-                  <div className="text-sm text-nightly-celadon">
-                    Participate in all-time leaderboards
-                  </div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.participateInGlobal}
-                  onChange={(e) =>
-                    handleSettingChange("participateInGlobal", e.target.checked)
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FaCalendar className="text-purple-400" />
-                <div>
-                  <div className="font-medium text-nightly-honeydew">
-                    Monthly Leaderboards
-                  </div>
-                  <div className="text-sm text-nightly-celadon">
-                    Participate in monthly competitive periods
-                  </div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.participateInMonthly}
-                  onChange={(e) =>
-                    handleSettingChange(
-                      "participateInMonthly",
-                      e.target.checked,
-                    )
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Data Sharing */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
-            Data Sharing Preferences
-          </h3>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FaClock className="text-nightly-aquamarine" />
-                <div>
-                  <div className="font-medium text-nightly-honeydew">
-                    Share Session Time
-                  </div>
-                  <div className="text-sm text-nightly-celadon">
-                    Include your session duration in leaderboards
-                  </div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.shareSessionTime}
-                  onChange={(e) =>
-                    handleSettingChange("shareSessionTime", e.target.checked)
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nighty-aquamarine"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FaFire className="text-red-400" />
-                <div>
-                  <div className="font-medium text-nighty-honeydew">
-                    Share Streak Data
-                  </div>
-                  <div className="text-sm text-nightly-celadon">
-                    Include your streak achievements in competitions
-                  </div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.shareStreakData}
-                  onChange={(e) =>
-                    handleSettingChange("shareStreakData", e.target.checked)
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Display Name Settings */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
-            Display Name
-          </h3>
-
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg cursor-pointer">
-              <input
-                type="radio"
-                name="displayName"
-                value="anonymous"
-                checked={settings.displayName === "anonymous"}
-                onChange={(e) =>
-                  handleSettingChange("displayName", e.target.value)
-                }
-                className="text-nightly-aquamarine focus:ring-nightly-aquamarine"
-              />
-              <div>
-                <div className="font-medium text-nightly-honeydew">
-                  Anonymous
-                </div>
-                <div className="text-sm text-nightly-celadon">
-                  Show as "ChastityUser_XXXX"
-                </div>
-              </div>
-            </label>
-
-            <label className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg cursor-pointer">
-              <input
-                type="radio"
-                name="displayName"
-                value="username"
-                checked={settings.displayName === "username"}
-                onChange={(e) =>
-                  handleSettingChange("displayName", e.target.value)
-                }
-                className="text-nightly-aquamarine focus:ring-nightly-aquamarine"
-              />
-              <div>
-                <div className="font-medium text-nightly-honeydew">
-                  Username
-                </div>
-                <div className="text-sm text-nightly-celadon">
-                  Use your username if available
-                </div>
-              </div>
-            </label>
-
-            <label className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg cursor-pointer">
-              <input
-                type="radio"
-                name="displayName"
-                value="real"
-                checked={settings.displayName === "real"}
-                onChange={(e) =>
-                  handleSettingChange("displayName", e.target.value)
-                }
-                className="text-nightly-aquamarine focus:ring-nightly-aquamarine"
-              />
-              <div>
-                <div className="font-medium text-nightly-honeydew">
-                  Real Name
-                </div>
-                <div className="text-sm text-nightly-celadon">
-                  Use your real name (not recommended)
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
+        <DisplayNameSection
+          settings={settings}
+          onSettingChange={handleSettingChange}
+        />
 
         {/* Save Button */}
         <div className="flex justify-end space-x-3 pt-4">
@@ -344,7 +372,7 @@ export const AchievementPrivacySettings: React.FC<
             disabled={!hasChanges || isUpdatingPrivacy}
             className={`flex items-center space-x-2 px-6 py-2 rounded-lg font-semibold transition-colors ${
               hasChanges && !isUpdatingPrivacy
-                ? "bg-nightly-aquamarine text-black hover:bg-nighty-aquamarine/80"
+                ? "bg-nightly-aquamarine text-black hover:bg-nightly-aquamarine/80"
                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
             }`}
           >
