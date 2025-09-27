@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { useAuthState } from "@/contexts/AuthContext";
-import { relationshipService } from "@/services/database/RelationshipService";
+import { relationshipService } from "@/services/database/relationships/RelationshipService";
 import { RelationshipRequest } from "@/types/relationships";
 import { BaseHookState, BaseHookActions } from "./types";
 import { withErrorHandling, createBaseActions } from "./utils";

@@ -20,7 +20,7 @@ import {
   RelationshipTask,
   RelationshipTaskStatus,
 } from "@/types/relationships";
-import { relationshipService } from "../RelationshipService";
+import { relationshipService } from "../relationships/RelationshipService";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 import { relationshipCoreService } from "./RelationshipCoreService";
