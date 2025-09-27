@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-// TODO: Replace with proper hook pattern to avoid architectural violations
-// import { PauseService, EnhancedPauseReason } from "../../services/PauseService";
-import { serviceLogger } from "../../utils/logging";
+import React from "react";
+import { usePauseResumeControls } from "../../hooks/tracker/usePauseResumeControls";
 
 // Temporary types until proper hook pattern is implemented
 type EnhancedPauseReason = "Bathroom Break" | "Emergency" | "Medical" | "Other";
@@ -13,61 +11,30 @@ type PauseState = {
   cooldownRemaining?: number;
 };
 
-const logger = serviceLogger("PauseResumeButtons");
-
-// Helper function to format cooldown time (inline until proper hook pattern)
-const formatTimeRemaining = (cooldownSeconds: number): string => {
-  const hours = Math.floor(cooldownSeconds / 3600);
-  const minutes = Math.floor((cooldownSeconds % 3600) / 60);
-  const seconds = cooldownSeconds % 60;
-
-  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
-  if (minutes > 0) return `${minutes}m ${seconds}s`;
-  return `${seconds}s`;
-};
-
-// Helper function to get button states and conditions
-const getButtonStates = (isPaused: boolean, pauseState?: PauseState) => {
-  return {
-    showPause: !isPaused,
-    showResume: isPaused,
-    canPause: pauseState?.canPause ?? false,
-    showCooldown: !pauseState?.canPause && !!pauseState?.cooldownRemaining,
-  };
-};
-
-// Helper function to get button styling
-const getPauseButtonStyling = (canPause: boolean) => {
-  return canPause
-    ? "bg-gradient-to-r from-yellow-600/80 to-orange-600/80 hover:from-yellow-500/90 hover:to-orange-500/90 text-white hover:shadow-yellow-500/20"
-    : "bg-gradient-to-r from-gray-400/80 to-gray-500/80 text-gray-300 cursor-not-allowed";
-};
-
-// Helper function to get button text
-const getPauseButtonText = (canPause: boolean) => {
-  return canPause ? "Pause Session" : "Cooldown Active";
-};
-
 // PauseButton sub-component
 interface PauseButtonProps {
   canPause: boolean;
   isLoading: boolean;
   onPauseClick: () => void;
+  pauseButtonStyling: string;
+  pauseButtonText: string;
 }
 
 const PauseButton: React.FC<PauseButtonProps> = ({
   canPause,
   isLoading,
   onPauseClick,
+  pauseButtonStyling,
+  pauseButtonText,
 }) => (
   <div className="flex justify-center mb-8">
     <button
       type="button"
       onClick={onPauseClick}
       disabled={!canPause || isLoading}
-      className={`glass-button font-bold py-3 px-6 shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 ${getPauseButtonStyling(canPause)}`}
+      className={`glass-button font-bold py-3 px-6 shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 ${pauseButtonStyling}`}
     >
-      ⏸️ {getPauseButtonText(canPause)}
+      ⏸️ {pauseButtonText}
     </button>
   </div>
 );
@@ -96,14 +63,14 @@ const ResumeButton: React.FC<ResumeButtonProps> = ({
 
 // CooldownDisplay sub-component
 interface CooldownDisplayProps {
-  cooldownRemaining: number;
+  cooldownDisplay: string;
 }
 
 const CooldownDisplay: React.FC<CooldownDisplayProps> = ({
-  cooldownRemaining,
+  cooldownDisplay,
 }) => (
   <div className="text-sm text-yellow-600 mb-4 text-center">
-    Next pause available in: {formatTimeRemaining(cooldownRemaining)}
+    Next pause available in: {cooldownDisplay}
   </div>
 );
 
@@ -213,109 +180,46 @@ interface PauseResumeButtonsProps {
   onResume?: () => void;
 }
 
-// Helper functions for async operations
-const executeWithLoadingState = async (
-  setIsLoading: (loading: boolean) => void,
-  operation: () => Promise<void>,
-) => {
-  setIsLoading(true);
-  try {
-    await operation();
-  } catch (error) {
-    logger.error("Operation failed", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-const resetModalState = (
-  setShowPauseModal: (show: boolean) => void,
-  setSelectedReason: (reason: EnhancedPauseReason) => void,
-  setCustomReason: (reason: string) => void,
-) => {
-  setShowPauseModal(false);
-  setSelectedReason("Bathroom Break");
-  setCustomReason("");
-};
-
-// Custom hook to manage pause/resume logic
-const usePauseResumeLogic = (
-  sessionId: string,
-  onPause?: () => void,
-  onResume?: () => void,
-) => {
-  const [showPauseModal, setShowPauseModal] = useState(false);
-  const [selectedReason, setSelectedReason] =
-    useState<EnhancedPauseReason>("Bathroom Break");
-  const [customReason, setCustomReason] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleConfirmPause = async () => {
-    if (!sessionId) return;
-    await executeWithLoadingState(setIsLoading, async () => {
-      // TODO: Replace with proper service hook call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
-      resetModalState(setShowPauseModal, setSelectedReason, setCustomReason);
-      onPause?.();
-      logger.info("Session paused successfully (mocked)", { sessionId });
-    });
-  };
-
-  const handleResumeClick = async () => {
-    if (!sessionId) return;
-    await executeWithLoadingState(setIsLoading, async () => {
-      // TODO: Replace with proper service hook call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
-      onResume?.();
-      logger.info("Session resumed successfully (mocked)", { sessionId });
-    });
-  };
-
-  const handleModalCancel = () => {
-    resetModalState(setShowPauseModal, setSelectedReason, setCustomReason);
-  };
-
-  return {
-    showPauseModal,
-    setShowPauseModal,
-    selectedReason,
-    setSelectedReason,
-    customReason,
-    setCustomReason,
-    isLoading,
-    handleConfirmPause,
-    handleResumeClick,
-    handleModalCancel,
-  };
-};
+interface PauseResumeButtonsProps {
+  sessionId: string;
+  userId: string;
+  isPaused: boolean;
+  pauseState?: PauseState;
+  onPause?: () => void;
+  onResume?: () => void;
+}
 
 export const PauseResumeButtons: React.FC<PauseResumeButtonsProps> = ({
   sessionId,
-  _userId, // Mark as unused with underscore prefix
+  userId,
   isPaused,
   pauseState,
   onPause,
   onResume,
 }) => {
   const {
+    buttonStates,
+    cooldownDisplay,
+    pauseButtonStyling,
+    pauseButtonText,
     showPauseModal,
-    setShowPauseModal,
     selectedReason,
-    setSelectedReason,
     customReason,
-    setCustomReason,
     isLoading,
-    handleConfirmPause,
+    handlePauseClick,
     handleResumeClick,
+    handleConfirmPause,
     handleModalCancel,
-  } = usePauseResumeLogic(sessionId, onPause, onResume);
-
-  const buttonStates = getButtonStates(isPaused, pauseState);
-
-  const handlePauseClick = () => {
-    if (!pauseState?.canPause) return;
-    setShowPauseModal(true);
-  };
+    setSelectedReason,
+    setCustomReason,
+  } = usePauseResumeControls({
+    sessionId,
+    userId,
+    isPaused,
+    pauseState,
+    onPause,
+    onResume,
+  });
 
   return (
     <>
@@ -328,11 +232,13 @@ export const PauseResumeButtons: React.FC<PauseResumeButtonsProps> = ({
           canPause={buttonStates.canPause}
           isLoading={isLoading}
           onPauseClick={handlePauseClick}
+          pauseButtonStyling={pauseButtonStyling}
+          pauseButtonText={pauseButtonText}
         />
       )}
 
-      {buttonStates.showCooldown && pauseState?.cooldownRemaining && (
-        <CooldownDisplay cooldownRemaining={pauseState.cooldownRemaining} />
+      {buttonStates.showCooldown && (
+        <CooldownDisplay cooldownDisplay={cooldownDisplay} />
       )}
 
       <PauseModal
