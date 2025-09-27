@@ -445,7 +445,10 @@ export function useUpdateTask() {
     },
     onSuccess: (
       updatedTask: Task,
-      { userId, taskId }: { userId: string; taskId: string; updatedTask: any },
+      {
+        userId,
+        taskId,
+      }: { userId: string; taskId: string; updates: UpdateTaskData },
     ) => {
       logger.info("Task update successful", { taskId, userId });
 

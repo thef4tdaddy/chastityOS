@@ -97,8 +97,8 @@ export class SessionDataSync extends FirebaseSyncCore {
             "download_conflict",
             this.collectionName,
             docData.id,
-            localDoc as Record<string, unknown>,
-            docData as Record<string, unknown>,
+            localDoc as unknown as Record<string, unknown>,
+            docData as unknown as Record<string, unknown>,
           );
 
           if (result) {
@@ -147,8 +147,8 @@ export class SessionDataSync extends FirebaseSyncCore {
             "upload_conflict",
             this.collectionName,
             docData.id,
-            docData as Record<string, unknown>,
-            remoteDoc as Record<string, unknown>,
+            docData as unknown as Record<string, unknown>,
+            remoteDoc as unknown as Record<string, unknown>,
           );
           result.conflicts.push(conflictInfo);
           this.updateSyncResult(result, "conflicts");

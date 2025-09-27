@@ -1,17 +1,57 @@
 /**
  * NavigationStore Tests
- * Unit tests for NavigationStore functionality
+ * Unit tests for NavigationStore functionality using modern v4.0 architecture
  */
 import { describe, it, expect, beforeEach } from "vitest";
 import { useNavigationStore } from "../navigationStore";
 
 describe("NavigationStore", () => {
   beforeEach(() => {
-    // Reset store before each test
+    // Reset store before each test using the modern reset method
     useNavigationStore.getState().resetStore();
   });
 
-  describe("Mobile Menu", () => {
+  describe("Initial State", () => {
+    it("should have correct initial state", () => {
+      const state = useNavigationStore.getState();
+
+      expect(state.currentPage).toBe("dashboard");
+      expect(state.breadcrumbs).toEqual([]);
+      expect(state.isMobileMenuOpen).toBe(false);
+      expect(state.isPageLoading).toBe(false);
+      expect(state.pageTitle).toBeUndefined();
+    });
+  });
+
+  describe("Page Management", () => {
+    it("should set current page", () => {
+      const { setCurrentPage } = useNavigationStore.getState();
+
+      setCurrentPage("settings");
+
+      expect(useNavigationStore.getState().currentPage).toBe("settings");
+    });
+
+    it("should set page title", () => {
+      const { setPageTitle } = useNavigationStore.getState();
+
+      setPageTitle("User Settings");
+
+      expect(useNavigationStore.getState().pageTitle).toBe("User Settings");
+    });
+
+    it("should set page loading state", () => {
+      const { setPageLoading } = useNavigationStore.getState();
+
+      setPageLoading(true);
+      expect(useNavigationStore.getState().isPageLoading).toBe(true);
+
+      setPageLoading(false);
+      expect(useNavigationStore.getState().isPageLoading).toBe(false);
+    });
+  });
+
+  describe("Mobile Menu Management", () => {
     it("should start with mobile menu closed", () => {
       const { isMobileMenuOpen } = useNavigationStore.getState();
       expect(isMobileMenuOpen).toBe(false);
@@ -20,6 +60,8 @@ describe("NavigationStore", () => {
     it("should toggle mobile menu state", () => {
       const { toggleMobileMenu } = useNavigationStore.getState();
 
+      expect(useNavigationStore.getState().isMobileMenuOpen).toBe(false);
+
       toggleMobileMenu();
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
 
@@ -27,49 +69,28 @@ describe("NavigationStore", () => {
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(false);
     });
 
-    it("should open mobile menu", () => {
-      const { openMobileMenu } = useNavigationStore.getState();
+    it("should open mobile menu explicitly", () => {
+      const { setMobileMenuOpen } = useNavigationStore.getState();
 
-      openMobileMenu();
+      setMobileMenuOpen(true);
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
     });
 
-    it("should close mobile menu", () => {
-      const { openMobileMenu, closeMobileMenu } = useNavigationStore.getState();
+    it("should close mobile menu explicitly", () => {
+      const { setMobileMenuOpen, closeMobileMenu } =
+        useNavigationStore.getState();
 
-      openMobileMenu();
+      // First open it
+      setMobileMenuOpen(true);
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
 
+      // Then close it
       closeMobileMenu();
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(false);
     });
   });
 
-  describe("Page Title Management", () => {
-    it("should start with default page title", () => {
-      const { currentPageTitle } = useNavigationStore.getState();
-      expect(currentPageTitle).toBe("ChastityOS");
-    });
-
-    it("should update page title", () => {
-      const { setPageTitle } = useNavigationStore.getState();
-
-      setPageTitle("Test Page");
-      expect(useNavigationStore.getState().currentPageTitle).toBe("Test Page");
-    });
-
-    it("should set page metadata", () => {
-      const { setPageMetadata } = useNavigationStore.getState();
-
-      setPageMetadata("Test Page", "Test Description");
-      const state = useNavigationStore.getState();
-
-      expect(state.currentPageTitle).toBe("Test Page");
-      expect(state.currentPageDescription).toBe("Test Description");
-    });
-  });
-
-  describe("Breadcrumbs", () => {
+  describe("Breadcrumb Management", () => {
     it("should start with empty breadcrumbs", () => {
       const { breadcrumbs } = useNavigationStore.getState();
       expect(breadcrumbs).toEqual([]);
@@ -77,9 +98,10 @@ describe("NavigationStore", () => {
 
     it("should set breadcrumbs", () => {
       const { setBreadcrumbs } = useNavigationStore.getState();
-      const testBreadcrumbs = ["Home", "Settings"];
+      const testBreadcrumbs = ["Home", "Settings", "Profile"];
 
       setBreadcrumbs(testBreadcrumbs);
+
       expect(useNavigationStore.getState().breadcrumbs).toEqual(
         testBreadcrumbs,
       );
@@ -87,71 +109,88 @@ describe("NavigationStore", () => {
 
     it("should add breadcrumb", () => {
       const { addBreadcrumb } = useNavigationStore.getState();
-      const breadcrumb = "Home";
 
-      addBreadcrumb(breadcrumb);
-      expect(useNavigationStore.getState().breadcrumbs).toEqual([breadcrumb]);
+      addBreadcrumb("Home");
+      expect(useNavigationStore.getState().breadcrumbs).toEqual(["Home"]);
+
+      addBreadcrumb("Settings");
+      expect(useNavigationStore.getState().breadcrumbs).toEqual([
+        "Home",
+        "Settings",
+      ]);
     });
 
-    it("should clear breadcrumbs", () => {
+    it("should remove last breadcrumb", () => {
+      const { setBreadcrumbs, removeBreadcrumb } =
+        useNavigationStore.getState();
+
+      setBreadcrumbs(["Home", "Settings", "Profile"]);
+      expect(useNavigationStore.getState().breadcrumbs).toEqual([
+        "Home",
+        "Settings",
+        "Profile",
+      ]);
+
+      removeBreadcrumb();
+      expect(useNavigationStore.getState().breadcrumbs).toEqual([
+        "Home",
+        "Settings",
+      ]);
+
+      removeBreadcrumb();
+      expect(useNavigationStore.getState().breadcrumbs).toEqual(["Home"]);
+    });
+
+    it("should clear all breadcrumbs", () => {
       const { setBreadcrumbs, clearBreadcrumbs } =
         useNavigationStore.getState();
 
-      setBreadcrumbs(["Home"]);
-      expect(useNavigationStore.getState().breadcrumbs).toHaveLength(1);
+      setBreadcrumbs(["Home", "Settings", "Profile"]);
+      expect(useNavigationStore.getState().breadcrumbs).toEqual([
+        "Home",
+        "Settings",
+        "Profile",
+      ]);
 
       clearBreadcrumbs();
       expect(useNavigationStore.getState().breadcrumbs).toEqual([]);
     });
   });
 
-  describe("Navigation Loading", () => {
-    it("should start with navigation not loading", () => {
-      const { isNavigating } = useNavigationStore.getState();
-      expect(isNavigating).toBe(false);
-    });
-
-    it("should set navigation loading state", () => {
-      const { setNavigating } = useNavigationStore.getState();
-
-      setNavigating(true);
-      expect(useNavigationStore.getState().isNavigating).toBe(true);
-
-      setNavigating(false);
-      expect(useNavigationStore.getState().isNavigating).toBe(false);
-    });
-  });
-
   describe("Store Reset", () => {
     it("should reset store to initial state", () => {
       const {
-        openMobileMenu,
+        setCurrentPage,
         setPageTitle,
+        setMobileMenuOpen,
         setBreadcrumbs,
-        setNavigating,
+        setPageLoading,
         resetStore,
       } = useNavigationStore.getState();
 
-      // Change state
-      openMobileMenu();
-      setPageTitle("Test Page");
-      setBreadcrumbs(["Test"]);
-      setNavigating(true);
+      // Change all values
+      setCurrentPage("custom-page");
+      setPageTitle("Custom Title");
+      setMobileMenuOpen(true);
+      setBreadcrumbs(["Custom", "Path"]);
+      setPageLoading(true);
 
-      // Verify state changed
+      // Verify changes
       let state = useNavigationStore.getState();
+      expect(state.currentPage).toBe("custom-page");
+      expect(state.pageTitle).toBe("Custom Title");
       expect(state.isMobileMenuOpen).toBe(true);
-      expect(state.currentPageTitle).toBe("Test Page");
-      expect(state.breadcrumbs).toHaveLength(1);
-      expect(state.isNavigating).toBe(true);
+      expect(state.breadcrumbs).toEqual(["Custom", "Path"]);
+      expect(state.isPageLoading).toBe(true);
 
       // Reset and verify
       resetStore();
       state = useNavigationStore.getState();
+      expect(state.currentPage).toBe("dashboard");
+      expect(state.pageTitle).toBeUndefined();
       expect(state.isMobileMenuOpen).toBe(false);
-      expect(state.currentPageTitle).toBe("ChastityOS");
       expect(state.breadcrumbs).toEqual([]);
-      expect(state.isNavigating).toBe(false);
+      expect(state.isPageLoading).toBe(false);
     });
   });
 });

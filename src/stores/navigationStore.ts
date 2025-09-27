@@ -5,7 +5,28 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export interface NavigationState {
+// Type definitions that are referenced in other files
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  isActive?: boolean;
+}
+
+export interface NavigationActions {
+  setCurrentPage: (page: string) => void;
+  setBreadcrumbs: (breadcrumbs: string[]) => void;
+  toggleMobileMenu: () => void;
+  setMobileMenuOpen: (isOpen: boolean) => void;
+  closeMobileMenu: () => void;
+  setPageLoading: (isLoading: boolean) => void;
+  setPageTitle: (title: string) => void;
+  addBreadcrumb: (breadcrumb: string) => void;
+  removeBreadcrumb: () => void;
+  clearBreadcrumbs: () => void;
+  resetStore: () => void;
+}
+
+export interface NavigationState extends NavigationActions {
   // Current page/route
   currentPage: string;
 
@@ -20,20 +41,6 @@ export interface NavigationState {
 
   // Page title state
   pageTitle?: string;
-
-  // Actions
-  setCurrentPage: (page: string) => void;
-  setBreadcrumbs: (breadcrumbs: string[]) => void;
-  toggleMobileMenu: () => void;
-  setMobileMenuOpen: (isOpen: boolean) => void;
-  closeMobileMenu: () => void;
-  setPageLoading: (isLoading: boolean) => void;
-  setPageTitle: (title: string) => void;
-
-  // Utility actions
-  addBreadcrumb: (breadcrumb: string) => void;
-  removeBreadcrumb: () => void;
-  clearBreadcrumbs: () => void;
 }
 
 export const useNavigationStore = create<NavigationState>()(
@@ -93,6 +100,20 @@ export const useNavigationStore = create<NavigationState>()(
 
       clearBreadcrumbs: () =>
         set({ breadcrumbs: [] }, false, "clearBreadcrumbs"),
+
+      // Reset store to initial state (for testing)
+      resetStore: () =>
+        set(
+          {
+            currentPage: "dashboard",
+            breadcrumbs: [],
+            isMobileMenuOpen: false,
+            isPageLoading: false,
+            pageTitle: undefined,
+          },
+          false,
+          "resetStore",
+        ),
     }),
     {
       name: "navigation-store",
@@ -112,3 +133,6 @@ export const useIsMobileMenuOpen = () =>
 
 export const useIsPageLoading = () =>
   useNavigationStore((state) => state.isPageLoading);
+
+// Type aliases for export compatibility
+export type NavigationStore = NavigationState;

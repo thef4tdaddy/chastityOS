@@ -58,12 +58,7 @@ export class AchievementDBService extends BaseDBService {
       };
 
       await this.achievementsTable.add(achievementData);
-      await this.queueSync(
-        "achievements",
-        "create",
-        achievementData.id,
-        achievementData,
-      );
+      await this.queueSync("achievements:create", achievementData);
 
       logger.info(
         `Achievement created: ${achievementData.name}`,
@@ -171,12 +166,7 @@ export class AchievementDBService extends BaseDBService {
       };
 
       await this.userAchievementsTable.add(userAchievement);
-      await this.queueSync(
-        "userAchievements",
-        "create",
-        userAchievement.id,
-        userAchievement,
-      );
+      await this.queueSync("userAchievements:create", userAchievement);
 
       logger.info(
         `Achievement ${achievementId} awarded to user ${userId}`,
@@ -257,12 +247,7 @@ export class AchievementDBService extends BaseDBService {
       userAchievement.syncStatus = "pending";
 
       await this.userAchievementsTable.put(userAchievement);
-      await this.queueSync(
-        "userAchievements",
-        "update",
-        userAchievement.id,
-        userAchievement,
-      );
+      await this.queueSync("userAchievements:update", userAchievement);
 
       logger.info(
         `Achievement ${achievementId} visibility toggled for user ${userId}`,
@@ -309,20 +294,10 @@ export class AchievementDBService extends BaseDBService {
 
       if (existing) {
         await this.achievementProgressTable.put(progressData);
-        await this.queueSync(
-          "achievementProgress",
-          "update",
-          progressData.id,
-          progressData,
-        );
+        await this.queueSync("achievementProgress:update", progressData);
       } else {
         await this.achievementProgressTable.add(progressData);
-        await this.queueSync(
-          "achievementProgress",
-          "create",
-          progressData.id,
-          progressData,
-        );
+        await this.queueSync("achievementProgress:create", progressData);
       }
 
       // If completed, award the achievement
@@ -417,12 +392,7 @@ export class AchievementDBService extends BaseDBService {
       };
 
       await this.achievementNotificationsTable.add(notification);
-      await this.queueSync(
-        "achievementNotifications",
-        "create",
-        notification.id,
-        notification,
-      );
+      await this.queueSync("achievementNotifications:create", notification);
 
       logger.info(
         `Achievement notification created for user ${userId}`,
@@ -475,12 +445,7 @@ export class AchievementDBService extends BaseDBService {
         notification.syncStatus = "pending";
 
         await this.achievementNotificationsTable.put(notification);
-        await this.queueSync(
-          "achievementNotifications",
-          "update",
-          notification.id,
-          notification,
-        );
+        await this.queueSync("achievementNotifications:update", notification);
       }
     } catch (error) {
       logger.error(
@@ -635,8 +600,14 @@ export class AchievementDBService extends BaseDBService {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
         userId,
-        category: category as AchievementCategory,
-        period: period as "daily" | "weekly" | "monthly" | "yearly" | "allTime",
+        category: category as
+          | "session_count"
+          | "total_chastity_time"
+          | "longest_single_session"
+          | "current_streak"
+          | "achievement_points"
+          | "goal_achievements",
+        period: period as "this_week" | "this_month" | "this_year" | "all_time",
         value,
         rank: 0, // Will be calculated by ranking algorithm
         displayName,
@@ -649,12 +620,7 @@ export class AchievementDBService extends BaseDBService {
       // Upsert the entry
       await this.leaderboardEntriesTable.put(entryData);
 
-      await this.queueSync(
-        "leaderboardEntries",
-        "create",
-        entryData.id,
-        entryData,
-      );
+      await this.queueSync("leaderboardEntries:create", entryData);
 
       logger.info(
         `Updated leaderboard entry for user ${userId}`,

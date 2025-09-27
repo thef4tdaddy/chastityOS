@@ -3,11 +3,12 @@
  */
 
 import { useState, useMemo } from "react";
-import { DBAchievement, DBUserAchievement } from "../types";
 import {
+  DBAchievement,
+  DBUserAchievement,
   AchievementCategory,
   AchievementDifficulty,
-} from "../types/achievements";
+} from "../types";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -142,39 +143,21 @@ export const useAchievementGallery = (
   };
 };
 
-// Helper function to convert string category to enum and get display name
-export const getCategoryName = (
-  category: string | AchievementCategory,
-): string => {
-  // Map string categories to enum values
-  const categoryMap: Record<string, string> = {
-    session_milestones: "Session Milestones",
-    consistency_badges: "Consistency Badges",
-    streak_achievements: "Streak Achievements",
-    goal_based: "Goal Based",
-    task_completion: "Task Completion",
-    special_achievements: "Special Achievements",
-  };
-
-  // If it's already a string literal, use the map
-  if (typeof category === "string") {
-    return categoryMap[category] || "Unknown";
-  }
-
-  // If it's an enum, handle enum cases
+// Helper function to get category display name
+export const getCategoryName = (category: AchievementCategory): string => {
   switch (category) {
     case AchievementCategory.SESSION_MILESTONES:
       return "Session Milestones";
     case AchievementCategory.CONSISTENCY_BADGES:
-      return "Consistency Badges";
+      return "Consistency";
     case AchievementCategory.STREAK_ACHIEVEMENTS:
-      return "Streak Achievements";
+      return "Streaks";
     case AchievementCategory.GOAL_BASED:
-      return "Goal Based";
+      return "Goals";
     case AchievementCategory.TASK_COMPLETION:
-      return "Task Completion";
+      return "Tasks";
     case AchievementCategory.SPECIAL_ACHIEVEMENTS:
-      return "Special Achievements";
+      return "Special";
     default:
       return "Unknown";
   }

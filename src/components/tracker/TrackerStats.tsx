@@ -1,7 +1,7 @@
 import React from "react";
-import { useSessionTimer } from "../../hooks/useSessionTimer";
 import { formatElapsedTime } from "../../utils";
 import type { DBSession } from "../../types/database";
+import { useTrackerStats } from "../../hooks/tracker/useTrackerStats";
 
 interface TrackerStatsProps {
   // New props for real-time timer
@@ -19,50 +19,18 @@ interface TrackerStatsProps {
   totalTimeCageOff?: number;
 }
 
-export const TrackerStats: React.FC<TrackerStatsProps> = ({
-  currentSession,
-  topBoxLabel = "Total Locked Time",
-  topBoxTime,
-  mainChastityDisplayTime = 0,
-  isPaused = false,
-  livePauseDuration = 0,
-  accumulatedPauseTimeThisSession = 0,
-  isCageOn = false,
-  timeCageOff = 0,
-  totalChastityTime = 0,
-  totalTimeCageOff = 0,
-}) => {
-  // Use the new timer hook for real-time updates when session is provided
-  const timerData = useSessionTimer(currentSession);
-
-  // Use real-time data if session is provided, otherwise fall back to props
-  const displayData = currentSession
-    ? {
-        effectiveTime: timerData.effectiveTimeFormatted,
-        isPaused: timerData.isPaused,
-        currentPauseDuration: timerData.currentPauseDurationFormatted,
-        accumulatedPause: timerData.currentPauseDurationFormatted,
-        totalElapsed: timerData.totalElapsedTimeFormatted,
-        isActive: timerData.isActive,
-      }
-    : {
-        effectiveTime: `${Math.floor(mainChastityDisplayTime / 3600)}h ${Math.floor((mainChastityDisplayTime % 3600) / 60)}m ${mainChastityDisplayTime % 60}s`,
-        isPaused,
-        currentPauseDuration: `${Math.floor(livePauseDuration / 3600)}h ${Math.floor((livePauseDuration % 3600) / 60)}m ${livePauseDuration % 60}s`,
-        accumulatedPause: `${Math.floor(accumulatedPauseTimeThisSession / 3600)}h ${Math.floor((accumulatedPauseTimeThisSession % 3600) / 60)}m ${accumulatedPauseTimeThisSession % 60}s`,
-        totalElapsed: topBoxTime || "0s",
-        isActive: isCageOn,
-      };
+export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
+  const { displayData, stats } = useTrackerStats(props);
 
   return (
     <div className="space-y-6 mb-8">
       {/* Top stat card with enhanced glass effect */}
       <div className="glass-card-primary text-center glass-float">
         <p className="text-blue-200 text-sm md:text-lg font-medium mb-2">
-          {topBoxLabel}
+          {stats.topBoxLabel}
         </p>
         <p className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
-          {displayData.totalElapsed}
+          {stats.totalElapsedFormatted}
         </p>
       </div>
 
@@ -90,7 +58,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
                 : "text-white"
             }`}
           >
-            {displayData.effectiveTime}
+            {stats.currentSessionFormatted}
           </p>
           {displayData.isPaused && (
             <p className="text-xs text-yellow-200 bg-yellow-400/10 px-2 py-1 rounded-md">
@@ -98,13 +66,13 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
             </p>
           )}
           {displayData.isActive &&
-            (currentSession
-              ? currentSession.accumulatedPauseTime > 0
-              : accumulatedPauseTimeThisSession > 0) && (
+            (props.currentSession
+              ? props.currentSession.accumulatedPauseTime > 0
+              : props.accumulatedPauseTimeThisSession! > 0) && (
               <p className="text-xs text-yellow-200 bg-yellow-400/10 px-2 py-1 rounded-md mt-2">
                 Total time paused this session:{" "}
-                {currentSession
-                  ? formatElapsedTime(currentSession.accumulatedPauseTime)
+                {props.currentSession
+                  ? formatElapsedTime(props.currentSession.accumulatedPauseTime)
                   : displayData.accumulatedPause}
               </p>
             )}
@@ -112,7 +80,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
 
         <div
           className={`glass-card transition-all duration-500 ${
-            !displayData.isActive && timeCageOff > 0
+            !displayData.isActive && props.timeCageOff! > 0
               ? "border-red-400/30 shadow-red-400/20"
               : "glass-card-primary"
           }`}
@@ -122,12 +90,12 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
           </p>
           <p
             className={`text-2xl md:text-4xl font-bold ${
-              !displayData.isActive && timeCageOff > 0
+              !displayData.isActive && props.timeCageOff! > 0
                 ? "text-red-300"
                 : "text-white"
             }`}
           >
-            {`${Math.floor(timeCageOff / 3600)}h ${Math.floor((timeCageOff % 3600) / 60)}m ${timeCageOff % 60}s`}
+            {stats.cageOffTimeFormatted}
           </p>
         </div>
       </div>
@@ -139,7 +107,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
             Total Time In Chastity:
           </p>
           <p className="text-2xl md:text-4xl font-bold text-white">
-            {`${Math.floor(totalChastityTime / 3600)}h ${Math.floor((totalChastityTime % 3600) / 60)}m ${totalChastityTime % 60}s`}
+            {stats.totalChastityTimeFormatted}
           </p>
         </div>
         <div className="glass-card glass-hover">
@@ -147,7 +115,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = ({
             Total Time Cage Off:
           </p>
           <p className="text-2xl md:text-4xl font-bold text-white">
-            {`${Math.floor(totalTimeCageOff / 3600)}h ${Math.floor((totalTimeCageOff % 3600) / 60)}m ${totalTimeCageOff % 60}s`}
+            {stats.totalCageOffTimeFormatted}
           </p>
         </div>
       </div>

@@ -81,7 +81,7 @@ export function VirtualList<T>({
   const scrollerProps = isMobile
     ? {
         style: {
-          WebkitOverflowScrolling: "touch",
+          WebkitOverflowScrolling: "touch" as const,
           transform: "translateZ(0)", // Enable hardware acceleration
         },
       }
