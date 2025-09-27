@@ -10,7 +10,7 @@ import {
   goalDBService,
 } from "./database";
 import { DBSession, DBGoal, DBTask, AchievementCategory } from "../types";
-import { ACHIEVEMENTS_WITH_IDS } from "../constants/achievements";
+import { ACHIEVEMENTS_WITH_IDS } from "../constants/achievements/index";
 import { logger } from "../utils/logging";
 
 export class AchievementEngine {
