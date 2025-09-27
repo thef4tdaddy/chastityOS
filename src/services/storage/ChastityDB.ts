@@ -3,7 +3,7 @@
  * Comprehensive local database with sync capabilities
  * Based on issue #104 specifications
  */
-import Dexie, { type Table } from "dexie";
+import Dexie, { type Table, type Transaction } from "dexie";
 import {
   DBUser,
   DBSession,
@@ -42,6 +42,12 @@ export class ChastityDB extends Dexie {
   achievementProgress!: Table<DBAchievementProgress>;
   achievementNotifications!: Table<DBAchievementNotification>;
   leaderboardEntries!: Table<DBLeaderboardEntry>;
+
+  // Explicitly declare Dexie methods we use to fix TypeScript issues
+  declare transaction: <T>(mode: string, tables: any, callback: (trans: Transaction) => T | Promise<T>) => Promise<T>;
+  declare on: (eventName: string, callback: (...args: any[]) => void) => void;
+  declare verno: number;
+  declare tables: Table<any>[];
 
   constructor() {
     super("ChastityOS");
@@ -277,7 +283,7 @@ export class ChastityDB extends Dexie {
 
     this.leaderboardEntries.hook(
       "updating",
-      (modifications, _primKey, _obj, _trans) => {
+      (modifications: Partial<DBLeaderboardEntry>, _primKey, _obj, _trans) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
