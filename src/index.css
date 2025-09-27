@@ -1,35 +1,42 @@
 /* src/index.css */
 
 @import "tailwindcss"; /* This must be the very first line */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 /* =============================================
    === 1. THEME & GLOBAL VARIABLES           ===
    =============================================
    All theme-specific colors and fonts are defined here as CSS Custom Properties.
-   To change a theme's color, you only need to edit it in one place.
+   ChastityOS Design System with dark mode focus.
 */
 :root,
 .theme-prod {
-  --font-main: "Cinzel", serif;
+  --font-main:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
 
-  /* --- Primary (Purple) Palette --- */
-  --color-bg-primary: theme("colors.gray.950");
-  --color-bg-secondary: theme("colors.gray.900");
-  --color-bg-tertiary: theme("colors.gray.800");
+  /* --- ChastityOS Dark Mode Color Palette --- */
+  --color-bg-primary: theme("colors.dark_purple.DEFAULT");
+  --color-bg-secondary: theme("colors.lavender_web.500");
+  --color-bg-tertiary: theme("colors.lavender_web.600");
   --color-text-primary: theme("colors.white");
-  --color-text-secondary: theme("colors.gray.200");
-  --color-text-accent: theme("colors.purple.300");
-  --color-border-primary: theme("colors.gray.600");
-  --color-border-accent: theme("colors.purple.500");
-  --color-button-bg: theme("colors.purple.600");
-  --color-button-bg-hover: theme("colors.purple.500");
+  --color-text-secondary: theme("colors.lavender_web.500");
+  --color-text-muted: theme("colors.rose_quartz.DEFAULT");
+  --color-text-accent: theme("colors.tekhelet.DEFAULT");
+  --color-border-primary: theme("colors.black");
+  --color-border-accent: theme("colors.tekhelet.DEFAULT");
+  --color-button-bg: theme("colors.tekhelet.DEFAULT");
+  --color-button-bg-hover: theme("colors.tekhelet.600");
   --color-button-text: theme("colors.white");
-  --color-accent: theme("colors.purple.500");
-  --color-focus-ring: theme("colors.purple.400");
+  --color-accent-orange: theme("colors.tangerine.DEFAULT");
+  --color-accent-purple: theme("colors.tekhelet.DEFAULT");
+  --color-focus-ring: theme("colors.tekhelet.400");
 }
 
 .theme-nightly {
-  --font-main: "Orbitron", sans-serif;
+  --font-main:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
 
   /* --- Nightly (Green) Palette Overrides --- */
   --color-bg-primary: theme("colors.green.950");
@@ -43,7 +50,8 @@
   --color-button-bg: theme("colors.green.600");
   --color-button-bg-hover: theme("colors.green.500");
   --color-button-text: theme("colors.white");
-  --color-accent: theme("colors.green.500");
+  --color-accent-orange: theme("colors.green.500");
+  --color-accent-purple: theme("colors.green.600");
   --color-focus-ring: theme("colors.green.400");
 }
 
