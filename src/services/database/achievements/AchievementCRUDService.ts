@@ -3,7 +3,7 @@
  * Handles basic CRUD operations for achievement definitions
  */
 
-import { ChastityDB, db } from "../../storage/ChastityDB";
+import { db } from "../../storage/ChastityDB";
 import { DBAchievement, AchievementCategory } from "../../../types";
 import { logger } from "../../../utils/logging";
 

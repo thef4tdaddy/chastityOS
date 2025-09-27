@@ -3,7 +3,7 @@
  * Handles user achievements, badges, and their visibility
  */
 
-import { ChastityDB, db } from "../../storage/ChastityDB";
+import { db } from "../../storage/ChastityDB";
 import { DBUserAchievement } from "../../../types";
 import { logger } from "../../../utils/logging";
 
