@@ -29,7 +29,6 @@ export const usePauseState = ({
   const [pauseState, setPauseState] = useState<PauseState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const _refreshPauseStateRef = useRef<() => Promise<void>>();
 
   const refreshPauseState = useCallback(async () => {
     if (!userId) return;

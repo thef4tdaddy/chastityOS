@@ -105,7 +105,9 @@ export const Filters: React.FC<FiltersProps> = ({
 
       <select
         value={selectedCategory}
-        onChange={(e) => onCategoryChange(e.target.value as AchievementCategory | "all")}
+        onChange={(e) =>
+          onCategoryChange(e.target.value as AchievementCategory | "all")
+        }
         className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
       >
         <option value="all">All Categories</option>
@@ -118,7 +120,9 @@ export const Filters: React.FC<FiltersProps> = ({
 
       <select
         value={selectedDifficulty}
-        onChange={(e) => onDifficultyChange(e.target.value as AchievementDifficulty | "all")}
+        onChange={(e) =>
+          onDifficultyChange(e.target.value as AchievementDifficulty | "all")
+        }
         className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
       >
         <option value="all">All Difficulties</option>
@@ -146,8 +150,8 @@ interface EmptyStateProps {
   message?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ 
-  message = "No achievements found matching your filters." 
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  message = "No achievements found matching your filters.",
 }) => (
   <div className="text-center py-12 text-nightly-celadon">
     <FaTrophy className="mx-auto text-4xl mb-4 opacity-50" />
@@ -171,7 +175,8 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
   const { achievement, progress, isEarned, isVisible } = item;
 
   const getCardClasses = (): string => {
-    const baseClasses = "relative p-4 rounded-lg border-2 transition-all duration-200";
+    const baseClasses =
+      "relative p-4 rounded-lg border-2 transition-all duration-200";
     const earnedClasses = isEarned
       ? `${getDifficultyColor(achievement.difficulty)} shadow-lg`
       : "border-gray-600 bg-gray-800/50";
@@ -235,10 +240,13 @@ interface AchievementInfoProps {
   isEarned: boolean;
 }
 
-const AchievementInfo: React.FC<AchievementInfoProps> = ({ achievement, isEarned }) => {
-  const getTitleClasses = () => 
+const AchievementInfo: React.FC<AchievementInfoProps> = ({
+  achievement,
+  isEarned,
+}) => {
+  const getTitleClasses = () =>
     `font-bold ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`;
-  
+
   const getDescriptionClasses = () =>
     `text-sm mt-1 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`;
 
@@ -257,7 +265,7 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({ achievement, isEarned
     <>
       <h4 className={getTitleClasses()}>{achievement.name}</h4>
       <p className={getDescriptionClasses()}>{achievement.description}</p>
-      
+
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center space-x-2">
           <span className={getBadgeClasses("points")}>
@@ -269,10 +277,7 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({ achievement, isEarned
         </div>
 
         {isEarned && (
-          <FaTrophy
-            className="text-yellow-600"
-            title="Achievement Earned!"
-          />
+          <FaTrophy className="text-yellow-600" title="Achievement Earned!" />
         )}
       </div>
     </>
@@ -312,7 +317,10 @@ interface HiddenIndicatorProps {
   isEarned: boolean;
 }
 
-const HiddenIndicator: React.FC<HiddenIndicatorProps> = ({ achievement, isEarned }) => {
+const HiddenIndicator: React.FC<HiddenIndicatorProps> = ({
+  achievement,
+  isEarned,
+}) => {
   if (!achievement.isHidden || isEarned) {
     return null;
   }

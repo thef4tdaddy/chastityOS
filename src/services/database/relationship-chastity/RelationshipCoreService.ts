@@ -3,7 +3,6 @@
  * Handles basic chastity data CRUD operations
  */
 import {
-  collection,
   doc,
   updateDoc,
   getDoc,

@@ -14,7 +14,7 @@ import {
   Unsubscribe,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
-import { Relationship, RelationshipStatus } from "@/types/relationships";
+import { Relationship } from "@/types/relationships";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("RelationshipCRUDService");

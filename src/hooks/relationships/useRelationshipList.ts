@@ -57,7 +57,10 @@ export function useRelationshipList(): RelationshipListState &
 
   const setActiveRelationship = useCallback(
     (relationship: Relationship | null) => {
-      setState((prev: RelationshipListState) => ({ ...prev, activeRelationship: relationship }));
+      setState((prev: RelationshipListState) => ({
+        ...prev,
+        activeRelationship: relationship,
+      }));
     },
     [],
   );

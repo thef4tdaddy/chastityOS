@@ -2,15 +2,15 @@
  * Swipeable Card Component
  * Card that responds to swipe gestures for actions
  */
-import React, { useState, useRef } from 'react';
-import { useTouchGestures } from '../../hooks/mobile/useTouchGestures';
-import { useHapticFeedback } from '../../hooks/mobile/useHapticFeedback';
+import React, { useState, useRef } from "react";
+import { useTouchGestures } from "../../hooks/mobile/useTouchGestures";
+import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface SwipeAction {
   id: string;
   label: string;
   icon?: React.ReactNode;
-  color: 'red' | 'green' | 'blue' | 'yellow' | 'purple';
+  color: "red" | "green" | "blue" | "yellow" | "purple";
   action: () => void;
 }
 
@@ -25,36 +25,41 @@ interface SwipeableCardProps {
 
 export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   children,
-  className = '',
+  className = "",
   leftActions = [],
   rightActions = [],
-  onSwipeThreshold = 0.3,
-  disabled = false
+  _onSwipeThreshold = 0.3,
+  disabled = false,
 }) => {
   const [translateX, setTranslateX] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [revealedSide, setRevealedSide] = useState<'left' | 'right' | null>(null);
+  const [revealedSide, setRevealedSide] = useState<"left" | "right" | null>(
+    null,
+  );
   const cardRef = useRef<HTMLDivElement>(null);
-  const startX = useRef(0);
+  const _startX = useRef(0);
   const { medium, success } = useHapticFeedback();
 
   const maxSwipeDistance = 120; // Maximum pixels to swipe
 
-  const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures({
-    onSwipeLeft: () => {
-      if (disabled || rightActions.length === 0) return;
-      handleSwipeReveal('right');
+  const { onTouchStart, onTouchMove, onTouchEnd } = useTouchGestures(
+    {
+      onSwipeLeft: () => {
+        if (disabled || rightActions.length === 0) return;
+        handleSwipeReveal("right");
+      },
+      onSwipeRight: () => {
+        if (disabled || leftActions.length === 0) return;
+        handleSwipeReveal("left");
+      },
     },
-    onSwipeRight: () => {
-      if (disabled || leftActions.length === 0) return;
-      handleSwipeReveal('left');
-    }
-  }, {
-    threshold: 20,
-    minDistance: 50
-  });
+    {
+      threshold: 20,
+      minDistance: 50,
+    },
+  );
 
-  const handleSwipeReveal = (side: 'left' | 'right') => {
+  const handleSwipeReveal = (side: "left" | "right") => {
     if (isRevealed && revealedSide === side) {
       // Close if already revealed on the same side
       closeActions();
@@ -63,7 +68,7 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
       medium();
       setIsRevealed(true);
       setRevealedSide(side);
-      setTranslateX(side === 'left' ? maxSwipeDistance : -maxSwipeDistance);
+      setTranslateX(side === "left" ? maxSwipeDistance : -maxSwipeDistance);
     }
   };
 
@@ -80,18 +85,20 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   };
 
   const actionColorClasses = {
-    red: 'bg-red-500 hover:bg-red-600 text-white',
-    green: 'bg-green-500 hover:bg-green-600 text-white',
-    blue: 'bg-blue-500 hover:bg-blue-600 text-white',
-    yellow: 'bg-yellow-500 hover:bg-yellow-600 text-black',
-    purple: 'bg-purple-500 hover:bg-purple-600 text-white'
+    red: "bg-red-500 hover:bg-red-600 text-white",
+    green: "bg-green-500 hover:bg-green-600 text-white",
+    blue: "bg-blue-500 hover:bg-blue-600 text-white",
+    yellow: "bg-yellow-500 hover:bg-yellow-600 text-black",
+    purple: "bg-purple-500 hover:bg-purple-600 text-white",
   };
 
-  const renderActions = (actions: SwipeAction[], side: 'left' | 'right') => (
-    <div className={`
+  const renderActions = (actions: SwipeAction[], side: "left" | "right") => (
+    <div
+      className={`
       absolute inset-y-0 flex items-center
-      ${side === 'left' ? 'left-0' : 'right-0'}
-    `}>
+      ${side === "left" ? "left-0" : "right-0"}
+    `}
+    >
       {actions.map((action, index) => (
         <button
           key={action.id}
@@ -103,18 +110,14 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
             text-xs font-medium
             transition-all duration-200
             ${actionColorClasses[action.color]}
-            ${index === 0 && side === 'left' ? 'rounded-l-lg' : ''}
-            ${index === actions.length - 1 && side === 'right' ? 'rounded-r-lg' : ''}
+            ${index === 0 && side === "left" ? "rounded-l-lg" : ""}
+            ${index === actions.length - 1 && side === "right" ? "rounded-r-lg" : ""}
           `}
           style={{
-            transform: `translateX(${side === 'left' ? -100 + (index * 16) : 100 - (index * 16)}px)`
+            transform: `translateX(${side === "left" ? -100 + index * 16 : 100 - index * 16}px)`,
           }}
         >
-          {action.icon && (
-            <div className="mb-1">
-              {action.icon}
-            </div>
-          )}
+          {action.icon && <div className="mb-1">{action.icon}</div>}
           <span className="leading-tight">{action.label}</span>
         </button>
       ))}
@@ -124,8 +127,8 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Background Actions */}
-      {leftActions.length > 0 && renderActions(leftActions, 'left')}
-      {rightActions.length > 0 && renderActions(rightActions, 'right')}
+      {leftActions.length > 0 && renderActions(leftActions, "left")}
+      {rightActions.length > 0 && renderActions(rightActions, "right")}
 
       {/* Main Card Content */}
       <div
@@ -134,10 +137,10 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
           relative z-10
           bg-white dark:bg-gray-800
           transition-transform duration-300 ease-out
-          ${!disabled ? 'touch-target' : ''}
+          ${!disabled ? "touch-target" : ""}
         `}
         style={{
-          transform: `translateX(${translateX}px)`
+          transform: `translateX(${translateX}px)`,
         }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -149,7 +152,7 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
       {/* Overlay when actions are revealed */}
       {isRevealed && (
-        <div 
+        <div
           className="absolute inset-0 z-20 bg-transparent"
           onClick={closeActions}
         />

@@ -259,7 +259,10 @@ export function useCreateTask() {
 
       return newTask;
     },
-    onSuccess: (newTask: Task, { userId }: { userId: string; taskData: any }) => {
+    onSuccess: (
+      newTask: Task,
+      { userId }: { userId: string; taskData: any },
+    ) => {
       logger.info("Task creation successful", { taskId: newTask.id, userId });
 
       // Invalidate task lists to trigger refetch
@@ -365,7 +368,10 @@ export function useUpdateTaskStatus() {
 
       return { previousTask, previousTasks };
     },
-    onSuccess: (updatedTask: Task, { userId, taskId }: { userId: string; taskId: string; status: any }) => {
+    onSuccess: (
+      updatedTask: Task,
+      { userId, taskId }: { userId: string; taskId: string; status: any },
+    ) => {
       logger.info("Task status update successful", {
         taskId,
         userId,
@@ -437,7 +443,10 @@ export function useUpdateTask() {
 
       return updatedTask;
     },
-    onSuccess: (updatedTask: Task, { userId, taskId }: { userId: string; taskId: string; updatedTask: any }) => {
+    onSuccess: (
+      updatedTask: Task,
+      { userId, taskId }: { userId: string; taskId: string; updatedTask: any },
+    ) => {
       logger.info("Task update successful", { taskId, userId });
 
       // Update detail cache
@@ -479,7 +488,10 @@ export function useDeleteTask() {
 
       logger.info("Task deleted successfully", { taskId, userId });
     },
-    onSuccess: (_: void, { taskId, userId }: { taskId: string; userId: string }) => {
+    onSuccess: (
+      _: void,
+      { taskId, userId }: { taskId: string; userId: string },
+    ) => {
       logger.info("Task deletion successful", { taskId, userId });
 
       // Remove from detail cache

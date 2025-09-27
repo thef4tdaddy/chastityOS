@@ -21,13 +21,14 @@ export const IntegratedTaskManager: React.FC<IntegratedTaskManagerProps> = ({
 }) => {
   // Server state via TanStack Query
   const { error } = useTasksQuery(userId);
-  const { createTask } = useTaskMutations();
+  const { createTask: _createTask } = useTaskMutations();
 
   // UI state via Zustand stores
-  const { showSuccess, showError } = useNotificationActions();
+  const { showSuccess: _showSuccess, showError: _showError } =
+    useNotificationActions();
 
   // Form state for new task form
-  const newTaskForm = useFormManager("newTaskForm", {
+  const _newTaskForm = useFormManager("newTaskForm", {
     title: "",
     description: "",
     deadline: "",

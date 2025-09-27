@@ -2,29 +2,29 @@
  * Mobile Card Component
  * Touch-optimized card with mobile-first design
  */
-import React from 'react';
-import { useHapticFeedback } from '../../hooks/mobile/useHapticFeedback';
+import React from "react";
+import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface MobileCardProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
   onLongPress?: () => void;
-  variant?: 'default' | 'elevated' | 'outlined' | 'glass';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  variant?: "default" | "elevated" | "outlined" | "glass";
+  padding?: "none" | "sm" | "md" | "lg";
   hover?: boolean;
   disabled?: boolean;
 }
 
 export const MobileCard: React.FC<MobileCardProps> = ({
   children,
-  className = '',
+  className = "",
   onClick,
   onLongPress,
-  variant = 'default',
-  padding = 'md',
+  variant = "default",
+  padding = "md",
   hover = true,
-  disabled = false
+  disabled = false,
 }) => {
   const { light } = useHapticFeedback();
 
@@ -46,17 +46,18 @@ export const MobileCard: React.FC<MobileCardProps> = ({
   };
 
   const variantClasses = {
-    default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
-    elevated: 'bg-white dark:bg-gray-800 shadow-lg border-0',
-    outlined: 'bg-transparent border-2 border-gray-300 dark:border-gray-600',
-    glass: 'bg-white/10 backdrop-blur-md border border-white/20'
+    default:
+      "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700",
+    elevated: "bg-white dark:bg-gray-800 shadow-lg border-0",
+    outlined: "bg-transparent border-2 border-gray-300 dark:border-gray-600",
+    glass: "bg-white/10 backdrop-blur-md border border-white/20",
   };
 
   const paddingClasses = {
-    none: '',
-    sm: 'p-3',
-    md: 'p-4',
-    lg: 'p-6'
+    none: "",
+    sm: "p-3",
+    md: "p-4",
+    lg: "p-6",
   };
 
   const baseClasses = `
@@ -66,13 +67,13 @@ export const MobileCard: React.FC<MobileCardProps> = ({
     ease-in-out
     ${variantClasses[variant]}
     ${paddingClasses[padding]}
-    ${onClick && !disabled ? 'cursor-pointer touch-target' : ''}
-    ${hover && onClick && !disabled ? 'hover:shadow-md hover:scale-[1.02] active:scale-[0.98]' : ''}
-    ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+    ${onClick && !disabled ? "cursor-pointer touch-target" : ""}
+    ${hover && onClick && !disabled ? "hover:shadow-md hover:scale-[1.02] active:scale-[0.98]" : ""}
+    ${disabled ? "opacity-50 cursor-not-allowed" : ""}
     ${className}
   `;
 
-  const Component = onClick ? 'button' : 'div';
+  const Component = onClick ? "button" : "div";
 
   return (
     <Component

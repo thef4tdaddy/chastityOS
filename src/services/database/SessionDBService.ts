@@ -374,7 +374,7 @@ class SessionDBService extends BaseDBService<DBSession> {
         .where("userId")
         .equals(userId)
         .sortBy("startTime");
-      
+
       logger.debug("Get user sessions", { userId, count: sessions.length });
       return sessions;
     } catch (error) {

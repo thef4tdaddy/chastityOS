@@ -2,7 +2,7 @@
  * Mobile Showcase Page
  * Demonstrates mobile-first components and interactions
  */
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   MobileButton,
   MobileCard,
@@ -11,9 +11,9 @@ import {
   BottomSheet,
   PullToRefresh,
   SwipeableCard,
-  VirtualList
-} from '../components/mobile';
-import { useViewport, useHapticFeedback } from '../hooks/mobile';
+  VirtualList,
+} from "../components/mobile";
+import { useViewport, useHapticFeedback } from "../hooks/mobile";
 
 const MobileShowcase: React.FC = () => {
   const { isMobile, isLandscape, safeAreaInsets } = useViewport();
@@ -25,38 +25,58 @@ const MobileShowcase: React.FC = () => {
   const listItems = Array.from({ length: 1000 }, (_, i) => ({
     id: i,
     title: `Item ${i + 1}`,
-    description: `This is the description for item ${i + 1}`
+    description: `This is the description for item ${i + 1}`,
   }));
 
   const handleRefresh = async () => {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setRefreshCount(prev => prev + 1);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setRefreshCount((prev) => prev + 1);
   };
 
   const swipeActions = [
     {
-      id: 'delete',
-      label: 'Delete',
-      color: 'red' as const,
+      id: "delete",
+      label: "Delete",
+      color: "red" as const,
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
         </svg>
       ),
-      action: () => alert('Delete action')
+      action: () => alert("Delete action"),
     },
     {
-      id: 'archive',
-      label: 'Archive',
-      color: 'blue' as const,
+      id: "archive",
+      label: "Archive",
+      color: "blue" as const,
       icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8l6 6 6-6" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 8l6 6 6-6"
+          />
         </svg>
       ),
-      action: () => alert('Archive action')
-    }
+      action: () => alert("Archive action"),
+    },
   ];
 
   return (
@@ -69,10 +89,12 @@ const MobileShowcase: React.FC = () => {
             Demonstrating mobile-first components and interactions
           </p>
           <div className="mt-4 text-fluid-sm text-rose_quartz">
-            <p>Viewport: {isMobile ? 'Mobile' : 'Desktop'}</p>
-            <p>Orientation: {isLandscape ? 'Landscape' : 'Portrait'}</p>
+            <p>Viewport: {isMobile ? "Mobile" : "Desktop"}</p>
+            <p>Orientation: {isLandscape ? "Landscape" : "Portrait"}</p>
             {isMobile && (
-              <p>Safe Areas: T:{safeAreaInsets.top} B:{safeAreaInsets.bottom}</p>
+              <p>
+                Safe Areas: T:{safeAreaInsets.top} B:{safeAreaInsets.bottom}
+              </p>
             )}
           </div>
         </div>
@@ -81,10 +103,18 @@ const MobileShowcase: React.FC = () => {
         <MobileCard variant="glass" className="space-y-4">
           <h2 className="text-fluid-lg font-semibold">Haptic Feedback</h2>
           <div className="grid grid-cols-2 gap-3">
-            <MobileButton size="sm" onClick={light}>Light</MobileButton>
-            <MobileButton size="sm" onClick={medium} variant="secondary">Medium</MobileButton>
-            <MobileButton size="sm" onClick={heavy} variant="outline">Heavy</MobileButton>
-            <MobileButton size="sm" onClick={success} variant="primary">Success</MobileButton>
+            <MobileButton size="sm" onClick={light}>
+              Light
+            </MobileButton>
+            <MobileButton size="sm" onClick={medium} variant="secondary">
+              Medium
+            </MobileButton>
+            <MobileButton size="sm" onClick={heavy} variant="outline">
+              Heavy
+            </MobileButton>
+            <MobileButton size="sm" onClick={success} variant="primary">
+              Success
+            </MobileButton>
           </div>
         </MobileCard>
 
@@ -93,11 +123,21 @@ const MobileShowcase: React.FC = () => {
           <h2 className="text-fluid-lg font-semibold">Button Variants</h2>
           <div className="space-y-3">
             <MobileButton fullWidth>Primary Button</MobileButton>
-            <MobileButton variant="secondary" fullWidth>Secondary Button</MobileButton>
-            <MobileButton variant="outline" fullWidth>Outline Button</MobileButton>
-            <MobileButton variant="ghost" fullWidth>Ghost Button</MobileButton>
-            <MobileButton variant="danger" fullWidth>Danger Button</MobileButton>
-            <MobileButton loading fullWidth>Loading Button</MobileButton>
+            <MobileButton variant="secondary" fullWidth>
+              Secondary Button
+            </MobileButton>
+            <MobileButton variant="outline" fullWidth>
+              Outline Button
+            </MobileButton>
+            <MobileButton variant="ghost" fullWidth>
+              Ghost Button
+            </MobileButton>
+            <MobileButton variant="danger" fullWidth>
+              Danger Button
+            </MobileButton>
+            <MobileButton loading fullWidth>
+              Loading Button
+            </MobileButton>
           </div>
         </MobileCard>
 
@@ -110,8 +150,18 @@ const MobileShowcase: React.FC = () => {
               type="email"
               placeholder="Enter your email"
               leftIcon={
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                  />
                 </svg>
               }
             />
@@ -134,15 +184,15 @@ const MobileShowcase: React.FC = () => {
         <MobileCard variant="outlined" className="space-y-4">
           <h2 className="text-fluid-lg font-semibold">Touch Targets</h2>
           <div className="grid grid-cols-3 gap-4">
-            <TouchTarget 
-              onTap={() => alert('Tapped!')}
+            <TouchTarget
+              onTap={() => alert("Tapped!")}
               className="bg-tekhelet/20 rounded-lg flex-col"
             >
               <span className="text-2xl">👆</span>
               <span className="text-xs">Tap</span>
             </TouchTarget>
             <TouchTarget
-              onLongPress={() => alert('Long pressed!')}
+              onLongPress={() => alert("Long pressed!")}
               className="bg-tangerine/20 rounded-lg flex-col"
               hapticFeedback="medium"
             >
@@ -178,7 +228,10 @@ const MobileShowcase: React.FC = () => {
         {/* Pull to Refresh Demo */}
         <div className="space-y-4">
           <h2 className="text-fluid-lg font-semibold">Pull to Refresh</h2>
-          <PullToRefresh onRefresh={handleRefresh} className="h-32 overflow-auto">
+          <PullToRefresh
+            onRefresh={handleRefresh}
+            className="h-32 overflow-auto"
+          >
             <div className="p-4 text-center">
               <p>Pull down to refresh</p>
               <p className="text-sm text-gray-400 mt-2">
@@ -220,8 +273,8 @@ const MobileShowcase: React.FC = () => {
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            This is a mobile-optimized bottom sheet that slides up from the bottom.
-            It supports swipe-to-close gestures and safe area handling.
+            This is a mobile-optimized bottom sheet that slides up from the
+            bottom. It supports swipe-to-close gestures and safe area handling.
           </p>
           <div className="space-y-2">
             <MobileButton fullWidth variant="primary">

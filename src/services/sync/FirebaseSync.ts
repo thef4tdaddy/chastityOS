@@ -366,10 +366,10 @@ export class FirebaseSync {
       logger.debug("Syncing collection", { collectionName, userId });
       // TODO: Implement collection sync logic
     } catch (error) {
-      logger.error("Failed to sync collection", { 
-        error: error as Error, 
-        collectionName, 
-        userId 
+      logger.error("Failed to sync collection", {
+        error: error as Error,
+        collectionName,
+        userId,
       });
       throw error;
     }

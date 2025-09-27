@@ -2,7 +2,7 @@
  * NotificationContainer Component
  * Displays toast notifications using NotificationStore
  */
-import React, { useEffect } from "react";
+import React from "react";
 import { useNotificationStore, Notification } from "@/stores";
 
 // Interface for notification actions used in this component

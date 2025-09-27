@@ -44,7 +44,11 @@ export class ChastityDB extends Dexie {
   leaderboardEntries!: Table<DBLeaderboardEntry>;
 
   // Explicitly declare Dexie methods we use to fix TypeScript issues
-  declare transaction: <T>(mode: string, tables: any, callback: (trans: Transaction) => T | Promise<T>) => Promise<T>;
+  declare transaction: <T>(
+    mode: string,
+    tables: any,
+    callback: (trans: Transaction) => T | Promise<T>,
+  ) => Promise<T>;
   declare on: (eventName: string, callback: (...args: any[]) => void) => void;
   declare verno: number;
   declare tables: Table<any>[];
@@ -137,12 +141,15 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating event", { id: obj.id, type: obj.type });
     });
 
-    this.events.hook("updating", (modifications: Partial<DBEvent>, _primKey, _obj, _trans) => {
-      modifications.lastModified = new Date();
-      if (!modifications.syncStatus) {
-        modifications.syncStatus = "pending" as SyncStatus;
-      }
-    });
+    this.events.hook(
+      "updating",
+      (modifications: Partial<DBEvent>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
 
     this.tasks.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
@@ -152,12 +159,15 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating task", { id: obj.id, text: obj.text });
     });
 
-    this.tasks.hook("updating", (modifications: Partial<DBTask>, _primKey, _obj, _trans) => {
-      modifications.lastModified = new Date();
-      if (!modifications.syncStatus) {
-        modifications.syncStatus = "pending" as SyncStatus;
-      }
-    });
+    this.tasks.hook(
+      "updating",
+      (modifications: Partial<DBTask>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
 
     this.goals.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
@@ -167,12 +177,15 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating goal", { id: obj.id, title: obj.title });
     });
 
-    this.goals.hook("updating", (modifications: Partial<DBGoal>, _primKey, _obj, _trans) => {
-      modifications.lastModified = new Date();
-      if (!modifications.syncStatus) {
-        modifications.syncStatus = "pending" as SyncStatus;
-      }
-    });
+    this.goals.hook(
+      "updating",
+      (modifications: Partial<DBGoal>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
 
     this.settings.hook("creating", (_primKey, obj, _trans) => {
       obj.lastModified = new Date();
@@ -182,12 +195,15 @@ export class ChastityDB extends Dexie {
       logger.debug("Creating settings", { userId: obj.userId });
     });
 
-    this.settings.hook("updating", (modifications: Partial<DBSettings>, _primKey, _obj, _trans) => {
-      modifications.lastModified = new Date();
-      if (!modifications.syncStatus) {
-        modifications.syncStatus = "pending" as SyncStatus;
-      }
-    });
+    this.settings.hook(
+      "updating",
+      (modifications: Partial<DBSettings>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
 
     // Achievement table hooks
     this.achievements.hook("creating", (_primKey, obj, _trans) => {
@@ -242,7 +258,12 @@ export class ChastityDB extends Dexie {
 
     this.achievementProgress.hook(
       "updating",
-      (modifications: Partial<DBAchievementProgress>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBAchievementProgress>,
+        _primKey,
+        _obj,
+        _trans,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -263,7 +284,12 @@ export class ChastityDB extends Dexie {
 
     this.achievementNotifications.hook(
       "updating",
-      (modifications: Partial<DBAchievementNotification>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBAchievementNotification>,
+        _primKey,
+        _obj,
+        _trans,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;

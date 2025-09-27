@@ -4,15 +4,7 @@
  */
 
 import React from "react";
-import {
-  FaKey,
-  FaLink,
-  FaUser,
-  FaUserShield,
-  FaCopy,
-  FaTrash,
-  FaExclamationTriangle,
-} from "react-icons/fa";
+import { FaKey, FaCopy, FaTrash, FaExclamationTriangle } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 
 interface MessageDisplayProps {
@@ -27,7 +19,7 @@ export const MessageDisplay: React.FC<MessageDisplayProps> = ({
   clearMessage,
 }) => {
   if (!message) return null;
-  
+
   return (
     <div
       className={`p-3 rounded-lg border ${
@@ -74,7 +66,9 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
         <button
           onClick={() =>
             setShowPermissions(
-              showPermissions === activeKeyholder.id ? null : activeKeyholder.id,
+              showPermissions === activeKeyholder.id
+                ? null
+                : activeKeyholder.id,
             )
           }
           className="text-purple-400 hover:text-purple-300 text-sm"
@@ -82,13 +76,13 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
           {showPermissions === activeKeyholder.id ? "Hide" : "View"} Permissions
         </button>
       </div>
-      
+
       <KeyholderInfo activeKeyholder={activeKeyholder} />
-      
+
       {showPermissions === activeKeyholder.id && (
         <PermissionsDisplay permissions={activeKeyholder.permissions} />
       )}
-      
+
       <div className="mt-3 flex gap-2">
         <button className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 transition-colors">
           End Relationship
@@ -98,11 +92,15 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
   );
 };
 
-const KeyholderInfo: React.FC<{ activeKeyholder: any }> = ({ activeKeyholder }) => (
+const KeyholderInfo: React.FC<{ activeKeyholder: any }> = ({
+  activeKeyholder,
+}) => (
   <div className="text-sm text-gray-300 mb-3">
     <p>
       Connected:{" "}
-      {formatDistanceToNow(activeKeyholder.acceptedAt || activeKeyholder.createdAt)}{" "}
+      {formatDistanceToNow(
+        activeKeyholder.acceptedAt || activeKeyholder.createdAt,
+      )}{" "}
       ago
     </p>
     <p>
@@ -111,7 +109,9 @@ const KeyholderInfo: React.FC<{ activeKeyholder: any }> = ({ activeKeyholder }) 
   </div>
 );
 
-const PermissionsDisplay: React.FC<{ permissions: any }> = ({ permissions }) => (
+const PermissionsDisplay: React.FC<{ permissions: any }> = ({
+  permissions,
+}) => (
   <div className="mt-3 p-3 bg-gray-700 rounded border">
     <h4 className="font-medium text-purple-300 mb-2">Keyholder Permissions</h4>
     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -203,10 +203,10 @@ export const ActiveInviteCodes: React.FC<ActiveInviteCodesProps> = ({
   );
 };
 
-const InviteCodeCard: React.FC<{ invite: any; copyToClipboard: (text: string) => void }> = ({
-  invite,
-  copyToClipboard,
-}) => (
+const InviteCodeCard: React.FC<{
+  invite: any;
+  copyToClipboard: (text: string) => void;
+}> = ({ invite, copyToClipboard }) => (
   <div className="p-3 bg-gray-700 rounded border flex items-center justify-between">
     <div>
       <div className="font-mono text-purple-300 font-bold text-lg">
@@ -300,9 +300,9 @@ interface SubmissiveRelationshipsProps {
   relationships: { asKeyholder: any[] };
 }
 
-export const SubmissiveRelationships: React.FC<SubmissiveRelationshipsProps> = ({
-  relationships,
-}) => {
+export const SubmissiveRelationships: React.FC<
+  SubmissiveRelationshipsProps
+> = ({ relationships }) => {
   if (relationships.asKeyholder.length === 0) return null;
 
   return (
@@ -324,7 +324,9 @@ const SubmissiveCard: React.FC<{ relationship: any }> = ({ relationship }) => (
         <div className="text-green-400">Active Submissive</div>
         <div className="text-xs text-gray-400">
           Connected:{" "}
-          {formatDistanceToNow(relationship.acceptedAt || relationship.createdAt)}{" "}
+          {formatDistanceToNow(
+            relationship.acceptedAt || relationship.createdAt,
+          )}{" "}
           ago
         </div>
       </div>
@@ -347,8 +349,12 @@ export const HelpSection: React.FC = () => (
       <div className="text-sm text-blue-300">
         <h4 className="font-medium mb-1">About Account Linking</h4>
         <ul className="space-y-1 text-xs text-blue-200">
-          <li>• Submissives can create invite codes for keyholders to accept</li>
-          <li>• Only one active keyholder per submissive currently supported</li>
+          <li>
+            • Submissives can create invite codes for keyholders to accept
+          </li>
+          <li>
+            • Only one active keyholder per submissive currently supported
+          </li>
           <li>• Invite codes expire after 24 hours</li>
           <li>• Either party can end the relationship at any time</li>
           <li>• Submissives control what permissions keyholders have</li>

@@ -87,7 +87,9 @@ export const useProfileAchievements = (
             }
           : null;
       })
-      .filter((item: ProfileBadge | null): item is ProfileBadge => item !== null);
+      .filter(
+        (item: ProfileBadge | null): item is ProfileBadge => item !== null,
+      );
   }, [visibleAchievements, allAchievements, isOwnProfile]);
 
   // Process recent achievements
@@ -112,7 +114,10 @@ export const useProfileAchievements = (
             }
           : null;
       })
-      .filter((item: ProfileAchievement | null): item is ProfileAchievement => item !== null);
+      .filter(
+        (item: ProfileAchievement | null): item is ProfileAchievement =>
+          item !== null,
+      );
   }, [visibleAchievements, allAchievements]);
 
   return {

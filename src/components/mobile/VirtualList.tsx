@@ -2,8 +2,8 @@
  * Virtual List Component
  * Optimized for mobile performance with large lists
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useViewport } from '../../hooks/mobile/useViewport';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useViewport } from "../../hooks/mobile/useViewport";
 
 interface VirtualListProps<T> {
   items: T[];
@@ -23,12 +23,12 @@ export function VirtualList<T>({
   renderItem,
   itemHeight = 80,
   overscan = 5,
-  className = '',
+  className = "",
   onEndReached,
   endReachedThreshold = 0.8,
   loading = false,
   loadingComponent,
-  emptyComponent
+  emptyComponent,
 }: VirtualListProps<T>) {
   const { isMobile } = useViewport();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,26 +39,30 @@ export function VirtualList<T>({
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(
     items.length - 1,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
   );
 
   const visibleItems = items.slice(startIndex, endIndex + 1);
 
   // Handle scroll with optimized performance for mobile
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const newScrollTop = target.scrollTop;
-    
-    setScrollTop(newScrollTop);
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const target = e.currentTarget;
+      const newScrollTop = target.scrollTop;
 
-    // Check if we need to load more items
-    if (onEndReached && !loading) {
-      const scrollRatio = (newScrollTop + containerHeight) / target.scrollHeight;
-      if (scrollRatio >= endReachedThreshold) {
-        onEndReached();
+      setScrollTop(newScrollTop);
+
+      // Check if we need to load more items
+      if (onEndReached && !loading) {
+        const scrollRatio =
+          (newScrollTop + containerHeight) / target.scrollHeight;
+        if (scrollRatio >= endReachedThreshold) {
+          onEndReached();
+        }
       }
-    }
-  }, [containerHeight, onEndReached, loading, endReachedThreshold]);
+    },
+    [containerHeight, onEndReached, loading, endReachedThreshold],
+  );
 
   // Update container height on resize
   useEffect(() => {
@@ -69,17 +73,19 @@ export function VirtualList<T>({
     };
 
     updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
   // Mobile-specific optimizations
-  const scrollerProps = isMobile ? {
-    style: {
-      WebkitOverflowScrolling: 'touch',
-      transform: 'translateZ(0)', // Enable hardware acceleration
-    }
-  } : {};
+  const scrollerProps = isMobile
+    ? {
+        style: {
+          WebkitOverflowScrolling: "touch",
+          transform: "translateZ(0)", // Enable hardware acceleration
+        },
+      }
+    : {};
 
   if (items.length === 0 && !loading) {
     return (
@@ -104,17 +110,17 @@ export function VirtualList<T>({
       <div
         style={{
           height: items.length * itemHeight,
-          position: 'relative'
+          position: "relative",
         }}
       >
         {/* Visible items container */}
         <div
           style={{
             transform: `translateY(${startIndex * itemHeight}px)`,
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            right: 0
+            right: 0,
           }}
         >
           {visibleItems.map((item, index) => (
@@ -122,7 +128,7 @@ export function VirtualList<T>({
               key={startIndex + index}
               style={{
                 height: itemHeight,
-                overflow: 'hidden'
+                overflow: "hidden",
               }}
               className="flex-shrink-0"
             >
