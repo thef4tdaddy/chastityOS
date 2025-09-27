@@ -197,7 +197,7 @@ export const auth = new Proxy({} as Auth, {
         "Firebase Auth not initialized. Use getFirebaseAuth() for lazy loading.",
       );
     }
-    return (_auth as Record<string | symbol, unknown>)[prop];
+    return (_auth as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -208,7 +208,7 @@ export const db = new Proxy({} as Firestore, {
         "Firestore not initialized. Use getFirestore() for lazy loading.",
       );
     }
-    return (_db as Record<string | symbol, unknown>)[prop];
+    return (_db as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -219,7 +219,7 @@ export const storage = new Proxy({} as FirebaseStorage, {
         "Firebase Storage not initialized. Use getFirebaseStorage() for lazy loading.",
       );
     }
-    return (_storage as Record<string | symbol, unknown>)[prop];
+    return (_storage as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 

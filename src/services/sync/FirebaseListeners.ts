@@ -64,7 +64,7 @@ export class FirebaseListeners {
           logger.debug(
             `Received ${changes.length} real-time updates for ${collectionName}`,
           );
-          this.firebaseSync.applyRemoteChanges(collectionName, changes);
+          this.firebaseSync.applyRemoteChanges(changes);
         }
       });
 

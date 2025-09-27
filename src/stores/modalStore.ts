@@ -2,7 +2,7 @@
  * Modal Store - UI Interaction State
  * Manages modal visibility, content, and confirmation dialogs
  */
-import React from "react";
+import * as React from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -56,19 +56,18 @@ export type ModalConfig =
   | AccountLinkingModalProps
   | BaseModalProps;
 
-export interface ModalState {
-  // Modal registry
-  modals: Record<string, ModalConfig>;
-
-  // Actions
+export interface ModalActions {
   openModal: (id: string, config?: Partial<ModalConfig>) => void;
   closeModal: (id: string) => void;
   closeAllModals: () => void;
   updateModal: (id: string, updates: Partial<ModalConfig>) => void;
-
-  // Utility methods
   isModalOpen: (id: string) => boolean;
   getModal: (id: string) => ModalConfig | undefined;
+}
+
+export interface ModalState extends ModalActions {
+  // Modal registry
+  modals: Record<string, ModalConfig>;
 }
 
 export const useModalStore = create<ModalState>()(
@@ -128,13 +127,13 @@ export const useModalStore = create<ModalState>()(
 
       updateModal: (id: string, updates: Partial<ModalConfig>) =>
         set(
-          (state) => ({
+          (state: ModalState): Partial<ModalState> => ({
             modals: {
               ...state.modals,
               [id]: {
                 ...state.modals[id],
                 ...updates,
-              },
+              } as ModalConfig,
             },
           }),
           false,
@@ -156,6 +155,9 @@ export const useModalStore = create<ModalState>()(
     },
   ),
 );
+
+// Type aliases for compatibility
+export type ModalStore = ModalState;
 
 // Common modal IDs as constants to prevent typos
 export const MODAL_IDS = {

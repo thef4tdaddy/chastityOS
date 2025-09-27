@@ -1,98 +1,42 @@
-import React, { useState } from "react";
-import type { DBTask, TaskStatus } from "../../types/database";
+import React from "react";
+import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
-import {
-  FaCheckCircle,
-  FaTimesCircle,
-  FaTrophy,
-  FaGavel,
-  FaClock,
-} from "../../utils/iconImport";
-
-// Helper function to get task status configuration
-const getTaskStatusConfig = (status: TaskStatus) => {
-  switch (status) {
-    case "pending":
-      return {
-        icon: <FaClock className="text-nightly-aquamarine" />,
-        text: "Pending",
-        borderColor: "border-nightly-aquamarine",
-      };
-    case "submitted":
-      return {
-        icon: <FaClock className="text-yellow-400" />,
-        text: "Submitted",
-        borderColor: "border-yellow-400",
-      };
-    case "approved":
-      return {
-        icon: <FaCheckCircle className="text-green-400" />,
-        text: "Approved",
-        borderColor: "border-green-400",
-      };
-    case "rejected":
-      return {
-        icon: <FaTimesCircle className="text-red-400" />,
-        text: "Rejected",
-        borderColor: "border-red-400",
-      };
-    case "completed":
-      return {
-        icon: <FaTrophy className="text-nightly-lavender-floral" />,
-        text: "Completed",
-        borderColor: "border-nightly-lavender-floral",
-      };
-    default:
-      return {
-        icon: <FaClock className="text-gray-400" />,
-        text: "Unknown",
-        borderColor: "border-gray-400",
-      };
-  }
-};
-
-// Helper function to get priority styling
-const getPriorityStyles = (priority: string) => {
-  switch (priority) {
-    case "critical":
-      return "bg-red-500/20 text-red-300";
-    case "high":
-      return "bg-orange-500/20 text-orange-300";
-    case "medium":
-      return "bg-yellow-500/20 text-yellow-300";
-    default:
-      return "bg-gray-500/20 text-gray-300";
-  }
-};
+import { FaTrophy, FaGavel } from "../../utils/iconImport";
+import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 
 // Task status badge component
 interface TaskStatusBadgeProps {
-  status: TaskStatus;
+  statusConfig: {
+    icon: React.ReactNode;
+    text: string;
+    borderColor: string;
+  };
   priority?: string;
+  priorityStyles?: {
+    bgColor: string;
+    textColor: string;
+  } | null;
 }
 
 const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = ({
-  status,
+  statusConfig,
   priority,
-}) => {
-  const statusConfig = getTaskStatusConfig(status);
-
-  return (
-    <div className="flex items-center gap-2">
-      {statusConfig.icon}
-      <span className="text-sm font-medium text-nightly-spring-green">
-        {statusConfig.text}
+  priorityStyles,
+}) => (
+  <div className="flex items-center gap-2">
+    {statusConfig.icon}
+    <span className="text-sm font-medium text-nightly-spring-green">
+      {statusConfig.text}
+    </span>
+    {priority && priorityStyles && (
+      <span
+        className={`px-2 py-1 text-xs rounded ${priorityStyles.bgColor} ${priorityStyles.textColor}`}
+      >
+        {priority.toUpperCase()}
       </span>
-      {priority && (
-        <span
-          className={`px-2 py-1 text-xs rounded ${getPriorityStyles(priority)}`}
-        >
-          {priority.toUpperCase()}
-        </span>
-      )}
-    </div>
-  );
-};
+    )}
+  </div>
+);
 
 // Task countdown component
 interface TaskCountdownProps {
@@ -245,21 +189,15 @@ interface TaskItemProps {
 }
 
 export const TaskItem: React.FC<TaskItemProps> = ({ task, onSubmit }) => {
-  const [note, setNote] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await onSubmit(task.id, note);
-      setNote("");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const statusConfig = getTaskStatusConfig(task.status);
-  const isOverdue = task.dueDate && new Date() > task.dueDate;
+  const {
+    note,
+    isSubmitting,
+    setNote,
+    handleSubmit,
+    statusConfig,
+    priorityStyles,
+    isOverdue,
+  } = useTaskItem(task, onSubmit);
 
   return (
     <div
@@ -267,12 +205,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onSubmit }) => {
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
-        <TaskStatusBadge status={task.status} priority={task.priority} />
+        <TaskStatusBadge
+          statusConfig={statusConfig}
+          priority={task.priority}
+          priorityStyles={priorityStyles}
+        />
         {task.dueDate && (
-          <TaskCountdown
-            dueDate={task.dueDate}
-            isOverdue={Boolean(isOverdue)}
-          />
+          <TaskCountdown dueDate={task.dueDate} isOverdue={isOverdue} />
         )}
       </div>
 

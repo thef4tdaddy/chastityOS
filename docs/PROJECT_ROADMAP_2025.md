@@ -12,6 +12,9 @@
 - **#133**: ✅ Feedback System - FAB button with bug report modal
 - **#131**: ✅ Logging Migration - Strict ESLint enforcement
 - **#130**: ✅ Component Refactoring - Feature-based organization
+- **#231**: ✅ Hook Implementation Epic - 4 phases, 23 missing hooks identified
+- **#214**: ✅ ESLint Error Master - Categorized cleanup with sub-issues
+- **#158**: ✅ Component Logic Separation - Business logic → hooks refactoring
 
 ### 🚧 In Progress (Draft PRs)
 
@@ -20,8 +23,21 @@
 - **#149**: ✅ Firebase Sync Service - Conflict resolution
 - **#148**: 💾 Dexie Database Schema - Service layer
 - **#143**: 🔐 Keyholder System Epic - Account linking (WIP)
+- **#232-235**: 🔧 Hook Implementation Phases - 23 critical hooks being developed
+- **#215-230**: 🔧 ESLint Cleanup Sub-issues - Parallel warning resolution
 
 ### 📋 High Priority Open Issues
+
+#### Code Quality & Architecture (CURRENT FOCUS)
+
+- **#231**: 🔧 **Hook Implementation Epic** - 39/62 hooks complete (63%)
+  - **#232**: Phase 1 - Critical Keyholder System Hooks (5 hooks)
+  - **#233**: Phase 2 - Enhanced Core Feature Hooks (6 hooks)
+  - **#234**: Phase 3 - Security & Real-time Hooks (7 hooks)
+  - **#235**: Phase 4 - Advanced Features & Polish Hooks (8 hooks)
+- **#214**: 🔧 **ESLint Error Master** - 354 problems (12 errors, 342 warnings)
+  - **#215-230**: Categorized cleanup sub-issues for parallel work
+- **#158**: 🔧 **Component Logic Separation** - Move business logic to hooks
 
 #### Core Functionality (Epic #121)
 
@@ -57,7 +73,27 @@
 
 ## Strategic Priorities
 
-### 1. 🔐 Keyholder System (HIGHEST PRIORITY)
+### 1. 🔧 Code Quality & Architecture Completion (HIGHEST PRIORITY)
+
+**Timeline: 4-6 weeks**
+**Status: Actively in progress with organized sub-issues**
+
+**Current State:**
+
+- ESLint errors reduced from 398 to 354 problems (11% improvement)
+- Hook architecture 63% complete (39/62 hooks implemented)
+- Component logic separation strategy established
+
+**Immediate Actions:**
+
+- Complete 23 missing hooks across 4 implementation phases
+- Resolve remaining 12 ESLint errors and 342 warnings through parallel work
+- Finish business logic separation from components
+
+**Why This is Now Priority #1:**
+Stable architecture and clean codebase are prerequisites for reliable keyholder system implementation. The organized sub-issue structure enables parallel development by multiple contributors.
+
+### 2. 🔐 Keyholder System (HIGH PRIORITY)
 
 **Timeline: 8-10 weeks**
 **Status: 3 concurrent implementations need consolidation**
@@ -75,26 +111,28 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 - Enable task/reward/punishment/rule management
 - Real-time monitoring and session control
 
-### 2. 🏗️ Architecture Stabilization (HIGH PRIORITY)
+### 3. 🏗️ Architecture Stabilization (MEDIUM PRIORITY)
 
-**Timeline: 4-6 weeks**
-**Status: Foundation work largely complete**
+**Timeline: 2-3 weeks** (reduced due to current progress)
+**Status: Foundation complete, polish in progress**
 
 **Completed:**
 
 - ✅ TanStack Query migration
 - ✅ Dexie offline database
-- ✅ Component refactoring
+- ✅ Component refactoring strategy established
 - ✅ TypeScript improvements
 - ✅ Logging system
+- ✅ Hook architecture documented and organized
+- ✅ ESLint cleanup strategy with sub-issues
 
 **Remaining:**
 
-- Complete Zustand UI state management
+- Complete 23 missing hooks (in progress via #232-235)
 - Finalize Firebase sync service
 - Polish TypeScript strict configuration
 
-### 3. 🎨 UI/UX Modernization (MEDIUM PRIORITY)
+### 4. 🎨 UI/UX Modernization (MEDIUM PRIORITY)
 
 **Timeline: 3-4 weeks**
 **Status: Design system in progress**
@@ -105,7 +143,7 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 - Mobile-first responsive improvements
 - Brand identity modernization
 
-### 4. 📱 PWA & Performance (MEDIUM PRIORITY)
+### 5. 📱 PWA & Performance (LOW PRIORITY)
 
 **Timeline: 2-3 weeks**
 **Status: Foundation exists, needs enhancement**
@@ -119,7 +157,25 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 
 ## Detailed Implementation Plan
 
-### Phase 1: Keyholder System Consolidation (Weeks 1-4)
+### Phase 1: Code Quality & Architecture Completion (Weeks 1-4)
+
+**Goal: Complete hook implementation and ESLint cleanup for stable foundation**
+
+**Week 1-2: Hook Implementation**
+
+- Complete Phase 1 critical keyholder hooks (#232)
+- Implement Phase 2 enhanced core features (#233)
+- Resolve max-lines ESLint errors through component separation
+- Fix remaining TypeScript errors
+
+**Week 3-4: Code Quality Polish**
+
+- Complete Phase 3 security & real-time hooks (#234)
+- Resolve function complexity warnings
+- Complete business logic separation from components
+- Finalize TypeScript strict configuration
+
+### Phase 2: Keyholder System Implementation (Weeks 5-8)
 
 **Goal: Merge the 3 keyholder implementations into one advanced system**
 
@@ -137,7 +193,7 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 - Implement basic keyholder dashboard
 - Add permission system
 
-### Phase 2: Advanced Keyholder Features (Weeks 5-8)
+### Phase 3: Advanced Keyholder Features (Weeks 9-12)
 
 **Goal: Complete advanced dual-account functionality**
 
@@ -155,7 +211,7 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 - Goal setting and modification
 - Advanced admin dashboard
 
-### Phase 3: Architecture Polish (Weeks 9-12)
+### Phase 4: Final Polish & Advanced Features (Weeks 13-16)
 
 **Goal: Complete architecture modernization**
 
@@ -173,7 +229,7 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 - Security audit
 - Documentation updates
 
-### Phase 4: UI/UX & Features (Weeks 13-16)
+### Phase 5: UI/UX & Performance (Weeks 17-20)
 
 **Goal: Polish user experience and add advanced features**
 
@@ -240,9 +296,9 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 
 ### Development Focus
 
-- **60%**: Keyholder system implementation and merger
-- **25%**: Architecture stabilization and performance
-- **10%**: UI/UX improvements
+- **50%**: Code quality completion (hooks + ESLint cleanup)
+- **30%**: Keyholder system implementation and merger
+- **15%**: Architecture stabilization and performance
 - **5%**: Documentation and testing
 
 ### Critical Dependencies
@@ -263,10 +319,11 @@ This is the most critical feature distinguishing ChastityOS. Currently have:
 
 ### Major Milestones
 
-- **Week 4**: Keyholder foundation complete
-- **Week 8**: Advanced keyholder features complete
-- **Week 12**: Architecture modernization complete
-- **Week 16**: Full feature set with polished UX
+- **Week 4**: Code quality foundation complete (hooks + ESLint)
+- **Week 8**: Keyholder system implementation complete
+- **Week 12**: Advanced keyholder features complete
+- **Week 16**: Architecture modernization complete
+- **Week 20**: Full feature set with polished UX
 
 ---
 

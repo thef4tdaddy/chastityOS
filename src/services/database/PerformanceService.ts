@@ -159,6 +159,10 @@ export class DBPerformanceService {
       }
 
       const stats = tableStats[metric.table];
+      if (!stats) {
+        // This should never happen due to initialization above, but TypeScript safety
+        continue;
+      }
       stats.queryCount++;
       stats.averageTime =
         (stats.averageTime * (stats.queryCount - 1) + metric.duration) /
