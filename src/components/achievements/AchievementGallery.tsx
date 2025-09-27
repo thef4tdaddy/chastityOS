@@ -89,7 +89,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
 
   // Filter achievements
   const filteredAchievements = useMemo(() => {
-    return achievementsWithProgress.filter((item) => {
+    return achievementsWithProgress.filter((item: AchievementWithProgress) => {
       const { achievement, isEarned } = item;
 
       // Category filter
@@ -143,7 +143,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
   const groupedAchievements = useMemo(() => {
     const groups: Record<string, AchievementWithProgress[]> = {};
 
-    filteredAchievements.forEach((item) => {
+    filteredAchievements.forEach((item: AchievementWithProgress) => {
       const categoryName = getCategoryName(item.achievement.category);
       if (!groups[categoryName]) {
         groups[categoryName] = [];
@@ -156,14 +156,14 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
 
   const stats = useMemo(() => {
     const totalEarned = achievementsWithProgress.filter(
-      (a) => a.isEarned,
+      (a: AchievementWithProgress) => a.isEarned,
     ).length;
     const totalVisible = achievementsWithProgress.filter(
-      (a) => !a.achievement.isHidden,
+      (a: AchievementWithProgress) => !a.achievement.isHidden,
     ).length;
     const totalPoints = achievementsWithProgress
-      .filter((a) => a.isEarned)
-      .reduce((sum, a) => sum + a.achievement.points, 0);
+      .filter((a: AchievementWithProgress) => a.isEarned)
+      .reduce((sum: number, a: AchievementWithProgress) => sum + a.achievement.points, 0);
 
     return {
       totalEarned,
@@ -214,7 +214,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
               type="text"
               placeholder="Search achievements..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
             />
           </div>
@@ -222,7 +222,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
           {/* Category Filter */}
           <select
             value={selectedCategory}
-            onChange={(e) =>
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
               setSelectedCategory(e.target.value as AchievementCategory | "all")
             }
             className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
@@ -238,7 +238,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
           {/* Difficulty Filter */}
           <select
             value={selectedDifficulty}
-            onChange={(e) =>
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
               setSelectedDifficulty(
                 e.target.value as AchievementDifficulty | "all",
               )
@@ -258,7 +258,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
             <input
               type="checkbox"
               checked={showOnlyEarned}
-              onChange={(e) => setShowOnlyEarned(e.target.checked)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowOnlyEarned(e.target.checked)}
               className="rounded border-white/20 bg-white/10 text-nightly-aquamarine focus:ring-nightly-aquamarine"
             />
             <span>Earned Only</span>
@@ -276,7 +276,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {achievements.map((item) => (
+                {achievements.map((item: AchievementWithProgress) => (
                   <AchievementCard
                     key={item.achievement.id}
                     item={item}
