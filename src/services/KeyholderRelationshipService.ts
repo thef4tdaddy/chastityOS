@@ -131,7 +131,7 @@ export class KeyholderRelationshipService {
       // Return the first active relationship as submissive
       // (Currently supporting single keyholder, multi-keyholder is future enhancement)
       const activeRelationship = relationships.asSubmissive.find(
-        (rel) => rel.status === "active",
+        (rel: KeyholderRelationship) => rel.status === "active",
       );
 
       return activeRelationship || null;
@@ -158,7 +158,7 @@ export class KeyholderRelationshipService {
         );
 
       const relationship = relationships.asKeyholder.find(
-        (rel) =>
+        (rel: KeyholderRelationship) =>
           rel.submissiveUserId === submissiveUserId && rel.status === "active",
       );
 
@@ -280,7 +280,7 @@ export class KeyholderRelationshipService {
 
       // Check if user already has an active relationship as submissive
       const hasActiveSubmissiveRelationship = relationships.asSubmissive.some(
-        (rel) => rel.status === "active",
+        (rel: KeyholderRelationship) => rel.status === "active",
       );
 
       // Currently supporting single keyholder per submissive
@@ -307,10 +307,10 @@ export class KeyholderRelationshipService {
         await keyholderRelationshipDBService.getRelationshipsForUser(userId);
 
       const activeAsSubmissive = relationships.asSubmissive.filter(
-        (rel) => rel.status === "active",
+        (rel: KeyholderRelationship) => rel.status === "active",
       );
       const activeAsKeyholder = relationships.asKeyholder.filter(
-        (rel) => rel.status === "active",
+        (rel: KeyholderRelationship) => rel.status === "active",
       );
 
       return {

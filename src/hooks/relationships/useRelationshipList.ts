@@ -40,11 +40,11 @@ export function useRelationshipList(): RelationshipListState &
       async () => {
         const relationships =
           await relationshipService.getUserRelationships(userId);
-        setState((prev) => ({ ...prev, relationships }));
+        setState((prev: RelationshipListState) => ({ ...prev, relationships }));
 
         // Set active relationship if there's only one and none is set
         if (relationships.length === 1 && !state.activeRelationship) {
-          setState((prev) => ({
+          setState((prev: RelationshipListState) => ({
             ...prev,
             activeRelationship: relationships[0],
           }));
@@ -57,7 +57,7 @@ export function useRelationshipList(): RelationshipListState &
 
   const setActiveRelationship = useCallback(
     (relationship: Relationship | null) => {
-      setState((prev) => ({ ...prev, activeRelationship: relationship }));
+      setState((prev: RelationshipListState) => ({ ...prev, activeRelationship: relationship }));
     },
     [],
   );
@@ -84,7 +84,7 @@ export function useRelationshipList(): RelationshipListState &
     const unsubscribe = relationshipService.subscribeToUserRelationships(
       userId,
       (relationships: Relationship[]) => {
-        setState((prev) => ({ ...prev, relationships }));
+        setState((prev: RelationshipListState) => ({ ...prev, relationships }));
       },
     );
 

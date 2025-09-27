@@ -125,7 +125,7 @@ export const useAchievements = (userId?: string) => {
         queryKey: ["achievements", "user", userId],
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error(
         "Failed to toggle achievement visibility",
         error,
@@ -145,7 +145,7 @@ export const useAchievements = (userId?: string) => {
         queryKey: ["achievements", "notifications", userId],
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error(
         "Failed to mark notification as read",
         error,
