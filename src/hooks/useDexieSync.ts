@@ -30,13 +30,16 @@ export const useDexieSync = () => {
   /**
    * Get all Dexie services
    */
-  const services = useMemo(() => ({
-    sessions: sessionDBService as DBServiceMethods,
-    events: eventDBService as DBServiceMethods,
-    tasks: taskDBService as DBServiceMethods,
-    goals: goalDBService as DBServiceMethods,
-    settings: settingsDBService as DBServiceMethods,
-  }), []);
+  const services = useMemo(
+    () => ({
+      sessions: sessionDBService,
+      events: eventDBService,
+      tasks: taskDBService,
+      goals: goalDBService,
+      settings: settingsDBService,
+    }),
+    [],
+  );
 
   /**
    * Trigger manual sync
@@ -59,7 +62,10 @@ export const useDexieSync = () => {
    * Create a record with automatic sync queuing
    */
   const createWithSync = useCallback(
-    async <T extends Record<string, unknown>>(service: keyof typeof services, data: T): Promise<string> => {
+    async <T extends Record<string, unknown>>(
+      service: keyof typeof services,
+      data: T,
+    ): Promise<string> => {
       if (!user?.uid) {
         throw new Error("No authenticated user");
       }

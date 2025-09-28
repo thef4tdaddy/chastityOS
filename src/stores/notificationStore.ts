@@ -88,7 +88,7 @@ export const useNotificationStore = create<NotificationState>()(
   devtools(
     (set, get) => ({
       // Initial state
-      notifications: [],
+      ...initialState,
       pauseOnHover: true,
 
       // Actions

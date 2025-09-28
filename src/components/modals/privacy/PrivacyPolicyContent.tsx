@@ -20,15 +20,15 @@ export const PrivacyPolicyContent: React.FC = () => {
           </h3>
         </div>
         <p className="leading-relaxed">
-          ChastityOS is committed to protecting your privacy and ensuring
-          the security of your personal information. This privacy policy
-          explains how we collect, use, and protect your data when you use
-          our application.
+          ChastityOS is committed to protecting your privacy and ensuring the
+          security of your personal information. This privacy policy explains
+          how we collect, use, and protect your data when you use our
+          application.
         </p>
         <p className="leading-relaxed mt-3">
-          We understand the sensitive nature of the data you entrust to us
-          and have implemented strict security measures to protect your
-          privacy at all times.
+          We understand the sensitive nature of the data you entrust to us and
+          have implemented strict security measures to protect your privacy at
+          all times.
         </p>
       </section>
 
@@ -115,20 +115,20 @@ export const PrivacyPolicyContent: React.FC = () => {
           </p>
           <ul className="list-disc list-inside space-y-1 ml-4">
             <li>
-              <strong>Encryption:</strong> All data is encrypted in transit
-              and at rest
+              <strong>Encryption:</strong> All data is encrypted in transit and
+              at rest
             </li>
             <li>
               <strong>Authentication:</strong> Secure login with optional
               two-factor authentication
             </li>
             <li>
-              <strong>Access Control:</strong> Strict access controls limit
-              who can view your data
+              <strong>Access Control:</strong> Strict access controls limit who
+              can view your data
             </li>
             <li>
-              <strong>Regular Audits:</strong> We regularly review and
-              update our security practices
+              <strong>Regular Audits:</strong> We regularly review and update
+              our security practices
             </li>
             <li>
               <strong>Local Storage:</strong> Some data is stored locally on
@@ -149,8 +149,8 @@ export const PrivacyPolicyContent: React.FC = () => {
         <div className="space-y-3">
           <p className="leading-relaxed">
             <strong>
-              We do not sell, trade, or rent your personal information to
-              third parties.
+              We do not sell, trade, or rent your personal information to third
+              parties.
             </strong>
           </p>
           <p className="leading-relaxed">
@@ -158,21 +158,15 @@ export const PrivacyPolicyContent: React.FC = () => {
           </p>
           <ul className="list-disc list-inside space-y-1 ml-4">
             <li>
-              With your explicit consent (e.g., public profiles you choose
-              to share)
+              With your explicit consent (e.g., public profiles you choose to
+              share)
             </li>
+            <li>With keyholders you authorize in relationship settings</li>
+            <li>To comply with legal obligations or court orders</li>
+            <li>To protect the rights and safety of our users</li>
             <li>
-              With keyholders you authorize in relationship settings
-            </li>
-            <li>
-              To comply with legal obligations or court orders
-            </li>
-            <li>
-              To protect the rights and safety of our users
-            </li>
-            <li>
-              With service providers who help us operate the app (under
-              strict confidentiality agreements)
+              With service providers who help us operate the app (under strict
+              confidentiality agreements)
             </li>
           </ul>
         </div>
@@ -202,7 +196,8 @@ export const PrivacyPolicyContent: React.FC = () => {
               data
             </li>
             <li>
-              <strong>Portability:</strong> Export your data in a machine-readable format
+              <strong>Portability:</strong> Export your data in a
+              machine-readable format
             </li>
             <li>
               <strong>Restriction:</strong> Limit how we process your data
@@ -227,8 +222,8 @@ export const PrivacyPolicyContent: React.FC = () => {
           </h3>
         </div>
         <p className="leading-relaxed">
-          If you have questions about this privacy policy or how we handle
-          your data, please contact our privacy team:
+          If you have questions about this privacy policy or how we handle your
+          data, please contact our privacy team:
         </p>
         <div className="mt-3 bg-white/5 rounded-lg p-4">
           <p>
@@ -249,10 +244,10 @@ export const PrivacyPolicyContent: React.FC = () => {
           Changes to This Policy
         </h3>
         <p className="leading-relaxed">
-          We may update this privacy policy from time to time. We will
-          notify you of any changes by posting the new privacy policy on
-          this page and updating the "Last updated" date. We encourage you
-          to review this privacy policy periodically for any changes.
+          We may update this privacy policy from time to time. We will notify
+          you of any changes by posting the new privacy policy on this page and
+          updating the "Last updated" date. We encourage you to review this
+          privacy policy periodically for any changes.
         </p>
       </section>
     </>

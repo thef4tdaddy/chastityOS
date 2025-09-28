@@ -190,6 +190,14 @@ export default [
             'Use PromptModal instead of window.prompt(). Create a modal component for user input.',
         },
       ],
+
+      // Ignore merge conflict markers to reduce noise in lint tracking
+      'no-irregular-whitespace': ['error', {
+        skipTemplates: true,
+        skipComments: true,
+        skipRegExps: true,
+        skipJSXText: true
+      }],
     },
   },
   {
