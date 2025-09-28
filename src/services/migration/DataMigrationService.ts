@@ -8,11 +8,11 @@ import {
   getDocs,
   getDoc,
   writeBatch,
-  query,
   serverTimestamp,
+  Firestore,
 } from "firebase/firestore";
-import { getFirestore } from "@/services/firebase";
-import { relationshipService } from "@/services/database/RelationshipService";
+import { getFirestore } from "../firebase";
+import { relationshipService } from "../database/relationships";
 import {
   Relationship,
   RelationshipStatus,
@@ -20,9 +20,11 @@ import {
   RelationshipSession,
   RelationshipTask,
   RelationshipEvent,
-} from "@/types/relationships";
-import { serviceLogger } from "@/utils/logging";
-import { generateUUID } from "@/utils";
+  RelationshipTaskStatus,
+} from "../../types/relationships";
+import type { TaskStatus, EventType } from "../../types/database";
+import { serviceLogger } from "../../utils/logging";
+import { generateUUID } from "../../utils";
 
 const logger = serviceLogger("DataMigrationService");
 
@@ -36,7 +38,7 @@ export interface MigrationResult {
 }
 
 class DataMigrationService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -46,9 +48,12 @@ class DataMigrationService {
     this.db = await getFirestore();
   }
 
-  private async ensureDb() {
+  private async ensureDb(): Promise<Firestore> {
     if (!this.db) {
       await this.initializeDb();
+    }
+    if (!this.db) {
+      throw new Error("Failed to initialize Firestore database");
     }
     return this.db;
   }
@@ -69,225 +74,51 @@ class DataMigrationService {
     try {
       const db = await this.ensureDb();
 
-      // Check if user already has relationships
-      const existingRelationships =
-        await relationshipService.getUserRelationships(userId);
-      if (existingRelationships.length > 0) {
-        result.errors.push(
-          "User already has relationships - migration not needed",
-        );
+      // Check if migration is needed
+      const validationResult = await this.validateMigrationEligibility(userId);
+      if (!validationResult.isEligible) {
+        result.errors.push(validationResult.reason);
         return result;
       }
 
-      // Create a self-relationship (user as both submissive and keyholder)
+      // Set up relationship and chastity data
       const relationshipId = generateUUID();
-      const relationship: Omit<
-        Relationship,
-        "createdAt" | "updatedAt" | "establishedAt"
-      > = {
-        id: relationshipId,
-        submissiveId: userId,
-        keyholderId: userId, // Self-relationship
-        status: RelationshipStatus.ACTIVE,
-        permissions: {
-          keyholderCanEdit: {
-            sessions: true,
-            tasks: true,
-            goals: true,
-            punishments: true,
-            settings: true,
-          },
-          submissiveCanPause: true,
-          emergencyUnlock: true,
-          requireApproval: {
-            sessionEnd: false,
-            taskCompletion: false,
-            goalChanges: false,
-          },
-        },
-        notes: "Migrated from single-user system",
-      };
-
       const batch = writeBatch(db);
-
-      // Create the relationship
-      batch.set(doc(db, "relationships", relationshipId), {
-        ...relationship,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        establishedAt: serverTimestamp(),
-      });
-
-      // Initialize chastity data
-      const chastityData: Omit<
-        RelationshipChastityData,
-        "createdAt" | "updatedAt"
-      > = {
+      await this.setupRelationshipAndChastityData(
+        batch,
+        userId,
         relationshipId,
-        submissiveId: userId,
-        keyholderId: userId,
-        currentSession: {
-          id: "",
-          isActive: false,
-          startTime: serverTimestamp() as any,
-          accumulatedPauseTime: 0,
-          keyholderApprovalRequired: false,
-        },
-        goals: {
-          personal: {
-            duration: 0,
-            type: "soft",
-            setBy: "submissive",
-          },
-          keyholder: {
-            minimumDuration: 0,
-            canBeModified: true,
-          },
-        },
-        settings: {
-          allowPausing: true,
-          pauseCooldown: 300,
-          requireReasonForEnd: false,
-          trackingEnabled: true,
-        },
-      };
+      );
 
-      batch.set(doc(db, "chastityData", relationshipId), {
-        ...chastityData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      // Migrate existing sessions
-      try {
-        const sessionsSnapshot = await getDocs(
-          collection(db, "users", userId, "sessions"),
-        );
-        for (const sessionDoc of sessionsSnapshot.docs) {
-          const oldSession = sessionDoc.data();
-
-          const newSession: Omit<
-            RelationshipSession,
-            "createdAt" | "updatedAt"
-          > = {
-            id: sessionDoc.id,
-            relationshipId,
-            startTime: oldSession.startTime || serverTimestamp(),
-            endTime: oldSession.endTime,
-            duration: oldSession.duration || 0,
-            effectiveDuration:
-              oldSession.effectiveDuration || oldSession.duration || 0,
-            events: [], // Legacy sessions won't have detailed events
-            goalMet: oldSession.goalMet || false,
-            keyholderApproval: {
-              required: false,
-              granted: true,
-            },
-          };
-
-          batch.set(
-            doc(db, "chastityData", relationshipId, "sessions", sessionDoc.id),
-            {
-              ...newSession,
-              createdAt: oldSession.createdAt || serverTimestamp(),
-              updatedAt: serverTimestamp(),
-            },
-          );
-
-          result.migratedSessions++;
-        }
-      } catch (error) {
-        result.errors.push(
-          `Failed to migrate sessions: ${(error as Error).message}`,
-        );
-      }
-
-      // Migrate existing tasks
-      try {
-        const tasksSnapshot = await getDocs(
-          collection(db, "users", userId, "tasks"),
-        );
-        for (const taskDoc of tasksSnapshot.docs) {
-          const oldTask = taskDoc.data();
-
-          const newTask: Omit<RelationshipTask, "createdAt" | "updatedAt"> = {
-            id: taskDoc.id,
-            relationshipId,
-            text: oldTask.text || "Migrated task",
-            assignedBy: "submissive", // Assume self-assigned for migration
-            assignedTo: "submissive",
-            dueDate: oldTask.dueDate,
-            status: this.mapTaskStatus(oldTask.status),
-            submittedAt: oldTask.submittedAt,
-            approvedAt: oldTask.approvedAt,
-            completedAt: oldTask.completedAt,
-            submissiveNote: oldTask.submissiveNote,
-            keyholderFeedback: oldTask.keyholderFeedback,
-            consequence: oldTask.consequence,
-          };
-
-          batch.set(
-            doc(db, "chastityData", relationshipId, "tasks", taskDoc.id),
-            {
-              ...newTask,
-              createdAt: oldTask.createdAt || serverTimestamp(),
-              updatedAt: serverTimestamp(),
-            },
-          );
-
-          result.migratedTasks++;
-        }
-      } catch (error) {
-        result.errors.push(
-          `Failed to migrate tasks: ${(error as Error).message}`,
-        );
-      }
-
-      // Migrate existing events
-      try {
-        const eventsSnapshot = await getDocs(
-          collection(db, "users", userId, "events"),
-        );
-        for (const eventDoc of eventsSnapshot.docs) {
-          const oldEvent = eventDoc.data();
-
-          const newEvent: Omit<RelationshipEvent, "createdAt"> = {
-            id: eventDoc.id,
-            relationshipId,
-            type: this.mapEventType(oldEvent.type),
-            timestamp: oldEvent.timestamp || serverTimestamp(),
-            details: {
-              duration: oldEvent.details?.duration,
-              notes: oldEvent.details?.notes || oldEvent.notes,
-              mood: oldEvent.details?.mood,
-              participants: ["submissive"], // Default for migration
-            },
-            loggedBy: "submissive",
-            isPrivate: oldEvent.isPrivate || false,
-            tags: oldEvent.tags || [],
-          };
-
-          batch.set(
-            doc(db, "chastityData", relationshipId, "events", eventDoc.id),
-            {
-              ...newEvent,
-              createdAt: oldEvent.createdAt || serverTimestamp(),
-            },
-          );
-
-          result.migratedEvents++;
-        }
-      } catch (error) {
-        result.errors.push(
-          `Failed to migrate events: ${(error as Error).message}`,
-        );
-      }
+      // Migrate data collections
+      const sessionCount = await this.migrateSessionsData(
+        batch,
+        userId,
+        relationshipId,
+        result,
+      );
+      const taskCount = await this.migrateTasksData(
+        batch,
+        userId,
+        relationshipId,
+        result,
+      );
+      const eventCount = await this.migrateEventsData(
+        batch,
+        userId,
+        relationshipId,
+        result,
+      );
 
       // Commit all changes
-      await batch.commit();
+      await this.executeMigrationBatch(batch);
 
+      // Update results
       result.success = true;
       result.relationshipId = relationshipId;
+      result.migratedSessions = sessionCount;
+      result.migratedTasks = taskCount;
+      result.migratedEvents = eventCount;
 
       logger.info("Successfully migrated single-user data", {
         userId,
@@ -303,6 +134,334 @@ class DataMigrationService {
     }
 
     return result;
+  }
+
+  /**
+   * Validate if user is eligible for migration
+   */
+  private async validateMigrationEligibility(
+    userId: string,
+  ): Promise<{ isEligible: boolean; reason: string }> {
+    const existingRelationships =
+      await relationshipService.getUserRelationships(userId);
+    if (existingRelationships.length > 0) {
+      return {
+        isEligible: false,
+        reason: "User already has relationships - migration not needed",
+      };
+    }
+    return { isEligible: true, reason: "" };
+  }
+
+  /**
+   * Set up relationship and chastity data structures
+   */
+  private async setupRelationshipAndChastityData(
+    batch: any,
+    userId: string,
+    relationshipId: string,
+  ): Promise<void> {
+    const db = await this.ensureDb();
+
+    // Create relationship
+    const relationship = this.createSelfRelationship(userId, relationshipId);
+    batch.set(doc(db, "relationships", relationshipId), {
+      ...relationship,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      establishedAt: serverTimestamp(),
+    });
+
+    // Create chastity data
+    const chastityData = this.createChastityData(userId, relationshipId);
+    batch.set(doc(db, "chastityData", relationshipId), {
+      ...chastityData,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  /**
+   * Create self-relationship configuration
+   */
+  private createSelfRelationship(
+    userId: string,
+    relationshipId: string,
+  ): Omit<Relationship, "createdAt" | "updatedAt" | "establishedAt"> {
+    return {
+      id: relationshipId,
+      submissiveId: userId,
+      keyholderId: userId, // Self-relationship
+      status: RelationshipStatus.ACTIVE,
+      permissions: {
+        keyholderCanEdit: {
+          sessions: true,
+          tasks: true,
+          goals: true,
+          punishments: true,
+          settings: true,
+        },
+        submissiveCanPause: true,
+        emergencyUnlock: true,
+        requireApproval: {
+          sessionEnd: false,
+          taskCompletion: false,
+          goalChanges: false,
+        },
+      },
+      notes: "Migrated from single-user system",
+    };
+  }
+
+  /**
+   * Create chastity data configuration
+   */
+  private createChastityData(
+    userId: string,
+    relationshipId: string,
+  ): Omit<RelationshipChastityData, "createdAt" | "updatedAt"> {
+    return {
+      relationshipId,
+      submissiveId: userId,
+      keyholderId: userId,
+      currentSession: {
+        id: "",
+        isActive: false,
+        startTime: serverTimestamp() as any,
+        accumulatedPauseTime: 0,
+        keyholderApprovalRequired: false,
+      },
+      goals: {
+        personal: {
+          duration: 0,
+          type: "soft",
+          setBy: "submissive",
+        },
+        keyholder: {
+          minimumDuration: 0,
+          canBeModified: true,
+        },
+      },
+      settings: {
+        allowPausing: true,
+        pauseCooldown: 300,
+        requireReasonForEnd: false,
+        trackingEnabled: true,
+      },
+    };
+  }
+
+  /**
+   * Migrate sessions data to new relationship structure
+   */
+  private async migrateSessionsData(
+    batch: any,
+    userId: string,
+    relationshipId: string,
+    result: MigrationResult,
+  ): Promise<number> {
+    try {
+      const db = await this.ensureDb();
+      const sessionsSnapshot = await getDocs(
+        collection(db, "users", userId, "sessions"),
+      );
+      let migratedCount = 0;
+
+      for (const sessionDoc of sessionsSnapshot.docs) {
+        const oldSession = sessionDoc.data();
+        const newSession = this.transformSessionData(
+          sessionDoc.id,
+          relationshipId,
+          oldSession,
+        );
+
+        batch.set(
+          doc(db, "chastityData", relationshipId, "sessions", sessionDoc.id),
+          {
+            ...newSession,
+            createdAt: oldSession.createdAt || serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+        );
+        migratedCount++;
+      }
+
+      return migratedCount;
+    } catch (error) {
+      result.errors.push(
+        `Failed to migrate sessions: ${(error as Error).message}`,
+      );
+      return 0;
+    }
+  }
+
+  /**
+   * Transform session data to new format
+   */
+  private transformSessionData(
+    sessionId: string,
+    relationshipId: string,
+    oldSession: any,
+  ): Omit<RelationshipSession, "createdAt" | "updatedAt"> {
+    return {
+      id: sessionId,
+      relationshipId,
+      startTime: oldSession.startTime || serverTimestamp(),
+      endTime: oldSession.endTime,
+      duration: oldSession.duration || 0,
+      effectiveDuration:
+        oldSession.effectiveDuration || oldSession.duration || 0,
+      events: [], // Legacy sessions won't have detailed events
+      goalMet: oldSession.goalMet || false,
+      keyholderApproval: {
+        required: false,
+        granted: true,
+      },
+    };
+  }
+
+  /**
+   * Migrate tasks data to new relationship structure
+   */
+  private async migrateTasksData(
+    batch: any,
+    userId: string,
+    relationshipId: string,
+    result: MigrationResult,
+  ): Promise<number> {
+    try {
+      const db = await this.ensureDb();
+      const tasksSnapshot = await getDocs(
+        collection(db, "users", userId, "tasks"),
+      );
+      let migratedCount = 0;
+
+      for (const taskDoc of tasksSnapshot.docs) {
+        const oldTask = taskDoc.data();
+        const newTask = this.transformTaskData(
+          taskDoc.id,
+          relationshipId,
+          oldTask,
+        );
+
+        batch.set(
+          doc(db, "chastityData", relationshipId, "tasks", taskDoc.id),
+          {
+            ...newTask,
+            createdAt: oldTask.createdAt || serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+        );
+        migratedCount++;
+      }
+
+      return migratedCount;
+    } catch (error) {
+      result.errors.push(
+        `Failed to migrate tasks: ${(error as Error).message}`,
+      );
+      return 0;
+    }
+  }
+
+  /**
+   * Transform task data to new format
+   */
+  private transformTaskData(
+    taskId: string,
+    relationshipId: string,
+    oldTask: any,
+  ): Omit<RelationshipTask, "createdAt" | "updatedAt"> {
+    return {
+      id: taskId,
+      relationshipId,
+      text: oldTask.text || "Migrated task",
+      assignedBy: "submissive", // Assume self-assigned for migration
+      assignedTo: "submissive",
+      dueDate: oldTask.dueDate,
+      status: this.mapTaskStatus(oldTask.status),
+      submittedAt: oldTask.submittedAt,
+      approvedAt: oldTask.approvedAt,
+      completedAt: oldTask.completedAt,
+      submissiveNote: oldTask.submissiveNote,
+      keyholderFeedback: oldTask.keyholderFeedback,
+      consequence: oldTask.consequence,
+    };
+  }
+
+  /**
+   * Migrate events data to new relationship structure
+   */
+  private async migrateEventsData(
+    batch: any,
+    userId: string,
+    relationshipId: string,
+    result: MigrationResult,
+  ): Promise<number> {
+    try {
+      const db = await this.ensureDb();
+      const eventsSnapshot = await getDocs(
+        collection(db, "users", userId, "events"),
+      );
+      let migratedCount = 0;
+
+      for (const eventDoc of eventsSnapshot.docs) {
+        const oldEvent = eventDoc.data();
+        const newEvent = this.transformEventData(
+          eventDoc.id,
+          relationshipId,
+          oldEvent,
+        );
+
+        batch.set(
+          doc(db, "chastityData", relationshipId, "events", eventDoc.id),
+          {
+            ...newEvent,
+            createdAt: oldEvent.createdAt || serverTimestamp(),
+          },
+        );
+        migratedCount++;
+      }
+
+      return migratedCount;
+    } catch (error) {
+      result.errors.push(
+        `Failed to migrate events: ${(error as Error).message}`,
+      );
+      return 0;
+    }
+  }
+
+  /**
+   * Transform event data to new format
+   */
+  private transformEventData(
+    eventId: string,
+    relationshipId: string,
+    oldEvent: any,
+  ): Omit<RelationshipEvent, "createdAt"> {
+    return {
+      id: eventId,
+      relationshipId,
+      type: this.mapEventType(oldEvent.type),
+      timestamp: oldEvent.timestamp || serverTimestamp(),
+      details: {
+        duration: oldEvent.details?.duration,
+        notes: oldEvent.details?.notes || oldEvent.notes,
+        mood: oldEvent.details?.mood,
+        participants: ["submissive"], // Default for migration
+      },
+      loggedBy: "submissive",
+      isPrivate: oldEvent.isPrivate || false,
+      tags: oldEvent.tags || [],
+    };
+  }
+
+  /**
+   * Execute the migration batch commit
+   */
+  private async executeMigrationBatch(batch: any): Promise<void> {
+    await batch.commit();
   }
 
   /**
@@ -405,25 +564,34 @@ class DataMigrationService {
   /**
    * Map legacy task status to new status
    */
-  private mapTaskStatus(oldStatus: any): any {
-    const statusMap: Record<string, any> = {
-      pending: "pending",
-      in_progress: "pending",
-      submitted: "submitted",
-      approved: "approved",
-      rejected: "rejected",
-      completed: "completed",
-      overdue: "pending", // Reset overdue to pending
+  private mapTaskStatus(oldStatus: string | unknown): RelationshipTaskStatus {
+    const statusMap: Record<string, RelationshipTaskStatus> = {
+      pending: RelationshipTaskStatus.PENDING,
+      in_progress: RelationshipTaskStatus.PENDING,
+      submitted: RelationshipTaskStatus.SUBMITTED,
+      approved: RelationshipTaskStatus.APPROVED,
+      rejected: RelationshipTaskStatus.REJECTED,
+      completed: RelationshipTaskStatus.COMPLETED,
+      overdue: RelationshipTaskStatus.PENDING, // Reset overdue to pending
     };
 
-    return statusMap[oldStatus] || "pending";
+    if (typeof oldStatus === "string" && statusMap[oldStatus]) {
+      return statusMap[oldStatus];
+    }
+
+    return RelationshipTaskStatus.PENDING; // Default fallback
   }
 
   /**
    * Map legacy event type to new event type
    */
-  private mapEventType(oldType: any): any {
-    const typeMap: Record<string, any> = {
+  private mapEventType(
+    oldType: string | unknown,
+  ): "orgasm" | "sexual_activity" | "milestone" | "note" {
+    const typeMap: Record<
+      string,
+      "orgasm" | "sexual_activity" | "milestone" | "note"
+    > = {
       orgasm: "orgasm",
       sexual_activity: "sexual_activity",
       milestone: "milestone",
@@ -434,7 +602,11 @@ class DataMigrationService {
       session_resume: "note", // Convert to note
     };
 
-    return typeMap[oldType] || "note";
+    if (typeof oldType === "string" && typeMap[oldType]) {
+      return typeMap[oldType];
+    }
+
+    return "note"; // Default fallback
   }
 
   /**

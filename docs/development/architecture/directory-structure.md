@@ -41,8 +41,10 @@ src/
 ## 🏗️ Directory Purposes
 
 ### `/src/components/` - UI Only Layer
+
 **Purpose**: Pure UI rendering and user interaction
 **Rules**:
+
 - NO business logic
 - NO direct API calls
 - NO data processing
@@ -63,21 +65,26 @@ function SessionTracker({ session, onStart, onPause }) {
 // ❌ BAD: Business logic in component
 function SessionTracker() {
   const startSession = async () => {
-    const data = { /* session data */ };
-    await firebase.firestore().collection('sessions').add(data); // NO!
+    const data = {
+      /* session data */
+    };
+    await firebase.firestore().collection("sessions").add(data); // NO!
   };
 }
 ```
 
 #### Subdirectories:
+
 - **`ui/`**: Reusable components (Button, Input, Modal, Card, etc.)
 - **`forms/`**: Form-specific components (SessionForm, TaskForm, etc.)
 - **`modals/`**: Modal dialogs (ConfirmModal, SettingsModal, etc.)
 - **`layout/`**: Layout components (Header, Navigation, Footer, etc.)
 
 ### `/src/services/` - Business Logic Layer
+
 **Purpose**: All business logic, data operations, and API interactions
 **Rules**:
+
 - ALL Firebase interactions
 - ALL data processing and validation
 - ALL business rules and calculations
@@ -102,15 +109,18 @@ export class SessionService {
 ```
 
 #### Subdirectories:
+
 - **`api/`**: Firebase API services (SessionService, TaskService, EventService)
 - **`storage/`**: Dexie local storage services (DexieSessionStorage, etc.)
 - **`auth/`**: Authentication services (AuthService, KeyholderService)
 - **`sync/`**: Data synchronization services (SyncService, ConflictResolver)
 
 ### `/src/hooks/` - React Hooks Layer
+
 **Purpose**: Connect React components to services and state management
 
 #### Subdirectories:
+
 - **`api/`**: TanStack Query hooks for server state
 - **`state/`**: Zustand store hooks for UI state
 - **`ui/`**: UI-specific hooks (useLocalStorage, useDebounce)
@@ -132,9 +142,11 @@ export function useUIStore() {
 ```
 
 ### `/src/stores/` - State Management Layer
+
 **Purpose**: Zustand stores for UI state only
 
 #### Subdirectories:
+
 - **`ui/`**: UI state (modals, forms, preferences)
 - **`cache/`**: Cache management (rarely used)
 
@@ -160,9 +172,11 @@ interface BadStore {
 ```
 
 ### `/src/utils/` - Utility Functions Layer
+
 **Purpose**: Pure utility functions with no side effects
 
 #### Subdirectories:
+
 - **`validation/`**: Form and data validation
 - **`formatting/`**: Data formatting (dates, durations, etc.)
 - **`constants/`**: App constants and enums
@@ -202,9 +216,11 @@ export function generateId(): string {
 ```
 
 ### `/src/contexts/` - React Context Layer
+
 **Purpose**: App-level state (auth, global settings)
 
 #### Subdirectories:
+
 - **`auth/`**: Authentication context
 - **`app/`**: App-level state context
 
@@ -226,9 +242,11 @@ interface AppContext {
 ```
 
 ### `/src/types/` - TypeScript Definitions
+
 **Purpose**: TypeScript type definitions organized by domain
 
 #### Subdirectories:
+
 - **`api/`**: API request/response types
 - **`ui/`**: UI component prop types
 - **`core/`**: Core business domain types
@@ -280,6 +298,7 @@ User Interaction → Components → Hooks → Services → Storage/API
 ### Example Flow: Starting a Session
 
 1. **Component** (`/components/tracker/SessionTracker.jsx`):
+
    ```javascript
    function SessionTracker() {
      const { mutate: startSession } = useStartSessionMutation();
@@ -288,16 +307,18 @@ User Interaction → Components → Hooks → Services → Storage/API
    ```
 
 2. **Hook** (`/hooks/api/useSessionMutations.js`):
+
    ```javascript
    export function useStartSessionMutation() {
      return useMutation({
        mutationFn: SessionService.startSession,
-       onSuccess: () => queryClient.invalidateQueries(['sessions']),
+       onSuccess: () => queryClient.invalidateQueries(["sessions"]),
      });
    }
    ```
 
 3. **Service** (`/services/api/session-service.js`):
+
    ```javascript
    export class SessionService {
      static async startSession(data) {
@@ -320,6 +341,7 @@ User Interaction → Components → Hooks → Services → Storage/API
 ## 🛡️ Architectural Enforcement
 
 ### ESLint Rules (Future)
+
 ```javascript
 // Prevent business logic in components
 'no-firebase-in-components': 'error',
@@ -332,34 +354,39 @@ User Interaction → Components → Hooks → Services → Storage/API
 ```
 
 ### Import Restrictions
+
 ```javascript
 // ✅ ALLOWED in components
-import { useCurrentSession } from '../hooks/api/use-session-query';
-import { useUIStore } from '../hooks/state/use-ui-store';
+import { useCurrentSession } from "../hooks/api/use-session-query";
+import { useUIStore } from "../hooks/state/use-ui-store";
 
 // ❌ FORBIDDEN in components
-import { firebase } from '../firebase';           // Use services instead
-import { DexieStorage } from '../storage/dexie'; // Use hooks instead
-import { SessionService } from '../services';    // Use hooks instead
+import { firebase } from "../firebase"; // Use services instead
+import { DexieStorage } from "../storage/dexie"; // Use hooks instead
+import { SessionService } from "../services"; // Use hooks instead
 ```
 
 ## 📋 Migration Strategy
 
 ### Phase 1: Structure Creation ✅
+
 - Created directory structure
 - Documented patterns and rules
 
 ### Phase 2: Service Layer Implementation
+
 - Move business logic from components to services
 - Implement TanStack Query hooks
 - Create Zustand stores for UI state
 
 ### Phase 3: Component Refactoring
+
 - Refactor components to be pure UI
 - Remove direct API calls from components
 - Implement proper error boundaries
 
 ### Phase 4: Type Safety
+
 - Add comprehensive TypeScript types
 - Implement strict ESLint rules
 - Add architectural compliance tests

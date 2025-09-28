@@ -55,7 +55,7 @@ const defaultState = {
 export const useUIPreferencesStore = create<UIPreferencesState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set, _get) => ({
         // Initial state
         ...defaultState,
 

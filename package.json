@@ -13,8 +13,8 @@
     "build:production": "vite build --mode production --config configs/build/vite.config.js",
     "build:vercel": "node scripts/build/vercel-build.js",
     "preview": "vite preview --config configs/build/vite.config.js",
-    "lint": "eslint . --config configs/linting/eslint.config.js --cache",
-    "lint:fix": "eslint . --config configs/linting/eslint.config.js --fix --cache",
+    "lint": "eslint . --config configs/linting/eslint.config.js --cache --cache-location .eslintcache --cache-strategy content",
+    "lint:fix": "eslint . --config configs/linting/eslint.config.js --fix --cache --cache-location .eslintcache --cache-strategy content",
     "lint:report": "eslint . --config configs/linting/eslint.config.js --format json --output-file eslint_report.json || true",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
@@ -38,6 +38,7 @@
     "start": "npm run dev"
   },
   "dependencies": {
+    "@jridgewell/sourcemap-codec": "^1.5.5",
     "@sentry/react": "^10.14.0",
     "@tailwindcss/cli": "^4.1.13",
     "@tailwindcss/vite": "^4.1.13",
@@ -103,7 +104,6 @@
   "overrides": {
     "glob": "^10.0.0",
     "rimraf": "^5.0.0",
-    "sourcemap-codec": "@jridgewell/sourcemap-codec@^1.5.0",
     "q": false
   }
 }
