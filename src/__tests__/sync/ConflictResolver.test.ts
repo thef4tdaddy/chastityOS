@@ -2,11 +2,7 @@
  * ConflictResolver Tests
  * Tests for conflict resolution strategies
  */
-<<<<<<< HEAD
 import { describe, it, expect } from "vitest";
-=======
-/// <reference types="vitest/globals" />
->>>>>>> origin/nightly
 import { conflictResolver } from "@/services/sync/ConflictResolver";
 import type { DBSession, DBTask, DBSettings } from "@/types/database";
 

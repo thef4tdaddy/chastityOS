@@ -62,7 +62,11 @@ export const SpecialChallengeSection: React.FC<
     month: string;
     colorClasses: string;
   }> = ({ type, title, description, icon, month, colorClasses }) => {
-    const challenge = challengeStatus[type];
+    const challengeMap = {
+      locktober: challengeStatus.locktober,
+      no_nut_november: challengeStatus.noNutNovember,
+    };
+    const challenge = challengeMap[type as keyof typeof challengeMap];
     const progress = getChallengeProgress(type);
 
     return (
@@ -171,7 +175,7 @@ export const SpecialChallengeSection: React.FC<
         />
 
         <ChallengeCard
-          type="noNutNovember"
+          type="no_nut_november"
           title="No Nut November"
           description="Abstain from orgasms for the entire month of November"
           icon={<FaBan className="text-2xl text-blue-400" />}

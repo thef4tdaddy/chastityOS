@@ -5,13 +5,8 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
-<<<<<<< HEAD
 import { DBEvent, EventFilters } from "../../types/database";
-=======
-import { Event } from "../../types/events";
-import { EventType } from "../../types/events";
-import { DBEvent } from "../../types/database";
->>>>>>> origin/nightly
+import { Event, EventType } from "../../types/events";
 import { logger } from "../../utils/logging";
 
 /**
@@ -351,12 +346,9 @@ export function useUpdateEvent() {
       const updatedEvent: DBEvent = {
         ...existingEvent,
         ...updates,
-<<<<<<< HEAD
-        lastModified: new Date(),
-=======
         createdAt: existingEvent.createdAt || new Date(),
+        lastModified: new Date(),
         updatedAt: new Date(),
->>>>>>> origin/nightly
       };
 
       const dbUpdatedEvent = eventToDBEvent(updatedEvent);

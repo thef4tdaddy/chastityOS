@@ -1,5 +1,5 @@
 import React from "react";
-import { AchievementNotification } from "../achievements";
+import { AchievementToast } from "../achievements/AchievementNotification";
 import type { DBAchievement } from "@/types/database";
 
 interface NotificationData {
@@ -23,9 +23,10 @@ export const AchievementNotifications: React.FC<
           (a) => a.id === notification.achievementId,
         );
         return achievement ? (
-          <AchievementNotification
+          <AchievementToast
             key={notification.id}
             achievement={achievement}
+            notification={notification}
             onClose={() => markNotificationRead(notification.id)}
           />
         ) : null;

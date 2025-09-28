@@ -3,7 +3,7 @@
  * Helper functions and utilities for testing
  */
 
-import { ReactElement } from 'react';
+import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { vi } from 'vitest';
 
@@ -134,9 +134,13 @@ export const flushPromises = () =>
 export const createErrorBoundaryWrapper = () => {
   const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
     try {
-      return <>{children}</>;
+      return React.createElement(React.Fragment, null, children);
     } catch (error) {
-      return <div data-testid="error-boundary">Error: {String(error)}</div>;
+      return React.createElement(
+        'div',
+        { 'data-testid': 'error-boundary' },
+        `Error: ${String(error)}`
+      );
     }
   };
   return ErrorBoundary;
