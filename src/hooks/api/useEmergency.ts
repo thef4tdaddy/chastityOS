@@ -137,23 +137,23 @@ export const EMERGENCY_REASONS: Record<
   EmergencyUnlockReason,
   { label: string; description: string }
 > = {
-  medical_emergency: {
+  "Medical Emergency": {
     label: "Medical Emergency",
     description: "Health-related emergencies requiring immediate unlock",
   },
-  safety_concern: {
+  "Safety Concern": {
     label: "Safety Concern",
     description: "Physical safety or security situations",
   },
-  equipment_malfunction: {
+  "Equipment Malfunction": {
     label: "Equipment Malfunction",
     description: "Device failure or malfunction",
   },
-  urgent_situation: {
+  "Urgent Situation": {
     label: "Urgent Situation",
     description: "Other urgent circumstances requiring unlock",
   },
-  other: {
+  Other: {
     label: "Other",
     description: "Custom reason (additional notes required)",
   },

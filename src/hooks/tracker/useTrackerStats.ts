@@ -1,5 +1,4 @@
 import { useSessionTimer } from "../useSessionTimer";
-import { formatElapsedTime } from "../../utils";
 import type { DBSession } from "../../types/database";
 
 export interface UseTrackerStatsProps {

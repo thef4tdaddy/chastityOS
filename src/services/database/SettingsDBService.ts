@@ -50,11 +50,13 @@ class SettingsDBService extends BaseDBService<DBSettings> {
             taskDeadlines: true,
             keyholderMessages: true,
             goalProgress: true,
+            achievements: true,
           },
           privacy: {
             publicProfile: false,
             shareStatistics: false,
             allowDataExport: true,
+            shareAchievements: false,
           },
           chastity: {
             allowEmergencyUnlock: true,

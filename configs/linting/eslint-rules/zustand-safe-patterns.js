@@ -369,58 +369,71 @@ export default {
         },
       },
       create(context) {
-        const visited = new Set();
-
         return {
-          // Check for store hooks inside conditional statements
-          IfStatement(node) {
-            function checkForStoreHooks(nodeToCheck) {
-              if (
-                nodeToCheck.type === 'CallExpression' &&
-                nodeToCheck.callee &&
-                nodeToCheck.callee.name &&
-                (nodeToCheck.callee.name.includes('Store') ||
-                  nodeToCheck.callee.name.includes('UI')) &&
-                nodeToCheck.callee.name.startsWith('use')
-              ) {
-                context.report({
-                  node: nodeToCheck,
-                  messageId: 'noConditionalSubscriptions',
-                });
-              }
-            }
-
-            // Recursively check for store hooks with cycle prevention
-            function traverse(node, depth = 0) {
-              // Prevent infinite recursion
-              if (!node || depth > 10 || visited.has(node)) return;
-              visited.add(node);
-
-              if (node.type === 'CallExpression') {
-                checkForStoreHooks(node);
-              }
-
-              // Traverse child nodes
-              Object.keys(node).forEach(key => {
-                const child = node[key];
-                if (Array.isArray(child)) {
-                  child.forEach(item => {
-                    if (item && typeof item === 'object') {
-                      traverse(item, depth + 1);
-                    }
-                  });
-                } else if (child && typeof child === 'object') {
-                  traverse(child, depth + 1);
+          // Check for store hooks directly inside conditional statements
+          CallExpression(node) {
+            // Check if this is a store hook call
+            if (
+              node.callee &&
+              node.callee.name &&
+              (node.callee.name.includes('Store') ||
+                node.callee.name.includes('UI')) &&
+              node.callee.name.startsWith('use')
+            ) {
+              // Check if this hook call is directly inside a conditional
+              const ancestors = context.sourceCode?.getAncestors?.(node) || [];
+              
+              // Look for immediate conditional parents (not deep nesting)
+              for (let i = ancestors.length - 1; i >= 0; i--) {
+                const ancestor = ancestors[i];
+                
+                // If we hit a function boundary, stop - we're at top level
+                if (
+                  ancestor.type === 'FunctionDeclaration' ||
+                  ancestor.type === 'FunctionExpression' ||
+                  ancestor.type === 'ArrowFunctionExpression'
+                ) {
+                  break;
                 }
-              });
+                
+                // Check for conditional patterns
+                if (
+                  ancestor.type === 'IfStatement' ||
+                  ancestor.type === 'ConditionalExpression' ||
+                  (ancestor.type === 'LogicalExpression' && 
+                   (ancestor.operator === '&&' || ancestor.operator === '||'))
+                ) {
+                  // Check if we're in the conditional branches
+                  let isInConditionalBranch = false;
+                  
+                  if (ancestor.type === 'IfStatement') {
+                    // For if statements, check if we're in consequent or alternate
+                    const nextAncestor = ancestors[i + 1];
+                    if (nextAncestor && (ancestor.consequent === nextAncestor || ancestor.alternate === nextAncestor)) {
+                      isInConditionalBranch = true;
+                    }
+                  } else if (ancestor.type === 'ConditionalExpression') {
+                    // For ternary operators, we need to check if the hook is in the consequent or alternate
+                    // This is more complex due to how AST represents ternaries
+                    isInConditionalBranch = true; // Any hook inside a ternary is conditional
+                  } else if (ancestor.type === 'LogicalExpression') {
+                    // For logical expressions (&&, ||), check if we're in the right side
+                    const nextAncestor = ancestors[i + 1];
+                    if (nextAncestor && ancestor.right === nextAncestor) {
+                      isInConditionalBranch = true;
+                    }
+                  }
+                     
+                  if (isInConditionalBranch) {
+                    context.report({
+                      node,
+                      messageId: 'noConditionalSubscriptions',
+                    });
+                    break;
+                  }
+                }
+              }
             }
-
-            // Check both consequent and alternate
-            if (node.consequent) traverse(node.consequent);
-            if (node.alternate) traverse(node.alternate);
-
-            // Clear visited for next check
-            visited.clear();
           },
         };
       },
