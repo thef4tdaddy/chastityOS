@@ -117,11 +117,7 @@ describe("NotificationStore", () => {
       expect(notifications[0]?.message).toBe("Info message");
     });
 
-<<<<<<< HEAD
-    it("should create loading notification", () => {
-=======
     it("should create custom notification with duration 0", () => {
->>>>>>> origin/nightly
       const { addNotification } = useNotificationStore.getState();
 
       const id = addNotification({
@@ -137,7 +133,6 @@ describe("NotificationStore", () => {
       expect(notifications[0]?.message).toBe("Loading message");
       expect(notifications[0]?.duration).toBe(0); // Custom notifications can have duration 0
       expect(notifications[0]?.dismissible).toBe(false);
->>>>>>> origin/nightly
     });
   });
 

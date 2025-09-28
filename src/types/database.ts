@@ -152,18 +152,6 @@ export interface DBGoal extends DBBase {
 
 export interface DBSettings extends DBBase {
   theme: "light" | "dark" | "auto" | "system";
-<<<<<<< HEAD
-  notifications:
-    | {
-        enabled: boolean;
-        sessionReminders: boolean;
-        taskDeadlines: boolean;
-        keyholderMessages: boolean;
-        goalProgress: boolean;
-        achievements: boolean; // New: Achievement notifications
-      }
-    | boolean; // Allow both nested object and simple boolean for backwards compatibility
-=======
   eventDisplayMode?: string;
   twoFactorEnabled?: boolean;
   updatedAt?: Date;
@@ -175,7 +163,6 @@ export interface DBSettings extends DBBase {
     goalProgress: boolean;
     achievements: boolean; // New: Achievement notifications
   };
->>>>>>> origin/nightly
   privacy: {
     publicProfile: boolean;
     shareStatistics: boolean;

@@ -202,7 +202,6 @@ const TrackerPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-<<<<<<< HEAD
       {/* Session Persistence Loading */}
       {(authLoading || isInitializing) && user?.uid && (
         <SessionLoader
