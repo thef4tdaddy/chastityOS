@@ -61,7 +61,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       );
       setShowRequestForm(false);
       setRequestForm({ email: "", role: "submissive", message: "" });
-    } catch (_error) {
+    } catch {
       // Handle error silently or with proper error handling
     }
   };
@@ -70,7 +70,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   const handleMigration = async () => {
     try {
       await migrateSingleUserData();
-    } catch (_error) {
+    } catch {
       // Handle migration error silently or with proper error handling
     }
   };
