@@ -2,7 +2,7 @@
  * Account Linking Hook
  * React hook for managing keyholder-wearer account linking
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AccountLinkingService } from "../../services/auth/account-linking";
 import { useAuthState } from "../../contexts";
@@ -46,6 +46,22 @@ export const useAccountLinking = () => {
     showDisconnectionDialog: false,
     showPermissionEditor: false,
   });
+
+  // Helper function to update loading state
+  const updateLoadingState = useCallback(
+    (
+      isLoading: boolean,
+      errorField: keyof AccountLinkingState,
+      error?: string,
+    ) => {
+      setState((prev) => ({
+        ...prev,
+        [isLoading ? "isGeneratingCode" : "isUsingCode"]: isLoading,
+        [errorField]: error || null,
+      }));
+    },
+    [],
+  );
 
   // ==================== QUERIES ====================
 
@@ -245,9 +261,10 @@ export const useAccountLinking = () => {
     }));
   }, []);
 
-  const clearErrors = useCallback(() => {
+  const clearAllErrors = useCallback(() => {
     setState((prev) => ({
       ...prev,
+      currentLinkCode: null,
       linkCodeError: null,
       codeUsageError: null,
     }));
@@ -257,42 +274,60 @@ export const useAccountLinking = () => {
     setState((prev) => ({ ...prev, selectedWearerId: wearerId }));
   }, []);
 
-  const toggleQRCode = useCallback(() => {
-    setState((prev) => ({ ...prev, showQRCode: !prev.showQRCode }));
-  }, []);
+  // Combined toggle function for boolean state properties
+  const toggleStateProperty = useCallback(
+    (
+      property: keyof Pick<
+        AccountLinkingState,
+        "showQRCode" | "showDisconnectionDialog" | "showPermissionEditor"
+      >,
+    ) => {
+      setState((prev) => ({ ...prev, [property]: !prev[property] }));
+    },
+    [],
+  );
 
-  const toggleDisconnectionDialog = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      showDisconnectionDialog: !prev.showDisconnectionDialog,
-    }));
-  }, []);
-
-  const togglePermissionEditor = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      showPermissionEditor: !prev.showPermissionEditor,
-    }));
-  }, []);
+  const toggleQRCode = useCallback(
+    () => toggleStateProperty("showQRCode"),
+    [toggleStateProperty],
+  );
+  const toggleDisconnectionDialog = useCallback(
+    () => toggleStateProperty("showDisconnectionDialog"),
+    [toggleStateProperty],
+  );
+  const togglePermissionEditor = useCallback(
+    () => toggleStateProperty("showPermissionEditor"),
+    [toggleStateProperty],
+  );
 
   // ==================== DERIVED STATE ====================
 
-  const isKeyholder = relationships.some((r) => r.keyholderId === user?.uid);
-  const isWearer = relationships.some((r) => r.wearerId === user?.uid);
-  const hasActiveRelationships = relationships.some(
-    (r) => r.status === "active",
+  // User role calculations
+  const userRoles = useMemo(
+    () => ({
+      isKeyholder: relationships.some((r) => r.keyholderId === user?.uid),
+      isWearer: relationships.some((r) => r.wearerId === user?.uid),
+      hasActiveRelationships: relationships.some((r) => r.status === "active"),
+    }),
+    [relationships, user?.uid],
+  );
+
+  // Relationship filtering
+  const relationshipsByRole = useMemo(
+    () => ({
+      keyholderRelationships: relationships.filter(
+        (r) => r.keyholderId === user?.uid,
+      ),
+      wearerRelationships: relationships.filter(
+        (r) => r.wearerId === user?.uid,
+      ),
+    }),
+    [relationships, user?.uid],
   );
 
   const selectedRelationship = state.selectedWearerId
     ? relationships.find((r) => r.wearerId === state.selectedWearerId)
     : null;
-
-  const keyholderRelationships = relationships.filter(
-    (r) => r.keyholderId === user?.uid,
-  );
-  const wearerRelationships = relationships.filter(
-    (r) => r.wearerId === user?.uid,
-  );
 
   // ==================== RETURN OBJECT ====================
 
@@ -304,12 +339,9 @@ export const useAccountLinking = () => {
     relationshipsError,
 
     // Derived state
-    isKeyholder,
-    isWearer,
-    hasActiveRelationships,
+    ...userRoles,
     selectedRelationship,
-    keyholderRelationships,
-    wearerRelationships,
+    ...relationshipsByRole,
 
     // Actions
     generateLinkCode,
@@ -318,7 +350,7 @@ export const useAccountLinking = () => {
     startAdminSession,
     disconnectKeyholder,
     clearLinkCode,
-    clearErrors,
+    clearAllErrors,
     setSelectedWearer,
     toggleQRCode,
     toggleDisconnectionDialog,
