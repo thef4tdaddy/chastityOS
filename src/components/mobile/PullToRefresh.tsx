@@ -15,6 +15,64 @@ interface PullToRefreshProps {
   className?: string;
 }
 
+// Helper function to calculate indicator styles
+const getIndicatorStyles = (pullDistance: number, refreshIndicatorOpacity: number, isRefreshing: boolean) => {
+  return {
+    transform: `translateX(-50%) translateY(${Math.min(pullDistance - 40, 20)}px)`,
+    opacity: isRefreshing ? 1 : refreshIndicatorOpacity,
+  };
+};
+
+// Helper function to calculate content transform
+const getContentTransform = (isPulling: boolean, isRefreshing: boolean, pullDistance: number) => {
+  return isPulling && !isRefreshing ? `translateY(${pullDistance * 0.5}px)` : "translateY(0)";
+};
+
+// Refresh Icon Component
+const RefreshIcon: React.FC<{ pullPercentage: number }> = ({ pullPercentage }) => (
+  <svg
+    className={`w-5 h-5 text-purple-500 transition-transform duration-200 ${
+      pullPercentage >= 100 ? "rotate-180" : ""
+    }`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 14l-7 7m0 0l-7-7m7 7V3"
+    />
+  </svg>
+);
+
+// Loading Spinner Component
+const LoadingSpinner: React.FC = () => (
+  <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+);
+
+// Pull to Refresh Indicator Component
+const PullIndicator: React.FC<{
+  isRefreshing: boolean;
+  refreshIndicatorScale: number;
+  pullPercentage: number;
+  pullDistance: number;
+  refreshIndicatorOpacity: number;
+}> = ({ isRefreshing, refreshIndicatorScale, pullPercentage, pullDistance, refreshIndicatorOpacity }) => (
+  <div
+    className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200 ease-out"
+    style={getIndicatorStyles(pullDistance, refreshIndicatorOpacity, isRefreshing)}
+  >
+    <div
+      className="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700"
+      style={{ transform: `scale(${isRefreshing ? 1 : refreshIndicatorScale})` }}
+    >
+      {isRefreshing ? <LoadingSpinner /> : <RefreshIcon pullPercentage={pullPercentage} />}
+    </div>
+  </div>
+);
+
 export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   children,
   onRefresh,
@@ -54,51 +112,19 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
     >
       {/* Pull to refresh indicator */}
       {isMobile && (isPulling || isRefreshing) && (
-        <div
-          className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200 ease-out"
-          style={{
-            transform: `translateX(-50%) translateY(${Math.min(pullDistance - 40, 20)}px)`,
-            opacity: isRefreshing ? 1 : refreshIndicatorOpacity,
-          }}
-        >
-          <div
-            className="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700"
-            style={{
-              transform: `scale(${isRefreshing ? 1 : refreshIndicatorScale})`,
-            }}
-          >
-            {isRefreshing ? (
-              <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <svg
-                className={`w-5 h-5 text-purple-500 transition-transform duration-200 ${
-                  pullPercentage >= 100 ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                />
-              </svg>
-            )}
-          </div>
-        </div>
+        <PullIndicator
+          isRefreshing={isRefreshing}
+          refreshIndicatorScale={refreshIndicatorScale}
+          pullPercentage={pullPercentage}
+          pullDistance={pullDistance}
+          refreshIndicatorOpacity={refreshIndicatorOpacity}
+        />
       )}
 
       {/* Content with transform during pull */}
       <div
         className="transition-transform duration-200 ease-out"
-        style={{
-          transform:
-            isPulling && !isRefreshing
-              ? `translateY(${pullDistance * 0.5}px)`
-              : "translateY(0)",
-        }}
+        style={{ transform: getContentTransform(isPulling, isRefreshing, pullDistance) }}
       >
         {children}
       </div>

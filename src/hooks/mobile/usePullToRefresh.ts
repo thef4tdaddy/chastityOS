@@ -34,7 +34,7 @@ export const usePullToRefresh = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [_scrollTop, setScrollTop] = useState(0);
 
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);

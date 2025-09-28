@@ -15,6 +15,73 @@ interface MobileInputProps
   variant?: "default" | "filled" | "borderless";
 }
 
+// Helper function to get size classes
+const getSizeClasses = (size: "sm" | "md" | "lg") => {
+  const sizeClasses = {
+    sm: "h-10 px-3 text-sm",
+    md: "h-12 px-4 text-base",
+    lg: "h-14 px-5 text-lg",
+  };
+  return sizeClasses[size];
+};
+
+// Helper function to get variant classes
+const getVariantClasses = (variant: "default" | "filled" | "borderless") => {
+  const variantClasses = {
+    default:
+      "border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800",
+    filled: "border-0 bg-gray-100 dark:bg-gray-700",
+    borderless:
+      "border-0 bg-transparent border-b-2 border-gray-300 dark:border-gray-600 rounded-none",
+  };
+  return variantClasses[variant];
+};
+
+// Helper function to get input mode based on type
+const getInputMode = (type: string) => {
+  if (type === "email") return "email" as const;
+  if (type === "tel") return "tel" as const;
+  if (type === "number") return "numeric" as const;
+  if (type === "url") return "url" as const;
+  return "text" as const;
+};
+
+// Helper function to get autocomplete value
+const getAutoComplete = (type: string, autoComplete?: string) => {
+  if (autoComplete) return autoComplete;
+  if (type === "email") return "email";
+  if (type === "tel") return "tel";
+  if (type === "password") return "current-password";
+  return "off";
+};
+
+// Helper function to build input classes
+const buildInputClasses = (
+  size: "sm" | "md" | "lg",
+  variant: "default" | "filled" | "borderless",
+  leftIcon?: React.ReactNode,
+  rightIcon?: React.ReactNode,
+  error?: string,
+  className = ""
+) => {
+  return `
+    w-full
+    ${getSizeClasses(size)}
+    ${getVariantClasses(variant)}
+    ${leftIcon ? "pl-10" : ""}
+    ${rightIcon ? "pr-10" : ""}
+    ${error ? "border-red-500 focus:border-red-500" : "focus:border-purple-500"}
+    ${variant !== "borderless" ? "rounded-lg" : ""}
+    font-medium
+    text-gray-900 dark:text-white
+    placeholder-gray-500 dark:placeholder-gray-400
+    transition-all duration-200 ease-in-out
+    focus:outline-none focus:ring-2 focus:ring-purple-500/20
+    disabled:opacity-50 disabled:cursor-not-allowed
+    ${className}
+  `.trim();
+};
+
 export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
   (
     {
@@ -31,36 +98,7 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     },
     ref,
   ) => {
-    const sizeClasses = {
-      sm: "h-10 px-3 text-sm",
-      md: "h-12 px-4 text-base",
-      lg: "h-14 px-5 text-lg",
-    };
-
-    const variantClasses = {
-      default:
-        "border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800",
-      filled: "border-0 bg-gray-100 dark:bg-gray-700",
-      borderless:
-        "border-0 bg-transparent border-b-2 border-gray-300 dark:border-gray-600 rounded-none",
-    };
-
-    const inputClasses = `
-    w-full
-    ${sizeClasses[size]}
-    ${variantClasses[variant]}
-    ${leftIcon ? "pl-10" : ""}
-    ${rightIcon ? "pr-10" : ""}
-    ${error ? "border-red-500 focus:border-red-500" : "focus:border-purple-500"}
-    ${variant !== "borderless" ? "rounded-lg" : ""}
-    font-medium
-    text-gray-900 dark:text-white
-    placeholder-gray-500 dark:placeholder-gray-400
-    transition-all duration-200 ease-in-out
-    focus:outline-none focus:ring-2 focus:ring-purple-500/20
-    disabled:opacity-50 disabled:cursor-not-allowed
-    ${className}
-  `;
+    const inputClasses = buildInputClasses(size, variant, leftIcon, rightIcon, error, className);
 
     // Mobile-specific input attributes
     const mobileInputProps = {
@@ -68,26 +106,9 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
       // Prevent iOS zoom on focus
       style: { fontSize: "16px", ...props.style },
       // Set appropriate input modes for better mobile keyboards
-      inputMode:
-        type === "email"
-          ? ("email" as const)
-          : type === "tel"
-            ? ("tel" as const)
-            : type === "number"
-              ? ("numeric" as const)
-              : type === "url"
-                ? ("url" as const)
-                : ("text" as const),
+      inputMode: getInputMode(type),
       // Optimize autocomplete
-      autoComplete:
-        props.autoComplete ||
-        (type === "email"
-          ? "email"
-          : type === "tel"
-            ? "tel"
-            : type === "password"
-              ? "current-password"
-              : "off"),
+      autoComplete: getAutoComplete(type, props.autoComplete),
     };
 
     return (
