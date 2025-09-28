@@ -126,8 +126,17 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onClearError }) => {
 // Login Prompt Component
 const LoginPrompt: React.FC = () => (
   <div className="p-6 bg-gray-800 rounded-lg border border-gray-700 text-center">
+<<<<<<< HEAD
+    <h2 className="text-xl font-bold mb-2 text-white">
+      🔐 Authentication Required
+    </h2>
+    <p className="text-gray-400">
+      Please log in to use the Dexie Demo functionality.
+    </p>
+=======
     <h2 className="text-xl font-bold mb-2 text-white">Login Required</h2>
     <p className="text-gray-400">Please log in to use the Dexie Demo.</p>
+>>>>>>> origin/nightly
   </div>
 );
 
@@ -146,12 +155,20 @@ const TaskList: React.FC<TaskListProps> = ({
   loading,
 }) => (
   <div className="space-y-2">
+<<<<<<< HEAD
+    <h3 className="text-lg font-semibold text-white mb-3">
+=======
     <h3 className="text-lg font-semibold text-white mb-2">
+>>>>>>> origin/nightly
       Tasks ({tasks.length})
     </h3>
     {tasks.length === 0 ? (
       <p className="text-gray-400 text-center py-4">
+<<<<<<< HEAD
+        No tasks yet. Add one above!
+=======
         No tasks yet. Add your first task above!
+>>>>>>> origin/nightly
       </p>
     ) : (
       tasks.map((task) => (
@@ -159,16 +176,46 @@ const TaskList: React.FC<TaskListProps> = ({
           key={task.id}
           className="flex items-center justify-between p-3 bg-gray-700 rounded border border-gray-600"
         >
+<<<<<<< HEAD
+          <div className="flex-1">
+            <span
+              className={`${task.status === "completed" ? "line-through text-gray-400" : "text-white"}`}
+            >
+              {task.text}
+            </span>
+            <div className="text-xs text-gray-400 mt-1">
+              Status: {task.status} | Sync: {task.syncStatus}
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() =>
+=======
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
               checked={task.status === "completed"}
               onChange={() =>
+>>>>>>> origin/nightly
                 onUpdateTask(task.id, {
                   status: task.status === "completed" ? "pending" : "completed",
                 })
               }
               disabled={loading}
+<<<<<<< HEAD
+              className="px-2 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-xs rounded transition-colors"
+            >
+              {task.status === "completed" ? "Undo" : "Done"}
+            </button>
+            <button
+              onClick={() => onDeleteTask(task.id)}
+              disabled={loading}
+              className="px-2 py-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white text-xs rounded transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+=======
               className="w-4 h-4 text-blue-600 bg-gray-600 border-gray-500 rounded focus:ring-blue-500"
             />
             <span
@@ -188,6 +235,7 @@ const TaskList: React.FC<TaskListProps> = ({
           >
             🗑️
           </button>
+>>>>>>> origin/nightly
         </div>
       ))
     )}
@@ -236,10 +284,13 @@ const useTaskManagement = (
         text: newTaskText.trim(),
         description: newTaskText.trim(),
         status: "pending",
+        priority: "medium",
+        assignedBy: "submissive",
         createdAt: new Date(),
-        updatedAt: new Date(),
         category: "general",
         type: "manual",
+        syncStatus: "pending",
+        lastModified: new Date(),
       };
 
       const createdTask = await createWithSync("tasks", newTask);
