@@ -60,7 +60,7 @@ export const useChastityState = () => {
     const hash = await sha256(tempPassword);
     setSettings(prev => ({ ...prev, keyholderName: name, keyholderPasswordHash: hash }));
     setKeyholderMessage(`Your keyholder password is: ${tempPassword}. This is now the permanent password unless you set a custom one.`);
-  }, [setSettings]);
+  }, [setSettings, setKeyholderMessage]);
 
   const handleKeyholderPasswordCheck = useCallback(async (passwordAttempt) => {
     const storedHash = settings?.keyholderPasswordHash;
@@ -75,7 +75,7 @@ export const useChastityState = () => {
     } else {
       setKeyholderMessage('Incorrect password. Please try again.');
     }
-  }, [settings?.keyholderPasswordHash]);
+  }, [settings?.keyholderPasswordHash, setIsKeyholderModeUnlocked, setKeyholderMessage]);
 
   const handleSetPermanentPassword = useCallback(async (newPassword) => {
     if (!newPassword || newPassword.length < 6) {
@@ -85,12 +85,12 @@ export const useChastityState = () => {
     const newHash = await sha256(newPassword);
     setSettings(prev => ({ ...prev, keyholderPasswordHash: newHash }));
     setKeyholderMessage("Permanent password has been updated successfully!");
-  }, [setSettings]);
+  }, [setSettings, setKeyholderMessage]);
 
   const lockKeyholderControls = useCallback(() => {
     setIsKeyholderModeUnlocked(false);
     setKeyholderMessage('');
-  }, []);
+  }, [setIsKeyholderModeUnlocked, setKeyholderMessage]);
 
   const keyholderHandlers = useKeyholderHandlers({
     userId,

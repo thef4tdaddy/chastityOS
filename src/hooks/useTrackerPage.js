@@ -1,5 +1,5 @@
 // src/hooks/useTrackerPage.js
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 /**
  * A custom hook to manage all the logic for the TrackerPage component.
@@ -71,13 +71,13 @@ export const useTrackerPage = (props) => {
     }, [isCageOn, cageOnTime, safeHistory]);
 
     // Handlers for the emergency unlock modal
-    const handleOpenUnlockModal = () => {
+    const handleOpenUnlockModal = useCallback(() => {
         setUnlockMessage('');
         setBackupCodeInput('');
         setShowEmergencyUnlockModal(true);
-    };
+    }, []);
 
-    const handleAttemptEmergencyUnlock = async () => {
+    const handleAttemptEmergencyUnlock = useCallback(async () => {
         if (!backupCodeInput) return;
         setUnlockMessage('Verifying code...');
         const result = await handleEmergencyUnlock(backupCodeInput);
@@ -85,7 +85,7 @@ export const useTrackerPage = (props) => {
         if (result.success && !result.revealedCode) {
             setTimeout(() => { setShowEmergencyUnlockModal(false); }, 2500);
         }
-    };
+    }, [backupCodeInput, handleEmergencyUnlock]);
 
     // Return everything the UI component needs
     return {
