@@ -226,7 +226,6 @@ export interface DBSettings extends DBBase {
   exportFormat?: string;
 
   // Security
-  twoFactorEnabled?: boolean;
   sessionTimeout?: number;
   requirePasswordForSensitive?: boolean;
   emergencyContacts?: string[];
@@ -247,7 +246,6 @@ export interface DBSettings extends DBBase {
   };
 
   // Additional timestamp properties used in useSettings.ts
-  updatedAt?: Date;
   createdAt?: Date;
 }
 

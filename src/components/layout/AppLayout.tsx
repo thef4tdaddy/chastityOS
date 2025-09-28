@@ -91,12 +91,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {isMobile && (
-        <BottomNavigation
-          items={mobileNavItems}
-          currentPath={location.pathname}
-        />
-      )}
+      {isMobile && <BottomNavigation items={mobileNavItems} />}
 
       <AchievementNotifications
         unreadNotifications={unreadNotifications}

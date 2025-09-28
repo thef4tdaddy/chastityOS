@@ -14,7 +14,7 @@ interface AchievementToastProps {
   onClose: () => void;
 }
 
-const AchievementToast: React.FC<AchievementToastProps> = ({
+export const AchievementToast: React.FC<AchievementToastProps> = ({
   achievement,
   onClose,
 }) => (
