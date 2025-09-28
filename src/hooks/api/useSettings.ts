@@ -109,7 +109,7 @@ interface ExportDataOptions {
 
 /**
  * Get user settings
- * Fixes: SettingsPage.tsx:696 (settingsDBService.findByUserId)
+ * Fixes: SettingsPage.tsx:696 (settingsDBService.getSettings)
  * Impact: Entire 780-line settings page becomes functional
  */
 export function useUserSettings(userId: string) {
@@ -275,7 +275,7 @@ export function useAccountMutations() {
 
         // This would integrate with auth service for 2FA setup
         // For now, just update settings
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -296,7 +296,7 @@ export function useAccountMutations() {
       mutationFn: async ({ userId }: { userId: string }) => {
         logger.info("Disabling 2FA", { userId });
 
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -361,7 +361,7 @@ export function usePrivacyMutations() {
           settings: privacySettings,
         });
 
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
