@@ -51,7 +51,11 @@ export const SpecialChallengeSection: React.FC<
       await joinChallenge(challengeType);
     } catch (err) {
       // Error is handled by the hook
-      logger.error("Failed to join challenge:", err);
+      logger.error(
+        "Failed to join challenge",
+        { error: err },
+        "SpecialChallengeSection",
+      );
     }
   };
 

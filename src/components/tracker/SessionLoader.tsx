@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
-import { sessionPersistenceService } from "../../services";
-import type { SessionRestorationResult } from "../../services/SessionPersistenceService";
+import { useSessionPersistence } from "../../hooks/useSessionPersistence";
+import { logger } from "../../utils/logging";
+
+// Define local interface to avoid restricted import
+interface SessionRestorationResult {
+  success: boolean;
+  error?: string;
+  wasRestored: boolean;
+  [key: string]: unknown;
+}
 
 interface SessionLoaderProps {
   userId: string;
@@ -14,18 +22,18 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
   onSessionRestored,
   onInitialized,
 }) => {
-  const [isRestoring, setIsRestoring] = useState(true);
-  const [restorationError, setRestorationError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const { initializeSession, isInitializing, error } = useSessionPersistence();
 
   useEffect(() => {
-    const initializeSession = async () => {
+    const initializeSessionState = async () => {
+      if (!userId) return;
+
       try {
         setProgress(25);
 
-        // Initialize session state
-        const result =
-          await sessionPersistenceService.initializeSessionState(userId);
+        // Initialize session state using the hook
+        const result = await initializeSession(userId);
         setProgress(75);
 
         if (result.wasRestored) {
@@ -33,22 +41,21 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
         }
 
         setProgress(100);
-        setIsRestoring(false);
         onInitialized();
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
-        setRestorationError(errorMessage);
-        setIsRestoring(false);
+        // Error is already handled by the hook
+        logger.error(
+          "Session initialization failed",
+          { error },
+          "SessionLoader",
+        );
       }
     };
 
-    if (userId) {
-      initializeSession();
-    }
-  }, [userId, onSessionRestored, onInitialized]);
+    initializeSessionState();
+  }, [userId, initializeSession, onSessionRestored, onInitialized]);
 
-  if (restorationError) {
+  if (error) {
     return (
       <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-red-900/50 border border-red-500 rounded-lg p-6 max-w-md text-center">
@@ -56,7 +63,7 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
           <h3 className="text-lg font-semibold text-red-300 mb-2">
             Session Restoration Failed
           </h3>
-          <p className="text-sm text-red-200 mb-4">{restorationError}</p>
+          <p className="text-sm text-red-200 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
@@ -68,7 +75,7 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
     );
   }
 
-  if (isRestoring) {
+  if (isInitializing) {
     return (
       <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">

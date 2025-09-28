@@ -3,7 +3,7 @@
  * Provides vibration patterns for mobile devices
  */
 import { useCallback } from "react";
-import { logger } from "@/utils/logging";
+import { logger } from "../../utils/logging";
 
 interface HapticFeedbackReturn {
   light: () => void;
@@ -26,7 +26,7 @@ export const useHapticFeedback = (): HapticFeedbackReturn => {
       try {
         navigator.vibrate(pattern);
       } catch (error) {
-        logger.warn("Haptic feedback failed:", error);
+        logger.warn("Haptic feedback failed", { error }, "useHapticFeedback");
       }
     },
     [isSupported],
@@ -77,5 +77,3 @@ export const useHapticFeedback = (): HapticFeedbackReturn => {
     isSupported,
   };
 };
-
-export default useHapticFeedback;
