@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { logger } from "../../utils/logging";
+import type { User } from "../../types";
 
 // Profile interface - keeping from original
 export interface PublicProfile {
@@ -88,7 +89,7 @@ const mockProfile: PublicProfile = {
   ],
 };
 
-export const usePublicProfile = (username?: string, currentUser?: any) => {
+export const usePublicProfile = (username?: string, currentUser?: User) => {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

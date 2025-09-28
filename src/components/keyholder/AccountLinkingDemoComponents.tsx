@@ -101,13 +101,7 @@ const KeyholderInfo: React.FC<{ activeKeyholder: AdminRelationship }> = ({
   activeKeyholder,
 }) => (
   <div className="text-sm text-gray-300 mb-3">
-    <p>
-      Connected:{" "}
-      {formatDistanceToNow(
-        activeKeyholder.acceptedAt || activeKeyholder.createdAt,
-      )}{" "}
-      ago
-    </p>
+    <p>Connected: {formatDistanceToNow(activeKeyholder.establishedAt)} ago</p>
     <p>
       Status: <span className="text-green-400">Active</span>
     </p>
@@ -215,7 +209,7 @@ const InviteCodeCard: React.FC<{
   <div className="p-3 bg-gray-700 rounded border flex items-center justify-between">
     <div>
       <div className="font-mono text-purple-300 font-bold text-lg">
-        {invite.code}
+        {invite.id}
       </div>
       <div className="text-xs text-gray-400">
         <div>Created: {formatDistanceToNow(invite.createdAt)} ago</div>
@@ -224,7 +218,7 @@ const InviteCodeCard: React.FC<{
     </div>
     <div className="flex gap-2">
       <button
-        onClick={() => copyToClipboard(invite.code)}
+        onClick={() => copyToClipboard(invite.id)}
         className="text-purple-400 hover:text-purple-300 p-1"
         title="Copy code"
       >
@@ -330,11 +324,7 @@ const SubmissiveCard: React.FC<{ relationship: AdminRelationship }> = ({
       <div className="text-sm">
         <div className="text-green-400">Active Submissive</div>
         <div className="text-xs text-gray-400">
-          Connected:{" "}
-          {formatDistanceToNow(
-            relationship.acceptedAt || relationship.createdAt,
-          )}{" "}
-          ago
+          Connected: {formatDistanceToNow(relationship.establishedAt)} ago
         </div>
       </div>
       <button className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30">
