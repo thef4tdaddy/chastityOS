@@ -89,9 +89,7 @@ const TrackerPage: React.FC = () => {
   // Session persistence state
   const {
     isInitializing,
-    restorationResult,
     error: persistenceError,
-    isSessionRestored,
     backupSession,
     startHeartbeat,
     stopHeartbeat,

@@ -8,6 +8,7 @@ import {
   FaSpinner,
 } from "@/utils/iconImport";
 import { useSpecialChallenges } from "@/hooks/useSpecialChallenges";
+import { logger } from "@/utils/logging";
 
 interface SpecialChallengeSectionProps {
   userId: string | null;
@@ -50,7 +51,7 @@ export const SpecialChallengeSection: React.FC<
       await joinChallenge(challengeType);
     } catch (err) {
       // Error is handled by the hook
-      console.error("Failed to join challenge:", err);
+      logger.error("Failed to join challenge:", err);
     }
   };
 

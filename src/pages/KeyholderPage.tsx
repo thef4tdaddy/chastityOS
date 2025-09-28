@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuthState } from "../contexts";
 import { useKeyholderStore } from "../stores/keyholderStore";
-import { sessionDBService, taskDBService } from "../services/database";
-import type { DBSession, DBTask } from "../types/database";
+import { sessionDBService } from "../services/database";
+import type { DBSession } from "../types/database";
 import {
   KeyholderPasswordUnlock,
   AccountLinkingPreview,
@@ -23,7 +23,6 @@ const KeyholderPage: React.FC = () => {
     (state) => state.lockKeyholderControls,
   );
   const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
-  const [tasks, setTasks] = useState<DBTask[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,13 +31,11 @@ const KeyholderPage: React.FC = () => {
 
       try {
         setLoading(true);
-        const [session, userTasks] = await Promise.all([
+        const [session] = await Promise.all([
           sessionDBService.getCurrentSession(user.uid),
-          taskDBService.findByUserId(user.uid),
         ]);
 
         setCurrentSession(session || null);
-        setTasks(userTasks);
       } catch (error) {
         logger.error("Error fetching keyholder data:", error, "KeyholderPage");
       } finally {

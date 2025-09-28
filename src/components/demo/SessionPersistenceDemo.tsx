@@ -36,7 +36,7 @@ export const SessionPersistenceDemo: React.FC = () => {
         const parsed = JSON.parse(backup);
         setBackupState(parsed);
         addLog("🔄 Backup state loaded from localStorage");
-      } catch (error) {
+      } catch {
         addLog("❌ Failed to parse backup state");
       }
     }

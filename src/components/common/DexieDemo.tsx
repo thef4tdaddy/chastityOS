@@ -247,8 +247,6 @@ const useTaskManagement = (
         assignedBy: "submissive",
         createdAt: new Date(),
         category: "general",
-        type: "manual",
-        syncStatus: "pending",
       };
 
       const createdTaskId = await createWithSync("tasks", newTask);
