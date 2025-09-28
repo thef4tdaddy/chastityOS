@@ -7,6 +7,7 @@ import { useDexieSync } from "@/hooks/useDexieSync";
 import { useOfflineDemo } from "@/hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
+import type { User } from "firebase/auth";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {
@@ -201,11 +202,11 @@ const TaskList: React.FC<TaskListProps> = ({
 
 // Custom hook for task management
 const useTaskManagement = (
-  user: any,
-  createWithSync: any,
-  updateWithSync: any,
-  deleteWithSync: any,
-  findByUserId: any,
+  user: User | null,
+  createWithSync: <T>(service: string, data: T) => Promise<string>,
+  updateWithSync: <T>(service: string, id: string, updates: T) => Promise<void>,
+  deleteWithSync: (service: string, id: string) => Promise<void>,
+  findByUserId: (service: string, userId: string) => Promise<DBTask[]>,
 ) => {
   const [tasks, setTasks] = useState<DBTask[]>([]);
   const [newTaskText, setNewTaskText] = useState("");

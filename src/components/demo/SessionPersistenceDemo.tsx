@@ -31,7 +31,7 @@ export const SessionPersistenceDemo: React.FC = () => {
 
   // Heartbeat simulation
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let interval: number | null = null;
 
     if (isHeartbeatActive && demoSession) {
       interval = setInterval(() => {
