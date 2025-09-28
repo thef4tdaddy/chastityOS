@@ -6,13 +6,6 @@ import React from "react";
 import { useNotificationStore } from "../../stores";
 import { Notification } from "../../stores/notificationStore";
 
-// Interface for notification actions used in this component
-interface NotificationAction {
-  label: string;
-  handler: () => void;
-  style?: "danger" | "secondary" | "primary";
-}
-
 // Simple icons for notification types
 const NotificationIcon: React.FC<{ type: string }> = ({ type }) => {
   switch (type) {

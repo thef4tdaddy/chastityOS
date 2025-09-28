@@ -47,8 +47,8 @@ export const useAccountLinking = () => {
     showPermissionEditor: false,
   });
 
-  // Helper function to update loading state
-  const updateLoadingState = useCallback(
+  // Helper function to update loading state (reserved for future use)
+  const _updateLoadingState = useCallback(
     (
       isLoading: boolean,
       errorField: keyof AccountLinkingState,

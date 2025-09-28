@@ -4,7 +4,7 @@
  * Built on top of existing SessionDBService and sync infrastructure
  */
 import { serviceLogger } from "../utils/logging";
-import { sessionDBService, db } from "./database";
+import { sessionDBService } from "./database";
 import { firebaseSync } from "./sync";
 import type { DBSession } from "../types/database";
 
@@ -426,8 +426,8 @@ export class SessionPersistenceService {
 
       // If session was paused during interruption, adjust pause time
       if (backup.pauseState?.isPaused && backup.pauseState.pauseStartTime) {
-        const pauseStart = new Date(backup.pauseState.pauseStartTime);
-        const interruptionStart = new Date(backup.lastHeartbeat!);
+        const _pauseStart = new Date(backup.pauseState.pauseStartTime);
+        const _interruptionStart = new Date(backup.lastHeartbeat!);
 
         // Only count the time from interruption as additional pause time
         const additionalPauseTime = Math.max(

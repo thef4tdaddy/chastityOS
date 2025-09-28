@@ -71,7 +71,7 @@ const mockRules: ChastityRule[] = [
 ];
 
 const RulesPage: React.FC = () => {
-  const { user } = useAuthState();
+  const { user: _user } = useAuthState();
   const [rules, setRules] = useState<ChastityRule[]>(mockRules);
   const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
   const [showEditor, setShowEditor] = useState(false);

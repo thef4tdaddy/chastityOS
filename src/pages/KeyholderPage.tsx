@@ -23,7 +23,7 @@ const KeyholderPage: React.FC = () => {
     (state) => state.lockKeyholderControls,
   );
   const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
-  const [tasks, setTasks] = useState<DBTask[]>([]);
+  const [_tasks, setTasks] = useState<DBTask[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

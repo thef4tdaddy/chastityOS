@@ -41,14 +41,14 @@ const mockRewardsAndPunishments: RewardPunishmentLog[] = [
 ];
 
 const RewardsPunishmentsPage: React.FC = () => {
-  const { user } = useAuthState();
+  const { user: _user } = useAuthState();
   const [logs, setLogs] = useState<RewardPunishmentLog[]>(
     mockRewardsAndPunishments,
   );
   const [filter, setFilter] = useState<"all" | "rewards" | "punishments">(
     "all",
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
 
   const filteredLogs = logs
     .filter((log) => {
