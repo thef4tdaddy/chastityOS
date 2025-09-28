@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { serverTimestamp } from 'firebase/firestore';
 import { useAuth } from './useAuth';
 import { useSettings } from './useSettings';
@@ -28,13 +28,13 @@ export const useChastityState = () => {
   
   // FIX: Destructure tasksState to isolate the `tasks` array from the other properties.
   const tasksState = useTasks(userId, isAuthReady);
-  const { tasks, ...otherTaskState } = tasksState;
+  const { tasks, addTask, updateTask, deleteTask, ...otherTaskState } = tasksState;
   
-  const sessionObjectForHooks = {
+  const sessionObjectForHooks = useMemo(() => ({
       isChastityOn: sessionState.isCageOn,
       chastityStartTimestamp: sessionState.cageOnTime,
       requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
-  };
+  }), [sessionState.isCageOn, sessionState.cageOnTime, sessionState.requiredKeyholderDurationSeconds]);
 
   const personalGoalState = usePersonalGoal({
     userId,
@@ -95,24 +95,24 @@ export const useChastityState = () => {
   const keyholderHandlers = useKeyholderHandlers({
     userId,
     tasks: tasks, // Pass the isolated tasks array
-    addTask: tasksState.addTask,
-    updateTask: tasksState.updateTask,
-    deleteTask: tasksState.deleteTask, // Pass the delete function
+    addTask: addTask,
+    updateTask: updateTask,
+    deleteTask: deleteTask, // Pass the delete function
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   });
 
   const handleSubmitForReview = useCallback(async (taskId, note) => {
-    if (!tasksState.updateTask) {
+    if (!updateTask) {
       console.error("updateTask function is not available.");
       return;
     }
-    await tasksState.updateTask(taskId, {
+    await updateTask(taskId, {
       status: 'pending_approval',
       submissiveNote: note,
       submittedAt: serverTimestamp()
     });
-  }, [tasksState]);
+  }, [updateTask]);
 
   useEffect(() => {
     const checkOverdueTasks = () => {
