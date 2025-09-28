@@ -119,14 +119,16 @@ export function useUserSettings(userId: string) {
       logger.info("Fetching user settings", { userId });
 
       try {
-        const settings = await settingsDBService.findByUserId(userId);
+        const settingsArray = await settingsDBService.findByUserId(userId);
 
-        if (!settings) {
+        if (!settingsArray || settingsArray.length === 0) {
           logger.info("No settings found for user, will create defaults", {
             userId,
           });
           return null;
         }
+
+        const settings = settingsArray[0];
 
         logger.info("User settings retrieved successfully", {
           userId,
@@ -159,7 +161,11 @@ export function useSettingsSection(userId: string, section: SettingsSection) {
     queryFn: async () => {
       logger.info("Fetching settings section", { userId, section });
 
-      const settings = await settingsDBService.findByUserId(userId);
+      const settingsArray = await settingsDBService.findByUserId(userId);
+      if (!settingsArray || settingsArray.length === 0) return null;
+
+      // Get the first (and should be only) settings record for this user
+      const settings = settingsArray[0];
       if (!settings) return null;
 
       // Extract just the requested section
@@ -194,7 +200,10 @@ export function useUpdateSettings() {
 
       try {
         // Get existing settings or create defaults
-        let existingSettings = await settingsDBService.findByUserId(userId);
+        let settingsResult = await settingsDBService.findByUserId(userId);
+        let existingSettings = Array.isArray(settingsResult)
+          ? settingsResult[0]
+          : settingsResult;
 
         if (!existingSettings) {
           // Create default settings if none exist
