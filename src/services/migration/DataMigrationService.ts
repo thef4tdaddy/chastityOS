@@ -22,7 +22,6 @@ import {
   RelationshipEvent,
   RelationshipTaskStatus,
 } from "../../types/relationships";
-import type { TaskStatus, EventType } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
 import { generateUUID } from "../../utils";
 

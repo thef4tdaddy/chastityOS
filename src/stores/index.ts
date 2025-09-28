@@ -52,15 +52,9 @@ export {
   useNotificationActions,
   useErrorHandler,
   useSuccessHandler,
+  type Notification,
 } from "./notificationStore";
-export type {
-  NotificationState,
-  NotificationActions,
-  NotificationStore,
-  NotificationConfig,
-  NotificationType,
-  NotificationAction,
-} from "./notificationStore";
+export type { NotificationState, Notification } from "./notificationStore";
 
 // Form Store - Form state, validation, dirty tracking
 export {

@@ -126,7 +126,12 @@ export interface DBTask extends DBBase {
 }
 
 export interface DBGoal extends DBBase {
-  type: "duration" | "task_completion" | "behavioral" | "milestone";
+  type:
+    | "duration"
+    | "task_completion"
+    | "behavioral"
+    | "milestone"
+    | "special_challenge";
   title: string;
   description?: string;
   targetValue: number;
@@ -139,6 +144,10 @@ export interface DBGoal extends DBBase {
   dueDate?: Date;
   createdBy: "submissive" | "keyholder";
   isPublic: boolean;
+  // Special challenge fields
+  challengeType?: "locktober" | "no_nut_november";
+  challengeYear?: number;
+  isSpecialChallenge?: boolean;
 }
 
 export interface DBSettings extends DBBase {

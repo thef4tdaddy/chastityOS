@@ -5,7 +5,13 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
+<<<<<<< HEAD
 import { DBEvent, EventFilters } from "../../types/database";
+=======
+import { Event } from "../../types/events";
+import { EventType } from "../../types/events";
+import { DBEvent } from "../../types/database";
+>>>>>>> origin/nightly
 import { logger } from "../../utils/logging";
 
 /**
@@ -22,6 +28,21 @@ import { logger } from "../../utils/logging";
  * Strategy: Dexie-first write, Firebase background sync
  */
 
+// Utility function to convert Event to DBEvent format
+const eventToDBEvent = (
+  event: Event,
+): Omit<DBEvent, "lastModified" | "syncStatus"> => {
+  return {
+    id: event.id,
+    userId: event.userId,
+    type: event.type,
+    timestamp: event.timestamp,
+    details: event.details,
+    isPrivate: false, // Default value, can be overridden
+    sessionId: undefined, // Can be set if available
+  };
+};
+
 // Query Keys
 export const eventKeys = {
   all: ["events"] as const,
@@ -37,20 +58,20 @@ export const eventKeys = {
 
 // Types
 interface EventFilters {
-  type?: string;
+  type?: EventType;
   startDate?: Date;
   endDate?: Date;
   limit?: number;
 }
 
 interface CreateEventData {
-  type: string;
+  type: EventType;
   details: Record<string, any>;
   timestamp?: Date;
 }
 
 interface UpdateEventData {
-  type?: string;
+  type?: EventType;
   details?: Record<string, any>;
   timestamp?: Date;
 }
@@ -263,7 +284,8 @@ export function useCreateEvent() {
       };
 
       // Dexie-first write for immediate UI response
-      await eventDBService.create(newEvent);
+      const dbEvent = eventToDBEvent(newEvent);
+      await eventDBService.create(dbEvent);
 
       logger.info("Event created successfully", {
         eventId,
@@ -329,10 +351,16 @@ export function useUpdateEvent() {
       const updatedEvent: DBEvent = {
         ...existingEvent,
         ...updates,
+<<<<<<< HEAD
         lastModified: new Date(),
+=======
+        createdAt: existingEvent.createdAt || new Date(),
+        updatedAt: new Date(),
+>>>>>>> origin/nightly
       };
 
-      await eventDBService.update(eventId, updatedEvent);
+      const dbUpdatedEvent = eventToDBEvent(updatedEvent);
+      await eventDBService.update(eventId, dbUpdatedEvent);
 
       logger.info("Event updated successfully", { eventId, userId });
 

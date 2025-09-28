@@ -136,7 +136,9 @@ export function useTaskMutations() {
         (oldTasks: DBTask[] | undefined) => {
           if (!oldTasks) return oldTasks;
           return oldTasks.map((task) =>
-            task.id === variables.taskId ? { ...task, ...data } : task,
+            task.id === variables.taskId
+              ? { ...task, ...(data as Partial<DBTask>) }
+              : task,
           );
         },
       );
@@ -216,7 +218,9 @@ export function useTaskMutations() {
         (oldTasks: DBTask[] | undefined) => {
           if (!oldTasks) return oldTasks;
           return oldTasks.map((task) =>
-            task.id === variables.taskId ? { ...task, ...data } : task,
+            task.id === variables.taskId
+              ? { ...task, ...(data as Partial<DBTask>) }
+              : task,
           );
         },
       );
