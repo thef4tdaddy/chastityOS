@@ -98,21 +98,24 @@ export function useRelationshipValidation(): RelationshipValidationState &
     [],
   );
 
-  const validatePermissionsForm = useCallback((permissions: KeyholderPermissions) => {
-    const errors: string[] = [];
+  const validatePermissionsForm = useCallback(
+    (permissions: KeyholderPermissions) => {
+      const errors: string[] = [];
 
-    // Add specific validation rules for permissions
-    if (typeof permissions !== "object" || permissions === null) {
-      errors.push("Permissions must be an object");
-    }
+      // Add specific validation rules for permissions
+      if (typeof permissions !== "object" || permissions === null) {
+        errors.push("Permissions must be an object");
+      }
 
-    // Add more specific validation as needed based on RelationshipPermissions type
+      // Add more specific validation as needed based on RelationshipPermissions type
 
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  }, []);
+      return {
+        isValid: errors.length === 0,
+        errors,
+      };
+    },
+    [],
+  );
 
   const clearError = useCallback(() => {
     clearErrorFn(setState);

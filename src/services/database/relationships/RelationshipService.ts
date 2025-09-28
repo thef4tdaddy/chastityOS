@@ -45,7 +45,7 @@ class RelationshipService {
 
   subscribeToUserRelationships(
     userId: string,
-    callback: (relationships: Relationship[]) => void
+    callback: (relationships: Relationship[]) => void,
   ): Unsubscribe {
     return relationshipCRUDService.subscribeToUserRelationships(
       userId,
@@ -102,7 +102,7 @@ class RelationshipService {
   async checkPermission(
     relationshipId: string,
     userId: string,
-    action: string
+    action: string,
   ) {
     return relationshipRoleService.checkPermission(
       relationshipId,
@@ -147,7 +147,7 @@ class RelationshipService {
 
   validateStatusTransition(
     currentStatus: RelationshipStatus,
-    newStatus: RelationshipStatus
+    newStatus: RelationshipStatus,
   ) {
     return relationshipValidationService.validateStatusTransition(
       currentStatus,
