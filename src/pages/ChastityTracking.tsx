@@ -151,9 +151,11 @@ const TrackerPage: React.FC = () => {
   const showReasonModal = false;
   const showPauseReasonModal = false;
   const _showEmergencyUnlockModal = false;
+  const useRealTimeTimer = false; // Feature flag for real-time timer
 
   // Mock session data for emergency unlock
   const sessionId = "mock-session-123";
+  const userId = user?.uid || "mock-user-123";
 
   const handleEmergencyUnlock = () => {
     // This would typically refresh the session state or redirect
@@ -202,7 +204,6 @@ const TrackerPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-<<<<<<< HEAD
       {/* Session Persistence Loading */}
       {(authLoading || isInitializing) && user?.uid && (
         <SessionLoader
