@@ -108,7 +108,7 @@ const NotificationContainer: React.FC = () => {
   // Group notifications by position
   const notificationsByPosition = notifications.reduce(
     (acc: Record<string, Notification[]>, notification: Notification) => {
-      const position = (notification as any).position || "top-right";
+      const position = notification.position || "top-right";
       if (!acc[position]) {
         acc[position] = [];
       }
