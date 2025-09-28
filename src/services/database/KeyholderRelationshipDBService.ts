@@ -52,7 +52,7 @@ class KeyholderRelationshipDBService extends BaseDBService {
   /**
    * Update record (alias for update method)
    */
-  async update(id: string, data: any): Promise<void> {
+  async update(id: string, data: Partial<KeyholderRelationship>): Promise<void> {
     return await super.update(id, data);
   }
 

@@ -36,7 +36,7 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Queue sync operation (placeholder for sync functionality)
    */
-  private queueSync(operation: string, data: any): void {
+  private queueSync(operation: string, data: Record<string, unknown>): void {
     // TODO: Implement sync queue functionality
     logger.debug("Queuing sync operation", { operation, data });
   }

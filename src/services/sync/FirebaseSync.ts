@@ -13,6 +13,7 @@ import type {
   SyncResult,
   ConflictInfo,
   DBSession,
+  SyncOperation,
 } from "@/types/database";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
@@ -414,11 +415,25 @@ export class FirebaseSync {
 
   /**
    * Apply remote changes to local database
+   * Supports both SyncOperation array and collection-specific data
    */
-  async applyRemoteChanges(changes: any): Promise<void> {
+  async applyRemoteChanges(
+    changesOrCollection: SyncOperation[] | string,
+    data?: Record<string, unknown>[]
+  ): Promise<void> {
     try {
-      logger.debug("Applying remote changes", { changes });
-      // TODO: Implement remote changes application logic
+      if (Array.isArray(changesOrCollection)) {
+        // Handle SyncOperation[] format
+        logger.debug("Applying remote changes", { changes: changesOrCollection });
+        // TODO: Implement remote changes application logic for SyncOperation[]
+      } else {
+        // Handle collection-specific format
+        logger.debug("Applying remote changes for collection", { 
+          collection: changesOrCollection, 
+          data 
+        });
+        // TODO: Implement remote changes application logic for specific collection
+      }
     } catch (error) {
       logger.error("Failed to apply remote changes", { error: error as Error });
       throw error;

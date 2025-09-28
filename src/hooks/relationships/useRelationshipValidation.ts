@@ -7,6 +7,7 @@ import { useAuthState } from "@/contexts/AuthContext";
 import { dataMigrationService } from "@/services/migration/DataMigrationService";
 import { BaseHookState, BaseHookActions } from "./types";
 import { withErrorHandling, createBaseActions } from "./utils";
+import type { KeyholderPermissions } from "@/types/core";
 
 interface RelationshipValidationState extends BaseHookState {
   needsMigration: boolean;
@@ -20,7 +21,7 @@ interface RelationshipValidationActions extends BaseHookActions {
     role: "submissive" | "keyholder";
     message?: string;
   }) => { isValid: boolean; errors: string[] };
-  validatePermissionsForm: (permissions: any) => {
+  validatePermissionsForm: (permissions: KeyholderPermissions) => {
     isValid: boolean;
     errors: string[];
   };
@@ -97,7 +98,7 @@ export function useRelationshipValidation(): RelationshipValidationState &
     [],
   );
 
-  const validatePermissionsForm = useCallback((permissions: any) => {
+  const validatePermissionsForm = useCallback((permissions: KeyholderPermissions) => {
     const errors: string[] = [];
 
     // Add specific validation rules for permissions

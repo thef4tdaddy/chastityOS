@@ -139,6 +139,12 @@ export type RemovalReason = (typeof REMOVAL_REASONS)[number];
 export type PauseReason = (typeof PAUSE_REASONS)[number];
 export type EmergencyUnlockReason = (typeof EMERGENCY_UNLOCK_REASONS)[number];
 
+// Emergency unlock event details
+export interface EmergencyUnlockEventDetails {
+  emergencyReason: EmergencyUnlockReason;
+  additionalNotes?: string;
+}
+
 // Event categories for organization
 export interface EventCategory {
   category: string;
@@ -248,7 +254,7 @@ export interface Event {
   userId: string;
   type: EventType;
   timestamp: Date;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
