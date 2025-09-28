@@ -98,7 +98,7 @@ export function useEventMutations() {
       duration?: number;
       isPrivate?: boolean;
       sessionId?: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
       const { notes, duration, ...restParams } = params;
@@ -243,7 +243,7 @@ export function useEventMutations() {
         duration?: number;
         isPrivate?: boolean;
         sessionId?: string;
-        metadata?: Record<string, any>;
+        metadata?: Record<string, unknown>;
       }>;
     }) => {
       // 1. Create all events in local Dexie

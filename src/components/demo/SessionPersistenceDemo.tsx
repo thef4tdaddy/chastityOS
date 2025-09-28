@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { FaPlay, FaStop, FaPause, FaSync, FaTrash } from "react-icons/fa";
 
+interface DemoSession {
+  id: string;
+  startTime: string;
+  isPaused: boolean;
+}
+
+interface BackupState {
+  sessionId: string;
+  startTime: string;
+  lastHeartbeat: string;
+  duration: number;
+}
+
 /**
  * Demo component to showcase session persistence functionality
  * This simulates the core session persistence features without requiring
  * the full database and auth infrastructure
  */
 export const SessionPersistenceDemo: React.FC = () => {
-  const [demoSession, setDemoSession] = useState<any>(null);
-  const [backupState, setBackupState] = useState<any>(null);
+  const [demoSession, setDemoSession] = useState<DemoSession | null>(null);
+  const [backupState, setBackupState] = useState<BackupState | null>(null);
   const [heartbeatCount, setHeartbeatCount] = useState(0);
   const [isHeartbeatActive, setIsHeartbeatActive] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
