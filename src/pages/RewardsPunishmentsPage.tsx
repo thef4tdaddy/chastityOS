@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useAuthState } from "../contexts";
 import {
   LogItem,
   RewardPunishmentStats,
@@ -41,14 +40,13 @@ const mockRewardsAndPunishments: RewardPunishmentLog[] = [
 ];
 
 const RewardsPunishmentsPage: React.FC = () => {
-  const { user } = useAuthState();
   const [logs, setLogs] = useState<RewardPunishmentLog[]>(
     mockRewardsAndPunishments,
   );
   const [filter, setFilter] = useState<"all" | "rewards" | "punishments">(
     "all",
   );
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const filteredLogs = logs
     .filter((log) => {

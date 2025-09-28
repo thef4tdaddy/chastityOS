@@ -27,7 +27,7 @@ const TasksPage: React.FC = () => {
         status: "submitted" as TaskStatus,
         // Note: submissiveNote would be handled in task updates
       });
-    } catch (_error) {
+    } catch {
       // Error is already logged in the hook
       // TODO: Add toast notification for user feedback on error
     }
