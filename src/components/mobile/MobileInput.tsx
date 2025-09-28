@@ -15,6 +15,54 @@ interface MobileInputProps
   variant?: "default" | "filled" | "borderless";
 }
 
+// Helper function to get input mode based on type
+const getInputMode = (
+  type: string,
+): React.HTMLAttributes<HTMLInputElement>["inputMode"] => {
+  switch (type) {
+    case "email":
+      return "email";
+    case "tel":
+      return "tel";
+    case "number":
+      return "numeric";
+    case "url":
+      return "url";
+    default:
+      return "text";
+  }
+};
+
+// Helper function to get autocomplete value
+const getAutoComplete = (
+  type: string,
+  existingAutoComplete?: string,
+): string => {
+  if (existingAutoComplete) return existingAutoComplete;
+
+  switch (type) {
+    case "email":
+      return "email";
+    case "tel":
+      return "tel";
+    case "password":
+      return "current-password";
+    default:
+      return "off";
+  }
+};
+
+// Helper function to get border and focus styles
+const getBorderStyles = (error?: string): string => {
+  if (error) return "border-red-500 focus:border-red-500";
+  return "focus:border-purple-500";
+};
+
+// Helper function to get border radius
+const getBorderRadius = (variant: string): string => {
+  return variant !== "borderless" ? "rounded-lg" : "";
+};
+
 export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
   (
     {
@@ -51,8 +99,8 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
     ${variantClasses[variant]}
     ${leftIcon ? "pl-10" : ""}
     ${rightIcon ? "pr-10" : ""}
-    ${error ? "border-red-500 focus:border-red-500" : "focus:border-purple-500"}
-    ${variant !== "borderless" ? "rounded-lg" : ""}
+    ${getBorderStyles(error)}
+    ${getBorderRadius(variant)}
     font-medium
     text-gray-900 dark:text-white
     placeholder-gray-500 dark:placeholder-gray-400
@@ -68,26 +116,9 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
       // Prevent iOS zoom on focus
       style: { fontSize: "16px", ...props.style },
       // Set appropriate input modes for better mobile keyboards
-      inputMode:
-        type === "email"
-          ? ("email" as const)
-          : type === "tel"
-            ? ("tel" as const)
-            : type === "number"
-              ? ("numeric" as const)
-              : type === "url"
-                ? ("url" as const)
-                : ("text" as const),
+      inputMode: getInputMode(type),
       // Optimize autocomplete
-      autoComplete:
-        props.autoComplete ||
-        (type === "email"
-          ? "email"
-          : type === "tel"
-            ? "tel"
-            : type === "password"
-              ? "current-password"
-              : "off"),
+      autoComplete: getAutoComplete(type, props.autoComplete),
     };
 
     return (
