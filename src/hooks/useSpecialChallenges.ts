@@ -233,7 +233,7 @@ export const useSpecialChallenges = (userId: string | null) => {
   // Load challenge status on mount and when userId changes
   useEffect(() => {
     loadChallengeStatus();
-  }, [loadChallengeStatus]);
+  }, [userId, checkChallengeAvailability]);
 
   // Refresh status every hour to check for date changes
   useEffect(() => {

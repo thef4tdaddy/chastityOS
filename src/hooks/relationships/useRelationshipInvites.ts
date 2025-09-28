@@ -87,7 +87,7 @@ export function useRelationshipInvites(): RelationshipInvitesState &
     if (userId) {
       loadPendingRequests();
     }
-  }, [userId, loadPendingRequests]);
+  }, [userId]);
 
   return {
     ...state,
