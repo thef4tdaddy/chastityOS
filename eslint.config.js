@@ -41,6 +41,7 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      'max-lines-per-function': ['warn', { max: 75 }],
     },
   },
 ]
