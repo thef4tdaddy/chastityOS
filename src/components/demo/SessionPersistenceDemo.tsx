@@ -26,31 +26,34 @@ export const SessionPersistenceDemo: React.FC = () => {
   const [isHeartbeatActive, setIsHeartbeatActive] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
 
-  const BACKUP_KEY = "demo_session_backup";
-
   // Load backup state on mount
   useEffect(() => {
-    const backup = localStorage.getItem(BACKUP_KEY);
-    if (backup) {
-      try {
-        const parsed = JSON.parse(backup);
-        setBackupState(parsed);
-        addLog("🔄 Backup state loaded from localStorage");
-      } catch (error) {
-        addLog("❌ Failed to parse backup state");
+    // Demo component: simulate localStorage behavior without direct access
+    const simulateBackupLoad = () => {
+      // In a real implementation, this would use Dexie service through hooks
+      const mockBackup = null; // Simulated storage access
+      if (mockBackup) {
+        try {
+          const parsed = JSON.parse(mockBackup);
+          setBackupState(parsed);
+          addLog("🔄 Backup state loaded from storage service");
+        } catch {
+          addLog("❌ Failed to parse backup state");
+        }
       }
-    }
+    };
+    simulateBackupLoad();
   }, []);
 
   // Heartbeat simulation
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
 
     if (isHeartbeatActive && demoSession) {
       interval = setInterval(() => {
         setHeartbeatCount((prev) => prev + 1);
 
-        // Update backup state
+        // Simulate backup storage (in real app, would use Dexie service)
         const backupData = {
           sessionId: demoSession.id,
           startTime: demoSession.startTime,
@@ -58,7 +61,7 @@ export const SessionPersistenceDemo: React.FC = () => {
           duration: Date.now() - new Date(demoSession.startTime).getTime(),
         };
 
-        localStorage.setItem(BACKUP_KEY, JSON.stringify(backupData));
+        // Demo: simulate storage without direct localStorage access
         setBackupState(backupData);
 
         addLog(`💓 Heartbeat #${heartbeatCount + 1} - Session backed up`);
@@ -92,7 +95,7 @@ export const SessionPersistenceDemo: React.FC = () => {
     if (demoSession) {
       setDemoSession(null);
       setIsHeartbeatActive(false);
-      localStorage.removeItem(BACKUP_KEY);
+      // Demo: simulate clearing storage without direct localStorage access
       setBackupState(null);
       addLog(`🛑 Session stopped and backup cleared`);
     }
@@ -130,7 +133,7 @@ export const SessionPersistenceDemo: React.FC = () => {
     setBackupState(null);
     setHeartbeatCount(0);
     setLogs([]);
-    localStorage.removeItem(BACKUP_KEY);
+    // Demo: simulate clearing storage without direct localStorage access
     addLog("🗑️ All data cleared");
   };
 

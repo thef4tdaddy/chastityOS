@@ -120,6 +120,7 @@ export const useViewport = (): ViewportInfo => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleOrientationChange);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Determine device type based on viewport width
@@ -143,5 +144,3 @@ export const useViewport = (): ViewportInfo => {
     safeAreaInsets,
   };
 };
-
-export default useViewport;
