@@ -120,7 +120,8 @@ export const useViewport = (): ViewportInfo => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleOrientationChange);
     };
-  }, []);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [updateViewport, updateSafeAreaInsets]);
 
   // Determine device type based on viewport width
   const isMobile = viewport.innerWidth < MOBILE_BREAKPOINT;
@@ -143,5 +144,3 @@ export const useViewport = (): ViewportInfo => {
     safeAreaInsets,
   };
 };
-
-export default useViewport;
