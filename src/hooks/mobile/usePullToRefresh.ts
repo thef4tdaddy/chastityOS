@@ -5,6 +5,7 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import type { React } from "react";
 import { useHapticFeedback } from "./useHapticFeedback";
+import { logger } from "@/utils/logging";
 
 interface PullToRefreshOptions {
   threshold?: number;
@@ -102,7 +103,7 @@ export const usePullToRefresh = ({
       try {
         await onRefresh();
       } catch (error) {
-        console.error("Pull to refresh failed:", error);
+        logger.error("Pull to refresh failed:", error);
       } finally {
         setIsRefreshing(false);
       }
