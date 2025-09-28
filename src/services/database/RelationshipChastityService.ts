@@ -176,13 +176,13 @@ class RelationshipChastityService {
         {
           id: sessionId,
           relationshipId,
-          startTime: serverTimestamp() as any,
+          startTime: serverTimestamp() as Timestamp,
           duration: 0,
           effectiveDuration: 0,
           events: [
             {
               type: "start",
-              timestamp: serverTimestamp() as any,
+              timestamp: serverTimestamp() as Timestamp,
               initiatedBy:
                 userId === chastityData?.keyholderId
                   ? "keyholder"
@@ -289,7 +289,7 @@ class RelationshipChastityService {
       // Add end event
       const endEvent: SessionEvent = {
         type: "end",
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         initiatedBy:
           userId === (await this.getKeyholderId(relationshipId))
             ? "keyholder"
@@ -381,7 +381,7 @@ class RelationshipChastityService {
 
       const pauseEvent: SessionEvent = {
         type: "pause",
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         initiatedBy: "submissive",
         reason: pauseReason,
       };
@@ -463,7 +463,7 @@ class RelationshipChastityService {
 
       const resumeEvent: SessionEvent = {
         type: "resume",
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         initiatedBy: "submissive",
       };
 
@@ -537,7 +537,7 @@ class RelationshipChastityService {
         text: taskData.text,
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
-        dueDate: taskData.dueDate ? (taskData.dueDate as any) : undefined,
+        dueDate: taskData.dueDate ? (taskData.dueDate as Timestamp) : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
       };
@@ -690,7 +690,7 @@ class RelationshipChastityService {
         id: eventId,
         relationshipId,
         type: eventData.type,
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         details: eventData.details,
         loggedBy: isKeyholder ? "keyholder" : "submissive",
         isPrivate: eventData.isPrivate || false,
@@ -819,7 +819,7 @@ class RelationshipChastityService {
   subscribeToChastityData(
     relationshipId: string,
     callback: (data: RelationshipChastityData | null) => void,
-  ): Unsubscribe {
+  ): Promise<Unsubscribe> {
     return this.ensureDb().then((db) => {
       return onSnapshot(
         doc(db, "chastityData", relationshipId),
@@ -839,7 +839,7 @@ class RelationshipChastityService {
           });
         },
       );
-    }) as any;
+    });
   }
 
   /**
@@ -848,7 +848,7 @@ class RelationshipChastityService {
   subscribeToTasks(
     relationshipId: string,
     callback: (tasks: RelationshipTask[]) => void,
-  ): Unsubscribe {
+  ): Promise<Unsubscribe> {
     return this.ensureDb().then((db) => {
       return onSnapshot(
         query(
@@ -869,7 +869,7 @@ class RelationshipChastityService {
           });
         },
       );
-    }) as any;
+    });
   }
 }
 
