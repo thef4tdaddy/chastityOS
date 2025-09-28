@@ -5,8 +5,29 @@
 
 import { achievementEngine } from "./AchievementEngine";
 import { achievementDBService } from "./database";
-import { sessionDBService, taskDBService, goalDBService } from "./database";
+import { sessionDBService, goalDBService } from "./database";
 import { logger } from "../utils/logging";
+import type { DBSession, DBGoal, DBAchievement } from "../types/database";
+
+// Type for session event data used in achievements
+export interface SessionEventData {
+  sessionId?: string;
+  duration?: number;
+  startTime?: Date;
+  endTime?: Date;
+  isHardcoreMode?: boolean;
+  goalDuration?: number;
+  actualDuration?: number;
+}
+
+// Type for goal event data used in achievements
+export interface GoalEventData {
+  goalId?: string;
+  type?: string;
+  targetValue?: number;
+  currentValue?: number;
+  completedAt?: Date;
+}
 
 export class AchievementIntegrationService {
   private initialized = false;
@@ -51,12 +72,23 @@ export class AchievementIntegrationService {
   /**
    * Handle session start event
    */
-  async onSessionStart(userId: string, sessionData: any): Promise<void> {
+  async onSessionStart(
+    userId: string,
+    sessionData: SessionEventData,
+  ): Promise<void> {
     try {
+      // Get the full session data if sessionId is provided
+      let fullSessionData: DBSession | undefined = undefined;
+      if (sessionData.sessionId) {
+        fullSessionData = await sessionDBService.findById(
+          sessionData.sessionId,
+        );
+      }
+
       await achievementEngine.processSessionEvent(
         userId,
         "session_start",
-        sessionData,
+        fullSessionData,
       );
       logger.debug(
         `Processed session start for user ${userId}`,
@@ -74,12 +106,23 @@ export class AchievementIntegrationService {
   /**
    * Handle session end event
    */
-  async onSessionEnd(userId: string, sessionData?: any): Promise<void> {
+  async onSessionEnd(
+    userId: string,
+    sessionData?: SessionEventData,
+  ): Promise<void> {
     try {
+      // Get the full session data if sessionId is provided
+      let fullSessionData: DBSession | undefined = undefined;
+      if (sessionData?.sessionId) {
+        fullSessionData = await sessionDBService.findById(
+          sessionData.sessionId,
+        );
+      }
+
       await achievementEngine.processSessionEvent(
         userId,
         "session_end",
-        sessionData,
+        fullSessionData,
       );
       logger.debug(
         `Processed session end for user ${userId}`,
@@ -154,12 +197,21 @@ export class AchievementIntegrationService {
   /**
    * Handle goal completion event
    */
-  async onGoalCompleted(userId: string, goalData?: any): Promise<void> {
+  async onGoalCompleted(
+    userId: string,
+    goalData?: GoalEventData,
+  ): Promise<void> {
     try {
+      // Get the full goal data if goalId is provided
+      let fullGoalData: DBGoal | undefined = undefined;
+      if (goalData?.goalId) {
+        fullGoalData = await goalDBService.findById(goalData.goalId);
+      }
+
       await achievementEngine.processGoalEvent(
         userId,
         "goal_completed",
-        goalData,
+        fullGoalData,
       );
       logger.debug(
         `Processed goal completion for user ${userId}`,
@@ -201,7 +253,7 @@ export class AchievementIntegrationService {
       // This would be called for beta users
       const achievements = await achievementDBService.getAllAchievements();
       const betaAchievement = achievements.find(
-        (a) => a.name === "Beta Tester",
+        (a: DBAchievement) => a.name === "Beta Tester",
       );
 
       if (betaAchievement) {

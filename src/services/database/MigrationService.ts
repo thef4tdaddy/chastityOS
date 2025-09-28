@@ -4,7 +4,16 @@
  */
 
 import { db } from "../storage/ChastityDB";
-import { serviceLogger } from "@/utils/logging";
+import { serviceLogger } from "../../utils/logging";
+import type {
+  DBUser,
+  DBSession,
+  DBEvent,
+  DBTask,
+  DBGoal,
+  DBSettings,
+  DBSyncMeta,
+} from "../../types/database";
 
 const logger = serviceLogger("MigrationService");
 
@@ -27,57 +36,58 @@ export class DBMigrationService {
 
         await db.transaction(
           "rw",
-          db.sessions,
-          db.events,
-          db.tasks,
-          db.goals,
+          [db.sessions, db.events, db.tasks, db.goals],
           async () => {
             // Update sessions without sync status
             const sessions = await db.sessions
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((session) => !session.syncStatus)
               .toArray();
             for (const session of sessions) {
-              await db.sessions.update(session.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (session.id) {
+                await db.sessions.update(session.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
 
             // Update events without sync status
             const events = await db.events
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((event) => !event.syncStatus)
               .toArray();
             for (const event of events) {
-              await db.events.update(event.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (event.id) {
+                await db.events.update(event.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
 
             // Update tasks without sync status
             const tasks = await db.tasks
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((task) => !task.syncStatus)
               .toArray();
             for (const task of tasks) {
-              await db.tasks.update(task.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (task.id) {
+                await db.tasks.update(task.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
 
             // Update goals without sync status
             const goals = await db.goals
-              .where("syncStatus")
-              .equals(undefined)
+              .filter((goal) => !goal.syncStatus)
               .toArray();
             for (const goal of goals) {
-              await db.goals.update(goal.id, {
-                syncStatus: "synced",
-                lastModified: new Date(),
-              });
+              if (goal.id) {
+                await db.goals.update(goal.id, {
+                  syncStatus: "synced",
+                  lastModified: new Date(),
+                });
+              }
             }
           },
         );
@@ -93,13 +103,14 @@ export class DBMigrationService {
 
         await db.transaction("rw", db.events, async () => {
           const events = await db.events
-            .where("isPrivate")
-            .equals(undefined)
+            .filter((event) => event.isPrivate === undefined)
             .toArray();
           for (const event of events) {
-            await db.events.update(event.id, {
-              isPrivate: false, // Default to public for existing events
-            });
+            if (event.id) {
+              await db.events.update(event.id, {
+                isPrivate: false, // Default to public for existing events
+              });
+            }
           }
         });
 
@@ -197,13 +208,13 @@ export class DBMigrationService {
    * Backup database before running migrations
    */
   static async createBackup(): Promise<{
-    users: any[];
-    sessions: any[];
-    events: any[];
-    tasks: any[];
-    goals: any[];
-    settings: any[];
-    syncMeta: any[];
+    users: DBUser[];
+    sessions: DBSession[];
+    events: DBEvent[];
+    tasks: DBTask[];
+    goals: DBGoal[];
+    settings: DBSettings[];
+    syncMeta: DBSyncMeta[];
   }> {
     logger.info("Creating database backup");
 
@@ -233,25 +244,27 @@ export class DBMigrationService {
    * Restore database from backup
    */
   static async restoreFromBackup(backup: {
-    users: any[];
-    sessions: any[];
-    events: any[];
-    tasks: any[];
-    goals: any[];
-    settings: any[];
-    syncMeta: any[];
+    users: DBUser[];
+    sessions: DBSession[];
+    events: DBEvent[];
+    tasks: DBTask[];
+    goals: DBGoal[];
+    settings: DBSettings[];
+    syncMeta: DBSyncMeta[];
   }): Promise<void> {
     logger.info("Restoring database from backup");
 
     await db.transaction(
       "rw",
-      db.users,
-      db.sessions,
-      db.events,
-      db.tasks,
-      db.goals,
-      db.settings,
-      db.syncMeta,
+      [
+        db.users,
+        db.sessions,
+        db.events,
+        db.tasks,
+        db.goals,
+        db.settings,
+        db.syncMeta,
+      ],
       async () => {
         // Clear existing data
         await db.users.clear();

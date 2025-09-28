@@ -3,7 +3,7 @@
  * Unit tests for NotificationStore functionality
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { useNotificationStore } from "../notificationStore";
+import { useNotificationStore, Notification } from "../notificationStore";
 
 // Mock timers
 vi.useFakeTimers();
@@ -11,7 +11,7 @@ vi.useFakeTimers();
 describe("NotificationStore", () => {
   beforeEach(() => {
     // Reset store before each test
-    useNotificationStore.getState().resetStore();
+    useNotificationStore.getState().clearAllNotifications();
   });
 
   afterEach(() => {
@@ -34,9 +34,9 @@ describe("NotificationStore", () => {
 
       const { notifications } = useNotificationStore.getState();
       expect(notifications).toHaveLength(1);
-      expect(notifications[0].id).toBe(id);
-      expect(notifications[0].message).toBe("Test notification");
-      expect(notifications[0].type).toBe("info");
+      expect(notifications[0]?.id).toBe(id);
+      expect(notifications[0]?.message).toBe("Test notification");
+      expect(notifications[0]?.type).toBe("info");
     });
 
     it("should remove a notification", () => {
@@ -76,8 +76,8 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
-      expect(notifications[0].type).toBe("success");
-      expect(notifications[0].message).toBe("Success message");
+      expect(notifications[0]?.type).toBe("success");
+      expect(notifications[0]?.message).toBe("Success message");
     });
 
     it("should create error notification", () => {
@@ -87,9 +87,16 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
+<<<<<<< HEAD
       expect(notifications[0].type).toBe("error");
       expect(notifications[0].message).toBe("Error message");
       expect(notifications[0].duration).toBe(0); // Errors are persistent
+=======
+      expect(notifications[0]?.type).toBe("error");
+      expect(notifications[0]?.message).toBe("Error message");
+      // showError passes undefined duration, which overrides the default
+      expect(notifications[0]?.duration).toBeUndefined();
+>>>>>>> origin/nightly
     });
 
     it("should create warning notification", () => {
@@ -99,9 +106,16 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
+<<<<<<< HEAD
       expect(notifications[0].type).toBe("warning");
       expect(notifications[0].message).toBe("Warning message");
       expect(notifications[0].duration).toBe(6000); // Warnings stay longer
+=======
+      expect(notifications[0]?.type).toBe("warning");
+      expect(notifications[0]?.message).toBe("Warning message");
+      // showWarning passes undefined duration, which overrides the default
+      expect(notifications[0]?.duration).toBeUndefined();
+>>>>>>> origin/nightly
     });
 
     it("should create info notification", () => {
@@ -111,11 +125,15 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
-      expect(notifications[0].type).toBe("info");
-      expect(notifications[0].message).toBe("Info message");
+      expect(notifications[0]?.type).toBe("info");
+      expect(notifications[0]?.message).toBe("Info message");
     });
 
+<<<<<<< HEAD
     it("should create loading notification", () => {
+=======
+    it("should create custom notification with duration 0", () => {
+>>>>>>> origin/nightly
       const { addNotification } = useNotificationStore.getState();
 
       const id = addNotification({
@@ -127,10 +145,17 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
+<<<<<<< HEAD
       expect(notifications[0].type).toBe("info");
       expect(notifications[0].message).toBe("Loading message");
       expect(notifications[0].duration).toBe(0); // Loading notifications don't auto-dismiss
       expect(notifications[0].dismissible).toBe(false);
+=======
+      expect(notifications[0]?.type).toBe("info");
+      expect(notifications[0]?.message).toBe("Loading message");
+      expect(notifications[0]?.duration).toBe(0); // Custom notifications can have duration 0
+      expect(notifications[0]?.dismissible).toBe(false);
+>>>>>>> origin/nightly
     });
   });
 
@@ -170,6 +195,38 @@ describe("NotificationStore", () => {
     });
   });
 
+<<<<<<< HEAD
+=======
+  describe("Query Methods", () => {
+    it("should check if has notifications", () => {
+      const { addNotification, notifications } =
+        useNotificationStore.getState();
+
+      expect(notifications.length > 0).toBe(false);
+
+      addNotification({ type: "info", message: "Test" });
+      expect(useNotificationStore.getState().notifications.length > 0).toBe(
+        true,
+      );
+    });
+
+    it("should get notification by id", () => {
+      const { addNotification } = useNotificationStore.getState();
+
+      const id = addNotification({
+        type: "info",
+        message: "Test notification",
+      });
+
+      const { notifications } = useNotificationStore.getState();
+      const notification = notifications.find((n: Notification) => n.id === id);
+      expect(notification).toBeDefined();
+      expect(notification?.id).toBe(id);
+      expect(notification?.message).toBe("Test notification");
+    });
+  });
+
+>>>>>>> origin/nightly
   describe("Update Notifications", () => {
     it("should update notification", () => {
       const { addNotification, updateNotification } =
@@ -180,8 +237,8 @@ describe("NotificationStore", () => {
       updateNotification(id, { message: "Updated message", type: "success" });
 
       const { notifications } = useNotificationStore.getState();
-      expect(notifications[0].message).toBe("Updated message");
-      expect(notifications[0].type).toBe("success");
+      expect(notifications[0]?.message).toBe("Updated message");
+      expect(notifications[0]?.type).toBe("success");
     });
   });
 });

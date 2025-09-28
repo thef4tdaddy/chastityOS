@@ -1,25 +1,45 @@
 /**
  * Achievement Database Service
- * Handles CRUD operations for achievements, user achievements, and progress tracking
+ * Backward compatibility wrapper for the new modular achievement services
+ * @deprecated Use individual services from './achievements/' for new code
  */
 
 import { BaseDBService } from "./BaseDBService";
-import { ChastityDB } from "../storage/ChastityDB";
+import { db } from "../storage/ChastityDB";
 import {
   DBAchievement,
   DBUserAchievement,
   DBAchievementProgress,
   DBAchievementNotification,
+  DBLeaderboardEntry,
   AchievementCategory,
   AchievementDifficulty,
+  LeaderboardPrivacy,
 } from "../../types";
 import { logger } from "../../utils/logging";
 
 export class AchievementDBService extends BaseDBService {
-  private achievementsTable = ChastityDB.achievements;
-  private userAchievementsTable = ChastityDB.userAchievements;
-  private achievementProgressTable = ChastityDB.achievementProgress;
-  private achievementNotificationsTable = ChastityDB.achievementNotifications;
+  protected db = db; // Use the db instance instead of ChastityDB.getInstance()
+  protected achievementsTable = this.db.achievements;
+  protected userAchievementsTable = this.db.userAchievements;
+  protected achievementProgressTable = this.db.achievementProgress;
+  protected achievementNotificationsTable = this.db.achievementNotifications;
+  protected leaderboardEntriesTable = this.db.leaderboardEntries;
+
+  /**
+   * Generate a unique ID for achievement-related records
+   */
+  private generateId(): string {
+    return `ach_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Queue sync operation (placeholder for sync functionality)
+   */
+  private queueSync(operation: string, data: any): void {
+    // TODO: Implement sync queue functionality
+    logger.debug("Queuing sync operation", { operation, data });
+  }
 
   // ==================== ACHIEVEMENT CRUD ====================
 
@@ -38,12 +58,7 @@ export class AchievementDBService extends BaseDBService {
       };
 
       await this.achievementsTable.add(achievementData);
-      await this.queueSync(
-        "achievements",
-        "create",
-        achievementData.id,
-        achievementData,
-      );
+      await this.queueSync("achievements:create", achievementData);
 
       logger.info(
         `Achievement created: ${achievementData.name}`,
@@ -99,7 +114,7 @@ export class AchievementDBService extends BaseDBService {
       return await this.achievementsTable
         .where("category")
         .equals(category)
-        .and((achievement) => achievement.isActive)
+        .and((achievement: DBAchievement) => achievement.isActive)
         .toArray();
     } catch (error) {
       logger.error(
@@ -127,7 +142,7 @@ export class AchievementDBService extends BaseDBService {
       const existing = await this.userAchievementsTable
         .where("userId")
         .equals(userId)
-        .and((ua) => ua.achievementId === achievementId)
+        .and((ua: DBUserAchievement) => ua.achievementId === achievementId)
         .first();
 
       if (existing) {
@@ -151,12 +166,7 @@ export class AchievementDBService extends BaseDBService {
       };
 
       await this.userAchievementsTable.add(userAchievement);
-      await this.queueSync(
-        "userAchievements",
-        "create",
-        userAchievement.id,
-        userAchievement,
-      );
+      await this.queueSync("userAchievements:create", userAchievement);
 
       logger.info(
         `Achievement ${achievementId} awarded to user ${userId}`,
@@ -202,7 +212,7 @@ export class AchievementDBService extends BaseDBService {
       return await this.userAchievementsTable
         .where("userId")
         .equals(userId)
-        .and((ua) => ua.isVisible)
+        .and((ua: DBUserAchievement) => ua.isVisible)
         .toArray();
     } catch (error) {
       logger.error(
@@ -225,7 +235,7 @@ export class AchievementDBService extends BaseDBService {
       const userAchievement = await this.userAchievementsTable
         .where("userId")
         .equals(userId)
-        .and((ua) => ua.achievementId === achievementId)
+        .and((ua: DBUserAchievement) => ua.achievementId === achievementId)
         .first();
 
       if (!userAchievement) {
@@ -237,12 +247,7 @@ export class AchievementDBService extends BaseDBService {
       userAchievement.syncStatus = "pending";
 
       await this.userAchievementsTable.put(userAchievement);
-      await this.queueSync(
-        "userAchievements",
-        "update",
-        userAchievement.id,
-        userAchievement,
-      );
+      await this.queueSync("userAchievements:update", userAchievement);
 
       logger.info(
         `Achievement ${achievementId} visibility toggled for user ${userId}`,
@@ -273,7 +278,7 @@ export class AchievementDBService extends BaseDBService {
       const existing = await this.achievementProgressTable
         .where("userId")
         .equals(userId)
-        .and((ap) => ap.achievementId === achievementId)
+        .and((ap: DBAchievementProgress) => ap.achievementId === achievementId)
         .first();
 
       const progressData: DBAchievementProgress = {
@@ -289,20 +294,10 @@ export class AchievementDBService extends BaseDBService {
 
       if (existing) {
         await this.achievementProgressTable.put(progressData);
-        await this.queueSync(
-          "achievementProgress",
-          "update",
-          progressData.id,
-          progressData,
-        );
+        await this.queueSync("achievementProgress:update", progressData);
       } else {
         await this.achievementProgressTable.add(progressData);
-        await this.queueSync(
-          "achievementProgress",
-          "create",
-          progressData.id,
-          progressData,
-        );
+        await this.queueSync("achievementProgress:create", progressData);
       }
 
       // If completed, award the achievement
@@ -397,12 +392,7 @@ export class AchievementDBService extends BaseDBService {
       };
 
       await this.achievementNotificationsTable.add(notification);
-      await this.queueSync(
-        "achievementNotifications",
-        "create",
-        notification.id,
-        notification,
-      );
+      await this.queueSync("achievementNotifications:create", notification);
 
       logger.info(
         `Achievement notification created for user ${userId}`,
@@ -455,12 +445,7 @@ export class AchievementDBService extends BaseDBService {
         notification.syncStatus = "pending";
 
         await this.achievementNotificationsTable.put(notification);
-        await this.queueSync(
-          "achievementNotifications",
-          "update",
-          notification.id,
-          notification,
-        );
+        await this.queueSync("achievementNotifications:update", notification);
       }
     } catch (error) {
       logger.error(
@@ -615,8 +600,14 @@ export class AchievementDBService extends BaseDBService {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
         userId,
-        category: category as any,
-        period: period as any,
+        category: category as
+          | "session_count"
+          | "total_chastity_time"
+          | "longest_single_session"
+          | "current_streak"
+          | "achievement_points"
+          | "goal_achievements",
+        period: period as "this_week" | "this_month" | "this_year" | "all_time",
         value,
         rank: 0, // Will be calculated by ranking algorithm
         displayName,
@@ -629,12 +620,7 @@ export class AchievementDBService extends BaseDBService {
       // Upsert the entry
       await this.leaderboardEntriesTable.put(entryData);
 
-      await this.queueSync(
-        "leaderboardEntries",
-        "create",
-        entryData.id,
-        entryData,
-      );
+      await this.queueSync("leaderboardEntries:create", entryData);
 
       logger.info(
         `Updated leaderboard entry for user ${userId}`,
@@ -653,7 +639,7 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Get user's leaderboard privacy settings
    */
-  async getLeaderboardPrivacy(userId: string): Promise<any> {
+  async getLeaderboardPrivacy(userId: string): Promise<LeaderboardPrivacy> {
     // This would typically be stored in user settings
     // For now, return default settings
     return {
@@ -670,7 +656,10 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Update user's leaderboard privacy settings
    */
-  async updateLeaderboardPrivacy(userId: string, settings: any): Promise<void> {
+  async updateLeaderboardPrivacy(
+    userId: string,
+    settings: LeaderboardPrivacy,
+  ): Promise<void> {
     try {
       // This would typically update user settings
       // For now, just log the action

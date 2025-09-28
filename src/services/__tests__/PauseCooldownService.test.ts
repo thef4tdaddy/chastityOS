@@ -11,17 +11,24 @@ import { db } from "../storage/dexie";
 vi.mock("../storage/dexie", () => ({
   db: {
     sessions: {
-      where: vi.fn().mockReturnThis(),
-      equals: vi.fn().mockReturnThis(),
-      and: vi.fn().mockReturnThis(),
-      first: vi.fn(),
+      where: vi.fn(() => ({
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            first: vi.fn(),
+          })),
+        })),
+      })),
     },
     events: {
-      where: vi.fn().mockReturnThis(),
-      equals: vi.fn().mockReturnThis(),
-      and: vi.fn().mockReturnThis(),
-      reverse: vi.fn().mockReturnThis(),
-      first: vi.fn(),
+      where: vi.fn(() => ({
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            reverse: vi.fn(() => ({
+              first: vi.fn(),
+            })),
+          })),
+        })),
+      })),
     },
   },
 }));
@@ -33,7 +40,14 @@ describe("PauseCooldownService", () => {
 
   describe("canUserPause", () => {
     it("should allow pause when no active session exists", async () => {
-      (db.sessions.first as any).mockResolvedValue(null);
+      const mockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            first: vi.fn().mockResolvedValue(null),
+          })),
+        })),
+      };
+      (db.sessions.where as any).mockReturnValue(mockChain);
 
       const result = await PauseCooldownService.canUserPause("user123");
 
@@ -46,8 +60,24 @@ describe("PauseCooldownService", () => {
         userId: "user123",
         isPaused: false,
       };
-      (db.sessions.first as any).mockResolvedValue(mockSession);
-      (db.events.first as any).mockResolvedValue(null);
+      const sessionMockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            first: vi.fn().mockResolvedValue(mockSession),
+          })),
+        })),
+      };
+      const eventMockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            reverse: vi.fn(() => ({
+              first: vi.fn().mockResolvedValue(null),
+            })),
+          })),
+        })),
+      };
+      (db.sessions.where as any).mockReturnValue(sessionMockChain);
+      (db.events.where as any).mockReturnValue(eventMockChain);
 
       const result = await PauseCooldownService.canUserPause("user123");
 
@@ -70,8 +100,24 @@ describe("PauseCooldownService", () => {
         type: "session_pause",
       };
 
-      (db.sessions.first as any).mockResolvedValue(mockSession);
-      (db.events.first as any).mockResolvedValue(mockPauseEvent);
+      const sessionMockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            first: vi.fn().mockResolvedValue(mockSession),
+          })),
+        })),
+      };
+      const eventMockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            reverse: vi.fn(() => ({
+              first: vi.fn().mockResolvedValue(mockPauseEvent),
+            })),
+          })),
+        })),
+      };
+      (db.sessions.where as any).mockReturnValue(sessionMockChain);
+      (db.events.where as any).mockReturnValue(eventMockChain);
 
       const result = await PauseCooldownService.canUserPause("user123");
 
@@ -91,8 +137,24 @@ describe("PauseCooldownService", () => {
         type: "session_pause",
       };
 
-      (db.sessions.first as any).mockResolvedValue(mockSession);
-      (db.events.first as any).mockResolvedValue(mockPauseEvent);
+      const sessionMockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            first: vi.fn().mockResolvedValue(mockSession),
+          })),
+        })),
+      };
+      const eventMockChain = {
+        equals: vi.fn(() => ({
+          and: vi.fn(() => ({
+            reverse: vi.fn(() => ({
+              first: vi.fn().mockResolvedValue(mockPauseEvent),
+            })),
+          })),
+        })),
+      };
+      (db.sessions.where as any).mockReturnValue(sessionMockChain);
+      (db.events.where as any).mockReturnValue(eventMockChain);
 
       const result = await PauseCooldownService.canUserPause("user123");
 

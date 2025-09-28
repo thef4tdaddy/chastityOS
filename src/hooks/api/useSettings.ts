@@ -3,20 +3,19 @@ import { settingsDBService } from "../../services/database/SettingsDBService";
 import { UserSettings } from "../../types/database";
 import { logger } from "../../utils/logging";
 
-/**
- * Settings Management Hooks - TanStack Query Integration
- *
- * Integrates with:
- * - settingsDBService → Dexie → Firebase sync
- * - SettingsPage.tsx (critical fix - entire 780-line page non-functional)
- *
- * Fixes:
- * - SettingsPage.tsx:696 (settingsDBService.findByUserId)
- * - Impact: Entire 780-line settings page becomes functional
- * - All 7 settings sections: Account, Display, Profile, Goals, Privacy, Data, Security
- *
- * Strategy: Dexie-first write, Firebase background sync
- */
+// Types for data import operations
+interface ImportUserData {
+  settings?: Partial<UserSettings>;
+  sessions?: unknown[];
+  events?: unknown[];
+  tasks?: unknown[];
+  goals?: unknown[];
+  metadata?: {
+    version: string;
+    exportedAt: string;
+    format: "json" | "csv" | "xlsx";
+  };
+}
 
 // Query Keys
 export const settingsKeys = {
@@ -137,7 +136,10 @@ export function useUserSettings(userId: string) {
 
         return settings;
       } catch (error) {
-        logger.error("Failed to fetch user settings", error, { userId });
+        logger.error("Failed to fetch user settings", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -217,7 +219,10 @@ export function useUpdateSettings() {
 
         return updatedSettings;
       } catch (error) {
-        logger.error("Failed to update settings", error, { userId });
+        logger.error("Failed to update settings", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -233,7 +238,10 @@ export function useUpdateSettings() {
       });
     },
     onError: (error, { userId }) => {
-      logger.error("Settings update failed", error, { userId });
+      logger.error("Settings update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
     },
   });
 }
@@ -249,7 +257,7 @@ export function useAccountMutations() {
     enable2FA: useMutation({
       mutationFn: async ({
         userId,
-        secret,
+        secret: _secret,
       }: {
         userId: string;
         secret: string;
@@ -299,8 +307,8 @@ export function useAccountMutations() {
     updatePassword: useMutation({
       mutationFn: async ({
         userId,
-        currentPassword,
-        newPassword,
+        currentPassword: _currentPassword,
+        newPassword: _newPassword,
       }: {
         userId: string;
         currentPassword: string;
@@ -393,7 +401,10 @@ export function useDataExport() {
 
         return exportData;
       } catch (error) {
-        logger.error("Data export failed", error, { userId });
+        logger.error("Data export failed", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -410,10 +421,10 @@ export function useDataImport() {
   return useMutation({
     mutationFn: async ({
       userId,
-      importData,
+      importData: _importData,
     }: {
       userId: string;
-      importData: any; // Would be properly typed based on import format
+      importData: ImportUserData;
     }) => {
       logger.info("Importing user data", { userId });
 
@@ -425,7 +436,10 @@ export function useDataImport() {
 
         return { success: true, importedRecords: 0 };
       } catch (error) {
-        logger.error("Data import failed", error, { userId });
+        logger.error("Data import failed", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -461,7 +475,10 @@ export function useResetAllData() {
 
         return { success: true };
       } catch (error) {
-        logger.error("Data reset failed", error, { userId });
+        logger.error("Data reset failed", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },

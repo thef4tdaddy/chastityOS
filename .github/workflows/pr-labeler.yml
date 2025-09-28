@@ -1,5 +1,3 @@
-
-
 name: Label PRs Based on Commit Type
 
 on:

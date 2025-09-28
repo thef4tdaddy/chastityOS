@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { execSync } from "child_process";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, '../..');
+const projectRoot = join(__dirname, "../..");
 
 /**
  * Smart Vercel build script that chooses the appropriate build mode
@@ -21,30 +21,35 @@ function determineMode() {
   let currentBranch = vercelGitCommitRef;
   if (!currentBranch) {
     try {
-      currentBranch = execSync('git branch --show-current', {
-        encoding: 'utf8',
-        cwd: projectRoot
+      currentBranch = execSync("git branch --show-current", {
+        encoding: "utf8",
+        cwd: projectRoot,
       }).trim();
     } catch (error) {
-      console.warn('Could not determine git branch, defaulting to nightly mode');
-      currentBranch = 'nightly';
+      console.warn(
+        "Could not determine git branch, defaulting to nightly mode",
+      );
+      currentBranch = "nightly";
     }
   }
 
   console.log(`🔍 Deployment context:`);
-  console.log(`   VERCEL_ENV: ${vercelEnv || 'not set'}`);
+  console.log(`   VERCEL_ENV: ${vercelEnv || "not set"}`);
   console.log(`   Branch: ${currentBranch}`);
 
   // Determine build mode based on context
   let mode;
 
-  if (vercelEnv === 'production' || currentBranch === 'main') {
-    mode = 'production';
-  } else if (currentBranch === 'nightly' || currentBranch?.includes('nightly')) {
-    mode = 'nightly';
+  if (vercelEnv === "production" || currentBranch === "main") {
+    mode = "production";
+  } else if (
+    currentBranch === "nightly" ||
+    currentBranch?.includes("nightly")
+  ) {
+    mode = "nightly";
   } else {
     // Default to nightly for PR previews and other branches
-    mode = 'nightly';
+    mode = "nightly";
   }
 
   console.log(`🚀 Building in ${mode} mode`);
@@ -59,8 +64,8 @@ function runBuild() {
 
   try {
     execSync(buildCommand, {
-      stdio: 'inherit',
-      cwd: projectRoot
+      stdio: "inherit",
+      cwd: projectRoot,
     });
     console.log(`✅ Build completed successfully in ${mode} mode`);
   } catch (error) {

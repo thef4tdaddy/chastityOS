@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { DBTask, TaskStatus } from "../../types/database";
+import type { TaskStatus } from "../../types/database";
 import { useTasksQuery, useTaskMutations } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
 import {
@@ -47,7 +47,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
         `Task ${action === "approve" ? "approved" : "rejected"} successfully`,
         "Task Updated",
       );
-    } catch (error) {
+    } catch (_error) {
       showError(
         `Failed to ${action} task. Please try again.`,
         "Task Update Failed",
@@ -68,7 +68,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
       setNewTaskText("");
       setShowAddTask(false);
       showSuccess("Task created successfully", "Task Added");
-    } catch (error) {
+    } catch (_error) {
       showError(
         "Failed to create task. Please try again.",
         "Task Creation Failed",
