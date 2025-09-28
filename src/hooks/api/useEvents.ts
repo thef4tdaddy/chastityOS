@@ -5,9 +5,13 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
+<<<<<<< HEAD
+import { DBEvent, EventFilters } from "../../types/database";
+=======
 import { Event } from "../../types/events";
 import { EventType } from "../../types/events";
 import { DBEvent } from "../../types/database";
+>>>>>>> origin/nightly
 import { logger } from "../../utils/logging";
 
 /**
@@ -79,7 +83,7 @@ interface UpdateEventData {
 export function useEventHistory(userId: string, filters?: EventFilters) {
   return useQuery({
     queryKey: eventKeys.list(userId, filters),
-    queryFn: async (): Promise<Event[]> => {
+    queryFn: async (): Promise<DBEvent[]> => {
       logger.info("Fetching event history", { userId, filters });
 
       try {
@@ -150,7 +154,7 @@ export function useInfiniteEventHistory(
     queryKey: eventKeys.infinite(userId, filters),
     queryFn: async ({
       pageParam = 0,
-    }): Promise<{ events: Event[]; nextPage?: number }> => {
+    }): Promise<{ events: DBEvent[]; nextPage?: number }> => {
       logger.info("Fetching infinite event page", {
         userId,
         pageParam,
@@ -211,7 +215,7 @@ export function useInfiniteEventHistory(
 export function useRecentEvents(userId: string, limit = 10) {
   return useQuery({
     queryKey: eventKeys.recent(userId, limit),
-    queryFn: async (): Promise<Event[]> => {
+    queryFn: async (): Promise<DBEvent[]> => {
       logger.info("Fetching recent events", { userId, limit });
 
       const events = await eventDBService.findByUserId(userId);
@@ -237,9 +241,10 @@ export function useRecentEvents(userId: string, limit = 10) {
 export function useEvent(eventId: string) {
   return useQuery({
     queryKey: eventKeys.detail(eventId),
-    queryFn: async (): Promise<Event | null> => {
+    queryFn: async (): Promise<DBEvent | null> => {
       logger.info("Fetching event detail", { eventId });
-      return await eventDBService.findById(eventId);
+      const event = await eventDBService.findById(eventId);
+      return event ?? null;
     },
     staleTime: 10 * 60 * 1000, // 10 minutes - historical data is stable
     enabled: !!eventId,
@@ -267,14 +272,15 @@ export function useCreateEvent() {
       // Generate event ID
       const eventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      const newEvent: Event = {
+      const newEvent: DBEvent = {
         id: eventId,
         userId,
+        syncStatus: "pending",
+        lastModified: new Date(),
         type: eventData.type,
         timestamp: eventData.timestamp || new Date(),
-        details: eventData.details,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        details: eventData.details || {},
+        isPrivate: eventData.isPrivate || false,
       };
 
       // Dexie-first write for immediate UI response
@@ -334,7 +340,7 @@ export function useUpdateEvent() {
       eventId: string;
       userId: string;
       updates: UpdateEventData;
-    }): Promise<Event> => {
+    }): Promise<DBEvent> => {
       logger.info("Updating event", { eventId, userId });
 
       const existingEvent = await eventDBService.findById(eventId);
@@ -342,11 +348,15 @@ export function useUpdateEvent() {
         throw new Error(`Event not found: ${eventId}`);
       }
 
-      const updatedEvent: Event = {
+      const updatedEvent: DBEvent = {
         ...existingEvent,
         ...updates,
+<<<<<<< HEAD
+        lastModified: new Date(),
+=======
         createdAt: existingEvent.createdAt || new Date(),
         updatedAt: new Date(),
+>>>>>>> origin/nightly
       };
 
       const dbUpdatedEvent = eventToDBEvent(updatedEvent);

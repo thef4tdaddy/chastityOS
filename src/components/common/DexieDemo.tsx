@@ -281,6 +281,8 @@ const useTaskManagement = (
       setError(null);
       const newTask: Omit<DBTask, "id"> = {
         userId: user.uid,
+        syncStatus: "pending",
+        lastModified: new Date(),
         text: newTaskText.trim(),
         description: newTaskText.trim(),
         status: "pending",
@@ -288,9 +290,12 @@ const useTaskManagement = (
         assignedBy: "submissive",
         createdAt: new Date(),
         category: "general",
+<<<<<<< HEAD
+=======
         type: "manual",
         syncStatus: "pending",
         lastModified: new Date(),
+>>>>>>> origin/nightly
       };
 
       const createdTask = await createWithSync("tasks", newTask);
