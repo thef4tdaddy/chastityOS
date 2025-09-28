@@ -5,7 +5,7 @@
 import { sessionDBService } from "./SessionDBService";
 import { eventDBService } from "./EventDBService";
 import { settingsDBService } from "./SettingsDBService";
-import type { EmergencyUnlockReason } from "../../types/events";
+import type { EmergencyUnlockReason, EmergencyUnlockEventDetails } from "../../types/events";
 import { serviceLogger } from "../../utils/logging";
 import { generateUUID } from "../../utils/helpers/hash";
 
@@ -271,8 +271,8 @@ class EmergencyService {
 
       const reasonBreakdown: Record<string, number> = {};
       emergencyUnlocks.forEach((event) => {
-        const reason =
-          ((event.details as any)?.emergencyReason as string) || "Unknown";
+        const details = event.details as EmergencyUnlockEventDetails;
+        const reason = details?.emergencyReason || "Unknown";
         reasonBreakdown[reason] = (reasonBreakdown[reason] || 0) + 1;
       });
 
