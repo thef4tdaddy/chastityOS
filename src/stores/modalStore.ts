@@ -2,7 +2,7 @@
  * Modal Store - UI Interaction State
  * Manages modal visibility, content, and confirmation dialogs
  */
-import * as React from "react";
+import { ReactNode } from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -10,7 +10,7 @@ import { devtools } from "zustand/middleware";
 export interface BaseModalProps {
   isOpen: boolean;
   title?: string;
-  content?: React.ReactNode;
+  content?: ReactNode;
   onConfirm?: () => void;
   onCancel?: () => void;
   confirmText?: string;
