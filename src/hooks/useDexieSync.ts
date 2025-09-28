@@ -32,11 +32,11 @@ export const useDexieSync = () => {
    */
   const services = useMemo(
     () => ({
-      sessions: sessionDBService as DBServiceMethods,
-      events: eventDBService as DBServiceMethods,
-      tasks: taskDBService as DBServiceMethods,
-      goals: goalDBService as DBServiceMethods,
-      settings: settingsDBService as DBServiceMethods,
+      sessions: sessionDBService,
+      events: eventDBService,
+      tasks: taskDBService,
+      goals: goalDBService,
+      settings: settingsDBService,
     }),
     [],
   );

@@ -5,8 +5,8 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
-import { DBEvent, EventFilters } from "../../types/database";
 import { Event, EventType } from "../../types/events";
+import { DBEvent, EventFilters } from "../../types/database";
 import { logger } from "../../utils/logging";
 
 /**
