@@ -104,7 +104,10 @@ export const AccountLinking: React.FC<AccountLinkingProps> = ({
         <ActiveKeyholderDisplay
           activeKeyholder={{
             ...activeKeyholder,
-            permissions: activeKeyholder.permissions as Record<string, boolean>,
+            permissions: activeKeyholder.permissions as unknown as Record<
+              string,
+              boolean
+            >,
           }}
           onEndRelationship={endRelationship}
         />
@@ -139,7 +142,7 @@ export const AccountLinking: React.FC<AccountLinkingProps> = ({
       <SubmissiveRelationshipsDisplay
         relationships={relationships.asKeyholder.map((rel) => ({
           ...rel,
-          permissions: rel.permissions as Record<string, boolean>,
+          permissions: rel.permissions as unknown as Record<string, boolean>,
         }))}
         onEndRelationship={endRelationship}
       />
