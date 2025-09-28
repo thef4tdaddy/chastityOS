@@ -87,7 +87,8 @@ export function useRelationshipInvites(): RelationshipInvitesState &
     if (userId) {
       loadPendingRequests();
     }
-  }, [userId]);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [userId, loadPendingRequests]);
 
   return {
     ...state,

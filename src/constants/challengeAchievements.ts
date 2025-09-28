@@ -3,6 +3,8 @@
  * These can be integrated with the achievement system when it's fully implemented
  */
 
+import { logger } from "@/utils/logging";
+
 export const CHALLENGE_ACHIEVEMENTS = {
   locktober: {
     id: "locktober-complete",
@@ -73,7 +75,7 @@ export const useAchievementIntegration = () => {
     if (!completedGoal.isCompleted || !completedGoal.challengeType) return;
 
     // This will be integrated with the actual achievement system
-    console.log("Challenge completed - would trigger achievement:", {
+    logger.info("Challenge completed - would trigger achievement:", {
       challengeType: completedGoal.challengeType,
       year: completedGoal.challengeYear,
       achievement:
