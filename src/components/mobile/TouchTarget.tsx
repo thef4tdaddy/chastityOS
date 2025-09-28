@@ -2,6 +2,7 @@
  * Touch Target Component
  * Ensures minimum touch target size for mobile accessibility
  */
+/// <reference types="react" />
 import React from "react";
 import type { JSX } from "react";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
@@ -13,7 +14,7 @@ interface TouchTargetProps {
   className?: string;
   disabled?: boolean;
   hapticFeedback?: "light" | "medium" | "heavy" | "none";
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
   [key: string]: any; // For additional props
 }
 
@@ -24,7 +25,7 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
   className = "",
   disabled = false,
   hapticFeedback = "light",
-  as: Component = "button",
+  as: Component = "button" as any,
   ...props
 }) => {
   const { light, medium, heavy } = useHapticFeedback();
@@ -83,7 +84,7 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       disabled={disabled}
-      {...props}
+      {...(props as any)}
     >
       {children}
     </Component>

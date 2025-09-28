@@ -2,6 +2,7 @@
  * ConflictResolver Tests
  * Tests for conflict resolution strategies
  */
+/// <reference types="vitest/globals" />
 import { conflictResolver } from "@/services/sync/ConflictResolver";
 import type { DBSession, DBTask, DBSettings } from "@/types/database";
 

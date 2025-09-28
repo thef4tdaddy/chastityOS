@@ -200,7 +200,10 @@ export function useUpdateSettings() {
 
       try {
         // Get existing settings or create defaults
-        let existingSettings = await settingsDBService.findByUserId(userId);
+        let settingsResult = await settingsDBService.findByUserId(userId);
+        let existingSettings = Array.isArray(settingsResult)
+          ? settingsResult[0]
+          : settingsResult;
 
         if (!existingSettings) {
           // Create default settings if none exist
