@@ -150,7 +150,7 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
     try {
       await navigator.clipboard.writeText(text);
       showMessage(`Copied "${text}" to clipboard`, "success");
-    } catch (err) {
+    } catch {
       showMessage("Failed to copy to clipboard", "error");
     }
   };

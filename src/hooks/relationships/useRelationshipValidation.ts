@@ -45,7 +45,7 @@ export function useRelationshipValidation(): RelationshipValidationState &
     try {
       const needsMigration = await dataMigrationService.needsMigration(userId);
       setState((prev) => ({ ...prev, needsMigration }));
-    } catch (error) {
+    } catch {
       // Silent fail for migration check - using logger instead of console
       // logger.warn("Failed to check migration status", error);
     }

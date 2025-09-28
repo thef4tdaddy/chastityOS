@@ -3,11 +3,8 @@
  * Handles sync operations for achievement progress data
  */
 import { serviceLogger } from "@/utils/logging";
-import { db } from "../database";
 import { FirebaseSyncCore } from "./FirebaseSyncCore";
 import type { DBBase, SyncOptions, SyncResult } from "@/types/database";
-import { query, where, getDocs, getDoc } from "firebase/firestore";
-import { syncConflictResolver } from "./SyncConflictResolver";
 
 const logger = serviceLogger("AchievementDataSync");
 
@@ -25,7 +22,7 @@ export class AchievementDataSync extends FirebaseSyncCore {
 
   async syncCollection(
     userId: string,
-    options: SyncOptions = {},
+    _options: SyncOptions = {},
   ): Promise<SyncResult> {
     if (this.isSyncing) {
       throw new Error("Achievement sync already in progress");
@@ -71,7 +68,10 @@ export class AchievementDataSync extends FirebaseSyncCore {
     });
   }
 
-  async applyRemoteChanges(docs: DBBase[], result?: SyncResult): Promise<void> {
+  async applyRemoteChanges(
+    docs: DBBase[],
+    _result?: SyncResult,
+  ): Promise<void> {
     // TODO: Implement when achievement database service exists
     logger.debug("Achievement applyRemoteChanges placeholder", {
       count: docs.length,
@@ -83,7 +83,7 @@ export class AchievementDataSync extends FirebaseSyncCore {
    */
   private async uploadLocalChanges(
     userId: string,
-    result: SyncResult,
+    _result: SyncResult,
   ): Promise<void> {
     // TODO: Implement achievement upload logic
     logger.debug("Achievement upload placeholder", { userId });
@@ -91,7 +91,7 @@ export class AchievementDataSync extends FirebaseSyncCore {
 
   private async downloadRemoteChanges(
     userId: string,
-    result: SyncResult,
+    _result: SyncResult,
   ): Promise<void> {
     // TODO: Implement achievement download logic
     logger.debug("Achievement download placeholder", { userId });
