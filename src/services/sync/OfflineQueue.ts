@@ -82,7 +82,7 @@ class OfflineQueue {
 
         // Increment retry count
         if (operation.id !== undefined) {
-          await this.incrementRetryCount(operation.id);
+          await this.incrementRetryCount(operation.id.toString());
         }
 
         // Remove from queue if max retries exceeded (simplified without retryCount check)

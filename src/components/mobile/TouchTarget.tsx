@@ -4,6 +4,7 @@
  */
 /// <reference types="react" />
 import React from "react";
+import type { JSX } from "react";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface TouchTargetProps {
