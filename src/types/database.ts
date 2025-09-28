@@ -4,15 +4,7 @@
  */
 
 export type SyncStatus = "synced" | "pending" | "conflict";
-export type EventType =
-  | "orgasm"
-  | "sexual_activity"
-  | "milestone"
-  | "note"
-  | "session_start"
-  | "session_end"
-  | "session_pause"
-  | "session_resume";
+export type EventType = string;
 export type TaskStatus =
   | "pending"
   | "submitted"
@@ -98,6 +90,13 @@ export interface DBEvent extends DBBase {
     // Additional properties for emergency/session events
     endReason?: string;
     emergencyReason?: string;
+    emergencyNotes?: string;
+    pauseReason?: string;
+    pauseDuration?: number;
+    sessionDuration?: number;
+    wasHardcoreMode?: boolean;
+    wasKeyholderControlled?: boolean;
+    accumulatedPauseTime?: number;
   };
   isPrivate: boolean;
 }
@@ -111,6 +110,7 @@ export interface DBTask extends DBBase {
   assignedBy: "submissive" | "keyholder";
   category?: string; // Optional category for task organization
   createdAt: Date;
+  updatedAt?: Date;
   dueDate?: Date;
   deadline?: Date; // Alternative deadline field name
   submittedAt?: Date;
@@ -126,7 +126,12 @@ export interface DBTask extends DBBase {
 }
 
 export interface DBGoal extends DBBase {
-  type: "duration" | "task_completion" | "behavioral" | "milestone";
+  type:
+    | "duration"
+    | "task_completion"
+    | "behavioral"
+    | "milestone"
+    | "special_challenge";
   title: string;
   description?: string;
   targetValue: number;
@@ -139,10 +144,29 @@ export interface DBGoal extends DBBase {
   dueDate?: Date;
   createdBy: "submissive" | "keyholder";
   isPublic: boolean;
+  // Special challenge fields
+  challengeType?: "locktober" | "no_nut_november";
+  challengeYear?: number;
+  isSpecialChallenge?: boolean;
 }
 
 export interface DBSettings extends DBBase {
-  theme: "light" | "dark" | "auto";
+  theme: "light" | "dark" | "auto" | "system";
+<<<<<<< HEAD
+  notifications:
+    | {
+        enabled: boolean;
+        sessionReminders: boolean;
+        taskDeadlines: boolean;
+        keyholderMessages: boolean;
+        goalProgress: boolean;
+        achievements: boolean; // New: Achievement notifications
+      }
+    | boolean; // Allow both nested object and simple boolean for backwards compatibility
+=======
+  eventDisplayMode?: string;
+  twoFactorEnabled?: boolean;
+  updatedAt?: Date;
   notifications: {
     enabled: boolean;
     sessionReminders: boolean;
@@ -151,6 +175,7 @@ export interface DBSettings extends DBBase {
     goalProgress: boolean;
     achievements: boolean; // New: Achievement notifications
   };
+>>>>>>> origin/nightly
   privacy: {
     publicProfile: boolean;
     shareStatistics: boolean;
@@ -177,6 +202,66 @@ export interface DBSettings extends DBBase {
     showProgress: boolean;
     enableNotifications: boolean;
   };
+
+  // Flat properties for compatibility with useSettings.ts
+  // User Profile
+  displayName?: string;
+  email?: string;
+  timezone?: string;
+  language?: string;
+
+  // UI Preferences
+  fontSize?: string | number;
+  animations?: boolean;
+
+  // Privacy Settings (flat versions)
+  publicProfile?: boolean;
+  profileVisibility?: string;
+  showStats?: boolean;
+  showAchievements?: boolean;
+
+  // Goal Settings
+  defaultGoalDuration?: number;
+  allowKeyholderOverride?: boolean;
+  goalReminders?: boolean;
+  progressSharing?: string | boolean;
+
+  // Data & Privacy (flat versions)
+  dataCollection?: boolean;
+  analytics?: boolean;
+  crashReporting?: boolean;
+  locationTracking?: boolean;
+
+  // Backup Settings
+  autoBackup?: boolean;
+  backupFrequency?: string;
+  dataRetention?: number;
+  exportFormat?: string;
+
+  // Security
+  twoFactorEnabled?: boolean;
+  sessionTimeout?: number;
+  requirePasswordForSensitive?: boolean;
+  emergencyContacts?: string[];
+
+  // Additional settings from useSettings.ts
+  advancedLogging?: boolean;
+  betaFeatures?: boolean;
+  developmentMode?: boolean;
+  keyholderLinked?: boolean;
+  keyholderPermissions?: {
+    viewTasks: boolean;
+    assignTasks: boolean;
+    viewSessions: boolean;
+    controlSessions: boolean;
+    viewEvents: boolean;
+    viewSettings: boolean;
+    modifySettings: boolean;
+  };
+
+  // Additional timestamp properties used in useSettings.ts
+  updatedAt?: Date;
+  createdAt?: Date;
 }
 
 // Alias for compatibility
@@ -268,6 +353,7 @@ export interface QueuedOperation<T extends DBBase> {
   type: "create" | "update" | "delete";
   collectionName: string;
   payload: T;
+  userId: string;
   createdAt: Date;
 }
 
