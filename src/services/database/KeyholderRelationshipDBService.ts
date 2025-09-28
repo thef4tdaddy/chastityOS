@@ -45,14 +45,17 @@ class KeyholderRelationshipDBService extends BaseDBService {
   /**
    * Get record by ID (alias for findById)
    */
-  async getById(id: string): Promise<any> {
+  async getById(id: string): Promise<KeyholderRelationship | undefined> {
     return await this.getByUid(id); // Use getByUid from BaseDBService
   }
 
   /**
    * Update record (alias for update method)
    */
-  async update(id: string, data: Partial<KeyholderRelationship>): Promise<void> {
+  async update(
+    id: string,
+    data: Partial<KeyholderRelationship>,
+  ): Promise<void> {
     return await super.update(id, data);
   }
 

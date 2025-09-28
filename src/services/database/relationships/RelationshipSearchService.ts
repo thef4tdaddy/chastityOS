@@ -11,6 +11,7 @@ import {
   limit,
   startAfter,
   DocumentSnapshot,
+  Firestore,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -38,7 +39,7 @@ export interface RelationshipSearchResult {
 }
 
 export class RelationshipSearchService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();

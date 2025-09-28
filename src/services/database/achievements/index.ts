@@ -63,9 +63,27 @@ export class AchievementDBService {
     private leaderboardService = achievementLeaderboardService,
   ) {
     // Inject dependencies for services that need them
-    (this.progressService as any).badgeService = this.badgeService;
-    (this.statsService as any).crudService = this.crudService;
-    (this.statsService as any).badgeService = this.badgeService;
+    if ("badgeService" in this.progressService) {
+      (
+        this.progressService as typeof this.progressService & {
+          badgeService: AchievementBadgeService;
+        }
+      ).badgeService = this.badgeService;
+    }
+    if ("crudService" in this.statsService) {
+      (
+        this.statsService as typeof this.statsService & {
+          crudService: AchievementCRUDService;
+        }
+      ).crudService = this.crudService;
+    }
+    if ("badgeService" in this.statsService) {
+      (
+        this.statsService as typeof this.statsService & {
+          badgeService: AchievementBadgeService;
+        }
+      ).badgeService = this.badgeService;
+    }
   }
 
   // ==================== ACHIEVEMENT CRUD ====================

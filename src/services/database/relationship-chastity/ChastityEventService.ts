@@ -10,6 +10,8 @@ import {
   orderBy,
   limit,
   serverTimestamp,
+  Firestore,
+  FieldValue,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { RelationshipEvent } from "@/types/relationships";
@@ -20,7 +22,7 @@ import { relationshipCoreService } from "./RelationshipCoreService";
 const logger = serviceLogger("ChastityEventService");
 
 class ChastityEventService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -64,7 +66,7 @@ class ChastityEventService {
         id: eventId,
         relationshipId,
         type: eventData.type,
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as FieldValue,
         details: eventData.details,
         loggedBy: isKeyholder ? "keyholder" : "submissive",
         isPrivate: eventData.isPrivate || false,
