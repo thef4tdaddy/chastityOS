@@ -15,6 +15,33 @@ interface PullToRefreshProps {
   className?: string;
 }
 
+// Helper function to calculate indicator transform
+const getIndicatorTransform = (pullDistance: number): string => {
+  const translateY = Math.min(pullDistance - 40, 20);
+  return `translateX(-50%) translateY(${translateY}px)`;
+};
+
+// Helper function to get content transform
+const getContentTransform = (
+  isPulling: boolean,
+  isRefreshing: boolean,
+  pullDistance: number,
+): string => {
+  if (isPulling && !isRefreshing) {
+    return `translateY(${pullDistance * 0.5}px)`;
+  }
+  return "translateY(0)";
+};
+
+// Helper function to determine if indicator should be shown
+const shouldShowIndicator = (
+  isMobile: boolean,
+  isPulling: boolean,
+  isRefreshing: boolean,
+): boolean => {
+  return isMobile && (isPulling || isRefreshing);
+};
+
 export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   children,
   onRefresh,
@@ -53,11 +80,11 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
       onScroll={onScroll}
     >
       {/* Pull to refresh indicator */}
-      {isMobile && (isPulling || isRefreshing) && (
+      {shouldShowIndicator(isMobile, isPulling, isRefreshing) && (
         <div
           className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200 ease-out"
           style={{
-            transform: `translateX(-50%) translateY(${Math.min(pullDistance - 40, 20)}px)`,
+            transform: getIndicatorTransform(pullDistance),
             opacity: isRefreshing ? 1 : refreshIndicatorOpacity,
           }}
         >
@@ -94,10 +121,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
       <div
         className="transition-transform duration-200 ease-out"
         style={{
-          transform:
-            isPulling && !isRefreshing
-              ? `translateY(${pullDistance * 0.5}px)`
-              : "translateY(0)",
+          transform: getContentTransform(isPulling, isRefreshing, pullDistance),
         }}
       >
         {children}

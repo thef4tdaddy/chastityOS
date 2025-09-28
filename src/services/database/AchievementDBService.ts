@@ -18,6 +18,15 @@ import {
 } from "../../types";
 import { logger } from "../../utils/logging";
 
+interface UpdateLeaderboardEntryOptions {
+  userId: string;
+  category: string;
+  period: string;
+  value: number;
+  displayName?: string;
+  displayNameType?: "real" | "username" | "anonymous";
+}
+
 export class AchievementDBService extends BaseDBService {
   protected db = db; // Use the db instance instead of ChastityDB.getInstance()
   protected achievementsTable = this.db.achievements;
@@ -589,13 +598,16 @@ export class AchievementDBService extends BaseDBService {
    * Update user's leaderboard entry
    */
   async updateLeaderboardEntry(
-    userId: string,
-    category: string,
-    period: string,
-    value: number,
-    displayName: string = "Anonymous",
-    displayNameType: "real" | "username" | "anonymous" = "anonymous",
+    options: UpdateLeaderboardEntryOptions,
   ): Promise<void> {
+    const {
+      userId,
+      category,
+      period,
+      value,
+      displayName = "Anonymous",
+      displayNameType = "anonymous",
+    } = options;
     try {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),

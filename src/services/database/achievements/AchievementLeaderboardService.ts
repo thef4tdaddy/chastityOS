@@ -10,6 +10,15 @@ import { logger } from "../../../utils/logging";
 type LeaderboardCategory = DBLeaderboardEntry["category"];
 type LeaderboardPeriod = DBLeaderboardEntry["period"];
 
+interface UpdateLeaderboardEntryOptions {
+  userId: string;
+  category: LeaderboardCategory;
+  period: LeaderboardPeriod;
+  value: number;
+  displayName?: string;
+  displayNameType?: "real" | "username" | "anonymous";
+}
+
 export class AchievementLeaderboardService {
   private leaderboardEntriesTable = db.leaderboardEntries;
 
@@ -97,13 +106,16 @@ export class AchievementLeaderboardService {
    * Update user's leaderboard entry
    */
   async updateLeaderboardEntry(
-    userId: string,
-    category: LeaderboardCategory,
-    period: LeaderboardPeriod,
-    value: number,
-    displayName: string = "Anonymous",
-    displayNameType: "real" | "username" | "anonymous" = "anonymous",
+    options: UpdateLeaderboardEntryOptions,
   ): Promise<void> {
+    const {
+      userId,
+      category,
+      period,
+      value,
+      displayName = "Anonymous",
+      displayNameType = "anonymous",
+    } = options;
     try {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
