@@ -3,7 +3,7 @@
  * Comprehensive local database with sync capabilities
  * Based on issue #104 specifications
  */
-import Dexie, { type Table, type Transaction } from "dexie";
+import Dexie, { type Table, type Transaction, type Version } from "dexie";
 import {
   DBUser,
   DBSession,
@@ -46,13 +46,16 @@ export class ChastityDB extends Dexie {
   // Explicitly declare Dexie methods we use to fix TypeScript issues
   declare transaction: <T>(
     mode: string,
-    tables: any,
+    tables: Table[],
     callback: (trans: Transaction) => T | Promise<T>,
   ) => Promise<T>;
-  declare on: (eventName: string, callback: (...args: any[]) => void) => void;
+  declare on: (
+    eventName: string,
+    callback: (...args: unknown[]) => void,
+  ) => void;
   declare verno: number;
-  declare tables: Table<any>[];
-  declare version: (versionNumber: number) => any;
+  declare tables: Table<unknown>[];
+  declare version: (versionNumber: number) => Version;
 
   constructor() {
     super("ChastityOS");

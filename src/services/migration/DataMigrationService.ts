@@ -10,6 +10,8 @@ import {
   writeBatch,
   serverTimestamp,
   Firestore,
+  WriteBatch,
+  Timestamp,
 } from "firebase/firestore";
 import { getFirestore } from "../firebase";
 import { relationshipService } from "../database/relationships";
@@ -156,7 +158,7 @@ class DataMigrationService {
    * Set up relationship and chastity data structures
    */
   private async setupRelationshipAndChastityData(
-    batch: any,
+    batch: WriteBatch,
     userId: string,
     relationshipId: string,
   ): Promise<void> {
@@ -226,7 +228,7 @@ class DataMigrationService {
       currentSession: {
         id: "",
         isActive: false,
-        startTime: serverTimestamp() as any,
+        startTime: serverTimestamp() as Timestamp,
         accumulatedPauseTime: 0,
         keyholderApprovalRequired: false,
       },
@@ -254,7 +256,7 @@ class DataMigrationService {
    * Migrate sessions data to new relationship structure
    */
   private async migrateSessionsData(
-    batch: any,
+    batch: WriteBatch,
     userId: string,
     relationshipId: string,
     result: MigrationResult,
@@ -300,7 +302,7 @@ class DataMigrationService {
   private transformSessionData(
     sessionId: string,
     relationshipId: string,
-    oldSession: any,
+    oldSession: Record<string, unknown>,
   ): Omit<RelationshipSession, "createdAt" | "updatedAt"> {
     return {
       id: sessionId,
@@ -323,7 +325,7 @@ class DataMigrationService {
    * Migrate tasks data to new relationship structure
    */
   private async migrateTasksData(
-    batch: any,
+    batch: WriteBatch,
     userId: string,
     relationshipId: string,
     result: MigrationResult,
@@ -369,7 +371,7 @@ class DataMigrationService {
   private transformTaskData(
     taskId: string,
     relationshipId: string,
-    oldTask: any,
+    oldTask: Record<string, unknown>,
   ): Omit<RelationshipTask, "createdAt" | "updatedAt"> {
     return {
       id: taskId,
@@ -392,7 +394,7 @@ class DataMigrationService {
    * Migrate events data to new relationship structure
    */
   private async migrateEventsData(
-    batch: any,
+    batch: WriteBatch,
     userId: string,
     relationshipId: string,
     result: MigrationResult,
@@ -437,7 +439,7 @@ class DataMigrationService {
   private transformEventData(
     eventId: string,
     relationshipId: string,
-    oldEvent: any,
+    oldEvent: Record<string, unknown>,
   ): Omit<RelationshipEvent, "createdAt"> {
     return {
       id: eventId,
@@ -459,7 +461,7 @@ class DataMigrationService {
   /**
    * Execute the migration batch commit
    */
-  private async executeMigrationBatch(batch: any): Promise<void> {
+  private async executeMigrationBatch(batch: WriteBatch): Promise<void> {
     await batch.commit();
   }
 
