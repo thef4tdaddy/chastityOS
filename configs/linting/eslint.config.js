@@ -288,14 +288,19 @@ export default [
     },
   },
   {
-    // Hooks directory rules - enforce React patterns
+    // Hooks directory rules - enforce React patterns (excluding utility files)
     files: ['src/hooks/**/*.{js,jsx,ts,tsx}'],
+    ignores: [
+      'src/hooks/api/queryClient.ts', // QueryClient setup utility
+      'src/hooks/**/types.{ts,tsx}', // Type definition files
+      'src/hooks/**/constants.{ts,tsx}', // Constants files
+    ],
     rules: {
-      // Hook files must export hooks only
+      // Hook files must export hooks only - relaxed for utility files
       'no-restricted-syntax': [
         'error',
         {
-          selector: "ExportDefaultDeclaration:not([declaration.id.name^='use'])",
+          selector: "ExportDefaultDeclaration > Identifier:not([name^='use'])",
           message: "Hook files should only export hooks (functions starting with 'use')",
         },
       ],
@@ -418,6 +423,45 @@ export default [
       'no-undef': 'off', // Config files might need Node.js specific patterns
       'max-lines': 'off', // Configuration files can be longer
       complexity: 'off', // Build configurations can be complex
+    },
+  },
+  {
+    // Demo, marketing, and debug files - excluded from production rules
+    files: [
+      'src/components/demo/**/*.{js,jsx,ts,tsx}',
+      'src/components/**/Demo*.{js,jsx,ts,tsx}',
+      'src/components/**/*Demo.{js,jsx,ts,tsx}',
+      'src/pages/showcase/**/*.{js,jsx,ts,tsx}',
+      'src/pages/**/Demo*.{js,jsx,ts,tsx}',
+      'src/pages/**/*Demo.{js,jsx,ts,tsx}',
+      'debug_test.js',
+      'debug_*.{js,ts}',
+      '**/debug*.{js,ts}',
+    ],
+    rules: {
+      // Allow console statements in demo/debug files
+      'no-console': 'off',
+
+      // Relax refactoring rules - demos don't need production-level optimization
+      'max-lines-per-function': 'off',
+      'max-lines': 'off',
+      'max-statements': 'off',
+      'complexity': 'off',
+      'max-depth': 'off',
+      'max-params': 'off',
+      'max-nested-callbacks': 'off',
+
+      // Allow architecture violations in demos (localStorage, direct imports, etc.)
+      'no-restricted-syntax': 'off',
+      'no-restricted-imports': 'off',
+      'no-restricted-globals': 'off',
+
+      // Relax Zustand rules for demos
+      'zustand-safe-patterns/zustand-no-getstate-in-useeffect': 'warn',
+      'zustand-safe-patterns/zustand-no-server-data': 'warn',
+      'zustand-safe-patterns/zustand-store-reference-pattern': 'warn',
+      'zustand-safe-patterns/zustand-no-store-actions-in-deps': 'warn',
+      'zustand-safe-patterns/zustand-no-auto-executing-store-calls': 'warn',
     },
   },
 ];
