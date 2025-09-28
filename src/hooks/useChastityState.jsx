@@ -36,19 +36,26 @@ export const useChastityState = () => {
       requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
   }), [sessionState.isCageOn, sessionState.cageOnTime, sessionState.requiredKeyholderDurationSeconds]);
 
-  const personalGoalState = usePersonalGoal({
+  const personalGoalProps = useMemo(() => ({
     userId,
     settings,
     setSettings,
     session: sessionObjectForHooks,
-  });
+  }), [userId, settings, setSettings, sessionObjectForHooks]);
 
-  const dataManagementState = useDataManagement({
-    userId, isAuthReady, userEmail: googleEmail, settings: settings,
+  const personalGoalState = usePersonalGoal(personalGoalProps);
+
+  const dataManagementProps = useMemo(() => ({
+    userId, 
+    isAuthReady, 
+    userEmail: googleEmail, 
+    settings: settings,
     session: sessionObjectForHooks,
     events: eventLogState.sexualEventsLog, // Corrected property name
     tasks: tasks, // Pass the isolated tasks array
-  });
+  }), [userId, isAuthReady, googleEmail, settings, sessionObjectForHooks, eventLogState.sexualEventsLog, tasks]);
+
+  const dataManagementState = useDataManagement(dataManagementProps);
 
   const [isKeyholderModeUnlocked, setIsKeyholderModeUnlocked] = useState(false);
   const [keyholderMessage, setKeyholderMessage] = useState('');
@@ -92,7 +99,7 @@ export const useChastityState = () => {
     setKeyholderMessage('');
   }, []);
 
-  const keyholderHandlers = useKeyholderHandlers({
+  const keyholderHandlersProps = useMemo(() => ({
     userId,
     tasks: tasks, // Pass the isolated tasks array
     addTask: addTask,
@@ -100,7 +107,9 @@ export const useChastityState = () => {
     deleteTask: deleteTask, // Pass the delete function
     saveDataToFirestore: sessionState.saveDataToFirestore,
     requiredKeyholderDurationSeconds: sessionState.requiredKeyholderDurationSeconds,
-  });
+  }), [userId, tasks, addTask, updateTask, deleteTask, sessionState.saveDataToFirestore, sessionState.requiredKeyholderDurationSeconds]);
+
+  const keyholderHandlers = useKeyholderHandlers(keyholderHandlersProps);
 
   const handleSubmitForReview = useCallback(async (taskId, note) => {
     if (!updateTask) {
