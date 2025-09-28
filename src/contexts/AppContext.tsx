@@ -13,7 +13,6 @@ import React, {
 import { firebaseSync } from "../services/sync";
 import { preloadCriticalServices } from "../services/firebase";
 import { achievementIntegration } from "../services/AchievementIntegration";
-import { sessionPersistenceService } from "../services";
 import { serviceLogger } from "../utils/logging";
 import { db } from "../services/database";
 import type { SyncStatus } from "../types/database";

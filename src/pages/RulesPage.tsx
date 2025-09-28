@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useAuthState } from "../contexts";
 import { RuleCard, RuleEditor } from "../components/rules";
 import type { ChastityRule } from "../components/rules";
 import { FaBook, FaEdit, FaInfo } from "../utils/iconImport";
@@ -71,7 +70,6 @@ const mockRules: ChastityRule[] = [
 ];
 
 const RulesPage: React.FC = () => {
-  const { user } = useAuthState();
   const [rules, setRules] = useState<ChastityRule[]>(mockRules);
   const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
   const [showEditor, setShowEditor] = useState(false);
