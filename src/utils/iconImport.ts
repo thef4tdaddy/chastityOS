@@ -58,6 +58,7 @@ export {
   FaSpinner,
   FaStickyNote,
   FaStop,
+  FaSync,
   FaTasks,
   FaTimes,
   FaTimesCircle,
