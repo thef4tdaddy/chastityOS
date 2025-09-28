@@ -6,6 +6,11 @@
 import React from "react";
 import { FaKey, FaCopy, FaTrash, FaExclamationTriangle } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
+import {
+  AdminRelationship,
+  AdminPermissions,
+  LinkCode,
+} from "@/types/account-linking";
 
 interface MessageDisplayProps {
   message: string;
@@ -44,7 +49,7 @@ export const MessageDisplay: React.FC<MessageDisplayProps> = ({
 };
 
 interface ActiveKeyholderProps {
-  activeKeyholder: any;
+  activeKeyholder: AdminRelationship;
   showPermissions: string | null;
   setShowPermissions: (id: string | null) => void;
 }
@@ -92,7 +97,7 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
   );
 };
 
-const KeyholderInfo: React.FC<{ activeKeyholder: any }> = ({
+const KeyholderInfo: React.FC<{ activeKeyholder: AdminRelationship }> = ({
   activeKeyholder,
 }) => (
   <div className="text-sm text-gray-300 mb-3">
@@ -109,7 +114,7 @@ const KeyholderInfo: React.FC<{ activeKeyholder: any }> = ({
   </div>
 );
 
-const PermissionsDisplay: React.FC<{ permissions: any }> = ({
+const PermissionsDisplay: React.FC<{ permissions: AdminPermissions }> = ({
   permissions,
 }) => (
   <div className="mt-3 p-3 bg-gray-700 rounded border">
@@ -175,7 +180,7 @@ export const CreateInviteSection: React.FC<CreateInviteSectionProps> = ({
 };
 
 interface ActiveInviteCodesProps {
-  activeInviteCodes: any[];
+  activeInviteCodes: LinkCode[];
   copyToClipboard: (text: string) => void;
 }
 
@@ -204,7 +209,7 @@ export const ActiveInviteCodes: React.FC<ActiveInviteCodesProps> = ({
 };
 
 const InviteCodeCard: React.FC<{
-  invite: any;
+  invite: LinkCode;
   copyToClipboard: (text: string) => void;
 }> = ({ invite, copyToClipboard }) => (
   <div className="p-3 bg-gray-700 rounded border flex items-center justify-between">
@@ -297,7 +302,7 @@ export const AcceptInviteSection: React.FC<AcceptInviteSectionProps> = ({
 );
 
 interface SubmissiveRelationshipsProps {
-  relationships: { asKeyholder: any[] };
+  relationships: { asKeyholder: AdminRelationship[] };
 }
 
 export const SubmissiveRelationships: React.FC<
@@ -309,7 +314,7 @@ export const SubmissiveRelationships: React.FC<
     <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
       <h3 className="font-semibold text-purple-300 mb-3">Your Submissives</h3>
       <div className="space-y-2">
-        {relationships.asKeyholder.map((relationship: any) => (
+        {relationships.asKeyholder.map((relationship: AdminRelationship) => (
           <SubmissiveCard key={relationship.id} relationship={relationship} />
         ))}
       </div>
@@ -317,7 +322,9 @@ export const SubmissiveRelationships: React.FC<
   );
 };
 
-const SubmissiveCard: React.FC<{ relationship: any }> = ({ relationship }) => (
+const SubmissiveCard: React.FC<{ relationship: AdminRelationship }> = ({
+  relationship,
+}) => (
   <div className="p-3 bg-gray-700 rounded border">
     <div className="flex items-center justify-between mb-2">
       <div className="text-sm">
