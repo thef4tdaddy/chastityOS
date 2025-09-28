@@ -3,7 +3,7 @@
  * React hook for managing leaderboard data and user participation
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { achievementDBService } from "../services";
 import {
@@ -92,10 +92,10 @@ export const useLeaderboards = (
 
   // Update privacy settings when data changes
   useEffect(() => {
-    if (userPrivacySettings) {
-      setPrivacySettings(userPrivacySettings);
+    if (_userPrivacySettings) {
+      setPrivacySettings(_userPrivacySettings);
     }
-  }, [userPrivacySettings]);
+  }, [_userPrivacySettings]);
 
   // ==================== MUTATIONS ====================
 

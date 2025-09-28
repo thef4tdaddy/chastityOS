@@ -109,7 +109,7 @@ interface ExportDataOptions {
 
 /**
  * Get user settings
- * Fixes: SettingsPage.tsx:696 (settingsDBService.findByUserId)
+ * Fixes: SettingsPage.tsx:696 (settingsDBService.getSettings)
  * Impact: Entire 780-line settings page becomes functional
  */
 export function useUserSettings(userId: string) {
@@ -119,14 +119,16 @@ export function useUserSettings(userId: string) {
       logger.info("Fetching user settings", { userId });
 
       try {
-        const settings = await settingsDBService.findByUserId(userId);
+        const settingsArray = await settingsDBService.findByUserId(userId);
 
-        if (!settings) {
+        if (!settingsArray || settingsArray.length === 0) {
           logger.info("No settings found for user, will create defaults", {
             userId,
           });
           return null;
         }
+
+        const settings = settingsArray[0];
 
         logger.info("User settings retrieved successfully", {
           userId,
@@ -159,7 +161,11 @@ export function useSettingsSection(userId: string, section: SettingsSection) {
     queryFn: async () => {
       logger.info("Fetching settings section", { userId, section });
 
-      const settings = await settingsDBService.findByUserId(userId);
+      const settingsArray = await settingsDBService.findByUserId(userId);
+      if (!settingsArray || settingsArray.length === 0) return null;
+
+      // Get the first (and should be only) settings record for this user
+      const settings = settingsArray[0];
       if (!settings) return null;
 
       // Extract just the requested section
@@ -194,7 +200,10 @@ export function useUpdateSettings() {
 
       try {
         // Get existing settings or create defaults
-        let existingSettings = await settingsDBService.findByUserId(userId);
+        let settingsResult = await settingsDBService.findByUserId(userId);
+        let existingSettings = Array.isArray(settingsResult)
+          ? settingsResult[0]
+          : settingsResult;
 
         if (!existingSettings) {
           // Create default settings if none exist
@@ -266,7 +275,7 @@ export function useAccountMutations() {
 
         // This would integrate with auth service for 2FA setup
         // For now, just update settings
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -287,7 +296,7 @@ export function useAccountMutations() {
       mutationFn: async ({ userId }: { userId: string }) => {
         logger.info("Disabling 2FA", { userId });
 
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -352,7 +361,7 @@ export function usePrivacyMutations() {
           settings: privacySettings,
         });
 
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -500,65 +509,48 @@ function createDefaultSettings(userId: string): UserSettings {
   return {
     id: userId,
     userId,
-    // Account defaults
-    displayName: "",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    language: "en",
+    syncStatus: "synced",
+    lastModified: new Date(),
 
     // Display defaults
     theme: "system",
-    fontSize: "medium",
-    animations: true,
-    notifications: true,
-
-    // Profile defaults
-    publicProfile: false,
-    profileVisibility: "private",
-    showStats: true,
-    showAchievements: true,
-
-    // Goal defaults
-    defaultGoalDuration: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-    allowKeyholderOverride: false,
-    goalReminders: true,
-    progressSharing: "private",
-
-    // Privacy defaults
-    dataCollection: true,
-    analytics: false,
-    crashReporting: true,
-    locationTracking: false,
-
-    // Security defaults
-    twoFactorEnabled: false,
-    sessionTimeout: 60 * 60 * 1000, // 1 hour
-    requirePasswordForSensitive: true,
-    emergencyContacts: [],
-
-    // Data defaults
-    autoBackup: true,
-    backupFrequency: "weekly",
-    dataRetention: 365, // 1 year
-    exportFormat: "json",
-
-    // Advanced defaults
-    advancedLogging: false,
-    betaFeatures: false,
-    developmentMode: false,
-
-    // Keyholder defaults
-    keyholderLinked: false,
-    keyholderPermissions: {
-      viewTasks: false,
-      assignTasks: false,
-      viewSessions: false,
-      controlSessions: false,
-      viewEvents: false,
-      viewSettings: false,
-      modifySettings: false,
+    notifications: {
+      enabled: true,
+      sessionReminders: true,
+      taskDeadlines: true,
+      keyholderMessages: true,
+      goalProgress: true,
+      achievements: true,
+    },
+    privacy: {
+      publicProfile: false,
+      shareStatistics: false,
+      allowDataExport: true,
+      shareAchievements: false,
+    },
+    chastity: {
+      allowEmergencyUnlock: true,
+      emergencyUnlockCooldown: 24, // hours
+      requireKeyholderApproval: false,
+      defaultSessionGoal: 7 * 24 * 60 * 60, // 7 days in seconds
+      hardcoreModeEnabled: false,
+    },
+    display: {
+      language: "en",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      dateFormat: "MM/DD/YYYY",
+      timeFormat: "12h",
+      startOfWeek: "monday",
+    },
+    achievements: {
+      enableTracking: true,
+      showProgress: true,
+      enableNotifications: true,
     },
 
-    createdAt: new Date(),
+    // Optional fields
+    eventDisplayMode: "kinky",
+    twoFactorEnabled: false,
     updatedAt: new Date(),
   };
 }
