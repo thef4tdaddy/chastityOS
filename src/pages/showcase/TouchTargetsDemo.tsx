@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "react-toastify";
 import { MobileCard, TouchTarget } from "../../components/mobile";
 
 interface TouchTargetsDemoProps {
@@ -13,14 +14,14 @@ export const TouchTargetsDemo: React.FC<TouchTargetsDemoProps> = ({
       <h2 className="text-fluid-lg font-semibold">Touch Targets</h2>
       <div className="grid grid-cols-3 gap-4">
         <TouchTarget
-          onTap={() => alert("Tapped!")}
+          onTap={() => toast.info("Tapped!")}
           className="bg-tekhelet/20 rounded-lg flex-col"
         >
           <span className="text-2xl">👆</span>
           <span className="text-xs">Tap</span>
         </TouchTarget>
         <TouchTarget
-          onLongPress={() => alert("Long pressed!")}
+          onLongPress={() => toast.success("Long pressed!")}
           className="bg-tangerine/20 rounded-lg flex-col"
           hapticFeedback="medium"
         >
