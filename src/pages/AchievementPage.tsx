@@ -27,7 +27,7 @@ export const AchievementPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
 
   const {
-    allAchievements,
+    allAchievements: _allAchievements,
     getAchievementsWithProgress,
     toggleAchievementVisibility,
     isLoading,

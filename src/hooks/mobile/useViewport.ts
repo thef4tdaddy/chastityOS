@@ -92,7 +92,7 @@ export const useViewport = (): ViewportInfo => {
     updateSafeAreaInsets();
 
     // Handle resize events with throttling
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {

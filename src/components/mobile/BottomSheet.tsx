@@ -68,6 +68,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         document.body.style.overflow = "";
       };
     }
+    return undefined;
   }, [isOpen, isMobile]);
 
   if (!isOpen) return null;

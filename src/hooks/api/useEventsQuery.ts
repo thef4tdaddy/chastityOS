@@ -176,7 +176,9 @@ export function useEventMutations() {
         (oldEvents: DBEvent[] | undefined) => {
           if (!oldEvents) return oldEvents;
           return oldEvents.map((event) =>
-            event.id === variables.eventId ? { ...event, ...data } : event,
+            event.id === variables.eventId
+              ? { ...event, ...(data as Partial<DBEvent>) }
+              : event,
           );
         },
       );
