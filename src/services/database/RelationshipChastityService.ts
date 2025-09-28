@@ -1,25 +1,29 @@
 /**
  * Relationship Chastity Service
- * Handles chastity data operations for relationship-based system
+ * REFACTORED: Now uses domain-focused services for better maintainability
+ *
+ * This file maintains backward compatibility by re-exporting the facade service
+ * that delegates to the appropriate domain services.
  */
 import {
   collection,
   doc,
   addDoc,
   updateDoc,
-  deleteDoc,
   getDoc,
   getDocs,
   query,
-  where,
   orderBy,
   limit,
   serverTimestamp,
   writeBatch,
   onSnapshot,
   Unsubscribe,
+  Firestore,
+  Timestamp,
+  FieldValue,
 } from "firebase/firestore";
-import { getFirestore } from "@/services/firebase";
+import { getFirestore } from "../firebase";
 import {
   RelationshipChastityData,
   RelationshipSession,
@@ -27,15 +31,15 @@ import {
   RelationshipEvent,
   SessionEvent,
   RelationshipTaskStatus,
-} from "@/types/relationships";
-import { relationshipService } from "./RelationshipService";
-import { serviceLogger } from "@/utils/logging";
-import { generateUUID } from "@/utils";
+} from "../../types/relationships";
+import { relationshipService } from "./relationships/RelationshipService";
+import { serviceLogger } from "../../utils/logging";
+import { generateUUID } from "../../utils";
 
 const logger = serviceLogger("RelationshipChastityService");
 
 class RelationshipChastityService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -45,9 +49,12 @@ class RelationshipChastityService {
     this.db = await getFirestore();
   }
 
-  private async ensureDb() {
+  private async ensureDb(): Promise<Firestore> {
     if (!this.db) {
       await this.initializeDb();
+    }
+    if (!this.db) {
+      throw new Error("Failed to initialize Firestore database");
     }
     return this.db;
   }
@@ -142,6 +149,9 @@ class RelationshipChastityService {
   ): Promise<string> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Check if user has permission to start session
       const hasPermission = await relationshipService.checkPermission(
@@ -242,6 +252,9 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Check permissions
       const hasPermission = await relationshipService.checkPermission(
@@ -335,6 +348,9 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Check if submissive can pause
       const canPause = await relationshipService.checkPermission(
@@ -412,6 +428,9 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
+      if (!db) {
+        throw new Error("Database connection not available");
+      }
 
       // Get current chastity data to calculate pause time
       const chastityData = await this.getChastityData(relationshipId);
@@ -520,7 +539,7 @@ class RelationshipChastityService {
         text: taskData.text,
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
-        dueDate: taskData.dueDate ? serverTimestamp() : undefined,
+        dueDate: taskData.dueDate ? (taskData.dueDate as any) : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
       };
@@ -562,7 +581,7 @@ class RelationshipChastityService {
     try {
       const db = await this.ensureDb();
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status,
         updatedAt: serverTimestamp(),
       };

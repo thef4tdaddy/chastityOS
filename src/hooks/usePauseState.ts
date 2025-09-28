@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   PauseCooldownService,
   PauseState,
 } from "../services/PauseCooldownService";
-import { PauseService } from "../services/PauseService";
 import { serviceLogger } from "../utils/logging";
 
 const logger = serviceLogger("usePauseState");
@@ -24,7 +23,7 @@ interface UsePauseStateReturn {
 
 export const usePauseState = ({
   userId,
-  sessionId,
+  sessionId: _sessionId,
   refreshInterval = 30000, // 30 seconds
 }: UsePauseStateProps): UsePauseStateReturn => {
   const [pauseState, setPauseState] = useState<PauseState | null>(null);
@@ -54,7 +53,7 @@ export const usePauseState = ({
   // Initial load
   useEffect(() => {
     refreshPauseState();
-  }, [refreshPauseState]);
+  }, []); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
 
   // Auto-refresh for cooldown countdown
   useEffect(() => {
@@ -62,7 +61,8 @@ export const usePauseState = ({
 
     const interval = setInterval(refreshPauseState, refreshInterval);
     return () => clearInterval(interval);
-  }, [pauseState, refreshInterval, refreshPauseState]);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [pauseState, refreshInterval]); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
 
   // Real-time cooldown countdown
   useEffect(() => {
@@ -89,7 +89,8 @@ export const usePauseState = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [pauseState, refreshPauseState]);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [pauseState]); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
 
   return {
     pauseState,

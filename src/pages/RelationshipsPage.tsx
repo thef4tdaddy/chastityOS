@@ -7,7 +7,7 @@ import RelationshipManager from "@/components/relationships/RelationshipManager"
 import { useRelationships } from "@/hooks/useRelationships";
 
 const RelationshipsPage: React.FC = () => {
-  const { activeRelationship, needsMigration } = useRelationships();
+  const { needsMigration } = useRelationships();
 
   return (
     <div className="min-h-screen bg-gray-50">

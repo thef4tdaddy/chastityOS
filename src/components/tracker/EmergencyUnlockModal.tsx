@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import {
   FaTimes,
   FaExclamationTriangle,
   FaArrowLeft,
   FaArrowRight,
 } from "react-icons/fa";
-import type { EmergencyUnlockReason } from "@/types/events";
-import { EMERGENCY_UNLOCK_REASONS } from "@/types/events";
-import { logger } from "../../utils/logging";
+import type { EmergencyUnlockReason } from "../../types/events";
+import { EMERGENCY_UNLOCK_REASONS } from "../../types/events";
+import { useEmergencyUnlockModal } from "../../hooks/tracker/useEmergencyUnlockModal";
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
@@ -20,63 +20,38 @@ interface EmergencyUnlockModalProps {
   isProcessing?: boolean;
 }
 
-type ModalStage = "warning" | "reason" | "confirm";
-
 export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   isOpen,
   onClose,
   onEmergencyUnlock,
   sessionId,
-  isProcessing = false,
+  isProcessing: _isProcessing = false,
 }) => {
-  const [stage, setStage] = useState<ModalStage>("warning");
-  const [reason, setReason] = useState<EmergencyUnlockReason | "">("");
-  const [customReason, setCustomReason] = useState("");
-  const [confirmText, setConfirmText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const confirmInputRef = useRef<HTMLInputElement>(null);
-  const requiredText = "EMERGENCY UNLOCK";
-
-  // Reset state when modal opens/closes
-  useEffect(() => {
-    if (isOpen) {
-      setStage("warning");
-      setReason("");
-      setCustomReason("");
-      setConfirmText("");
-      setIsSubmitting(false);
-    }
-  }, [isOpen]);
-
-  // Focus confirm input when reaching confirm stage
-  useEffect(() => {
-    if (stage === "confirm" && confirmInputRef.current) {
-      confirmInputRef.current.focus();
-    }
-  }, [stage]);
-
-  if (!isOpen) return null;
-
-  const handleEmergencyUnlock = async () => {
-    if (!reason || confirmText !== requiredText) return;
-
-    setIsSubmitting(true);
-    try {
-      const finalReason = reason as EmergencyUnlockReason;
-      const additionalNotes = reason === "Other" ? customReason : undefined;
+  const {
+    stage,
+    reason,
+    customReason,
+    confirmText,
+    isSubmitting,
+    setStage,
+    setReason,
+    setCustomReason,
+    setConfirmText,
+    handleEmergencyUnlock,
+    canProceedFromReason,
+    canConfirm,
+    requiredText,
+    confirmInputRef,
+  } = useEmergencyUnlockModal({
+    sessionId,
+    onEmergencyUnlock: async (finalReason, additionalNotes) => {
       await onEmergencyUnlock(finalReason, additionalNotes);
       onClose();
-    } catch (error) {
-      logger.error("Emergency unlock failed in modal", error, { sessionId });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+    isOpen,
+  });
 
-  const canProceedFromReason =
-    reason && (reason !== "Other" || customReason.trim());
-  const canConfirm = confirmText === requiredText && canProceedFromReason;
+  if (!isOpen) return null;
 
   const WarningStage = () => (
     <div className="text-center">

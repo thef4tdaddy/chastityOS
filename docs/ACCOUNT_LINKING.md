@@ -5,6 +5,7 @@ The ChastityOS Account Linking System provides secure, private linking between k
 ## Overview
 
 This system allows:
+
 - **Wearers** to generate secure link codes and share them with trusted keyholders
 - **Keyholders** to gain admin-level access to their wearer's data and controls
 - **Both parties** to maintain control with easy disconnection capabilities
@@ -34,31 +35,33 @@ This system allows:
 ### Data Structure
 
 #### Link Codes
+
 ```typescript
 interface LinkCode {
-  id: string;                 // 12-character secure code
-  wearerId: string;          // Creator's user ID
-  createdAt: Timestamp;      // Creation time
-  expiresAt: Timestamp;      // 24-hour expiry
-  status: 'pending' | 'used' | 'expired';
-  maxUses: number;           // Usually 1
-  usedBy: string | null;     // Keyholder who used it
-  shareMethod: 'manual' | 'qr' | 'email' | 'url';
+  id: string; // 12-character secure code
+  wearerId: string; // Creator's user ID
+  createdAt: Timestamp; // Creation time
+  expiresAt: Timestamp; // 24-hour expiry
+  status: "pending" | "used" | "expired";
+  maxUses: number; // Usually 1
+  usedBy: string | null; // Keyholder who used it
+  shareMethod: "manual" | "qr" | "email" | "url";
 }
 ```
 
 #### Admin Relationships
+
 ```typescript
 interface AdminRelationship {
   id: string;
-  keyholderId: string;       // Admin account
-  wearerId: string;          // Managed account
+  keyholderId: string; // Admin account
+  wearerId: string; // Managed account
   establishedAt: Timestamp;
-  status: 'active' | 'paused' | 'terminated';
+  status: "active" | "paused" | "terminated";
   permissions: AdminPermissions;
   security: SecuritySettings;
   privacy: PrivacySettings;
-  linkMethod: 'code' | 'qr' | 'email';
+  linkMethod: "code" | "qr" | "email";
 }
 ```
 
@@ -85,7 +88,7 @@ interface AdminRelationship {
 
 1. **Use Link Code**
    - Navigate to Keyholder page
-   - Click "Enter Link Code" 
+   - Click "Enter Link Code"
    - Enter the code provided by your wearer
    - Confirm the admin relationship
 
@@ -102,18 +105,21 @@ interface AdminRelationship {
 ## Security Features
 
 ### Link Code Security
+
 - **Cryptographically Secure**: Uses `crypto.getRandomValues()`
 - **Time-Limited**: 24-hour automatic expiry
 - **Single-Use**: Codes become invalid after first use
 - **Secure Characters**: Excludes confusing characters (0, O, 1, I)
 
 ### Admin Session Security
+
 - **Time-Limited Access**: 30-minute sessions with auto-expiry
 - **Permission-Based**: Granular control over what keyholders can do
 - **Audit Trail**: Complete logging of all admin actions
 - **IP Logging**: Track access for security auditing
 
 ### Privacy Controls
+
 - **Wearer Transparency**: Wearers can see all keyholder actions
 - **Data Retention**: Control what happens to data after disconnection
 - **Easy Disconnection**: Either party can terminate instantly
@@ -128,7 +134,7 @@ The system includes comprehensive Firestore security rules:
 match /linkCodes/{codeId} {
   allow read: if request.auth.uid == resource.data.wearerId;
   allow create: if request.auth.uid == request.resource.data.wearerId;
-  allow update: if resource.data.status == 'pending' && 
+  allow update: if resource.data.status == 'pending' &&
                    request.resource.data.status == 'used';
 }
 
@@ -144,6 +150,7 @@ match /adminRelationships/{relationshipId} {
 ## Integration with Existing System
 
 The account linking system:
+
 - **Preserves existing auth**: Anonymous accounts and Google SSO still work
 - **Maintains privacy**: No central server knows relationship details
 - **Extends functionality**: Adds multi-user support without breaking changes
@@ -169,13 +176,14 @@ const {
   relationships,
   currentLinkCode,
   isGeneratingCode,
-  disconnectKeyholder
+  disconnectKeyholder,
 } = useAccountLinking();
 ```
 
 ## Error Handling
 
 The system provides comprehensive error handling:
+
 - **Network Errors**: Graceful degradation and retry logic
 - **Permission Errors**: Clear error messages for unauthorized actions
 - **Validation Errors**: Real-time feedback for invalid inputs
@@ -184,6 +192,7 @@ The system provides comprehensive error handling:
 ## Future Enhancements
 
 Planned improvements:
+
 - **QR Code Generation**: Visual QR codes for easy sharing
 - **Email Integration**: Encrypted email sharing
 - **Advanced Permissions**: More granular control options
@@ -193,6 +202,7 @@ Planned improvements:
 ## Support
 
 For issues or questions about the account linking system:
+
 1. Check the TypeScript types for API reference
 2. Review the component props and hook return values
 3. Check Firebase console for security rule issues

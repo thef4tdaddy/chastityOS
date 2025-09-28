@@ -47,7 +47,7 @@ interface EventListProps {
 
 export const EventList: React.FC<EventListProps> = ({ events }) => {
   const getEventTypeInfo = (type: EventType) => {
-    return EVENT_TYPES.find((et) => et.value === type) || EVENT_TYPES[3]; // Default to note
+    return EVENT_TYPES.find((et) => et.value === type) || EVENT_TYPES[3]!; // Default to note
   };
 
   const formatDate = (date: Date) => {

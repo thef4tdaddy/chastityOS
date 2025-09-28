@@ -6,17 +6,11 @@
 import React, { useState } from "react";
 import { useOfflineQueueStats } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
-import {
-  FaWifi,
-  FaWifiSlash,
-  FaSync,
-  FaDatabase,
-  FaCloud,
-} from "react-icons/fa";
+import { FaWifi, FaWifiSlash, FaSync } from "../../utils/iconImport";
 
 export const OfflineStatus: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const { data: queueStats, isLoading } = useOfflineQueueStats();
+  const { data: queueStats } = useOfflineQueueStats();
   const { showInfo } = useNotificationActions();
 
   // Listen for online/offline events

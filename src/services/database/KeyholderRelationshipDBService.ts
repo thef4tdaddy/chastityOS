@@ -3,6 +3,7 @@
  * Handles account linking between keyholders and submissives
  */
 import { BaseDBService } from "./BaseDBService";
+import { db } from "../storage/ChastityDB";
 import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
 import { generateBackupCode } from "../../utils/helpers/hash";
 import { serviceLogger } from "../../utils/logging";
@@ -37,6 +38,23 @@ export interface AcceptInviteCodeData {
 class KeyholderRelationshipDBService extends BaseDBService {
   protected tableName = "keyholderRelationships";
   protected inviteCodesTable = "inviteCodes";
+
+  // Database instance access
+  protected db = db;
+
+  /**
+   * Get record by ID (alias for findById)
+   */
+  async getById(id: string): Promise<any> {
+    return await this.getByUid(id); // Use getByUid from BaseDBService
+  }
+
+  /**
+   * Update record (alias for update method)
+   */
+  async update(id: string, data: any): Promise<void> {
+    return await super.update(id, data);
+  }
 
   /**
    * Generate a new invite code for a submissive

@@ -1,7 +1,6 @@
 import React from "react";
 import { useAuthState } from "../contexts";
 import { useEventHistory } from "../hooks/api/useEvents";
-import type { DBEvent } from "../types/database";
 import { LogEventForm, EventList } from "../components/log_event";
 import { FaSpinner } from "../utils/iconImport";
 

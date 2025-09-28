@@ -27,5 +27,5 @@ export { emergencyService } from "./EmergencyService";
 export { keyholderRelationshipDBService } from "./KeyholderRelationshipDBService";
 
 // Relationship-based services
-export { relationshipService } from "./RelationshipService";
+export { relationshipService } from "./relationships/RelationshipService";
 export { relationshipChastityService } from "./RelationshipChastityService";

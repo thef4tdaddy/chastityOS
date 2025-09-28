@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuthState } from "../contexts";
 import { useTasks, useUpdateTaskStatus } from "../hooks/api/useTasks";
-import type { DBTask, TaskStatus } from "../types/database";
+import type { TaskStatus } from "../types/database";
 import { TaskItem } from "../components/tasks";
 
 const TasksPage: React.FC = () => {
@@ -17,7 +17,7 @@ const TasksPage: React.FC = () => {
 
   const updateTaskStatus = useUpdateTaskStatus();
 
-  const handleSubmitTask = async (taskId: string, note: string) => {
+  const handleSubmitTask = async (taskId: string, _note: string) => {
     if (!user) return;
 
     try {
@@ -27,7 +27,7 @@ const TasksPage: React.FC = () => {
         status: "submitted" as TaskStatus,
         // Note: submissiveNote would be handled in task updates
       });
-    } catch (error) {
+    } catch (_error) {
       // Error is already logged in the hook
       // TODO: Add toast notification for user feedback on error
     }

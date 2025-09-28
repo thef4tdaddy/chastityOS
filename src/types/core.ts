@@ -157,6 +157,11 @@ export interface Task {
 
 // ==================== GOAL TYPES ====================
 
+export enum SpecialChallengeType {
+  LOCKTOBER = "locktober",
+  NO_NUT_NOVEMBER = "no_nut_november",
+}
+
 export interface PersonalGoal {
   id: string;
   userId: string;
@@ -168,6 +173,10 @@ export interface PersonalGoal {
   createdAt: Timestamp;
   completedAt?: Timestamp;
   reward?: string;
+  // Special challenge properties
+  isSpecialChallenge?: boolean;
+  challengeType?: SpecialChallengeType;
+  challengeYear?: number;
 }
 
 // ==================== KEYHOLDER TYPES ====================

@@ -2,10 +2,12 @@
  * Modal Store - UI Interaction State
  * Manages modal visibility, content, and confirmation dialogs
  */
+import * as React from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export interface ModalConfig {
+// Define specific prop types for different modal types
+export interface BaseModalProps {
   isOpen: boolean;
   title?: string;
   content?: React.ReactNode;
@@ -15,22 +17,57 @@ export interface ModalConfig {
   cancelText?: string;
   size?: "sm" | "md" | "lg" | "xl";
   closable?: boolean;
-  [key: string]: any; // Additional props for specific modals
 }
 
-export interface ModalState {
-  // Modal registry
-  modals: Record<string, ModalConfig>;
+export interface ConfirmModalProps extends BaseModalProps {
+  message?: string;
+  confirmButtonStyle?: "primary" | "danger" | "warning";
+}
 
-  // Actions
+export interface TaskDetailsModalProps extends BaseModalProps {
+  taskId?: string;
+  taskData?: {
+    title: string;
+    description?: string;
+    dueDate?: Date;
+    status?: string;
+  };
+}
+
+export interface EventDetailsModalProps extends BaseModalProps {
+  eventId?: string;
+  eventData?: {
+    type: string;
+    timestamp: Date;
+    details?: Record<string, unknown>;
+  };
+}
+
+export interface AccountLinkingModalProps extends BaseModalProps {
+  linkingCode?: string;
+  qrCodeData?: string;
+}
+
+// Union type for all possible modal configurations
+export type ModalConfig =
+  | ConfirmModalProps
+  | TaskDetailsModalProps
+  | EventDetailsModalProps
+  | AccountLinkingModalProps
+  | BaseModalProps;
+
+export interface ModalActions {
   openModal: (id: string, config?: Partial<ModalConfig>) => void;
   closeModal: (id: string) => void;
   closeAllModals: () => void;
   updateModal: (id: string, updates: Partial<ModalConfig>) => void;
-
-  // Utility methods
   isModalOpen: (id: string) => boolean;
   getModal: (id: string) => ModalConfig | undefined;
+}
+
+export interface ModalState extends ModalActions {
+  // Modal registry
+  modals: Record<string, ModalConfig>;
 }
 
 export const useModalStore = create<ModalState>()(
@@ -90,13 +127,13 @@ export const useModalStore = create<ModalState>()(
 
       updateModal: (id: string, updates: Partial<ModalConfig>) =>
         set(
-          (state) => ({
+          (state: ModalState): Partial<ModalState> => ({
             modals: {
               ...state.modals,
               [id]: {
                 ...state.modals[id],
                 ...updates,
-              },
+              } as ModalConfig,
             },
           }),
           false,
@@ -118,6 +155,9 @@ export const useModalStore = create<ModalState>()(
     },
   ),
 );
+
+// Type aliases for compatibility
+export type ModalStore = ModalState;
 
 // Common modal IDs as constants to prevent typos
 export const MODAL_IDS = {
@@ -141,7 +181,9 @@ export const useIsModalOpen = (id: string) =>
 
 // Utility hooks for common modal patterns
 export const useConfirmModal = () => {
-  const { openModal, closeModal } = useModalStore();
+  // Selective subscriptions for modal store actions
+  const openModal = useModalStore((state) => state.openModal);
+  const closeModal = useModalStore((state) => state.closeModal);
 
   const openConfirmModal = (
     title: string,

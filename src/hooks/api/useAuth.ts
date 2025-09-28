@@ -254,3 +254,42 @@ export function useReauthenticate() {
     },
   });
 }
+
+/**
+ * Main authentication hook that combines all auth functionality
+ * This is the primary export that other components should use
+ */
+export function useAuth() {
+  const { data: user, isLoading, error } = useCurrentUser();
+  const loginMutation = useLogin();
+  const logoutMutation = useLogout();
+  const signUpMutation = useSignUp();
+  const passwordResetMutation = usePasswordReset();
+  const updateProfileMutation = useUpdateProfile();
+  const emailVerificationMutation = useEmailVerification();
+  const reauthenticateMutation = useReauthenticate();
+
+  return {
+    // User state
+    user,
+    userId: user?.uid,
+    isAuthenticated: !!user,
+    isLoading,
+    error,
+
+    // Auth methods
+    login: loginMutation.mutateAsync,
+    logout: logoutMutation.mutateAsync,
+    signUp: signUpMutation.mutateAsync,
+    sendPasswordReset: passwordResetMutation.mutateAsync,
+    updateProfile: updateProfileMutation.mutateAsync,
+    sendEmailVerification: emailVerificationMutation.mutateAsync,
+    reauthenticate: reauthenticateMutation.mutateAsync,
+
+    // Mutation states
+    isLoggingIn: loginMutation.isPending,
+    isLoggingOut: logoutMutation.isPending,
+    isSigningUp: signUpMutation.isPending,
+    isUpdatingProfile: updateProfileMutation.isPending,
+  };
+}

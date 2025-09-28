@@ -107,7 +107,10 @@ export function useEventHistory(userId: string, filters?: EventFilters) {
 
         return filteredEvents;
       } catch (error) {
-        logger.error("Failed to fetch event history", error, { userId });
+        logger.error("Failed to fetch event history", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+        });
         throw error;
       }
     },
@@ -289,7 +292,8 @@ export function useCreateEvent() {
       );
     },
     onError: (error, { userId, eventData }) => {
-      logger.error("Event creation failed", error, {
+      logger.error("Event creation failed", {
+        error: error instanceof Error ? error.message : String(error),
         userId,
         eventType: eventData.type,
       });
@@ -343,7 +347,11 @@ export function useUpdateEvent() {
       queryClient.invalidateQueries({ queryKey: eventKeys.recent(userId) });
     },
     onError: (error, { eventId, userId }) => {
-      logger.error("Event update failed", error, { eventId, userId });
+      logger.error("Event update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        eventId,
+        userId,
+      });
     },
   });
 }
@@ -389,7 +397,11 @@ export function useDeleteEvent() {
       );
     },
     onError: (error, { eventId, userId }) => {
-      logger.error("Event deletion failed", error, { eventId, userId });
+      logger.error("Event deletion failed", {
+        error: error instanceof Error ? error.message : String(error),
+        eventId,
+        userId,
+      });
     },
   });
 }

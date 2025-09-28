@@ -151,7 +151,11 @@ export function useTasks(userId: string, filters?: TaskFilters) {
 
         return filteredTasks;
       } catch (error) {
-        logger.error("Failed to fetch tasks", error, { userId, filters });
+        logger.error("Failed to fetch tasks", {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+          filters,
+        });
         throw error;
       }
     },
@@ -203,7 +207,7 @@ export function useTasksAssignedBy(keyholderUid: string) {
       // Note: This would require a different query method in the future
       // For now, we'll need to scan all tasks (inefficient but works)
       const allTasks = await taskDBService.getAll();
-      return allTasks.filter((task) => task.assignedBy === keyholderUid);
+      return allTasks.filter((task: Task) => task.assignedBy === keyholderUid);
     },
     staleTime: 5 * 60 * 1000,
     enabled: !!keyholderUid,
@@ -255,7 +259,10 @@ export function useCreateTask() {
 
       return newTask;
     },
-    onSuccess: (newTask, { userId }) => {
+    onSuccess: (
+      newTask: Task,
+      { userId }: { userId: string; taskData: any },
+    ) => {
       logger.info("Task creation successful", { taskId: newTask.id, userId });
 
       // Invalidate task lists to trigger refetch
@@ -274,7 +281,8 @@ export function useCreateTask() {
       );
     },
     onError: (error, { userId, taskData }) => {
-      logger.error("Task creation failed", error, {
+      logger.error("Task creation failed", {
+        error: error instanceof Error ? error.message : String(error),
         userId,
         title: taskData.title,
       });
@@ -360,7 +368,10 @@ export function useUpdateTaskStatus() {
 
       return { previousTask, previousTasks };
     },
-    onSuccess: (updatedTask, { userId, taskId }) => {
+    onSuccess: (
+      updatedTask: Task,
+      { userId, taskId }: { userId: string; taskId: string; status: any },
+    ) => {
       logger.info("Task status update successful", {
         taskId,
         userId,
@@ -380,7 +391,11 @@ export function useUpdateTaskStatus() {
       }
     },
     onError: (error, { taskId, userId }, context) => {
-      logger.error("Task status update failed", error, { taskId, userId });
+      logger.error("Task status update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
 
       // Rollback optimistic updates
       if (context?.previousTask) {
@@ -428,7 +443,13 @@ export function useUpdateTask() {
 
       return updatedTask;
     },
-    onSuccess: (updatedTask, { userId, taskId }) => {
+    onSuccess: (
+      updatedTask: Task,
+      {
+        userId,
+        taskId,
+      }: { userId: string; taskId: string; updates: UpdateTaskData },
+    ) => {
       logger.info("Task update successful", { taskId, userId });
 
       // Update detail cache
@@ -441,7 +462,11 @@ export function useUpdateTask() {
       });
     },
     onError: (error, { taskId, userId }) => {
-      logger.error("Task update failed", error, { taskId, userId });
+      logger.error("Task update failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
     },
   });
 }
@@ -466,7 +491,10 @@ export function useDeleteTask() {
 
       logger.info("Task deleted successfully", { taskId, userId });
     },
-    onSuccess: (_, { taskId, userId }) => {
+    onSuccess: (
+      _: void,
+      { taskId, userId }: { taskId: string; userId: string },
+    ) => {
       logger.info("Task deletion successful", { taskId, userId });
 
       // Remove from detail cache
@@ -491,7 +519,11 @@ export function useDeleteTask() {
       );
     },
     onError: (error, { taskId, userId }) => {
-      logger.error("Task deletion failed", error, { taskId, userId });
+      logger.error("Task deletion failed", {
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        userId,
+      });
     },
   });
 }

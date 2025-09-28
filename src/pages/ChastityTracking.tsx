@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { EmergencyUnlockModal } from "../components/tracker/EmergencyUnlockModal";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { SessionLoader } from "../components/tracker/SessionLoader";
 import { SessionRecoveryModal } from "../components/tracker/SessionRecoveryModal";
@@ -11,7 +10,7 @@ import { PauseResumeButtons } from "../components/tracker/PauseResumeButtons";
 import { ReasonModals } from "../components/tracker/ReasonModals";
 import { TrackerHeader } from "../components/tracker/TrackerHeader";
 import { useSessionPersistence } from "../hooks/useSessionPersistence";
-import { useCurrentUser } from "../hooks/api/useAuth";
+import { useAuth } from "../hooks/api/useAuth";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -21,7 +20,7 @@ import type { SessionRestorationResult } from "../services/SessionPersistenceSer
 
 const TrackerPage: React.FC = () => {
   // Authentication state
-  const { data: user, isLoading: authLoading } = useCurrentUser();
+  const { data: user, isLoading: authLoading } = useAuth();
 
   // Session persistence state
   const {
@@ -118,7 +117,12 @@ const TrackerPage: React.FC = () => {
   // } = usePauseState({ userId, sessionId: currentSession?.id });
 
   // Mock pause state data for now
-  const pauseState = { canPause: true, cooldownRemaining: undefined };
+  const pauseState = {
+    canPause: true,
+    cooldownRemaining: undefined,
+    lastPauseTime: undefined,
+    nextPauseAvailable: undefined,
+  };
   const pauseStateLoading = false;
   const pauseStateError = null;
   const refreshPauseState = () => {};
@@ -159,15 +163,23 @@ const TrackerPage: React.FC = () => {
     });
   };
 
-  // Initialize mock session
+  // Initialize mock session with real DBSession structure
   useEffect(() => {
-    setCurrentSession({
+    const mockSession: DBSession = {
       id: "session123",
       userId: "user123",
       startTime: new Date(Date.now() - 86400000), // 1 day ago
+      endTime: undefined,
       isPaused: false,
-      accumulatedPauseTime: 0,
-    });
+      pauseStartTime: undefined,
+      accumulatedPauseTime: 3600, // 1 hour of accumulated pause time
+      goalDuration: 172800, // 48 hour goal
+      isHardcoreMode: false,
+      keyholderApprovalRequired: false,
+      syncStatus: "synced" as const,
+      lastModified: new Date(),
+    };
+    setCurrentSession(mockSession);
   }, []);
 
   const handlePause = () => {
@@ -190,6 +202,7 @@ const TrackerPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
+<<<<<<< HEAD
       {/* Session Persistence Loading */}
       {(authLoading || isInitializing) && user?.uid && (
         <SessionLoader
@@ -232,15 +245,23 @@ const TrackerPage: React.FC = () => {
       />
 
       <TrackerStats
-        mainChastityDisplayTime={mainChastityDisplayTime}
+        // Pass the real session when using real-time timer
+        currentSession={useRealTimeTimer ? currentSession : undefined}
+        // Legacy props for backward compatibility
+        mainChastityDisplayTime={
+          useRealTimeTimer ? undefined : mainChastityDisplayTime
+        }
         topBoxLabel={topBoxLabel}
-        topBoxTime={topBoxTime}
-        livePauseDuration={livePauseDuration}
-        accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession}
+        topBoxTime={useRealTimeTimer ? undefined : topBoxTime}
+        livePauseDuration={useRealTimeTimer ? undefined : livePauseDuration}
+        accumulatedPauseTimeThisSession={
+          useRealTimeTimer ? undefined : accumulatedPauseTimeThisSession
+        }
         timeCageOff={timeCageOff}
         isCageOn={isCageOn}
         totalChastityTime={totalChastityTime}
         totalTimeCageOff={totalTimeCageOff}
+        isPaused={isPaused}
       />
 
       {/* Enhanced Pause Controls with 4-hour cooldown */}
@@ -270,12 +291,10 @@ const TrackerPage: React.FC = () => {
 
       <ActionButtons
         isCageOn={isCageOn}
-        isPaused={isPaused}
-        denialCooldownActive={denialCooldownActive}
-        hasPendingReleaseRequest={hasPendingReleaseRequest}
         isGoalActive={isGoalActive}
         isHardcoreGoal={isHardcoreGoal}
         requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
+        hasPendingReleaseRequest={hasPendingReleaseRequest}
         sessionId={sessionId}
         userId={userId}
         onEmergencyUnlock={handleEmergencyUnlock}
@@ -284,7 +303,6 @@ const TrackerPage: React.FC = () => {
       <ReasonModals
         showReasonModal={showReasonModal}
         showPauseReasonModal={showPauseReasonModal}
-        showEmergencyUnlockModal={showEmergencyUnlockModal}
       />
 
       {/* Debug info for development */}
