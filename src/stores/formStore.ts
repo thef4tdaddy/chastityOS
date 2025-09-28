@@ -79,297 +79,309 @@ export interface FormState {
   isFormSubmitting: (formId: string) => boolean;
 }
 
+// Helper functions to break down complexity
+const createFieldsFromValues = (
+  initialValues: Record<string, FormFieldValue>,
+): Record<string, FormField> => {
+  const fields: Record<string, FormField> = {};
+  Object.entries(initialValues).forEach(([key, value]) => {
+    fields[key] = {
+      value,
+      touched: false,
+      dirty: false,
+    };
+  });
+  return fields;
+};
+
+const createFormInstance = (initialValues: Record<string, FormFieldValue>) => ({
+  fields: createFieldsFromValues(initialValues),
+  isSubmitting: false,
+  isValid: true,
+  isDirty: false,
+  submitCount: 0,
+});
+
+const updateFieldInForm = (
+  form: FormState["forms"][string],
+  fieldName: string,
+  updates: Partial<FormField>,
+) => {
+  const field = form.fields[fieldName] || {
+    value: undefined,
+    touched: false,
+    dirty: false,
+  };
+
+  return {
+    ...form,
+    fields: {
+      ...form.fields,
+      [fieldName]: {
+        ...field,
+        ...updates,
+      },
+    },
+  };
+};
+
+const calculateFormDirty = (fields: Record<string, FormField>): boolean =>
+  Object.values(fields).some((f) => f.dirty);
+
+const calculateFormValid = (fields: Record<string, FormField>): boolean =>
+  !Object.values(fields).some((f) => f.error);
+
+// Validation functions
+const validateSingleField = (
+  get: () => FormState,
+  formId: string,
+  fieldName: string,
+  validator: (value: FormFieldValue) => string | undefined,
+) => {
+  const form = get().forms[formId];
+  if (!form) return;
+
+  const field = form.fields[fieldName];
+  if (!field) return;
+
+  const error = validator(field.value);
+  get().setFieldError(formId, fieldName, error);
+};
+
+const validateMultipleFields = (
+  get: () => FormState,
+  formId: string,
+  validators: Record<string, (value: FormFieldValue) => string | undefined>,
+): boolean => {
+  const form = get().forms[formId];
+  if (!form) return false;
+
+  let isValid = true;
+  Object.entries(validators).forEach(([fieldName, validator]) => {
+    const field = form.fields[fieldName];
+    if (!field) return;
+
+    const error = validator(field.value);
+    get().setFieldError(formId, fieldName, error);
+    if (error) isValid = false;
+  });
+
+  return isValid;
+};
+
+// Form lifecycle actions
+const createFormLifecycleActions = (set: any) => ({
+  createForm: (formId: string, initialValues = {}) =>
+    set(
+      (state: FormState) => {
+        if (state.forms[formId]) return state;
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: createFormInstance(initialValues),
+          },
+        };
+      },
+      false,
+      `createForm:${formId}`,
+    ),
+
+  destroyForm: (formId: string) =>
+    set(
+      (state: FormState) => {
+        const { [formId]: _removed, ...rest } = state.forms;
+        return { forms: rest };
+      },
+      false,
+      `destroyForm:${formId}`,
+    ),
+});
+
+// Field manipulation actions
+const createFieldActions = (set: any) => ({
+  setFieldValue: (formId: string, fieldName: string, value: FormFieldValue) =>
+    set(
+      (state: FormState) => {
+        const form = state.forms[formId];
+        if (!form) return state;
+
+        const currentField = form.fields[fieldName];
+        const isDirty = currentField ? currentField.value !== value : true;
+
+        const updatedForm = updateFieldInForm(form, fieldName, {
+          value,
+          dirty: isDirty,
+        });
+        const formIsDirty = calculateFormDirty(updatedForm.fields);
+
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: {
+              ...updatedForm,
+              isDirty: formIsDirty,
+            },
+          },
+        };
+      },
+      false,
+      `setFieldValue:${formId}.${fieldName}`,
+    ),
+
+  setFieldError: (formId: string, fieldName: string, error?: string) =>
+    set(
+      (state: FormState) => {
+        const form = state.forms[formId];
+        if (!form) return state;
+
+        const updatedForm = updateFieldInForm(form, fieldName, { error });
+        const isValid = calculateFormValid(updatedForm.fields);
+
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: {
+              ...updatedForm,
+              isValid,
+            },
+          },
+        };
+      },
+      false,
+      `setFieldError:${formId}.${fieldName}`,
+    ),
+
+  touchField: (formId: string, fieldName: string) =>
+    set(
+      (state: FormState) => {
+        const form = state.forms[formId];
+        if (!form) return state;
+
+        const updatedForm = updateFieldInForm(form, fieldName, {
+          touched: true,
+        });
+
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: updatedForm,
+          },
+        };
+      },
+      false,
+      `touchField:${formId}.${fieldName}`,
+    ),
+});
+
+// Form state actions
+const createFormStateActions = (set: any) => ({
+  resetForm: (formId: string, newValues = {}) =>
+    set(
+      (state: FormState) => {
+        const form = state.forms[formId];
+        if (!form) return state;
+
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: {
+              ...form,
+              fields: createFieldsFromValues(newValues),
+              isDirty: false,
+              isValid: true,
+            },
+          },
+        };
+      },
+      false,
+      `resetForm:${formId}`,
+    ),
+
+  setSubmitting: (formId: string, isSubmitting: boolean) =>
+    set(
+      (state: FormState) => {
+        const form = state.forms[formId];
+        if (!form) return state;
+
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: {
+              ...form,
+              isSubmitting,
+              ...(isSubmitting ? {} : { lastSubmitted: new Date() }),
+            },
+          },
+        };
+      },
+      false,
+      `setSubmitting:${formId}`,
+    ),
+
+  incrementSubmitCount: (formId: string) =>
+    set(
+      (state: FormState) => {
+        const form = state.forms[formId];
+        if (!form) return state;
+
+        return {
+          forms: {
+            ...state.forms,
+            [formId]: {
+              ...form,
+              submitCount: form.submitCount + 1,
+            },
+          },
+        };
+      },
+      false,
+      `incrementSubmitCount:${formId}`,
+    ),
+});
+
+// Form validation actions
+const createValidationActions = (get: () => FormState) => ({
+  validateField: (
+    formId: string,
+    fieldName: string,
+    validator: (value: FormFieldValue) => string | undefined,
+  ) => validateSingleField(get, formId, fieldName, validator),
+
+  validateForm: (
+    formId: string,
+    validators: Record<string, (value: FormFieldValue) => string | undefined>,
+  ) => validateMultipleFields(get, formId, validators),
+});
+
+// Form state actions
+const createFormActions = (set: any, get: () => FormState) => ({
+  ...createFormLifecycleActions(set),
+  ...createFieldActions(set),
+  ...createFormStateActions(set),
+  ...createValidationActions(get),
+});
+
 export const useFormStore = create<FormState>()(
   devtools(
     (set, get) => ({
       // Initial state
       forms: {},
 
-      // Actions
-      createForm: (formId: string, initialValues = {}) =>
-        set(
-          (state) => {
-            if (state.forms[formId]) return state; // Don't recreate existing forms
-
-            const fields: Record<string, FormField> = {};
-            Object.entries(initialValues).forEach(([key, value]) => {
-              fields[key] = {
-                value,
-                touched: false,
-                dirty: false,
-              };
-            });
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  fields,
-                  isSubmitting: false,
-                  isValid: true,
-                  isDirty: false,
-                  submitCount: 0,
-                },
-              },
-            };
-          },
-          false,
-          `createForm:${formId}`,
-        ),
-
-      destroyForm: (formId: string) =>
-        set(
-          (state) => {
-            const { [formId]: _removed, ...rest } = state.forms;
-            return { forms: rest };
-          },
-          false,
-          `destroyForm:${formId}`,
-        ),
-
-      setFieldValue: (
-        formId: string,
-        fieldName: string,
-        value: FormFieldValue,
-      ) =>
-        set(
-          (state) => {
-            const form = state.forms[formId];
-            if (!form) return state;
-
-            const field = form.fields[fieldName] || {
-              value: undefined,
-              touched: false,
-              dirty: false,
-            };
-            const isDirty = field.value !== value;
-
-            const updatedFields = {
-              ...form.fields,
-              [fieldName]: {
-                ...field,
-                value,
-                dirty: isDirty,
-              },
-            };
-
-            const formIsDirty = Object.values(updatedFields).some(
-              (f) => f.dirty,
-            );
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  ...form,
-                  fields: updatedFields,
-                  isDirty: formIsDirty,
-                },
-              },
-            };
-          },
-          false,
-          `setFieldValue:${formId}.${fieldName}`,
-        ),
-
-      setFieldError: (formId: string, fieldName: string, error?: string) =>
-        set(
-          (state) => {
-            const form = state.forms[formId];
-            if (!form) return state;
-
-            const field = form.fields[fieldName] || {
-              value: "",
-              touched: false,
-              dirty: false,
-            };
-            const updatedFields = {
-              ...form.fields,
-              [fieldName]: {
-                ...field,
-                error,
-              },
-            };
-
-            const isValid = !Object.values(updatedFields).some((f) => f.error);
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  ...form,
-                  fields: updatedFields,
-                  isValid,
-                },
-              },
-            };
-          },
-          false,
-          `setFieldError:${formId}.${fieldName}`,
-        ),
-
-      touchField: (formId: string, fieldName: string) =>
-        set(
-          (state) => {
-            const form = state.forms[formId];
-            if (!form) return state;
-
-            const field = form.fields[fieldName] || {
-              value: undefined,
-              touched: false,
-              dirty: false,
-            };
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  ...form,
-                  fields: {
-                    ...form.fields,
-                    [fieldName]: {
-                      ...field,
-                      touched: true,
-                    },
-                  },
-                },
-              },
-            };
-          },
-          false,
-          `touchField:${formId}.${fieldName}`,
-        ),
-
-      resetForm: (formId: string, newValues = {}) =>
-        set(
-          (state) => {
-            const form = state.forms[formId];
-            if (!form) return state;
-
-            const fields: Record<string, FormField> = {};
-            Object.entries(newValues).forEach(([key, value]) => {
-              fields[key] = {
-                value,
-                touched: false,
-                dirty: false,
-              };
-            });
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  ...form,
-                  fields,
-                  isDirty: false,
-                  isValid: true,
-                },
-              },
-            };
-          },
-          false,
-          `resetForm:${formId}`,
-        ),
-
-      setSubmitting: (formId: string, isSubmitting: boolean) =>
-        set(
-          (state) => {
-            const form = state.forms[formId];
-            if (!form) return state;
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  ...form,
-                  isSubmitting,
-                  ...(isSubmitting ? {} : { lastSubmitted: new Date() }),
-                },
-              },
-            };
-          },
-          false,
-          `setSubmitting:${formId}`,
-        ),
-
-      incrementSubmitCount: (formId: string) =>
-        set(
-          (state) => {
-            const form = state.forms[formId];
-            if (!form) return state;
-
-            return {
-              forms: {
-                ...state.forms,
-                [formId]: {
-                  ...form,
-                  submitCount: form.submitCount + 1,
-                },
-              },
-            };
-          },
-          false,
-          `incrementSubmitCount:${formId}`,
-        ),
-
-      // Validation
-      validateField: (
-        formId: string,
-        fieldName: string,
-        validator: (value: FormFieldValue) => string | undefined,
-      ) => {
-        const form = get().forms[formId];
-        if (!form) return;
-
-        const field = form.fields[fieldName];
-        if (!field) return;
-
-        const error = validator(field.value);
-        get().setFieldError(formId, fieldName, error);
-      },
-
-      validateForm: (
-        formId: string,
-        validators: Record<
-          string,
-          (value: FormFieldValue) => string | undefined
-        >,
-      ) => {
-        const form = get().forms[formId];
-        if (!form) return false;
-
-        let isValid = true;
-        Object.entries(validators).forEach(([fieldName, validator]) => {
-          const field = form.fields[fieldName];
-          if (!field) return;
-
-          const error = validator(field.value);
-          get().setFieldError(formId, fieldName, error);
-          if (error) isValid = false;
-        });
-
-        return isValid;
-      },
+      // All actions
+      ...createFormActions(set, get),
 
       // Utility getters
       getForm: (formId: string) => get().forms[formId],
-
       getFieldValue: (formId: string, fieldName: string) =>
         get().forms[formId]?.fields[fieldName]?.value,
-
       getFieldError: (formId: string, fieldName: string) =>
         get().forms[formId]?.fields[fieldName]?.error,
-
       isFieldTouched: (formId: string, fieldName: string) =>
         get().forms[formId]?.fields[fieldName]?.touched ?? false,
-
       isFieldDirty: (formId: string, fieldName: string) =>
         get().forms[formId]?.fields[fieldName]?.dirty ?? false,
-
       isFormValid: (formId: string) => get().forms[formId]?.isValid ?? false,
-
       isFormDirty: (formId: string) => get().forms[formId]?.isDirty ?? false,
-
       isFormSubmitting: (formId: string) =>
         get().forms[formId]?.isSubmitting ?? false,
     }),
