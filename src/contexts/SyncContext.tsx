@@ -4,7 +4,7 @@
  */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useSync } from "@/hooks/useSync";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/api/useAuth";
 import { ConflictResolutionModal } from "@/components/common/ConflictResolutionModal";
 import type { ConflictInfo } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
@@ -35,10 +35,11 @@ interface SyncProviderProps {
 }
 
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
-  const { userId } = useAuth();
+  const { data: user } = useAuth();
+  const userId = user?.uid;
   const {
     isSyncing,
-    lastSyncResult,
+    lastSyncResult: _lastSyncResult,
     pendingConflicts,
     sync,
     resolveConflicts,
@@ -76,7 +77,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     const interval = setInterval(performSync, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [userId, sync]);
+  }, [userId]);
 
   // Show conflict modal when conflicts are detected
   useEffect(() => {

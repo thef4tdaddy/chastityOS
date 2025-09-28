@@ -47,6 +47,9 @@ export default defineConfig({
         },
       },
     },
+    // Increase timeout for Firebase operations
+    testTimeout: 10000,
+    hookTimeout: 10000,
   },
   resolve: {
     alias: {

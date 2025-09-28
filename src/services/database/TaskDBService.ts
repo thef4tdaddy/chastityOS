@@ -201,6 +201,56 @@ class TaskDBService extends BaseDBService<DBTask> {
       throw error;
     }
   }
+
+  /**
+   * Create a new task (alias for addTask method)
+   */
+  async createTask(
+    taskData: Omit<DBTask, "id" | "lastModified" | "syncStatus" | "createdAt">,
+  ): Promise<string> {
+    try {
+      const taskId = generateUUID();
+      const task: Omit<DBTask, "lastModified" | "syncStatus"> = {
+        id: taskId,
+        createdAt: new Date(),
+        ...taskData,
+      };
+
+      await this.create(task);
+      logger.info("Created new task", { taskId, userId: taskData.userId });
+      return taskId;
+    } catch (error) {
+      logger.error("Failed to create task", { error: error as Error });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a task (alias for delete method)
+   */
+  async deleteTask(taskId: string): Promise<void> {
+    try {
+      await this.delete(taskId);
+      logger.info("Deleted task", { taskId });
+    } catch (error) {
+      logger.error("Failed to delete task", { error: error as Error, taskId });
+      throw error;
+    }
+  }
+
+  /**
+   * Get all tasks (alias for getAll method)
+   */
+  async getAll(): Promise<DBTask[]> {
+    try {
+      const tasks = await this.table.toArray();
+      logger.debug("Get all tasks", { count: tasks.length });
+      return tasks;
+    } catch (error) {
+      logger.error("Failed to get all tasks", { error: error as Error });
+      throw error;
+    }
+  }
 }
 
 export const taskDBService = new TaskDBService();

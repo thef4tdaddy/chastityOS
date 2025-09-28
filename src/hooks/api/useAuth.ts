@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { User } from "firebase/auth";
-import { authService } from "../../services/auth/auth-service";
+import { AuthService } from "../../services/auth/auth-service";
 import { logger } from "../../utils/logging";
 
 /**
@@ -27,7 +27,7 @@ export function useCurrentUser() {
   return useQuery({
     queryKey: authKeys.currentUser,
     queryFn: async (): Promise<User | null> => {
-      return authService.getCurrentUser();
+      return AuthService.getCurrentUser();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - auth state is fairly stable
     gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
@@ -51,7 +51,7 @@ export function useLogin() {
       password: string;
     }) => {
       logger.info("Login attempt", { email });
-      return await authService.signIn(email, password);
+      return await AuthService.signIn(email, password);
     },
     onSuccess: (user) => {
       logger.info("Login successful", { uid: user.uid });
@@ -81,7 +81,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: async () => {
       logger.info("Logout initiated");
-      await authService.signOut();
+      await AuthService.signOut();
     },
     onSuccess: () => {
       logger.info("Logout successful");
@@ -116,11 +116,11 @@ export function useSignUp() {
       displayName?: string;
     }) => {
       logger.info("Sign up attempt", { email, displayName });
-      const user = await authService.signUp(email, password);
+      const user = await AuthService.signUp(email, password);
 
       // Update display name if provided
       if (displayName && user) {
-        await authService.updateProfile(user, { displayName });
+        await AuthService.updateProfile(user, { displayName });
       }
 
       return user;
@@ -135,7 +135,7 @@ export function useSignUp() {
         // Prefetch user profile
         queryClient.prefetchQuery({
           queryKey: authKeys.profile(user.uid),
-          queryFn: () => authService.getCurrentUser(),
+          queryFn: () => AuthService.getCurrentUser(),
         });
       }
     },
@@ -153,7 +153,7 @@ export function usePasswordReset() {
   return useMutation({
     mutationFn: async ({ email }: { email: string }) => {
       logger.info("Password reset requested", { email });
-      await authService.sendPasswordResetEmail(email);
+      await AuthService.sendPasswordResetEmail(email);
     },
     onSuccess: (_, { email }) => {
       logger.info("Password reset email sent", { email });
@@ -179,7 +179,7 @@ export function useUpdateProfile() {
       displayName?: string;
       photoURL?: string;
     }) => {
-      const user = authService.getCurrentUser();
+      const user = AuthService.getCurrentUser();
       if (!user) {
         throw new Error("No authenticated user");
       }
@@ -189,7 +189,7 @@ export function useUpdateProfile() {
         displayName,
         photoURL,
       });
-      await authService.updateProfile(user, { displayName, photoURL });
+      await AuthService.updateProfile(user, { displayName, photoURL });
 
       return user;
     },
@@ -220,7 +220,7 @@ export function useEmailVerification() {
       }
 
       logger.info("Email verification requested", { uid: user.uid });
-      await authService.sendEmailVerification(user);
+      await AuthService.sendEmailVerification(user);
     },
     onSuccess: () => {
       logger.info("Verification email sent");
@@ -238,13 +238,13 @@ export function useEmailVerification() {
 export function useReauthenticate() {
   return useMutation({
     mutationFn: async ({ password }: { password: string }) => {
-      const user = authService.getCurrentUser();
+      const user = AuthService.getCurrentUser();
       if (!user || !user.email) {
         throw new Error("No authenticated user with email");
       }
 
       logger.info("Re-authentication attempt", { uid: user.uid });
-      await authService.reauthenticateWithCredential(user.email, password);
+      await AuthService.reauthenticateWithCredential(user.email, password);
     },
     onSuccess: () => {
       logger.info("Re-authentication successful");
@@ -253,4 +253,43 @@ export function useReauthenticate() {
       logger.error("Re-authentication failed", error);
     },
   });
+}
+
+/**
+ * Main authentication hook that combines all auth functionality
+ * This is the primary export that other components should use
+ */
+export function useAuth() {
+  const { data: user, isLoading, error } = useCurrentUser();
+  const loginMutation = useLogin();
+  const logoutMutation = useLogout();
+  const signUpMutation = useSignUp();
+  const passwordResetMutation = usePasswordReset();
+  const updateProfileMutation = useUpdateProfile();
+  const emailVerificationMutation = useEmailVerification();
+  const reauthenticateMutation = useReauthenticate();
+
+  return {
+    // User state
+    user,
+    userId: user?.uid,
+    isAuthenticated: !!user,
+    isLoading,
+    error,
+
+    // Auth methods
+    login: loginMutation.mutateAsync,
+    logout: logoutMutation.mutateAsync,
+    signUp: signUpMutation.mutateAsync,
+    sendPasswordReset: passwordResetMutation.mutateAsync,
+    updateProfile: updateProfileMutation.mutateAsync,
+    sendEmailVerification: emailVerificationMutation.mutateAsync,
+    reauthenticate: reauthenticateMutation.mutateAsync,
+
+    // Mutation states
+    isLoggingIn: loginMutation.isPending,
+    isLoggingOut: logoutMutation.isPending,
+    isSigningUp: signUpMutation.isPending,
+    isUpdatingProfile: updateProfileMutation.isPending,
+  };
 }

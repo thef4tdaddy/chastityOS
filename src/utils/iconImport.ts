@@ -16,10 +16,13 @@
 // React Icons (FA) imports
 export {
   FaAward,
+  FaBan,
   FaBook,
   FaBullseye,
   FaCalendar,
+  FaCalendarAlt,
   FaChartBar,
+  FaCheck,
   FaCheckCircle,
   FaClipboard,
   FaClock,
@@ -55,6 +58,7 @@ export {
   FaSpinner,
   FaStickyNote,
   FaStop,
+  FaSync,
   FaTasks,
   FaTimes,
   FaTimesCircle,
@@ -74,7 +78,15 @@ export {
   FaLightbulb,
   FaComment,
   FaPaperPlane,
+  FaCheck,
+  FaWifi,
+  FaSync,
 } from "react-icons/fa";
+
+// Material Design Icons
+export {
+  MdWifiOff as FaWifiSlash, // Alias for compatibility
+} from "react-icons/md";
 
 // Lucide React imports (placeholder for future use)
 // Add lucide-react icons here as needed:

@@ -170,6 +170,11 @@ class EmergencyService {
         (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
       )[0];
 
+      if (!lastEmergencyUnlock) {
+        // This should never happen due to the length check above, but TypeScript safety
+        return { allowed: true };
+      }
+
       const cooldownHours = settings.chastity.emergencyUnlockCooldown;
       const cooldownUntil = new Date(
         lastEmergencyUnlock.timestamp.getTime() +
@@ -266,15 +271,20 @@ class EmergencyService {
 
       const reasonBreakdown: Record<string, number> = {};
       emergencyUnlocks.forEach((event) => {
-        const reason = (event.details?.emergencyReason as string) || "Unknown";
+        const reason =
+          ((event.details as any)?.emergencyReason as string) || "Unknown";
         reasonBreakdown[reason] = (reasonBreakdown[reason] || 0) + 1;
       });
 
       const lastEmergencyUnlock =
         emergencyUnlocks.length > 0
-          ? emergencyUnlocks.sort(
-              (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
-            )[0].timestamp
+          ? (() => {
+              const sortedUnlocks = emergencyUnlocks.sort(
+                (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+              );
+              const firstUnlock = sortedUnlocks[0];
+              return firstUnlock?.timestamp;
+            })()
           : undefined;
 
       const cooldownCheck = await this.checkEmergencyUnlockCooldown(userId);

@@ -14,54 +14,57 @@ Based on feedback, the keyholder system should be:
 ## Simplified Architecture
 
 ### Core Data Model
+
 ```typescript
 // Much simpler than multi-wearer system
 interface KeyholderRelationship {
   id: string;
-  submissiveId: string;    // The wearer's account
-  keyholderId: string;     // The keyholder's account
-  status: 'active' | 'paused' | 'ended';
+  submissiveId: string; // The wearer's account
+  keyholderId: string; // The keyholder's account
+  status: "active" | "paused" | "ended";
 
   // Simple permissions - just read stats + assign tasks
   permissions: {
-    viewStats: boolean;      // See all tracking data
-    assignTasks: boolean;    // Create tasks for submissive
-    viewSessions: boolean;   // See session history
-    viewEvents: boolean;     // See event logs
+    viewStats: boolean; // See all tracking data
+    assignTasks: boolean; // Create tasks for submissive
+    viewSessions: boolean; // See session history
+    viewEvents: boolean; // See event logs
   };
 
   establishedAt: Timestamp;
-  linkCode?: string;        // For initial linking
+  linkCode?: string; // For initial linking
 }
 ```
 
 ### Simplified Hook Architecture
+
 ```typescript
 // Core keyholder hooks (much simpler)
 export const useKeyholderRelationship = (keyholderId: string) => {
   // Manage single relationship
   // Link/unlink from submissive
-}
+};
 
 export const useSubmissiveStats = (relationshipId: string) => {
   // View all submissive's tracking data
   // Sessions, events, statistics
-}
+};
 
 export const useKeyholderTasks = (relationshipId: string) => {
   // Assign tasks to submissive
   // View task completion status
-}
+};
 
 export const useAccountLinking = () => {
   // Simple secure linking
   // Generate/use link codes
-}
+};
 ```
 
 ## Implementation Priority (Simplified)
 
 ### Week 1-2: Basic Dual-Account System
+
 Focus on **PR #136** as the foundation (has the cleanest account linking approach):
 
 ```typescript
@@ -73,6 +76,7 @@ Focus on **PR #136** as the foundation (has the cleanest account linking approac
 ```
 
 ### Week 3-4: Enhanced Features
+
 Add the best parts from **PR #143** and **PR #132**:
 
 ```typescript
@@ -86,6 +90,7 @@ Add the best parts from **PR #143** and **PR #132**:
 ## Key Simplifications
 
 ### ❌ Remove Complex Features:
+
 - Multi-wearer management (not needed)
 - Admin sessions with timeouts (simpler permission model)
 - Complex role switching (1:1 relationship only)
@@ -93,6 +98,7 @@ Add the best parts from **PR #143** and **PR #132**:
 - Complex permission matrices (simple read + assign tasks)
 
 ### ✅ Keep Essential Features:
+
 - Secure account linking with codes
 - Keyholder dashboard with all submissive stats
 - Task assignment and completion tracking
@@ -102,6 +108,7 @@ Add the best parts from **PR #143** and **PR #132**:
 ## Recommended Merge Strategy
 
 ### Primary: Use PR #136 as Foundation
+
 **Reason**: Has the cleanest account linking approach for 1:1 relationships
 
 ```typescript
@@ -113,6 +120,7 @@ Add the best parts from **PR #143** and **PR #132**:
 ```
 
 ### Secondary: Integrate Best UI from PR #143
+
 **Reason**: Has good React components and TanStack Query integration
 
 ```typescript
@@ -124,6 +132,7 @@ Add the best parts from **PR #143** and **PR #132**:
 ```
 
 ### Tertiary: Use Simplified Schema from PR #132
+
 **Reason**: Database design is good but remove multi-wearer complexity
 
 ```typescript
@@ -136,6 +145,7 @@ Add the best parts from **PR #143** and **PR #132**:
 ## Final Keyholder Dashboard Features
 
 ### Keyholder Account Dashboard:
+
 ```
 ┌─────────────────────────────────────┐
 │           Keyholder Dashboard        │
@@ -186,4 +196,4 @@ Much faster implementation with this simplified approach!
 
 ---
 
-**Recommendation**: Proceed with this simplified but still advanced approach. Gets you the keyholder system you want much faster while preserving all the valuable work that's been done.**
+**Recommendation**: Proceed with this simplified but still advanced approach. Gets you the keyholder system you want much faster while preserving all the valuable work that's been done.\*\*

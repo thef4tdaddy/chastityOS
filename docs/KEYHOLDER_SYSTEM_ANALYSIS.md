@@ -7,9 +7,11 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
 ## Current Keyholder Implementations Analysis
 
 ### PR #143: Epic Keyholder System - Account Linking & Integrated Control
+
 **Status:** WIP/Draft
 **Approach:** Account linking with invite codes
 **Features:**
+
 - ✅ KeyholderRelationshipDBService with invite codes
 - ✅ KeyholderRelationshipService business logic
 - ✅ React hook (useKeyholderRelationships)
@@ -24,9 +26,11 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
 **Architecture:** Dexie-based with TanStack Query integration
 
 ### PR #136: Private Account Linking System - Keyholder Admin Access
+
 **Status:** Open
 **Approach:** Admin-level access with secure link codes
 **Features:**
+
 - ✅ 12-character cryptographically secure link codes
 - ✅ 24-hour automatic expiry with single-use validation
 - ✅ Multiple sharing methods (manual, QR, secure URL)
@@ -41,9 +45,11 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
 **Architecture:** Firebase-focused with admin session management
 
 ### PR #132: Firebase Architecture Redesign - Dual-Account System
+
 **Status:** Open
 **Approach:** Complete Firebase architecture overhaul
 **Features:**
+
 - ✅ New collections: relationships, relationshipRequests, chastityData
 - ✅ Enhanced User model with role support ('submissive', 'keyholder', 'both')
 - ✅ Comprehensive Firebase security rules
@@ -61,6 +67,7 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
 ### Target: Advanced Full-Connection Keyholder System
 
 **Core Requirements:**
+
 - Dual-account system where keyholders have their own accounts
 - Full administrative control over linked submissive accounts
 - Real-time task/reward/punishment/rule management
@@ -68,18 +75,22 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
 - Advanced security with audit trails
 
 ### Phase 1: Foundation Merger (2-3 weeks)
+
 **Merge PR #132 (Firebase Architecture) + PR #136 (Account Linking)**
 
 **Key Components to Integrate:**
+
 1. **Database Schema** (from #132):
+
    ```typescript
    // Use relationship-based architecture
-   relationships/{relationshipId}
-   chastityData/{relationshipId}
-   relationshipRequests/{requestId}
+   relationships / { relationshipId };
+   chastityData / { relationshipId };
+   relationshipRequests / { requestId };
    ```
 
 2. **Security System** (from #136):
+
    ```typescript
    // 12-character secure codes with multiple sharing methods
    // Time-limited admin sessions
@@ -88,14 +99,16 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
 
 3. **Service Layer** (from #132 + #143):
    ```typescript
-   RelationshipService + KeyholderRelationshipDBService
+   RelationshipService + KeyholderRelationshipDBService;
    // Combined for complete functionality
    ```
 
 ### Phase 2: Advanced Features Integration (3-4 weeks)
+
 **Merge PR #143 features + Build Advanced Controls**
 
 **Advanced Keyholder Features:**
+
 1. **Task Management System**:
    - Create and assign tasks with deadlines
    - Approval/rejection workflow with feedback
@@ -121,9 +134,11 @@ Based on comprehensive audit of PRs and issues, there are **3 major keyholder im
    - Override controls for all restrictions
 
 ### Phase 3: Advanced Admin Dashboard (2-3 weeks)
+
 **Build Comprehensive Keyholder Interface**
 
 **Dashboard Features:**
+
 ```
 Keyholder Dashboard:
 ├── Submissive Overview
@@ -161,6 +176,7 @@ Keyholder Dashboard:
 ### 1. Code Consolidation Plan
 
 **Keep from PR #132 (Firebase Architecture):**
+
 - Complete database schema redesign
 - Firebase security rules
 - RelationshipService core functionality
@@ -168,6 +184,7 @@ Keyholder Dashboard:
 - Enhanced User model with roles
 
 **Keep from PR #136 (Account Linking):**
+
 - 12-character secure link code system
 - Multiple sharing methods (QR, manual, secure URL)
 - Admin session management with timeouts
@@ -175,6 +192,7 @@ Keyholder Dashboard:
 - Emergency disconnection capabilities
 
 **Keep from PR #143 (Invite System):**
+
 - Dexie integration for offline support
 - TanStack Query hooks
 - React components (AccountLinking, AdminDashboard)
@@ -184,18 +202,20 @@ Keyholder Dashboard:
 ### 2. Architecture Integration
 
 **Data Flow:**
+
 ```
 Firebase (primary) ↔ Dexie (local/offline) ↔ TanStack Query (caching) ↔ React Components
 ```
 
 **Relationship Model (Combined):**
+
 ```typescript
 interface KeyholderRelationship {
   // From #132 - Core structure
   id: string;
   submissiveId: string;
   keyholderId: string;
-  status: 'pending' | 'active' | 'paused' | 'terminated';
+  status: "pending" | "active" | "paused" | "terminated";
 
   // From #136 - Security features
   linkCode: string;
@@ -211,7 +231,7 @@ interface KeyholderRelationship {
     goalModification: boolean;
     taskManagement: boolean;
     rewardsPunishments: boolean;
-    dataAccess: 'read' | 'full';
+    dataAccess: "read" | "full";
     emergencyOverride: boolean;
   };
 
@@ -228,6 +248,7 @@ interface KeyholderRelationship {
 ### 3. Implementation Priority
 
 **Critical Path:**
+
 1. Merge database schemas (#132 foundation)
 2. Integrate secure linking system (#136 security)
 3. Add Dexie/TanStack Query layer (#143 offline/caching)
@@ -238,6 +259,7 @@ interface KeyholderRelationship {
 ## Benefits of This Approach
 
 ### For Users:
+
 - **Complete Control**: Keyholders have full administrative access
 - **Real-time**: Live session monitoring and instant controls
 - **Advanced Features**: Task management, rewards, punishments, rules
@@ -245,6 +267,7 @@ interface KeyholderRelationship {
 - **Privacy**: Secure linking with easy disconnection
 
 ### For Development:
+
 - **Leverages Best Work**: Combines strengths from all 3 implementations
 - **Minimal Rework**: Reuses existing database schemas and UI components
 - **Future-Proof**: Scalable architecture supporting advanced features

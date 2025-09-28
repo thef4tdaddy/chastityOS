@@ -5,7 +5,28 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export interface NavigationState {
+// Type definitions that are referenced in other files
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  isActive?: boolean;
+}
+
+export interface NavigationActions {
+  setCurrentPage: (page: string) => void;
+  setBreadcrumbs: (breadcrumbs: string[]) => void;
+  toggleMobileMenu: () => void;
+  setMobileMenuOpen: (isOpen: boolean) => void;
+  closeMobileMenu: () => void;
+  setPageLoading: (isLoading: boolean) => void;
+  setPageTitle: (title: string) => void;
+  addBreadcrumb: (breadcrumb: string) => void;
+  removeBreadcrumb: () => void;
+  clearBreadcrumbs: () => void;
+  resetStore: () => void;
+}
+
+export interface NavigationState extends NavigationActions {
   // Current page/route
   currentPage: string;
   currentPageTitle: string;
@@ -20,6 +41,7 @@ export interface NavigationState {
   // Navigation loading state
   isNavigating: boolean;
 
+<<<<<<< HEAD
   // Actions
   setCurrentPage: (page: string) => void;
   setBreadcrumbs: (
@@ -39,6 +61,10 @@ export interface NavigationState {
 
   // Reset function for testing
   resetStore: () => void;
+=======
+  // Page title state
+  pageTitle?: string;
+>>>>>>> origin/nightly
 }
 
 const initialState = {
@@ -52,9 +78,17 @@ const initialState = {
 
 export const useNavigationStore = create<NavigationState>()(
   devtools(
-    (set, get) => ({
+    (set, _get) => ({
       // Initial state
+<<<<<<< HEAD
       ...initialState,
+=======
+      currentPage: "dashboard",
+      breadcrumbs: [],
+      isMobileMenuOpen: false,
+      isPageLoading: false,
+      pageTitle: undefined,
+>>>>>>> origin/nightly
 
       // Actions
       setCurrentPage: (page: string) =>
@@ -76,6 +110,7 @@ export const useNavigationStore = create<NavigationState>()(
       closeMobileMenu: () =>
         set({ isMobileMenuOpen: false }, false, "closeMobileMenu"),
 
+<<<<<<< HEAD
       setNavigating: (isNavigating: boolean) =>
         set({ isNavigating }, false, "setNavigating"),
 
@@ -88,6 +123,13 @@ export const useNavigationStore = create<NavigationState>()(
           false,
           "setPageMetadata",
         ),
+=======
+      setPageLoading: (isLoading: boolean) =>
+        set({ isPageLoading: isLoading }, false, "setPageLoading"),
+>>>>>>> origin/nightly
+
+      setPageTitle: (title: string) =>
+        set({ pageTitle: title }, false, "setPageTitle"),
 
       // Utility actions
       addBreadcrumb: (breadcrumb: { label: string; path?: string }) =>
@@ -111,8 +153,24 @@ export const useNavigationStore = create<NavigationState>()(
       clearBreadcrumbs: () =>
         set({ breadcrumbs: [] }, false, "clearBreadcrumbs"),
 
+<<<<<<< HEAD
       // Reset function for testing
       resetStore: () => set(initialState, false, "resetStore"),
+=======
+      // Reset store to initial state (for testing)
+      resetStore: () =>
+        set(
+          {
+            currentPage: "dashboard",
+            breadcrumbs: [],
+            isMobileMenuOpen: false,
+            isPageLoading: false,
+            pageTitle: undefined,
+          },
+          false,
+          "resetStore",
+        ),
+>>>>>>> origin/nightly
     }),
     {
       name: "navigation-store",
@@ -132,3 +190,6 @@ export const useIsMobileMenuOpen = () =>
 
 export const useIsPageLoading = () =>
   useNavigationStore((state) => state.isPageLoading);
+
+// Type aliases for export compatibility
+export type NavigationStore = NavigationState;
