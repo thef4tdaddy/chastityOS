@@ -6,9 +6,9 @@ import { useState, useMemo } from "react";
 import {
   DBAchievement,
   DBUserAchievement,
-  AchievementCategory,
   AchievementDifficulty,
 } from "../types";
+import { AchievementCategory } from "../types/achievements";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -113,7 +113,9 @@ export const useAchievementGallery = (
     const groups: Record<string, AchievementWithProgress[]> = {};
 
     filteredAchievements.forEach((item) => {
-      const categoryName = getCategoryName(item.achievement.category);
+      const categoryName = getCategoryName(
+        item.achievement.category as AchievementCategory,
+      );
       if (!groups[categoryName]) {
         groups[categoryName] = [];
       }
