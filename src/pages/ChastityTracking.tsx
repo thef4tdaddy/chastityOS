@@ -61,7 +61,7 @@ const TrackerPage: React.FC = () => {
   const isHardcoreGoal = false;
   const showReasonModal = false;
   const showPauseReasonModal = false;
-  const showEmergencyUnlockModal = false;
+  const _showEmergencyUnlockModal = false;
 
   // Mock session data for emergency unlock
   const sessionId = "mock-session-123";

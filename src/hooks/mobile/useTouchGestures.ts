@@ -113,7 +113,7 @@ export const useTouchGestures = (
   );
 
   const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
+    (_e: React.TouchEvent) => {
       clearLongPressTimer();
 
       if (!touchStart.current || !touchCurrent.current) {

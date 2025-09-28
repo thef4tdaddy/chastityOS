@@ -24,7 +24,6 @@ import { relationshipCoreService } from "./RelationshipCoreService";
 import { chastitySessionService } from "./ChastitySessionService";
 import { chastityTaskService } from "./ChastityTaskService";
 import { chastityEventService } from "./ChastityEventService";
-import { relationshipPermissionService } from "./RelationshipPermissionService";
 import { serviceLogger } from "@/utils/logging";
 import type {
   RelationshipChastityData,
