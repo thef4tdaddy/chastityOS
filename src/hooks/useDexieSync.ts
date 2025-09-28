@@ -2,7 +2,7 @@
  * Dexie Sync Hook
  * Provides easy access to Dexie services with automatic sync management
  */
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApp } from "@/contexts/AppContext";
 import {
@@ -24,13 +24,13 @@ export const useDexieSync = () => {
   /**
    * Get all Dexie services
    */
-  const services = {
+  const services = useMemo(() => ({
     sessions: sessionDBService,
     events: eventDBService,
     tasks: taskDBService,
     goals: goalDBService,
     settings: settingsDBService,
-  };
+  }), []);
 
   /**
    * Trigger manual sync
