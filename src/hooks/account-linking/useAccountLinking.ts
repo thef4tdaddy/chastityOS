@@ -47,22 +47,6 @@ export const useAccountLinking = () => {
     showPermissionEditor: false,
   });
 
-  // Helper function to update loading state
-  const updateLoadingState = useCallback(
-    (
-      isLoading: boolean,
-      errorField: keyof AccountLinkingState,
-      error?: string,
-    ) => {
-      setState((prev) => ({
-        ...prev,
-        [isLoading ? "isGeneratingCode" : "isUsingCode"]: isLoading,
-        [errorField]: error || null,
-      }));
-    },
-    [],
-  );
-
   // ==================== QUERIES ====================
 
   // Get admin relationships for current user

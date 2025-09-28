@@ -651,7 +651,7 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Get user's leaderboard privacy settings
    */
-  async getLeaderboardPrivacy(userId: string): Promise<LeaderboardPrivacy> {
+  async getLeaderboardPrivacy(_userId: string): Promise<LeaderboardPrivacy> {
     // This would typically be stored in user settings
     // For now, return default settings
     return {
@@ -670,7 +670,7 @@ export class AchievementDBService extends BaseDBService {
    */
   async updateLeaderboardPrivacy(
     userId: string,
-    settings: LeaderboardPrivacy,
+    _settings: LeaderboardPrivacy,
   ): Promise<void> {
     try {
       // This would typically update user settings

@@ -17,12 +17,6 @@ import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useDexieSync");
 
-// Common interface for all DB services
-interface DBServiceMethods {
-  create: (data: Record<string, unknown>) => Promise<string>;
-  update: (id: string, updates: Record<string, unknown>) => Promise<void>;
-}
-
 export const useDexieSync = () => {
   const { state: appState, actions: appActions } = useApp();
   const { user } = useAuth();
