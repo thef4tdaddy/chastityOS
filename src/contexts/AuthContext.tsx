@@ -121,6 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           isLoading: false,
           error: "Failed to initialize authentication",
         });
+        return undefined;
       }
     };
 

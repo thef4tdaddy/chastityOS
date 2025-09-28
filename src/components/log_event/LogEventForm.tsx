@@ -102,7 +102,7 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
         tags: "",
         isPrivate: false,
       });
-    } catch (error) {
+    } catch {
       showError("Failed to log event. Please try again.", "Event Log Failed");
     }
   };

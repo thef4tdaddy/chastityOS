@@ -393,3 +393,37 @@ export class AuthService {
     }
   }
 }
+
+// Export singleton instance for compatibility with existing code
+export const authService = {
+  signIn: AuthService.signIn.bind(AuthService),
+  register: AuthService.register.bind(AuthService),
+  signOut: AuthService.signOut.bind(AuthService),
+  resetPassword: AuthService.resetPassword.bind(AuthService),
+  updatePassword: AuthService.updatePassword.bind(AuthService),
+  getCurrentUser: AuthService.getCurrentUser.bind(AuthService),
+  getUserProfile: AuthService.getUserProfile.bind(AuthService),
+  updateUserProfile: AuthService.updateUserProfile.bind(AuthService),
+  sendPasswordResetEmail: AuthService.resetPassword.bind(AuthService),
+  updateProfile: async (user: any, profile: any) => {
+    // This is a Firebase Auth method, not our service method
+    const { updateProfile } = await import("firebase/auth");
+    return updateProfile(user, profile);
+  },
+  reauthenticateWithCredential: async (email: string, password: string) => {
+    // This needs Firebase Auth implementation
+    const { reauthenticateWithCredential, EmailAuthProvider } = await import(
+      "firebase/auth"
+    );
+    const { getFirebaseAuth } = await import("../firebase");
+    const auth = await getFirebaseAuth();
+    const user = auth.currentUser;
+    if (!user) throw new Error("No authenticated user");
+    const credential = EmailAuthProvider.credential(email, password);
+    return reauthenticateWithCredential(user, credential);
+  },
+  sendEmailVerification: async (user: any) => {
+    const { sendEmailVerification } = await import("firebase/auth");
+    return sendEmailVerification(user);
+  },
+};

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { usePauseState } from "../usePauseState";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("usePauseResumeControls");
@@ -113,7 +112,7 @@ const resetModalState = (
 
 export const usePauseResumeControls = ({
   sessionId,
-  userId,
+  _userId,
   isPaused,
   pauseState,
   onPause,

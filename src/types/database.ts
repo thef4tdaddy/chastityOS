@@ -4,15 +4,7 @@
  */
 
 export type SyncStatus = "synced" | "pending" | "conflict";
-export type EventType =
-  | "orgasm"
-  | "sexual_activity"
-  | "milestone"
-  | "note"
-  | "session_start"
-  | "session_end"
-  | "session_pause"
-  | "session_resume";
+export type EventType = string;
 export type TaskStatus =
   | "pending"
   | "submitted"
@@ -98,6 +90,13 @@ export interface DBEvent extends DBBase {
     // Additional properties for emergency/session events
     endReason?: string;
     emergencyReason?: string;
+    emergencyNotes?: string;
+    pauseReason?: string;
+    pauseDuration?: number;
+    sessionDuration?: number;
+    wasHardcoreMode?: boolean;
+    wasKeyholderControlled?: boolean;
+    accumulatedPauseTime?: number;
   };
   isPrivate: boolean;
 }
@@ -111,6 +110,7 @@ export interface DBTask extends DBBase {
   assignedBy: "submissive" | "keyholder";
   category?: string; // Optional category for task organization
   createdAt: Date;
+  updatedAt?: Date;
   dueDate?: Date;
   deadline?: Date; // Alternative deadline field name
   submittedAt?: Date;
@@ -126,7 +126,12 @@ export interface DBTask extends DBBase {
 }
 
 export interface DBGoal extends DBBase {
-  type: "duration" | "task_completion" | "behavioral" | "milestone";
+  type:
+    | "duration"
+    | "task_completion"
+    | "behavioral"
+    | "milestone"
+    | "special_challenge";
   title: string;
   description?: string;
   targetValue: number;
@@ -139,10 +144,15 @@ export interface DBGoal extends DBBase {
   dueDate?: Date;
   createdBy: "submissive" | "keyholder";
   isPublic: boolean;
+  // Special challenge fields
+  challengeType?: "locktober" | "no_nut_november";
+  challengeYear?: number;
+  isSpecialChallenge?: boolean;
 }
 
 export interface DBSettings extends DBBase {
   theme: "light" | "dark" | "auto" | "system";
+<<<<<<< HEAD
   notifications:
     | {
         enabled: boolean;
@@ -153,6 +163,19 @@ export interface DBSettings extends DBBase {
         achievements: boolean; // New: Achievement notifications
       }
     | boolean; // Allow both nested object and simple boolean for backwards compatibility
+=======
+  eventDisplayMode?: string;
+  twoFactorEnabled?: boolean;
+  updatedAt?: Date;
+  notifications: {
+    enabled: boolean;
+    sessionReminders: boolean;
+    taskDeadlines: boolean;
+    keyholderMessages: boolean;
+    goalProgress: boolean;
+    achievements: boolean; // New: Achievement notifications
+  };
+>>>>>>> origin/nightly
   privacy: {
     publicProfile: boolean;
     shareStatistics: boolean;

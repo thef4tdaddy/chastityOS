@@ -188,7 +188,8 @@ export function useTask(taskId: string) {
     queryKey: taskKeys.detail(taskId),
     queryFn: async (): Promise<Task | null> => {
       logger.info("Fetching task detail", { taskId });
-      return await taskDBService.findById(taskId);
+      const task = await taskDBService.findById(taskId);
+      return task ?? null;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - task details are stable
     enabled: !!taskId,
@@ -242,8 +243,8 @@ export function useCreateTask() {
         priority: taskData.priority || "medium",
         category: taskData.category,
         dueDate: taskData.dueDate,
-        assignedBy: taskData.assignedBy,
-        metadata: taskData.metadata,
+        assignedBy:
+          (taskData.assignedBy as "submissive" | "keyholder") || "submissive",
         createdAt: new Date(),
         updatedAt: new Date(),
       };
