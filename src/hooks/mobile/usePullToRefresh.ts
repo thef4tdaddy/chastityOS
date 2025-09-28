@@ -3,6 +3,7 @@
  * Provides pull-to-refresh functionality for mobile devices
  */
 import { useCallback, useRef, useState, useEffect } from "react";
+import type { React } from "react";
 import { useHapticFeedback } from "./useHapticFeedback";
 
 interface PullToRefreshOptions {
@@ -34,7 +35,7 @@ export const usePullToRefresh = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [_scrollTop, setScrollTop] = useState(0);
 
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);

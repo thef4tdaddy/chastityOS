@@ -173,7 +173,7 @@ export function useRelationships() {
   ]);
 
   // Unified error handling - combine errors from all hooks
-  const hasError = useMemo(() => {
+  const _hasError = useMemo(() => {
     return !!(
       relationshipList.error ||
       relationshipInvites.error ||
