@@ -206,7 +206,12 @@ export const useSpecialChallenges = (userId: string | null) => {
         throw err;
       }
     },
-    [userId, challengeStatus, loadChallengeStatus],
+    [
+      userId,
+      challengeStatus,
+      loadChallengeStatus,
+      checkForChallengeAchievements,
+    ],
   );
 
   /**
