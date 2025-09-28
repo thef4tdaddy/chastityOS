@@ -11,8 +11,26 @@ export * from "./achievements";
 // Account linking types
 export * from "./account-linking";
 
-// Relationship types
-export * from "./relationships";
+// Relationship types - explicit exports to avoid conflicts
+export type {
+  RelationshipStatus,
+  RelationshipPermissions,
+  RelationshipRequest,
+  RelationshipRequestStatus,
+  Relationship,
+  EnhancedUserProfile,
+  EnhancedUser,
+  RelationshipChastityData,
+  RelationshipSession,
+  RelationshipTaskStatus,
+  RelationshipTask,
+  RelationshipEvent,
+  DefaultRelationshipPermissions,
+  CreateDefaultPermissions,
+  // Alias conflicting types to avoid namespace collision
+  UserVerification as RelationshipUserVerification,
+  SessionEvent as RelationshipSessionEvent,
+} from "./relationships";
 
 // Database types - explicitly export to avoid conflicts
 export type {

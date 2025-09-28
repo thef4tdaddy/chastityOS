@@ -3,7 +3,7 @@ import { DBSession } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { PauseCooldownService } from "../PauseCooldownService";
 import { EffectiveTimeService } from "../EffectiveTimeService";
-import { PauseService } from "../PauseService";
+import { PauseService, EnhancedPauseReason } from "../PauseService";
 // import { FirebaseAPI } from './firebase'; // This will be used later
 
 const logger = serviceLogger("SessionService");
@@ -67,10 +67,10 @@ export class SessionService {
    */
   static async pauseSession(
     sessionId: string,
-    reason: string,
+    reason: EnhancedPauseReason,
     customReason?: string,
   ) {
-    return PauseService.pauseSession(sessionId, reason as any, customReason);
+    return PauseService.pauseSession(sessionId, reason, customReason);
   }
 
   /**

@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { SyncStatusIndicator } from "@/components/common";
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useNavigationStore } from "@/stores";
 import { ToastContainer } from "react-toastify";
 import { useAuthState } from "../../contexts";
@@ -10,7 +9,7 @@ import { useViewport } from "../../hooks/mobile";
 import { Header } from "./Header";
 import { MobileMenu } from "./MobileMenu";
 import { AchievementNotifications } from "./AchievementNotifications";
-import { navItems, mobileNavItems } from "./NavigationData";
+import { navItems, mobileNavItemsConfig } from "./NavigationData";
 import "react-toastify/dist/ReactToastify.css";
 
 interface AppLayoutProps {
@@ -36,9 +35,25 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const closeMobileMenu = useNavigationStore((state) => state.closeMobileMenu);
   const setPageTitle = useNavigationStore((state) => state.setPageTitle);
 
-  // Using imported navItems from NavigationData
-
-  // Using imported mobileNavItems from NavigationData
+  // Create mobile navigation items with React elements from configuration
+  const mobileNavItems = mobileNavItemsConfig.map((item) => ({
+    ...item,
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d={item.iconPath}
+        />
+      </svg>
+    ),
+  }));
 
   // Update page title based on current route
   useEffect(() => {
@@ -78,12 +93,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {isMobile && (
-        <BottomNavigation
-          items={mobileNavItems}
-          currentPath={location.pathname}
-        />
-      )}
+      {isMobile && <BottomNavigation items={mobileNavItems} />}
 
       <AchievementNotifications
         unreadNotifications={unreadNotifications}

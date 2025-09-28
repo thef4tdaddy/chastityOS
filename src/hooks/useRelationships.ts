@@ -10,6 +10,7 @@ import {
   RelationshipEvent,
   RelationshipPermissions,
 } from "@/types/relationships";
+import type { KeyholderRelationship } from "@/types/core";
 import {
   useRelationshipList,
   useRelationshipInvites,
@@ -96,7 +97,7 @@ export interface RelationshipActions {
   checkMigrationStatus: () => Promise<void>;
 
   // Utility
-  setActiveRelationship: (relationship: any) => void;
+  setActiveRelationship: (relationship: KeyholderRelationship | null) => void;
   refreshData: () => Promise<void>;
   clearError: () => void;
 }
@@ -118,7 +119,11 @@ export function useRelationships() {
       relationshipStatus.loadRelationshipData(relationshipId);
       relationshipTasks.loadRelationshipData(relationshipId);
     }
-  }, [relationshipList.activeRelationship, relationshipStatus, relationshipTasks]);
+  }, [
+    relationshipList.activeRelationship,
+    relationshipStatus,
+    relationshipTasks,
+  ]);
 
   // Set up real-time listeners for active relationship data
   useEffect(() => {
@@ -147,7 +152,11 @@ export function useRelationships() {
       unsubscribeChastityData();
       unsubscribeTasks();
     };
-  }, [relationshipList.activeRelationship, relationshipStatus, relationshipTasks]);
+  }, [
+    relationshipList.activeRelationship,
+    relationshipStatus,
+    relationshipTasks,
+  ]);
 
   // Enhanced refresh function that coordinates all hooks
   const refreshData = useCallback(async () => {
@@ -257,7 +266,7 @@ export function useRelationships() {
 
   // Enhanced setActiveRelationship that clears data when switching
   const setActiveRelationship = useCallback(
-    (relationship: any) => {
+    (relationship: KeyholderRelationship | null) => {
       relationshipList.setActiveRelationship(relationship);
 
       // Clear old data when switching relationships
