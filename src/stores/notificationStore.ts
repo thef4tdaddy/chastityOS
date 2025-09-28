@@ -88,12 +88,8 @@ export const useNotificationStore = create<NotificationState>()(
   devtools(
     (set, get) => ({
       // Initial state
-<<<<<<< HEAD
-      ...initialState,
-=======
       notifications: [],
       pauseOnHover: true,
->>>>>>> origin/nightly
 
       // Actions
       addNotification: (notification) => {
@@ -117,12 +113,7 @@ export const useNotificationStore = create<NotificationState>()(
         // Auto-remove notification after duration if specified
         if (newNotification.duration && newNotification.duration > 0) {
           setTimeout(() => {
-<<<<<<< HEAD
-            const currentState = useNotificationStore.getState();
-            currentState.removeNotification(id);
-=======
             useNotificationStore.getState().removeNotification(id);
->>>>>>> origin/nightly
           }, newNotification.duration);
         }
 
