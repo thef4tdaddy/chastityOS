@@ -109,7 +109,7 @@ interface ExportDataOptions {
 
 /**
  * Get user settings
- * Fixes: SettingsPage.tsx:696 (settingsDBService.findByUserId)
+ * Fixes: SettingsPage.tsx:696 (settingsDBService.getSettings)
  * Impact: Entire 780-line settings page becomes functional
  */
 export function useUserSettings(userId: string) {
@@ -119,7 +119,7 @@ export function useUserSettings(userId: string) {
       logger.info("Fetching user settings", { userId });
 
       try {
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
 
         if (!settings) {
           logger.info("No settings found for user, will create defaults", {
@@ -159,7 +159,7 @@ export function useSettingsSection(userId: string, section: SettingsSection) {
     queryFn: async () => {
       logger.info("Fetching settings section", { userId, section });
 
-      const settings = await settingsDBService.findByUserId(userId);
+      const settings = await settingsDBService.getSettings(userId);
       if (!settings) return null;
 
       // Extract just the requested section
@@ -194,7 +194,7 @@ export function useUpdateSettings() {
 
       try {
         // Get existing settings or create defaults
-        let existingSettings = await settingsDBService.findByUserId(userId);
+        let existingSettings = await settingsDBService.getSettings(userId);
 
         if (!existingSettings) {
           // Create default settings if none exist
@@ -266,7 +266,7 @@ export function useAccountMutations() {
 
         // This would integrate with auth service for 2FA setup
         // For now, just update settings
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -287,7 +287,7 @@ export function useAccountMutations() {
       mutationFn: async ({ userId }: { userId: string }) => {
         logger.info("Disabling 2FA", { userId });
 
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -352,7 +352,7 @@ export function usePrivacyMutations() {
           settings: privacySettings,
         });
 
-        const settings = await settingsDBService.findByUserId(userId);
+        const settings = await settingsDBService.getSettings(userId);
         if (settings) {
           await settingsDBService.update(userId, {
             ...settings,
@@ -500,6 +500,45 @@ function createDefaultSettings(userId: string): UserSettings {
   return {
     id: userId,
     userId,
+    syncStatus: "pending",
+    lastModified: new Date(),
+
+    // Required nested objects
+    notifications: {
+      enabled: true,
+      sessionReminders: true,
+      taskDeadlines: true,
+      keyholderMessages: true,
+      goalProgress: true,
+      achievements: true,
+    },
+    privacy: {
+      publicProfile: false,
+      shareStatistics: false,
+      allowDataExport: true,
+      shareAchievements: true,
+    },
+    chastity: {
+      allowEmergencyUnlock: true,
+      emergencyUnlockCooldown: 24,
+      requireKeyholderApproval: false,
+      defaultSessionGoal: 0,
+      hardcoreModeEnabled: false,
+    },
+    display: {
+      language: "en",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      dateFormat: "MM/dd/yyyy",
+      timeFormat: "12h",
+      startOfWeek: "sunday",
+    },
+    achievements: {
+      enableTracking: true,
+      showProgress: true,
+      enableNotifications: true,
+    },
+
+    // Flat properties for compatibility
     // Account defaults
     displayName: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -509,7 +548,6 @@ function createDefaultSettings(userId: string): UserSettings {
     theme: "system",
     fontSize: "medium",
     animations: true,
-    notifications: true,
 
     // Profile defaults
     publicProfile: false,
