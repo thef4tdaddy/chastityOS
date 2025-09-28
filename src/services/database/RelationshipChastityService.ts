@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 /**
  * RelationshipChastityService - Service for managing relationship-based chastity data
  */
@@ -22,7 +24,7 @@ export class RelationshipChastityService {
   /**
    * Updates session with end time
    */
-  async endSession(sessionId: string) {
+  async endSession(_sessionId: string) {
     const updateData = {
       endTime: Timestamp.now(),
       updatedAt: Timestamp.now(),
@@ -50,7 +52,7 @@ export class RelationshipChastityService {
   /**
    * Gets session history with timestamps
    */
-  async getSessionHistory(userId: string) {
+  async getSessionHistory(_userId: string) {
     // This would typically fetch from Firestore and convert Timestamp objects
     const mockHistory = [{
       id: '1',
