@@ -64,12 +64,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       ? `${currentItem.label} - ChastityOS`
       : "ChastityOS";
     setPageTitle(title);
-  }, [location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, navItems]); // setPageTitle omitted - Zustand store actions are stable
 
   // Close mobile menu when route changes
   useEffect(() => {
     closeMobileMenu();
-  }, [location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]); // closeMobileMenu omitted - Zustand store actions are stable
 
   return (
     <div className="bg-dark_purple min-h-screen text-white font-inter">

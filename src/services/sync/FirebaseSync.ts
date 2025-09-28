@@ -419,18 +419,20 @@ export class FirebaseSync {
    */
   async applyRemoteChanges(
     changesOrCollection: SyncOperation[] | string,
-    data?: Record<string, unknown>[]
+    data?: Record<string, unknown>[],
   ): Promise<void> {
     try {
       if (Array.isArray(changesOrCollection)) {
         // Handle SyncOperation[] format
-        logger.debug("Applying remote changes", { changes: changesOrCollection });
+        logger.debug("Applying remote changes", {
+          changes: changesOrCollection,
+        });
         // TODO: Implement remote changes application logic for SyncOperation[]
       } else {
         // Handle collection-specific format
-        logger.debug("Applying remote changes for collection", { 
-          collection: changesOrCollection, 
-          data 
+        logger.debug("Applying remote changes for collection", {
+          collection: changesOrCollection,
+          data,
         });
         // TODO: Implement remote changes application logic for specific collection
       }

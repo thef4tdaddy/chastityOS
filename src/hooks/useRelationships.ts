@@ -119,7 +119,11 @@ export function useRelationships() {
       relationshipStatus.loadRelationshipData(relationshipId);
       relationshipTasks.loadRelationshipData(relationshipId);
     }
-  }, [relationshipList.activeRelationship, relationshipStatus, relationshipTasks]);
+  }, [
+    relationshipList.activeRelationship,
+    relationshipStatus,
+    relationshipTasks,
+  ]);
 
   // Set up real-time listeners for active relationship data
   useEffect(() => {
@@ -148,7 +152,11 @@ export function useRelationships() {
       unsubscribeChastityData();
       unsubscribeTasks();
     };
-  }, [relationshipList.activeRelationship, relationshipStatus, relationshipTasks]);
+  }, [
+    relationshipList.activeRelationship,
+    relationshipStatus,
+    relationshipTasks,
+  ]);
 
   // Enhanced refresh function that coordinates all hooks
   const refreshData = useCallback(async () => {

@@ -7,7 +7,7 @@ import { useDexieSync } from "@/hooks/useDexieSync";
 import { useOfflineDemo } from "@/hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
-import type { User } from "firebase/auth";
+import type { User } from "@/types";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {
@@ -156,7 +156,7 @@ const TaskList: React.FC<TaskListProps> = ({
     </h3>
     {tasks.length === 0 ? (
       <p className="text-gray-400 text-center py-4">
-        No tasks yet. Add one above!
+        No tasks yet. Add your first task above!
       </p>
     ) : (
       tasks.map((task) => (
@@ -164,36 +164,35 @@ const TaskList: React.FC<TaskListProps> = ({
           key={task.id}
           className="flex items-center justify-between p-3 bg-gray-700 rounded border border-gray-600"
         >
-          <div className="flex-1">
-            <span
-              className={`${task.status === "completed" ? "line-through text-gray-400" : "text-white"}`}
-            >
-              {task.text}
-            </span>
-            <div className="text-xs text-gray-400 mt-1">
-              Status: {task.status} | Sync: {task.syncStatus}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() =>
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              checked={task.status === "completed"}
+              onChange={() =>
                 onUpdateTask(task.id, {
                   status: task.status === "completed" ? "pending" : "completed",
                 })
               }
               disabled={loading}
-              className="px-2 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-xs rounded transition-colors"
+              className="w-4 h-4 text-blue-600 bg-gray-600 border-gray-500 rounded focus:ring-blue-500"
+            />
+            <span
+              className={`flex-1 ${
+                task.status === "completed"
+                  ? "line-through text-gray-400"
+                  : "text-white"
+              }`}
             >
-              {task.status === "completed" ? "Undo" : "Done"}
-            </button>
-            <button
-              onClick={() => onDeleteTask(task.id)}
-              disabled={loading}
-              className="px-2 py-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white text-xs rounded transition-colors"
-            >
-              Delete
-            </button>
+              {task.text}
+            </span>
           </div>
+          <button
+            onClick={() => onDeleteTask(task.id)}
+            disabled={loading}
+            className="text-red-400 hover:text-red-300 disabled:opacity-50"
+          >
+            🗑️
+          </button>
         </div>
       ))
     )}
@@ -248,10 +247,13 @@ const useTaskManagement = (
         assignedBy: "submissive",
         createdAt: new Date(),
         category: "general",
+        type: "manual",
+        syncStatus: "pending",
       };
 
-      const createdTask = await createWithSync("tasks", newTask);
-      setTasks((prev) => [...prev, createdTask as DBTask]);
+      const createdTaskId = await createWithSync("tasks", newTask);
+      const fullTask: DBTask = { ...newTask, id: createdTaskId };
+      setTasks((prev) => [...prev, fullTask]);
       setNewTaskText("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create task");
@@ -261,14 +263,14 @@ const useTaskManagement = (
   const handleUpdateTask = async (taskId: string, updates: Partial<DBTask>) => {
     try {
       setError(null);
-      const updatedTask = await updateWithSync("tasks", taskId, {
+      await updateWithSync("tasks", taskId, {
         ...updates,
         updatedAt: new Date(),
       });
 
       setTasks((prev) =>
         prev.map((task) =>
-          task.id === taskId ? { ...task, ...updatedTask } : task,
+          task.id === taskId ? { ...task, ...updates } : task,
         ),
       );
     } catch (err) {

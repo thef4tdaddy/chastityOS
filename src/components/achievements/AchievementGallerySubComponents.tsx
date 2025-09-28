@@ -11,7 +11,11 @@ import {
   FaEye,
   FaSearch,
 } from "../../utils/iconImport";
-import { DBAchievement, AchievementCategory, DBUserAchievement } from "../../types";
+import {
+  DBAchievement,
+  AchievementCategory,
+  DBUserAchievement,
+} from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
 
 interface AchievementWithProgress {

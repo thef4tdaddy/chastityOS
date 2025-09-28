@@ -5,7 +5,10 @@
 import { sessionDBService } from "./SessionDBService";
 import { eventDBService } from "./EventDBService";
 import { settingsDBService } from "./SettingsDBService";
-import type { EmergencyUnlockReason, EmergencyUnlockEventDetails } from "../../types/events";
+import type {
+  EmergencyUnlockReason,
+  EmergencyUnlockEventDetails,
+} from "../../types/events";
 import { serviceLogger } from "../../utils/logging";
 import { generateUUID } from "../../utils/helpers/hash";
 
