@@ -7,7 +7,7 @@ import { useDexieSync } from "@/hooks/useDexieSync";
 import { useOfflineDemo } from "@/hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
-import type { User } from "firebase/auth";
+import type { User } from "@/types";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {
@@ -250,8 +250,9 @@ const useTaskManagement = (
         category: "general",
       };
 
-      const createdTask = await createWithSync("tasks", newTask);
-      setTasks((prev) => [...prev, createdTask as DBTask]);
+      const createdTaskId = await createWithSync("tasks", newTask);
+      const fullTask: DBTask = { ...newTask, id: createdTaskId };
+      setTasks((prev) => [...prev, fullTask]);
       setNewTaskText("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create task");
@@ -261,14 +262,14 @@ const useTaskManagement = (
   const handleUpdateTask = async (taskId: string, updates: Partial<DBTask>) => {
     try {
       setError(null);
-      const updatedTask = await updateWithSync("tasks", taskId, {
+      await updateWithSync("tasks", taskId, {
         ...updates,
         updatedAt: new Date(),
       });
 
       setTasks((prev) =>
         prev.map((task) =>
-          task.id === taskId ? { ...task, ...updatedTask } : task,
+          task.id === taskId ? { ...task, ...updates } : task,
         ),
       );
     } catch (err) {

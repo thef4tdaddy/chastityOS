@@ -64,12 +64,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       ? `${currentItem.label} - ChastityOS`
       : "ChastityOS";
     setPageTitle(title);
-  }, [location.pathname, setPageTitle]);
+  }, [location.pathname]); // Removed setPageTitle from deps as store actions are stable
 
   // Close mobile menu when route changes
   useEffect(() => {
     closeMobileMenu();
-  }, [location.pathname, closeMobileMenu]);
+  }, [location.pathname]); // Removed closeMobileMenu from deps as store actions are stable
 
   return (
     <div className="bg-dark_purple min-h-screen text-white font-inter">

@@ -51,7 +51,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
 
   return (
     <div className={`max-w-4xl mx-auto p-6 ${className}`}>
-      <ErrorDisplay error={error} onClear={clearError} />
+      <ErrorDisplay error={error ?? null} onClear={clearError} />
 
       <MigrationBanner
         needsMigration={needsMigration}
