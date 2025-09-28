@@ -4,18 +4,12 @@
  */
 import React, { useState } from "react";
 import { useRelationships } from "@/hooks/useRelationships";
-import { RelationshipStatus } from "@/types/relationships";
-import {
-  FaUserPlus,
-  FaUsers,
-  FaCog,
-  FaTrash,
-  FaCheck,
-  FaTimes,
-  FaEye,
-  FaSpinner,
-  FaExclamationTriangle,
-} from "react-icons/fa";
+import { FaUserPlus } from "react-icons/fa";
+import { MigrationBanner } from "./MigrationBanner";
+import { PendingRequestsList } from "./PendingRequestsList";
+import { RelationshipRequestForm } from "./RelationshipRequestForm";
+import { RelationshipsList } from "./RelationshipsList";
+import { ErrorDisplay } from "./ErrorDisplay";
 
 interface RelationshipManagerProps {
   className?: string;
@@ -41,12 +35,18 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   } = useRelationships();
 
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [requestForm, setRequestForm] = useState({
-    email: "",
-    role: "submissive" as "submissive" | "keyholder",
-    message: "",
-  });
 
+<<<<<<< HEAD
+  const handleSendRequest = async (requestData: {
+    email: string;
+    role: "submissive" | "keyholder";
+    message: string;
+  }) => {
+    await sendRelationshipRequest(
+      requestData.email,
+      requestData.role,
+      requestData.message,
+=======
   // Handle sending relationship request
   const handleSendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -367,30 +367,21 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
           </form>
         </div>
       </div>
+>>>>>>> origin/nightly
     );
+    setShowRequestForm(false);
   };
 
   return (
     <div className={`max-w-4xl mx-auto p-6 ${className}`}>
-      {/* Error display */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <p className="text-red-800">{error}</p>
-            <button
-              onClick={clearError}
-              className="text-red-600 hover:text-red-800"
-            >
-              <FaTimes />
-            </button>
-          </div>
-        </div>
-      )}
+      <ErrorDisplay error={error} onClear={clearError} />
 
-      {/* Migration banner */}
-      {renderMigrationBanner()}
+      <MigrationBanner
+        needsMigration={needsMigration}
+        isLoading={isLoading}
+        onMigrate={migrateSingleUserData}
+      />
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           Relationship Manager
@@ -398,48 +389,33 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
 
         <button
           onClick={() => setShowRequestForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 inline-flex items-center"
         >
-          <FaUserPlus />
-          Send Request
+          <FaUserPlus className="mr-2" />
+          New Request
         </button>
       </div>
 
-      {/* Active relationship indicator */}
-      {activeRelationship && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <p className="text-green-800">
-            <strong>Active:</strong> Relationship with{" "}
-            {activeRelationship.submissiveId === activeRelationship.keyholderId
-              ? "Yourself"
-              : activeRelationship.keyholderId}
-          </p>
-        </div>
-      )}
+      <PendingRequestsList
+        pendingRequests={pendingRequests}
+        isLoading={isLoading}
+        onAccept={acceptRelationshipRequest}
+        onReject={rejectRelationshipRequest}
+      />
 
-      {/* Pending requests */}
-      {renderPendingRequests()}
+      <RelationshipRequestForm
+        isVisible={showRequestForm}
+        isLoading={isLoading}
+        onSubmit={handleSendRequest}
+        onCancel={() => setShowRequestForm(false)}
+      />
 
-      {/* Relationships list */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Your Relationships ({relationships.length})
-        </h2>
-        {renderRelationships()}
-      </div>
-
-      {/* Request form modal */}
-      {renderRequestForm()}
-
-      {/* Loading overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-40">
-          <div className="bg-white rounded-lg p-4 flex items-center gap-3">
-            <FaSpinner className="animate-spin text-blue-600" />
-            <span>Processing...</span>
-          </div>
-        </div>
-      )}
+      <RelationshipsList
+        relationships={relationships}
+        activeRelationship={activeRelationship}
+        onSetActive={setActiveRelationship}
+        onEndRelationship={endRelationship}
+      />
     </div>
   );
 };
