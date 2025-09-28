@@ -1,6 +1,6 @@
 // src/pages/TrackerPage.jsx
 import React from 'react';
-import { FaPlay, FaPause, FaStop, FaLock, FaSpinner } from 'react-icons/fa';
+import { FaLock, FaSpinner } from 'react-icons/fa';
 import { formatTime, formatElapsedTime, formatDaysOnly } from '../utils';
 import { useTrackerPage } from '../hooks/useTrackerPage'; // Import the new hook
 import EmergencyUnlockModal from '../components/tracker/EmergencyUnlockModal'; // Import the new modal component

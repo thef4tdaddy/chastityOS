@@ -461,7 +461,9 @@ export const useChastitySession = (
                 if (!docRef) return;
                 const docSnap = await getDoc(docRef);
                 if (!docSnap.exists()) {
-                    console.log("🆕 Creating default user doc for:", userId);
+                    if (import.meta.env.DEV) {
+                      console.log("🆕 Creating default user doc for:", userId);
+                    }
                     await setDoc(docRef, {
                         isCageOn: false,
                         chastityHistory: [],

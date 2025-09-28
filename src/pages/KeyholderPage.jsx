@@ -16,7 +16,9 @@ export default function KeyholderPage(props) {
     return () => {
       // If the controls are unlocked when the user leaves the page, lock them.
       if (isKeyholderModeUnlocked) {
-        console.log("Navigating away from Keyholder page, locking controls.");
+        if (import.meta.env.DEV) {
+          console.log("Navigating away from Keyholder page, locking controls.");
+        }
         // Note: I've updated this to call the handler from your dashboard props for consistency
         handleLockKeyholderControls(); 
       }

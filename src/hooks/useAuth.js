@@ -34,7 +34,9 @@ export const useAuth = () => {
                             const dataToMigrate = anonSnap.data();
                             await setDoc(newDocRef, dataToMigrate, { merge: true });
                             await deleteDoc(anonDocRef);
-                            console.log("Anonymous data migrated successfully.");
+                            if (import.meta.env.DEV) {
+                              console.log("Anonymous data migrated successfully.");
+                            }
                         }
                     } catch (err) {
                         console.error("Failed to migrate anonymous data:", err);

@@ -112,7 +112,9 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
   const handleResetAllData = useCallback(async (isAccountDeletion = false) => {
     if (!isAuthReady || !userId) return;
 
-    console.log("Initiating full data reset...");
+    if (import.meta.env.DEV) {
+      console.log("Initiating full data reset...");
+    }
     const batch = writeBatch(db);
     const userDocRef = doc(db, "users", userId);
     
@@ -135,7 +137,9 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
     try {
         const tasksSnapshot = await getDocs(query(tasksCollectionRef));
         tasksSnapshot.forEach(doc => {
-            console.log(`Adding task ${doc.id} to delete batch.`);
+            if (import.meta.env.DEV) {
+              console.log(`Adding task ${doc.id} to delete batch.`);
+            }
             batch.delete(doc.ref);
         });
     } catch (error) {
@@ -148,7 +152,9 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
      try {
         const eventsSnapshot = await getDocs(query(eventsCollectionRef));
         eventsSnapshot.forEach(doc => {
-            console.log(`Adding event ${doc.id} to delete batch.`);
+            if (import.meta.env.DEV) {
+              console.log(`Adding event ${doc.id} to delete batch.`);
+            }
             batch.delete(doc.ref);
         });
     } catch (error) {
@@ -159,7 +165,9 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
     // 4. Commit all the changes at once
     try {
         await batch.commit();
-        console.log("Full data reset successful.");
+        if (import.meta.env.DEV) {
+          console.log("Full data reset successful.");
+        }
         if (!isAccountDeletion) {
           alert('All data has been reset.');
           window.location.reload(); // Reload to reflect changes

@@ -42,18 +42,22 @@ const FeedbackForm = () => {
       labels: label
     };
 
-    // Debug: Print what we're using
-    console.log('🚀 Submitting feedback...');
-    console.log('📦 Type:', type);
-    console.log('📝 Message:', message);
-    console.log('🌐 GitHub Repo:', githubRepo);
-    console.log('🔑 GitHub Token prefix:', githubToken?.slice(0, 6));
-    console.log('📄 GitHub Payload:', githubPayload);
+    // Debug: Print what we're using for development
+    if (import.meta.env.DEV) {
+      console.log('🚀 Submitting feedback...');
+      console.log('📦 Type:', type);
+      console.log('📝 Message:', message);
+      console.log('🌐 GitHub Repo:', githubRepo);
+      console.log('🔑 GitHub Token prefix:', githubToken?.slice(0, 6));
+      console.log('📄 GitHub Payload:', githubPayload);
+    }
 
     try {
       // Discord submission
       await axios.post(discordWebhook[type], discordPayload);
-      console.log('✅ Discord post successful');
+      if (import.meta.env.DEV) {
+        console.log('✅ Discord post successful');
+      }
 
       // GitHub issue creation
       if (!githubRepo || !githubToken) {
@@ -69,7 +73,9 @@ const FeedbackForm = () => {
             }
           }
         );
-        console.log('✅ GitHub issue created:', response.data.html_url);
+        if (import.meta.env.DEV) {
+          console.log('✅ GitHub issue created:', response.data.html_url);
+        }
       }
 
       setStatus('Feedback sent successfully!');

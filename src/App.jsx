@@ -40,8 +40,8 @@ const App = () => {
         needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
-        onRegistered(r) { console.log('SW Registered:', r); },
-        onRegisterError(error) { console.log('SW registration error:', error); },
+        onRegistered(r) { if (import.meta.env.DEV) { console.log('SW Registered:', r); } },
+        onRegisterError(error) { if (import.meta.env.DEV) { console.log('SW registration error:', error); } },
     });
 
     const navItemNames = { tracker: "Chastity Tracker", logEvent: "Sexual Event Log", fullReport: "Full Report", keyholder: "Keyholder", tasks: "Tasks", rewards: "Rewards & Punishments", settings: "Settings", privacy: "Privacy & Analytics", feedback: "Submit Beta Feedback" };

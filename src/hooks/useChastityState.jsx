@@ -121,7 +121,9 @@ export const useChastityState = () => {
 
       for (const task of pendingTasks) {
         if (now > task.deadline) {
-          console.log(`Task "${task.text}" is overdue. Auto-submitting...`);
+          if (import.meta.env.DEV) {
+            console.log(`Task "${task.text}" is overdue. Auto-submitting...`);
+          }
           handleSubmitForReview(task.id, 'Automatically submitted: Deadline passed.');
         }
       }

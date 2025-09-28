@@ -51,7 +51,11 @@ export default [
     files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsparser,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        global: 'readonly',
+        vi: 'readonly',
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },

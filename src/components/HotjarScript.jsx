@@ -18,9 +18,13 @@ const HotjarScript = ({ isTrackingAllowed }) => {
         a.appendChild(r);
       })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
 
-      console.log('[Hotjar Debug] Injected Hotjar script.');
+      if (import.meta.env.DEV) {
+        console.log('[Hotjar Debug] Injected Hotjar script.');
+      }
     } else {
-      console.log('[Hotjar Debug] Hotjar already initialized.');
+      if (import.meta.env.DEV) {
+        console.log('[Hotjar Debug] Hotjar already initialized.');
+      }
     }
   }, [isTrackingAllowed]);
 
