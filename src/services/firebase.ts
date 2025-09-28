@@ -77,7 +77,7 @@ export const getFirebaseAuth = async () => {
       "auth",
       Promise.all([getFirebaseApp(), import("firebase/auth")]).then(
         ([app, { getAuth }]) => {
-          const auth = getAuth(app);
+          const auth = getAuth(app as FirebaseApp);
           logger.debug("Firebase Auth loaded");
           return auth;
         },
@@ -184,6 +184,7 @@ export const conditionalPreloadAll = async (): Promise<void> => {
 import type { Auth } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
 import type { FirebaseStorage } from "firebase/storage";
+import type { FirebaseApp } from "firebase/app";
 
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;
@@ -196,7 +197,7 @@ export const auth = new Proxy({} as Auth, {
         "Firebase Auth not initialized. Use getFirebaseAuth() for lazy loading.",
       );
     }
-    return (_auth as Record<string | symbol, unknown>)[prop];
+    return (_auth as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -207,7 +208,7 @@ export const db = new Proxy({} as Firestore, {
         "Firestore not initialized. Use getFirestore() for lazy loading.",
       );
     }
-    return (_db as Record<string | symbol, unknown>)[prop];
+    return (_db as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -218,7 +219,7 @@ export const storage = new Proxy({} as FirebaseStorage, {
         "Firebase Storage not initialized. Use getFirebaseStorage() for lazy loading.",
       );
     }
-    return (_storage as Record<string | symbol, unknown>)[prop];
+    return (_storage as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -230,7 +231,7 @@ getFirestore().then((dbInstance) => {
   _db = dbInstance;
 });
 getFirebaseStorage().then((storageInstance) => {
-  _storage = storageInstance;
+  _storage = storageInstance as FirebaseStorage;
 });
 
 // Export configuration for debugging

@@ -77,8 +77,7 @@ class SessionDBService extends BaseDBService<DBSession> {
   async getActiveSessions(): Promise<DBSession[]> {
     try {
       const sessions = await this.table
-        .where("endTime")
-        .equals(undefined)
+        .filter((session) => !session.endTime)
         .toArray();
 
       logger.debug("Get active sessions", { count: sessions.length });
@@ -358,6 +357,27 @@ class SessionDBService extends BaseDBService<DBSession> {
       return stats;
     } catch (error) {
       logger.error("Failed to get session stats", {
+        error: error as Error,
+        userId,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get all sessions for a user (alias for getSessionHistory)
+   */
+  async getUserSessions(userId: string): Promise<DBSession[]> {
+    try {
+      const sessions = await this.table
+        .where("userId")
+        .equals(userId)
+        .sortBy("startTime");
+
+      logger.debug("Get user sessions", { userId, count: sessions.length });
+      return sessions;
+    } catch (error) {
+      logger.error("Failed to get user sessions", {
         error: error as Error,
         userId,
       });

@@ -8,7 +8,7 @@ import { AccountLinkingDemo } from "../components/keyholder/AccountLinkingDemo";
 type Scenario =
   | "submissive-with-keyholder"
   | "submissive-no-keyholder"
-  | "keyholder-with-submissives";
+  | "keyholder-mode";
 
 const KeyholderDemo: React.FC = () => {
   const [scenario, setScenario] = useState<Scenario>("submissive-no-keyholder");
@@ -48,14 +48,14 @@ const KeyholderDemo: React.FC = () => {
               Submissive (With Keyholder)
             </button>
             <button
-              onClick={() => setScenario("keyholder-with-submissives")}
+              onClick={() => setScenario("keyholder-mode")}
               className={`px-3 py-2 rounded text-sm ${
-                scenario === "keyholder-with-submissives"
+                scenario === "keyholder-mode"
                   ? "bg-purple-600 text-white"
                   : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              Keyholder (With Submissives)
+              Keyholder Mode
             </button>
           </div>
         </div>

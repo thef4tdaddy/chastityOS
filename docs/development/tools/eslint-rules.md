@@ -5,15 +5,19 @@ This document provides detailed explanations for all ESLint rules configured in 
 ## 📋 Rule Categories
 
 ### 🏗️ Architectural Rules
+
 Rules that enforce the architectural patterns and code organization.
 
 ### 🔒 Security Rules
+
 Rules that prevent security vulnerabilities and unsafe practices.
 
 ### 📊 Performance Rules
+
 Rules that optimize bundle size and runtime performance.
 
 ### 🎨 Code Quality Rules
+
 Rules that improve code readability and maintainability.
 
 ---
@@ -21,20 +25,22 @@ Rules that improve code readability and maintainability.
 ## 🏗️ Architectural Rules
 
 ### `@typescript-eslint/no-unused-vars`
+
 **Level**: Error
 **Rationale**: Prevents unused imports and variables that bloat the bundle.
 
 ```javascript
 // ❌ Bad
-import { useState, useEffect } from 'react'; // useEffect is unused
+import { useState, useEffect } from "react"; // useEffect is unused
 const [count, setCount] = useState(0); // setCount is unused
 
 // ✅ Good
-import { useState } from 'react';
+import { useState } from "react";
 const [count] = useState(0);
 ```
 
 **Configuration**:
+
 ```javascript
 '@typescript-eslint/no-unused-vars': ['error', {
   argsIgnorePattern: '^_',
@@ -44,6 +50,7 @@ const [count] = useState(0);
 ```
 
 ### `react-hooks/rules-of-hooks`
+
 **Level**: Error
 **Rationale**: Enforces Rules of Hooks to prevent bugs and inconsistent behavior.
 
@@ -70,6 +77,7 @@ function Component() {
 ```
 
 ### `react-hooks/exhaustive-deps`
+
 **Level**: Warn
 **Rationale**: Prevents stale closures and ensures effect dependencies are correct.
 
@@ -99,6 +107,7 @@ useEffect(() => {
 ## 🏗️ Custom Architectural Rules
 
 ### `no-business-logic-in-components` (Custom Rule - Future)
+
 **Level**: Error
 **Rationale**: Enforces separation of concerns - components should only handle UI.
 
@@ -112,12 +121,10 @@ function SessionTracker() {
     const sessionData = {
       id: generateId(),
       startTime: new Date(),
-      userId: getCurrentUser().id
+      userId: getCurrentUser().id,
     };
 
-    await firebase.firestore()
-      .collection('sessions')
-      .add(sessionData);
+    await firebase.firestore().collection("sessions").add(sessionData);
 
     setSession(sessionData);
   };
@@ -134,16 +141,14 @@ function SessionTracker() {
 ```
 
 ### `no-direct-firebase-calls` (Custom Rule - Future)
+
 **Level**: Error
 **Rationale**: All Firebase calls should go through service layer for consistency.
 
 ```javascript
 // ❌ Bad - Direct Firebase call
 useEffect(() => {
-  firebase.firestore()
-    .collection('sessions')
-    .get()
-    .then(setData);
+  firebase.firestore().collection("sessions").get().then(setData);
 }, []);
 
 // ✅ Good - Using service layer
@@ -151,6 +156,7 @@ const { data } = useSessionsQuery();
 ```
 
 ### `require-error-logging` (Custom Rule - Future)
+
 **Level**: Error
 **Rationale**: All errors must be logged through centralized logger.
 
@@ -171,6 +177,7 @@ catch (error) {
 ## 🔒 Security Rules
 
 ### `no-eval`
+
 **Level**: Error
 **Rationale**: Prevents code injection attacks.
 
@@ -181,10 +188,11 @@ eval(code); // Extremely dangerous
 
 // ✅ Good - Use safe alternatives
 const config = JSON.parse(jsonString); // For JSON
-const fn = new Function('return ' + expression); // Slightly safer but still avoid
+const fn = new Function("return " + expression); // Slightly safer but still avoid
 ```
 
 ### `no-implied-eval`
+
 **Level**: Error
 **Rationale**: Prevents implicit eval through setTimeout/setInterval.
 
@@ -193,22 +201,24 @@ const fn = new Function('return ' + expression); // Slightly safer but still avo
 setTimeout('alert("Hello")', 1000); // Implicit eval
 
 // ✅ Good
-setTimeout(() => alert('Hello'), 1000);
+setTimeout(() => alert("Hello"), 1000);
 ```
 
 ### `no-new-func`
+
 **Level**: Error
 **Rationale**: Prevents Function constructor which can execute arbitrary code.
 
 ```javascript
 // ❌ Bad
-const fn = new Function('a', 'b', 'return a + b');
+const fn = new Function("a", "b", "return a + b");
 
 // ✅ Good
 const fn = (a, b) => a + b;
 ```
 
 ### `no-script-url`
+
 **Level**: Error
 **Rationale**: Prevents javascript: URLs which can execute arbitrary code.
 
@@ -225,27 +235,31 @@ const fn = (a, b) => a + b;
 ## 📊 Performance Rules
 
 ### `react/no-array-index-key`
+
 **Level**: Warn
 **Rationale**: Using array indices as keys can cause performance issues and bugs.
 
 ```javascript
 // ❌ Bad - Array index as key
-{items.map((item, index) => (
-  <Item key={index} data={item} /> // Can cause rendering issues
-))}
+{
+  items.map((item, index) => (
+    <Item key={index} data={item} /> // Can cause rendering issues
+  ));
+}
 
 // ✅ Good - Stable unique key
-{items.map((item) => (
-  <Item key={item.id} data={item} />
-))}
+{
+  items.map((item) => <Item key={item.id} data={item} />);
+}
 
 // ✅ Acceptable - When list never reorders and items don't have IDs
-{staticList.map((item, index) => (
-  <StaticItem key={index} data={item} />
-))}
+{
+  staticList.map((item, index) => <StaticItem key={index} data={item} />);
+}
 ```
 
 ### `react/jsx-no-bind`
+
 **Level**: Warn
 **Rationale**: Prevents creating new functions on every render.
 
@@ -269,6 +283,7 @@ const handleItemClick = useCallback(() => {
 ```
 
 ### `react/no-unstable-nested-components`
+
 **Level**: Error
 **Rationale**: Prevents performance issues from recreating components on every render.
 
@@ -309,6 +324,7 @@ function ParentComponent({ config }) {
 ## 🎨 Code Quality Rules
 
 ### `prefer-const`
+
 **Level**: Error
 **Rationale**: Prevents accidental reassignment and clarifies intent.
 
@@ -327,19 +343,21 @@ currentValue = calculateNewValue();
 ```
 
 ### `no-var`
+
 **Level**: Error
 **Rationale**: Prevents function-scoped variables and hoisting confusion.
 
 ```javascript
 // ❌ Bad
-var name = 'John'; // Function-scoped, hoisted
+var name = "John"; // Function-scoped, hoisted
 
 // ✅ Good
-const name = 'John'; // Block-scoped
+const name = "John"; // Block-scoped
 let age = 25; // Block-scoped when reassignment needed
 ```
 
 ### `object-shorthand`
+
 **Level**: Error
 **Rationale**: Promotes cleaner, more concise object syntax.
 
@@ -347,25 +365,36 @@ let age = 25; // Block-scoped when reassignment needed
 // ❌ Bad
 const user = {
   name: name,
-  getId: function() { return this.id; },
-  save: function() { /* ... */ }
+  getId: function () {
+    return this.id;
+  },
+  save: function () {
+    /* ... */
+  },
 };
 
 // ✅ Good
 const user = {
   name,
-  getId() { return this.id; },
-  save() { /* ... */ }
+  getId() {
+    return this.id;
+  },
+  save() {
+    /* ... */
+  },
 };
 ```
 
 ### `arrow-body-style`
+
 **Level**: Error
 **Rationale**: Enforces consistent arrow function style.
 
 ```javascript
 // ❌ Bad - Unnecessary block body
-const double = (x) => { return x * 2; };
+const double = (x) => {
+  return x * 2;
+};
 
 // ✅ Good - Concise body
 const double = (x) => x * 2;
@@ -373,7 +402,7 @@ const double = (x) => x * 2;
 // ✅ Good - Block body when necessary
 const processData = (data) => {
   const processed = transform(data);
-  log('Data processed');
+  log("Data processed");
   return processed;
 };
 ```
@@ -385,6 +414,7 @@ const processData = (data) => {
 ### Future Custom Rules
 
 #### `enforce-service-layer-pattern`
+
 ```javascript
 // Will enforce that components use service layer
 'custom/enforce-service-layer-pattern': ['error', {
@@ -394,6 +424,7 @@ const processData = (data) => {
 ```
 
 #### `no-console-in-production`
+
 ```javascript
 // Will prevent console.log in production builds
 'custom/no-console-in-production': ['error', {
@@ -403,6 +434,7 @@ const processData = (data) => {
 ```
 
 #### `enforce-error-boundaries`
+
 ```javascript
 // Will require error boundaries for route components
 'custom/enforce-error-boundaries': ['error', {
@@ -416,16 +448,17 @@ const processData = (data) => {
 ## 🔧 ESLint Configuration
 
 ### Base Configuration
+
 ```javascript
 export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.configs.stylistic,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2024,
-      sourceType: 'module',
+      sourceType: "module",
       globals: {
         ...globals.browser,
         ...globals.es2024,
@@ -438,8 +471,8 @@ export default [
     },
     plugins: {
       react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-      'react-refresh': reactRefreshPlugin,
+      "react-hooks": reactHooksPlugin,
+      "react-refresh": reactRefreshPlugin,
     },
     rules: {
       // ... rules configuration
@@ -449,6 +482,7 @@ export default [
 ```
 
 ### Environment-Specific Rules
+
 ```javascript
 // Development environment - more lenient
 {
@@ -477,6 +511,7 @@ export default [
 ## 🛠️ Rule Overrides
 
 ### Test Files
+
 ```javascript
 {
   files: ['**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
@@ -489,6 +524,7 @@ export default [
 ```
 
 ### Configuration Files
+
 ```javascript
 {
   files: ['**/*.config.{js,ts}', '**/vite.config.*', '**/tailwind.config.*'],
@@ -505,21 +541,25 @@ export default [
 ## 📖 Best Practices
 
 ### 1. Gradual Adoption
+
 - Start with warnings for new rules
 - Fix existing violations over time
 - Use `eslint-disable-next-line` sparingly with comments explaining why
 
 ### 2. Team Consistency
+
 - All team members should use the same ESLint configuration
 - Use pre-commit hooks to enforce rules
 - Regular code reviews to catch rule violations
 
 ### 3. Performance Considerations
+
 - Use `cache: true` in ESLint configuration for faster subsequent runs
 - Consider using ESLint flat config for better performance
 - Run ESLint in parallel with other tools in CI
 
 ### 4. Rule Documentation
+
 - Document any custom rules thoroughly
 - Provide examples of violations and corrections
 - Keep this documentation updated as rules change
@@ -529,21 +569,25 @@ export default [
 ## 🔄 Migration Strategy
 
 ### Phase 1: Foundation Rules (Current)
+
 - Core JavaScript/TypeScript rules
 - React hooks rules
 - Basic security rules
 
 ### Phase 2: Architectural Rules (Future)
+
 - Service layer enforcement
 - Component purity rules
 - Import/export restrictions
 
 ### Phase 3: Performance Rules (Future)
+
 - Bundle size optimization rules
 - Runtime performance rules
 - Memory leak prevention
 
 ### Phase 4: Advanced Rules (Future)
+
 - Custom business logic rules
 - Framework-specific optimizations
 - Team-specific conventions
@@ -553,9 +597,11 @@ export default [
 ## 🎯 Custom ChastityOS Rules (Implemented)
 
 ### Zustand Safety Rules
+
 Our custom rules prevent React error #185 and enforce proper architecture:
 
 #### `zustand-safe-patterns/zustand-no-server-data`
+
 **Level**: Error
 **Rationale**: Enforces that Zustand stores only contain UI state, not server data.
 
@@ -569,12 +615,13 @@ const useStore = create((set) => ({
 // ✅ Good - UI state only in Zustand
 const useUIStore = create((set) => ({
   isModalOpen: false,
-  theme: 'light',
+  theme: "light",
   sidebarCollapsed: false,
 }));
 ```
 
 #### `zustand-safe-patterns/zustand-no-getstate-in-useeffect`
+
 **Level**: Error
 **Rationale**: Prevents infinite render loops from getState() calls in useEffect.
 
@@ -586,13 +633,14 @@ useEffect(() => {
 }, []);
 
 // ✅ Good - Proper subscription
-const data = useUIStore(state => state.data);
+const data = useUIStore((state) => state.data);
 useEffect(() => {
   // Use the subscribed data
 }, [data]);
 ```
 
 #### `zustand-safe-patterns/zustand-store-reference-pattern`
+
 **Level**: Error
 **Rationale**: Prevents dangerous async patterns that cause infinite loops.
 
@@ -611,6 +659,7 @@ setTimeout(() => {
 ## 📊 Current Codebase Analysis
 
 As of implementation, the ESLint rules detected:
+
 - **137 total violations** (83 errors, 54 warnings)
 - **Major categories:**
   - Console.log usage: 50+ violations (will use logger utility)
@@ -623,17 +672,20 @@ As of implementation, the ESLint rules detected:
 ## 🔄 Migration Strategy
 
 ### Phase 1: Rules Implementation ✅
+
 - Custom Zustand safety rules created
 - Architectural enforcement rules configured
 - File size and complexity warnings established
 
 ### Phase 2: Natural Resolution During Rewrite
+
 - Service layer implementation will fix component architecture violations
 - TanStack Query + Zustand implementation will fix state management violations
 - Logger utility adoption will fix console.log violations
 - Toast system will fix alert() violations
 
 ### Phase 3: Strict Enforcement
+
 - Promote warnings to errors for new code
 - Enforce architectural patterns for all new development
 - Add pre-commit hooks for rule enforcement

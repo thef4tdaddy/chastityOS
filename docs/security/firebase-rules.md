@@ -75,6 +75,7 @@ service cloud.firestore {
 ## 🛡️ Authentication Rules
 
 ### Basic Authentication Check
+
 ```javascript
 function isAuthenticated() {
   return request.auth != null;
@@ -86,6 +87,7 @@ function isOwner(userId) {
 ```
 
 ### Keyholder Authentication
+
 ```javascript
 function isKeyholder(userId) {
   // Check if current user is a verified keyholder for this user
@@ -104,6 +106,7 @@ function hasKeyholderAccess(userId, requiredLevel) {
 ```
 
 ### Advanced Authentication Patterns
+
 ```javascript
 function isVerifiedKeyholder(userId) {
   // Keyholder must be verified and have active status
@@ -127,6 +130,7 @@ function canAccessSensitiveData(userId) {
 ## 📊 Data Validation Rules
 
 ### Session Validation
+
 ```javascript
 function isValidSession() {
   let data = request.resource.data;
@@ -181,6 +185,7 @@ function isValidStatusTransition(fromStatus, toStatus) {
 ```
 
 ### Event Validation
+
 ```javascript
 function isValidEvent() {
   let data = request.resource.data;
@@ -232,6 +237,7 @@ function isValidArousalEvent(data) {
 ```
 
 ### Task Validation
+
 ```javascript
 function isValidTaskCreation() {
   let data = request.resource.data;
@@ -298,6 +304,7 @@ function isValidTaskStatusTransition(fromStatus, toStatus, assignedBy) {
 ## 🔗 Keyholder Access Rules
 
 ### Keyholder Link Creation
+
 ```javascript
 function isValidKeyholderLink() {
   let data = request.resource.data;
@@ -356,6 +363,7 @@ function isValidKeyholderStatusTransition(fromStatus, toStatus, submissiveId, ke
 ```
 
 ### Access Level Management
+
 ```javascript
 function canModifyAccessLevel(userId, keyholderId) {
   // Only submissive can modify keyholder access levels
@@ -375,6 +383,7 @@ function isValidAccessLevel(level) {
 ## 🚦 Rate Limiting Rules
 
 ### General Rate Limiting
+
 ```javascript
 function isWithinRateLimit(collection, limit, timeWindow) {
   // Check how many documents user has created in the time window
@@ -401,6 +410,7 @@ function canCreateTask() {
 ```
 
 ### Feedback Rate Limiting
+
 ```javascript
 function canSubmitFeedback() {
   let data = request.resource.data;
@@ -432,11 +442,11 @@ function isValidFeedback() {
 ## 🔍 Security Monitoring Rules
 
 ### Audit Logging
+
 ```javascript
 function logSecurityEvent(eventType, details) {
   // Security events are automatically logged by Cloud Functions
   // This function documents the events we track
-
   // Tracked events:
   // - unauthorized_access_attempt
   // - keyholder_access
@@ -449,11 +459,11 @@ function logSecurityEvent(eventType, details) {
 // Example usage in sensitive operations
 function accessSensitiveData(userId) {
   // Log before allowing access
-  logSecurityEvent('sensitive_data_access', {
-    'userId': userId,
-    'accessor': request.auth.uid,
-    'timestamp': request.time,
-    'isKeyholder': isKeyholder(userId)
+  logSecurityEvent("sensitive_data_access", {
+    userId: userId,
+    accessor: request.auth.uid,
+    timestamp: request.time,
+    isKeyholder: isKeyholder(userId),
   });
 
   return canAccessSensitiveData(userId);
@@ -461,6 +471,7 @@ function accessSensitiveData(userId) {
 ```
 
 ### Suspicious Activity Detection
+
 ```javascript
 function detectSuspiciousActivity() {
   // Patterns that trigger security alerts:
@@ -493,27 +504,29 @@ function detectSuspiciousActivity() {
 ## 🛠️ Development vs Production Rules
 
 ### Development Environment
+
 ```javascript
 // More permissive rules for development
 function isDevelopmentEnvironment() {
-  return request.headers['x-environment'] == 'development';
+  return request.headers["x-environment"] == "development";
 }
 
 // Allow more lenient validation in development
 function isValidSessionDev() {
-  return isDevelopmentEnvironment() ?
-         isValidSessionLenient() :
-         isValidSession();
+  return isDevelopmentEnvironment()
+    ? isValidSessionLenient()
+    : isValidSession();
 }
 
 function isValidSessionLenient() {
   // Relaxed validation for testing
   let data = request.resource.data;
-  return 'userId' in data && data.userId == request.auth.uid;
+  return "userId" in data && data.userId == request.auth.uid;
 }
 ```
 
 ### Production Environment
+
 ```javascript
 // Strict rules for production
 function isProductionEnvironment() {
@@ -522,15 +535,18 @@ function isProductionEnvironment() {
 
 // Enhanced security for production
 function isValidSessionProd() {
-  return isValidSession() &&
-         isWithinRateLimit('sessions', 10, 24) && // Stricter rate limits
-         hasValidUserAgent() && // Require valid user agent
-         !isFromSuspiciousIP(); // Block known malicious IPs
+  return (
+    isValidSession() &&
+    isWithinRateLimit("sessions", 10, 24) && // Stricter rate limits
+    hasValidUserAgent() && // Require valid user agent
+    !isFromSuspiciousIP()
+  ); // Block known malicious IPs
 }
 
 function hasValidUserAgent() {
-  return 'user-agent' in request.headers &&
-         request.headers['user-agent'].size() > 10;
+  return (
+    "user-agent" in request.headers && request.headers["user-agent"].size() > 10
+  );
 }
 ```
 
@@ -539,6 +555,7 @@ function hasValidUserAgent() {
 ## 🔄 Migration and Updates
 
 ### Rule Versioning
+
 ```javascript
 // Version 2.0 - Current
 // - Added keyholder access controls
@@ -559,17 +576,16 @@ function shouldUseNewRules() {
 ```
 
 ### Backward Compatibility
+
 ```javascript
 function isValidSessionAnyVersion() {
-  return shouldUseNewRules() ?
-         isValidSession() :
-         isValidSessionLegacy();
+  return shouldUseNewRules() ? isValidSession() : isValidSessionLegacy();
 }
 
 function isValidSessionLegacy() {
   // Legacy validation for older data
   let data = request.resource.data;
-  return 'userId' in data && data.userId == request.auth.uid;
+  return "userId" in data && data.userId == request.auth.uid;
 }
 ```
 
@@ -578,6 +594,7 @@ function isValidSessionLegacy() {
 ## 📊 Performance Optimization
 
 ### Query Optimization
+
 ```javascript
 // Use efficient queries with proper indexing
 function getRecentSessions(userId) {
@@ -604,6 +621,7 @@ function isValidSessionOptimized() {
 ```
 
 ### Caching Strategy
+
 ```javascript
 // Cache frequently accessed data
 function getCachedUserSettings(userId) {

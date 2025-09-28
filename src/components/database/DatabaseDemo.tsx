@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export const DatabaseDemo: React.FC = () => {
   const { user } = useAuth();
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   if (!user) {
     return (
