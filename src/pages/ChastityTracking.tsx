@@ -18,6 +18,70 @@ import type { SessionRestorationResult } from "../services/SessionPersistenceSer
 // import { usePauseState } from "../hooks/usePauseState";
 // import { SessionService } from "../services/api/session-service";
 
+// Helper function to handle session restoration
+const createSessionRestorationHandler =
+  (
+    setCurrentSession: (session: DBSession | null) => void,
+    startHeartbeat: (sessionId: string) => void,
+    setCorruptedSession: (session: DBSession | null) => void,
+    setShowSessionRecovery: (show: boolean) => void,
+  ) =>
+  (result: SessionRestorationResult) => {
+    logger.info("Session restoration completed", {
+      wasRestored: result.wasRestored,
+      sessionId: result.session?.id,
+    });
+
+    if (result.session) {
+      setCurrentSession(result.session);
+      startHeartbeat(result.session.id);
+
+      // If session had validation issues but was recovered, show recovery modal
+      if (result.error && result.session) {
+        setCorruptedSession(result.session);
+        setShowSessionRecovery(true);
+      }
+    }
+  };
+
+// Helper function to handle session recovery
+const createSessionRecoveryHandler =
+  (
+    setCurrentSession: (session: DBSession | null) => void,
+    backupSession: (session: DBSession) => Promise<void>,
+    startHeartbeat: (sessionId: string) => void,
+    setShowSessionRecovery: (show: boolean) => void,
+    setCorruptedSession: (session: DBSession | null) => void,
+  ) =>
+  async (session: DBSession) => {
+    try {
+      setCurrentSession(session);
+      await backupSession(session);
+      startHeartbeat(session.id);
+      setShowSessionRecovery(false);
+      setCorruptedSession(null);
+      logger.info("Session recovered successfully", { sessionId: session.id });
+    } catch (error) {
+      logger.error("Failed to recover session", { error: error as Error });
+    }
+  };
+
+// Helper function to handle session discard
+const createSessionDiscardHandler =
+  (
+    setCurrentSession: (session: DBSession | null) => void,
+    setShowSessionRecovery: (show: boolean) => void,
+    setCorruptedSession: (session: DBSession | null) => void,
+    stopHeartbeat: () => void,
+  ) =>
+  () => {
+    setCurrentSession(null);
+    setShowSessionRecovery(false);
+    setCorruptedSession(null);
+    stopHeartbeat();
+    logger.info("Corrupted session discarded");
+  };
+
 const TrackerPage: React.FC = () => {
   // Authentication state
   const { data: user, isLoading: authLoading } = useAuth();
@@ -44,52 +108,33 @@ const TrackerPage: React.FC = () => {
     null,
   );
 
-  // Handle session restoration
-  const handleSessionRestored = (result: SessionRestorationResult) => {
-    logger.info("Session restoration completed", {
-      wasRestored: result.wasRestored,
-      sessionId: result.session?.id,
-    });
+  // Create handlers using helper functions
+  const handleSessionRestored = createSessionRestorationHandler(
+    setCurrentSession,
+    startHeartbeat,
+    setCorruptedSession,
+    setShowSessionRecovery,
+  );
 
-    if (result.session) {
-      setCurrentSession(result.session);
-      startHeartbeat(result.session.id);
+  const handleRecoverSession = createSessionRecoveryHandler(
+    setCurrentSession,
+    backupSession,
+    startHeartbeat,
+    setShowSessionRecovery,
+    setCorruptedSession,
+  );
 
-      // If session had validation issues but was recovered, show recovery modal
-      if (result.error && result.session) {
-        setCorruptedSession(result.session);
-        setShowSessionRecovery(true);
-      }
-    }
-  };
+  const handleDiscardSession = createSessionDiscardHandler(
+    setCurrentSession,
+    setShowSessionRecovery,
+    setCorruptedSession,
+    stopHeartbeat,
+  );
 
   // Handle session persistence initialization
   const handleSessionInitialized = () => {
     setIsSessionInitialized(true);
     logger.debug("Session persistence initialized");
-  };
-
-  // Handle session recovery
-  const handleRecoverSession = async (session: DBSession) => {
-    try {
-      setCurrentSession(session);
-      await backupSession(session);
-      startHeartbeat(session.id);
-      setShowSessionRecovery(false);
-      setCorruptedSession(null);
-      logger.info("Session recovered successfully", { sessionId: session.id });
-    } catch (error) {
-      logger.error("Failed to recover session", { error: error as Error });
-    }
-  };
-
-  // Handle session discard
-  const handleDiscardSession = () => {
-    setCurrentSession(null);
-    setShowSessionRecovery(false);
-    setCorruptedSession(null);
-    stopHeartbeat();
-    logger.info("Corrupted session discarded");
   };
 
   // Backup session state when it changes

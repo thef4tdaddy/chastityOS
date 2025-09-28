@@ -5,7 +5,7 @@
 
 import React, { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, expect } from "vitest";
 
 // Mock data factories
 export const createMockUser = (overrides = {}) => ({

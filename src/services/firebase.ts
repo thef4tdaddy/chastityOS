@@ -185,7 +185,6 @@ export const conditionalPreloadAll = async (): Promise<void> => {
 import type { Auth } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
 import type { FirebaseStorage } from "firebase/storage";
-import type { FirebaseApp } from "firebase/app";
 
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;

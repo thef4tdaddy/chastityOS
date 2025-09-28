@@ -120,7 +120,7 @@ export const useViewport = (): ViewportInfo => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleOrientationChange);
     };
-  }, [updateViewport, updateSafeAreaInsets]);
+  }, []);
 
   // Determine device type based on viewport width
   const isMobile = viewport.innerWidth < MOBILE_BREAKPOINT;

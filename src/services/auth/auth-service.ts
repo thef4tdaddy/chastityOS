@@ -405,7 +405,10 @@ export const authService = {
   getUserProfile: AuthService.getUserProfile.bind(AuthService),
   updateUserProfile: AuthService.updateUserProfile.bind(AuthService),
   sendPasswordResetEmail: AuthService.resetPassword.bind(AuthService),
-  updateProfile: async (user: FirebaseUser, profile: { displayName?: string | null; photoURL?: string | null }) => {
+  updateProfile: async (
+    user: FirebaseUser,
+    profile: { displayName?: string | null; photoURL?: string | null },
+  ) => {
     // This is a Firebase Auth method, not our service method
     const { updateProfile } = await import("firebase/auth");
     return updateProfile(user, profile);

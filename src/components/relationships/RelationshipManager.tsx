@@ -35,23 +35,32 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   } = useRelationships();
 
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [requestForm, setRequestForm] = useState({
+    email: "",
+    role: "submissive" as "submissive" | "keyholder",
+    message: "",
+  });
 
-  const handleSendRequest = async (requestData: {
-    email: string;
-    role: "submissive" | "keyholder";
-    message: string;
-  }) => {
-    await sendRelationshipRequest(
-      requestData.email,
-      requestData.role,
-      requestData.message,
-    );
-    setShowRequestForm(false);
+  // Handle sending relationship request
+  const handleSendRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      await sendRelationshipRequest(
+        requestForm.email,
+        requestForm.role,
+        requestForm.message,
+      );
+      setShowRequestForm(false);
+      setRequestForm({ email: "", role: "submissive", message: "" });
+    } catch {
+      // Handle error silently or with proper error handling
+    }
   };
 
   return (
     <div className={`max-w-4xl mx-auto p-6 ${className}`}>
-      <ErrorDisplay error={error} onClear={clearError} />
+      <ErrorDisplay error={error ?? null} onClear={clearError} />
 
       <MigrationBanner
         needsMigration={needsMigration}
