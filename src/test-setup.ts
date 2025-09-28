@@ -2,7 +2,7 @@
  * Test Setup Configuration
  * Global setup for Vitest test environment
  */
-import { expect, afterEach } from "vitest";
+import { expect, afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 // Extend Vitest's expect with testing library matchers
@@ -35,7 +35,7 @@ global.console = {
 // Mock window.matchMedia for responsive component tests
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
