@@ -1,13 +1,21 @@
-import React, { useEffect } from "react";
+<<<<<<< HEAD
+import React, { useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
+=======
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+>>>>>>> origin/nightly
 import { useNavigationStore } from "@/stores";
 import { ToastContainer } from "react-toastify";
 import { useAuthState } from "../../contexts";
 import { useAchievements } from "../../hooks/useAchievements";
-import { AchievementNotification } from "../achievements";
 import { BottomNavigation } from "../mobile";
 import { useViewport } from "../../hooks/mobile";
+import { Header } from "./Header";
+import { MobileMenu } from "./MobileMenu";
+import { AchievementNotifications } from "./AchievementNotifications";
+import { navItems, mobileNavItems } from "./NavigationData";
 import "react-toastify/dist/ReactToastify.css";
 
 interface AppLayoutProps {
@@ -23,7 +31,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { unreadNotifications, allAchievements, markNotificationRead } =
     useAchievements(user?.uid);
 
-  // Use navigation store with selective subscriptions for mobile menu state
+  // Navigation store subscriptions
   const isMobileMenuOpen = useNavigationStore(
     (state) => state.isMobileMenuOpen,
   );
@@ -33,7 +41,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const closeMobileMenu = useNavigationStore((state) => state.closeMobileMenu);
   const setPageTitle = useNavigationStore((state) => state.setPageTitle);
 
-  const navItems = [
+<<<<<<< HEAD
+  const navItems = useMemo(() => [
     { path: "/", label: "Dashboard" },
     { path: "/chastity-tracking", label: "Chastity Tracking" },
     { path: "/tasks", label: "Tasks" },
@@ -42,7 +51,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { path: "/settings", label: "Settings" },
     { path: "/achievements", label: "Achievements" },
     { path: "/log-event", label: "Log Event" },
-  ];
+  ], []);
 
   // Mobile bottom nav items (most important features)
   const mobileNavItems = [
@@ -149,6 +158,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     },
   ];
 
+=======
+>>>>>>> origin/nightly
   // Update page title based on current route
   useEffect(() => {
     const currentItem = navItems.find(
@@ -158,184 +169,59 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       ? `${currentItem.label} - ChastityOS`
       : "ChastityOS";
     setPageTitle(title);
-  }, [location.pathname]);
+<<<<<<< HEAD
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, navItems]); // setPageTitle omitted - Zustand store actions are stable
+=======
+  }, [location.pathname, setPageTitle]);
+>>>>>>> origin/nightly
 
   // Close mobile menu when route changes
   useEffect(() => {
     closeMobileMenu();
-  }, [location.pathname]);
+<<<<<<< HEAD
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]); // closeMobileMenu omitted - Zustand store actions are stable
+=======
+  }, [location.pathname, closeMobileMenu]);
+>>>>>>> origin/nightly
 
   return (
     <div className="bg-dark_purple min-h-screen text-white font-inter">
-      {/* Top Header */}
-      <header className="sticky top-0 z-50 bg-dark_purple border-b border-black safe-area-inset-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            {/* Logo */}
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/"
-                className="text-2xl font-bold text-white flex items-center space-x-2"
-              >
-                <span className="text-tekhelet">🔐</span>
-                <span>ChastityOS</span>
-              </Link>
-              <SyncStatusIndicator />
-            </div>
+      <Header
+        navItems={navItems}
+        isMobileMenuOpen={isMobileMenuOpen}
+        toggleMobileMenu={toggleMobileMenu}
+      />
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-1">
-              {navItems
-                .filter((item) => item.path !== "/")
-                .slice(0, 5)
-                .map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                      location.pathname === item.path
-                        ? "text-white border-b-2 border-tekhelet bg-tekhelet/10"
-                        : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+      <MobileMenu
+        navItems={navItems}
+        isOpen={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+      />
 
-              {/* Settings */}
-              <Link
-                to="/settings"
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                  location.pathname === "/settings"
-                    ? "text-white border-b-2 border-tekhelet bg-tekhelet/10"
-                    : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
-                }`}
-              >
-                Settings
-              </Link>
-
-              {/* KH Access Button */}
-              <Link
-                to="/keyholder"
-                className="bg-tekhelet hover:bg-tekhelet-600 text-white px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
-              >
-                KH Access
-              </Link>
-            </nav>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden touch-target text-white p-2 hover:bg-tekhelet/20 rounded-md"
-              onClick={toggleMobileMenu}
-              aria-label="Toggle mobile menu"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d={
-                    isMobileMenuOpen
-                      ? "M6 18L18 6M6 6l12 12"
-                      : "M4 6h16M4 12h16M4 18h16"
-                  }
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile Navigation Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden">
-              <div className="px-2 pt-2 pb-3 space-y-1 bg-lavender_web-500/10 backdrop-blur rounded-lg mt-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                      location.pathname === item.path
-                        ? "bg-tekhelet text-white"
-                        : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
-                    }`}
-                    onClick={closeMobileMenu}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-
-                {/* Mobile Keyholder Access */}
-                <Link
-                  to="/keyholder"
-                  className="block bg-tekhelet hover:bg-tekhelet-600 text-white px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
-                  onClick={closeMobileMenu}
-                >
-                  KH Access
-                </Link>
-              </div>
-            </div>
-          )}
+      <main className="flex-1 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {children}
         </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main
-        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${isMobile ? "pb-20" : ""}`}
-      >
-        <div className="min-h-[calc(100vh-12rem)]">{children}</div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <BottomNavigation items={mobileNavItems} />
-
-      {/* Footer - Hidden on mobile when bottom nav is present */}
-      <footer
-        className={`border-t border-black bg-dark_purple ${isMobile ? "hidden" : ""}`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center text-rose_quartz text-sm">
-            <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
-              <span>v4.0.0</span>
-              <span className="hidden sm:inline">|</span>
-              <Link
-                to="/privacy"
-                className="hover:text-white transition-colors"
-              >
-                Privacy
-              </Link>
-              <span className="hidden sm:inline">|</span>
-              <Link to="#" className="hover:text-white transition-colors">
-                Terms
-              </Link>
-              <span className="hidden sm:inline">|</span>
-              <Link
-                to="/feedback"
-                className="hover:text-white transition-colors"
-              >
-                Support
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Achievement Notifications */}
-      {user && (
-        <AchievementNotification
-          notifications={unreadNotifications}
-          achievements={allAchievements}
-          onMarkRead={markNotificationRead}
+      {isMobile && (
+        <BottomNavigation
+          items={mobileNavItems}
+          currentPath={location.pathname}
         />
       )}
 
-      {/* Toast Container */}
+      <AchievementNotifications
+        unreadNotifications={unreadNotifications}
+        allAchievements={allAchievements}
+        markNotificationRead={markNotificationRead}
+      />
+
       <ToastContainer
         position="top-right"
-        autoClose={8000}
+        autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick={false}

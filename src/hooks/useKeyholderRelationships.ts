@@ -228,7 +228,7 @@ export function useKeyholderRelationships(): KeyholderRelationshipState &
       setState((prev) => ({ ...prev, isAcceptingInvite: true, message: "" }));
 
       try {
-        const relationship =
+        const _relationship =
           await KeyholderRelationshipService.acceptInviteCode(
             code,
             user.uid,
@@ -277,7 +277,7 @@ export function useKeyholderRelationships(): KeyholderRelationshipState &
         logger.info("Invite code revoked successfully", { codeId });
         await loadInviteCodes();
       } catch (error) {
-        const errorMessage =
+        const _errorMessage =
           (error as Error).message || "Failed to revoke invite code";
         logger.error("Failed to revoke invite code", { error: error as Error });
       }
@@ -335,7 +335,7 @@ export function useKeyholderRelationships(): KeyholderRelationshipState &
         await loadRelationships();
         await loadRelationshipSummary();
       } catch (error) {
-        const errorMessage =
+        const _errorMessage =
           (error as Error).message || "Failed to end relationship";
         logger.error("Failed to end relationship", { error: error as Error });
       }
@@ -400,7 +400,7 @@ export function useKeyholderRelationships(): KeyholderRelationshipState &
     } else {
       setState(initialState);
     }
-  }, [user?.uid]);
+  }, [user?.uid, loadRelationships, loadInviteCodes, loadRelationshipSummary]);
 
   return {
     ...state,

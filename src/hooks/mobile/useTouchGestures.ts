@@ -3,6 +3,7 @@
  * Provides swipe, tap, and other touch interactions for mobile devices
  */
 import { useCallback, useRef, useState } from "react";
+import type { React } from "react";
 
 interface TouchPoint {
   x: number;
@@ -40,7 +41,7 @@ export const useTouchGestures = (
 
   const touchStart = useRef<TouchPoint | null>(null);
   const touchCurrent = useRef<TouchPoint | null>(null);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSwipeActive, setIsSwipeActive] = useState(false);
 
   const clearLongPressTimer = useCallback(() => {
@@ -77,7 +78,7 @@ export const useTouchGestures = (
         e.preventDefault();
       }
     },
-    [handlers.onLongPress],
+    [handlers],
   );
 
   const handleTouchMove = useCallback(
@@ -113,7 +114,7 @@ export const useTouchGestures = (
   );
 
   const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
+    (_e: React.TouchEvent) => {
       clearLongPressTimer();
 
       if (!touchStart.current || !touchCurrent.current) {

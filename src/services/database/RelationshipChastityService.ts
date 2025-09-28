@@ -20,8 +20,6 @@ import {
   onSnapshot,
   Unsubscribe,
   Firestore,
-  Timestamp,
-  FieldValue,
 } from "firebase/firestore";
 import { getFirestore } from "../firebase";
 import {

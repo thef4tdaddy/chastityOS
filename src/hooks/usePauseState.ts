@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   PauseCooldownService,
   PauseState,
@@ -53,7 +53,7 @@ export const usePauseState = ({
   // Initial load
   useEffect(() => {
     refreshPauseState();
-  }, []); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
+  }, [refreshPauseState]);
 
   // Auto-refresh for cooldown countdown
   useEffect(() => {
@@ -62,7 +62,7 @@ export const usePauseState = ({
     const interval = setInterval(refreshPauseState, refreshInterval);
     return () => clearInterval(interval);
     // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
-  }, [pauseState, refreshInterval]); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
+  }, [pauseState, refreshInterval, refreshPauseState]);
 
   // Real-time cooldown countdown
   useEffect(() => {
@@ -90,7 +90,7 @@ export const usePauseState = ({
 
     return () => clearInterval(interval);
     // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
-  }, [pauseState]); // refreshPauseState is stable (useCallback), omitted to prevent infinite loops
+  }, [pauseState, refreshPauseState]);
 
   return {
     pauseState,

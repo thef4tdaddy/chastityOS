@@ -16,10 +16,13 @@
 // React Icons (FA) imports
 export {
   FaAward,
+  FaBan,
   FaBook,
   FaBullseye,
   FaCalendar,
+  FaCalendarAlt,
   FaChartBar,
+  FaCheck,
   FaCheckCircle,
   FaClipboard,
   FaClock,
@@ -55,6 +58,7 @@ export {
   FaSpinner,
   FaStickyNote,
   FaStop,
+  FaSync,
   FaTasks,
   FaTimes,
   FaTimesCircle,

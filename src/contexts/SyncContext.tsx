@@ -35,7 +35,8 @@ interface SyncProviderProps {
 }
 
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
-  const { userId } = useAuth();
+  const { data: user } = useAuth();
+  const userId = user?.uid;
   const {
     isSyncing,
     lastSyncResult: _lastSyncResult,
@@ -76,7 +77,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     const interval = setInterval(performSync, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [userId, sync]);
 
   // Show conflict modal when conflicts are detected
   useEffect(() => {

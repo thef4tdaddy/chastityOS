@@ -3,6 +3,7 @@
  * Core services are loaded immediately, others on-demand
  */
 import { serviceLogger } from "@/utils/logging";
+import type { FirebaseApp } from "firebase/app";
 
 const logger = serviceLogger("Firebase");
 
@@ -102,7 +103,7 @@ export const getFirestore = async () => {
             persistentMultipleTabManager,
           } = firestoreModule;
 
-          const db = initializeFirestore(app, {
+          const db = initializeFirestore(app as FirebaseApp, {
             localCache: persistentLocalCache({
               tabManager: persistentMultipleTabManager(),
             }),
@@ -126,7 +127,7 @@ export const getFirebaseStorage = async () => {
       "storage",
       Promise.all([getFirebaseApp(), import("firebase/storage")]).then(
         ([app, { getStorage }]) => {
-          const storage = getStorage(app);
+          const storage = getStorage(app as FirebaseApp);
           logger.debug("Firebase Storage loaded");
           return storage;
         },
