@@ -400,7 +400,7 @@ export function useKeyholderRelationships(): KeyholderRelationshipState &
     } else {
       setState(initialState);
     }
-  }, [user?.uid, loadRelationships, loadInviteCodes, loadRelationshipSummary]);
+  }, [user?.uid]);
 
   return {
     ...state,
