@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
 import { useNavigationStore } from "@/stores";
@@ -33,7 +33,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const closeMobileMenu = useNavigationStore((state) => state.closeMobileMenu);
   const setPageTitle = useNavigationStore((state) => state.setPageTitle);
 
-  const navItems = [
+  const navItems = useMemo(() => [
     { path: "/", label: "Dashboard" },
     { path: "/chastity-tracking", label: "Chastity Tracking" },
     { path: "/tasks", label: "Tasks" },
@@ -42,7 +42,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { path: "/settings", label: "Settings" },
     { path: "/achievements", label: "Achievements" },
     { path: "/log-event", label: "Log Event" },
-  ];
+  ], []);
 
   // Mobile bottom nav items (most important features)
   const mobileNavItems = [
@@ -158,12 +158,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       ? `${currentItem.label} - ChastityOS`
       : "ChastityOS";
     setPageTitle(title);
-  }, [location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, navItems]); // setPageTitle omitted - Zustand store actions are stable
 
   // Close mobile menu when route changes
   useEffect(() => {
     closeMobileMenu();
-  }, [location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]); // closeMobileMenu omitted - Zustand store actions are stable
 
   return (
     <div className="bg-dark_purple min-h-screen text-white font-inter">

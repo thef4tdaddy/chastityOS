@@ -77,7 +77,7 @@ export const useTouchGestures = (
         e.preventDefault();
       }
     },
-    [handlers.onLongPress],
+    [handlers],
   );
 
   const handleTouchMove = useCallback(

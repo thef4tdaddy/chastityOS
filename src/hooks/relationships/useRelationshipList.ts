@@ -78,7 +78,8 @@ export function useRelationshipList(): RelationshipListState &
     if (userId) {
       loadRelationships();
     }
-  }, [userId]); // Removed loadRelationships from dependencies to avoid Zustand warning
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]); // loadRelationships intentionally omitted - depends on state.activeRelationship and would cause infinite loops
 
   // Set up real-time listeners
   useEffect(() => {

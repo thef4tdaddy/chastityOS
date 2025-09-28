@@ -87,7 +87,7 @@ export function useRelationshipInvites(): RelationshipInvitesState &
     if (userId) {
       loadPendingRequests();
     }
-  }, [userId]); // Removed loadPendingRequests from dependencies to avoid Zustand warning
+  }, [userId, loadPendingRequests]);
 
   return {
     ...state,
