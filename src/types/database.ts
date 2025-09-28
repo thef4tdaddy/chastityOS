@@ -4,15 +4,7 @@
  */
 
 export type SyncStatus = "synced" | "pending" | "conflict";
-export type EventType =
-  | "orgasm"
-  | "sexual_activity"
-  | "milestone"
-  | "note"
-  | "session_start"
-  | "session_end"
-  | "session_pause"
-  | "session_resume";
+export type EventType = string;
 export type TaskStatus =
   | "pending"
   | "submitted"
@@ -98,6 +90,13 @@ export interface DBEvent extends DBBase {
     // Additional properties for emergency/session events
     endReason?: string;
     emergencyReason?: string;
+    emergencyNotes?: string;
+    pauseReason?: string;
+    pauseDuration?: number;
+    sessionDuration?: number;
+    wasHardcoreMode?: boolean;
+    wasKeyholderControlled?: boolean;
+    accumulatedPauseTime?: number;
   };
   isPrivate: boolean;
 }
@@ -111,6 +110,7 @@ export interface DBTask extends DBBase {
   assignedBy: "submissive" | "keyholder";
   category?: string; // Optional category for task organization
   createdAt: Date;
+  updatedAt?: Date;
   dueDate?: Date;
   deadline?: Date; // Alternative deadline field name
   submittedAt?: Date;
@@ -151,7 +151,10 @@ export interface DBGoal extends DBBase {
 }
 
 export interface DBSettings extends DBBase {
-  theme: "light" | "dark" | "auto";
+  theme: "light" | "dark" | "auto" | "system";
+  eventDisplayMode?: string;
+  twoFactorEnabled?: boolean;
+  updatedAt?: Date;
   notifications: {
     enabled: boolean;
     sessionReminders: boolean;
