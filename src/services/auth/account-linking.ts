@@ -13,6 +13,7 @@ import {
   getDocs,
   serverTimestamp,
   Timestamp,
+  Firestore,
 } from "firebase/firestore";
 import { getFirebaseAuth, getFirestore } from "../firebase";
 import {
@@ -76,7 +77,7 @@ export class AccountLinkingService {
       };
 
       // Save to Firestore
-      await setDoc(doc(db as any, "linkCodes", code), linkCodeData);
+      await setDoc(doc(db as Firestore, "linkCodes", code), linkCodeData);
 
       const response: LinkCodeResponse = {
         code,
@@ -171,7 +172,7 @@ export class AccountLinkingService {
   static async validateLinkCode(code: string): Promise<LinkCodeValidation> {
     try {
       const db = await getFirestore();
-      const linkDoc = await getDoc(doc(db as any, "linkCodes", code));
+      const linkDoc = await getDoc(doc(db as Firestore, "linkCodes", code));
 
       if (!linkDoc.exists()) {
         return {
@@ -238,14 +239,14 @@ export class AccountLinkingService {
       const [keyholderQuery, wearerQuery] = await Promise.all([
         getDocs(
           query(
-            collection(db as any, "adminRelationships"),
+            collection(db as Firestore, "adminRelationships"),
             where("keyholderId", "==", userId),
             where("status", "==", "active"),
           ),
         ),
         getDocs(
           query(
-            collection(db as any, "adminRelationships"),
+            collection(db as Firestore, "adminRelationships"),
             where("wearerId", "==", userId),
             where("status", "==", "active"),
           ),
@@ -291,7 +292,7 @@ export class AccountLinkingService {
 
       // Get existing relationship
       const relationshipDoc = await getDoc(
-        doc(db as any, "adminRelationships", request.relationshipId),
+        doc(db as Firestore, "adminRelationships", request.relationshipId),
       );
 
       if (!relationshipDoc.exists()) {
@@ -330,13 +331,13 @@ export class AccountLinkingService {
 
       // Update the relationship
       await updateDoc(
-        doc(db as any, "adminRelationships", request.relationshipId),
+        doc(db as Firestore, "adminRelationships", request.relationshipId),
         updateData,
       );
 
       // Get updated relationship
       const updatedDoc = await getDoc(
-        doc(db as any, "adminRelationships", request.relationshipId),
+        doc(db as Firestore, "adminRelationships", request.relationshipId),
       );
       const updatedRelationship = updatedDoc.data() as AdminRelationship;
 
@@ -394,7 +395,7 @@ export class AccountLinkingService {
         isActive: true,
       };
 
-      await setDoc(doc(db as any, "adminSessions", sessionId), session);
+      await setDoc(doc(db as Firestore, "adminSessions", sessionId), session);
 
       return {
         success: true,
@@ -463,7 +464,7 @@ export class AccountLinkingService {
     };
 
     await setDoc(
-      doc(db as any, "adminRelationships", relationshipId),
+      doc(db as Firestore, "adminRelationships", relationshipId),
       relationship,
     );
     return relationship;
@@ -497,7 +498,7 @@ export class AccountLinkingService {
     keyholderId: string,
   ): Promise<void> {
     const db = await getFirestore();
-    await updateDoc(doc(db as any, "linkCodes", code), {
+    await updateDoc(doc(db as Firestore, "linkCodes", code), {
       status: "used",
       usedBy: keyholderId,
       usedAt: serverTimestamp(),

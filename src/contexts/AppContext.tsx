@@ -18,6 +18,15 @@ import { serviceLogger } from "../utils/logging";
 import { db } from "../services/database";
 import type { SyncStatus } from "../types/database";
 
+// Extend Navigator interface for connection API
+interface NavigatorWithConnection extends Navigator {
+  connection?: {
+    effectiveType: string;
+    addEventListener: (event: string, callback: () => void) => void;
+    removeEventListener: (event: string, callback: () => void) => void;
+  };
+}
+
 const logger = serviceLogger("AppContext");
 
 export interface AppState {
@@ -87,7 +96,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const syncStatus = "synced" as SyncStatus;
 
         // Detect connection type
-        const connection = (navigator as any).connection;
+        const connection = (navigator as NavigatorWithConnection).connection;
         const connectionType = connection?.effectiveType || "unknown";
 
         setState((prev) => ({
@@ -127,7 +136,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     // Listen for connection changes
     const handleConnectionChange = () => {
-      const connection = (navigator as any).connection;
+      const connection = (navigator as NavigatorWithConnection).connection;
       if (connection) {
         setState((prev) => ({
           ...prev,
@@ -140,7 +149,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     if ("connection" in navigator) {
-      (navigator as any).connection.addEventListener(
+      (navigator as NavigatorWithConnection).connection?.addEventListener(
         "change",
         handleConnectionChange,
       );
@@ -151,7 +160,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       window.removeEventListener("offline", handleOffline);
 
       if ("connection" in navigator) {
-        (navigator as any).connection.removeEventListener(
+        (navigator as NavigatorWithConnection).connection?.removeEventListener(
           "change",
           handleConnectionChange,
         );
