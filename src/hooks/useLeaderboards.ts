@@ -84,7 +84,7 @@ export const useLeaderboards = (
   /**
    * Get user's leaderboard privacy settings
    */
-  const { data: _userPrivacySettings } = useQuery({
+  const { data: userPrivacySettings } = useQuery({
     queryKey: ["leaderboards", "privacy", userId],
     queryFn: () => achievementDBService.getLeaderboardPrivacy(userId!),
     enabled: Boolean(userId),
