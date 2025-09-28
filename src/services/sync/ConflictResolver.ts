@@ -78,7 +78,9 @@ class ConflictResolver {
         if (systemFields.includes(key)) {
           // System fields: latest timestamp wins
           if (local.lastModified > remote.lastModified) {
-            (merged as Record<string, unknown>)[key] = (local as Record<string, unknown>)[key];
+            (merged as Record<string, unknown>)[key] = (
+              local as Record<string, unknown>
+            )[key];
           }
         } else {
           // For complex objects, do deep comparison
@@ -93,12 +95,13 @@ class ConflictResolver {
               key === "chastity" ||
               key === "display"
             ) {
-              (merged as Record<string, unknown>)[key] = this.mergeSettingsObject(
-                localVal as Record<string, unknown>,
-                remoteVal as Record<string, unknown>,
-                local.lastModified,
-                remote.lastModified,
-              );
+              (merged as Record<string, unknown>)[key] =
+                this.mergeSettingsObject(
+                  localVal as Record<string, unknown>,
+                  remoteVal as Record<string, unknown>,
+                  local.lastModified,
+                  remote.lastModified,
+                );
             } else {
               // For other objects, use timestamp rule
               (merged as Record<string, unknown>)[key] =
@@ -129,11 +132,11 @@ class ConflictResolver {
    * Merge settings objects intelligently
    */
   private mergeSettingsObject(
-    local: Record<string, any>,
-    remote: Record<string, any>,
+    local: Record<string, unknown>,
+    remote: Record<string, unknown>,
     localTimestamp: Date,
     remoteTimestamp: Date,
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     const merged = { ...remote };
 
     Object.keys(local).forEach((key) => {

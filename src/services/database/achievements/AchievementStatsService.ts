@@ -3,14 +3,19 @@
  * Handles statistics aggregation and reporting
  */
 
-import { AchievementCategory, AchievementDifficulty } from "../../../types";
+import {
+  AchievementCategory,
+  AchievementDifficulty,
+  Achievement,
+  UserAchievement,
+} from "../../../types";
 import { logger } from "../../../utils/logging";
 
 export class AchievementStatsService {
   constructor(
-    private crudService?: { getAllAchievements: () => Promise<any[]> },
+    private crudService?: { getAllAchievements: () => Promise<Achievement[]> },
     private badgeService?: {
-      getUserAchievements: (userId: string) => Promise<any[]>;
+      getUserAchievements: (userId: string) => Promise<UserAchievement[]>;
     },
   ) {}
 
@@ -35,13 +40,16 @@ export class AchievementStatsService {
       ]);
 
       const achievementMap = new Map(
-        allAchievements.map((a: any) => [a.id, a]),
+        allAchievements.map((a: Achievement) => [a.id, a]),
       );
 
-      const totalPoints = userAchievements.reduce((sum: number, ua: any) => {
-        const achievement = achievementMap.get(ua.achievementId);
-        return sum + (achievement?.points || 0);
-      }, 0);
+      const totalPoints = userAchievements.reduce(
+        (sum: number, ua: UserAchievement) => {
+          const achievement = achievementMap.get(ua.achievementId);
+          return sum + (achievement?.points || 0);
+        },
+        0,
+      );
 
       const categoryCounts = {} as Record<AchievementCategory, number>;
       const difficultyBreakdown = {} as Record<AchievementDifficulty, number>;
@@ -54,7 +62,7 @@ export class AchievementStatsService {
         (diff) => (difficultyBreakdown[diff] = 0),
       );
 
-      userAchievements.forEach((ua: any) => {
+      userAchievements.forEach((ua: UserAchievement) => {
         const achievement = achievementMap.get(ua.achievementId);
         if (achievement) {
           categoryCounts[achievement.category]++;
