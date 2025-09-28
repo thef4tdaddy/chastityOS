@@ -13,6 +13,7 @@ import type {
   SyncResult,
   ConflictInfo,
   DBSession,
+  SyncOperation,
 } from "@/types/database";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
@@ -415,7 +416,7 @@ export class FirebaseSync {
   /**
    * Apply remote changes to local database
    */
-  async applyRemoteChanges(changes: any): Promise<void> {
+  async applyRemoteChanges(changes: SyncOperation[]): Promise<void> {
     try {
       logger.debug("Applying remote changes", { changes });
       // TODO: Implement remote changes application logic
