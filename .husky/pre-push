@@ -1,6 +1,7 @@
 #!/bin/sh
 
-echo "🔍 Running lint on src/ only..."
-npx eslint src/ --config configs/linting/eslint.config.js || echo "⚠️  ESLint found issues, but continuing with push..."
+echo "🔍 Running quick lint check..."
+# Run ESLint with cache and timeout to prevent freezing
+timeout 30s npx eslint src/ --config configs/linting/eslint.config.js --cache --max-warnings 50 || echo "⚠️  ESLint timeout or issues found, continuing with push..."
 
 echo "✅ Pre-push checks complete"

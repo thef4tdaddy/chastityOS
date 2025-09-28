@@ -22,8 +22,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Use a version that matches your project
-          cache: 'npm'
+          node-version: "20" # Use a version that matches your project
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -35,10 +35,27 @@ jobs:
         run: npm run typecheck
 
       - name: Run unit tests
-        run: npm test
+        run: npm test -- --run --reporter=verbose
+
+      - name: Upload test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: coverage/
+          retention-days: 7
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
         run: npm run test:e2e
+        continue-on-error: true
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7

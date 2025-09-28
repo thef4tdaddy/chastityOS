@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaClock } from "react-icons/fa";
-import { PauseCooldownService } from "../../services/PauseCooldownService";
+// TODO: Replace with proper hook pattern instead of direct service import
+// import { PauseCooldownService } from "../../services/PauseCooldownService";
 
 interface CooldownTimerProps {
   cooldownSeconds: number;
@@ -40,8 +41,8 @@ export const CooldownTimer: React.FC<CooldownTimerProps> = ({
             Pause Cooldown Active
           </div>
           <div className="text-sm text-yellow-700">
-            Next pause available in:{" "}
-            {PauseCooldownService.formatTimeRemaining(timeRemaining)}
+            Next pause available in: {Math.floor(timeRemaining / 60)}m{" "}
+            {timeRemaining % 60}s
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
  * React hook for managing leaderboard data and user participation
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { achievementDBService } from "../services";
 import {
@@ -39,7 +39,7 @@ export interface LeaderboardPrivacySettings {
 
 export const useLeaderboards = (
   userId?: string,
-  category: LeaderboardCategory = LeaderboardCategory.TOTAL_POINTS,
+  category: LeaderboardCategory = LeaderboardCategory.ACHIEVEMENT_POINTS,
   period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
 ) => {
   const queryClient = useQueryClient();
@@ -84,16 +84,18 @@ export const useLeaderboards = (
   /**
    * Get user's leaderboard privacy settings
    */
-  const { data: userPrivacySettings } = useQuery({
+  const { data: _userPrivacySettings } = useQuery({
     queryKey: ["leaderboards", "privacy", userId],
     queryFn: () => achievementDBService.getLeaderboardPrivacy(userId!),
     enabled: Boolean(userId),
-    onSuccess: (data) => {
-      if (data) {
-        setPrivacySettings(data);
-      }
-    },
   });
+
+  // Update privacy settings when data changes
+  useEffect(() => {
+    if (userPrivacySettings) {
+      setPrivacySettings(userPrivacySettings);
+    }
+  }, [userPrivacySettings]);
 
   // ==================== MUTATIONS ====================
 
@@ -198,7 +200,7 @@ export const useLeaderboards = (
    * Process raw leaderboard data into displayable format
    */
   const leaderboardData: LeaderboardEntry[] = rawLeaderboardData.map(
-    (entry, index) => ({
+    (entry: DBLeaderboardEntry, index: number) => ({
       id: entry.id,
       displayName: getDisplayName(entry),
       value: entry.value,
@@ -253,4 +255,4 @@ export const useLeaderboards = (
   };
 };
 
-export default useLeaderboards;
+// Named export only - hook files should only export hooks starting with 'use'

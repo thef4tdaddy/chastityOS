@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useAuthState } from "../contexts";
 import { useKeyholderStore } from "../stores/keyholderStore";
 import { sessionDBService, taskDBService } from "../services/database";
-import type { DBSession, DBTask, TaskStatus } from "../types/database";
+import type { DBSession, DBTask } from "../types/database";
 import {
   KeyholderPasswordUnlock,
-  AccountLinking,
   AccountLinkingPreview,
   AdminDashboard,
   SessionControls,
@@ -16,8 +15,13 @@ import { FaLock, FaCog, FaEye, FaSpinner } from "../utils/iconImport";
 
 const KeyholderPage: React.FC = () => {
   const { user } = useAuthState();
-  const { isKeyholderModeUnlocked, lockKeyholderControls } =
-    useKeyholderStore();
+  // Selective subscriptions for specific keyholder store values
+  const isKeyholderModeUnlocked = useKeyholderStore(
+    (state) => state.isKeyholderModeUnlocked,
+  );
+  const lockKeyholderControls = useKeyholderStore(
+    (state) => state.lockKeyholderControls,
+  );
   const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
   const [tasks, setTasks] = useState<DBTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +84,7 @@ const KeyholderPage: React.FC = () => {
             {isKeyholderModeUnlocked && (
               <>
                 <SessionControls session={currentSession} />
-                <TaskManagement tasks={tasks} />
+                <TaskManagement userId={user?.uid || ""} />
 
                 {/* Additional Controls */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
