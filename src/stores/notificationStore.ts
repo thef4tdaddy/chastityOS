@@ -46,6 +46,9 @@ export interface NotificationState {
   showError: (message: string, title?: string, duration?: number) => string;
   showWarning: (message: string, title?: string, duration?: number) => string;
   showInfo: (message: string, title?: string, duration?: number) => string;
+
+  // Reset function for testing
+  resetStore: () => void;
 }
 
 // Default durations for different notification types
@@ -56,12 +59,20 @@ const DEFAULT_DURATIONS = {
   info: 4000,
 };
 
+const initialState = {
+  notifications: [],
+};
+
 export const useNotificationStore = create<NotificationState>()(
   devtools(
     (set, get) => ({
       // Initial state
+<<<<<<< HEAD
+      ...initialState,
+=======
       notifications: [],
       pauseOnHover: true,
+>>>>>>> origin/nightly
 
       // Actions
       addNotification: (notification) => {
@@ -85,7 +96,12 @@ export const useNotificationStore = create<NotificationState>()(
         // Auto-remove notification after duration if specified
         if (newNotification.duration && newNotification.duration > 0) {
           setTimeout(() => {
+<<<<<<< HEAD
+            const currentState = useNotificationStore.getState();
+            currentState.removeNotification(id);
+=======
             useNotificationStore.getState().removeNotification(id);
+>>>>>>> origin/nightly
           }, newNotification.duration);
         }
 
@@ -117,40 +133,55 @@ export const useNotificationStore = create<NotificationState>()(
 
       // Convenience methods
       showSuccess: (message: string, title?: string, duration?: number) => {
-        return get().addNotification({
+        const notificationData: Omit<Notification, "id" | "timestamp"> = {
           type: "success",
           message,
           title,
-          duration,
-        });
+        };
+        if (duration !== undefined) {
+          notificationData.duration = duration;
+        }
+        return get().addNotification(notificationData);
       },
 
       showError: (message: string, title?: string, duration?: number) => {
-        return get().addNotification({
+        const notificationData: Omit<Notification, "id" | "timestamp"> = {
           type: "error",
           message,
           title,
-          duration,
-        });
+        };
+        if (duration !== undefined) {
+          notificationData.duration = duration;
+        }
+        return get().addNotification(notificationData);
       },
 
       showWarning: (message: string, title?: string, duration?: number) => {
-        return get().addNotification({
+        const notificationData: Omit<Notification, "id" | "timestamp"> = {
           type: "warning",
           message,
           title,
-          duration,
-        });
+        };
+        if (duration !== undefined) {
+          notificationData.duration = duration;
+        }
+        return get().addNotification(notificationData);
       },
 
       showInfo: (message: string, title?: string, duration?: number) => {
-        return get().addNotification({
+        const notificationData: Omit<Notification, "id" | "timestamp"> = {
           type: "info",
           message,
           title,
-          duration,
-        });
+        };
+        if (duration !== undefined) {
+          notificationData.duration = duration;
+        }
+        return get().addNotification(notificationData);
       },
+
+      // Reset function for testing
+      resetStore: () => set(initialState, false, "resetStore"),
     }),
     {
       name: "notification-store",
