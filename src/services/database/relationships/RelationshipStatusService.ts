@@ -2,7 +2,7 @@
  * Relationship Status Service
  * Handles status updates and transitions for relationships
  */
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp, Firestore } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { RelationshipStatus } from "@/types/relationships";
 import { serviceLogger } from "@/utils/logging";
@@ -11,7 +11,7 @@ import { relationshipCRUDService } from "./RelationshipCRUDService";
 const logger = serviceLogger("RelationshipStatusService");
 
 export class RelationshipStatusService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
