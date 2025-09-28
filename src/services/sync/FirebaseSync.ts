@@ -3,9 +3,17 @@
  * Main orchestrator for data synchronization between Dexie and Firebase
  */
 import { serviceLogger } from "@/utils/logging";
-import { getFirebaseAuth } from "../firebase";
+import { getFirebaseAuth, getFirestore } from "../firebase";
+import { sessionDBService } from "../database";
 import type { Auth } from "firebase/auth";
-import type { SyncOptions, SyncResult, ConflictInfo } from "@/types/database";
+import type { Firestore } from "firebase/firestore";
+import { doc, Timestamp } from "firebase/firestore";
+import type {
+  SyncOptions,
+  SyncResult,
+  ConflictInfo,
+  DBSession,
+} from "@/types/database";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
 import { userSettingsSync } from "./UserSettingsSync";

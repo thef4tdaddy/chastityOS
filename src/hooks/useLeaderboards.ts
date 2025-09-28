@@ -92,10 +92,10 @@ export const useLeaderboards = (
 
   // Update privacy settings when data changes
   useEffect(() => {
-    if (_userPrivacySettings) {
-      setPrivacySettings(_userPrivacySettings);
+    if (userPrivacySettings) {
+      setPrivacySettings(userPrivacySettings);
     }
-  }, [_userPrivacySettings]);
+  }, [userPrivacySettings]);
 
   // ==================== MUTATIONS ====================
 
