@@ -3,6 +3,7 @@
  * Ensures minimum touch target size for mobile accessibility
  */
 import React from "react";
+import type { JSX } from "react";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface TouchTargetProps {

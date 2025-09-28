@@ -123,6 +123,77 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onClearError }) => {
   );
 };
 
+// Login Prompt Component
+const LoginPrompt: React.FC = () => (
+  <div className="p-6 bg-gray-800 rounded-lg border border-gray-700 text-center">
+    <h2 className="text-xl font-bold mb-2 text-white">Login Required</h2>
+    <p className="text-gray-400">Please log in to use the Dexie Demo.</p>
+  </div>
+);
+
+// Task List Component
+interface TaskListProps {
+  tasks: DBTask[];
+  onUpdateTask: (taskId: string, updates: Partial<DBTask>) => Promise<void>;
+  onDeleteTask: (taskId: string) => Promise<void>;
+  loading: boolean;
+}
+
+const TaskList: React.FC<TaskListProps> = ({
+  tasks,
+  onUpdateTask,
+  onDeleteTask,
+  loading,
+}) => (
+  <div className="space-y-2">
+    <h3 className="text-lg font-semibold text-white mb-2">
+      Tasks ({tasks.length})
+    </h3>
+    {tasks.length === 0 ? (
+      <p className="text-gray-400 text-center py-4">
+        No tasks yet. Add your first task above!
+      </p>
+    ) : (
+      tasks.map((task) => (
+        <div
+          key={task.id}
+          className="flex items-center justify-between p-3 bg-gray-700 rounded border border-gray-600"
+        >
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              checked={task.status === "completed"}
+              onChange={() =>
+                onUpdateTask(task.id, {
+                  status: task.status === "completed" ? "pending" : "completed",
+                })
+              }
+              disabled={loading}
+              className="w-4 h-4 text-blue-600 bg-gray-600 border-gray-500 rounded focus:ring-blue-500"
+            />
+            <span
+              className={`${
+                task.status === "completed"
+                  ? "line-through text-gray-400"
+                  : "text-white"
+              }`}
+            >
+              {task.title}
+            </span>
+          </div>
+          <button
+            onClick={() => onDeleteTask(task.id)}
+            disabled={loading}
+            className="text-red-400 hover:text-red-300 disabled:opacity-50"
+          >
+            🗑️
+          </button>
+        </div>
+      ))
+    )}
+  </div>
+);
+
 // Custom hook for task management
 const useTaskManagement = (
   user: any,
