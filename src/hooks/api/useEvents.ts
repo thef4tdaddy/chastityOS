@@ -61,13 +61,13 @@ interface EventFilters {
 
 interface CreateEventData {
   type: EventType;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   timestamp?: Date;
 }
 
 interface UpdateEventData {
   type?: EventType;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp?: Date;
 }
 

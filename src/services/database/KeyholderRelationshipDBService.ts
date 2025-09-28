@@ -45,7 +45,7 @@ class KeyholderRelationshipDBService extends BaseDBService {
   /**
    * Get record by ID (alias for findById)
    */
-  async getById(id: string): Promise<any> {
+  async getById(id: string): Promise<KeyholderRelationship | undefined> {
     return await this.getByUid(id); // Use getByUid from BaseDBService
   }
 

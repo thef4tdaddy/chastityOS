@@ -85,7 +85,7 @@ export const createMockSettings = (overrides = {}) => ({
 });
 
 // Firebase mock helpers
-export const createMockFirebaseDoc = (data: any) => ({
+export const createMockFirebaseDoc = (data: Record<string, unknown>) => ({
   id: "test-doc-id",
   data: () => data,
   exists: () => true,
@@ -95,11 +95,13 @@ export const createMockFirebaseDoc = (data: any) => ({
   },
 });
 
-export const createMockFirebaseCollection = (docs: any[]) => ({
+export const createMockFirebaseCollection = (
+  docs: Record<string, unknown>[],
+) => ({
   docs: docs.map(createMockFirebaseDoc),
   size: docs.length,
   empty: docs.length === 0,
-  forEach: (callback: (doc: any) => void) =>
+  forEach: (callback: (doc: Record<string, unknown>) => void) =>
     docs.forEach((doc) => callback(createMockFirebaseDoc(doc))),
 });
 
@@ -158,14 +160,14 @@ export const renderWithProviders = (
 };
 
 // Validation helpers
-export const expectToBeDate = (value: any) => {
+export const expectToBeDate = (value: unknown) => {
   expect(value).toBeInstanceOf(Date);
-  expect(value.getTime()).not.toBeNaN();
+  expect((value as Date).getTime()).not.toBeNaN();
 };
 
-export const expectToBeValidId = (value: any) => {
+export const expectToBeValidId = (value: unknown) => {
   expect(typeof value).toBe("string");
-  expect(value.length).toBeGreaterThan(0);
+  expect((value as string).length).toBeGreaterThan(0);
 };
 
 // Performance testing helpers
@@ -177,7 +179,7 @@ export const measurePerformance = async (fn: () => Promise<void> | void) => {
 };
 
 // Snapshot testing helpers
-export const createStableSnapshot = (obj: any) => {
+export const createStableSnapshot = (obj: Record<string, unknown>) => {
   // Remove timestamps and volatile data for stable snapshots
   const stable = JSON.parse(JSON.stringify(obj));
   if (stable.timestamp) stable.timestamp = "[timestamp]";

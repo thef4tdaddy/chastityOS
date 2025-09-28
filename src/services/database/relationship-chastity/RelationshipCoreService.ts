@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   onSnapshot,
   Unsubscribe,
+  Firestore,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { RelationshipChastityData } from "@/types/relationships";
@@ -18,7 +19,7 @@ import { serviceLogger } from "@/utils/logging";
 const logger = serviceLogger("RelationshipCoreService");
 
 class RelationshipCoreService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -137,7 +138,7 @@ class RelationshipCoreService {
           });
         },
       );
-    }) as any;
+    }) as Unsubscribe;
   }
 
   // ==================== HELPER METHODS ====================

@@ -195,7 +195,14 @@ export class DBPerformanceService {
    * Generate performance recommendations
    */
   private static generateRecommendations(
-    tableStats: Record<string, any>,
+    tableStats: Record<
+      string,
+      {
+        queryCount: number;
+        averageTime: number;
+        totalRecords: number;
+      }
+    >,
     slowestQueries: QueryMetrics[],
   ): string[] {
     const recommendations: string[] = [];
