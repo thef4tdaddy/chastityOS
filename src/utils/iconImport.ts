@@ -78,9 +78,7 @@ export {
   FaLightbulb,
   FaComment,
   FaPaperPlane,
-  FaCheck,
   FaWifi,
-  FaSync,
 } from "react-icons/fa";
 
 // Material Design Icons
