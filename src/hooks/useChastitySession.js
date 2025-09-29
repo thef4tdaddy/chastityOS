@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc, Timestamp, addDoc, onSnapshot, getDoc } from 'firebase/firestore';
 import { formatTime, formatElapsedTime } from '../utils';
 import { db } from '../firebase';
+import { useChastityTimers } from './chastity/useChastityTimers';
 
 export const useChastitySession = (
     userId,
@@ -50,10 +51,11 @@ export const useChastitySession = (
     // --- New State for Keyholder Duration ---
     const [requiredKeyholderDurationSeconds, setRequiredKeyholderDurationSeconds] = useState(0);
 
-
-    const timerInChastityRef = useRef(null);
-    const timerCageOffRef = useRef(null);
-    const pauseDisplayTimerRef = useRef(null);
+    // Initialize timers using extracted hook
+    useChastityTimers({
+        isCageOn, isPaused, cageOnTime, hasSessionEverBeenActive, pauseStartTime,
+        setTimeInChastity, setTimeCageOff, setLivePauseDuration
+    });
 
     const getDocRef = useCallback((targetUserId = userId) => {
         if (!targetUserId) return null;
@@ -490,33 +492,6 @@ export const useChastitySession = (
         setTotalChastityTime(totalEffective);
         setOverallTotalPauseTime(totalPaused);
     }, [chastityHistory]);
-
-    useEffect(() => {
-        clearInterval(timerInChastityRef.current);
-        clearInterval(timerCageOffRef.current);
-        clearInterval(pauseDisplayTimerRef.current);
-        if (isCageOn && !isPaused && cageOnTime) {
-            timerInChastityRef.current = setInterval(() => {
-                const now = new Date();
-                const elapsed = Math.floor((now.getTime() - cageOnTime.getTime()) / 1000);
-                setTimeInChastity(elapsed);
-            }, 1000);
-        } else if (!isCageOn && hasSessionEverBeenActive) {
-            timerCageOffRef.current = setInterval(() => setTimeCageOff(prev => prev + 1), 1000);
-        }
-        if (isPaused && pauseStartTime) {
-            pauseDisplayTimerRef.current = setInterval(() => {
-                setLivePauseDuration(Math.floor((new Date().getTime() - pauseStartTime.getTime()) / 1000));
-            }, 1000);
-        } else {
-            setLivePauseDuration(0);
-        }
-        return () => {
-            clearInterval(timerInChastityRef.current);
-            clearInterval(timerCageOffRef.current);
-            clearInterval(pauseDisplayTimerRef.current);
-        };
-    }, [isCageOn, isPaused, cageOnTime, hasSessionEverBeenActive, pauseStartTime]);
 
     return {
         cageOnTime, isCageOn, timeInChastity, timeCageOff, chastityHistory, totalChastityTime,
