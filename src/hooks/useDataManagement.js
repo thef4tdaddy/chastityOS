@@ -169,7 +169,7 @@ export function useDataManagement({ userId, isAuthReady, userEmail, settings, se
         Sentry.captureException(error);
         if (!isAccountDeletion) alert(`Failed to reset data: ${error.message}`);
     }
-  }, [isAuthReady, userId]);
+  }, [isAuthReady, userId]); // Firebase imports are stable
 
   return { 
     handleExportData, 

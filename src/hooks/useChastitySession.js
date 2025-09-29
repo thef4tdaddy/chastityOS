@@ -128,7 +128,7 @@ export const useChastitySession = (
         
         setShowRestoreSessionPrompt(false);
         setLoadedSessionData(null);
-    }, []);
+    }, []); // This is intentionally empty as this function is meant to be stable and only uses setters
 
     // ... (All your other functions: handleToggleCage, handleConfirmRemoval, etc. remain unchanged)
     const handleToggleCage = useCallback(() => {
@@ -390,7 +390,7 @@ export const useChastitySession = (
             setRestoreUserIdInput('');
             setTimeout(() => setRestoreFromIdMessage(''), 3000);
         }
-    }, [restoreUserIdInput, userId, applyRestoredData, fetchEvents]);
+    }, [restoreUserIdInput, userId, applyRestoredData, fetchEvents]); // setDoc is from firebase and is stable
 
     const handleConfirmRestoreSession = useCallback(async () => {
         if (loadedSessionData) {
