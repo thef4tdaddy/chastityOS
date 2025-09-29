@@ -323,7 +323,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load active goals", { error });
     }
-  }, [userId]);
+  }, []); // userId is passed but not used in mock
 
   const loadGoalTemplates = useCallback(async () => {
     try {

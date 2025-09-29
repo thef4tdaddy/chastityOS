@@ -596,7 +596,6 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load session statistics", { error });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // userId not actually used in mock implementation
 
   const loadGoalStatistics = useCallback(async () => {
@@ -619,7 +618,6 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load goal statistics", { error });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps  
   }, []); // userId not actually used in mock implementation
 
   const loadAchievementStatistics = useCallback(async () => {
@@ -636,7 +634,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load achievement statistics", { error });
     }
-  }, [userId]);
+  }, []);
 
   const loadComparativeStatistics = useCallback(async () => {
     try {
@@ -648,7 +646,6 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load comparative statistics", { error });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // sessionStats not actually used for computation
 
   const loadSharedStatistics = useCallback(async () => {
@@ -681,7 +678,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load shared statistics", { error });
     }
-  }, [relationshipId, sessionStats, goalStats, consistencyRating]);
+  }, [relationshipId, consistencyRating]);
 
   const loadPredictiveAnalytics = useCallback(async () => {
     try {
@@ -714,7 +711,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load recommendations", { error });
     }
-  }, [sessionStats, goalStats]);
+  }, []); // Static data for recommendations
 
   // ==================== TIME-BASED QUERIES ====================
 
@@ -819,7 +816,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         recommendations: [],
       },
     };
-  }, [sessionStats, goalStats, consistencyRating]);
+  }, [consistencyRating]); // Only depends on consistency rating
 
   const getRelationshipComparison =
     useCallback((): RelationshipComparisonStats => {
@@ -890,7 +887,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         throw error;
       }
     },
-    [sessionStats, goalStats, achievementStats, userId],
+    [userId], // Only userId is actually used
   );
 
   const shareWithKeyholder = useCallback(

@@ -357,6 +357,7 @@ export const useDataSync = (userId: string) => {
     loadRelationshipSyncStatus,
     loadSyncPermissions,
     initializeRealTimeSync,
+    syncPermissions.allowRealTimeSync,
   ]);
 
   // ==================== REAL-TIME SYNC ====================
@@ -694,7 +695,7 @@ export const useDataSync = (userId: string) => {
         throw error;
       }
     },
-    [syncPermissions],
+    [syncPermissions, initializeRealTimeSync],
   );
 
   const configureSyncScope = useCallback(
