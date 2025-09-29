@@ -18,6 +18,132 @@ interface VirtualListProps<T> {
   emptyComponent?: React.ReactNode;
 }
 
+// Empty State Component
+const EmptyState: React.FC<{
+  emptyComponent?: React.ReactNode;
+  className: string;
+}> = ({ emptyComponent, className }) => (
+  <div className={`flex items-center justify-center h-32 ${className}`}>
+    {emptyComponent || (
+      <p className="text-gray-500 dark:text-gray-400 text-center">
+        No items to display
+      </p>
+    )}
+  </div>
+);
+
+// Loading Indicator Component
+const LoadingIndicator: React.FC<{
+  loadingComponent?: React.ReactNode;
+}> = ({ loadingComponent }) => (
+  <div className="flex items-center justify-center py-4">
+    {loadingComponent || (
+      <div className="flex items-center space-x-2 text-gray-500">
+        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <span>Loading...</span>
+      </div>
+    )}
+  </div>
+);
+
+// Virtual Items Container Component
+const VirtualItemsContainer: React.FC<{
+  visibleItems: any[];
+  startIndex: number;
+  itemHeight: number;
+  renderItem: (item: any, index: number) => React.ReactNode;
+}> = ({ visibleItems, startIndex, itemHeight, renderItem }) => (
+  <div
+    style={{
+      transform: `translateY(${startIndex * itemHeight}px)`,
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+    }}
+  >
+    {visibleItems.map((item, index) => (
+      <div
+        key={startIndex + index}
+        style={{
+          height: itemHeight,
+          overflow: "hidden",
+        }}
+        className="flex-shrink-0"
+      >
+        {renderItem(item, startIndex + index)}
+      </div>
+    ))}
+  </div>
+);
+
+// Custom hook for virtual scrolling calculations
+const useVirtualScrolling = (
+  items: any[],
+  itemHeight: number,
+  overscan: number,
+  scrollTop: number,
+  containerHeight: number,
+) => {
+  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+  const endIndex = Math.min(
+    items.length - 1,
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
+  );
+  const visibleItems = items.slice(startIndex, endIndex + 1);
+
+  return { startIndex, endIndex, visibleItems };
+};
+
+// Custom hook for scroll handling
+const useScrollHandler = (
+  containerHeight: number,
+  onEndReached?: () => void,
+  loading?: boolean,
+  endReachedThreshold?: number,
+) => {
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const target = e.currentTarget;
+      const newScrollTop = target.scrollTop;
+
+      // Check if we need to load more items
+      if (onEndReached && !loading && endReachedThreshold) {
+        const scrollRatio =
+          (newScrollTop + containerHeight) / target.scrollHeight;
+        if (scrollRatio >= endReachedThreshold) {
+          onEndReached();
+        }
+      }
+
+      return newScrollTop;
+    },
+    [containerHeight, onEndReached, loading, endReachedThreshold],
+  );
+
+  return handleScroll;
+};
+
+// Custom hook for container height management
+const useContainerHeight = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  return { containerRef, containerHeight };
+};
+
 export function VirtualList<T>({
   items,
   renderItem,
@@ -31,51 +157,31 @@ export function VirtualList<T>({
   emptyComponent,
 }: VirtualListProps<T>) {
   const { isMobile } = useViewport();
-  const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
 
-  // Calculate visible range
-  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-  const endIndex = Math.min(
-    items.length - 1,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
+  const { containerRef, containerHeight } = useContainerHeight();
+  const { startIndex, visibleItems } = useVirtualScrolling(
+    items,
+    itemHeight,
+    overscan,
+    scrollTop,
+    containerHeight,
   );
 
-  const visibleItems = items.slice(startIndex, endIndex + 1);
+  const handleScrollEvent = useScrollHandler(
+    containerHeight,
+    onEndReached,
+    loading,
+    endReachedThreshold,
+  );
 
-  // Handle scroll with optimized performance for mobile
   const handleScroll = useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
-      const target = e.currentTarget;
-      const newScrollTop = target.scrollTop;
-
+      const newScrollTop = handleScrollEvent(e);
       setScrollTop(newScrollTop);
-
-      // Check if we need to load more items
-      if (onEndReached && !loading) {
-        const scrollRatio =
-          (newScrollTop + containerHeight) / target.scrollHeight;
-        if (scrollRatio >= endReachedThreshold) {
-          onEndReached();
-        }
-      }
     },
-    [containerHeight, onEndReached, loading, endReachedThreshold],
+    [handleScrollEvent],
   );
-
-  // Update container height on resize
-  useEffect(() => {
-    const updateHeight = () => {
-      if (containerRef.current) {
-        setContainerHeight(containerRef.current.clientHeight);
-      }
-    };
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, []);
 
   // Mobile-specific optimizations
   const scrollerProps = isMobile
@@ -88,15 +194,7 @@ export function VirtualList<T>({
     : {};
 
   if (items.length === 0 && !loading) {
-    return (
-      <div className={`flex items-center justify-center h-32 ${className}`}>
-        {emptyComponent || (
-          <p className="text-gray-500 dark:text-gray-400 text-center">
-            No items to display
-          </p>
-        )}
-      </div>
-    );
+    return <EmptyState emptyComponent={emptyComponent} className={className} />;
   }
 
   return (
@@ -113,42 +211,16 @@ export function VirtualList<T>({
           position: "relative",
         }}
       >
-        {/* Visible items container */}
-        <div
-          style={{
-            transform: `translateY(${startIndex * itemHeight}px)`,
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          {visibleItems.map((item, index) => (
-            <div
-              key={startIndex + index}
-              style={{
-                height: itemHeight,
-                overflow: "hidden",
-              }}
-              className="flex-shrink-0"
-            >
-              {renderItem(item, startIndex + index)}
-            </div>
-          ))}
-        </div>
+        <VirtualItemsContainer
+          visibleItems={visibleItems}
+          startIndex={startIndex}
+          itemHeight={itemHeight}
+          renderItem={renderItem}
+        />
       </div>
 
       {/* Loading indicator */}
-      {loading && (
-        <div className="flex items-center justify-center py-4">
-          {loadingComponent || (
-            <div className="flex items-center space-x-2 text-gray-500">
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              <span>Loading...</span>
-            </div>
-          )}
-        </div>
-      )}
+      {loading && <LoadingIndicator loadingComponent={loadingComponent} />}
     </div>
   );
 }

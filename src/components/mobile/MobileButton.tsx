@@ -16,82 +16,105 @@ interface MobileButtonProps
   hapticFeedback?: "light" | "medium" | "heavy" | "none";
 }
 
-export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
-  (
-    {
-      variant = "primary",
-      size = "md",
-      fullWidth = false,
-      loading = false,
-      leftIcon,
-      rightIcon,
-      hapticFeedback = "light",
-      children,
-      className = "",
-      onClick,
-      disabled,
-      ...props
-    },
-    ref,
-  ) => {
-    const { light, medium, heavy } = useHapticFeedback();
-
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (disabled || loading) return;
-
-      // Trigger haptic feedback
-      if (hapticFeedback !== "none") {
-        switch (hapticFeedback) {
-          case "light":
-            light();
-            break;
-          case "medium":
-            medium();
-            break;
-          case "heavy":
-            heavy();
-            break;
-        }
-      }
-
-      onClick?.(e);
-    };
-
-    const sizeClasses = {
-      sm: "h-10 px-4 text-sm font-medium",
-      md: "h-12 px-6 text-base font-semibold",
-      lg: "h-14 px-8 text-lg font-semibold",
-      xl: "h-16 px-10 text-xl font-bold",
-    };
-
-    const variantClasses = {
-      primary: `
+// Button style configurations
+const BUTTON_STYLES = {
+  sizes: {
+    sm: "h-10 px-4 text-sm font-medium",
+    md: "h-12 px-6 text-base font-semibold",
+    lg: "h-14 px-8 text-lg font-semibold",
+    xl: "h-16 px-10 text-xl font-bold",
+  },
+  variants: {
+    primary: `
       bg-tekhelet hover:bg-tekhelet-600 active:bg-tekhelet-700
       text-white border-2 border-tekhelet
       shadow-lg hover:shadow-xl active:shadow-md
     `,
-      secondary: `
+    secondary: `
       bg-lavender_web hover:bg-lavender_web-600 active:bg-lavender_web-700
       text-dark_purple border-2 border-lavender_web
       shadow-lg hover:shadow-xl active:shadow-md
     `,
-      outline: `
+    outline: `
       bg-transparent hover:bg-tekhelet/10 active:bg-tekhelet/20
       text-tekhelet border-2 border-tekhelet
       hover:text-white hover:bg-tekhelet
     `,
-      ghost: `
+    ghost: `
       bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700
       text-gray-700 dark:text-gray-300 border-2 border-transparent
     `,
-      danger: `
+    danger: `
       bg-red-500 hover:bg-red-600 active:bg-red-700
       text-white border-2 border-red-500
       shadow-lg hover:shadow-xl active:shadow-md
     `,
-    };
+  },
+};
 
-    const baseClasses = `
+// Loading Spinner Component
+const LoadingSpinner: React.FC = () => (
+  <div className="absolute inset-0 flex items-center justify-center">
+    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+// Button Content Component
+const ButtonContent: React.FC<{
+  loading: boolean;
+  leftIcon?: React.ReactNode;
+  children: React.ReactNode;
+  rightIcon?: React.ReactNode;
+}> = ({ loading, leftIcon, children, rightIcon }) => (
+  <div
+    className={`flex items-center space-x-2 ${loading ? "opacity-0" : "opacity-100"}`}
+  >
+    {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+    {children && <span className="truncate">{children}</span>}
+    {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+  </div>
+);
+
+// Ripple Effect Component
+const RippleEffect: React.FC = () => (
+  <div className="absolute inset-0 rounded-xl overflow-hidden">
+    <div className="absolute inset-0 bg-white/20 transform scale-0 group-active:scale-100 transition-transform duration-150 ease-out" />
+  </div>
+);
+
+// Custom hook for haptic feedback handling
+const useButtonHaptics = (
+  hapticFeedback: "light" | "medium" | "heavy" | "none",
+) => {
+  const { light, medium, heavy } = useHapticFeedback();
+
+  const triggerHapticFeedback = () => {
+    if (hapticFeedback === "none") return;
+
+    switch (hapticFeedback) {
+      case "light":
+        light();
+        break;
+      case "medium":
+        medium();
+        break;
+      case "heavy":
+        heavy();
+        break;
+    }
+  };
+
+  return triggerHapticFeedback;
+};
+
+// Custom hook for button styling
+const useButtonStyling = (
+  variant: keyof typeof BUTTON_STYLES.variants,
+  size: keyof typeof BUTTON_STYLES.sizes,
+  fullWidth: boolean,
+  className: string,
+) => {
+  const baseClasses = `
     relative
     inline-flex
     items-center
@@ -114,41 +137,63 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
     disabled:cursor-not-allowed
     disabled:transform-none
     ${fullWidth ? "w-full" : ""}
-    ${sizeClasses[size]}
-    ${variantClasses[variant]}
+    ${BUTTON_STYLES.sizes[size]}
+    ${BUTTON_STYLES.variants[variant]}
     ${className}
-  `;
+  `
+    .trim()
+    .replace(/\s+/g, " ");
+
+  return baseClasses;
+};
+
+export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
+  (
+    {
+      variant = "primary",
+      size = "md",
+      fullWidth = false,
+      loading = false,
+      leftIcon,
+      rightIcon,
+      hapticFeedback = "light",
+      children,
+      className = "",
+      onClick,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
+    const triggerHapticFeedback = useButtonHaptics(hapticFeedback);
+    const buttonClasses = useButtonStyling(variant, size, fullWidth, className);
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (disabled || loading) return;
+
+      triggerHapticFeedback();
+      onClick?.(e);
+    };
 
     return (
       <button
         ref={ref}
-        className={baseClasses}
+        className={buttonClasses}
         onClick={handleClick}
         disabled={disabled || loading}
         {...props}
       >
-        {/* Loading Spinner */}
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
+        {loading && <LoadingSpinner />}
 
-        {/* Content */}
-        <div
-          className={`flex items-center space-x-2 ${loading ? "opacity-0" : "opacity-100"}`}
+        <ButtonContent
+          loading={loading}
+          leftIcon={leftIcon}
+          rightIcon={rightIcon}
         >
-          {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+          {children}
+        </ButtonContent>
 
-          {children && <span className="truncate">{children}</span>}
-
-          {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
-        </div>
-
-        {/* Ripple effect overlay */}
-        <div className="absolute inset-0 rounded-xl overflow-hidden">
-          <div className="absolute inset-0 bg-white/20 transform scale-0 group-active:scale-100 transition-transform duration-150 ease-out" />
-        </div>
+        <RippleEffect />
       </button>
     );
   },

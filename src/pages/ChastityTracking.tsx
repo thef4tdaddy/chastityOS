@@ -54,15 +54,16 @@ const createSessionRecoveryHandler =
     setCorruptedSession: (session: DBSession | null) => void,
   ) =>
   async (session: DBSession) => {
+    logger.info("Session recovery initiated", { sessionId: session.id });
     try {
-      setCurrentSession(session);
       await backupSession(session);
+      setCurrentSession(session);
       startHeartbeat(session.id);
       setShowSessionRecovery(false);
       setCorruptedSession(null);
-      logger.info("Session recovered successfully", { sessionId: session.id });
+      logger.info("Session recovery completed", { sessionId: session.id });
     } catch (error) {
-      logger.error("Failed to recover session", { error: error as Error });
+      logger.error("Session recovery failed", { error: error as Error });
     }
   };
 
@@ -82,6 +83,140 @@ const createSessionDiscardHandler =
     logger.info("Corrupted session discarded");
   };
 
+// Session Persistence Error Component
+const SessionPersistenceError: React.FC<{ error: string }> = ({ error }) => (
+  <div className="mx-4 mb-4 p-3 bg-red-900/50 border border-red-500 rounded-lg">
+    <p className="text-sm text-red-200">
+      <strong>Session Error:</strong> {error}
+    </p>
+  </div>
+);
+
+// Cooldown Display Component
+const CooldownDisplay: React.FC<{
+  pauseState: { cooldownRemaining?: number } | null;
+}> = ({ pauseState }) => {
+  if (!pauseState?.cooldownRemaining) return null;
+
+  return (
+    <div className="mx-4 text-center">
+      <div className="text-yellow-600">
+        Cooldown: {pauseState.cooldownRemaining}s remaining
+      </div>
+    </div>
+  );
+};
+
+// Debug Panel Component
+const DebugPanel: React.FC<{
+  pauseState: any;
+  pauseStateLoading: boolean;
+  pauseStateError: any;
+}> = ({ pauseState, pauseStateLoading, pauseStateError }) => {
+  if (process.env.NODE_ENV !== "development") return null;
+
+  return (
+    <div className="mt-8 p-4 bg-gray-800 rounded-lg text-xs">
+      <h4 className="text-yellow-400 font-bold mb-2">Debug: Pause State</h4>
+      <pre className="text-gray-300">
+        {JSON.stringify(
+          {
+            canPause: pauseState?.canPause,
+            cooldownRemaining: pauseState?.cooldownRemaining,
+            lastPauseTime: pauseState?.lastPauseTime,
+            nextPauseAvailable: pauseState?.nextPauseAvailable,
+            isLoading: pauseStateLoading,
+            error: pauseStateError,
+          },
+          null,
+          2,
+        )}
+      </pre>
+    </div>
+  );
+};
+
+// Custom hook for session state management
+const useSessionState = () => {
+  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
+  const [showSessionRecovery, setShowSessionRecovery] = useState(false);
+  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
+  const [corruptedSession, setCorruptedSession] = useState<DBSession | null>(
+    null,
+  );
+
+  return {
+    currentSession,
+    setCurrentSession,
+    showSessionRecovery,
+    setShowSessionRecovery,
+    isSessionInitialized,
+    setIsSessionInitialized,
+    corruptedSession,
+    setCorruptedSession,
+  };
+};
+
+// Custom hook for mock data (temporary until real implementation)
+const useMockData = (user: any) => {
+  // Mock pause state data for now
+  const pauseState = {
+    canPause: true,
+    cooldownRemaining: undefined,
+    lastPauseTime: undefined,
+    nextPauseAvailable: undefined,
+  };
+  const pauseStateLoading = false;
+  const pauseStateError = null;
+  const refreshPauseState = () => {};
+
+  // Mock session data - replace with real session management
+  const mockSessionData = {
+    isCageOn: true,
+    isPaused: false,
+    remainingGoalTime: 3600,
+    keyholderName: "Keyholder",
+    savedSubmissivesName: "Submissive",
+    requiredKeyholderDurationSeconds: 7200,
+    mainChastityDisplayTime: 3600,
+    topBoxLabel: "Total Locked Time",
+    topBoxTime: "1d 2h 3m",
+    livePauseDuration: 0,
+    accumulatedPauseTimeThisSession: 0,
+    timeCageOff: 0,
+    totalChastityTime: 86400,
+    totalTimeCageOff: 0,
+    showRestoreSessionPrompt: false,
+    pauseCooldownMessage: null,
+    denialCooldownActive: false,
+    hasPendingReleaseRequest: false,
+    isGoalActive: true,
+    isHardcoreGoal: false,
+    showReasonModal: false,
+    showPauseReasonModal: false,
+    useRealTimeTimer: false, // Feature flag for real-time timer
+    sessionId: "mock-session-123",
+    userId: user?.uid || "mock-user-123",
+  };
+
+  // Override pause state for demo - show that pause is available
+  const mockPauseState = {
+    canPause: true,
+    lastPauseTime: undefined,
+    nextPauseAvailable: undefined,
+    cooldownRemaining: undefined,
+  };
+
+  return {
+    pauseState,
+    pauseStateLoading,
+    pauseStateError,
+    refreshPauseState,
+    ...mockSessionData,
+    mockPauseState,
+  };
+};
+
 const TrackerPage: React.FC = () => {
   // Authentication state
   const { data: user, isLoading: authLoading } = useAuth();
@@ -98,13 +233,20 @@ const TrackerPage: React.FC = () => {
     autoInitialize: true,
   });
 
-  // Session state
-  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
-  const [showSessionRecovery, setShowSessionRecovery] = useState(false);
-  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
-  const [corruptedSession, setCorruptedSession] = useState<DBSession | null>(
-    null,
-  );
+  // Session state management
+  const {
+    currentSession,
+    setCurrentSession,
+    showSessionRecovery,
+    setShowSessionRecovery,
+    isSessionInitialized,
+    setIsSessionInitialized,
+    corruptedSession,
+    setCorruptedSession,
+  } = useSessionState();
+
+  // Mock data (replace with real hooks)
+  const mockData = useMockData(user);
 
   // Create handlers using helper functions
   const handleSessionRestored = createSessionRestorationHandler(
@@ -135,77 +277,28 @@ const TrackerPage: React.FC = () => {
     logger.debug("Session persistence initialized");
   };
 
-  // Backup session state when it changes
-  useEffect(() => {
-    if (currentSession && isSessionInitialized) {
-      backupSession(currentSession).catch((error) => {
-        logger.error("Failed to backup session", { error: error as Error });
-      });
-    }
-  }, [currentSession, isSessionInitialized, backupSession]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopHeartbeat();
-    };
-  }, [stopHeartbeat]);
-
-  // TODO: Replace with proper hook pattern
-  // const {
-  //   pauseState,
-  //   isLoading: pauseStateLoading,
-  //   error: pauseStateError,
-  //   refreshPauseState,
-  // } = usePauseState({ userId, sessionId: currentSession?.id });
-
-  // Mock pause state data for now
-  const pauseState = {
-    canPause: true,
-    cooldownRemaining: undefined,
-    lastPauseTime: undefined,
-    nextPauseAvailable: undefined,
-  };
-  const pauseStateLoading = false;
-  const pauseStateError = null;
-  const refreshPauseState = () => {};
-
-  // Mock session data - replace with real session management
-  const isCageOn = true;
-  const isPaused = false;
-  const remainingGoalTime = 3600;
-  const keyholderName = "Keyholder";
-  const savedSubmissivesName = "Submissive";
-  const requiredKeyholderDurationSeconds = 7200;
-  const mainChastityDisplayTime = 3600;
-  const topBoxLabel = "Total Locked Time";
-  const topBoxTime = "1d 2h 3m";
-  const livePauseDuration = 0;
-  const accumulatedPauseTimeThisSession = 0;
-  const timeCageOff = 0;
-  const totalChastityTime = 86400;
-  const totalTimeCageOff = 0;
-  const showRestoreSessionPrompt = false;
-  const pauseCooldownMessage = null;
-  const denialCooldownActive = false;
-  const hasPendingReleaseRequest = false;
-  const isGoalActive = true;
-  const isHardcoreGoal = false;
-  const showReasonModal = false;
-  const showPauseReasonModal = false;
-  const _showEmergencyUnlockModal = false;
-  const useRealTimeTimer = false; // Feature flag for real-time timer
-
-  // Mock session data for emergency unlock
-  const sessionId = "mock-session-123";
-  const userId = user?.uid || "mock-user-123";
-
   const handleEmergencyUnlock = () => {
     // This would typically refresh the session state or redirect
     logger.info("Emergency unlock completed - refreshing session state", {
-      sessionId,
-      userId,
+      sessionId: mockData.sessionId,
+      userId: mockData.userId,
     });
+  };
+
+  const handlePause = () => {
+    logger.info("Session paused", {
+      sessionId: currentSession?.id,
+      userId: mockData.userId,
+    });
+    mockData.refreshPauseState();
+  };
+
+  const handleResume = () => {
+    logger.info("Session resumed", {
+      sessionId: currentSession?.id,
+      userId: mockData.userId,
+    });
+    mockData.refreshPauseState();
   };
 
   // Initialize mock session with real DBSession structure
@@ -225,25 +318,23 @@ const TrackerPage: React.FC = () => {
       lastModified: new Date(),
     };
     setCurrentSession(mockSession);
-  }, []);
+  }, [setCurrentSession]);
 
-  const handlePause = () => {
-    logger.info("Session paused", { sessionId: currentSession?.id, userId });
-    refreshPauseState();
-  };
+  // Backup session state when it changes
+  useEffect(() => {
+    if (currentSession && isSessionInitialized) {
+      backupSession(currentSession).catch((error) => {
+        logger.error("Failed to backup session", { error: error as Error });
+      });
+    }
+  }, [currentSession, isSessionInitialized, backupSession]);
 
-  const handleResume = () => {
-    logger.info("Session resumed", { sessionId: currentSession?.id, userId });
-    refreshPauseState();
-  };
-
-  // Override pause state for demo - show that pause is available
-  const mockPauseState = {
-    canPause: true,
-    lastPauseTime: undefined,
-    nextPauseAvailable: undefined,
-    cooldownRemaining: undefined,
-  };
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopHeartbeat();
+    };
+  }, [stopHeartbeat]);
 
   return (
     <div className="text-nightly-spring-green">
@@ -266,67 +357,59 @@ const TrackerPage: React.FC = () => {
       )}
 
       {/* Session Persistence Error */}
-      {persistenceError && (
-        <div className="mx-4 mb-4 p-3 bg-red-900/50 border border-red-500 rounded-lg">
-          <p className="text-sm text-red-200">
-            <strong>Session Error:</strong> {persistenceError}
-          </p>
-        </div>
-      )}
+      {persistenceError && <SessionPersistenceError error={persistenceError} />}
 
-      {showRestoreSessionPrompt && (
+      {mockData.showRestoreSessionPrompt && (
         <RestoreSessionPrompt onConfirm={() => {}} onDiscard={() => {}} />
       )}
 
       <TrackerHeader
-        remainingGoalTime={remainingGoalTime}
-        keyholderName={keyholderName}
-        savedSubmissivesName={savedSubmissivesName}
-        requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
-        isCageOn={isCageOn}
-        denialCooldownActive={denialCooldownActive}
-        pauseCooldownMessage={pauseCooldownMessage}
+        remainingGoalTime={mockData.remainingGoalTime}
+        keyholderName={mockData.keyholderName}
+        savedSubmissivesName={mockData.savedSubmissivesName}
+        requiredKeyholderDurationSeconds={
+          mockData.requiredKeyholderDurationSeconds
+        }
+        isCageOn={mockData.isCageOn}
+        denialCooldownActive={mockData.denialCooldownActive}
+        pauseCooldownMessage={mockData.pauseCooldownMessage}
       />
 
       <TrackerStats
         // Pass the real session when using real-time timer
-        currentSession={useRealTimeTimer ? currentSession : undefined}
+        currentSession={mockData.useRealTimeTimer ? currentSession : undefined}
         // Legacy props for backward compatibility
         mainChastityDisplayTime={
-          useRealTimeTimer ? undefined : mainChastityDisplayTime
+          mockData.useRealTimeTimer
+            ? undefined
+            : mockData.mainChastityDisplayTime
         }
-        topBoxLabel={topBoxLabel}
-        topBoxTime={useRealTimeTimer ? undefined : topBoxTime}
-        livePauseDuration={useRealTimeTimer ? undefined : livePauseDuration}
+        topBoxLabel={mockData.topBoxLabel}
+        topBoxTime={mockData.useRealTimeTimer ? undefined : mockData.topBoxTime}
+        livePauseDuration={
+          mockData.useRealTimeTimer ? undefined : mockData.livePauseDuration
+        }
         accumulatedPauseTimeThisSession={
-          useRealTimeTimer ? undefined : accumulatedPauseTimeThisSession
+          mockData.useRealTimeTimer
+            ? undefined
+            : mockData.accumulatedPauseTimeThisSession
         }
-        timeCageOff={timeCageOff}
-        isCageOn={isCageOn}
-        totalChastityTime={totalChastityTime}
-        totalTimeCageOff={totalTimeCageOff}
-        isPaused={isPaused}
+        timeCageOff={mockData.timeCageOff}
+        isCageOn={mockData.isCageOn}
+        totalChastityTime={mockData.totalChastityTime}
+        totalTimeCageOff={mockData.totalTimeCageOff}
+        isPaused={mockData.isPaused}
       />
 
       {/* Enhanced Pause Controls with 4-hour cooldown */}
-      {isCageOn && currentSession && (
+      {mockData.isCageOn && currentSession && (
         <>
-          {pauseState &&
-            !pauseState.canPause &&
-            pauseState.cooldownRemaining && (
-              <div className="mx-4 text-center">
-                {/* TODO: Replace with proper CooldownTimer component */}
-                <div className="text-yellow-600">
-                  Cooldown: {pauseState.cooldownRemaining}s remaining
-                </div>
-              </div>
-            )}
-
+          <CooldownDisplay pauseState={mockData.pauseState} />
           <PauseResumeButtons
             sessionId={currentSession.id}
             userId={user?.uid || ""}
-            isPaused={isPaused}
-            pauseState={mockPauseState} // Use mock state to show functionality
+            isPaused={mockData.isPaused}
+            pauseState={mockData.mockPauseState} // Use mock state to show functionality
             onPause={handlePause}
             onResume={handleResume}
           />
@@ -334,41 +417,28 @@ const TrackerPage: React.FC = () => {
       )}
 
       <ActionButtons
-        isCageOn={isCageOn}
-        isGoalActive={isGoalActive}
-        isHardcoreGoal={isHardcoreGoal}
-        requiredKeyholderDurationSeconds={requiredKeyholderDurationSeconds}
-        hasPendingReleaseRequest={hasPendingReleaseRequest}
-        sessionId={sessionId}
-        userId={userId}
+        isCageOn={mockData.isCageOn}
+        isGoalActive={mockData.isGoalActive}
+        isHardcoreGoal={mockData.isHardcoreGoal}
+        requiredKeyholderDurationSeconds={
+          mockData.requiredKeyholderDurationSeconds
+        }
+        hasPendingReleaseRequest={mockData.hasPendingReleaseRequest}
+        sessionId={mockData.sessionId}
+        userId={mockData.userId}
         onEmergencyUnlock={handleEmergencyUnlock}
       />
 
       <ReasonModals
-        showReasonModal={showReasonModal}
-        showPauseReasonModal={showPauseReasonModal}
+        showReasonModal={mockData.showReasonModal}
+        showPauseReasonModal={mockData.showPauseReasonModal}
       />
 
-      {/* Debug info for development */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="mt-8 p-4 bg-gray-800 rounded-lg text-xs">
-          <h4 className="text-yellow-400 font-bold mb-2">Debug: Pause State</h4>
-          <pre className="text-gray-300">
-            {JSON.stringify(
-              {
-                canPause: pauseState?.canPause,
-                cooldownRemaining: pauseState?.cooldownRemaining,
-                lastPauseTime: pauseState?.lastPauseTime,
-                nextPauseAvailable: pauseState?.nextPauseAvailable,
-                isLoading: pauseStateLoading,
-                error: pauseStateError,
-              },
-              null,
-              2,
-            )}
-          </pre>
-        </div>
-      )}
+      <DebugPanel
+        pauseState={mockData.pauseState}
+        pauseStateLoading={mockData.pauseStateLoading}
+        pauseStateError={mockData.pauseStateError}
+      />
     </div>
   );
 };
