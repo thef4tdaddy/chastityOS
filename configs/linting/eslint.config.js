@@ -313,12 +313,20 @@ export default [
       'src/hooks/**/constants.{ts,tsx}', // Constants files
     ],
     rules: {
-      // Hook files must export hooks only - relaxed for utility files
+      // Hook files must export hooks only - allow types and interfaces
       'no-restricted-syntax': [
         'error',
         {
           selector: "ExportDefaultDeclaration > Identifier:not([name^='use'])",
           message: "Hook files should only export hooks (functions starting with 'use')",
+        },
+        {
+          selector: "ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > VariableDeclaration > VariableDeclarator[id.name!=/^use/]",
+          message: "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
+        },
+        {
+          selector: "ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > FunctionDeclaration[id.name!=/^use/]",
+          message: "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
         },
       ],
     },
