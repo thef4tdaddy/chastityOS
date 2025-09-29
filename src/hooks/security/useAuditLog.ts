@@ -23,7 +23,6 @@ import {
   AuditExport,
   AuditPrivacySettings,
   CleanupResult,
-  AuditExportOptions,
 } from "../../types/security";
 import { PermissionContext } from "../../types/security";
 import {
@@ -47,12 +46,7 @@ interface UseAuditLogOptions {
 }
 
 export const useAuditLog = (options: UseAuditLogOptions) => {
-  const {
-    userId,
-    relationshipId,
-    autoLogActions = true,
-    retentionDays = 365,
-  } = options;
+  const { userId, relationshipId, retentionDays = 365 } = options;
 
   // Audit state
   const [auditState, setAuditState] = useState<AuditLogState>({
@@ -138,7 +132,7 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
           ...prev,
           recentEntries: [entry, ...prev.recentEntries.slice(0, 99)], // Keep last 100
         }));
-      } catch (err) {
+      } catch {
         // Failed to log audit action
       }
     },
@@ -381,12 +375,11 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
 
   // Share with keyholder
   const shareWithKeyholder = useCallback(
-    async (entries: string[]): Promise<void> => {
+    async (_entries: string[]): Promise<void> => {
       if (!relationshipId) {
         throw new Error("No relationship context for sharing");
       }
 
-      // In real implementation, this would share selected entries with keyholder
       // In real implementation, this would share selected entries with keyholder
     },
     [relationshipId],
@@ -520,7 +513,7 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
 // Search helper functions
 function applyTextSearch(entries: AuditEntry[], query?: string): AuditEntry[] {
   if (!query) return entries;
-  
+
   const searchTerm = query.toLowerCase();
   return entries.filter(
     (entry) =>
@@ -529,7 +522,10 @@ function applyTextSearch(entries: AuditEntry[], query?: string): AuditEntry[] {
   );
 }
 
-function applySearchFilters(entries: AuditEntry[], filters?: AuditFilter): AuditEntry[] {
+function applySearchFilters(
+  entries: AuditEntry[],
+  filters?: AuditFilter,
+): AuditEntry[] {
   if (!filters) return entries;
 
   let results = entries;
@@ -559,24 +555,20 @@ function applySearchFilters(entries: AuditEntry[], filters?: AuditFilter): Audit
   }
 
   if (filters.severity) {
-    results = results.filter(
-      (entry) => entry.severity === filters.severity,
-    );
+    results = results.filter((entry) => entry.severity === filters.severity);
   }
 
   if (filters.outcome) {
-    results = results.filter(
-      (entry) => entry.outcome === filters.outcome,
-    );
+    results = results.filter((entry) => entry.outcome === filters.outcome);
   }
 
   return results;
 }
 
 function applySorting(
-  entries: AuditEntry[], 
-  sortBy?: string, 
-  sortOrder?: "asc" | "desc"
+  entries: AuditEntry[],
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
 ): AuditEntry[] {
   if (!sortBy) return entries;
 
@@ -588,9 +580,13 @@ function applySorting(
         comparison = a.timestamp.getTime() - b.timestamp.getTime();
         break;
       case "severity":
-        const severityOrder = { low: 0, medium: 1, high: 2, critical: 3 };
-        comparison =
-          severityOrder[a.severity] - severityOrder[b.severity];
+        const severityOrder: Record<string, number> = {
+          low: 0,
+          medium: 1,
+          high: 2,
+          critical: 3,
+        };
+        comparison = severityOrder[a.severity] - severityOrder[b.severity];
         break;
       case "category":
         comparison = a.category.localeCompare(b.category);
@@ -602,12 +598,12 @@ function applySorting(
 }
 
 function applyPagination(
-  entries: AuditEntry[], 
-  limit?: number, 
-  offset?: number
+  entries: AuditEntry[],
+  limit?: number,
+  offset?: number,
 ): AuditEntry[] {
   if (!limit && !offset) return entries;
-  
+
   const start = offset || 0;
   const end = start + (limit || entries.length);
   return entries.slice(start, end);

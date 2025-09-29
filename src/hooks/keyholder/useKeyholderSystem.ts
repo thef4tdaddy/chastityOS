@@ -3,7 +3,7 @@
  * Unified management interface for all keyholder functionality
  * Acts as the primary entry point for keyholder operations
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "../../contexts";
 import { useKeyholderRelationships } from "../useKeyholderRelationships";
 import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
@@ -419,10 +419,10 @@ export const useKeyholderSystem = (keyholderId?: string) => {
     ) {
       refreshData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     keyholderRelationships.relationships.asKeyholder.length,
     state.activeRelationships.length,
-    refreshData,
   ]);
 
   // Admin session auto-expiry
@@ -464,7 +464,7 @@ export type UseKeyholderSystemReturn = ReturnType<typeof useKeyholderSystem>;
 // Helper functions for useKeyholderSystem
 function calculateKeyholderStatusAndStats(
   keyholderRelationshipsList: KeyholderRelationship[],
-  keyholderRelationships: any
+  keyholderRelationships: Record<string, unknown>
 ): { keyholderStatus: KeyholderStatus; stats: KeyholderStats } {
   // Calculate keyholder status
   const keyholderStatus: KeyholderStatus = {

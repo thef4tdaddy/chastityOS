@@ -4,7 +4,7 @@
  * Provides comprehensive permission checking system that validates user permissions
  * in real-time across all application contexts.
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { UserRole } from "../../types/core";
 import {
   Permission,
@@ -19,7 +19,6 @@ import {
   PermissionScope,
   RolePermission,
   ContextPermission,
-  PermissionCache,
   PermissionCheckLog,
 } from "../../types/security";
 
@@ -98,20 +97,20 @@ export const usePermissions = (options: UsePermissionsOptions) => {
       const hasAccess = checkPermissionAccess(
         permission,
         contextToUse,
-        permissionState
+        permissionState,
       );
 
       // Cache and log the result
-      cacheAndLogPermissionCheck(
+      cacheAndLogPermissionCheck({
         cacheKey,
         hasAccess,
         permission,
-        contextToUse,
+        context: contextToUse,
         userId,
         cacheEnabled,
         cacheTTL,
-        setPermissionState
-      );
+        setPermissionState,
+      });
 
       return hasAccess;
     },
@@ -360,7 +359,7 @@ function calculateOverallPermissionLevel(
   return PermissionLevel.NONE;
 }
 
-async function getDefaultPermissions(userId: string): Promise<{
+async function getDefaultPermissions(_userId: string): Promise<{
   userPermissions: Permission[];
   rolePermissions: RolePermission[];
   contextPermissions: ContextPermission[];
@@ -403,7 +402,7 @@ async function getDefaultPermissions(userId: string): Promise<{
 function checkPermissionAccess(
   permission: string,
   context: PermissionContext | undefined,
-  permissionState: PermissionState
+  permissionState: PermissionState,
 ): boolean {
   let hasAccess = false;
 
@@ -446,16 +445,26 @@ function checkPermissionAccess(
   return hasAccess;
 }
 
-function cacheAndLogPermissionCheck(
-  cacheKey: string,
-  hasAccess: boolean,
-  permission: string,
-  context: PermissionContext | undefined,
-  userId: string,
-  cacheEnabled: boolean,
-  cacheTTL: number,
-  setPermissionState: React.Dispatch<React.SetStateAction<PermissionState>>
-): void {
+function cacheAndLogPermissionCheck(params: {
+  cacheKey: string;
+  hasAccess: boolean;
+  permission: string;
+  context: PermissionContext | undefined;
+  userId: string;
+  cacheEnabled: boolean;
+  cacheTTL: number;
+  setPermissionState: React.Dispatch<React.SetStateAction<PermissionState>>;
+}): void {
+  const {
+    cacheKey,
+    hasAccess,
+    permission,
+    context,
+    userId,
+    cacheEnabled,
+    cacheTTL,
+    setPermissionState,
+  } = params;
   // Cache the result
   if (cacheEnabled) {
     setPermissionState((prev) => ({
