@@ -1,0 +1,379 @@
+name: ESLint Quality Reporting
+
+on:
+  push:
+    branches: [main, nightly]
+  pull_request:
+    branches: [main, nightly]
+  schedule:
+    # Run weekly code quality report on Mondays at 8 AM UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  eslint-quality-audit:
+    name: ESLint Code Quality Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for trend analysis
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint and generate JSON report
+        run: |
+          echo "Running ESLint analysis..."
+          npm run lint:report
+
+          # Also show stylish output for logs
+          npm run lint || echo "ESLint found violations - check report for details"
+
+      - name: Analyze ESLint Results
+        id: eslint_analysis
+        run: |
+          if [ ! -f "eslint_report.json" ]; then
+            echo "❌ ESLint report not found"
+            exit 1
+          fi
+
+          echo "Analyzing ESLint results..."
+
+          # Create analysis script inline
+          node -e "
+          const fs = require('fs');
+          const eslintReport = JSON.parse(fs.readFileSync('eslint_report.json', 'utf8'));
+
+          let totalErrors = 0;
+          let totalWarnings = 0;
+          let totalFiles = eslintReport.length;
+          let filesWithIssues = 0;
+          let ruleViolations = {};
+
+          eslintReport.forEach(file => {
+            if (file.errorCount > 0 || file.warningCount > 0) {
+              filesWithIssues++;
+            }
+            totalErrors += file.errorCount;
+            totalWarnings += file.warningCount;
+
+            file.messages.forEach(message => {
+              const rule = message.ruleId || 'unknown';
+              ruleViolations[rule] = (ruleViolations[rule] || 0) + 1;
+            });
+          });
+
+          // Find top 5 most violated rules
+          const topRules = Object.entries(ruleViolations)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5);
+
+          // Calculate quality score (0-100)
+          const maxPossibleScore = 100;
+          const errorPenalty = totalErrors * 2;
+          const warningPenalty = totalWarnings * 0.5;
+          const qualityScore = Math.max(0, maxPossibleScore - errorPenalty - warningPenalty);
+
+          console.log(\`total_errors=\${totalErrors}\`);
+          console.log(\`total_warnings=\${totalWarnings}\`);
+          console.log(\`total_files=\${totalFiles}\`);
+          console.log(\`files_with_issues=\${filesWithIssues}\`);
+          console.log(\`quality_score=\${qualityScore.toFixed(2)}\`);
+          console.log(\`top_rules=\${JSON.stringify(topRules)}\`);
+
+          // Write to GitHub output
+          const output = [
+            \`total_errors=\${totalErrors}\`,
+            \`total_warnings=\${totalWarnings}\`,
+            \`total_files=\${totalFiles}\`,
+            \`files_with_issues=\${filesWithIssues}\`,
+            \`quality_score=\${qualityScore.toFixed(2)}\`,
+            \`top_rules=\${JSON.stringify(topRules)}\`
+          ].join('\n');
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, output + '\n');
+          "
+
+          echo "✅ ESLint analysis completed"
+          echo "Quality Score: $(cat $GITHUB_OUTPUT | grep quality_score | cut -d= -f2)/100"
+          echo "Errors: $(cat $GITHUB_OUTPUT | grep total_errors | cut -d= -f2)"
+          echo "Warnings: $(cat $GITHUB_OUTPUT | grep total_warnings | cut -d= -f2)"
+
+      - name: Update Google Sheets with Code Quality Data
+        run: |
+          if [ -n "${{ secrets.GSHEET_CLIENT_EMAIL }}" ] && [ -n "${{ secrets.CODE_QUALITY_SPREADSHEET_ID }}" ]; then
+            echo "Updating Google Sheets with code quality data..."
+
+            QUALITY_DATA='{
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+              "commit": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "eventType": "${{ github.event_name }}",
+              "qualityScore": ${{ steps.eslint_analysis.outputs.quality_score }},
+              "totalErrors": ${{ steps.eslint_analysis.outputs.total_errors }},
+              "totalWarnings": ${{ steps.eslint_analysis.outputs.total_warnings }},
+              "totalFiles": ${{ steps.eslint_analysis.outputs.total_files }},
+              "filesWithIssues": ${{ steps.eslint_analysis.outputs.files_with_issues }},
+              "topRules": ${{ steps.eslint_analysis.outputs.top_rules }}
+            }'
+
+            TREND_RESULT=$(node scripts/ci/google-sheets-helper.js quality "$QUALITY_DATA") || echo "Sheets update failed"
+
+            if echo "$TREND_RESULT" | grep -q "QUALITY_TREND="; then
+              TREND_JSON=$(echo "$TREND_RESULT" | grep "QUALITY_TREND=" | cut -d= -f2-)
+              echo "quality_trend=$TREND_JSON" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "ℹ️ Google Sheets integration not configured"
+          fi
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+          CODE_QUALITY_SPREADSHEET_ID: ${{ secrets.CODE_QUALITY_SPREADSHEET_ID }}
+
+      - name: Check for Quality Regression
+        id: quality_check
+        run: |
+          ERRORS=${{ steps.eslint_analysis.outputs.total_errors }}
+          WARNINGS=${{ steps.eslint_analysis.outputs.total_warnings }}
+          QUALITY_SCORE=${{ steps.eslint_analysis.outputs.quality_score }}
+
+          # Quality regression if:
+          # - More than 5 new errors
+          # - Quality score below 70
+          # - More than 50 warnings
+
+          if [ "$ERRORS" -gt 5 ] || [ $(echo "$QUALITY_SCORE < 70" | bc -l) -eq 1 ] || [ "$WARNINGS" -gt 50 ]; then
+            echo "regression_detected=true" >> $GITHUB_OUTPUT
+          else
+            # Check trend data if available
+            if [ -n "${{ steps.eslint_analysis.outputs.quality_trend }}" ]; then
+              IS_TREND_REGRESSION=$(echo '${{ steps.eslint_analysis.outputs.quality_trend }}' | jq -r '.isRegression // false')
+              echo "regression_detected=$IS_TREND_REGRESSION" >> $GITHUB_OUTPUT
+            else
+              echo "regression_detected=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send Discord Code Quality Notification
+        if: always()
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Sending Discord code quality notification..."
+
+            IS_REGRESSION=${{ steps.quality_check.outputs.regression_detected }}
+            TREND_DATA="${{ steps.eslint_analysis.outputs.quality_trend }}"
+
+            DISCORD_DATA='{
+              "qualityScore": ${{ steps.eslint_analysis.outputs.quality_score }},
+              "totalErrors": ${{ steps.eslint_analysis.outputs.total_errors }},
+              "totalWarnings": ${{ steps.eslint_analysis.outputs.total_warnings }},
+              "totalFiles": ${{ steps.eslint_analysis.outputs.total_files }},
+              "filesWithIssues": ${{ steps.eslint_analysis.outputs.files_with_issues }},
+              "topRules": ${{ steps.eslint_analysis.outputs.top_rules }},
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "isRegression": '${IS_REGRESSION}',
+              "trend": '${TREND_DATA:-null}'
+            }'
+
+            node scripts/ci/discord-reporter.js quality "$DISCORD_DATA" || echo "Discord notification failed"
+          else
+            echo "ℹ️ Discord webhook not configured"
+          fi
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Create GitHub issue for Code Quality Regression
+        if: steps.quality_check.outputs.regression_detected == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const qualityScore = parseFloat('${{ steps.eslint_analysis.outputs.quality_score }}');
+            const totalErrors = parseInt('${{ steps.eslint_analysis.outputs.total_errors }}');
+            const totalWarnings = parseInt('${{ steps.eslint_analysis.outputs.total_warnings }}');
+            const totalFiles = parseInt('${{ steps.eslint_analysis.outputs.total_files }}');
+            const filesWithIssues = parseInt('${{ steps.eslint_analysis.outputs.files_with_issues }}');
+            const topRules = JSON.parse('${{ steps.eslint_analysis.outputs.top_rules }}');
+
+            const topRulesText = topRules
+              .slice(0, 5)
+              .map(([rule, count]) => `- **${rule}**: ${count} violation${count > 1 ? 's' : ''}`)
+              .join('\n');
+
+            const title = `🚨 Code Quality Regression Detected - ${context.ref}`;
+            const body = `## Code Quality Alert
+
+            Code quality has degraded and requires immediate attention.
+
+            ### Quality Metrics
+            - **Quality Score**: ${qualityScore.toFixed(1)}/100 ${qualityScore < 70 ? '❌' : qualityScore < 85 ? '⚠️' : '✅'}
+            - **Total Errors**: ${totalErrors} ${totalErrors > 5 ? '❌' : '✅'}
+            - **Total Warnings**: ${totalWarnings} ${totalWarnings > 50 ? '⚠️' : '✅'}
+            - **Files with Issues**: ${filesWithIssues}/${totalFiles} (${(filesWithIssues/totalFiles*100).toFixed(1)}%)
+
+            ### Top Rule Violations
+            ${topRulesText || 'No specific rule violations detected'}
+
+            ### Context
+            - **Commit**: ${context.sha}
+            - **Branch**: ${context.ref}
+            - **Triggered by**: ${context.eventName}
+            - **Workflow Run**: [#${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+
+            ### Action Required
+            Please review and fix the ESLint violations to improve code quality.
+
+            ### Quick Fixes
+            Run the following commands to automatically fix some issues:
+            \`\`\`bash
+            npm run lint:fix
+            npm run format
+            \`\`\`
+
+            ### Resources
+            - [ESLint Rules Documentation](https://eslint.org/docs/rules/)
+            - [Code Quality Best Practices](https://eslint.org/docs/user-guide/getting-started)
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['code-quality', 'eslint', 'technical-debt', 'priority-high', 'automated']
+            });
+
+      - name: Upload ESLint report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eslint-quality-report
+          path: eslint_report.json
+          retention-days: 30
+
+  generate-weekly-report:
+    name: Generate Weekly Quality Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    needs: eslint-quality-audit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Trend Analysis Report
+        id: trend_report
+        run: |
+          if [ -n "${{ secrets.GSHEET_CLIENT_EMAIL }}" ]; then
+            echo "Generating weekly trend analysis report..."
+
+            TREND_REPORT=$(node scripts/ci/google-sheets-helper.js report) || echo "{}"
+
+            if [ "$TREND_REPORT" != "{}" ] && [ "$TREND_REPORT" != "" ]; then
+              echo "trend_data=$TREND_REPORT" >> $GITHUB_OUTPUT
+              echo "report_generated=true" >> $GITHUB_OUTPUT
+            else
+              echo "report_generated=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "report_generated=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+          LIGHTHOUSE_SPREADSHEET_ID: ${{ secrets.LIGHTHOUSE_SPREADSHEET_ID }}
+          CODE_QUALITY_SPREADSHEET_ID: ${{ secrets.CODE_QUALITY_SPREADSHEET_ID }}
+
+      - name: Send Weekly Discord Report
+        if: steps.trend_report.outputs.report_generated == 'true'
+        run: |
+          if [ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]; then
+            echo "Sending weekly Discord report..."
+
+            REPORT_DATA='${{ steps.trend_report.outputs.trend_data }}'
+            node scripts/ci/discord-reporter.js weekly-report "$REPORT_DATA" || echo "Discord report failed"
+          fi
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Create Weekly GitHub Report Issue
+        if: steps.trend_report.outputs.report_generated == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const trendData = JSON.parse('${{ steps.trend_report.outputs.trend_data }}');
+            const date = new Date().toISOString().split('T')[0];
+
+            const getTrendEmoji = (trend) => {
+              switch (trend) {
+                case 'improving': return '📈';
+                case 'declining': return '📉';
+                case 'stable': return '➡️';
+                default: return '❓';
+              }
+            };
+
+            const title = `📊 Weekly Quality & Performance Report - ${date}`;
+            const body = `## Weekly ChastityOS Health Report
+
+            Automated analysis of project quality and performance trends.
+
+            ### ${getTrendEmoji(trendData.performance?.trend)} Performance Analysis
+            - **Trend**: ${trendData.performance?.trend?.toUpperCase() || 'UNKNOWN'}
+            - **Change**: ${trendData.performance?.change || 'N/A'}%
+            - **Current Average**: ${trendData.performance?.recentAverage || 'N/A'}%
+            - **Previous Average**: ${trendData.performance?.previousAverage || 'N/A'}%
+
+            ### ${getTrendEmoji(trendData.quality?.trend)} Code Quality Analysis
+            - **Trend**: ${trendData.quality?.trend?.toUpperCase() || 'UNKNOWN'}
+            - **Change**: ${trendData.quality?.change || 'N/A'} points
+            - **Current Average**: ${trendData.quality?.recentAverage || 'N/A'}/100
+            - **Previous Average**: ${trendData.quality?.previousAverage || 'N/A'}/100
+
+            ### 📅 Analysis Period
+            Last 7 days compared to previous 7 days
+
+            ### 🎯 Recommendations
+            ${trendData.performance?.trend === 'declining' ? '- 🚨 **Performance attention needed** - investigate recent changes affecting load times' : ''}
+            ${trendData.quality?.trend === 'declining' ? '- 🚨 **Code quality attention needed** - review and fix ESLint violations' : ''}
+            ${(trendData.performance?.trend === 'improving' && trendData.quality?.trend === 'improving') ? '- ✅ **Great work!** Both performance and quality are improving' : ''}
+
+            ### 🔗 Resources
+            - [Performance Dashboard](https://sheets.google.com) (Configure LIGHTHOUSE_SPREADSHEET_ID)
+            - [Quality Dashboard](https://sheets.google.com) (Configure CODE_QUALITY_SPREADSHEET_ID)
+            - [CI/CD Setup Guide](./docs/ci-cd-setup.md)
+
+            ---
+            🤖 Generated automatically by ChastityOS CI/CD • Report covers ${trendData.performance?.dataPoints || 0} data points
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['report', 'weekly', 'quality', 'performance', 'automated']
+            });

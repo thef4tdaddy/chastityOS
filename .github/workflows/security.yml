@@ -1,0 +1,465 @@
+name: Security and Quality Scanning
+
+on:
+  push:
+    branches: [main, nightly]
+  pull_request:
+    branches: [main, nightly]
+  schedule:
+    # Run weekly security scan on Mondays at 6 AM UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch: # Allow manual triggering
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  dependency-security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit npm dependencies
+        run: |
+          echo "Running npm audit..."
+          npm audit --audit-level=moderate || echo "Audit warnings found - review required"
+
+      - name: Check for high-severity vulnerabilities
+        run: |
+          HIGH_VULNS=$(npm audit --audit-level=high --json 2>/dev/null | jq -r '.metadata.vulnerabilities.high // 0')
+          CRITICAL_VULNS=$(npm audit --audit-level=critical --json 2>/dev/null | jq -r '.metadata.vulnerabilities.critical // 0')
+
+          echo "High severity vulnerabilities: $HIGH_VULNS"
+          echo "Critical severity vulnerabilities: $CRITICAL_VULNS"
+
+          if [ "$HIGH_VULNS" -gt 0 ] || [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "❌ High or critical severity vulnerabilities found!"
+            npm audit --audit-level=high
+            exit 1
+          else
+            echo "✅ No high or critical vulnerabilities found"
+          fi
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "Checking for outdated dependencies..."
+          npx npm-check-updates --target minor || echo "Some dependencies have updates available"
+
+      - name: Generate dependency report
+        run: |
+          echo "# Dependency Security Report" > dependency-report.md
+          echo "Generated on: $(date)" >> dependency-report.md
+          echo "" >> dependency-report.md
+          echo "## Audit Summary" >> dependency-report.md
+          npm audit --json > audit.json || true
+          if [ -f audit.json ]; then
+            jq -r '.metadata | "Total vulnerabilities: \(.vulnerabilities.total // 0)"' audit.json >> dependency-report.md
+            jq -r '.metadata | "Info: \(.vulnerabilities.info // 0), Low: \(.vulnerabilities.low // 0), Moderate: \(.vulnerabilities.moderate // 0), High: \(.vulnerabilities.high // 0), Critical: \(.vulnerabilities.critical // 0)"' audit.json >> dependency-report.md
+          fi
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-report
+          path: dependency-report.md
+
+  code-security:
+    name: Code Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-and-quality
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build:nightly
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  file-security:
+    name: File and Configuration Security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL,HIGH,MEDIUM"
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
+        if: always()
+
+      - name: Check for sensitive files
+        run: |
+          echo "Checking for potentially sensitive files..."
+
+          # Check for common sensitive file patterns
+          SENSITIVE_FILES=$(find . -type f \( \
+            -name "*.key" -o \
+            -name "*.pem" -o \
+            -name "*.p12" -o \
+            -name "*.pfx" -o \
+            -name "*_rsa" -o \
+            -name "*_dsa" -o \
+            -name "*.env" -o \
+            -name ".env.*" \
+          \) ! -path "./node_modules/*" ! -path "./.git/*" ! -name ".env.example")
+
+          if [ -n "$SENSITIVE_FILES" ]; then
+            echo "⚠️ Potentially sensitive files found:"
+            echo "$SENSITIVE_FILES"
+            echo "Please review these files to ensure no secrets are committed"
+          else
+            echo "✅ No obviously sensitive files found"
+          fi
+
+      - name: Environment variable security scan
+        run: |
+          echo "Scanning for environment variable security issues..."
+
+          # Check for hardcoded environment variables in code
+          echo "Checking for hardcoded env vars in source files..."
+          if find src/ -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" | \
+             xargs grep -l "process\.env\." | head -5; then
+            echo "⚠️ Direct process.env usage found - consider using import.meta.env for Vite"
+          fi
+
+          # Check for Vite env var patterns
+          echo "Checking Vite environment variable usage..."
+          if find src/ -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" | \
+             xargs grep -l "import\.meta\.env\." | head -5; then
+            echo "✅ Vite environment variables found - verifying VITE_ prefix usage"
+
+            # Check that all env vars have VITE_ prefix (for client-side safety)
+            if find src/ -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" | \
+               xargs grep "import\.meta\.env\." | grep -v "VITE_" | head -5; then
+              echo "❌ Non-VITE_ prefixed environment variables found in client code!"
+              echo "Client-side code should only access VITE_ prefixed variables"
+              exit 1
+            else
+              echo "✅ All client-side env vars properly prefixed with VITE_"
+            fi
+          fi
+
+      - name: Check for hardcoded secrets and API keys
+        run: |
+          echo "Scanning for potential hardcoded secrets and API keys..."
+
+          # Enhanced patterns for various secret types
+          SECRET_PATTERNS=(
+            # API Keys
+            "AIza[0-9A-Za-z\\-_]{35}"  # Google API Key
+            "AKIA[0-9A-Z]{16}"         # AWS Access Key
+            "sk_live_[0-9a-zA-Z]{24}"  # Stripe Live Key
+            "sk_test_[0-9a-zA-Z]{24}"  # Stripe Test Key
+            # Firebase
+            "firebase[_-]?api[_-]?key[\"'\\s]*[:=][\"'\\s]*[A-Za-z0-9-_]+"
+            "firebase[_-]?project[_-]?id[\"'\\s]*[:=][\"'\\s]*[A-Za-z0-9-_]+"
+            # Generic patterns
+            "['\"]?[A-Za-z0-9_-]*[Kk][Ee][Yy]['\"]?\\s*[:=]\\s*['\"][A-Za-z0-9-_]{20,}['\"]"
+            "['\"]?[A-Za-z0-9_-]*[Ss][Ee][Cc][Rr][Ee][Tt]['\"]?\\s*[:=]\\s*['\"][A-Za-z0-9-_]{20,}['\"]"
+            "['\"]?[A-Za-z0-9_-]*[Tt][Oo][Kk][Ee][Nn]['\"]?\\s*[:=]\\s*['\"][A-Za-z0-9-_]{20,}['\"]"
+            "['\"]?[A-Za-z0-9_-]*[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd]['\"]?\\s*[:=]\\s*['\"][A-Za-z0-9-_]{8,}['\"]"
+          )
+
+          SECRET_FOUND=false
+
+          for pattern in "${SECRET_PATTERNS[@]}"; do
+            if grep -r -i --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist \
+               --exclude="*.md" --exclude="security.yml" \
+               -E "$pattern" . | head -3; then
+              echo "❌ Potential secret pattern found: $pattern"
+              SECRET_FOUND=true
+            fi
+          done
+
+          if [ "$SECRET_FOUND" = true ]; then
+            echo "❌ Potential secrets detected! Please review and remove any hardcoded credentials."
+            echo "Use environment variables or GitHub secrets instead."
+            exit 1
+          else
+            echo "✅ No obvious hardcoded secrets detected"
+          fi
+
+      - name: Validate environment variable usage patterns
+        run: |
+          echo "Validating environment variable usage patterns..."
+
+          # Check for proper environment variable validation
+          if find src/ -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" | \
+             xargs grep -l "import\.meta\.env\.VITE_" | head -5; then
+            echo "Found Vite environment variable usage - checking for validation..."
+
+            # Look for proper validation patterns
+            if find src/ -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" | \
+               xargs grep -l "import\.meta\.env\.VITE_.*||" | head -3; then
+              echo "✅ Found fallback values for environment variables"
+            else
+              echo "⚠️ Consider adding fallback values for environment variables"
+            fi
+          fi
+
+      - name: Environment file security check
+        run: |
+          echo "Checking environment file security..."
+
+          # Check for .env files that might be committed
+          if find . -name ".env" -not -path "./node_modules/*" -not -path "./.git/*"; then
+            echo "❌ .env files found in repository! These should not be committed."
+            find . -name ".env" -not -path "./node_modules/*" -not -path "./.git/*"
+            exit 1
+          fi
+
+          # Check for .env.local files
+          if find . -name ".env.local" -not -path "./node_modules/*" -not -path "./.git/*"; then
+            echo "❌ .env.local files found in repository! These should not be committed."
+            find . -name ".env.local" -not -path "./node_modules/*" -not -path "./.git/*"
+            exit 1
+          fi
+
+          # Check for .env.production files
+          if find . -name ".env.production" -not -path "./node_modules/*" -not -path "./.git/*"; then
+            echo "❌ .env.production files found in repository! These should not be committed."
+            find . -name ".env.production" -not -path "./node_modules/*" -not -path "./.git/*"
+            exit 1
+          fi
+
+          # Verify .env.example exists as template
+          if [ -f ".env.example" ]; then
+            echo "✅ .env.example template found"
+
+            # Check that .env.example doesn't contain real values
+            if grep -E "^[A-Z_]+=[A-Za-z0-9-_]{20,}" .env.example; then
+              echo "⚠️ .env.example may contain real values - should only have placeholders"
+            else
+              echo "✅ .env.example appears to contain only placeholders"
+            fi
+          else
+            echo "⚠️ .env.example template not found - consider creating one"
+          fi
+
+      - name: Verify .gitignore protects sensitive files
+        run: |
+          echo "Checking .gitignore protection for sensitive files..."
+
+          if [ -f ".gitignore" ]; then
+            # Check for common sensitive file patterns in .gitignore
+            PROTECTED_PATTERNS=(
+              "\.env$"
+              "\.env\.local"
+              "\.env\.production"
+              "\.env\.development"
+              "\.key$"
+              "\.pem$"
+              "\.p12$"
+              "\.pfx$"
+              "*_rsa$"
+              "*_dsa$"
+            )
+
+            echo "Checking .gitignore for sensitive file protection..."
+            MISSING_PATTERNS=()
+
+            for pattern in "${PROTECTED_PATTERNS[@]}"; do
+              if ! grep -q "$pattern" .gitignore; then
+                MISSING_PATTERNS+=("$pattern")
+              fi
+            done
+
+            if [ ${#MISSING_PATTERNS[@]} -gt 0 ]; then
+              echo "⚠️ .gitignore missing protection for:"
+              printf '%s\n' "${MISSING_PATTERNS[@]}"
+              echo "Consider adding these patterns to .gitignore"
+            else
+              echo "✅ .gitignore properly protects sensitive files"
+            fi
+          else
+            echo "❌ .gitignore not found! Create one to protect sensitive files."
+            exit 1
+          fi
+
+  firebase-security:
+    name: Firebase Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Check Firebase configuration
+        run: |
+          echo "Checking Firebase configuration security..."
+
+          # Check if firebase.json exists and has proper security settings
+          if [ -f firebase.json ]; then
+            echo "✅ firebase.json found"
+
+            # Check for security headers
+            if grep -q "headers" firebase.json; then
+              echo "✅ Security headers configured"
+            else
+              echo "⚠️ Consider adding security headers to firebase.json"
+            fi
+          else
+            echo "ℹ️ firebase.json not found - using Vercel deployment"
+          fi
+
+      - name: Validate Firebase Security Rules (if present)
+        run: |
+          if [ -f firestore.rules ]; then
+            echo "Validating Firestore security rules..."
+            # Basic validation - more comprehensive validation would require Firebase project access
+            if grep -q "allow read, write: if" firestore.rules; then
+              echo "✅ Security rules contain access controls"
+            else
+              echo "⚠️ Security rules may need review"
+            fi
+          else
+            echo "ℹ️ Firestore rules not found in repository"
+          fi
+
+  license-compliance:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install license checker
+        run: npm install -g license-checker
+
+      - name: Check licenses
+        run: |
+          echo "Checking dependency licenses..."
+          license-checker --summary > license-summary.txt
+          cat license-summary.txt
+
+          # Check for problematic licenses
+          if license-checker --excludePrivatePackages | grep -E "(GPL-3.0|AGPL|SSPL)"; then
+            echo "⚠️ Found potentially problematic licenses - review required"
+          else
+            echo "✅ No problematic licenses detected"
+          fi
+
+      - name: Generate license report
+        run: |
+          echo "# License Compliance Report" > license-report.md
+          echo "Generated on: $(date)" >> license-report.md
+          echo "" >> license-report.md
+          echo "## License Summary" >> license-report.md
+          cat license-summary.txt >> license-report.md
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-compliance-report
+          path: license-report.md
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs:
+      [
+        dependency-security,
+        code-security,
+        file-security,
+        firebase-security,
+        license-compliance,
+      ]
+    if: always()
+
+    steps:
+      - name: Security scan summary
+        run: |
+          echo "Security Scan Summary"
+          echo "===================="
+          echo "Dependency Security: ${{ needs.dependency-security.result }}"
+          echo "Code Security: ${{ needs.code-security.result }}"
+          echo "File Security: ${{ needs.file-security.result }}"
+          echo "Firebase Security: ${{ needs.firebase-security.result }}"
+          echo "License Compliance: ${{ needs.license-compliance.result }}"
+
+          # Check if any critical security checks failed
+          if [[ "${{ needs.dependency-security.result }}" == "failure" ]]; then
+            echo "❌ Critical dependency vulnerabilities found"
+            exit 1
+          elif [[ "${{ needs.code-security.result }}" == "failure" ]]; then
+            echo "❌ Code security issues found"
+            exit 1
+          else
+            echo "✅ Security scans completed successfully"
+          fi
+
+      - name: Create security badge data
+        run: |
+          echo "Creating security status for badges..."
+          if [[ "${{ needs.dependency-security.result }}" == "success" && "${{ needs.code-security.result }}" == "success" ]]; then
+            echo "SECURITY_STATUS=passing" >> $GITHUB_ENV
+          else
+            echo "SECURITY_STATUS=failing" >> $GITHUB_ENV
+          fi
