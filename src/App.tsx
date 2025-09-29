@@ -5,7 +5,7 @@ import { firebaseListeners } from "./services/sync";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./hooks/api/queryClient";
-import { AuthProvider, AppProvider } from "./contexts";
+import { AuthProvider, AppProvider, ToastProvider } from "./contexts";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -21,6 +21,7 @@ import KeyholderDemo from "./pages/KeyholderDemo";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import AchievementPage from "./pages/AchievementPage";
+import ToastDemo from "./pages/showcase/ToastDemo";
 import Root from "./Root";
 
 const router = createBrowserRouter([
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
         path: "/relationships",
         element: <RelationshipsPage />,
       },
+      {
+        path: "/toast-demo",
+        element: <ToastDemo />,
+      },
     ],
   },
 ]);
@@ -96,8 +101,10 @@ function App(): React.ReactElement {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <AuthProvider>
-          <RouterProvider router={router} />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <ToastProvider>
+            <RouterProvider router={router} />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ToastProvider>
         </AuthProvider>
       </AppProvider>
     </QueryClientProvider>
