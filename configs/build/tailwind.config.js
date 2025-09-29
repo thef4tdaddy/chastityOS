@@ -17,6 +17,13 @@ module.exports = {
     "reward-box",
     "punishment-box",
     "task-box",
+    "touch-target",
+    "btn-mobile",
+    "input-mobile",
+    "select-mobile",
+    "card-mobile",
+    "bottom-nav",
+    "bottom-nav-item",
   ],
   darkMode: false,
   theme: {

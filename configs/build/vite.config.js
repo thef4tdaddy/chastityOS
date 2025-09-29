@@ -101,23 +101,9 @@ const createPWAConfig = (mode) => {
             },
           },
         },
-        {
-          urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'google-fonts-cache',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
-            },
-            cacheKeyWillBeUsed: async ({ request }) => {
-              return `${request.url}?${request.headers.get('font-display') || 'auto'}`;
-            },
-          },
-        },
       ],
     },
-    manifest: createPWAManifest(),
+    manifest: false, // Temporarily disable custom manifest to fix build
     devOptions: {
       enabled: mode !== "development",
     },
