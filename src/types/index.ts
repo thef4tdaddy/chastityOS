@@ -74,5 +74,11 @@ export {
 // Feedback types
 export * from "./feedback";
 
+// Security types
+export * from "./security";
+
+// Real-time types
+export * from "./realtime";
+
 // Re-export commonly used Firebase types
 export type { Timestamp } from "firebase/firestore";
