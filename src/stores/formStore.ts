@@ -170,7 +170,9 @@ const validateMultipleFields = (
 };
 
 // Form lifecycle actions
-const createFormLifecycleActions = (set: any) => ({
+const createFormLifecycleActions = (
+  set: (state: Partial<FormState> | ((state: FormState) => FormState)) => void,
+) => ({
   createForm: (formId: string, initialValues = {}) =>
     set(
       (state: FormState) => {
@@ -198,7 +200,9 @@ const createFormLifecycleActions = (set: any) => ({
 });
 
 // Field manipulation actions
-const createFieldActions = (set: any) => ({
+const createFieldActions = (
+  set: (state: Partial<FormState> | ((state: FormState) => FormState)) => void,
+) => ({
   setFieldValue: (formId: string, fieldName: string, value: FormFieldValue) =>
     set(
       (state: FormState) => {
@@ -274,7 +278,9 @@ const createFieldActions = (set: any) => ({
 });
 
 // Form state actions
-const createFormStateActions = (set: any) => ({
+const createFormStateActions = (
+  set: (state: Partial<FormState> | ((state: FormState) => FormState)) => void,
+) => ({
   resetForm: (formId: string, newValues = {}) =>
     set(
       (state: FormState) => {
@@ -354,7 +360,10 @@ const createValidationActions = (get: () => FormState) => ({
 });
 
 // Form state actions
-const createFormActions = (set: any, get: () => FormState) => ({
+const createFormActions = (
+  set: (state: Partial<FormState> | ((state: FormState) => FormState)) => void,
+  get: () => FormState,
+) => ({
   ...createFormLifecycleActions(set),
   ...createFieldActions(set),
   ...createFormStateActions(set),
