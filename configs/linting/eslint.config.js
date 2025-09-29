@@ -179,14 +179,17 @@ export default [
       'zustand-safe-patterns/zustand-no-conditional-subscriptions': 'warn', // Memory leak prevention
 
       // 🧹 Toast Migration Rule - Enforce new toast system
-      'no-legacy-toast/no-legacy-toast': ['warn', {
-        allowedImports: [
-          // Temporary exceptions during migration
-          'src/components/achievements/AchievementNotification.tsx',
-          'src/pages/showcase/TouchTargetsDemo.tsx'
-        ],
-        severity: 'warn'
-      }],
+      'no-legacy-toast/no-legacy-toast': [
+        'warn',
+        {
+          allowedImports: [
+            // Temporary exceptions during migration
+            'src/components/achievements/AchievementNotification.tsx',
+            'src/pages/showcase/TouchTargetsDemo.tsx',
+          ],
+          severity: 'warn',
+        },
+      ],
 
       // Block window dialog patterns that no-restricted-globals doesn't catch
       'no-restricted-syntax': [
@@ -209,12 +212,15 @@ export default [
       ],
 
       // Ignore merge conflict markers to reduce noise in lint tracking
-      'no-irregular-whitespace': ['error', {
-        skipTemplates: true,
-        skipComments: true,
-        skipRegExps: true,
-        skipJSXText: true
-      }],
+      'no-irregular-whitespace': [
+        'error',
+        {
+          skipTemplates: true,
+          skipComments: true,
+          skipRegExps: true,
+          skipJSXText: true,
+        },
+      ],
     },
   },
   {
@@ -233,7 +239,10 @@ export default [
     },
     rules: {
       ...typescriptPlugin.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
@@ -321,12 +330,16 @@ export default [
           message: "Hook files should only export hooks (functions starting with 'use')",
         },
         {
-          selector: "ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > VariableDeclaration > VariableDeclarator[id.name!=/^use/]",
-          message: "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
+          selector:
+            'ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > VariableDeclaration > VariableDeclarator[id.name!=/^use/]',
+          message:
+            "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
         },
         {
-          selector: "ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > FunctionDeclaration[id.name!=/^use/]",
-          message: "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
+          selector:
+            'ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > FunctionDeclaration[id.name!=/^use/]',
+          message:
+            "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
         },
       ],
     },
@@ -471,7 +484,7 @@ export default [
       'max-lines-per-function': 'off',
       'max-lines': 'off',
       'max-statements': 'off',
-      'complexity': 'off',
+      complexity: 'off',
       'max-depth': 'off',
       'max-params': 'off',
       'max-nested-callbacks': 'off',
