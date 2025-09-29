@@ -146,7 +146,14 @@ html {
 
 /* Mobile-optimized button styles */
 .btn-mobile {
-  @apply touch-target;
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing);
   padding: 0.75rem 1.5rem;
   border-radius: 0.75rem;
   font-weight: 600;
@@ -155,7 +162,6 @@ html {
   color: var(--color-button-text);
   border: none;
   outline: none;
-  position: relative;
   overflow: hidden;
 }
 
