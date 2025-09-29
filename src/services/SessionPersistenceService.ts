@@ -4,7 +4,7 @@
  * Built on top of existing SessionDBService and sync infrastructure
  */
 import { serviceLogger } from "../utils/logging";
-import { sessionDBService, db } from "./database";
+import { sessionDBService } from "./database";
 import { firebaseSync } from "./sync";
 import type { DBSession } from "../types/database";
 
@@ -28,9 +28,17 @@ export interface SessionRestorationResult {
   error?: string;
 }
 
+interface SessionBroadcastData {
+  sessionId?: string;
+  userId?: string;
+  timestamp?: number;
+  pauseState?: SessionPersistenceState["pauseState"];
+  [key: string]: unknown;
+}
+
 export class SessionPersistenceService {
   private static instance: SessionPersistenceService;
-  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private heartbeatInterval: number | null = null;
   private readonly HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
   private readonly BACKUP_KEY = "chastity_session_backup";
   private readonly MAX_INTERRUPTION_TIME_MS = 5 * 60 * 1000; // 5 minutes
@@ -418,8 +426,8 @@ export class SessionPersistenceService {
 
       // If session was paused during interruption, adjust pause time
       if (backup.pauseState?.isPaused && backup.pauseState.pauseStartTime) {
-        const pauseStart = new Date(backup.pauseState.pauseStartTime);
-        const interruptionStart = new Date(backup.lastHeartbeat!);
+        const _pauseStart = new Date(backup.pauseState.pauseStartTime);
+        const _interruptionStart = new Date(backup.lastHeartbeat!);
 
         // Only count the time from interruption as additional pause time
         const additionalPauseTime = Math.max(
@@ -491,7 +499,10 @@ export class SessionPersistenceService {
   /**
    * Broadcast session event to other tabs
    */
-  private broadcastSessionEvent(type: string, data: any): void {
+  private broadcastSessionEvent(
+    type: string,
+    data: SessionBroadcastData,
+  ): void {
     try {
       this.broadcastChannel.postMessage({
         type,
@@ -547,12 +558,12 @@ export class SessionPersistenceService {
   }
 
   // Cross-tab event handlers
-  private handleRemoteSessionStart(data: any): void {
+  private handleRemoteSessionStart(data: SessionBroadcastData): void {
     logger.debug("Remote session started", { data });
     // Handle conflicts if this tab also has an active session
   }
 
-  private handleRemoteSessionEnd(data: any): void {
+  private handleRemoteSessionEnd(data: SessionBroadcastData): void {
     logger.debug("Remote session ended", { data });
     // Clean up if this was our session
     if (this.getBackupState()?.activeSessionId === data.sessionId) {
@@ -561,22 +572,22 @@ export class SessionPersistenceService {
     }
   }
 
-  private handleRemoteSessionPause(data: any): void {
+  private handleRemoteSessionPause(data: SessionBroadcastData): void {
     logger.debug("Remote session paused", { data });
     // Update local backup if needed
   }
 
-  private handleRemoteSessionResume(data: any): void {
+  private handleRemoteSessionResume(data: SessionBroadcastData): void {
     logger.debug("Remote session resumed", { data });
     // Update local backup if needed
   }
 
-  private handleRemoteSessionUpdate(data: any): void {
+  private handleRemoteSessionUpdate(data: SessionBroadcastData): void {
     logger.debug("Remote session updated", { data });
     // Sync local state if this is our session
   }
 
-  private handleRemoteHeartbeat(data: any): void {
+  private handleRemoteHeartbeat(data: SessionBroadcastData): void {
     logger.debug("Remote heartbeat received", { data });
     // Handle heartbeat from other tabs
   }

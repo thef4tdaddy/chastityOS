@@ -50,7 +50,7 @@ interface CreateTaskData {
   category?: string;
   dueDate?: Date;
   assignedBy?: string; // keyholder UID
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface UpdateTaskData {
@@ -59,7 +59,7 @@ interface UpdateTaskData {
   priority?: "low" | "medium" | "high";
   category?: string;
   dueDate?: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -262,7 +262,7 @@ export function useCreateTask() {
     },
     onSuccess: (
       newTask: Task,
-      { userId }: { userId: string; taskData: any },
+      { userId }: { userId: string; taskData: CreateTaskData },
     ) => {
       logger.info("Task creation successful", { taskId: newTask.id, userId });
 
@@ -371,7 +371,10 @@ export function useUpdateTaskStatus() {
     },
     onSuccess: (
       updatedTask: Task,
-      { userId, taskId }: { userId: string; taskId: string; status: any },
+      {
+        userId,
+        taskId,
+      }: { userId: string; taskId: string; status: TaskStatus },
     ) => {
       logger.info("Task status update successful", {
         taskId,

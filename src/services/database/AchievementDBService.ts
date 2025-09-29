@@ -18,6 +18,15 @@ import {
 } from "../../types";
 import { logger } from "../../utils/logging";
 
+interface UpdateLeaderboardEntryOptions {
+  userId: string;
+  category: string;
+  period: string;
+  value: number;
+  displayName?: string;
+  displayNameType?: "real" | "username" | "anonymous";
+}
+
 export class AchievementDBService extends BaseDBService {
   protected db = db; // Use the db instance instead of ChastityDB.getInstance()
   protected achievementsTable = this.db.achievements;
@@ -36,7 +45,7 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Queue sync operation (placeholder for sync functionality)
    */
-  private queueSync(operation: string, data: any): void {
+  private queueSync(operation: string, data: Record<string, unknown>): void {
     // TODO: Implement sync queue functionality
     logger.debug("Queuing sync operation", { operation, data });
   }
@@ -589,13 +598,16 @@ export class AchievementDBService extends BaseDBService {
    * Update user's leaderboard entry
    */
   async updateLeaderboardEntry(
-    userId: string,
-    category: string,
-    period: string,
-    value: number,
-    displayName: string = "Anonymous",
-    displayNameType: "real" | "username" | "anonymous" = "anonymous",
+    options: UpdateLeaderboardEntryOptions,
   ): Promise<void> {
+    const {
+      userId,
+      category,
+      period,
+      value,
+      displayName = "Anonymous",
+      displayNameType = "anonymous",
+    } = options;
     try {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
@@ -639,7 +651,7 @@ export class AchievementDBService extends BaseDBService {
   /**
    * Get user's leaderboard privacy settings
    */
-  async getLeaderboardPrivacy(userId: string): Promise<LeaderboardPrivacy> {
+  async getLeaderboardPrivacy(_userId: string): Promise<LeaderboardPrivacy> {
     // This would typically be stored in user settings
     // For now, return default settings
     return {
@@ -658,7 +670,7 @@ export class AchievementDBService extends BaseDBService {
    */
   async updateLeaderboardPrivacy(
     userId: string,
-    settings: LeaderboardPrivacy,
+    _settings: LeaderboardPrivacy,
   ): Promise<void> {
     try {
       // This would typically update user settings

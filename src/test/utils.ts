@@ -3,22 +3,22 @@
  * Helper functions and utilities for testing
  */
 
-import { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { vi } from 'vitest';
+import React, { ReactElement } from "react";
+import { render, RenderOptions } from "@testing-library/react";
+import { vi, expect } from "vitest";
 
 // Mock data factories
 export const createMockUser = (overrides = {}) => ({
-  id: 'test-user-123',
-  email: 'test@example.com',
+  id: "test-user-123",
+  email: "test@example.com",
   isAnonymous: false,
   createdAt: new Date(),
   ...overrides,
 });
 
 export const createMockSession = (overrides = {}) => ({
-  id: 'test-session-123',
-  userId: 'test-user-123',
+  id: "test-session-123",
+  userId: "test-user-123",
   startTime: new Date(),
   endTime: null,
   isPaused: false,
@@ -26,44 +26,44 @@ export const createMockSession = (overrides = {}) => ({
   goalDuration: 3600, // 1 hour
   isHardcoreMode: false,
   keyholderApprovalRequired: false,
-  syncStatus: 'pending' as const,
+  syncStatus: "pending" as const,
   lastModified: new Date(),
   ...overrides,
 });
 
 export const createMockEvent = (overrides = {}) => ({
-  id: 'test-event-123',
-  userId: 'test-user-123',
-  type: 'orgasm' as const,
+  id: "test-event-123",
+  userId: "test-user-123",
+  type: "orgasm" as const,
   timestamp: new Date(),
   details: {
     intensity: 5,
-    notes: 'Test event',
+    notes: "Test event",
   },
   isPrivate: false,
-  syncStatus: 'pending' as const,
+  syncStatus: "pending" as const,
   lastModified: new Date(),
   ...overrides,
 });
 
 export const createMockTask = (overrides = {}) => ({
-  id: 'test-task-123',
-  userId: 'test-user-123',
-  text: 'Test task',
-  description: 'A test task description',
-  status: 'pending' as const,
-  priority: 'medium' as const,
-  assignedBy: 'keyholder' as const,
+  id: "test-task-123",
+  userId: "test-user-123",
+  text: "Test task",
+  description: "A test task description",
+  status: "pending" as const,
+  priority: "medium" as const,
+  assignedBy: "keyholder" as const,
   createdAt: new Date(),
   dueDate: new Date(Date.now() + 86400000), // 1 day from now
-  syncStatus: 'pending' as const,
+  syncStatus: "pending" as const,
   lastModified: new Date(),
   ...overrides,
 });
 
 export const createMockSettings = (overrides = {}) => ({
-  userId: 'test-user-123',
-  theme: 'dark' as const,
+  userId: "test-user-123",
+  theme: "dark" as const,
   notifications: {
     enabled: true,
     sessionReminders: true,
@@ -85,21 +85,24 @@ export const createMockSettings = (overrides = {}) => ({
 });
 
 // Firebase mock helpers
-export const createMockFirebaseDoc = (data: any) => ({
-  id: 'test-doc-id',
+export const createMockFirebaseDoc = (data: Record<string, unknown>) => ({
+  id: "test-doc-id",
   data: () => data,
   exists: () => true,
   ref: {
-    id: 'test-doc-id',
-    path: 'test/path',
+    id: "test-doc-id",
+    path: "test/path",
   },
 });
 
-export const createMockFirebaseCollection = (docs: any[]) => ({
+export const createMockFirebaseCollection = (
+  docs: Record<string, unknown>[],
+) => ({
   docs: docs.map(createMockFirebaseDoc),
   size: docs.length,
   empty: docs.length === 0,
-  forEach: (callback: (doc: any) => void) => docs.forEach(doc => callback(createMockFirebaseDoc(doc))),
+  forEach: (callback: (doc: Record<string, unknown>) => void) =>
+    docs.forEach((doc) => callback(createMockFirebaseDoc(doc))),
 });
 
 // Time manipulation helpers
@@ -114,7 +117,7 @@ export const setSystemTime = (date: Date) => {
 // DOM testing helpers
 export const waitForLoadingToFinish = async () => {
   // Wait for any loading states to complete
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 };
 
 // Store testing helpers
@@ -124,19 +127,23 @@ export const resetAllStores = () => {
 };
 
 // Async testing helpers
-export const waitForAsync = (ms = 0) => 
-  new Promise(resolve => setTimeout(resolve, ms));
+export const waitForAsync = (ms = 0) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
-export const flushPromises = () => 
-  new Promise(resolve => setImmediate(resolve));
+export const flushPromises = () =>
+  new Promise((resolve) => setImmediate(resolve));
 
 // Error boundary testing
 export const createErrorBoundaryWrapper = () => {
   const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
     try {
-      return <>{children}</>;
+      return React.createElement(React.Fragment, null, children);
     } catch (error) {
-      return <div data-testid="error-boundary">Error: {String(error)}</div>;
+      return React.createElement(
+        "div",
+        { "data-testid": "error-boundary" },
+        `Error: ${String(error)}`,
+      );
     }
   };
   return ErrorBoundary;
@@ -145,7 +152,7 @@ export const createErrorBoundaryWrapper = () => {
 // Custom render function with providers
 export const renderWithProviders = (
   ui: ReactElement,
-  options?: RenderOptions
+  options?: RenderOptions,
 ) => {
   // This would wrap components with necessary providers
   // For now, using basic render
@@ -153,14 +160,14 @@ export const renderWithProviders = (
 };
 
 // Validation helpers
-export const expectToBeDate = (value: any) => {
+export const expectToBeDate = (value: unknown) => {
   expect(value).toBeInstanceOf(Date);
-  expect(value.getTime()).not.toBeNaN();
+  expect((value as Date).getTime()).not.toBeNaN();
 };
 
-export const expectToBeValidId = (value: any) => {
-  expect(typeof value).toBe('string');
-  expect(value.length).toBeGreaterThan(0);
+export const expectToBeValidId = (value: unknown) => {
+  expect(typeof value).toBe("string");
+  expect((value as string).length).toBeGreaterThan(0);
 };
 
 // Performance testing helpers
@@ -172,12 +179,12 @@ export const measurePerformance = async (fn: () => Promise<void> | void) => {
 };
 
 // Snapshot testing helpers
-export const createStableSnapshot = (obj: any) => {
+export const createStableSnapshot = (obj: Record<string, unknown>) => {
   // Remove timestamps and volatile data for stable snapshots
   const stable = JSON.parse(JSON.stringify(obj));
-  if (stable.timestamp) stable.timestamp = '[timestamp]';
-  if (stable.createdAt) stable.createdAt = '[createdAt]';
-  if (stable.lastModified) stable.lastModified = '[lastModified]';
-  if (stable.id && stable.id.includes('test-')) stable.id = '[test-id]';
+  if (stable.timestamp) stable.timestamp = "[timestamp]";
+  if (stable.createdAt) stable.createdAt = "[createdAt]";
+  if (stable.lastModified) stable.lastModified = "[lastModified]";
+  if (stable.id && stable.id.includes("test-")) stable.id = "[test-id]";
   return stable;
 };

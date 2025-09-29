@@ -1,9 +1,10 @@
 import { useNotificationStore } from './src/stores/notificationStore.ts';
+import { logger } from './src/utils/logging.ts';
 
 const { showError, showWarning } = useNotificationStore.getState();
 const errorId = showError("Test error");
 const warningId = showWarning("Test warning");
 
 const { notifications } = useNotificationStore.getState();
-console.log("Error notification:", notifications.find(n => n.id === errorId));
-console.log("Warning notification:", notifications.find(n => n.id === warningId));
+logger.debug("Error notification", { notification: notifications.find(n => n.id === errorId) });
+logger.debug("Warning notification", { notification: notifications.find(n => n.id === warningId) });

@@ -405,7 +405,10 @@ export const authService = {
   getUserProfile: AuthService.getUserProfile.bind(AuthService),
   updateUserProfile: AuthService.updateUserProfile.bind(AuthService),
   sendPasswordResetEmail: AuthService.resetPassword.bind(AuthService),
-  updateProfile: async (user: any, profile: any) => {
+  updateProfile: async (
+    user: FirebaseUser,
+    profile: { displayName?: string | null; photoURL?: string | null },
+  ) => {
     // This is a Firebase Auth method, not our service method
     const { updateProfile } = await import("firebase/auth");
     return updateProfile(user, profile);
@@ -422,7 +425,7 @@ export const authService = {
     const credential = EmailAuthProvider.credential(email, password);
     return reauthenticateWithCredential(user, credential);
   },
-  sendEmailVerification: async (user: any) => {
+  sendEmailVerification: async (user: FirebaseUser) => {
     const { sendEmailVerification } = await import("firebase/auth");
     return sendEmailVerification(user);
   },

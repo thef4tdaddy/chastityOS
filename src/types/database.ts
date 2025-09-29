@@ -152,7 +152,9 @@ export interface DBGoal extends DBBase {
 
 export interface DBSettings extends DBBase {
   theme: "light" | "dark" | "auto" | "system";
-<<<<<<< HEAD
+  eventDisplayMode?: string;
+  twoFactorEnabled?: boolean;
+  updatedAt?: Date;
   notifications:
     | {
         enabled: boolean;
@@ -163,19 +165,6 @@ export interface DBSettings extends DBBase {
         achievements: boolean; // New: Achievement notifications
       }
     | boolean; // Allow both nested object and simple boolean for backwards compatibility
-=======
-  eventDisplayMode?: string;
-  twoFactorEnabled?: boolean;
-  updatedAt?: Date;
-  notifications: {
-    enabled: boolean;
-    sessionReminders: boolean;
-    taskDeadlines: boolean;
-    keyholderMessages: boolean;
-    goalProgress: boolean;
-    achievements: boolean; // New: Achievement notifications
-  };
->>>>>>> origin/nightly
   privacy: {
     publicProfile: boolean;
     shareStatistics: boolean;
@@ -239,7 +228,6 @@ export interface DBSettings extends DBBase {
   exportFormat?: string;
 
   // Security
-  twoFactorEnabled?: boolean;
   sessionTimeout?: number;
   requirePasswordForSensitive?: boolean;
   emergencyContacts?: string[];
@@ -260,7 +248,6 @@ export interface DBSettings extends DBBase {
   };
 
   // Additional timestamp properties used in useSettings.ts
-  updatedAt?: Date;
   createdAt?: Date;
 }
 

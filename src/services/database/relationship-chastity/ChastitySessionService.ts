@@ -12,6 +12,8 @@ import {
   limit,
   serverTimestamp,
   writeBatch,
+  Firestore,
+  Timestamp,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { RelationshipSession, SessionEvent } from "@/types/relationships";
@@ -23,7 +25,7 @@ import { relationshipCoreService } from "./RelationshipCoreService";
 const logger = serviceLogger("ChastitySessionService");
 
 class ChastitySessionService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -83,13 +85,13 @@ class ChastitySessionService {
         {
           id: sessionId,
           relationshipId,
-          startTime: serverTimestamp() as any,
+          startTime: serverTimestamp() as Timestamp,
           duration: 0,
           effectiveDuration: 0,
           events: [
             {
               type: "start",
-              timestamp: serverTimestamp() as any,
+              timestamp: serverTimestamp() as Timestamp,
               initiatedBy:
                 userId === chastityData?.keyholderId
                   ? "keyholder"
@@ -193,7 +195,7 @@ class ChastitySessionService {
       // Add end event
       const endEvent: SessionEvent = {
         type: "end",
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         initiatedBy:
           userId ===
           (await relationshipCoreService.getKeyholderId(relationshipId))
@@ -283,7 +285,7 @@ class ChastitySessionService {
 
       const pauseEvent: SessionEvent = {
         type: "pause",
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         initiatedBy: "submissive",
         reason: pauseReason,
       };
@@ -363,7 +365,7 @@ class ChastitySessionService {
 
       const resumeEvent: SessionEvent = {
         type: "resume",
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as Timestamp,
         initiatedBy: "submissive",
       };
 

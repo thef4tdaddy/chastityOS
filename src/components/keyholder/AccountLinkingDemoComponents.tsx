@@ -6,6 +6,11 @@
 import React from "react";
 import { FaKey, FaCopy, FaTrash, FaExclamationTriangle } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
+import {
+  AdminRelationship,
+  AdminPermissions,
+  LinkCode,
+} from "@/types/account-linking";
 
 interface MessageDisplayProps {
   message: string;
@@ -44,7 +49,7 @@ export const MessageDisplay: React.FC<MessageDisplayProps> = ({
 };
 
 interface ActiveKeyholderProps {
-  activeKeyholder: any;
+  activeKeyholder: AdminRelationship;
   showPermissions: string | null;
   setShowPermissions: (id: string | null) => void;
 }
@@ -92,24 +97,18 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
   );
 };
 
-const KeyholderInfo: React.FC<{ activeKeyholder: any }> = ({
+const KeyholderInfo: React.FC<{ activeKeyholder: AdminRelationship }> = ({
   activeKeyholder,
 }) => (
   <div className="text-sm text-gray-300 mb-3">
-    <p>
-      Connected:{" "}
-      {formatDistanceToNow(
-        activeKeyholder.acceptedAt || activeKeyholder.createdAt,
-      )}{" "}
-      ago
-    </p>
+    <p>Connected: {formatDistanceToNow(activeKeyholder.establishedAt)} ago</p>
     <p>
       Status: <span className="text-green-400">Active</span>
     </p>
   </div>
 );
 
-const PermissionsDisplay: React.FC<{ permissions: any }> = ({
+const PermissionsDisplay: React.FC<{ permissions: AdminPermissions }> = ({
   permissions,
 }) => (
   <div className="mt-3 p-3 bg-gray-700 rounded border">
@@ -175,7 +174,7 @@ export const CreateInviteSection: React.FC<CreateInviteSectionProps> = ({
 };
 
 interface ActiveInviteCodesProps {
-  activeInviteCodes: any[];
+  activeInviteCodes: LinkCode[];
   copyToClipboard: (text: string) => void;
 }
 
@@ -204,13 +203,13 @@ export const ActiveInviteCodes: React.FC<ActiveInviteCodesProps> = ({
 };
 
 const InviteCodeCard: React.FC<{
-  invite: any;
+  invite: LinkCode;
   copyToClipboard: (text: string) => void;
 }> = ({ invite, copyToClipboard }) => (
   <div className="p-3 bg-gray-700 rounded border flex items-center justify-between">
     <div>
       <div className="font-mono text-purple-300 font-bold text-lg">
-        {invite.code}
+        {invite.id}
       </div>
       <div className="text-xs text-gray-400">
         <div>Created: {formatDistanceToNow(invite.createdAt)} ago</div>
@@ -219,7 +218,7 @@ const InviteCodeCard: React.FC<{
     </div>
     <div className="flex gap-2">
       <button
-        onClick={() => copyToClipboard(invite.code)}
+        onClick={() => copyToClipboard(invite.id)}
         className="text-purple-400 hover:text-purple-300 p-1"
         title="Copy code"
       >
@@ -297,7 +296,7 @@ export const AcceptInviteSection: React.FC<AcceptInviteSectionProps> = ({
 );
 
 interface SubmissiveRelationshipsProps {
-  relationships: { asKeyholder: any[] };
+  relationships: { asKeyholder: AdminRelationship[] };
 }
 
 export const SubmissiveRelationships: React.FC<
@@ -309,7 +308,7 @@ export const SubmissiveRelationships: React.FC<
     <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
       <h3 className="font-semibold text-purple-300 mb-3">Your Submissives</h3>
       <div className="space-y-2">
-        {relationships.asKeyholder.map((relationship: any) => (
+        {relationships.asKeyholder.map((relationship: AdminRelationship) => (
           <SubmissiveCard key={relationship.id} relationship={relationship} />
         ))}
       </div>
@@ -317,17 +316,15 @@ export const SubmissiveRelationships: React.FC<
   );
 };
 
-const SubmissiveCard: React.FC<{ relationship: any }> = ({ relationship }) => (
+const SubmissiveCard: React.FC<{ relationship: AdminRelationship }> = ({
+  relationship,
+}) => (
   <div className="p-3 bg-gray-700 rounded border">
     <div className="flex items-center justify-between mb-2">
       <div className="text-sm">
         <div className="text-green-400">Active Submissive</div>
         <div className="text-xs text-gray-400">
-          Connected:{" "}
-          {formatDistanceToNow(
-            relationship.acceptedAt || relationship.createdAt,
-          )}{" "}
-          ago
+          Connected: {formatDistanceToNow(relationship.establishedAt)} ago
         </div>
       </div>
       <button className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30">

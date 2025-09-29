@@ -20,7 +20,7 @@ const getGitHash = () => {
   let gitHash = "dev";
   try {
     gitHash = execSync("git rev-parse --short HEAD").toString().trim();
-  } catch (_e) {
+  } catch {
     console.warn(
       '[vite.config.js] Git hash not available. Using "dev" instead.',
     );

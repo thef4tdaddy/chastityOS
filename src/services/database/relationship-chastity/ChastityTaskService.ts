@@ -15,6 +15,8 @@ import {
   onSnapshot,
   Unsubscribe,
   Timestamp,
+  Firestore,
+  FieldValue,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -29,7 +31,7 @@ import { relationshipCoreService } from "./RelationshipCoreService";
 const logger = serviceLogger("ChastityTaskService");
 
 class ChastityTaskService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -129,10 +131,11 @@ class ChastityTaskService {
     try {
       const db = await this.ensureDb();
 
-      const updateData: any = {
-        status,
-        updatedAt: serverTimestamp(),
-      };
+      const updateData: Record<string, FieldValue | string | number | boolean> =
+        {
+          status,
+          updatedAt: serverTimestamp(),
+        };
 
       // Add role-specific fields
       const isKeyholder =
@@ -244,7 +247,7 @@ class ChastityTaskService {
           });
         },
       );
-    }) as any;
+    }) as Unsubscribe;
   }
 }
 

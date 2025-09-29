@@ -18,7 +18,7 @@ export class AchievementCRUDService {
     collection: string,
     operation: string,
     id: string,
-    __data: any,
+    __data: Record<string, unknown>,
   ): Promise<void> {
     // Simplified sync queue - would normally integrate with proper sync service
     logger.debug(`Queued sync: ${operation} ${collection}/${id}`);

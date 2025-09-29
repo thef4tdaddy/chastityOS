@@ -87,16 +87,10 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
-<<<<<<< HEAD
-      expect(notifications[0].type).toBe("error");
-      expect(notifications[0].message).toBe("Error message");
-      expect(notifications[0].duration).toBe(0); // Errors are persistent
-=======
       expect(notifications[0]?.type).toBe("error");
       expect(notifications[0]?.message).toBe("Error message");
       // showError passes undefined duration, which overrides the default
       expect(notifications[0]?.duration).toBeUndefined();
->>>>>>> origin/nightly
     });
 
     it("should create warning notification", () => {
@@ -106,16 +100,10 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
-<<<<<<< HEAD
-      expect(notifications[0].type).toBe("warning");
-      expect(notifications[0].message).toBe("Warning message");
-      expect(notifications[0].duration).toBe(6000); // Warnings stay longer
-=======
       expect(notifications[0]?.type).toBe("warning");
       expect(notifications[0]?.message).toBe("Warning message");
       // showWarning passes undefined duration, which overrides the default
       expect(notifications[0]?.duration).toBeUndefined();
->>>>>>> origin/nightly
     });
 
     it("should create info notification", () => {
@@ -129,11 +117,7 @@ describe("NotificationStore", () => {
       expect(notifications[0]?.message).toBe("Info message");
     });
 
-<<<<<<< HEAD
-    it("should create loading notification", () => {
-=======
     it("should create custom notification with duration 0", () => {
->>>>>>> origin/nightly
       const { addNotification } = useNotificationStore.getState();
 
       const id = addNotification({
@@ -145,17 +129,10 @@ describe("NotificationStore", () => {
       const { notifications } = useNotificationStore.getState();
 
       expect(notifications).toHaveLength(1);
-<<<<<<< HEAD
-      expect(notifications[0].type).toBe("info");
-      expect(notifications[0].message).toBe("Loading message");
-      expect(notifications[0].duration).toBe(0); // Loading notifications don't auto-dismiss
-      expect(notifications[0].dismissible).toBe(false);
-=======
       expect(notifications[0]?.type).toBe("info");
       expect(notifications[0]?.message).toBe("Loading message");
       expect(notifications[0]?.duration).toBe(0); // Custom notifications can have duration 0
       expect(notifications[0]?.dismissible).toBe(false);
->>>>>>> origin/nightly
     });
   });
 
@@ -195,8 +172,6 @@ describe("NotificationStore", () => {
     });
   });
 
-<<<<<<< HEAD
-=======
   describe("Query Methods", () => {
     it("should check if has notifications", () => {
       const { addNotification, notifications } =
@@ -225,8 +200,6 @@ describe("NotificationStore", () => {
       expect(notification?.message).toBe("Test notification");
     });
   });
-
->>>>>>> origin/nightly
   describe("Update Notifications", () => {
     it("should update notification", () => {
       const { addNotification, updateNotification } =

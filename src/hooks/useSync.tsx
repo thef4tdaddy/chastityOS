@@ -112,7 +112,7 @@ export const useSync = (): UseSyncState & UseSyncActions => {
 
             // Update both local and remote with chosen data
             await firebaseSync.applyRemoteChanges(conflict.collection, [
-              dataToApply as any,
+              dataToApply,
             ]);
 
             resolvedIds.push(`${conflict.collection}-${conflict.documentId}`);

@@ -14,6 +14,9 @@ import {
   orderBy,
   serverTimestamp,
   writeBatch,
+  Firestore,
+  WriteBatch,
+  FieldValue,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -50,7 +53,7 @@ const getDefaultPermissions = (): DefaultRelationshipPermissions => ({
 });
 
 export class RelationshipInviteService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();
@@ -330,7 +333,7 @@ export class RelationshipInviteService {
     relationshipId: string,
     submissiveId: string,
     keyholderId: string,
-    batch?: any,
+    batch?: WriteBatch,
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
@@ -343,7 +346,7 @@ export class RelationshipInviteService {
         currentSession: {
           id: "",
           isActive: false,
-          startTime: serverTimestamp() as any,
+          startTime: serverTimestamp() as FieldValue,
           accumulatedPauseTime: 0,
           keyholderApprovalRequired: false,
         },

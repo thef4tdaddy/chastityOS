@@ -9,6 +9,7 @@ import {
   where,
   orderBy,
   limit,
+  Firestore,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import {
@@ -50,7 +51,7 @@ export interface UserRelationshipStats {
 }
 
 export class RelationshipStatsService {
-  private db: any = null;
+  private db: Firestore | null = null;
 
   constructor() {
     this.initializeDb();

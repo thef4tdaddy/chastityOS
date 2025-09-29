@@ -3,9 +3,18 @@
  * Main orchestrator for data synchronization between Dexie and Firebase
  */
 import { serviceLogger } from "@/utils/logging";
-import { getFirebaseAuth } from "../firebase";
+import { getFirebaseAuth, getFirestore } from "../firebase";
+import { sessionDBService } from "../database";
 import type { Auth } from "firebase/auth";
-import type { SyncOptions, SyncResult, ConflictInfo } from "@/types/database";
+import type { Firestore } from "firebase/firestore";
+import { doc, Timestamp } from "firebase/firestore";
+import type {
+  SyncOptions,
+  SyncResult,
+  ConflictInfo,
+  DBSession,
+  SyncOperation,
+} from "@/types/database";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
 import { userSettingsSync } from "./UserSettingsSync";
@@ -406,11 +415,27 @@ export class FirebaseSync {
 
   /**
    * Apply remote changes to local database
+   * Supports both SyncOperation array and collection-specific data
    */
-  async applyRemoteChanges(changes: any): Promise<void> {
+  async applyRemoteChanges(
+    changesOrCollection: SyncOperation[] | string,
+    data?: Record<string, unknown>[],
+  ): Promise<void> {
     try {
-      logger.debug("Applying remote changes", { changes });
-      // TODO: Implement remote changes application logic
+      if (Array.isArray(changesOrCollection)) {
+        // Handle SyncOperation[] format
+        logger.debug("Applying remote changes", {
+          changes: changesOrCollection,
+        });
+        // TODO: Implement remote changes application logic for SyncOperation[]
+      } else {
+        // Handle collection-specific format
+        logger.debug("Applying remote changes for collection", {
+          collection: changesOrCollection,
+          data,
+        });
+        // TODO: Implement remote changes application logic for specific collection
+      }
     } catch (error) {
       logger.error("Failed to apply remote changes", { error: error as Error });
       throw error;

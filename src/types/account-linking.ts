@@ -135,7 +135,7 @@ export interface AdminAction {
   // Action details
   type: AdminActionType;
   target: string; // What was acted upon
-  details: Record<string, any>; // Action-specific data
+  details: Record<string, unknown>; // Action-specific data
 
   // Metadata
   timestamp: Timestamp;
@@ -222,7 +222,7 @@ export interface UpdateRelationshipRequest {
 export interface AdminActionRequest {
   type: AdminActionType;
   target: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   requireWearerApproval?: boolean;
 }
 
@@ -275,7 +275,7 @@ export interface AuditLogEntry {
   actor: "keyholder" | "wearer" | "system";
   actorId: string;
   action: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   severity: "info" | "warning" | "critical";
   category: "access" | "permission" | "data" | "security" | "relationship";
 }
@@ -308,7 +308,7 @@ export interface AdminNotification {
     | "security_alert";
   title: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 
   createdAt: Timestamp;
   readAt?: Timestamp;
@@ -321,7 +321,7 @@ export interface AdminNotification {
 export interface AccountLinkingError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: Timestamp;
   userId?: string;
   relationshipId?: string;

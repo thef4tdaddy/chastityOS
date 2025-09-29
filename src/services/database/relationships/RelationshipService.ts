@@ -12,6 +12,13 @@ import { relationshipValidationService } from "./RelationshipValidationService";
 import { relationshipSearchService } from "./RelationshipSearchService";
 import { relationshipStatsService } from "./RelationshipStatsService";
 import { serviceLogger } from "@/utils/logging";
+import {
+  Relationship,
+  RelationshipPermissions,
+  RelationshipStatus,
+  UserRole,
+} from "@/types";
+import { DocumentSnapshot, Unsubscribe } from "firebase/firestore";
 
 const _logger = serviceLogger("RelationshipService");
 
@@ -36,7 +43,10 @@ class RelationshipService {
     );
   }
 
-  subscribeToUserRelationships(userId: string, callback: any) {
+  subscribeToUserRelationships(
+    userId: string,
+    callback: (relationships: Relationship[]) => void,
+  ): Unsubscribe {
     return relationshipCRUDService.subscribeToUserRelationships(
       userId,
       callback,
@@ -47,7 +57,7 @@ class RelationshipService {
   async sendRelationshipRequest(
     fromUserId: string,
     toUserId: string,
-    fromRole: any,
+    fromRole: UserRole,
     message?: string,
   ) {
     return relationshipInviteService.sendRelationshipRequest(
@@ -79,7 +89,7 @@ class RelationshipService {
   // Role and Permission Operations
   async updateRelationshipPermissions(
     relationshipId: string,
-    permissions: any,
+    permissions: Partial<RelationshipPermissions>,
     updatingUserId: string,
   ) {
     return relationshipRoleService.updateRelationshipPermissions(
@@ -89,7 +99,11 @@ class RelationshipService {
     );
   }
 
-  async checkPermission(relationshipId: string, userId: string, action: any) {
+  async checkPermission(
+    relationshipId: string,
+    userId: string,
+    action: string,
+  ) {
     return relationshipRoleService.checkPermission(
       relationshipId,
       userId,
@@ -127,11 +141,14 @@ class RelationshipService {
     );
   }
 
-  validatePermissions(permissions: any) {
+  validatePermissions(permissions: Partial<RelationshipPermissions>) {
     return relationshipValidationService.validatePermissions(permissions);
   }
 
-  validateStatusTransition(currentStatus: any, newStatus: any) {
+  validateStatusTransition(
+    currentStatus: RelationshipStatus,
+    newStatus: RelationshipStatus,
+  ) {
     return relationshipValidationService.validateStatusTransition(
       currentStatus,
       newStatus,
@@ -147,9 +164,9 @@ class RelationshipService {
 
   // Search Operations
   async searchRelationships(
-    filters: any = {},
+    filters: Record<string, unknown> = {},
     pageSize: number = 20,
-    lastDoc?: any,
+    lastDoc?: DocumentSnapshot,
   ) {
     return relationshipSearchService.searchRelationships(
       filters,
@@ -165,7 +182,7 @@ class RelationshipService {
   async getRelationshipHistory(
     userId: string,
     pageSize: number = 20,
-    lastDoc?: any,
+    lastDoc?: DocumentSnapshot,
   ) {
     return relationshipSearchService.getRelationshipHistory(
       userId,
@@ -176,8 +193,8 @@ class RelationshipService {
 
   async searchRelationshipRequests(
     userId: string,
-    direction: any = "both",
-    status?: any,
+    direction: "sent" | "received" | "both" = "both",
+    status?: string,
     pageSize: number = 20,
   ) {
     return relationshipSearchService.searchRelationshipRequests(
@@ -190,7 +207,7 @@ class RelationshipService {
 
   async findRelationshipsByParticipants(
     participantIds: string[],
-    status?: any,
+    status?: RelationshipStatus,
   ) {
     return relationshipSearchService.findRelationshipsByParticipants(
       participantIds,

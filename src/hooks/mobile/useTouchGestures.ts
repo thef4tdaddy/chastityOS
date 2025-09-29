@@ -33,6 +33,53 @@ interface TouchGestureHandlers {
   onLongPress?: () => void;
 }
 
+// Helper function to determine if a gesture is a tap
+const isTapGesture = (
+  deltaX: number,
+  deltaY: number,
+  threshold: number,
+): boolean => {
+  return Math.abs(deltaX) < threshold && Math.abs(deltaY) < threshold;
+};
+
+// Helper function to determine swipe direction and trigger handler
+const handleSwipeGesture = (
+  deltaX: number,
+  deltaY: number,
+  minDistance: number,
+  handlers: TouchGestureHandlers,
+): void => {
+  const absDeltaX = Math.abs(deltaX);
+  const absDeltaY = Math.abs(deltaY);
+
+  if (absDeltaX > absDeltaY && absDeltaX >= minDistance) {
+    // Horizontal swipe
+    if (deltaX > 0) {
+      handlers.onSwipeRight?.();
+    } else {
+      handlers.onSwipeLeft?.();
+    }
+  } else if (absDeltaY >= minDistance) {
+    // Vertical swipe
+    if (deltaY > 0) {
+      handlers.onSwipeDown?.();
+    } else {
+      handlers.onSwipeUp?.();
+    }
+  }
+};
+
+// Helper function to reset touch state
+const resetTouchState = (
+  touchStart: React.MutableRefObject<TouchPoint | null>,
+  touchCurrent: React.MutableRefObject<TouchPoint | null>,
+  setIsSwipeActive: (active: boolean) => void,
+): void => {
+  touchStart.current = null;
+  touchCurrent.current = null;
+  setIsSwipeActive(false);
+};
+
 export const useTouchGestures = (
   handlers: TouchGestureHandlers,
   options: SwipeOptions = {},
@@ -118,7 +165,7 @@ export const useTouchGestures = (
       clearLongPressTimer();
 
       if (!touchStart.current || !touchCurrent.current) {
-        setIsSwipeActive(false);
+        resetTouchState(touchStart, touchCurrent, setIsSwipeActive);
         return;
       }
 
@@ -128,46 +175,23 @@ export const useTouchGestures = (
 
       // Check if gesture was too slow
       if (deltaTime > maxTime) {
-        setIsSwipeActive(false);
-        touchStart.current = null;
-        touchCurrent.current = null;
+        resetTouchState(touchStart, touchCurrent, setIsSwipeActive);
         return;
       }
 
       const deltaX = endPoint.x - startPoint.x;
       const deltaY = endPoint.y - startPoint.y;
-      const absDeltaX = Math.abs(deltaX);
-      const absDeltaY = Math.abs(deltaY);
 
       // Determine if it's a tap (small movement)
-      if (absDeltaX < threshold && absDeltaY < threshold) {
+      if (isTapGesture(deltaX, deltaY, threshold)) {
         handlers.onTap?.();
-        setIsSwipeActive(false);
-        touchStart.current = null;
-        touchCurrent.current = null;
+        resetTouchState(touchStart, touchCurrent, setIsSwipeActive);
         return;
       }
 
-      // Determine swipe direction
-      if (absDeltaX > absDeltaY && absDeltaX >= minDistance) {
-        // Horizontal swipe
-        if (deltaX > 0) {
-          handlers.onSwipeRight?.();
-        } else {
-          handlers.onSwipeLeft?.();
-        }
-      } else if (absDeltaY >= minDistance) {
-        // Vertical swipe
-        if (deltaY > 0) {
-          handlers.onSwipeDown?.();
-        } else {
-          handlers.onSwipeUp?.();
-        }
-      }
-
-      setIsSwipeActive(false);
-      touchStart.current = null;
-      touchCurrent.current = null;
+      // Handle swipe gestures
+      handleSwipeGesture(deltaX, deltaY, minDistance, handlers);
+      resetTouchState(touchStart, touchCurrent, setIsSwipeActive);
     },
     [handlers, maxTime, minDistance, threshold, clearLongPressTimer],
   );

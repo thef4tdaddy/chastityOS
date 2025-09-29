@@ -18,34 +18,15 @@ import type { SessionRestorationResult } from "../services/SessionPersistenceSer
 // import { usePauseState } from "../hooks/usePauseState";
 // import { SessionService } from "../services/api/session-service";
 
-const TrackerPage: React.FC = () => {
-  // Authentication state
-  const { data: user, isLoading: authLoading } = useAuth();
-
-  // Session persistence state
-  const {
-    isInitializing,
-    restorationResult,
-    error: persistenceError,
-    isSessionRestored,
-    backupSession,
-    startHeartbeat,
-    stopHeartbeat,
-  } = useSessionPersistence({
-    userId: user?.uid,
-    autoInitialize: true,
-  });
-
-  // Session state
-  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
-  const [showSessionRecovery, setShowSessionRecovery] = useState(false);
-  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
-  const [corruptedSession, setCorruptedSession] = useState<DBSession | null>(
-    null,
-  );
-
-  // Handle session restoration
-  const handleSessionRestored = (result: SessionRestorationResult) => {
+// Helper function to handle session restoration
+const createSessionRestorationHandler =
+  (
+    setCurrentSession: (session: DBSession | null) => void,
+    startHeartbeat: (sessionId: string) => void,
+    setCorruptedSession: (session: DBSession | null) => void,
+    setShowSessionRecovery: (show: boolean) => void,
+  ) =>
+  (result: SessionRestorationResult) => {
     logger.info("Session restoration completed", {
       wasRestored: result.wasRestored,
       sessionId: result.session?.id,
@@ -63,14 +44,16 @@ const TrackerPage: React.FC = () => {
     }
   };
 
-  // Handle session persistence initialization
-  const handleSessionInitialized = () => {
-    setIsSessionInitialized(true);
-    logger.debug("Session persistence initialized");
-  };
-
-  // Handle session recovery
-  const handleRecoverSession = async (session: DBSession) => {
+// Helper function to handle session recovery
+const createSessionRecoveryHandler =
+  (
+    setCurrentSession: (session: DBSession | null) => void,
+    backupSession: (session: DBSession) => Promise<void>,
+    startHeartbeat: (sessionId: string) => void,
+    setShowSessionRecovery: (show: boolean) => void,
+    setCorruptedSession: (session: DBSession | null) => void,
+  ) =>
+  async (session: DBSession) => {
     try {
       setCurrentSession(session);
       await backupSession(session);
@@ -83,13 +66,73 @@ const TrackerPage: React.FC = () => {
     }
   };
 
-  // Handle session discard
-  const handleDiscardSession = () => {
+// Helper function to handle session discard
+const createSessionDiscardHandler =
+  (
+    setCurrentSession: (session: DBSession | null) => void,
+    setShowSessionRecovery: (show: boolean) => void,
+    setCorruptedSession: (session: DBSession | null) => void,
+    stopHeartbeat: () => void,
+  ) =>
+  () => {
     setCurrentSession(null);
     setShowSessionRecovery(false);
     setCorruptedSession(null);
     stopHeartbeat();
     logger.info("Corrupted session discarded");
+  };
+
+const TrackerPage: React.FC = () => {
+  // Authentication state
+  const { data: user, isLoading: authLoading } = useAuth();
+
+  // Session persistence state
+  const {
+    isInitializing,
+    error: persistenceError,
+    backupSession,
+    startHeartbeat,
+    stopHeartbeat,
+  } = useSessionPersistence({
+    userId: user?.uid,
+    autoInitialize: true,
+  });
+
+  // Session state
+  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
+  const [showSessionRecovery, setShowSessionRecovery] = useState(false);
+  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
+  const [corruptedSession, setCorruptedSession] = useState<DBSession | null>(
+    null,
+  );
+
+  // Create handlers using helper functions
+  const handleSessionRestored = createSessionRestorationHandler(
+    setCurrentSession,
+    startHeartbeat,
+    setCorruptedSession,
+    setShowSessionRecovery,
+  );
+
+  const handleRecoverSession = createSessionRecoveryHandler(
+    setCurrentSession,
+    backupSession,
+    startHeartbeat,
+    setShowSessionRecovery,
+    setCorruptedSession,
+  );
+
+  const handleDiscardSession = createSessionDiscardHandler(
+    setCurrentSession,
+    setShowSessionRecovery,
+    setCorruptedSession,
+    stopHeartbeat,
+  );
+
+  // Handle session persistence initialization
+  const handleSessionInitialized = () => {
+    setIsSessionInitialized(true);
+    logger.debug("Session persistence initialized");
   };
 
   // Backup session state when it changes
@@ -151,9 +194,11 @@ const TrackerPage: React.FC = () => {
   const showReasonModal = false;
   const showPauseReasonModal = false;
   const _showEmergencyUnlockModal = false;
+  const useRealTimeTimer = false; // Feature flag for real-time timer
 
   // Mock session data for emergency unlock
   const sessionId = "mock-session-123";
+  const userId = user?.uid || "mock-user-123";
 
   const handleEmergencyUnlock = () => {
     // This would typically refresh the session state or redirect
@@ -202,7 +247,6 @@ const TrackerPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-<<<<<<< HEAD
       {/* Session Persistence Loading */}
       {(authLoading || isInitializing) && user?.uid && (
         <SessionLoader

@@ -7,6 +7,18 @@ import { db } from "../../storage/ChastityDB";
 import { DBLeaderboardEntry } from "../../../types";
 import { logger } from "../../../utils/logging";
 
+type LeaderboardCategory = DBLeaderboardEntry["category"];
+type LeaderboardPeriod = DBLeaderboardEntry["period"];
+
+interface UpdateLeaderboardEntryOptions {
+  userId: string;
+  category: LeaderboardCategory;
+  period: LeaderboardPeriod;
+  value: number;
+  displayName?: string;
+  displayNameType?: "real" | "username" | "anonymous";
+}
+
 export class AchievementLeaderboardService {
   private leaderboardEntriesTable = db.leaderboardEntries;
 
@@ -18,7 +30,7 @@ export class AchievementLeaderboardService {
     collection: string,
     operation: string,
     id: string,
-    _data: any,
+    _data: Record<string, unknown>,
   ): Promise<void> {
     // Simplified sync queue - would normally integrate with proper sync service
     logger.debug(`Queued sync: ${operation} ${collection}/${id}`);
@@ -28,8 +40,8 @@ export class AchievementLeaderboardService {
    * Get leaderboard entries for a category and period
    */
   async getLeaderboard(
-    category: string,
-    period: string,
+    category: LeaderboardCategory,
+    period: LeaderboardPeriod,
     limit: number = 50,
   ): Promise<DBLeaderboardEntry[]> {
     try {
@@ -94,19 +106,22 @@ export class AchievementLeaderboardService {
    * Update user's leaderboard entry
    */
   async updateLeaderboardEntry(
-    userId: string,
-    category: string,
-    period: string,
-    value: number,
-    displayName: string = "Anonymous",
-    displayNameType: "real" | "username" | "anonymous" = "anonymous",
+    options: UpdateLeaderboardEntryOptions,
   ): Promise<void> {
+    const {
+      userId,
+      category,
+      period,
+      value,
+      displayName = "Anonymous",
+      displayNameType = "anonymous",
+    } = options;
     try {
       const entryData: DBLeaderboardEntry = {
         id: this.generateId(),
         userId,
-        category: category as any,
-        period: period as any,
+        category,
+        period,
         value,
         rank: 0, // Will be calculated by ranking algorithm
         displayName,
@@ -143,7 +158,12 @@ export class AchievementLeaderboardService {
   /**
    * Get user's leaderboard privacy settings
    */
-  async getLeaderboardPrivacy(_userId: string): Promise<any> {
+  async getLeaderboardPrivacy(_userId: string): Promise<{
+    participateInGlobal: boolean;
+    participateInMonthly: boolean;
+    shareSessionTime: boolean;
+    showRealName: boolean;
+  }> {
     // This would typically be stored in user settings
     // For now, return default settings
     return {
@@ -162,7 +182,12 @@ export class AchievementLeaderboardService {
    */
   async updateLeaderboardPrivacy(
     _userId: string,
-    _settings: any,
+    _settings: {
+      participateInGlobal?: boolean;
+      participateInMonthly?: boolean;
+      shareSessionTime?: boolean;
+      showRealName?: boolean;
+    },
   ): Promise<void> {
     try {
       // This would typically update user settings

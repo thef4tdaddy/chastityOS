@@ -159,7 +159,12 @@ export const useSpecialChallenges = (userId: string | null) => {
       }
 
       try {
-        const challenge = challengeStatus[challengeType];
+        const challengeMap = {
+          locktober: challengeStatus.locktober,
+          no_nut_november: challengeStatus.noNutNovember,
+        };
+        const challenge =
+          challengeMap[challengeType as keyof typeof challengeMap];
         if (!challenge.goal) {
           throw new Error("Challenge goal not found");
         }
@@ -201,7 +206,12 @@ export const useSpecialChallenges = (userId: string | null) => {
         throw err;
       }
     },
-    [userId, challengeStatus, loadChallengeStatus],
+    [
+      userId,
+      challengeStatus,
+      loadChallengeStatus,
+      checkForChallengeAchievements,
+    ],
   );
 
   /**
@@ -223,7 +233,8 @@ export const useSpecialChallenges = (userId: string | null) => {
   // Load challenge status on mount and when userId changes
   useEffect(() => {
     loadChallengeStatus();
-  }, [loadChallengeStatus]);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [userId, checkChallengeAvailability, loadChallengeStatus]);
 
   // Refresh status every hour to check for date changes
   useEffect(() => {

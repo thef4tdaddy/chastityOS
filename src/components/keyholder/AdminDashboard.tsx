@@ -134,7 +134,11 @@ export const AdminDashboard: React.FC = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedTab(tab.id as any)}
+                onClick={() =>
+                  setSelectedTab(
+                    tab.id as "overview" | "sessions" | "tasks" | "settings",
+                  )
+                }
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedTab === tab.id
                     ? "bg-nightly-lavender-floral text-white"

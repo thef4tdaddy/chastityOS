@@ -24,13 +24,16 @@ export const useDexieSync = () => {
   /**
    * Get all Dexie services
    */
-  const services = useMemo(() => ({
-    sessions: sessionDBService,
-    events: eventDBService,
-    tasks: taskDBService,
-    goals: goalDBService,
-    settings: settingsDBService,
-  }), []);
+  const services = useMemo(
+    () => ({
+      sessions: sessionDBService,
+      events: eventDBService,
+      tasks: taskDBService,
+      goals: goalDBService,
+      settings: settingsDBService,
+    }),
+    [],
+  );
 
   /**
    * Trigger manual sync
@@ -53,12 +56,15 @@ export const useDexieSync = () => {
    * Create a record with automatic sync queuing
    */
   const createWithSync = useCallback(
-    async <T>(service: keyof typeof services, data: T): Promise<string> => {
+    async <T extends Record<string, unknown>>(
+      service: keyof typeof services,
+      data: T,
+    ): Promise<string> => {
       if (!user?.uid) {
         throw new Error("No authenticated user");
       }
 
-      const id = await services[service].create(data as any);
+      const id = await services[service].create(data);
 
       // Trigger background sync if online
       if (appState.isOnline) {
@@ -79,7 +85,7 @@ export const useDexieSync = () => {
    * Update a record with automatic sync queuing
    */
   const updateWithSync = useCallback(
-    async <T>(
+    async <T extends Record<string, unknown>>(
       service: keyof typeof services,
       id: string,
       updates: T,
@@ -88,7 +94,7 @@ export const useDexieSync = () => {
         throw new Error("No authenticated user");
       }
 
-      await services[service].update(id, updates as any);
+      await services[service].update(id, updates);
 
       // Trigger background sync if online
       if (appState.isOnline) {

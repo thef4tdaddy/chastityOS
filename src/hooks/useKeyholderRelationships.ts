@@ -400,6 +400,7 @@ export function useKeyholderRelationships(): KeyholderRelationshipState &
     } else {
       setState(initialState);
     }
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [user?.uid, loadRelationships, loadInviteCodes, loadRelationshipSummary]);
 
   return {

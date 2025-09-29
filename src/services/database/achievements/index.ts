@@ -49,23 +49,59 @@ export {
   achievementLeaderboardService,
 };
 
+interface AchievementDBServiceOptions {
+  crudService?: typeof achievementCRUDService;
+  badgeService?: typeof achievementBadgeService;
+  progressService?: typeof achievementProgressService;
+  notificationService?: typeof achievementNotificationService;
+  statsService?: typeof achievementStatsService;
+  leaderboardService?: typeof achievementLeaderboardService;
+}
+
 /**
  * Composite Achievement Service for backward compatibility
  * Maintains the original API while delegating to focused services
  */
 export class AchievementDBService {
-  constructor(
-    private crudService = achievementCRUDService,
-    private badgeService = achievementBadgeService,
-    private progressService = achievementProgressService,
-    private notificationService = achievementNotificationService,
-    private statsService = achievementStatsService,
-    private leaderboardService = achievementLeaderboardService,
-  ) {
+  private crudService: typeof achievementCRUDService;
+  private badgeService: typeof achievementBadgeService;
+  private progressService: typeof achievementProgressService;
+  private notificationService: typeof achievementNotificationService;
+  private statsService: typeof achievementStatsService;
+  private leaderboardService: typeof achievementLeaderboardService;
+
+  constructor(options: AchievementDBServiceOptions = {}) {
+    this.crudService = options.crudService ?? achievementCRUDService;
+    this.badgeService = options.badgeService ?? achievementBadgeService;
+    this.progressService =
+      options.progressService ?? achievementProgressService;
+    this.notificationService =
+      options.notificationService ?? achievementNotificationService;
+    this.statsService = options.statsService ?? achievementStatsService;
+    this.leaderboardService =
+      options.leaderboardService ?? achievementLeaderboardService;
     // Inject dependencies for services that need them
-    (this.progressService as any).badgeService = this.badgeService;
-    (this.statsService as any).crudService = this.crudService;
-    (this.statsService as any).badgeService = this.badgeService;
+    if ("badgeService" in this.progressService) {
+      (
+        this.progressService as typeof this.progressService & {
+          badgeService: AchievementBadgeService;
+        }
+      ).badgeService = this.badgeService;
+    }
+    if ("crudService" in this.statsService) {
+      (
+        this.statsService as typeof this.statsService & {
+          crudService: AchievementCRUDService;
+        }
+      ).crudService = this.crudService;
+    }
+    if ("badgeService" in this.statsService) {
+      (
+        this.statsService as typeof this.statsService & {
+          badgeService: AchievementBadgeService;
+        }
+      ).badgeService = this.badgeService;
+    }
   }
 
   // ==================== ACHIEVEMENT CRUD ====================

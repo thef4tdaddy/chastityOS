@@ -4,7 +4,6 @@
  */
 /// <reference types="react" />
 import React from "react";
-import type { JSX } from "react";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface TouchTargetProps {
@@ -15,7 +14,7 @@ interface TouchTargetProps {
   disabled?: boolean;
   hapticFeedback?: "light" | "medium" | "heavy" | "none";
   as?: keyof React.JSX.IntrinsicElements;
-  [key: string]: any; // For additional props
+  [key: string]: unknown; // For additional props
 }
 
 export const TouchTarget: React.FC<TouchTargetProps> = ({
@@ -25,7 +24,7 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
   className = "",
   disabled = false,
   hapticFeedback = "light",
-  as: Component = "button" as any,
+  as: Component = "button" as keyof React.JSX.IntrinsicElements,
   ...props
 }) => {
   const { light, medium, heavy } = useHapticFeedback();
@@ -84,7 +83,7 @@ export const TouchTarget: React.FC<TouchTargetProps> = ({
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       disabled={disabled}
-      {...(props as any)}
+      {...props}
     >
       {children}
     </Component>

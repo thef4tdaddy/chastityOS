@@ -77,6 +77,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     const interval = setInterval(performSync, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [userId, sync]);
 
   // Show conflict modal when conflicts are detected
