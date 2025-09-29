@@ -143,7 +143,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
 
       return () => clearTimeout(saveTimer);
     }
-  }, [securityState, hasUnsavedChanges, autoSave, loading, userId]);
+  }, [hasUnsavedChanges, autoSave, loading, userId]);
 
   // Update session settings
   const updateSessionSettings = useCallback(
@@ -409,7 +409,7 @@ async function saveSecuritySettings(
   settings: SecuritySettingsState,
 ): Promise<void> {
   // In real implementation, save to backend/Firebase
-  console.log("Saving security settings for user:", userId, settings);
+  // In real implementation, save to backend/Firebase
 }
 
 function calculateSecurityScore(

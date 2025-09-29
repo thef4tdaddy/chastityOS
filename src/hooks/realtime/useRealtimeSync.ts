@@ -79,7 +79,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       connectionStartTimeRef.current = new Date();
 
       wsRef.current.onopen = () => {
-        console.log("WebSocket connected");
+        // WebSocket connected
         reconnectAttemptsRef.current = 0;
 
         setSyncState((prev) => ({
@@ -105,12 +105,12 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
           const message = JSON.parse(event.data);
           handleMessage(message);
         } catch (error) {
-          console.error("Failed to parse WebSocket message:", error);
+          // Failed to parse WebSocket message
         }
       };
 
       wsRef.current.onclose = (event) => {
-        console.log("WebSocket disconnected:", event.code, event.reason);
+        // WebSocket disconnected
 
         setSyncState((prev) => ({
           ...prev,
@@ -129,7 +129,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       };
 
       wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        // WebSocket error
 
         setSyncState((prev) => ({
           ...prev,
@@ -141,7 +141,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
         }));
       };
     } catch (error) {
-      console.error("Failed to create WebSocket connection:", error);
+      // Failed to create WebSocket connection
       setSyncState((prev) => ({
         ...prev,
         connectionStatus: ConnectionStatus.ERROR,
@@ -167,7 +167,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   // Attempt reconnection
   const attemptReconnect = useCallback(() => {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-      console.log("Max reconnection attempts reached");
+      // Max reconnection attempts reached
       return;
     }
 
@@ -179,7 +179,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
     }));
 
     reconnectTimeoutRef.current = setTimeout(() => {
-      console.log(`Reconnection attempt ${reconnectAttemptsRef.current}`);
+      // Reconnection attempt
       connect();
     }, reconnectInterval);
   }, [connect, maxReconnectAttempts, reconnectInterval]);
@@ -247,7 +247,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
         // Heartbeat acknowledged
         break;
       default:
-        console.log("Unknown message type:", message.type);
+      // Unknown message type
     }
   }, []);
 
@@ -293,7 +293,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
         try {
           subscription.callback(update);
         } catch (error) {
-          console.error("Error in subscription callback:", error);
+          // Error in subscription callback
         }
       }
     });

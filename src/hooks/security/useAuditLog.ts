@@ -26,6 +26,18 @@ import {
   AuditExportOptions,
 } from "../../types/security";
 import { PermissionContext } from "../../types/security";
+import {
+  getCategoryForAction,
+  getClientIP,
+  saveAuditEntry,
+  fetchRecentAuditEntries,
+  savePrivacySettings,
+  applyAuditFilters,
+  convertToCSV,
+  generatePDF,
+  calculateSecurityScore,
+  generateSecurityRecommendations,
+} from "./auditHelpers";
 
 interface UseAuditLogOptions {
   userId: string;
@@ -127,7 +139,7 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
           recentEntries: [entry, ...prev.recentEntries.slice(0, 99)], // Keep last 100
         }));
       } catch (err) {
-        console.error("Failed to log audit action:", err);
+        // Failed to log audit action
       }
     },
     [userId, relationshipId, auditState.privacySettings],
@@ -444,7 +456,7 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
       }
 
       // In real implementation, this would share selected entries with keyholder
-      console.log("Sharing audit entries with keyholder:", entries);
+      // In real implementation, this would share selected entries with keyholder
     },
     [relationshipId],
   );
@@ -573,120 +585,3 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     ...computedValues,
   };
 };
-
-// Helper functions
-function getCategoryForAction(action: AuditAction): AuditCategory {
-  const categoryMap: Record<AuditAction, AuditCategory> = {
-    [AuditAction.LOGIN]: AuditCategory.AUTHENTICATION,
-    [AuditAction.LOGOUT]: AuditCategory.AUTHENTICATION,
-    [AuditAction.SESSION_START]: AuditCategory.SESSION,
-    [AuditAction.SESSION_END]: AuditCategory.SESSION,
-    [AuditAction.SESSION_PAUSE]: AuditCategory.SESSION,
-    [AuditAction.SESSION_RESUME]: AuditCategory.SESSION,
-    [AuditAction.TASK_CREATE]: AuditCategory.TASKS,
-    [AuditAction.TASK_UPDATE]: AuditCategory.TASKS,
-    [AuditAction.TASK_DELETE]: AuditCategory.TASKS,
-    [AuditAction.TASK_SUBMIT]: AuditCategory.TASKS,
-    [AuditAction.TASK_APPROVE]: AuditCategory.TASKS,
-    [AuditAction.PERMISSION_CHECK]: AuditCategory.PERMISSIONS,
-    [AuditAction.PERMISSION_GRANT]: AuditCategory.PERMISSIONS,
-    [AuditAction.PERMISSION_REVOKE]: AuditCategory.PERMISSIONS,
-    [AuditAction.DATA_EXPORT]: AuditCategory.DATA,
-    [AuditAction.DATA_IMPORT]: AuditCategory.DATA,
-    [AuditAction.SETTINGS_UPDATE]: AuditCategory.SYSTEM,
-    [AuditAction.RELATIONSHIP_REQUEST]: AuditCategory.RELATIONSHIPS,
-    [AuditAction.RELATIONSHIP_ACCEPT]: AuditCategory.RELATIONSHIPS,
-    [AuditAction.RELATIONSHIP_END]: AuditCategory.RELATIONSHIPS,
-  };
-
-  return categoryMap[action] || AuditCategory.SYSTEM;
-}
-
-async function getClientIP(): Promise<string> {
-  // In real implementation, get client IP from request or service
-  return "127.0.0.1";
-}
-
-async function saveAuditEntry(entry: AuditEntry): Promise<void> {
-  // In real implementation, save to backend/Firebase
-  console.log("Saving audit entry:", entry);
-}
-
-async function fetchRecentAuditEntries(
-  userId: string,
-  relationshipId?: string,
-): Promise<AuditEntry[]> {
-  // In real implementation, fetch from backend
-  return [];
-}
-
-async function savePrivacySettings(
-  userId: string,
-  settings: Partial<AuditPrivacySettings>,
-): Promise<void> {
-  // In real implementation, save to backend
-  console.log("Saving privacy settings:", settings);
-}
-
-function applyAuditFilters(
-  entries: AuditEntry[],
-  filters: AuditFilter,
-): AuditEntry[] {
-  // Implementation would apply all filters
-  return entries;
-}
-
-function convertToCSV(entries: AuditEntry[]): string {
-  const headers = [
-    "Timestamp",
-    "User ID",
-    "Action",
-    "Category",
-    "Description",
-    "Outcome",
-  ];
-  const rows = entries.map((entry) => [
-    entry.timestamp.toISOString(),
-    entry.userId,
-    entry.action,
-    entry.category,
-    entry.details.description,
-    entry.outcome,
-  ]);
-
-  return [headers, ...rows].map((row) => row.join(",")).join("\n");
-}
-
-async function generatePDF(entries: AuditEntry[]): Promise<Uint8Array> {
-  // In real implementation, generate PDF using library like jsPDF
-  return new Uint8Array();
-}
-
-function calculateSecurityScore(entries: AuditEntry[]): number {
-  // Simplified security score calculation
-  const securityEvents = entries.filter(
-    (e) => e.category === AuditCategory.SECURITY,
-  );
-  const failedLogins = entries.filter(
-    (e) => e.outcome === AuditOutcome.FAILURE,
-  );
-
-  let score = 100;
-  score -= securityEvents.length * 5;
-  score -= failedLogins.length * 10;
-
-  return Math.max(0, Math.min(100, score));
-}
-
-function generateSecurityRecommendations(entries: AuditEntry[]): string[] {
-  const recommendations: string[] = [];
-
-  const failedLogins = entries.filter(
-    (e) => e.outcome === AuditOutcome.FAILURE,
-  );
-  if (failedLogins.length > 5) {
-    recommendations.push("Consider enabling two-factor authentication");
-  }
-
-  return recommendations;
-}

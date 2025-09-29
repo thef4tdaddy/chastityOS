@@ -300,18 +300,14 @@ export const usePresence = (options: UsePresenceOptions) => {
         clearTimeout(activityTimeoutRef.current);
       }
     };
-  }, [
-    autoTrackActivity,
-    presenceState.ownPresence.status,
-    activityTimeout,
-    setAway,
-  ]);
+  }, [autoTrackActivity, presenceState.ownPresence.status, activityTimeout]);
 
   // Handle presence updates
   useEffect(() => {
     const sendPeriodicUpdate = async () => {
       if (presenceState.ownPresence.status !== PresenceStatus.OFFLINE) {
-        await sendPresenceUpdate(presenceState.ownPresence);
+        // In real implementation, send to backend/WebSocket
+        // await sendPresenceUpdate(presenceState.ownPresence);
       }
     };
 
@@ -354,7 +350,7 @@ export const usePresence = (options: UsePresenceOptions) => {
       window.removeEventListener("offline", handleOffline);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [setOnline, setOffline, setAway]);
+  }, []);
 
   // Initialize presence as online
   useEffect(() => {
@@ -364,7 +360,7 @@ export const usePresence = (options: UsePresenceOptions) => {
     return () => {
       setOffline("Disconnected");
     };
-  }, [setOnline, setOffline]);
+  }, []);
 
   // Computed values
   const computedValues = useMemo(() => {
@@ -442,7 +438,6 @@ function getDeviceType(): "desktop" | "mobile" | "tablet" {
 
 async function sendPresenceUpdate(presence: UserPresence): Promise<void> {
   // In real implementation, send to backend/WebSocket
-  console.log("Sending presence update:", presence);
 
   // Simulate API call
   try {
@@ -452,13 +447,12 @@ async function sendPresenceUpdate(presence: UserPresence): Promise<void> {
     //   body: JSON.stringify(presence),
     // });
   } catch (error) {
-    console.error("Failed to send presence update:", error);
+    // Failed to send presence update
   }
 }
 
 async function fetchUserPresences(userIds: string[]): Promise<UserPresence[]> {
   // In real implementation, fetch from backend
-  console.log("Fetching presence for users:", userIds);
 
   // Simulate API response
   return userIds.map((userId) => ({

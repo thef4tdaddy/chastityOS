@@ -428,7 +428,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
           ),
         }));
       } catch (error) {
-        console.error("Failed to sync timer:", error);
+        // Failed to sync timer
       }
     },
     [accuracyThreshold],
@@ -441,7 +441,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         try {
           subscription.callback(timer);
         } catch (error) {
-          console.error("Error in timer subscription callback:", error);
+          // Error in subscription callback
         }
       }
     });
@@ -456,14 +456,40 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [updateTimerProgress, syncInterval]);
+  }, [syncInterval]);
 
   // Start sync interval
   useEffect(() => {
-    const syncActiveTimers = () => {
-      timerState.activeTimers
-        .filter((t) => t.status === TimerStatus.RUNNING)
-        .forEach((timer) => syncTimer(timer.id));
+    const syncActiveTimers = async () => {
+      const runningTimers = timerState.activeTimers.filter(
+        (t) => t.status === TimerStatus.RUNNING,
+      );
+
+      for (const timer of runningTimers) {
+        try {
+          const serverTime = await getServerTime();
+          const now = new Date();
+          const clientOffset = now.getTime() - serverTime.getTime();
+
+          setTimerState((prev) => ({
+            ...prev,
+            timerSyncs: prev.timerSyncs.map((sync) =>
+              sync.timerId === timer.id
+                ? {
+                    ...sync,
+                    lastSync: now,
+                    serverTime,
+                    clientOffset,
+                    syncAccuracy:
+                      Math.abs(clientOffset) < accuracyThreshold ? 1.0 : 0.5,
+                  }
+                : sync,
+            ),
+          }));
+        } catch (error) {
+          // Failed to sync timer
+        }
+      }
     };
 
     syncIntervalRef.current = setInterval(syncActiveTimers, syncInterval * 30); // Sync every 30 seconds
@@ -473,7 +499,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(syncIntervalRef.current);
       }
     };
-  }, [timerState.activeTimers, syncTimer, syncInterval]);
+  }, [timerState.activeTimers, syncInterval, accuracyThreshold]);
 
   // Computed values
   const computedValues = useMemo(() => {
@@ -541,14 +567,14 @@ async function getServerTime(): Promise<Date> {
     // return new Date(timestamp);
     return new Date(); // Fallback to client time
   } catch (error) {
-    console.error("Failed to get server time:", error);
+    // Fallback to client time
     return new Date();
   }
 }
 
 async function saveTimer(timer: LiveTimer): Promise<void> {
   // In real implementation, save to backend
-  console.log("Saving timer:", timer);
+  // In real implementation, save to backend
 }
 
 async function logTimerEvent(
@@ -566,5 +592,5 @@ async function logTimerEvent(
   };
 
   // In real implementation, save to backend
-  console.log("Logging timer event:", event);
+  // In real implementation, save to backend
 }

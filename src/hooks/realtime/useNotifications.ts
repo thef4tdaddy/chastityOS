@@ -155,7 +155,7 @@ export const useNotifications = (options: UseNotificationsOptions) => {
       const requestPermission = async () => {
         if (Notification.permission === "default") {
           const permission = await Notification.requestPermission();
-          console.log("Push notification permission:", permission);
+          // Permission granted or denied
         }
       };
 
@@ -523,7 +523,7 @@ async function deliverNotification(
         return deliverSMSNotification(notification);
 
       default:
-        console.warn("Unknown notification channel:", channel);
+      // Unknown notification channel
     }
   });
 
@@ -548,14 +548,14 @@ async function deliverEmailNotification(
   notification: Notification,
 ): Promise<void> {
   // In real implementation, send email via backend API
-  console.log("Would send email notification:", notification);
+  // In real implementation, send email via backend API
 }
 
 async function deliverSMSNotification(
   notification: Notification,
 ): Promise<void> {
   // In real implementation, send SMS via backend API
-  console.log("Would send SMS notification:", notification);
+  // In real implementation, send SMS via backend API
 }
 
 async function fetchNotificationPreferences(
@@ -575,7 +575,7 @@ async function fetchRecentNotifications(
 
 async function saveNotification(notification: Notification): Promise<void> {
   // In real implementation, save to backend
-  console.log("Saving notification:", notification);
+  // In real implementation, save to backend
 }
 
 async function updateNotificationStatus(
@@ -583,7 +583,7 @@ async function updateNotificationStatus(
   status: Partial<Pick<Notification, "isRead">>,
 ): Promise<void> {
   // In real implementation, update in backend
-  console.log("Updating notification status:", notificationId, status);
+  // In real implementation, update in backend
 }
 
 async function updateMultipleNotificationStatus(
@@ -591,16 +591,12 @@ async function updateMultipleNotificationStatus(
   status: Partial<Pick<Notification, "isRead">>,
 ): Promise<void> {
   // In real implementation, bulk update in backend
-  console.log(
-    "Updating multiple notification status:",
-    notificationIds,
-    status,
-  );
+  // In real implementation, bulk update in backend
 }
 
 async function deleteNotification(notificationId: string): Promise<void> {
   // In real implementation, delete from backend
-  console.log("Deleting notification:", notificationId);
+  // In real implementation, delete from backend
 }
 
 async function saveNotificationPreferences(
@@ -608,5 +604,5 @@ async function saveNotificationPreferences(
   preferences: NotificationPreferences,
 ): Promise<void> {
   // In real implementation, save to backend
-  console.log("Saving notification preferences:", userId, preferences);
+  // In real implementation, save to backend
 }
