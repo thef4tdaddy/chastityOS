@@ -13,6 +13,120 @@ import {
 import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking";
 import { AdminRelationship } from "../../types/account-linking";
 
+// Loading Component
+const AdminLoadingDisplay: React.FC = () => (
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+    <div className="flex items-center justify-center py-8">
+      <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine" />
+      <span className="ml-3 text-nightly-celadon">
+        Loading admin dashboard...
+      </span>
+    </div>
+  </div>
+);
+
+// Wearer Selection Component
+const WearerSelection: React.FC<{
+  keyholderRelationships: any[];
+  selectedWearerId: string | null;
+  onSetSelectedWearer: (id: string | null) => void;
+}> = ({ keyholderRelationships, selectedWearerId, onSetSelectedWearer }) => {
+  if (keyholderRelationships.length <= 1) return null;
+
+  return (
+    <div className="mb-6">
+      <label className="block text-sm font-medium text-nightly-honeydew mb-2">
+        Select Wearer to Manage:
+      </label>
+      <select
+        value={selectedWearerId || ""}
+        onChange={(e) => onSetSelectedWearer(e.target.value || null)}
+        className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full max-w-md"
+      >
+        {keyholderRelationships.map((relationship) => (
+          <option key={relationship.id} value={relationship.wearerId}>
+            Wearer: {relationship.wearerId}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+// Admin Session Status Component
+const AdminSessionStatus: React.FC<{
+  selectedRelationship: AdminRelationship;
+  isAdminSessionActive: boolean;
+  onStartAdminSession: () => void;
+}> = ({ selectedRelationship, isAdminSessionActive, onStartAdminSession }) => (
+  <div className="bg-white/5 rounded-lg p-4 mb-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="font-medium text-nightly-honeydew mb-1">
+          Admin Session
+        </h3>
+        <p className="text-sm text-nightly-celadon">
+          {isAdminSessionActive
+            ? `Active session for ${selectedRelationship.wearerId}`
+            : "No active admin session"}
+        </p>
+      </div>
+      <div>
+        {!isAdminSessionActive ? (
+          <button
+            onClick={onStartAdminSession}
+            className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+          >
+            <FaShieldAlt />
+            Start Admin Session
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 text-green-400">
+            <FaShieldAlt />
+            <span className="text-sm">Session Active</span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// Navigation Tabs Component  
+const NavigationTabs: React.FC<{
+  selectedTab: string;
+  onSetSelectedTab: (tab: "overview" | "sessions" | "tasks" | "settings") => void;
+}> = ({ selectedTab, onSetSelectedTab }) => {
+  const tabs = [
+    { id: "overview", label: "Overview", icon: FaEye },
+    { id: "sessions", label: "Sessions", icon: FaLock },
+    { id: "tasks", label: "Tasks", icon: FaTasks },
+    { id: "settings", label: "Settings", icon: FaCog },
+  ];
+
+  return (
+    <div className="flex space-x-1 bg-black/20 rounded-lg p-1 mb-6">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() =>
+            onSetSelectedTab(
+              tab.id as "overview" | "sessions" | "tasks" | "settings",
+            )
+          }
+          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            selectedTab === tab.id
+              ? "bg-nightly-lavender-floral text-white"
+              : "text-nightly-celadon hover:text-nightly-honeydew hover:bg-white/5"
+          }`}
+        >
+          <tab.icon />
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 export const AdminDashboard: React.FC = () => {
   const {
     relationships,
@@ -46,16 +160,7 @@ export const AdminDashboard: React.FC = () => {
   };
 
   if (isLoadingRelationships) {
-    return (
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-        <div className="flex items-center justify-center py-8">
-          <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine" />
-          <span className="ml-3 text-nightly-celadon">
-            Loading admin dashboard...
-          </span>
-        </div>
-      </div>
-    );
+    return <AdminLoadingDisplay />;
   }
 
   return (
@@ -71,85 +176,26 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Wearer Selection */}
-      {keyholderRelationships.length > 1 && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-nightly-honeydew mb-2">
-            Select Wearer to Manage:
-          </label>
-          <select
-            value={selectedWearerId || ""}
-            onChange={(e) => setSelectedWearer(e.target.value || null)}
-            className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full max-w-md"
-          >
-            {keyholderRelationships.map((relationship) => (
-              <option key={relationship.id} value={relationship.wearerId}>
-                Wearer: {relationship.wearerId}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <WearerSelection
+        keyholderRelationships={keyholderRelationships}
+        selectedWearerId={selectedWearerId}
+        onSetSelectedWearer={setSelectedWearer}
+      />
 
       {selectedRelationship && (
         <>
           {/* Admin Session Status */}
-          <div className="bg-white/5 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-nightly-honeydew mb-1">
-                  Admin Session
-                </h3>
-                <p className="text-sm text-nightly-celadon">
-                  {isAdminSessionActive
-                    ? `Active session for ${selectedRelationship.wearerId}`
-                    : "No active admin session"}
-                </p>
-              </div>
-              <div>
-                {!isAdminSessionActive ? (
-                  <button
-                    onClick={handleStartAdminSession}
-                    className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
-                  >
-                    <FaShieldAlt />
-                    Start Admin Session
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2 text-green-400">
-                    <FaShieldAlt />
-                    <span className="text-sm">Session Active</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <AdminSessionStatus
+            selectedRelationship={selectedRelationship}
+            isAdminSessionActive={isAdminSessionActive}
+            onStartAdminSession={handleStartAdminSession}
+          />
 
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-black/20 rounded-lg p-1 mb-6">
-            {[
-              { id: "overview", label: "Overview", icon: FaEye },
-              { id: "sessions", label: "Sessions", icon: FaLock },
-              { id: "tasks", label: "Tasks", icon: FaTasks },
-              { id: "settings", label: "Settings", icon: FaCog },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() =>
-                  setSelectedTab(
-                    tab.id as "overview" | "sessions" | "tasks" | "settings",
-                  )
-                }
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTab === tab.id
-                    ? "bg-nightly-lavender-floral text-white"
-                    : "text-nightly-celadon hover:text-nightly-honeydew hover:bg-white/5"
-                }`}
-              >
-                <tab.icon />
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <NavigationTabs
+            selectedTab={selectedTab}
+            onSetSelectedTab={setSelectedTab}
+          />
 
           {/* Tab Content */}
           <div className="space-y-6">
@@ -184,7 +230,7 @@ export const AdminDashboard: React.FC = () => {
   );
 };
 
-// Sub-components for each tab
+// Sub-components for each tab (moved to separate functions to reduce main component size)
 const AdminOverview: React.FC<{ relationship: AdminRelationship }> = ({
   relationship,
 }) => (
