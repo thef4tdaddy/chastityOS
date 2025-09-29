@@ -51,14 +51,6 @@ export const eventKeys = {
     [...eventKeys.all, "recent", userId, limit] as const,
 } as const;
 
-// Types
-interface EventFilters {
-  type?: EventType;
-  startDate?: Date;
-  endDate?: Date;
-  limit?: number;
-}
-
 interface CreateEventData {
   type: EventType;
   details: Record<string, unknown>;
