@@ -138,7 +138,12 @@ const detectSystemPreferences = () => {
 const fontSizeOrder: FontSize[] = ["sm", "md", "lg", "xl"];
 
 // Helper functions for different action categories
-const createThemeActions = (set: any, get: () => ThemeStore) => ({
+const createThemeActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   setMode: (mode: ThemeMode) => {
     set({ mode });
     logger.debug("Theme mode set", { mode });
@@ -173,7 +178,12 @@ const createThemeActions = (set: any, get: () => ThemeStore) => ({
   },
 });
 
-const createTypographyActions = (set: any, get: () => ThemeStore) => ({
+const createTypographyActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   setFontSize: (size: FontSize) => {
     set({ fontSize: size });
     logger.debug("Font size set", { size });
@@ -209,7 +219,12 @@ const createTypographyActions = (set: any, get: () => ThemeStore) => ({
   },
 });
 
-const createAnimationActions = (set: any, get: () => ThemeStore) => ({
+const createAnimationActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   setAnimationSpeed: (speed: AnimationSpeed) => {
     set({ animationSpeed: speed });
     logger.debug("Animation speed set", { speed });
@@ -226,7 +241,12 @@ const createAnimationActions = (set: any, get: () => ThemeStore) => ({
   },
 });
 
-const createLayoutActions = (set: any, get: () => ThemeStore) => ({
+const createLayoutActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   setCompactMode: (compact: boolean) => {
     set({ compactMode: compact });
     logger.debug("Compact mode set", { compact });
@@ -258,7 +278,12 @@ const createLayoutActions = (set: any, get: () => ThemeStore) => ({
   },
 });
 
-const createAccessibilityActions = (set: any, get: () => ThemeStore) => ({
+const createAccessibilityActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   setHighContrast: (enabled: boolean) => {
     set({ highContrast: enabled });
     logger.debug("High contrast set", { enabled });
@@ -285,7 +310,12 @@ const createAccessibilityActions = (set: any, get: () => ThemeStore) => ({
   },
 });
 
-const createUIPreferenceActions = (set: any, get: () => ThemeStore) => ({
+const createUIPreferenceActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   setShowTooltips: (show: boolean) => {
     set({ showTooltips: show });
     logger.debug("Show tooltips set", { show });
@@ -317,7 +347,12 @@ const createUIPreferenceActions = (set: any, get: () => ThemeStore) => ({
   },
 });
 
-const createSystemActions = (set: any, get: () => ThemeStore) => ({
+const createSystemActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+  get: () => ThemeStore,
+) => ({
   updateSystemPreferences: () => {
     const { dark, reducedMotion } = detectSystemPreferences();
 
@@ -359,7 +394,11 @@ const createComputedGetters = (get: () => ThemeStore) => ({
   },
 });
 
-const createPresetActions = (set: any) => ({
+const createPresetActions = (
+  set: (
+    state: Partial<ThemeStore> | ((state: ThemeStore) => ThemeStore),
+  ) => void,
+) => ({
   applyPreset: (
     preset: "default" | "minimal" | "accessible" | "performance",
   ) => {
