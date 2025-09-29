@@ -6,7 +6,7 @@ import { expect, afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 // Extend Vitest's expect with testing library matchers
-// @ts-ignore - vitest globals
+// @ts-expect-error - vitest globals
 global.expect = expect;
 
 // Cleanup after each test case
