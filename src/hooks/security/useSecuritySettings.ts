@@ -92,25 +92,8 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
 
         // In real implementation, fetch from backend/Firebase
         const settings = await fetchSecuritySettings(userId);
-
-        setSecurityState({
-          sessionSettings: {
-            ...defaultSessionSettings,
-            ...settings.sessionSettings,
-          },
-          accessSettings: {
-            ...defaultAccessSettings,
-            ...settings.accessSettings,
-          },
-          monitoringSettings: {
-            ...defaultMonitoringSettings,
-            ...settings.monitoringSettings,
-          },
-          privacySettings: {
-            ...defaultPrivacySettings,
-            ...settings.privacySettings,
-          },
-        });
+        const mergedSettings = mergeWithDefaultSettings(settings);
+        setSecurityState(mergedSettings);
       } catch (err) {
         setError(
           err instanceof Error
@@ -130,20 +113,13 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
   // Auto-save when settings change
   useEffect(() => {
     if (autoSave && hasUnsavedChanges && !loading) {
-      const saveTimer = setTimeout(async () => {
-        try {
-          await saveSecuritySettings(userId, securityState);
-          setHasUnsavedChanges(false);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to save settings",
-          );
-        }
+      const saveTimer = setTimeout(() => {
+        handleAutoSave(userId, securityState, setHasUnsavedChanges, setError);
       }, 2000); // 2 second debounce
 
       return () => clearTimeout(saveTimer);
     }
-  }, [hasUnsavedChanges, autoSave, loading, userId]);
+  }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
 
   // Update session settings
   const updateSessionSettings = useCallback(
@@ -598,4 +574,44 @@ function calculateSecurityLevel(
   if (score >= 6) return "high";
   if (score >= 3) return "medium";
   return "low";
+}
+
+// Settings management helper functions
+function mergeWithDefaultSettings(
+  settings: Partial<SecuritySettingsState>
+): SecuritySettingsState {
+  return {
+    sessionSettings: {
+      ...defaultSessionSettings,
+      ...settings.sessionSettings,
+    },
+    accessSettings: {
+      ...defaultAccessSettings,
+      ...settings.accessSettings,
+    },
+    monitoringSettings: {
+      ...defaultMonitoringSettings,
+      ...settings.monitoringSettings,
+    },
+    privacySettings: {
+      ...defaultPrivacySettings,
+      ...settings.privacySettings,
+    },
+  };
+}
+
+async function handleAutoSave(
+  userId: string,
+  securityState: SecuritySettingsState,
+  setHasUnsavedChanges: React.Dispatch<React.SetStateAction<boolean>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>
+): Promise<void> {
+  try {
+    await saveSecuritySettings(userId, securityState);
+    setHasUnsavedChanges(false);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to save settings",
+    );
+  }
 }
