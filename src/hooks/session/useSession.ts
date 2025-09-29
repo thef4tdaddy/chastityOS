@@ -264,7 +264,14 @@ export const useSession = (userId: string, relationshipId?: string) => {
     };
 
     initializeSession();
-  }, [userId, relationshipId]);
+  }, [
+    userId,
+    relationshipId,
+    loadCurrentSession,
+    loadHistory,
+    loadAnalytics,
+    loadGoals,
+  ]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 

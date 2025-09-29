@@ -143,7 +143,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
 
       return () => clearTimeout(saveTimer);
     }
-  }, [hasUnsavedChanges, autoSave, loading, userId]);
+  }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
 
   // Update session settings
   const updateSessionSettings = useCallback(

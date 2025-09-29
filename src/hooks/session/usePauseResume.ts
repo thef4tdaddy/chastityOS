@@ -235,7 +235,14 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     };
 
     initializePauseSystem();
-  }, [sessionId, relationshipId]);
+  }, [
+    sessionId,
+    relationshipId,
+    loadPauseState,
+    loadPauseHistory,
+    loadPauseAnalytics,
+    loadCooldownState,
+  ]);
 
   // ==================== COOLDOWN COUNTDOWN ====================
 

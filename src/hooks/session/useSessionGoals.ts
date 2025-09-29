@@ -293,7 +293,16 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     };
 
     initializeGoals();
-  }, [userId, relationshipId]);
+  }, [
+    userId,
+    relationshipId,
+    loadActiveGoals,
+    loadGoalHistory,
+    loadGoalTemplates,
+    loadKeyholderGoals,
+    loadAchievements,
+    loadProgress,
+  ]);
 
   // ==================== PROGRESS TRACKING ====================
 
@@ -303,7 +312,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     }, 30000); // Update every 30 seconds
 
     return () => clearInterval(updateProgressInterval);
-  }, [activeGoals]);
+  }, [activeGoals, updateActiveGoalProgress]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 

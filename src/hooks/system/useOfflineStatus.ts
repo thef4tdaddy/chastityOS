@@ -207,7 +207,7 @@ export const useOfflineStatus = () => {
     if (syncQueue.length > 0) {
       processSyncQueue();
     }
-  }, [syncQueue, addNetworkEvent, queryClient]);
+  }, [syncQueue, addNetworkEvent, queryClient, processSyncQueue]);
 
   // Handle offline event
   const handleOffline = useCallback(() => {

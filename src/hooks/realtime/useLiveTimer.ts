@@ -149,7 +149,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       // Notify subscribers
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Pause a timer
@@ -188,7 +188,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Resume a timer
@@ -228,7 +228,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Stop a timer
@@ -267,7 +267,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Extend a timer
@@ -303,7 +303,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Subscribe to timer updates
@@ -402,7 +402,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         return updatedTimer;
       }),
     }));
-  }, []);
+  }, [notifySubscribers]);
 
   // Sync timer with server
   const syncTimer = useCallback(
@@ -456,7 +456,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [syncInterval]);
+  }, [syncInterval, updateTimerProgress]);
 
   // Start sync interval
   useEffect(() => {
