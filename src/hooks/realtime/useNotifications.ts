@@ -19,6 +19,17 @@ import {
   NotificationHistoryEntry,
   NotificationDeliveryStatus,
 } from "../../types/realtime";
+import {
+  isInQuietHours,
+  deliverNotification,
+  fetchNotificationPreferences,
+  fetchRecentNotifications,
+  saveNotification,
+  updateNotificationStatus,
+  updateMultipleNotificationStatus,
+  deleteNotification,
+  saveNotificationPreferences,
+} from "./notificationHelpers";
 
 interface UseNotificationsOptions {
   userId: string;
@@ -483,126 +494,3 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     ...computedValues,
   };
 };
-
-// Helper functions
-function isInQuietHours(quietHours: QuietHours): boolean {
-  if (!quietHours.enabled) return false;
-
-  const now = new Date();
-  const currentDay = now.getDay();
-  const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-
-  // Check if current day is in quiet hours days
-  if (!quietHours.days.includes(currentDay)) {
-    return false;
-  }
-
-  // Simple time comparison (doesn't handle cross-midnight ranges properly)
-  return (
-    currentTime >= quietHours.startTime && currentTime <= quietHours.endTime
-  );
-}
-
-async function deliverNotification(
-  notification: Notification,
-  channels: NotificationChannelType[],
-): Promise<void> {
-  const deliveryPromises = channels.map(async (channel) => {
-    switch (channel) {
-      case NotificationChannelType.IN_APP:
-        // Already handled by adding to state
-        return;
-
-      case NotificationChannelType.PUSH:
-        return deliverPushNotification(notification);
-
-      case NotificationChannelType.EMAIL:
-        return deliverEmailNotification(notification);
-
-      case NotificationChannelType.SMS:
-        return deliverSMSNotification(notification);
-
-      default:
-      // Unknown notification channel
-    }
-  });
-
-  await Promise.allSettled(deliveryPromises);
-}
-
-async function deliverPushNotification(
-  notification: Notification,
-): Promise<void> {
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification(notification.title, {
-      body: notification.message,
-      icon: "/icon-192x192.png",
-      badge: "/badge-72x72.png",
-      tag: notification.id,
-      requireInteraction: notification.priority === NotificationPriority.URGENT,
-    });
-  }
-}
-
-async function deliverEmailNotification(
-  notification: Notification,
-): Promise<void> {
-  // In real implementation, send email via backend API
-  // In real implementation, send email via backend API
-}
-
-async function deliverSMSNotification(
-  notification: Notification,
-): Promise<void> {
-  // In real implementation, send SMS via backend API
-  // In real implementation, send SMS via backend API
-}
-
-async function fetchNotificationPreferences(
-  userId: string,
-): Promise<Partial<NotificationPreferences>> {
-  // In real implementation, fetch from backend
-  return {};
-}
-
-async function fetchRecentNotifications(
-  userId: string,
-  relationshipId?: string,
-): Promise<Notification[]> {
-  // In real implementation, fetch from backend
-  return [];
-}
-
-async function saveNotification(notification: Notification): Promise<void> {
-  // In real implementation, save to backend
-  // In real implementation, save to backend
-}
-
-async function updateNotificationStatus(
-  notificationId: string,
-  status: Partial<Pick<Notification, "isRead">>,
-): Promise<void> {
-  // In real implementation, update in backend
-  // In real implementation, update in backend
-}
-
-async function updateMultipleNotificationStatus(
-  notificationIds: string[],
-  status: Partial<Pick<Notification, "isRead">>,
-): Promise<void> {
-  // In real implementation, bulk update in backend
-  // In real implementation, bulk update in backend
-}
-
-async function deleteNotification(notificationId: string): Promise<void> {
-  // In real implementation, delete from backend
-  // In real implementation, delete from backend
-}
-
-async function saveNotificationPreferences(
-  userId: string,
-  preferences: NotificationPreferences,
-): Promise<void> {
-  // In real implementation, save to backend
-  // In real implementation, save to backend
-}
