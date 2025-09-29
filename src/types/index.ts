@@ -74,5 +74,14 @@ export {
 // Feedback types
 export * from "./feedback";
 
+// Theme types
+export * from "./theme";
+
+// Goals types
+export * from "./goals";
+
+// Gamification types
+export * from "./gamification";
+
 // Re-export commonly used Firebase types
 export type { Timestamp } from "firebase/firestore";
