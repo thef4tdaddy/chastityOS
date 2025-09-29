@@ -220,5 +220,3 @@ export const useSwipeGestures = (
     options,
   );
 };
-
-export default useTouchGestures;
