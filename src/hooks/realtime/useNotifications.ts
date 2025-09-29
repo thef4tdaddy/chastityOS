@@ -12,12 +12,8 @@ import {
   NotificationPriority,
   NotificationChannelType,
   NotificationPreferences,
-  NotificationChannel,
   NotificationChannelSettings,
   QuietHours,
-  NotificationCategoryPreference,
-  NotificationHistoryEntry,
-  NotificationDeliveryStatus,
 } from "../../types/realtime";
 
 interface UseNotificationsOptions {
@@ -97,7 +93,7 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     userId,
     relationshipId,
     enablePush = false,
-    enableEmail = false,
+    _enableEmail = false,
     maxNotifications = 100,
   } = options;
 
@@ -154,7 +150,7 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     if (enablePush && "Notification" in window) {
       const requestPermission = async () => {
         if (Notification.permission === "default") {
-          const permission = await Notification.requestPermission();
+          const _permission = await Notification.requestPermission();
           // Permission granted or denied
         }
       };
