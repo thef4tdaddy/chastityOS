@@ -34,6 +34,63 @@ const ErrorState: React.FC<{ error: string }> = ({ error }) => (
   </div>
 );
 
+// Challenge State Components
+const ChallengeNotAvailable: React.FC<{ month: string }> = ({ month }) => (
+  <div className="text-center py-3">
+    <p className="text-sm opacity-60">Available during {month} only</p>
+  </div>
+);
+
+const ChallengeJoinButton: React.FC<{
+  onJoin: () => void;
+}> = ({ onJoin }) => (
+  <button
+    onClick={onJoin}
+    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
+  >
+    <FaTrophy className="mr-2" />
+    Join Challenge
+  </button>
+);
+
+const ChallengeActiveState: React.FC<{ progress: number }> = ({ progress }) => (
+  <div>
+    <div className="mb-3">
+      <div className="flex justify-between text-sm mb-1">
+        <span>Progress</span>
+        <span>{progress.toFixed(1)}%</span>
+      </div>
+      <div className="w-full bg-gray-700 rounded-full h-2">
+        <div
+          className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
+          style={{ width: `${Math.min(100, progress)}%` }}
+        />
+      </div>
+    </div>
+    <div className="text-center py-2">
+      <div className="flex items-center justify-center text-green-400">
+        <FaCheckCircle className="mr-2" />
+        <span className="font-semibold">Challenge Active!</span>
+      </div>
+      <p className="text-xs opacity-70 mt-1">
+        Keep going to complete the challenge
+      </p>
+    </div>
+  </div>
+);
+
+const ChallengeCompletedState: React.FC = () => (
+  <div className="text-center py-3">
+    <div className="flex items-center justify-center text-gold-400 mb-2">
+      <FaTrophy className="text-2xl mr-2" />
+      <span className="text-lg font-bold">Completed!</span>
+    </div>
+    <p className="text-sm opacity-80">
+      Congratulations on completing the challenge!
+    </p>
+  </div>
+);
+
 // Challenge Card Component
 const ChallengeCard: React.FC<{
   type: "locktober" | "no_nut_november";
@@ -77,59 +134,15 @@ const ChallengeCard: React.FC<{
         <span>Active during {month}</span>
       </div>
 
-      {!challenge.available && (
-        <div className="text-center py-3">
-          <p className="text-sm opacity-60">Available during {month} only</p>
-        </div>
-      )}
+      {!challenge.available && <ChallengeNotAvailable month={month} />}
 
       {challenge.available && !challenge.active && !challenge.completed && (
-        <button
-          onClick={() => onJoinChallenge(type)}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
-        >
-          <FaTrophy className="mr-2" />
-          Join Challenge
-        </button>
+        <ChallengeJoinButton onJoin={() => onJoinChallenge(type)} />
       )}
 
-      {challenge.active && (
-        <div>
-          <div className="mb-3">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Progress</span>
-              <span>{progress.toFixed(1)}%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(100, progress)}%` }}
-              />
-            </div>
-          </div>
-          <div className="text-center py-2">
-            <div className="flex items-center justify-center text-green-400">
-              <FaCheckCircle className="mr-2" />
-              <span className="font-semibold">Challenge Active!</span>
-            </div>
-            <p className="text-xs opacity-70 mt-1">
-              Keep going to complete the challenge
-            </p>
-          </div>
-        </div>
-      )}
+      {challenge.active && <ChallengeActiveState progress={progress} />}
 
-      {challenge.completed && (
-        <div className="text-center py-3">
-          <div className="flex items-center justify-center text-gold-400 mb-2">
-            <FaTrophy className="text-2xl mr-2" />
-            <span className="text-lg font-bold">Completed!</span>
-          </div>
-          <p className="text-sm opacity-80">
-            Congratulations on completing the challenge!
-          </p>
-        </div>
-      )}
+      {challenge.completed && <ChallengeCompletedState />}
     </div>
   );
 };
