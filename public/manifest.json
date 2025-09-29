@@ -1,0 +1,123 @@
+{
+  "id": "/",
+  "name": "ChastityOS",
+  "short_name": "ChastityOS",
+  "description": "A modern web app for tracking chastity sessions, managing keyholder tasks, and supporting FLR dynamics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#282132",
+  "theme_color": "#581c87",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities"],
+  "lang": "en-US",
+  "shortcuts": [
+    {
+      "name": "Quick Log Event",
+      "short_name": "Log Event",
+      "description": "Quickly log a new chastity event",
+      "url": "/?shortcut=log-event",
+      "icons": [{ "src": "/icons/shortcut-log.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "View Tracker",
+      "short_name": "Tracker",
+      "description": "View current chastity tracking dashboard",
+      "url": "/?shortcut=tracker",
+      "icons": [{ "src": "/icons/shortcut-tracker.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Keyholder Dashboard",
+      "short_name": "Keyholder",
+      "description": "Access keyholder controls and tasks",
+      "url": "/?shortcut=keyholder",
+      "icons": [{ "src": "/icons/shortcut-keyholder.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/screenshot-mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of the chastity tracker dashboard"
+    },
+    {
+      "src": "/screenshots/screenshot-mobile-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile view of event logging interface"
+    },
+    {
+      "src": "/screenshots/screenshot-desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop view of the main dashboard"
+    }
+  ],
+  "scope": "/",
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}

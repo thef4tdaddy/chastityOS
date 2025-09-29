@@ -2,7 +2,7 @@
  * Test Setup Configuration
  * Global setup for Vitest test environment
  */
-import { expect, afterEach } from "vitest";
+import { expect, afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 // Extend Vitest's expect with testing library matchers
