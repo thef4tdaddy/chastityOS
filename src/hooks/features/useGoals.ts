@@ -506,7 +506,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
 
   const calculateEstimatedCompletion = (
     difficulty: GoalDifficulty,
-    target: any,
+    target: { value?: number; unit?: string },
   ): Date => {
     const baseDays = target.value || 30;
     const multiplier = {

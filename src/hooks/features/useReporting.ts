@@ -32,7 +32,7 @@ export interface ReportTemplate {
   description: string;
   type: ReportType;
   parameters: ReportParameter[];
-  defaultParameters: Record<string, any>;
+  defaultParameters: Record<string, string | number | boolean | Date>;
 }
 
 // Report parameter
@@ -41,7 +41,7 @@ export interface ReportParameter {
   type: "string" | "number" | "date" | "boolean" | "select";
   required: boolean;
   options?: string[];
-  default?: any;
+  default?: string | number | boolean | Date;
 }
 
 // Report parameters
@@ -52,7 +52,7 @@ export interface ReportParameters {
   };
   includeDetails: boolean;
   groupBy?: string;
-  filters: Record<string, any>;
+  filters: Record<string, string | number | boolean | Date>;
 }
 
 // Generated report
@@ -61,7 +61,7 @@ export interface GeneratedReport {
   templateId: string;
   name: string;
   parameters: ReportParameters;
-  data: any;
+  data: Record<string, unknown> | unknown[];
   generatedAt: Date;
   generatedBy: string;
   size: number;
@@ -82,7 +82,7 @@ export interface CustomReportDefinition {
 export interface ReportFilter {
   field: string;
   operator: "equals" | "contains" | "greater" | "less" | "between";
-  value: any;
+  value: string | number | boolean | Date;
 }
 
 // Report sort
@@ -139,7 +139,7 @@ export interface DataExport {
 // Data filter
 export interface DataFilter {
   field: string;
-  value: any;
+  value: string | number | boolean | Date;
 }
 
 // Reporting preferences
@@ -496,7 +496,7 @@ export const useReporting = (userId?: string, relationshipId?: string) => {
     return { dataType, filters, records: [] };
   };
 
-  const exportData = async (data: any, format: ExportFormat) => {
+  const exportData = async (data: Record<string, unknown> | unknown[], format: ExportFormat) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: getContentType(format),
     });

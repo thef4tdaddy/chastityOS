@@ -55,7 +55,7 @@ export interface OfflineCapabilities {
 export interface NetworkEvent {
   type: "online" | "offline" | "quality-change";
   timestamp: Date;
-  details?: Record<string, any>;
+  details?: Record<string, string | number | boolean>;
 }
 
 /**
@@ -64,7 +64,7 @@ export interface NetworkEvent {
 export const useOfflineStatus = () => {
   const queryClient = useQueryClient();
   const [networkEvents, setNetworkEvents] = useState<NetworkEvent[]>([]);
-  const [syncQueue, setSyncQueue] = useState<any[]>([]);
+  const [syncQueue, setSyncQueue] = useState<Record<string, unknown>[]>([]);
   const [lastOnline, setLastOnline] = useState<Date | null>(null);
 
   // Get network information if available
@@ -155,7 +155,7 @@ export const useOfflineStatus = () => {
 
   // Add network event
   const addNetworkEvent = useCallback(
-    (type: NetworkEvent["type"], details?: Record<string, any>) => {
+    (type: NetworkEvent["type"], details?: Record<string, string | number | boolean>) => {
       const event: NetworkEvent = {
         type,
         timestamp: new Date(),
@@ -200,7 +200,7 @@ export const useOfflineStatus = () => {
 
     logger.info("Processing sync queue", { queueSize: syncQueue.length });
 
-    const processedItems: any[] = [];
+    const processedItems: Record<string, unknown>[] = [];
 
     for (const item of syncQueue) {
       try {
@@ -230,7 +230,7 @@ export const useOfflineStatus = () => {
   }, [syncQueue, queryClient]);
 
   // Add item to sync queue
-  const queueForSync = useCallback((item: any) => {
+  const queueForSync = useCallback((item: Record<string, unknown>) => {
     setSyncQueue((prev) => [...prev, { ...item, queuedAt: new Date() }]);
     logger.debug("Item queued for sync", { item });
   }, []);

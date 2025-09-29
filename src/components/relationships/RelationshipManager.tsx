@@ -5,6 +5,7 @@
 import React, { useState } from "react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { Relationship } from "@/types/relationships";
+import { KeyholderRelationship, KeyholderPermissions } from "@/types/core";
 import { FaUserPlus } from "react-icons/fa";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
@@ -42,9 +43,19 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     message: "",
   });
 
-  // Create a wrapper to handle the type mismatch between Relationship and KeyholderRelationship
+  // Create a wrapper to handle the type conversion between Relationship and KeyholderRelationship
   const handleSetActiveRelationship = (relationship: Relationship) => {
-    setActiveRelationship(relationship as any); // Cast to resolve type mismatch
+    // Convert Relationship to KeyholderRelationship format
+    const keyholderRelationship: KeyholderRelationship = {
+      id: relationship.id,
+      submissiveUserId: relationship.submissiveId,
+      keyholderUserId: relationship.keyholderId,
+      status: relationship.status === "active" ? "active" : "ended",
+      permissions: {} as KeyholderPermissions, // Would be populated from relationship data
+      createdAt: relationship.createdAt,
+      updatedAt: relationship.updatedAt
+    };
+    setActiveRelationship(keyholderRelationship);
   };
 
   // Handle sending relationship request

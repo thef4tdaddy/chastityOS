@@ -266,7 +266,7 @@ export const usePerformance = () => {
   );
 
   // Measure API response time
-  const measureApiTime = useCallback(async (apiCall: () => Promise<any>) => {
+  const measureApiTime = useCallback(async <T>(apiCall: () => Promise<T>): Promise<T> => {
     const startTime = performance.now();
     try {
       const result = await apiCall();

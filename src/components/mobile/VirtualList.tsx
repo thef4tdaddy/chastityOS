@@ -47,12 +47,17 @@ const LoadingIndicator: React.FC<{
 );
 
 // Virtual Items Container Component
-const VirtualItemsContainer: React.FC<{
-  visibleItems: any[];
+const VirtualItemsContainer = <T,>({
+  visibleItems,
+  startIndex,
+  itemHeight,
+  renderItem,
+}: {
+  visibleItems: T[];
   startIndex: number;
   itemHeight: number;
-  renderItem: (item: any, index: number) => React.ReactNode;
-}> = ({ visibleItems, startIndex, itemHeight, renderItem }) => (
+  renderItem: (item: T, index: number) => React.ReactNode;
+}) => (
   <div
     style={{
       transform: `translateY(${startIndex * itemHeight}px)`,
@@ -78,8 +83,8 @@ const VirtualItemsContainer: React.FC<{
 );
 
 // Custom hook for virtual scrolling calculations
-const useVirtualScrolling = (
-  items: any[],
+const useVirtualScrolling = <T,>(
+  items: T[],
   itemHeight: number,
   overscan: number,
   scrollTop: number,
