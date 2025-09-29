@@ -112,7 +112,7 @@ export const useChastityState = () => {
       submissiveNote: note,
       submittedAt: serverTimestamp()
     });
-  }, [tasksState.updateTask]); // Only need the updateTask function
+  }, [tasksState]); // Need the whole tasksState object for updateTask
 
   useEffect(() => {
     const checkOverdueTasks = () => {
