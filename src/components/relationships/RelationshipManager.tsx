@@ -4,6 +4,7 @@
  */
 import React, { useState } from "react";
 import { useRelationships } from "@/hooks/useRelationships";
+import { Relationship } from "@/types/relationships";
 import { FaUserPlus } from "react-icons/fa";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
@@ -41,16 +42,19 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     message: "",
   });
 
-  // Handle sending relationship request
-  const handleSendRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Create a wrapper to handle the type mismatch between Relationship and KeyholderRelationship
+  const handleSetActiveRelationship = (relationship: Relationship) => {
+    setActiveRelationship(relationship as any); // Cast to resolve type mismatch
+  };
 
+  // Handle sending relationship request
+  const handleSendRequest = async (data: {
+    email: string;
+    role: "submissive" | "keyholder";
+    message: string;
+  }) => {
     try {
-      await sendRelationshipRequest(
-        requestForm.email,
-        requestForm.role,
-        requestForm.message,
-      );
+      await sendRelationshipRequest(data.email, data.role, data.message);
       setShowRequestForm(false);
       setRequestForm({ email: "", role: "submissive", message: "" });
     } catch {
@@ -99,7 +103,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       <RelationshipsList
         relationships={relationships}
         activeRelationship={activeRelationship}
-        onSetActive={setActiveRelationship}
+        onSetActive={handleSetActiveRelationship}
         onEndRelationship={endRelationship}
       />
     </div>

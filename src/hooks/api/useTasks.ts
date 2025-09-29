@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taskDBService } from "../../services/database/TaskDBService";
-import { Task, TaskStatus } from "../../types/database";
+import { Task, TaskStatus, DBTask } from "../../types/database";
 import { logger } from "../../utils/logging";
 
 /**
@@ -118,10 +118,14 @@ export function useTasks(userId: string, filters?: TaskFilters) {
 
         // Sort by priority and due date
         filteredTasks.sort((a, b) => {
-          // Priority sorting (high > medium > low)
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          const aPriority = priorityOrder[a.priority || "medium"];
-          const bPriority = priorityOrder[b.priority || "medium"];
+          // Priority sorting (urgent > high > medium > low)
+          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+          const aPriority =
+            priorityOrder[a.priority as keyof typeof priorityOrder] ||
+            priorityOrder.medium;
+          const bPriority =
+            priorityOrder[b.priority as keyof typeof priorityOrder] ||
+            priorityOrder.medium;
 
           if (aPriority !== bPriority) {
             return bPriority - aPriority;
@@ -228,15 +232,16 @@ export function useCreateTask() {
     }: {
       userId: string;
       taskData: CreateTaskData;
-    }): Promise<Task> => {
+    }): Promise<DBTask> => {
       logger.info("Creating new task", { userId, title: taskData.title });
 
       // Generate task ID
       const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      const newTask: Task = {
+      const newTask: DBTask = {
         id: taskId,
         userId,
+        text: taskData.title, // DBTask uses 'text' field
         title: taskData.title,
         description: taskData.description || "",
         status: "pending",
@@ -247,6 +252,8 @@ export function useCreateTask() {
           (taskData.assignedBy as "submissive" | "keyholder") || "submissive",
         createdAt: new Date(),
         updatedAt: new Date(),
+        syncStatus: "pending",
+        lastModified: new Date(),
       };
 
       // Dexie-first write for immediate UI response
@@ -546,7 +553,7 @@ export function useTaskStats(userId: string) {
       const stats = {
         total: tasks.length,
         pending: tasks.filter((t) => t.status === "pending").length,
-        inProgress: tasks.filter((t) => t.status === "in_progress").length,
+        inProgress: tasks.filter((t) => t.status === "submitted").length, // Use submitted instead of in_progress
         completed: tasks.filter((t) => t.status === "completed").length,
         overdue: tasks.filter((t) => {
           if (!t.dueDate || t.status === "completed") return false;
