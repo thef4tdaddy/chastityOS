@@ -5,7 +5,7 @@ import { firebaseListeners } from "./services/sync";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./hooks/api/queryClient";
-import { AuthProvider, AppProvider } from "./contexts";
+import { AuthProvider, AppProvider, ToastProvider } from "./contexts";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -96,8 +96,10 @@ function App(): React.ReactElement {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <AuthProvider>
-          <RouterProvider router={router} />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <ToastProvider>
+            <RouterProvider router={router} />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ToastProvider>
         </AuthProvider>
       </AppProvider>
     </QueryClientProvider>
