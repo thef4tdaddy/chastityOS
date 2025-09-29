@@ -21,11 +21,12 @@ export function useSettingsQuery(userId: string | undefined) {
       if (!userId) return null;
 
       // Always read from local Dexie first for instant response
-      let settings = await settingsDBService.getUserSettings(userId);
+      let settings = await settingsDBService.getSettings(userId);
 
       // If no settings exist, create default settings
       if (!settings) {
-        settings = await settingsDBService.createDefaultSettings(userId);
+        await settingsDBService.createDefaultSettings(userId);
+        settings = await settingsDBService.getSettings(userId);
       }
 
       // Trigger background sync if online to ensure data freshness

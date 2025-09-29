@@ -9,6 +9,7 @@ import {
   RelationshipTask,
   RelationshipEvent,
   RelationshipPermissions,
+  Relationship,
 } from "@/types/relationships";
 import type { KeyholderRelationship } from "@/types/core";
 import {
@@ -130,27 +131,34 @@ export function useRelationships() {
     if (!relationshipList.activeRelationship) return;
 
     const relationshipId = relationshipList.activeRelationship.id;
+    let unsubscribeChastityData: (() => void) | null = null;
+    let unsubscribeTasks: (() => void) | null = null;
 
-    const unsubscribeChastityData =
-      relationshipChastityService.subscribeToChastityData(
+    // Set up subscriptions
+    const setupSubscriptions = async () => {
+      unsubscribeChastityData =
+        await relationshipChastityService.subscribeToChastityData(
+          relationshipId,
+          (_chastityData) => {
+            // Update the status hook with new data
+            relationshipStatus.loadRelationshipData(relationshipId);
+          },
+        );
+
+      unsubscribeTasks = await relationshipChastityService.subscribeToTasks(
         relationshipId,
-        (_chastityData) => {
-          // Update the status hook with new data
-          relationshipStatus.loadRelationshipData(relationshipId);
+        (_tasks) => {
+          // Update the tasks hook with new data
+          relationshipTasks.loadRelationshipData(relationshipId);
         },
       );
+    };
 
-    const unsubscribeTasks = relationshipChastityService.subscribeToTasks(
-      relationshipId,
-      (_tasks) => {
-        // Update the tasks hook with new data
-        relationshipTasks.loadRelationshipData(relationshipId);
-      },
-    );
+    setupSubscriptions();
 
     return () => {
-      unsubscribeChastityData();
-      unsubscribeTasks();
+      if (unsubscribeChastityData) unsubscribeChastityData();
+      if (unsubscribeTasks) unsubscribeTasks();
     };
   }, [
     relationshipList.activeRelationship,
@@ -267,7 +275,11 @@ export function useRelationships() {
   // Enhanced setActiveRelationship that clears data when switching
   const setActiveRelationship = useCallback(
     (relationship: KeyholderRelationship | null) => {
-      relationshipList.setActiveRelationship(relationship);
+      // Cast KeyholderRelationship to Relationship for compatibility
+      // TODO: Align these types in the future
+      relationshipList.setActiveRelationship(
+        relationship as Relationship | null,
+      );
 
       // Clear old data when switching relationships
       if (!relationship) {
