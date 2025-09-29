@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import typescriptParser from '@typescript-eslint/parser';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import zustandSafePatterns from './eslint-rules/zustand-safe-patterns.js';
+import noLegacyToast from '../../eslint-rules/no-legacy-toast.js';
 
 export default [
   {
@@ -65,6 +66,7 @@ export default [
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
       'zustand-safe-patterns': zustandSafePatterns,
+      'no-legacy-toast': { rules: { 'no-legacy-toast': noLegacyToast } },
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -76,18 +78,18 @@ export default [
       'no-useless-escape': 'warn',
       'react-hooks/exhaustive-deps': 'warn',
 
-      // Block browser dialogs - use ChastityOS UI components instead
+      // Block browser dialogs - use new toast system instead
       'no-restricted-globals': [
         'error',
         {
           name: 'alert',
           message:
-            "Use toast notifications instead of alert(). Import { toast } from 'react-toastify' and use toast.error(), toast.success(), etc.",
+            "Use new toast system instead of alert(). Import { useToast } from '@/contexts' and use showError(), showSuccess(), etc.",
         },
         {
           name: 'confirm',
           message:
-            'Use ConfirmModal instead of confirm(). Create a modal component or use a confirmation library.',
+            'Use toast with action button instead of confirm(). Use showWarning() with action option or create ConfirmModal.',
         },
         {
           name: 'prompt',
@@ -106,6 +108,11 @@ export default [
               importNames: ['createContext', 'useContext'],
               message:
                 'Avoid React Context for server data - use TanStack Query + Dexie (see services/ and hooks/api/). For auth state, React Context is acceptable. For UI state: use Zustand stores in src/stores/.',
+            },
+            {
+              name: 'react-toastify',
+              message:
+                "Use new toast system instead of react-toastify. Import { useToast } from '@/contexts' and use showSuccess(), showError(), etc.",
             },
             {
               name: 'react-icons',
@@ -171,6 +178,16 @@ export default [
       'zustand-safe-patterns/zustand-selective-subscriptions': 'warn', // Performance optimization
       'zustand-safe-patterns/zustand-no-conditional-subscriptions': 'warn', // Memory leak prevention
 
+      // 🧹 Toast Migration Rule - Enforce new toast system
+      'no-legacy-toast/no-legacy-toast': ['warn', {
+        allowedImports: [
+          // Temporary exceptions during migration
+          'src/components/achievements/AchievementNotification.tsx',
+          'src/pages/showcase/TouchTargetsDemo.tsx'
+        ],
+        severity: 'warn'
+      }],
+
       // Block window dialog patterns that no-restricted-globals doesn't catch
       'no-restricted-syntax': [
         'error',
@@ -182,7 +199,7 @@ export default [
         {
           selector: "CallExpression[callee.object.name='window'][callee.property.name='alert']",
           message:
-            "Use toast notifications instead of window.alert(). Import { toast } from 'react-toastify' and use toast.error(), toast.success(), etc.",
+            "Use new toast system instead of window.alert(). Import { useToast } from '@/contexts' and use showError(), showSuccess(), etc.",
         },
         {
           selector: "CallExpression[callee.object.name='window'][callee.property.name='prompt']",
@@ -296,12 +313,20 @@ export default [
       'src/hooks/**/constants.{ts,tsx}', // Constants files
     ],
     rules: {
-      // Hook files must export hooks only - relaxed for utility files
+      // Hook files must export hooks only - allow types and interfaces
       'no-restricted-syntax': [
         'error',
         {
           selector: "ExportDefaultDeclaration > Identifier:not([name^='use'])",
           message: "Hook files should only export hooks (functions starting with 'use')",
+        },
+        {
+          selector: "ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > VariableDeclaration > VariableDeclarator[id.name!=/^use/]",
+          message: "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
+        },
+        {
+          selector: "ExportNamedDeclaration:not(:has(TSTypeAliasDeclaration, TSInterfaceDeclaration)) > FunctionDeclaration[id.name!=/^use/]",
+          message: "Hook files should only export hooks (functions starting with 'use') - types and interfaces are allowed",
         },
       ],
     },

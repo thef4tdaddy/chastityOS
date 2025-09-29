@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useNavigationStore } from "@/stores";
-import { ToastContainer } from "react-toastify";
 import { useAuthState } from "../../contexts";
 import { useAchievements } from "../../hooks/useAchievements";
 import { BottomNavigation } from "../mobile";
@@ -10,7 +9,6 @@ import { Header } from "./Header";
 import { MobileMenu } from "./MobileMenu";
 import { AchievementNotifications } from "./AchievementNotifications";
 import { navItems, mobileNavItemsConfig } from "./NavigationData";
-import "react-toastify/dist/ReactToastify.css";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -99,20 +97,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         unreadNotifications={unreadNotifications}
         allAchievements={allAchievements}
         markNotificationRead={markNotificationRead}
-      />
-
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-        toastClassName="achievement-toast"
       />
     </div>
   );

@@ -10,6 +10,116 @@ import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("KeyholderStore");
 
+// Helper functions for password operations
+const handlePasswordCheck = async (
+  passwordAttempt: string,
+  storedHash: string,
+  set: (state: Partial<KeyholderState>) => void,
+  get: () => KeyholderState,
+) => {
+  const state = get();
+
+  if (state.isCheckingPassword) {
+    logger.debug("Password check already in progress");
+    return;
+  }
+
+  set({ isCheckingPassword: true, keyholderMessage: "" });
+
+  try {
+    logger.debug("Checking keyholder password");
+
+    if (!storedHash) {
+      const message = "Error: No keyholder password is set in the database.";
+      set({
+        keyholderMessage: message,
+        isCheckingPassword: false,
+      });
+      logger.warn("No keyholder password hash found");
+      return;
+    }
+
+    const attemptHash = await sha256(passwordAttempt);
+
+    if (attemptHash === storedHash) {
+      set({
+        isKeyholderModeUnlocked: true,
+        keyholderMessage: "Controls are now unlocked.",
+        isPasswordDialogOpen: false,
+        passwordAttempt: "",
+        isCheckingPassword: false,
+      });
+      logger.info("Keyholder password correct, mode unlocked");
+    } else {
+      set({
+        keyholderMessage: "Incorrect password. Please try again.",
+        passwordAttempt: "",
+        isCheckingPassword: false,
+      });
+      logger.warn("Incorrect keyholder password attempt");
+    }
+  } catch (error) {
+    const message = "Failed to check password. Please try again.";
+    set({
+      keyholderMessage: message,
+      isCheckingPassword: false,
+    });
+    logger.error("Error checking keyholder password", {
+      error: error as Error,
+    });
+  }
+};
+
+const handlePasswordSet = async (
+  newPassword: string,
+  onSave: (hash: string) => Promise<void>,
+  set: (state: Partial<KeyholderState>) => void,
+  get: () => KeyholderState,
+) => {
+  const state = get();
+
+  if (state.isSavingPassword) {
+    logger.debug("Password save already in progress");
+    return;
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    set({
+      keyholderMessage: "Password must be at least 6 characters long.",
+    });
+    return;
+  }
+
+  set({ isSavingPassword: true, keyholderMessage: "" });
+
+  try {
+    logger.debug("Setting permanent keyholder password");
+
+    const newHash = await sha256(newPassword);
+    await onSave(newHash);
+
+    set({
+      keyholderMessage: "Permanent password has been updated successfully!",
+      newPassword: "",
+      confirmPassword: "",
+      isPasswordSettingMode: false,
+      isPasswordDialogOpen: false,
+      isSavingPassword: false,
+    });
+
+    logger.info("Permanent keyholder password updated successfully");
+  } catch (error) {
+    const message = "Failed to update password. Please try again.";
+    set({
+      keyholderMessage: message,
+      isSavingPassword: false,
+    });
+    logger.error("Error setting permanent password", {
+      error: error as Error,
+    });
+  }
+};
+
 export interface KeyholderState {
   // UI State
   isKeyholderModeUnlocked: boolean;
@@ -78,58 +188,7 @@ export const useKeyholderStore = create<KeyholderStore>()(
 
       // Password Management
       checkPassword: async (passwordAttempt: string, storedHash: string) => {
-        const state = get();
-
-        if (state.isCheckingPassword) {
-          logger.debug("Password check already in progress");
-          return;
-        }
-
-        set({ isCheckingPassword: true, keyholderMessage: "" });
-
-        try {
-          logger.debug("Checking keyholder password");
-
-          if (!storedHash) {
-            const message =
-              "Error: No keyholder password is set in the database.";
-            set({
-              keyholderMessage: message,
-              isCheckingPassword: false,
-            });
-            logger.warn("No keyholder password hash found");
-            return;
-          }
-
-          const attemptHash = await sha256(passwordAttempt);
-
-          if (attemptHash === storedHash) {
-            set({
-              isKeyholderModeUnlocked: true,
-              keyholderMessage: "Controls are now unlocked.",
-              isPasswordDialogOpen: false,
-              passwordAttempt: "",
-              isCheckingPassword: false,
-            });
-            logger.info("Keyholder password correct, mode unlocked");
-          } else {
-            set({
-              keyholderMessage: "Incorrect password. Please try again.",
-              passwordAttempt: "",
-              isCheckingPassword: false,
-            });
-            logger.warn("Incorrect keyholder password attempt");
-          }
-        } catch (error) {
-          const message = "Failed to check password. Please try again.";
-          set({
-            keyholderMessage: message,
-            isCheckingPassword: false,
-          });
-          logger.error("Error checking keyholder password", {
-            error: error as Error,
-          });
-        }
+        await handlePasswordCheck(passwordAttempt, storedHash, set, get);
       },
 
       setTempPassword: async (keyholderName: string): Promise<string> => {
@@ -162,49 +221,7 @@ export const useKeyholderStore = create<KeyholderStore>()(
         newPassword: string,
         onSave: (hash: string) => Promise<void>,
       ) => {
-        const state = get();
-
-        if (state.isSavingPassword) {
-          logger.debug("Password save already in progress");
-          return;
-        }
-
-        if (!newPassword || newPassword.length < 6) {
-          set({
-            keyholderMessage: "Password must be at least 6 characters long.",
-          });
-          return;
-        }
-
-        set({ isSavingPassword: true, keyholderMessage: "" });
-
-        try {
-          logger.debug("Setting permanent keyholder password");
-
-          const newHash = await sha256(newPassword);
-          await onSave(newHash);
-
-          set({
-            keyholderMessage:
-              "Permanent password has been updated successfully!",
-            newPassword: "",
-            confirmPassword: "",
-            isPasswordSettingMode: false,
-            isPasswordDialogOpen: false,
-            isSavingPassword: false,
-          });
-
-          logger.info("Permanent keyholder password updated successfully");
-        } catch (error) {
-          const message = "Failed to update password. Please try again.";
-          set({
-            keyholderMessage: message,
-            isSavingPassword: false,
-          });
-          logger.error("Error setting permanent password", {
-            error: error as Error,
-          });
-        }
+        await handlePasswordSet(newPassword, onSave, set, get);
       },
 
       // UI Actions
