@@ -1,84 +1,162 @@
-/**
- * Type definitions barrel export
- * Re-exports all type definitions for easy importing
- */
+import { Timestamp, FieldValue } from 'firebase/firestore';
 
-// Core types
-export * from "./core";
-export * from "./events";
-export * from "./achievements";
+// User and authentication types
+export interface User {
+  uid: string;
+  email?: string | null;
+  isAnonymous: boolean;
+}
 
-// Account linking types
-export * from "./account-linking";
+export interface UserData {
+  savedSubmissivesName?: string;
+  keyholderName?: string;
+  isKeyholderControlsLocked?: boolean;
+  requiredKeyholderDurationSeconds?: number;
+  isTrackingAllowed?: boolean;
+  [key: string]: unknown;
+}
 
-// Relationship types - explicit exports to avoid conflicts
-export type {
-  RelationshipStatus,
-  RelationshipPermissions,
-  RelationshipRequest,
-  RelationshipRequestStatus,
-  Relationship,
-  EnhancedUserProfile,
-  EnhancedUser,
-  RelationshipChastityData,
-  RelationshipSession,
-  RelationshipTaskStatus,
-  RelationshipTask,
-  RelationshipEvent,
-  DefaultRelationshipPermissions,
-  CreateDefaultPermissions,
-  // Alias conflicting types to avoid namespace collision
-  UserVerification as RelationshipUserVerification,
-  SessionEvent as RelationshipSessionEvent,
-} from "./relationships";
+// Task-related types
+export interface RewardPunishment {
+  type: 'time' | 'note' | 'none';
+  value: number | string;
+}
 
-// Database types - explicitly export to avoid conflicts
-export type {
-  SyncStatus,
-  DBBase,
-  DBUser,
-  DBSession,
-  DBEvent,
-  DBTask,
-  DBGoal,
-  DBSettings,
-  SyncOperation,
-  ConflictRecord,
-  DBSyncMeta,
-  QueuedOperation,
-  SessionWithDuration,
-  TaskWithStatus,
-  GoalWithProgress,
-  SessionFilters,
-  EventFilters,
-  TaskFilters,
-  // New achievement database types
-  DBAchievement,
-  DBUserAchievement,
-  DBAchievementProgress,
-  DBAchievementNotification,
-  DBLeaderboardEntry,
-  // Compatibility aliases
-  UserSettings,
-  Task,
-} from "./database";
+export interface Task {
+  id: string;
+  text: string;
+  status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  deadline?: Date | null;
+  reward?: RewardPunishment;
+  punishment?: RewardPunishment;
+  createdAt?: Date | null;
+  submittedAt?: Date | null;
+  note?: string;
+  logType?: 'reward' | 'punishment';
+  sourceText?: string;
+  timeChangeSeconds?: number;
+}
 
-// Import and re-export achievement enums (as values for runtime usage)
-export {
-  AchievementCategory,
-  AchievementDifficulty,
-  LeaderboardCategory,
-  LeaderboardPeriod,
-} from "./achievements";
+export interface TaskData {
+  text: string;
+  deadline?: Date | null;
+  reward?: RewardPunishment;
+  punishment?: RewardPunishment;
+  logType?: string;
+  sourceText?: string;
+  note?: string;
+  timeChangeSeconds?: number;
+  createdAt?: Timestamp | FieldValue;
+}
 
-// Feedback types
-export * from "./feedback";
+// Session-related types
+export interface SessionData {
+  cageOnTime?: Date | null;
+  isCageOn?: boolean;
+  timeInChastity?: number;
+  timeCageOff?: number;
+  totalChastityTime?: number;
+  totalTimeCageOff?: number;
+  hasSessionEverBeenActive?: boolean;
+  isPaused?: boolean;
+  pauseStartTime?: Date | null;
+  accumulatedPauseTimeThisSession?: number;
+  currentSessionPauseEvents?: PauseEvent[];
+  requiredKeyholderDurationSeconds?: number;
+  isKeyholderControlsLocked?: boolean;
+  [key: string]: unknown;
+}
 
-// Security types
-export * from "./security";
+export interface PauseEvent {
+  id: string;
+  startTime: Date;
+  endTime?: Date;
+  reason?: string;
+  duration?: number;
+}
 
-// Real-time types
-export * from "./realtime";
+// Keyholder-related types
+export interface KeyholderSession {
+  keyholderName?: string;
+  isActive: boolean;
+  startTime?: Date;
+  endTime?: Date;
+  permissions: KeyholderPermissions;
+}
 
-// Re-export commonly used Firebase types
-export type { Timestamp } from "firebase/firestore";
+export interface KeyholderPermissions {
+  canApproveTasks: boolean;
+  canAddPunishments: boolean;
+  canAddRewards: boolean;
+  canModifyDuration: boolean;
+  canLockControls: boolean;
+}
+
+export interface KeyholderReward {
+  type: 'time' | 'note' | 'other';
+  timeSeconds?: number;
+  note?: string;
+  other?: string;
+}
+
+export interface KeyholderPunishment {
+  type: 'time' | 'note' | 'other';
+  timeSeconds?: number;
+  note?: string;
+  other?: string;
+}
+
+export interface AdminSession {
+  userId: string;
+  isAdmin: boolean;
+  permissions: AdminPermissions;
+  sessionStart: Date;
+  lastActivity: Date;
+}
+
+export interface AdminPermissions {
+  canManageUsers: boolean;
+  canViewAllSessions: boolean;
+  canModifySettings: boolean;
+  canAccessLogs: boolean;
+}
+
+// Multi-wearer functionality types
+export interface Wearer {
+  id: string;
+  name: string;
+  email?: string;
+  isActive: boolean;
+  sessionData: SessionData;
+  tasks: Task[];
+  keyholderPermissions: KeyholderPermissions;
+}
+
+export interface MultiWearerSession {
+  keyholderUserId: string;
+  wearers: Wearer[];
+  isActive: boolean;
+  createdAt: Date;
+  lastUpdated: Date;
+}
+
+// Utility types for Firebase operations
+export interface FirestoreTimestamp {
+  toDate(): Date;
+}
+
+// Hook return types
+export interface UseTasksReturn {
+  tasks: Task[];
+  isLoading: boolean;
+  addTask: (taskData: TaskData) => Promise<void>;
+  updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
+}
+
+export interface UseSessionReturn {
+  sessionData: SessionData;
+  updateSession: (data: Partial<SessionData>) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+}

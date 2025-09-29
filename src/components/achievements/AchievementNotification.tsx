@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from "react";
-import { toast } from "react-toastify";
+import { useToast } from "../../contexts";
 import { FaTrophy, FaTimes } from "../../utils/iconImport";
 import { DBAchievement, DBAchievementNotification } from "../../types";
 
@@ -55,6 +55,8 @@ interface AchievementNotificationProps {
 export const AchievementNotification: React.FC<
   AchievementNotificationProps
 > = ({ notifications, achievements, onMarkRead, autoShow = true }) => {
+  const { showSuccess } = useToast();
+
   useEffect(() => {
     if (!autoShow) return;
 
@@ -69,26 +71,21 @@ export const AchievementNotification: React.FC<
       );
 
       if (achievement) {
-        toast.success(
-          <AchievementToast
-            achievement={achievement}
-            notification={notification}
-            onClose={() => onMarkRead(notification.id)}
-          />,
+        showSuccess(
+          `🏆 Achievement Unlocked: ${achievement.name} - ${achievement.description}`,
           {
-            toastId: notification.id,
-            autoClose: 8000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            className: "achievement-toast achievement-toast-body",
-            onClose: () => onMarkRead(notification.id),
-          },
+            title: "Achievement Unlocked!",
+            priority: "medium",
+            duration: 8000,
+            action: {
+              label: "Mark Read",
+              onClick: () => onMarkRead(notification.id),
+            },
+          }
         );
       }
     });
-  }, [notifications, achievements, onMarkRead, autoShow]);
+  }, [notifications, achievements, onMarkRead, autoShow, showSuccess]);
 
   return null; // This component only manages toast notifications
 };
