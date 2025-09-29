@@ -128,7 +128,7 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
   const checkFirebaseHealth = async (): Promise<HealthStatus> => {
     try {
       // Simple connectivity test - try to access Firebase
-      if (typeof window !== "undefined" && window.firebase) {
+      if (typeof window !== "undefined" && (window as any).firebase) {
         return HealthStatus.HEALTHY;
       }
       return HealthStatus.WARNING;

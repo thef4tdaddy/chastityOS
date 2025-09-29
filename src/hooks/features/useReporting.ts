@@ -401,23 +401,23 @@ export const useReporting = (userId?: string, relationshipId?: string) => {
       format: ExportFormat;
     }) => {
       const rawData = await getRawData(dataType, filters);
-      const exportData = await exportData(rawData, format);
+      const exportResult = await exportData(rawData, format);
 
-      const exportResult: DataExport = {
+      const dataExport: DataExport = {
         id: `data-export-${Date.now()}`,
         dataType,
         filters,
         format,
-        url: exportData.url,
+        url: exportResult.url,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       };
 
       logger.info("Raw data exported", {
         dataType,
         format,
-        exportId: exportResult.id,
+        exportId: dataExport.id,
       });
-      return exportResult;
+      return dataExport;
     },
   });
 
