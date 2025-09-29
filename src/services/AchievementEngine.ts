@@ -140,6 +140,7 @@ export class AchievementEngine {
 
     for (const achievement of milestoneAchievements) {
       const requirement = achievement.requirements[0];
+      if (!requirement) continue; // Skip if no requirements
 
       if (requirement.type === "session_count") {
         if (completedSessions.length >= requirement.value) {
@@ -175,6 +176,7 @@ export class AchievementEngine {
 
     for (const achievement of consistencyAchievements) {
       const requirement = achievement.requirements[0];
+      if (!requirement) continue; // Skip if no requirements
 
       if (
         requirement.type === "session_count" &&
@@ -209,6 +211,7 @@ export class AchievementEngine {
 
     for (const achievement of streakAchievements) {
       const requirement = achievement.requirements[0];
+      if (!requirement) continue; // Skip if no requirements
 
       if (
         requirement.type === "streak_days" &&
@@ -226,7 +229,7 @@ export class AchievementEngine {
     userId: string,
     goalData?: DBGoal,
   ): Promise<void> {
-    const goals = await goalDBService.getUserGoals(userId);
+    const goals = await goalDBService.getGoals(userId);
     const completedGoals = goals.filter((g: DBGoal) => g.isCompleted);
 
     const goalAchievements =
@@ -236,6 +239,7 @@ export class AchievementEngine {
 
     for (const achievement of goalAchievements) {
       const requirement = achievement.requirements[0];
+      if (!requirement) continue; // Skip if no requirements
 
       if (requirement.type === "goal_completion") {
         if (completedGoals.length >= requirement.value) {
@@ -265,7 +269,7 @@ export class AchievementEngine {
    * Check task-based achievements
    */
   private async checkTaskAchievements(userId: string): Promise<void> {
-    const tasks = await taskDBService.getUserTasks(userId);
+    const tasks = await taskDBService.getTasks(userId);
     const completedTasks = tasks.filter(
       (t: DBTask) => t.status === "completed" || t.status === "approved",
     );
@@ -278,6 +282,7 @@ export class AchievementEngine {
 
     for (const achievement of taskAchievements) {
       const requirement = achievement.requirements[0];
+      if (!requirement) continue; // Skip if no requirements
 
       if (requirement.type === "task_completion") {
         if (completedTasks.length >= requirement.value) {
@@ -297,7 +302,8 @@ export class AchievementEngine {
           }
         } else if (requirement.condition === "tasks_completed_early") {
           const earlyTasks = tasks.filter(
-            (t) => t.completedAt && t.dueDate && t.completedAt < t.dueDate,
+            (t: DBTask) =>
+              t.completedAt && t.dueDate && t.completedAt < t.dueDate,
           );
           if (earlyTasks.length >= requirement.value) {
             await this.awardAchievementIfNotOwned(userId, achievement.id);
@@ -329,6 +335,7 @@ export class AchievementEngine {
     // Track special conditions
     for (const achievement of specialAchievements) {
       const requirement = achievement.requirements[0];
+      if (!requirement) continue; // Skip if no requirements
 
       if (requirement.type === "special_condition") {
         let shouldIncrement = false;

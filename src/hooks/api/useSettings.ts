@@ -133,10 +133,10 @@ export function useUserSettings(userId: string) {
         logger.info("User settings retrieved successfully", {
           userId,
           hasSettings: !!settings,
-          sectionsCount: Object.keys(settings).length,
+          sectionsCount: settings ? Object.keys(settings).length : 0,
         });
 
-        return settings;
+        return settings || null;
       } catch (error) {
         logger.error("Failed to fetch user settings", {
           error: error instanceof Error ? error.message : String(error),
@@ -216,7 +216,9 @@ export function useUpdateSettings() {
           ...existingSettings,
           ...updates,
           updatedAt: new Date(),
-        };
+          lastModified: new Date(),
+          syncStatus: "pending",
+        } as UserSettings;
 
         // Save to Dexie (immediate local update)
         await settingsDBService.update(userId, updatedSettings);
