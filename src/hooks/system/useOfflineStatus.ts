@@ -69,7 +69,29 @@ export const useOfflineStatus = () => {
 
   // Get network information if available
   const getNetworkInfo = useCallback(() => {
-    const nav = navigator as any;
+    const nav = navigator as Navigator & {
+      connection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      mozConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      webkitConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+    };
     const connection =
       nav.connection || nav.mozConnection || nav.webkitConnection;
 
@@ -155,7 +177,10 @@ export const useOfflineStatus = () => {
 
   // Add network event
   const addNetworkEvent = useCallback(
-    (type: NetworkEvent["type"], details?: Record<string, string | number | boolean>) => {
+    (
+      type: NetworkEvent["type"],
+      details?: Record<string, string | number | boolean>,
+    ) => {
       const event: NetworkEvent = {
         type,
         timestamp: new Date(),
@@ -276,7 +301,29 @@ export const useOfflineStatus = () => {
     window.addEventListener("offline", handleOffline);
 
     // Listen for connection changes if supported
-    const nav = navigator as any;
+    const nav = navigator as Navigator & {
+      connection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      mozConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      webkitConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+    };
     const connection =
       nav.connection || nav.mozConnection || nav.webkitConnection;
     if (connection) {
