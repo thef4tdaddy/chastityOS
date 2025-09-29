@@ -160,13 +160,7 @@ export function useSessionPersistence(
 
   // Get current backup state
   const getBackupState = useCallback((): SessionPersistenceState | null => {
-    try {
-      const backup = localStorage.getItem("chastity_session_backup");
-      return backup ? JSON.parse(backup) : null;
-    } catch (err) {
-      logger.error("Failed to get backup state", { error: err as Error });
-      return null;
-    }
+    return sessionPersistenceService.getBackupState();
   }, []);
 
   // Auto-initialize when userId is provided
