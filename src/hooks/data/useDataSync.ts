@@ -6,10 +6,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type {
   SyncResult,
-  ConflictInfo,
-  SyncOptions,
 } from "../../types/database";
-import type { KeyholderRelationship } from "../../types/core";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useDataSync");
@@ -353,7 +350,7 @@ export const useDataSync = (userId: string) => {
             );
             break;
           case "latest_timestamp":
-            resolvedData = getLatestTimestampVersion(conflict);
+            const _resolvedData = getLatestTimestampVersion(conflict);
             break;
           default:
             throw new Error(

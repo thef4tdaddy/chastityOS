@@ -4,7 +4,6 @@
  * with appropriate privacy controls
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { DBSession, DBGoal, DBTask } from "../../types/database";
 import type { KeyholderRelationship } from "../../types/core";
 import { serviceLogger } from "../../utils/logging";
 

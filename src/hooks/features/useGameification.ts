@@ -8,7 +8,6 @@
 import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  GameificationState,
   PlayerProfile,
   Challenge,
   Leaderboard,
@@ -42,7 +41,7 @@ const STORAGE_KEYS = {
 };
 
 // Experience values by source
-const EXPERIENCE_VALUES = {
+const _EXPERIENCE_VALUES = {
   [ExperienceSource.SESSION_COMPLETE]: 100,
   [ExperienceSource.CHALLENGE_COMPLETE]: 250,
   [ExperienceSource.MILESTONE_REACHED]: 150,
@@ -432,7 +431,7 @@ export const useGameification = (userId: string) => {
 
   // Check level up
   const checkLevelUp = useCallback(async (): Promise<LevelUpResult | null> => {
-    const currentLevelThreshold =
+    const _currentLevelThreshold =
       LEVEL_THRESHOLDS[playerProfile.level - 1] || 0;
     const nextLevelThreshold =
       LEVEL_THRESHOLDS[playerProfile.level] || Infinity;

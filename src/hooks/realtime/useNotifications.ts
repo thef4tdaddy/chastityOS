@@ -19,26 +19,6 @@ import {
   NotificationHistoryEntry,
   NotificationDeliveryStatus,
 } from "../../types/realtime";
-import {
-  isInQuietHours,
-  deliverNotification,
-  fetchNotificationPreferences,
-  fetchRecentNotifications,
-  saveNotification,
-  updateNotificationStatus,
-  updateMultipleNotificationStatus,
-  deleteNotification,
-  saveNotificationPreferences,
-} from "./notificationHelpers";
-import {
-  createNotificationFactory,
-  createMarkAsReadFunction,
-  createMarkAllAsReadFunction,
-  createDismissNotificationFunction,
-  createUpdatePreferencesFunction,
-  createConvenienceNotificationFunctions,
-  createRelationshipNotificationFunctions,
-} from "./notificationOperations";
 
 interface UseNotificationsOptions {
   userId: string;
@@ -174,7 +154,8 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     if (enablePush && "Notification" in window) {
       const requestPermission = async () => {
         if (Notification.permission === "default") {
-          await Notification.requestPermission();
+          const permission = await Notification.requestPermission();
+          // Permission granted or denied
         }
       };
 
@@ -182,33 +163,139 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     }
   }, [enablePush]);
 
-  // Create notification operations using helper functions
-  const addNotification = createNotificationFactory(
-    userId,
-    notificationState,
-    setNotificationState,
-    maxNotifications,
+  // Add notification
+  const addNotification = useCallback(
+    async (
+      notification: Omit<
+        Notification,
+        "id" | "timestamp" | "isRead" | "userId"
+      >,
+    ): Promise<void> => {
+      const newNotification: Notification = {
+        ...notification,
+        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date(),
+        isRead: false,
+        userId,
+      };
+
+      // Check if notifications are enabled globally
+      if (!notificationState.preferences.globalEnabled) {
+        return;
+      }
+
+      // Check category preferences
+      const categoryPref = notificationState.preferences.categories.find(
+        (cat) => cat.category === notification.type,
+      );
+
+      if (!categoryPref?.enabled) {
+        return;
+      }
+
+      // Check quiet hours
+      if (isInQuietHours(notificationState.preferences.quietHours)) {
+        // Queue for later delivery if not urgent
+        if (notification.priority !== NotificationPriority.URGENT) {
+          return;
+        }
+      }
+
+      // Add to state
+      setNotificationState((prev) => ({
+        ...prev,
+        notifications: [
+          newNotification,
+          ...prev.notifications.slice(0, maxNotifications - 1),
+        ],
+      }));
+
+      // Deliver through enabled channels
+      await deliverNotification(newNotification, categoryPref.channels);
+
+      // Save to backend
+      await saveNotification(newNotification);
+    },
+    [userId, notificationState.preferences, maxNotifications],
   );
 
-  const markAsRead = createMarkAsReadFunction(setNotificationState);
-  const markAllAsRead = createMarkAllAsReadFunction(
-    notificationState,
-    setNotificationState,
-  );
-  const dismissNotification =
-    createDismissNotificationFunction(setNotificationState);
-  const updatePreferences = createUpdatePreferencesFunction(
-    userId,
-    notificationState,
-    setNotificationState,
+  // Mark notification as read
+  const markAsRead = useCallback(
+    async (notificationId: string): Promise<void> => {
+      setNotificationState((prev) => ({
+        ...prev,
+        notifications: prev.notifications.map((notif) =>
+          notif.id === notificationId ? { ...notif, isRead: true } : notif,
+        ),
+      }));
+
+      // Update in backend
+      await updateNotificationStatus(notificationId, { isRead: true });
+    },
+    [],
   );
 
-  // Channel management functions
+  // Mark all notifications as read
+  const markAllAsRead = useCallback(async (): Promise<void> => {
+    const unreadIds = notificationState.notifications
+      .filter((notif) => !notif.isRead)
+      .map((notif) => notif.id);
+
+    setNotificationState((prev) => ({
+      ...prev,
+      notifications: prev.notifications.map((notif) => ({
+        ...notif,
+        isRead: true,
+      })),
+    }));
+
+    // Update in backend
+    await updateMultipleNotificationStatus(unreadIds, { isRead: true });
+  }, [notificationState.notifications]);
+
+  // Dismiss notification
+  const dismissNotification = useCallback(
+    async (notificationId: string): Promise<void> => {
+      setNotificationState((prev) => ({
+        ...prev,
+        notifications: prev.notifications.filter(
+          (notif) => notif.id !== notificationId,
+        ),
+      }));
+
+      // Remove from backend
+      await deleteNotification(notificationId);
+    },
+    [],
+  );
+
+  // Update preferences
+  const updatePreferences = useCallback(
+    async (prefs: Partial<NotificationPreferences>): Promise<void> => {
+      const updatedPreferences = {
+        ...notificationState.preferences,
+        ...prefs,
+      };
+
+      setNotificationState((prev) => ({
+        ...prev,
+        preferences: updatedPreferences,
+        deliveryChannels: updatedPreferences.channels,
+      }));
+
+      // Save to backend
+      await saveNotificationPreferences(userId, updatedPreferences);
+    },
+    [userId, notificationState.preferences],
+  );
+
+  // Enable/disable notification channel
   const enableChannel = useCallback(
     async (channel: NotificationChannelType): Promise<void> => {
       const updatedChannels = notificationState.preferences.channels.map(
         (ch) => (ch.type === channel ? { ...ch, enabled: true } : ch),
       );
+
       await updatePreferences({ channels: updatedChannels });
     },
     [notificationState.preferences.channels, updatePreferences],
@@ -219,11 +306,13 @@ export const useNotifications = (options: UseNotificationsOptions) => {
       const updatedChannels = notificationState.preferences.channels.map(
         (ch) => (ch.type === channel ? { ...ch, enabled: false } : ch),
       );
+
       await updatePreferences({ channels: updatedChannels });
     },
     [notificationState.preferences.channels, updatePreferences],
   );
 
+  // Update channel settings
   const updateChannelSettings = useCallback(
     async (
       channel: NotificationChannelType,
@@ -235,21 +324,110 @@ export const useNotifications = (options: UseNotificationsOptions) => {
             ? { ...ch, settings: { ...ch.settings, ...settings } }
             : ch,
       );
+
       await updatePreferences({ channels: updatedChannels });
     },
     [notificationState.preferences.channels, updatePreferences],
   );
 
-  // Create convenience and relationship notification functions
-  const { showSuccess, showError, showWarning, showInfo } =
-    createConvenienceNotificationFunctions(addNotification);
+  // Convenience methods for creating notifications
+  const showSuccess = useCallback(
+    (title: string, message: string) => {
+      return addNotification({
+        type: NotificationType.SUCCESS,
+        title,
+        message,
+        priority: NotificationPriority.LOW,
+      });
+    },
+    [addNotification],
+  );
 
-  const {
-    notifyTaskAssigned,
-    notifyTaskApproved,
-    notifySessionStarted,
-    notifyRelationshipRequest,
-  } = createRelationshipNotificationFunctions(addNotification, relationshipId);
+  const showError = useCallback(
+    (title: string, message: string) => {
+      return addNotification({
+        type: NotificationType.ERROR,
+        title,
+        message,
+        priority: NotificationPriority.HIGH,
+      });
+    },
+    [addNotification],
+  );
+
+  const showWarning = useCallback(
+    (title: string, message: string) => {
+      return addNotification({
+        type: NotificationType.WARNING,
+        title,
+        message,
+        priority: NotificationPriority.MEDIUM,
+      });
+    },
+    [addNotification],
+  );
+
+  const showInfo = useCallback(
+    (title: string, message: string) => {
+      return addNotification({
+        type: NotificationType.INFO,
+        title,
+        message,
+        priority: NotificationPriority.LOW,
+      });
+    },
+    [addNotification],
+  );
+
+  // Relationship-specific notifications
+  const notifyTaskAssigned = useCallback(
+    (taskTitle: string, keyholderName: string) => {
+      return addNotification({
+        type: NotificationType.TASK_ASSIGNED,
+        title: "New Task Assigned",
+        message: `${keyholderName} has assigned you: ${taskTitle}`,
+        priority: NotificationPriority.MEDIUM,
+        relationshipId,
+      });
+    },
+    [addNotification, relationshipId],
+  );
+
+  const notifyTaskApproved = useCallback(
+    (taskTitle: string) => {
+      return addNotification({
+        type: NotificationType.TASK_APPROVED,
+        title: "Task Approved",
+        message: `Your task "${taskTitle}" has been approved`,
+        priority: NotificationPriority.LOW,
+        relationshipId,
+      });
+    },
+    [addNotification, relationshipId],
+  );
+
+  const notifySessionStarted = useCallback(() => {
+    return addNotification({
+      type: NotificationType.SESSION_STARTED,
+      title: "Chastity Session Started",
+      message: "Your chastity session has begun",
+      priority: NotificationPriority.MEDIUM,
+    });
+  }, [addNotification]);
+
+  const notifyRelationshipRequest = useCallback(
+    (requesterName: string) => {
+      return addNotification({
+        type: NotificationType.RELATIONSHIP_REQUEST,
+        title: "Relationship Request",
+        message: `${requesterName} wants to establish a keyholder relationship with you`,
+        priority: NotificationPriority.HIGH,
+        actionUrl: "/relationships",
+        actionText: "View Request",
+      });
+    },
+    [addNotification],
+  );
 
   // Computed values
   const computedValues = useMemo(() => {
@@ -305,3 +483,119 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     ...computedValues,
   };
 };
+
+// Helper functions
+function isInQuietHours(quietHours: QuietHours): boolean {
+  if (!quietHours.enabled) return false;
+
+  const now = new Date();
+  const currentDay = now.getDay();
+  const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+
+  // Check if current day is in quiet hours days
+  if (!quietHours.days.includes(currentDay)) {
+    return false;
+  }
+
+  // Simple time comparison (doesn't handle cross-midnight ranges properly)
+  return (
+    currentTime >= quietHours.startTime && currentTime <= quietHours.endTime
+  );
+}
+
+async function deliverNotification(
+  notification: Notification,
+  channels: NotificationChannelType[],
+): Promise<void> {
+  const deliveryPromises = channels.map(async (channel) => {
+    switch (channel) {
+      case NotificationChannelType.IN_APP:
+        // Already handled by adding to state
+        return;
+
+      case NotificationChannelType.PUSH:
+        return deliverPushNotification(notification);
+
+      case NotificationChannelType.EMAIL:
+        return deliverEmailNotification(notification);
+
+      case NotificationChannelType.SMS:
+        return deliverSMSNotification(notification);
+
+      default:
+      // Unknown notification channel
+    }
+  });
+
+  await Promise.allSettled(deliveryPromises);
+}
+
+async function deliverPushNotification(
+  notification: Notification,
+): Promise<void> {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(notification.title, {
+      body: notification.message,
+      icon: "/icon-192x192.png",
+      badge: "/badge-72x72.png",
+      tag: notification.id,
+      requireInteraction: notification.priority === NotificationPriority.URGENT,
+    });
+  }
+}
+
+async function deliverEmailNotification(
+  _notification: Notification,
+): Promise<void> {
+  // In real implementation, send email via backend API
+}
+
+async function deliverSMSNotification(
+  _notification: Notification,
+): Promise<void> {
+  // In real implementation, send SMS via backend API
+}
+
+async function fetchNotificationPreferences(
+  _userId: string,
+): Promise<Partial<NotificationPreferences>> {
+  // In real implementation, fetch from backend
+  return {};
+}
+
+async function fetchRecentNotifications(
+  _userId: string,
+  _relationshipId?: string,
+): Promise<Notification[]> {
+  // In real implementation, fetch from backend
+  return [];
+}
+
+async function saveNotification(_notification: Notification): Promise<void> {
+  // In real implementation, save to backend
+}
+
+async function updateNotificationStatus(
+  _notificationId: string,
+  _status: Partial<Pick<Notification, "isRead">>,
+): Promise<void> {
+  // In real implementation, update in backend
+}
+
+async function updateMultipleNotificationStatus(
+  _notificationIds: string[],
+  _status: Partial<Pick<Notification, "isRead">>,
+): Promise<void> {
+  // In real implementation, bulk update in backend
+}
+
+async function deleteNotification(_notificationId: string): Promise<void> {
+  // In real implementation, delete from backend
+}
+
+async function saveNotificationPreferences(
+  _userId: string,
+  _preferences: NotificationPreferences,
+): Promise<void> {
+  // In real implementation, save to backend
+}
