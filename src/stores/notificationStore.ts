@@ -8,10 +8,12 @@ import { devtools } from "zustand/middleware";
 export interface Notification {
   id: string;
   type: "success" | "error" | "warning" | "info";
+  priority: "low" | "medium" | "high" | "urgent";
   title?: string;
   message: string;
   duration?: number; // in milliseconds, 0 means persistent
   dismissible?: boolean;
+  requireInteraction?: boolean; // for urgent priority
   position?:
     | "top-left"
     | "top-right"
@@ -23,6 +25,8 @@ export interface Notification {
     label: string;
     onClick: () => void;
   };
+  icon?: string; // optional custom icon
+  metadata?: Record<string, unknown>; // extensible metadata
   timestamp: Date;
 }
 
@@ -65,15 +69,23 @@ export interface NotificationActions {
 }
 
 export type NotificationStore = NotificationState;
-export type NotificationConfig = Omit<Notification, "id" | "timestamp">;
 export type NotificationType = "success" | "error" | "warning" | "info";
+export type NotificationPriority = "low" | "medium" | "high" | "urgent";
 export type NotificationAction = {
   label: string;
   onClick: () => void;
 };
 
-// Default durations for different notification types
+// Default durations for different notification priorities
 const DEFAULT_DURATIONS = {
+  low: 3000,
+  medium: 5000,
+  high: 7000,
+  urgent: 0, // Persistent - requires interaction
+};
+
+// Fallback durations by type (legacy support)
+const TYPE_DURATIONS = {
   success: 4000,
   error: 0, // Persistent for errors
   warning: 6000,
@@ -94,11 +106,28 @@ export const useNotificationStore = create<NotificationState>()(
       // Actions
       addNotification: (notification) => {
         const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Determine priority from type if not specified
+        const priority = notification.priority || (
+          notification.type === 'error' ? 'high' : 
+          notification.type === 'warning' ? 'medium' : 'low'
+        );
+        
+        // Set duration based on priority, with fallback to type
+        const duration = notification.duration !== undefined 
+          ? notification.duration 
+          : DEFAULT_DURATIONS[priority] || TYPE_DURATIONS[notification.type];
+        
+        // Urgent priority requires interaction
+        const requireInteraction = priority === 'urgent' || notification.requireInteraction;
+        
         const newNotification: Notification = {
           id,
           timestamp: new Date(),
-          duration: DEFAULT_DURATIONS[notification.type],
+          priority,
+          duration,
           dismissible: true,
+          requireInteraction,
           ...notification,
         };
 
@@ -107,11 +136,11 @@ export const useNotificationStore = create<NotificationState>()(
             notifications: [...state.notifications, newNotification],
           }),
           false,
-          `addNotification:${notification.type}`,
+          `addNotification:${notification.type}:${priority}`,
         );
 
-        // Auto-remove notification after duration if specified
-        if (newNotification.duration && newNotification.duration > 0) {
+        // Auto-remove notification after duration if specified and not requiring interaction
+        if (newNotification.duration && newNotification.duration > 0 && !newNotification.requireInteraction) {
           setTimeout(() => {
             useNotificationStore.getState().removeNotification(id);
           }, newNotification.duration);
