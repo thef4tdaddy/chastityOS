@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
 import { Event, EventType } from "../../types/events";
-import { DBEvent, EventFilters } from "../../types/database";
+import { DBEvent } from "../../types/database";
 import { logger } from "../../utils/logging";
 
 /**
@@ -63,6 +63,7 @@ interface CreateEventData {
   type: EventType;
   details: Record<string, unknown>;
   timestamp?: Date;
+  isPrivate?: boolean;
 }
 
 interface UpdateEventData {
@@ -267,19 +268,28 @@ export function useCreateEvent() {
       // Generate event ID
       const eventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      const newEvent: DBEvent = {
+      const newEvent: Event = {
         id: eventId,
         userId,
-        syncStatus: "pending",
-        lastModified: new Date(),
+        type: eventData.type,
+        timestamp: eventData.timestamp || new Date(),
+        details: eventData.details || {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Convert to DBEvent format for database storage
+      const dbEvent: Omit<DBEvent, "lastModified" | "syncStatus"> = {
+        id: eventId,
+        userId,
         type: eventData.type,
         timestamp: eventData.timestamp || new Date(),
         details: eventData.details || {},
         isPrivate: eventData.isPrivate || false,
+        sessionId: undefined,
       };
 
       // Dexie-first write for immediate UI response
-      const dbEvent = eventToDBEvent(newEvent);
       await eventDBService.create(dbEvent);
 
       logger.info("Event created successfully", {
@@ -335,7 +345,7 @@ export function useUpdateEvent() {
       eventId: string;
       userId: string;
       updates: UpdateEventData;
-    }): Promise<DBEvent> => {
+    }): Promise<Event> => {
       logger.info("Updating event", { eventId, userId });
 
       const existingEvent = await eventDBService.findById(eventId);
@@ -343,14 +353,18 @@ export function useUpdateEvent() {
         throw new Error(`Event not found: ${eventId}`);
       }
 
-      const updatedEvent: DBEvent = {
-        ...existingEvent,
-        ...updates,
-        createdAt: existingEvent.createdAt || new Date(),
-        lastModified: new Date(),
+      // Convert DBEvent to Event for return type
+      const updatedEvent: Event = {
+        id: existingEvent.id,
+        userId: existingEvent.userId,
+        type: (updates.type || existingEvent.type) as EventType,
+        timestamp: updates.timestamp || existingEvent.timestamp,
+        details: updates.details || existingEvent.details,
+        createdAt: new Date(), // Default createdAt
         updatedAt: new Date(),
       };
 
+      // Create updated DBEvent for database
       const dbUpdatedEvent = eventToDBEvent(updatedEvent);
       await eventDBService.update(eventId, dbUpdatedEvent);
 

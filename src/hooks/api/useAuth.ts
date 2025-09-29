@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { User } from "firebase/auth";
-import { AuthService } from "../../services/auth/auth-service";
+import { User as FirebaseUser } from "firebase/auth";
+import { User, UserRole } from "../../types/core";
+import { AuthService, authService } from "../../services/auth/auth-service";
 import { logger } from "../../utils/logging";
 
 /**
@@ -51,19 +52,21 @@ export function useLogin() {
       password: string;
     }) => {
       logger.info("Login attempt", { email });
-      return await AuthService.signIn(email, password);
+      return await AuthService.signIn({ email, password, rememberMe: false });
     },
-    onSuccess: (user) => {
-      logger.info("Login successful", { uid: user.uid });
+    onSuccess: (response) => {
+      if (response.success && response.data) {
+        logger.info("Login successful", { uid: response.data.uid });
 
-      // Update current user cache
-      queryClient.setQueryData(authKeys.currentUser, user);
+        // Update current user cache
+        queryClient.setQueryData(authKeys.currentUser, response.data);
 
-      // Invalidate user profile to refresh data
-      queryClient.invalidateQueries({ queryKey: ["auth", "profile"] });
+        // Invalidate user profile to refresh data
+        queryClient.invalidateQueries({ queryKey: ["auth", "profile"] });
 
-      // Invalidate all user-specific data
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+        // Invalidate all user-specific data
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      }
     },
     onError: (error) => {
       logger.error("Login failed", error);
@@ -116,25 +119,27 @@ export function useSignUp() {
       displayName?: string;
     }) => {
       logger.info("Sign up attempt", { email, displayName });
-      const user = await AuthService.signUp(email, password);
+      const response = await AuthService.register({
+        email,
+        password,
+        confirmPassword: password,
+        displayName: displayName || "",
+        role: UserRole.SUBMISSIVE, // Default role
+        agreeToTerms: true,
+      });
 
-      // Update display name if provided
-      if (displayName && user) {
-        await AuthService.updateProfile(user, { displayName });
-      }
-
-      return user;
+      return response;
     },
-    onSuccess: (user) => {
-      logger.info("Sign up successful", { uid: user?.uid });
+    onSuccess: (response) => {
+      if (response.success && response.data) {
+        logger.info("Sign up successful", { uid: response.data.uid });
 
-      if (user) {
         // Update current user cache
-        queryClient.setQueryData(authKeys.currentUser, user);
+        queryClient.setQueryData(authKeys.currentUser, response.data);
 
         // Prefetch user profile
         queryClient.prefetchQuery({
-          queryKey: authKeys.profile(user.uid),
+          queryKey: authKeys.profile(response.data.uid),
           queryFn: () => AuthService.getCurrentUser(),
         });
       }
@@ -153,7 +158,7 @@ export function usePasswordReset() {
   return useMutation({
     mutationFn: async ({ email }: { email: string }) => {
       logger.info("Password reset requested", { email });
-      await AuthService.sendPasswordResetEmail(email);
+      return await AuthService.resetPassword(email);
     },
     onSuccess: (_, { email }) => {
       logger.info("Password reset email sent", { email });
@@ -179,7 +184,7 @@ export function useUpdateProfile() {
       displayName?: string;
       photoURL?: string;
     }) => {
-      const user = AuthService.getCurrentUser();
+      const user = await AuthService.getCurrentUser();
       if (!user) {
         throw new Error("No authenticated user");
       }
@@ -189,16 +194,23 @@ export function useUpdateProfile() {
         displayName,
         photoURL,
       });
-      await AuthService.updateProfile(user, { displayName, photoURL });
 
-      return user;
+      const response = await AuthService.updateUserProfile(user.uid, {
+        displayName,
+      });
+
+      return response;
     },
-    onSuccess: (user) => {
-      logger.info("Profile updated successfully", { uid: user.uid });
+    onSuccess: (response) => {
+      if (response.success && response.data) {
+        logger.info("Profile updated successfully", { uid: response.data.uid });
 
-      // Update current user cache with fresh data
-      queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
-      queryClient.invalidateQueries({ queryKey: authKeys.profile(user.uid) });
+        // Update current user cache with fresh data
+        queryClient.invalidateQueries({ queryKey: authKeys.currentUser });
+        queryClient.invalidateQueries({
+          queryKey: authKeys.profile(response.data.uid),
+        });
+      }
     },
     onError: (error) => {
       logger.error("Profile update failed", error);
@@ -220,7 +232,9 @@ export function useEmailVerification() {
       }
 
       logger.info("Email verification requested", { uid: user.uid });
-      await AuthService.sendEmailVerification(user);
+      await authService.sendEmailVerification({
+        uid: user.uid,
+      } as FirebaseUser);
     },
     onSuccess: () => {
       logger.info("Verification email sent");
@@ -238,13 +252,13 @@ export function useEmailVerification() {
 export function useReauthenticate() {
   return useMutation({
     mutationFn: async ({ password }: { password: string }) => {
-      const user = AuthService.getCurrentUser();
+      const user = await AuthService.getCurrentUser();
       if (!user || !user.email) {
         throw new Error("No authenticated user with email");
       }
 
       logger.info("Re-authentication attempt", { uid: user.uid });
-      await AuthService.reauthenticateWithCredential(user.email, password);
+      await authService.reauthenticateWithCredential(user.email, password);
     },
     onSuccess: () => {
       logger.info("Re-authentication successful");
