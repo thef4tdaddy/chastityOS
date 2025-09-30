@@ -23,7 +23,6 @@ import {
   AuditExport,
   AuditPrivacySettings,
   CleanupResult,
-  AuditExportOptions,
 } from "../../types/security";
 import { PermissionContext } from "../../types/security";
 import {
@@ -47,15 +46,177 @@ interface UseAuditLogOptions {
 }
 
 export const useAuditLog = (options: UseAuditLogOptions) => {
-  const {
-    userId,
-    relationshipId,
-    autoLogActions = true,
-    retentionDays = 365,
-  } = options;
+  const { userId, relationshipId, retentionDays = 365 } = options;
 
-  // Audit state
-  const [auditState, setAuditState] = useState<AuditLogState>({
+  // Initialize state
+  const [auditState, setAuditState] = useState<AuditLogState>(() =>
+    initializeAuditState(retentionDays),
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load recent audit entries on mount
+  useEffect(() => {
+    if (userId) {
+      loadAuditEntries(
+        userId,
+        relationshipId,
+        setAuditState,
+        setError,
+        setLoading,
+      );
+    }
+  }, [userId, relationshipId]);
+
+  // Create action handlers
+  const actionHandlers = useMemo(
+    () =>
+      createActionHandlers(userId, relationshipId, auditState, setAuditState),
+    [userId, relationshipId, auditState],
+  );
+
+  // Create query handlers
+  const queryHandlers = useMemo(
+    () => createQueryHandlers(auditState),
+    [auditState],
+  );
+
+  // Create management handlers
+  const managementHandlers = useMemo(
+    () => createManagementHandlers(userId, auditState, setAuditState),
+    [userId, auditState],
+  );
+
+  // Computed values
+  const computedValues = useMemo(
+    () => calculateComputedValues(auditState),
+    [auditState],
+  );
+
+  return {
+    // Audit data
+    recentEntries: auditState.recentEntries,
+    categories: auditState.categories,
+    filters: auditState.filters,
+    loading,
+    error,
+
+    // Action handlers
+    ...actionHandlers,
+
+    // Query handlers
+    ...queryHandlers,
+
+    // Management handlers
+    ...managementHandlers,
+
+    // Computed values
+    ...computedValues,
+  };
+};
+
+// Search helper functions
+function applyTextSearch(entries: AuditEntry[], query?: string): AuditEntry[] {
+  if (!query) return entries;
+
+  const searchTerm = query.toLowerCase();
+  return entries.filter(
+    (entry) =>
+      entry.details.description.toLowerCase().includes(searchTerm) ||
+      entry.action.toLowerCase().includes(searchTerm),
+  );
+}
+
+function applySearchFilters(
+  entries: AuditEntry[],
+  filters?: AuditFilter,
+): AuditEntry[] {
+  if (!filters) return entries;
+
+  let results = entries;
+
+  if (filters.startDate && filters.endDate) {
+    results = results.filter(
+      (entry) =>
+        entry.timestamp >= filters.startDate! &&
+        entry.timestamp <= filters.endDate!,
+    );
+  }
+
+  if (filters.userId) {
+    results = results.filter((entry) => entry.userId === filters.userId);
+  }
+
+  if (filters.actions && filters.actions.length > 0) {
+    results = results.filter((entry) =>
+      filters.actions!.includes(entry.action),
+    );
+  }
+
+  if (filters.categories && filters.categories.length > 0) {
+    results = results.filter((entry) =>
+      filters.categories!.includes(entry.category),
+    );
+  }
+
+  if (filters.severity) {
+    results = results.filter((entry) => entry.severity === filters.severity);
+  }
+
+  if (filters.outcome) {
+    results = results.filter((entry) => entry.outcome === filters.outcome);
+  }
+
+  return results;
+}
+
+function applySorting(
+  entries: AuditEntry[],
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
+): AuditEntry[] {
+  if (!sortBy) return entries;
+
+  return [...entries].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy) {
+      case "timestamp":
+        comparison = a.timestamp.getTime() - b.timestamp.getTime();
+        break;
+      case "severity":
+        const severityOrder: Record<string, number> = {
+          low: 0,
+          medium: 1,
+          high: 2,
+          critical: 3,
+        };
+        comparison = severityOrder[a.severity] - severityOrder[b.severity];
+        break;
+      case "category":
+        comparison = a.category.localeCompare(b.category);
+        break;
+    }
+
+    return sortOrder === "desc" ? -comparison : comparison;
+  });
+}
+
+function applyPagination(
+  entries: AuditEntry[],
+  limit?: number,
+  offset?: number,
+): AuditEntry[] {
+  if (!limit && !offset) return entries;
+
+  const start = offset || 0;
+  const end = start + (limit || entries.length);
+  return entries.slice(start, end);
+}
+
+// Initialization and handler creation helpers
+function initializeAuditState(retentionDays: number): AuditLogState {
+  return {
     recentEntries: [],
     categories: Object.values(AuditCategory),
     filters: {},
@@ -71,40 +232,39 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
       retentionDays,
       anonymizeAfterDays: 90,
     },
-  });
+  };
+}
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+async function loadAuditEntries(
+  userId: string,
+  relationshipId: string | undefined,
+  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+): Promise<void> {
+  try {
+    setIsLoading(true);
+    setError(null);
 
-  // Load recent audit entries on mount
-  useEffect(() => {
-    const loadRecentEntries = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    const entries = await fetchRecentAuditEntries(userId, relationshipId);
 
-        // In real implementation, fetch from backend/Firebase
-        const entries = await fetchRecentAuditEntries(userId, relationshipId);
+    setAuditState((prev) => ({
+      ...prev,
+      recentEntries: entries,
+    }));
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to load audit log");
+  } finally {
+    setIsLoading(false);
+  }
+}
 
-        setAuditState((prev) => ({
-          ...prev,
-          recentEntries: entries,
-        }));
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load audit log",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId) {
-      loadRecentEntries();
-    }
-  }, [userId, relationshipId]);
-
-  // Log an action
+function createActionHandlers(
+  userId: string,
+  relationshipId: string | undefined,
+  auditState: AuditLogState,
+  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+) {
   const logAction = useCallback(
     async (
       action: AuditAction,
@@ -130,22 +290,18 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
             : undefined,
         };
 
-        // In real implementation, save to backend
         await saveAuditEntry(entry);
-
-        // Update local state
         setAuditState((prev) => ({
           ...prev,
-          recentEntries: [entry, ...prev.recentEntries.slice(0, 99)], // Keep last 100
+          recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
         }));
-      } catch (err) {
+      } catch {
         // Failed to log audit action
       }
     },
     [userId, relationshipId, auditState.privacySettings],
   );
 
-  // Log security event
   const logSecurityEvent = useCallback(
     async (event: SecurityEvent): Promise<void> => {
       const details: AuditDetails = {
@@ -157,7 +313,7 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
         id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date(),
         userId,
-        action: AuditAction.PERMISSION_CHECK, // Generic security action
+        action: AuditAction.PERMISSION_CHECK,
         category: AuditCategory.SECURITY,
         context: { relationshipId },
         details,
@@ -175,7 +331,6 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
       };
 
       await saveAuditEntry(entry);
-
       setAuditState((prev) => ({
         ...prev,
         recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
@@ -184,7 +339,6 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     [userId, relationshipId, auditState.privacySettings],
   );
 
-  // Log permission check
   const logPermissionCheck = useCallback(
     async (
       permission: string,
@@ -205,10 +359,12 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     [logAction],
   );
 
-  // Get entries by date range
+  return { logAction, logSecurityEvent, logPermissionCheck };
+}
+
+function createQueryHandlers(auditState: AuditLogState) {
   const getEntriesByDateRange = useCallback(
     async (start: Date, end: Date): Promise<AuditEntry[]> => {
-      // In real implementation, query backend with date filters
       return auditState.recentEntries.filter(
         (entry) => entry.timestamp >= start && entry.timestamp <= end,
       );
@@ -216,7 +372,6 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     [auditState.recentEntries],
   );
 
-  // Get entries by category
   const getEntriesByCategory = useCallback(
     async (category: AuditCategory): Promise<AuditEntry[]> => {
       return auditState.recentEntries.filter(
@@ -226,7 +381,6 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     [auditState.recentEntries],
   );
 
-  // Get entries by user
   const getEntriesByUser = useCallback(
     async (targetUserId: string): Promise<AuditEntry[]> => {
       return auditState.recentEntries.filter(
@@ -238,106 +392,35 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     [auditState.recentEntries],
   );
 
-  // Search entries
   const searchEntries = useCallback(
     async (query: AuditSearchQuery): Promise<AuditEntry[]> => {
       let results = auditState.recentEntries;
-
-      // Apply text search
-      if (query.query) {
-        const searchTerm = query.query.toLowerCase();
-        results = results.filter(
-          (entry) =>
-            entry.details.description.toLowerCase().includes(searchTerm) ||
-            entry.action.toLowerCase().includes(searchTerm),
-        );
-      }
-
-      // Apply filters
-      if (query.filters) {
-        const { filters } = query;
-
-        if (filters.startDate && filters.endDate) {
-          results = results.filter(
-            (entry) =>
-              entry.timestamp >= filters.startDate! &&
-              entry.timestamp <= filters.endDate!,
-          );
-        }
-
-        if (filters.userId) {
-          results = results.filter((entry) => entry.userId === filters.userId);
-        }
-
-        if (filters.actions && filters.actions.length > 0) {
-          results = results.filter((entry) =>
-            filters.actions!.includes(entry.action),
-          );
-        }
-
-        if (filters.categories && filters.categories.length > 0) {
-          results = results.filter((entry) =>
-            filters.categories!.includes(entry.category),
-          );
-        }
-
-        if (filters.severity) {
-          results = results.filter(
-            (entry) => entry.severity === filters.severity,
-          );
-        }
-
-        if (filters.outcome) {
-          results = results.filter(
-            (entry) => entry.outcome === filters.outcome,
-          );
-        }
-      }
-
-      // Apply sorting
-      if (query.sortBy) {
-        results.sort((a, b) => {
-          let comparison = 0;
-
-          switch (query.sortBy) {
-            case "timestamp":
-              comparison = a.timestamp.getTime() - b.timestamp.getTime();
-              break;
-            case "severity":
-              const severityOrder = { low: 0, medium: 1, high: 2, critical: 3 };
-              comparison =
-                severityOrder[a.severity] - severityOrder[b.severity];
-              break;
-            case "category":
-              comparison = a.category.localeCompare(b.category);
-              break;
-          }
-
-          return query.sortOrder === "desc" ? -comparison : comparison;
-        });
-      }
-
-      // Apply pagination
-      if (query.limit || query.offset) {
-        const start = query.offset || 0;
-        const end = start + (query.limit || results.length);
-        results = results.slice(start, end);
-      }
-
+      results = applyTextSearch(results, query.query);
+      results = applySearchFilters(results, query.filters);
+      results = applySorting(results, query.sortBy, query.sortOrder);
+      results = applyPagination(results, query.limit, query.offset);
       return results;
     },
     [auditState.recentEntries],
   );
 
-  // Apply filters
+  return {
+    getEntriesByDateRange,
+    getEntriesByCategory,
+    getEntriesByUser,
+    searchEntries,
+  };
+}
+
+function createManagementHandlers(
+  userId: string,
+  auditState: AuditLogState,
+  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+) {
   const applyFilters = useCallback((filters: AuditFilter): void => {
-    setAuditState((prev) => ({
-      ...prev,
-      filters,
-    }));
+    setAuditState((prev) => ({ ...prev, filters }));
   }, []);
 
-  // Get security summary
   const getSecuritySummary = useCallback((): SecurityAuditSummary => {
     const securityEntries = auditState.recentEntries.filter(
       (entry) => entry.category === AuditCategory.SECURITY,
@@ -372,216 +455,55 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     };
   }, [auditState.recentEntries]);
 
-  // Get compliance report
-  const getComplianceReport = useCallback((): ComplianceReport => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const periodEntries = auditState.recentEntries.filter(
-      (entry) => entry.timestamp >= thirtyDaysAgo,
-    );
-
-    const actionsByCategory = periodEntries.reduce(
-      (acc, entry) => {
-        acc[entry.category] = (acc[entry.category] || 0) + 1;
-        return acc;
-      },
-      {} as Record<AuditCategory, number>,
-    );
-
-    const securityScore = calculateSecurityScore(periodEntries);
-
-    return {
-      period: {
-        start: thirtyDaysAgo,
-        end: now,
-      },
-      totalActions: periodEntries.length,
-      actionsByCategory,
-      securityScore,
-      recommendations: generateSecurityRecommendations(periodEntries),
-    };
-  }, [auditState.recentEntries]);
-
-  // Export audit log
-  const exportAuditLog = useCallback(
-    async (
-      format: ExportFormat,
-      filters?: AuditFilter,
-    ): Promise<AuditExport> => {
-      let entries = auditState.recentEntries;
-
-      // Apply filters if provided
-      if (filters) {
-        // Implementation would filter entries based on criteria
-        entries = applyAuditFilters(entries, filters);
-      }
-
-      // Generate export data based on format
-      let data: string | Uint8Array;
-      let filename: string;
-
-      switch (format) {
-        case "json":
-          data = JSON.stringify(entries, null, 2);
-          filename = `audit-log-${Date.now()}.json`;
-          break;
-        case "csv":
-          data = convertToCSV(entries);
-          filename = `audit-log-${Date.now()}.csv`;
-          break;
-        case "pdf":
-          data = await generatePDF(entries);
-          filename = `audit-log-${Date.now()}.pdf`;
-          break;
-        default:
-          throw new Error(`Unsupported export format: ${format}`);
-      }
-
-      return {
-        format,
-        data,
-        filename,
-        generatedAt: new Date(),
-      };
-    },
-    [auditState.recentEntries],
-  );
-
-  // Share with keyholder
-  const shareWithKeyholder = useCallback(
-    async (entries: string[]): Promise<void> => {
-      if (!relationshipId) {
-        throw new Error("No relationship context for sharing");
-      }
-
-      // In real implementation, this would share selected entries with keyholder
-      // In real implementation, this would share selected entries with keyholder
-    },
-    [relationshipId],
-  );
-
-  // Update privacy settings
   const updatePrivacySettings = useCallback(
     async (settings: Partial<AuditPrivacySettings>): Promise<void> => {
       setAuditState((prev) => ({
         ...prev,
-        privacySettings: {
-          ...prev.privacySettings,
-          ...settings,
-        },
+        privacySettings: { ...prev.privacySettings, ...settings },
       }));
-
-      // In real implementation, save to backend
       await savePrivacySettings(userId, settings);
     },
     [userId],
   );
 
-  // Cleanup old entries
-  const cleanupOldEntries = useCallback(
-    async (retentionDays: number): Promise<CleanupResult> => {
-      const cutoffDate = new Date(
-        Date.now() - retentionDays * 24 * 60 * 60 * 1000,
-      );
+  return { applyFilters, getSecuritySummary, updatePrivacySettings };
+}
 
-      const oldEntries = auditState.recentEntries.filter(
-        (entry) => entry.timestamp < cutoffDate,
-      );
+function calculateComputedValues(auditState: AuditLogState) {
+  const totalEntries = auditState.recentEntries.length;
+  const securityAlerts = auditState.recentEntries.filter(
+    (entry) => entry.severity === AuditSeverity.HIGH,
+  ).length;
 
-      // In real implementation, delete/anonymize old entries in backend
-      const result: CleanupResult = {
-        deletedEntries: oldEntries.length,
-        anonymizedEntries: 0,
-        errors: [],
-      };
+  const lastLoginEntry = auditState.recentEntries.find(
+    (entry) => entry.action === AuditAction.LOGIN,
+  );
+  const lastLoginTime = lastLoginEntry?.timestamp;
 
-      // Update local state
-      setAuditState((prev) => ({
-        ...prev,
-        recentEntries: prev.recentEntries.filter(
-          (entry) => entry.timestamp >= cutoffDate,
-        ),
-      }));
-
-      return result;
+  const actionCounts = auditState.recentEntries.reduce(
+    (acc, entry) => {
+      acc[entry.action] = (acc[entry.action] || 0) + 1;
+      return acc;
     },
-    [auditState.recentEntries],
+    {} as Record<string, number>,
   );
 
-  // Computed values
-  const computedValues = useMemo(() => {
-    const totalEntries = auditState.recentEntries.length;
-    const securityAlerts = auditState.recentEntries.filter(
-      (entry) => entry.severity === AuditSeverity.HIGH,
-    ).length;
+  const mostCommonActions = Object.entries(actionCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([action, count]) => ({ action, count }));
 
-    const lastLoginEntry = auditState.recentEntries.find(
-      (entry) => entry.action === AuditAction.LOGIN,
-    );
-    const lastLoginTime = lastLoginEntry?.timestamp;
-
-    const actionCounts = auditState.recentEntries.reduce(
-      (acc, entry) => {
-        acc[entry.action] = (acc[entry.action] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    const mostCommonActions = Object.entries(actionCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([action, count]) => ({ action, count }));
-
-    const hasSecurityConcerns = auditState.recentEntries.some(
-      (entry) =>
-        entry.category === AuditCategory.SECURITY &&
-        entry.severity === AuditSeverity.HIGH,
-    );
-
-    return {
-      totalEntries,
-      securityAlerts,
-      lastLoginTime,
-      mostCommonActions,
-      hasSecurityConcerns,
-    };
-  }, [auditState.recentEntries]);
+  const hasSecurityConcerns = auditState.recentEntries.some(
+    (entry) =>
+      entry.category === AuditCategory.SECURITY &&
+      entry.severity === AuditSeverity.HIGH,
+  );
 
   return {
-    // Audit data
-    recentEntries: auditState.recentEntries,
-    categories: auditState.categories,
-    filters: auditState.filters,
-    loading,
-    error,
-
-    // Logging actions
-    logAction,
-    logSecurityEvent,
-    logPermissionCheck,
-
-    // Querying audit log
-    getEntriesByDateRange,
-    getEntriesByCategory,
-    getEntriesByUser,
-    searchEntries,
-
-    // Filtering and analysis
-    applyFilters,
-    getSecuritySummary,
-    getComplianceReport,
-
-    // Export and sharing
-    exportAuditLog,
-    shareWithKeyholder,
-
-    // Privacy and retention
-    updatePrivacySettings,
-    cleanupOldEntries,
-
-    // Computed values
-    ...computedValues,
+    totalEntries,
+    securityAlerts,
+    lastLoginTime,
+    mostCommonActions,
+    hasSecurityConcerns,
   };
-};
+}

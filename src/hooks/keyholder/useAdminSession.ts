@@ -1,7 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { AdminSession, AdminPermissions } from '../../types';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  DocumentReference,
+} from "firebase/firestore";
+import { db } from "../../firebase";
+import { AdminSession, AdminPermissions } from "../../types";
 
 interface UseAdminSessionProps {
   userId: string;
@@ -27,14 +33,17 @@ const defaultPermissions: AdminPermissions = {
   canAccessLogs: false,
 };
 
-export function useAdminSession({ userId, isAuthReady }: UseAdminSessionProps): UseAdminSessionReturn {
+export function useAdminSession({
+  userId,
+  isAuthReady,
+}: UseAdminSessionProps): UseAdminSessionReturn {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const getAdminDocRef = useCallback(() => {
     if (!userId) return null;
-    return doc(db, 'admins', userId);
+    return doc(db, "admins", userId);
   }, [userId]);
 
   // Load existing admin session
@@ -46,129 +55,49 @@ export function useAdminSession({ userId, isAuthReady }: UseAdminSessionProps): 
     }
 
     const loadAdminSession = async () => {
-      try {
-        setIsLoading(true);
-        const adminDocRef = getAdminDocRef();
-        if (!adminDocRef) return;
-
-        const adminDoc = await getDoc(adminDocRef);
-        if (adminDoc.exists()) {
-          const data = adminDoc.data();
-          const session: AdminSession = {
-            userId: data.userId,
-            isAdmin: data.isAdmin || false,
-            permissions: { ...defaultPermissions, ...data.permissions },
-            sessionStart: data.sessionStart?.toDate() || new Date(),
-            lastActivity: data.lastActivity?.toDate() || new Date(),
-          };
-          setAdminSession(session);
-        } else {
-          setAdminSession(null);
-        }
-      } catch (err) {
-        console.error('Error loading admin session:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load admin session');
-      } finally {
-        setIsLoading(false);
-      }
+      await loadExistingAdminSession(
+        getAdminDocRef,
+        setAdminSession,
+        setError,
+        setIsLoading,
+      );
     };
 
     loadAdminSession();
   }, [isAuthReady, userId, getAdminDocRef]);
 
-  const startAdminSession = useCallback(async (permissions: AdminPermissions) => {
-    try {
-      setError(null);
-      const adminDocRef = getAdminDocRef();
-      if (!adminDocRef) {
-        throw new Error('No admin document reference available');
-      }
-
-      const now = new Date();
-      const newSession: AdminSession = {
+  const startAdminSession = useCallback(
+    async (permissions: AdminPermissions) => {
+      await handleStartAdminSession(
         userId,
-        isAdmin: true,
         permissions,
-        sessionStart: now,
-        lastActivity: now,
-      };
-
-      await setDoc(adminDocRef, {
-        userId,
-        isAdmin: true,
-        permissions,
-        sessionStart: now,
-        lastActivity: now,
-      });
-
-      setAdminSession(newSession);
-    } catch (err) {
-      console.error('Error starting admin session:', err);
-      setError(err instanceof Error ? err.message : 'Failed to start admin session');
-    }
-  }, [userId, getAdminDocRef]);
+        getAdminDocRef,
+        setAdminSession,
+        setError,
+      );
+    },
+    [userId, getAdminDocRef],
+  );
 
   const endAdminSession = useCallback(async () => {
-    try {
-      setError(null);
-      const adminDocRef = getAdminDocRef();
-      if (!adminDocRef) return;
-
-      await updateDoc(adminDocRef, {
-        isAdmin: false,
-        lastActivity: new Date(),
-      });
-
-      setAdminSession(null);
-    } catch (err) {
-      console.error('Error ending admin session:', err);
-      setError(err instanceof Error ? err.message : 'Failed to end admin session');
-    }
+    await handleEndAdminSession(getAdminDocRef, setAdminSession, setError);
   }, [getAdminDocRef]);
 
-  const updatePermissions = useCallback(async (newPermissions: Partial<AdminPermissions>) => {
-    try {
-      setError(null);
-      if (!adminSession) return;
-
-      const adminDocRef = getAdminDocRef();
-      if (!adminDocRef) return;
-
-      const updatedPermissions = { ...adminSession.permissions, ...newPermissions };
-      
-      await updateDoc(adminDocRef, {
-        permissions: updatedPermissions,
-        lastActivity: new Date(),
-      });
-
-      setAdminSession(prev => prev ? {
-        ...prev,
-        permissions: updatedPermissions,
-        lastActivity: new Date(),
-      } : null);
-    } catch (err) {
-      console.error('Error updating admin permissions:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update permissions');
-    }
-  }, [adminSession, getAdminDocRef]);
+  const updatePermissions = useCallback(
+    async (newPermissions: Partial<AdminPermissions>) => {
+      await handleUpdatePermissions(
+        adminSession,
+        newPermissions,
+        getAdminDocRef,
+        setAdminSession,
+        setError,
+      );
+    },
+    [adminSession, getAdminDocRef],
+  );
 
   const updateActivity = useCallback(async () => {
-    try {
-      if (!adminSession || !adminSession.isAdmin) return;
-
-      const adminDocRef = getAdminDocRef();
-      if (!adminDocRef) return;
-
-      const now = new Date();
-      await updateDoc(adminDocRef, {
-        lastActivity: now,
-      });
-
-      setAdminSession(prev => prev ? { ...prev, lastActivity: now } : null);
-    } catch (err) {
-      console.error('Error updating admin activity:', err);
-      // Don't set error for activity updates as they're non-critical
-    }
+    await handleUpdateActivity(adminSession, getAdminDocRef, setAdminSession);
   }, [adminSession, getAdminDocRef]);
 
   return {
@@ -182,4 +111,163 @@ export function useAdminSession({ userId, isAuthReady }: UseAdminSessionProps): 
     updatePermissions,
     updateActivity,
   };
+}
+
+// Helper functions for useAdminSession
+async function loadExistingAdminSession(
+  getAdminDocRef: () => DocumentReference | null,
+  setAdminSession: React.Dispatch<React.SetStateAction<AdminSession | null>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+): Promise<void> {
+  try {
+    setIsLoading(true);
+    const adminDocRef = getAdminDocRef();
+    if (!adminDocRef) return;
+
+    const adminDoc = await getDoc(adminDocRef);
+    if (adminDoc.exists()) {
+      const data = adminDoc.data();
+      const session: AdminSession = {
+        userId: data.userId,
+        isAdmin: data.isAdmin || false,
+        permissions: { ...defaultPermissions, ...data.permissions },
+        sessionStart: data.sessionStart?.toDate() || new Date(),
+        lastActivity: data.lastActivity?.toDate() || new Date(),
+      };
+      setAdminSession(session);
+    } else {
+      setAdminSession(null);
+    }
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to load admin session",
+    );
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+async function handleStartAdminSession(
+  userId: string,
+  permissions: AdminPermissions,
+  getAdminDocRef: () => DocumentReference | null,
+  setAdminSession: React.Dispatch<React.SetStateAction<AdminSession | null>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+): Promise<void> {
+  try {
+    setError(null);
+    const adminDocRef = getAdminDocRef();
+    if (!adminDocRef) {
+      throw new Error("No admin document reference available");
+    }
+
+    const now = new Date();
+    const newSession: AdminSession = {
+      userId,
+      isAdmin: true,
+      permissions,
+      sessionStart: now,
+      lastActivity: now,
+    };
+
+    await setDoc(adminDocRef, {
+      userId,
+      isAdmin: true,
+      permissions,
+      sessionStart: now,
+      lastActivity: now,
+    });
+
+    setAdminSession(newSession);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to start admin session",
+    );
+  }
+}
+
+async function handleEndAdminSession(
+  getAdminDocRef: () => DocumentReference | null,
+  setAdminSession: React.Dispatch<React.SetStateAction<AdminSession | null>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+): Promise<void> {
+  try {
+    setError(null);
+    const adminDocRef = getAdminDocRef();
+    if (!adminDocRef) return;
+
+    await updateDoc(adminDocRef, {
+      isAdmin: false,
+      lastActivity: new Date(),
+    });
+
+    setAdminSession(null);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to end admin session",
+    );
+  }
+}
+
+async function handleUpdatePermissions(
+  adminSession: AdminSession | null,
+  newPermissions: Partial<AdminPermissions>,
+  getAdminDocRef: () => DocumentReference | null,
+  setAdminSession: React.Dispatch<React.SetStateAction<AdminSession | null>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+): Promise<void> {
+  try {
+    setError(null);
+    if (!adminSession) return;
+
+    const adminDocRef = getAdminDocRef();
+    if (!adminDocRef) return;
+
+    const updatedPermissions = {
+      ...adminSession.permissions,
+      ...newPermissions,
+    };
+
+    await updateDoc(adminDocRef, {
+      permissions: updatedPermissions,
+      lastActivity: new Date(),
+    });
+
+    setAdminSession((prev) =>
+      prev
+        ? {
+            ...prev,
+            permissions: updatedPermissions,
+            lastActivity: new Date(),
+          }
+        : null,
+    );
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to update permissions",
+    );
+  }
+}
+
+async function handleUpdateActivity(
+  adminSession: AdminSession | null,
+  getAdminDocRef: () => DocumentReference | null,
+  setAdminSession: React.Dispatch<React.SetStateAction<AdminSession | null>>,
+): Promise<void> {
+  try {
+    if (!adminSession || !adminSession.isAdmin) return;
+
+    const adminDocRef = getAdminDocRef();
+    if (!adminDocRef) return;
+
+    const now = new Date();
+    await updateDoc(adminDocRef, {
+      lastActivity: now,
+    });
+
+    setAdminSession((prev) => (prev ? { ...prev, lastActivity: now } : null));
+  } catch {
+    // Don't set error for activity updates as they're non-critical
+  }
 }
