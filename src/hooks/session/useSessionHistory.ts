@@ -398,8 +398,6 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load sessions", { error });
     }
-    // userId is a stable prop from the component, safe to omit from deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [privacySettings.retentionPeriod]);
 
   const loadPrivacySettings = useCallback(async () => {

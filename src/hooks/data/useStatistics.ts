@@ -823,7 +823,14 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         recommendations: [],
       },
     };
-  }, [consistencyRating]); // Only depends on consistency rating
+  }, [
+    consistencyRating,
+    sessionStats.sessionsThisWeek,
+    sessionStats.sessionsThisMonth,
+    sessionStats.averageSessionLength,
+    sessionStats.completionRate,
+    goalStats.completionRate,
+  ]);
 
   const getRelationshipComparison =
     useCallback((): RelationshipComparisonStats => {
@@ -834,13 +841,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         satisfactionTrend: "improving",
         milestones: [],
       };
-    }, [
-      sessionStats.sessionsThisMonth,
-      sessionStats.sessionsThisWeek,
-      sessionStats.averageSessionLength,
-      sessionStats.completionRate,
-      goalStats.completionRate,
-    ]);
+    }, [sessionStats.sessionsThisMonth]);
 
   // ==================== PREDICTIVE ANALYTICS ====================
 

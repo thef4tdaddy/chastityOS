@@ -549,8 +549,6 @@ function createManagementHandlers(
       // In real implementation, this would share selected entries with keyholder
       // In real implementation, this would share selected entries with keyholder
     },
-    // relationshipId is not in scope of this function, outer scope value
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
