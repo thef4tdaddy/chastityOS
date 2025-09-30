@@ -1,17 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
   onSnapshot, 
   query, 
   where,
-  getDocs
 } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { MultiWearerSession, Wearer, KeyholderPermissions, SessionData } from '../../types';
+import {
+  getMultiWearerCollectionRef,
+  getWearersCollectionRef,
+  createMultiWearerSession,
+  endMultiWearerSession,
+  addWearerToSession,
+  removeWearerFromSession,
+  updateWearerInSession,
+  parseWearerData,
+  parseSessionData,
+} from './multiWearerHelpers';
 
 interface UseMultiWearerProps {
   keyholderUserId: string;
@@ -34,14 +38,6 @@ interface UseMultiWearerReturn {
   deactivateWearer: (wearerId: string) => Promise<void>;
 }
 
-const defaultPermissions: KeyholderPermissions = {
-  canApproveTasks: false,
-  canAddPunishments: false,
-  canAddRewards: false,
-  canModifyDuration: false,
-  canLockControls: false,
-};
-
 export function useMultiWearer({ 
   keyholderUserId, 
   isAuthReady 
@@ -50,14 +46,6 @@ export function useMultiWearer({
   const [wearers, setWearers] = useState<Wearer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const getMultiWearerCollectionRef = useCallback(() => {
-    return collection(db, 'multiWearerSessions');
-  }, []);
-
-  const getWearersCollectionRef = useCallback((sessionId: string) => {
-    return collection(db, 'multiWearerSessions', sessionId, 'wearers');
-  }, []);
 
   // Set up real-time listener for multi-wearer session
   useEffect(() => {
@@ -82,34 +70,16 @@ export function useMultiWearer({
       (querySnapshot) => {
         try {
           if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            const data = doc.data();
-            const sessionData: MultiWearerSession = {
-              keyholderUserId: data.keyholderUserId,
-              wearers: [],
-              isActive: data.isActive || false,
-              createdAt: data.createdAt?.toDate() || new Date(),
-              lastUpdated: data.lastUpdated?.toDate() || new Date(),
-            };
+            const docSnapshot = querySnapshot.docs[0];
+            const sessionData = parseSessionData(docSnapshot);
             setSession({ ...sessionData, wearers: [] });
             
             // Set up listener for wearers
-            const wearersCollectionRef = getWearersCollectionRef(doc.id);
+            const wearersCollectionRef = getWearersCollectionRef(docSnapshot.id);
             const wearersUnsubscribe = onSnapshot(
               wearersCollectionRef,
               (wearersSnapshot) => {
-                const wearersData: Wearer[] = wearersSnapshot.docs.map(wearerDoc => {
-                  const wearerData = wearerDoc.data();
-                  return {
-                    id: wearerDoc.id,
-                    name: wearerData.name || '',
-                    email: wearerData.email,
-                    isActive: wearerData.isActive || false,
-                    sessionData: wearerData.sessionData || {},
-                    tasks: wearerData.tasks || [],
-                    keyholderPermissions: { ...defaultPermissions, ...wearerData.keyholderPermissions },
-                  };
-                });
+                const wearersData: Wearer[] = wearersSnapshot.docs.map(parseWearerData);
                 setWearers(wearersData);
                 setSession(prev => prev ? { ...prev, wearers: wearersData } : null);
               }
@@ -136,7 +106,7 @@ export function useMultiWearer({
     );
 
     return () => unsubscribe();
-  }, [isAuthReady, keyholderUserId, getMultiWearerCollectionRef, getWearersCollectionRef]);
+  }, [isAuthReady, keyholderUserId]);
 
   const createSession = useCallback(async () => {
     try {
@@ -144,51 +114,25 @@ export function useMultiWearer({
       if (!keyholderUserId) {
         throw new Error('Keyholder user ID is required');
       }
-
-      const multiWearerCollectionRef = getMultiWearerCollectionRef();
-      const sessionData = {
-        keyholderUserId,
-        isActive: true,
-        createdAt: new Date(),
-        lastUpdated: new Date(),
-      };
-
-      await addDoc(multiWearerCollectionRef, sessionData);
+      await createMultiWearerSession(keyholderUserId);
     } catch (err) {
       console.error('Error creating multi-wearer session:', err);
       setError(err instanceof Error ? err.message : 'Failed to create session');
       throw err;
     }
-  }, [keyholderUserId, getMultiWearerCollectionRef]);
+  }, [keyholderUserId]);
 
   const endSession = useCallback(async () => {
     try {
       setError(null);
       if (!session) return;
-
-      // Find the session document
-      const multiWearerCollectionRef = getMultiWearerCollectionRef();
-      const q = query(
-        multiWearerCollectionRef, 
-        where('keyholderUserId', '==', keyholderUserId),
-        where('isActive', '==', true)
-      );
-
-      // This is a simplified approach - in a real implementation, you'd store the session ID
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const sessionDoc = querySnapshot.docs[0];
-        await updateDoc(sessionDoc.ref, {
-          isActive: false,
-          lastUpdated: new Date(),
-        });
-      }
+      await endMultiWearerSession(keyholderUserId);
     } catch (err) {
       console.error('Error ending multi-wearer session:', err);
       setError(err instanceof Error ? err.message : 'Failed to end session');
       throw err;
     }
-  }, [session, keyholderUserId, getMultiWearerCollectionRef]);
+  }, [session, keyholderUserId]);
 
   const addWearer = useCallback(async (wearerData: Omit<Wearer, 'id'>) => {
     try {
@@ -196,90 +140,37 @@ export function useMultiWearer({
       if (!session) {
         throw new Error('No active session to add wearer to');
       }
-
-      // Find the session document (simplified - you'd normally store the session ID)
-      const multiWearerCollectionRef = getMultiWearerCollectionRef();
-      const q = query(
-        multiWearerCollectionRef, 
-        where('keyholderUserId', '==', keyholderUserId),
-        where('isActive', '==', true)
-      );
-
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        throw new Error('Active session not found');
-      }
-
-      const sessionDoc = querySnapshot.docs[0];
-      const wearersCollectionRef = getWearersCollectionRef(sessionDoc.id);
-
-      const newWearerData = {
-        ...wearerData,
-        keyholderPermissions: { ...defaultPermissions, ...wearerData.keyholderPermissions },
-        createdAt: new Date(),
-      };
-
-      await addDoc(wearersCollectionRef, newWearerData);
+      await addWearerToSession(keyholderUserId, wearerData);
     } catch (err) {
       console.error('Error adding wearer:', err);
       setError(err instanceof Error ? err.message : 'Failed to add wearer');
       throw err;
     }
-  }, [session, keyholderUserId, getMultiWearerCollectionRef, getWearersCollectionRef]);
+  }, [session, keyholderUserId]);
 
   const removeWearer = useCallback(async (wearerId: string) => {
     try {
       setError(null);
       if (!session) return;
-
-      // Find session and delete wearer
-      const multiWearerCollectionRef = getMultiWearerCollectionRef();
-      const q = query(
-        multiWearerCollectionRef, 
-        where('keyholderUserId', '==', keyholderUserId),
-        where('isActive', '==', true)
-      );
-
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const sessionDoc = querySnapshot.docs[0];
-        const wearerDocRef = doc(db, 'multiWearerSessions', sessionDoc.id, 'wearers', wearerId);
-        await deleteDoc(wearerDocRef);
-      }
+      await removeWearerFromSession(keyholderUserId, wearerId);
     } catch (err) {
       console.error('Error removing wearer:', err);
       setError(err instanceof Error ? err.message : 'Failed to remove wearer');
       throw err;
     }
-  }, [session, keyholderUserId, getMultiWearerCollectionRef]);
+  }, [session, keyholderUserId]);
 
   const updateWearer = useCallback(async (wearerId: string, updates: Partial<Wearer>) => {
     try {
       setError(null);
       if (!session) return;
-
-      const multiWearerCollectionRef = getMultiWearerCollectionRef();
-      const q = query(
-        multiWearerCollectionRef, 
-        where('keyholderUserId', '==', keyholderUserId),
-        where('isActive', '==', true)
-      );
-
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const sessionDoc = querySnapshot.docs[0];
-        const wearerDocRef = doc(db, 'multiWearerSessions', sessionDoc.id, 'wearers', wearerId);
-        await updateDoc(wearerDocRef, {
-          ...updates,
-          lastUpdated: new Date(),
-        });
-      }
+      await updateWearerInSession(keyholderUserId, wearerId, updates);
     } catch (err) {
       console.error('Error updating wearer:', err);
       setError(err instanceof Error ? err.message : 'Failed to update wearer');
       throw err;
     }
-  }, [session, keyholderUserId, getMultiWearerCollectionRef]);
+  }, [session, keyholderUserId]);
 
   const updateWearerPermissions = useCallback(async (
     wearerId: string, 
