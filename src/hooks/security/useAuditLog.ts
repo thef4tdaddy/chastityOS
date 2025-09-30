@@ -300,7 +300,7 @@ function createActionHandlers(
           ...prev,
           recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
         }));
-      } catch (_err) {
+      } catch {
         // Failed to log audit action
       }
     },
@@ -463,8 +463,8 @@ function createManagementHandlers(
     };
   }, [auditState.recentEntries]);
 
-  // Get compliance report
-  const getComplianceReport = useCallback((): ComplianceReport => {
+  // Get compliance report (not yet exposed in return)
+  const _getComplianceReport = useCallback((): ComplianceReport => {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -494,8 +494,8 @@ function createManagementHandlers(
     };
   }, [auditState.recentEntries]);
 
-  // Export audit log
-  const exportAuditLog = useCallback(
+  // Export audit log (not yet exposed in return)
+  const _exportAuditLog = useCallback(
     async (
       format: ExportFormat,
       filters?: AuditFilter,
@@ -539,8 +539,8 @@ function createManagementHandlers(
     [auditState.recentEntries],
   );
 
-  // Share with keyholder
-  const shareWithKeyholder = useCallback(
+  // Share with keyholder (not yet exposed in return)
+  const _shareWithKeyholder = useCallback(
     async (_entries: string[]): Promise<void> => {
       if (!relationshipId) {
         throw new Error("No relationship context for sharing");

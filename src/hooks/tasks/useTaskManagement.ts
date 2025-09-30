@@ -292,7 +292,7 @@ export function useTaskManagement(
 
   // Assign a task to a wearer
   const assignTask = useCallback(
-    async (taskId: string, wearerId: string): Promise<void> => {
+    async (taskId: string, _wearerId: string): Promise<void> => {
       setError(null);
 
       try {

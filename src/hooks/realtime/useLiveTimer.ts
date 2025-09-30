@@ -427,7 +427,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
               : sync,
           ),
         }));
-      } catch (error) {
+      } catch {
         // Failed to sync timer
       }
     },
@@ -440,7 +440,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       if (subscription.timerId === timer.id && subscription.isActive) {
         try {
           subscription.callback(timer);
-        } catch (error) {
+        } catch {
           // Error in subscription callback
         }
       }
@@ -474,7 +474,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
               : sync,
           ),
         }));
-      } catch (error) {
+      } catch {
         // Failed to sync timer
       }
     }
@@ -548,13 +548,13 @@ async function getServerTime(): Promise<Date> {
     // const { timestamp } = await response.json();
     // return new Date(timestamp);
     return new Date(); // Fallback to client time
-  } catch (error) {
+  } catch {
     // Fallback to client time
     return new Date();
   }
 }
 
-async function saveTimer(timer: LiveTimer): Promise<void> {
+async function saveTimer(_timer: LiveTimer): Promise<void> {
   // In real implementation, save to backend
   // In real implementation, save to backend
 }
@@ -564,7 +564,7 @@ async function logTimerEvent(
   type: string,
   data?: Record<string, string | number | boolean | Date>,
 ): Promise<void> {
-  const event: TimerEvent = {
+  const _event: TimerEvent = {
     id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     timerId,
     type: type as TimerEvent["type"],

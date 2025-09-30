@@ -73,7 +73,7 @@ export const createWebSocketFunctions = (
         try {
           const message = JSON.parse(event.data);
           handleMessage(message);
-        } catch (_error) {
+        } catch {
           // Failed to parse WebSocket message
         }
       };
@@ -97,14 +97,14 @@ export const createWebSocketFunctions = (
         }
       };
 
-      wsRef.current.onerror = (error) => {
+      wsRef.current.onerror = (_error) => {
         setSyncState((prev) => ({
           ...prev,
           connectionStatus: ConnectionStatus.ERROR,
           syncMetrics: updateSyncMetrics(prev.syncMetrics, "error"),
         }));
       };
-    } catch (error) {
+    } catch {
       setSyncState((prev) => ({
         ...prev,
         connectionStatus: ConnectionStatus.ERROR,
@@ -178,6 +178,7 @@ export const createWebSocketFunctions = (
   }, []);
 
   const sendMessage = useCallback(
+
     (message: RealtimeUpdate | Record<string, unknown>) => {
       const success = sendWebSocketMessage(wsRef.current, message, () => {
         setSyncState((prev) => ({
@@ -271,7 +272,7 @@ export const createWebSocketFunctions = (
         if (subscription.dataType === update.type && subscription.isActive) {
           try {
             subscription.callback(update);
-          } catch (error) {
+          } catch {
             // Error in subscription callback
           }
         }
@@ -370,7 +371,7 @@ export const createRealtimeSubscriptionFunctions = (
   );
 
   const publishUpdate = useCallback(
-    async (update: RealtimeUpdate): Promise<void> => {
+    async (_update: RealtimeUpdate): Promise<void> => {
       // Implementation would send the update via WebSocket
     },
     [],
