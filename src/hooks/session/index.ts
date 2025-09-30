@@ -27,3 +27,15 @@ export {
   type HistoricalSession,
   type HistoryInsights,
 } from "./useSessionHistory";
+
+// Phase 1 Hooks - Component Migration (#309)
+export {
+  useSessionLoader,
+  type UseSessionLoaderReturn,
+} from "./useSessionLoader";
+export {
+  useSessionActions,
+  type UseSessionActionsReturn,
+  type UseSessionActionsOptions,
+  type SessionConfig,
+} from "./useSessionActions";
