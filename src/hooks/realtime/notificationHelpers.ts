@@ -64,7 +64,7 @@ export async function deliverNotification(
   // Use Promise.all instead of Promise.allSettled for compatibility
   try {
     await Promise.all(deliveryPromises);
-  } catch (_error) {
+  } catch {
     // Handle delivery errors
   }
 }

@@ -62,7 +62,7 @@ export const usePresence = (options: UsePresenceOptions) => {
 
   // Extract individual functions for easier use
   const {
-    updateOwnPresence,
+    updateOwnPresence: _updateOwnPresence,
     setOnline,
     setOffline,
     setAway,
