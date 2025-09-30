@@ -29,7 +29,7 @@ import { logger } from "../../utils/logging";
 
 // Enhanced goal state
 
-import type * as Types from "./types/Goals";
+import type * as _Types from "./types/Goals";
 export type * from "./types/Goals";
 
 export const useGoals = (userId?: string, relationshipId?: string) => {
@@ -493,12 +493,12 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
     }));
   };
 
-  const detectConflicts = (goals: EnhancedGoal[]) => {
+  const detectConflicts = (_goals: EnhancedGoal[]) => {
     // Simplified conflict detection
     return [];
   };
 
-  const generatePlanRecommendations = (goals: EnhancedGoal[]) => {
+  const generatePlanRecommendations = (_goals: EnhancedGoal[]) => {
     return [
       {
         type: "reorder" as const,

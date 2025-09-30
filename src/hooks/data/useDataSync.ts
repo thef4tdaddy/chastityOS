@@ -4,16 +4,14 @@
  * with proper privacy controls
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type {
-  SyncResult,
-} from "../../types/database";
+import type { SyncResult } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useDataSync");
 
 // ==================== INTERFACES ====================
 
-import type * as Types from "./types/dataSync";
+import type * as _Types from "./types/dataSync";
 export type * from "./types/dataSync";
 
 export const useDataSync = (userId: string) => {
@@ -331,26 +329,26 @@ export const useDataSync = (userId: string) => {
         }
 
         // Apply resolution strategy
-        let resolvedData: Record<string, unknown>;
+        let _resolvedData: Record<string, unknown>;
 
         switch (resolution.strategy) {
           case "local_wins":
-            resolvedData = conflict.localVersion;
+            _resolvedData = conflict.localVersion;
             break;
           case "remote_wins":
-            resolvedData = conflict.remoteVersion;
+            _resolvedData = conflict.remoteVersion;
             break;
           case "keyholder_wins":
-            resolvedData = conflict.keyholderVersion || conflict.remoteVersion;
+            _resolvedData = conflict.keyholderVersion || conflict.remoteVersion;
             break;
           case "merge_intelligent":
-            resolvedData = intelligentMerge(
+            _resolvedData = intelligentMerge(
               conflict.localVersion,
               conflict.remoteVersion,
             );
             break;
           case "latest_timestamp":
-            const _resolvedData = getLatestTimestampVersion(conflict);
+            _resolvedData = getLatestTimestampVersion(conflict);
             break;
           default:
             throw new Error(
@@ -620,7 +618,7 @@ export const useDataSync = (userId: string) => {
     };
   }, [conflicts, syncMetrics]);
 
-  const getSyncHistory = useCallback((days = 30): SyncHistoryEntry[] => {
+  const getSyncHistory = useCallback((_days = 30): SyncHistoryEntry[] => {
     // Return sync history for the specified number of days
     return [];
   }, []);

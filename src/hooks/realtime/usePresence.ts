@@ -7,10 +7,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   PresenceState,
-  UserPresence,
+  UserPresence as _UserPresence,
   PresenceStatus,
   ActivityContext,
-  PresenceSubscription,
+  PresenceSubscription as _PresenceSubscription,
 } from "../../types/realtime";
 import {
   createPresenceUpdateFunctions,

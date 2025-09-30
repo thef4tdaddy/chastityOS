@@ -28,7 +28,7 @@ export function getDeviceType(): "desktop" | "mobile" | "tablet" {
 
 // Helper function to send presence update
 export async function sendPresenceUpdate(
-  presence: UserPresence,
+  _presence: UserPresence,
 ): Promise<void> {
   // In real implementation, send to backend/WebSocket
 
@@ -39,7 +39,7 @@ export async function sendPresenceUpdate(
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify(presence),
     // });
-  } catch (error) {
+  } catch (_error) {
     // Failed to send presence update
   }
 }

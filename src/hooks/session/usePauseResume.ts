@@ -3,14 +3,14 @@
  * Provides advanced pause/resume functionality with keyholder overrides,
  * intelligent cooldown management, and comprehensive analytics
  */
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { PauseCooldownService } from "../../services/PauseCooldownService";
 import { serviceLogger } from "../../utils/logging";
 import type {
-  PauseStatus,
-  CooldownState,
+  PauseStatus as _PauseStatus,
+  CooldownState as _CooldownState,
   KeyholderOverrideCapabilities,
-  PauseHistoryEntry,
+  PauseHistoryEntry as _PauseHistoryEntry,
   PauseAnalytics,
   PauseReason,
   PauseRequestStatus,
@@ -69,9 +69,11 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   const { cooldownState, startCooldown, clearCooldown } = useCooldownState();
 
   const [keyholderOverrides, setKeyholderOverrides] = useState(
-    createInitialKeyholderOverrides
+    createInitialKeyholderOverrides,
   );
-  const [pauseAnalytics, setPauseAnalytics] = useState(createInitialPauseAnalytics);
+  const [pauseAnalytics, setPauseAnalytics] = useState(
+    createInitialPauseAnalytics,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,7 +83,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Computed values
   const canPause = useMemo(
     () => !pauseStatus.isPaused && !cooldownState.isInCooldown,
-    [pauseStatus.isPaused, cooldownState.isInCooldown]
+    [pauseStatus.isPaused, cooldownState.isInCooldown],
   );
 
   const canResume = useMemo(() => pauseStatus.isPaused, [pauseStatus.isPaused]);
@@ -90,18 +92,20 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     if (!cooldownState.nextPauseAvailable) return 0;
     return Math.max(
       0,
-      Math.floor((cooldownState.nextPauseAvailable.getTime() - Date.now()) / 1000)
+      Math.floor(
+        (cooldownState.nextPauseAvailable.getTime() - Date.now()) / 1000,
+      ),
     );
   }, [cooldownState.nextPauseAvailable]);
 
   const hasKeyholderOverride = useMemo(
     () => keyholderOverrides.canOverrideCooldown,
-    [keyholderOverrides.canOverrideCooldown]
+    [keyholderOverrides.canOverrideCooldown],
   );
 
   const pauseFrequency = useMemo(
     () => calculatePauseFrequency(pauseHistory),
-    [pauseHistory]
+    [pauseHistory],
   );
 
   // Initialize keyholder overrides
@@ -122,7 +126,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
       if (cooldownInfo && !cooldownInfo.canPause) {
         startCooldown(
           cooldownInfo.cooldownRemaining || 0,
-          keyholderOverrides.canOverrideCooldown
+          keyholderOverrides.canOverrideCooldown,
         );
       }
     } catch (err) {
@@ -162,7 +166,9 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
       } catch (err) {
         logger.error("Failed to initialize pause system", { error: err });
         setError(
-          err instanceof Error ? err.message : "Failed to initialize pause system"
+          err instanceof Error
+            ? err.message
+            : "Failed to initialize pause system",
         );
       } finally {
         setIsLoading(false);
@@ -189,7 +195,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         throw err;
       }
     },
-    [canPause, sessionId, startPause]
+    [canPause, sessionId, startPause],
   );
 
   // Resume session
@@ -202,17 +208,23 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
       logger.debug("Resuming session", { sessionId });
 
       const resumeTime = new Date();
-      const duration = calculatePauseDuration(pauseStatus.pauseStartTime, resumeTime);
+      const duration = calculatePauseDuration(
+        pauseStatus.pauseStartTime,
+        resumeTime,
+      );
 
       setPauseStatus(updatePauseStatusOnResume(pauseStatus));
       setPauseHistory((prev) =>
-        updatePauseHistoryOnResume(prev, resumeTime, duration)
+        updatePauseHistoryOnResume(prev, resumeTime, duration),
       );
 
       const cooldownDur = calculateCooldownDuration(pauseAnalytics, duration);
       startCooldown(cooldownDur, keyholderOverrides.canOverrideCooldown);
 
-      logger.info("Session resumed successfully", { sessionId, pauseDuration: duration });
+      logger.info("Session resumed successfully", {
+        sessionId,
+        pauseDuration: duration,
+      });
     } catch (err) {
       logger.error("Failed to resume session", { error: err });
       throw err;
@@ -256,7 +268,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         };
       }
     },
-    [sessionId, cooldownState.isInCooldown, pauseSession]
+    [sessionId, cooldownState.isInCooldown, pauseSession],
   );
 
   // Request cooldown override
@@ -272,7 +284,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
       }
 
       try {
-        logger.debug("Requesting cooldown override", { sessionId, justification });
+        logger.debug("Requesting cooldown override", {
+          sessionId,
+          justification,
+        });
 
         return {
           approved: false,
@@ -290,7 +305,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         };
       }
     },
-    [sessionId, relationshipId]
+    [sessionId, relationshipId],
   );
 
   // Keyholder force pause
@@ -309,7 +324,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         throw err;
       }
     },
-    [keyholderOverrides.canForcePause, sessionId, startPause]
+    [keyholderOverrides.canForcePause, sessionId, startPause],
   );
 
   // Keyholder force resume
@@ -324,18 +339,22 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         await resumeSession();
         logger.info("Keyholder force resume successful", { sessionId });
       } catch (err) {
-        logger.error("Failed to execute keyholder force resume", { error: err });
+        logger.error("Failed to execute keyholder force resume", {
+          error: err,
+        });
         throw err;
       }
     },
-    [keyholderOverrides.canForceResume, sessionId, resumeSession]
+    [keyholderOverrides.canForceResume, sessionId, resumeSession],
   );
 
   // Keyholder override cooldown
   const keyholderOverrideCooldown = useCallback(
     async (reason: string): Promise<void> => {
       if (!keyholderOverrides.canOverrideCooldown) {
-        throw new Error("Keyholder does not have cooldown override permissions");
+        throw new Error(
+          "Keyholder does not have cooldown override permissions",
+        );
       }
 
       try {
@@ -343,11 +362,13 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         clearCooldown();
         logger.info("Keyholder cooldown override successful", { sessionId });
       } catch (err) {
-        logger.error("Failed to execute keyholder cooldown override", { error: err });
+        logger.error("Failed to execute keyholder cooldown override", {
+          error: err,
+        });
         throw err;
       }
     },
-    [keyholderOverrides.canOverrideCooldown, sessionId, clearCooldown]
+    [keyholderOverrides.canOverrideCooldown, sessionId, clearCooldown],
   );
 
   // Analytics
@@ -357,7 +378,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
   const getCooldownEffectiveness = useCallback((): CooldownAnalytics => {
     return {
-      effectiveness: calculateCooldownEffectiveness(pauseHistory, cooldownState),
+      effectiveness: calculateCooldownEffectiveness(
+        pauseHistory,
+        cooldownState,
+      ),
       averageCooldownDuration: cooldownState.adaptiveDuration,
       overrideFrequency: 0,
       adaptiveAdjustments: 0,
