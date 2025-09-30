@@ -42,6 +42,62 @@ const shouldShowIndicator = (
   return isMobile && (isPulling || isRefreshing);
 };
 
+// Refresh Indicator Component
+const RefreshIndicator: React.FC<{
+  isVisible: boolean;
+  isRefreshing: boolean;
+  pullDistance: number;
+  pullPercentage: number;
+  refreshIndicatorOpacity: number;
+  refreshIndicatorScale: number;
+}> = ({
+  isVisible,
+  isRefreshing,
+  pullDistance,
+  pullPercentage,
+  refreshIndicatorOpacity,
+  refreshIndicatorScale,
+}) => {
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200 ease-out"
+      style={{
+        transform: getIndicatorTransform(pullDistance),
+        opacity: isRefreshing ? 1 : refreshIndicatorOpacity,
+      }}
+    >
+      <div
+        className="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700"
+        style={{
+          transform: `scale(${isRefreshing ? 1 : refreshIndicatorScale})`,
+        }}
+      >
+        {isRefreshing ? (
+          <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <svg
+            className={`w-5 h-5 text-purple-500 transition-transform duration-200 ${
+              pullPercentage >= 100 ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
+          </svg>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   children,
   onRefresh,
@@ -80,42 +136,14 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
       onScroll={onScroll}
     >
       {/* Pull to refresh indicator */}
-      {shouldShowIndicator(isMobile, isPulling, isRefreshing) && (
-        <div
-          className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10 transition-all duration-200 ease-out"
-          style={{
-            transform: getIndicatorTransform(pullDistance),
-            opacity: isRefreshing ? 1 : refreshIndicatorOpacity,
-          }}
-        >
-          <div
-            className="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700"
-            style={{
-              transform: `scale(${isRefreshing ? 1 : refreshIndicatorScale})`,
-            }}
-          >
-            {isRefreshing ? (
-              <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <svg
-                className={`w-5 h-5 text-purple-500 transition-transform duration-200 ${
-                  pullPercentage >= 100 ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                />
-              </svg>
-            )}
-          </div>
-        </div>
-      )}
+      <RefreshIndicator
+        isVisible={shouldShowIndicator(isMobile, isPulling, isRefreshing)}
+        isRefreshing={isRefreshing}
+        pullDistance={pullDistance}
+        pullPercentage={pullPercentage}
+        refreshIndicatorOpacity={refreshIndicatorOpacity}
+        refreshIndicatorScale={refreshIndicatorScale}
+      />
 
       {/* Content with transform during pull */}
       <div

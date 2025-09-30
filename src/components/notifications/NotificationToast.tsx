@@ -99,6 +99,51 @@ const NotificationIcon: React.FC<{ type: string; priority: NotificationPriority 
   }
 };
 
+// Notification Header Component
+const NotificationHeader: React.FC<{
+  title?: string;
+  priority: NotificationPriority;
+}> = ({ title, priority }) => {
+  if (!title) return null;
+
+  return (
+    <h4 className="text-sm font-semibold mb-1">
+      {title}
+      {priority === "urgent" && (
+        <span className="ml-2 text-xs px-2 py-0.5 bg-red-600 rounded-full text-red-100">
+          URGENT
+        </span>
+      )}
+    </h4>
+  );
+};
+
+// Notification Action Button Component
+const NotificationActionButton: React.FC<{
+  action: { label: string; onClick: () => void };
+  styles: ReturnType<typeof getPriorityStyles>;
+  onDismiss: (id: string) => void;
+  notificationId: string;
+  dismissible: boolean;
+}> = ({ action, styles, onDismiss, notificationId, dismissible }) => (
+  <div className="mt-3">
+    <button
+      onClick={() => {
+        action.onClick();
+        if (dismissible) {
+          onDismiss(notificationId);
+        }
+      }}
+      className={`
+        text-xs px-3 py-1.5 rounded border transition-colors
+        ${styles.border} hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50
+      `}
+    >
+      {action.label}
+    </button>
+  </div>
+);
+
 // Animation variants
 const toastVariants = {
   initial: { opacity: 0, y: -50, scale: 0.9 },
@@ -155,35 +200,17 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onD
       </div>
 
       <div className="ml-3 flex-1">
-        {notification.title && (
-          <h4 className="text-sm font-semibold mb-1">
-            {notification.title}
-            {notification.priority === "urgent" && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-red-600 rounded-full text-red-100">
-                URGENT
-              </span>
-            )}
-          </h4>
-        )}
+        <NotificationHeader title={notification.title} priority={notification.priority} />
         <p className="text-sm">{notification.message}</p>
 
         {notification.action && (
-          <div className="mt-3">
-            <button
-              onClick={() => {
-                notification.action!.onClick();
-                if (notification.dismissible) {
-                  onDismiss(notification.id);
-                }
-              }}
-              className={`
-                text-xs px-3 py-1.5 rounded border transition-colors
-                ${styles.border} hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50
-              `}
-            >
-              {notification.action.label}
-            </button>
-          </div>
+          <NotificationActionButton
+            action={notification.action}
+            styles={styles}
+            onDismiss={onDismiss}
+            notificationId={notification.id}
+            dismissible={notification.dismissible}
+          />
         )}
       </div>
 

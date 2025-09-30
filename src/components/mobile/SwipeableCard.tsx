@@ -99,31 +99,23 @@ const RevealOverlay: React.FC<{
   );
 };
 
-export const SwipeableCard: React.FC<SwipeableCardProps> = ({
-  children,
-  className = "",
-  leftActions = [],
-  rightActions = [],
-  onSwipeThreshold: _onSwipeThreshold = 0.3,
-  disabled = false,
-}) => {
+// Custom hook for swipe logic
+const useSwipeLogic = (
+  leftActions: SwipeAction[],
+  rightActions: SwipeAction[],
+  disabled: boolean,
+) => {
   const [translateX, setTranslateX] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [revealedSide, setRevealedSide] = useState<"left" | "right" | null>(
-    null,
-  );
-  const cardRef = useRef<HTMLDivElement>(null);
-  const _startX = useRef(0);
+  const [revealedSide, setRevealedSide] = useState<"left" | "right" | null>(null);
   const { medium, success } = useHapticFeedback();
 
-  const maxSwipeDistance = 120; // Maximum pixels to swipe
+  const maxSwipeDistance = 120;
 
   const handleSwipeReveal = (side: "left" | "right") => {
     if (isRevealed && revealedSide === side) {
-      // Close if already revealed on the same side
       closeActions();
     } else {
-      // Reveal actions
       medium();
       setIsRevealed(true);
       setRevealedSide(side);
@@ -159,6 +151,38 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
       minDistance: 50,
     },
   );
+
+  return {
+    translateX,
+    isRevealed,
+    closeActions,
+    handleActionClick,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  };
+};
+
+export const SwipeableCard: React.FC<SwipeableCardProps> = ({
+  children,
+  className = "",
+  leftActions = [],
+  rightActions = [],
+  onSwipeThreshold: _onSwipeThreshold = 0.3,
+  disabled = false,
+}) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const _startX = useRef(0);
+
+  const {
+    translateX,
+    isRevealed,
+    closeActions,
+    handleActionClick,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  } = useSwipeLogic(leftActions, rightActions, disabled);
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
