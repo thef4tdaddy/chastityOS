@@ -118,15 +118,9 @@ const STORAGE_KEYS = {
   ACCESSIBILITY: "chastity-theme-accessibility",
 };
 
-/**
- * Enhanced Theme Hook
- */
-export const useTheme = () => {
-  const queryClient = useQueryClient();
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Get available themes (default + custom)
-  const { data: customThemes = [] } = useQuery<CustomTheme[]>({
+// Custom hook for theme queries
+const useThemeQueries = (customThemes: CustomTheme[]) => {
+  const customThemesQuery = useQuery<CustomTheme[]>({
     queryKey: ["themes", "custom"],
     queryFn: () => {
       const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_THEMES);
@@ -135,34 +129,29 @@ export const useTheme = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Get theme preferences
-  const { data: preferences = DEFAULT_PREFERENCES } =
-    useQuery<ThemePreferences>({
-      queryKey: ["themes", "preferences"],
-      queryFn: () => {
-        const stored = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
-        return stored
-          ? { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) }
-          : DEFAULT_PREFERENCES;
-      },
-      staleTime: 5 * 60 * 1000,
-    });
+  const preferencesQuery = useQuery<ThemePreferences>({
+    queryKey: ["themes", "preferences"],
+    queryFn: () => {
+      const stored = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+      return stored
+        ? { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) }
+        : DEFAULT_PREFERENCES;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  // Get accessibility settings
-  const { data: accessibilitySettings = DEFAULT_ACCESSIBILITY } =
-    useQuery<AccessibilitySettings>({
-      queryKey: ["themes", "accessibility"],
-      queryFn: () => {
-        const stored = localStorage.getItem(STORAGE_KEYS.ACCESSIBILITY);
-        return stored
-          ? { ...DEFAULT_ACCESSIBILITY, ...JSON.parse(stored) }
-          : DEFAULT_ACCESSIBILITY;
-      },
-      staleTime: 5 * 60 * 1000,
-    });
+  const accessibilityQuery = useQuery<AccessibilitySettings>({
+    queryKey: ["themes", "accessibility"],
+    queryFn: () => {
+      const stored = localStorage.getItem(STORAGE_KEYS.ACCESSIBILITY);
+      return stored
+        ? { ...DEFAULT_ACCESSIBILITY, ...JSON.parse(stored) }
+        : DEFAULT_ACCESSIBILITY;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  // Get current theme
-  const { data: currentTheme = DEFAULT_LIGHT_THEME } = useQuery<Theme>({
+  const currentThemeQuery = useQuery<Theme>({
     queryKey: ["themes", "current"],
     queryFn: () => {
       const stored = localStorage.getItem(STORAGE_KEYS.CURRENT_THEME);
@@ -176,19 +165,18 @@ export const useTheme = () => {
     staleTime: 1000,
   });
 
-  // Combined available themes
-  const availableThemes = useMemo(
-    () => [...DEFAULT_THEMES, ...customThemes],
-    [customThemes],
-  );
+  return {
+    customThemes: customThemesQuery.data || [],
+    preferences: preferencesQuery.data || DEFAULT_PREFERENCES,
+    accessibilitySettings: accessibilityQuery.data || DEFAULT_ACCESSIBILITY,
+    currentTheme: currentThemeQuery.data || DEFAULT_LIGHT_THEME,
+  };
+};
 
-  // Check if dark mode
-  const isDarkMode = useMemo(
-    () => currentTheme.category === ThemeCategory.DARK,
-    [currentTheme],
-  );
+// Custom hook for theme mutations
+const useThemeMutations = (availableThemes: Theme[], customThemes: CustomTheme[]) => {
+  const queryClient = useQueryClient();
 
-  // Set theme mutation
   const setThemeMutation = useMutation({
     mutationFn: async (themeId: string) => {
       const theme = availableThemes.find((t) => t.id === themeId);
@@ -207,7 +195,6 @@ export const useTheme = () => {
     },
   });
 
-  // Create custom theme mutation
   const createCustomThemeMutation = useMutation({
     mutationFn: async (definition: CustomThemeDefinition) => {
       const baseTheme = availableThemes.find(
@@ -240,7 +227,13 @@ export const useTheme = () => {
     },
   });
 
-  // Update preferences mutation
+  return { setThemeMutation, createCustomThemeMutation };
+};
+
+// Custom hook for preference mutations
+const usePreferenceMutations = (preferences: ThemePreferences, accessibilitySettings: AccessibilitySettings) => {
+  const queryClient = useQueryClient();
+
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<ThemePreferences>) => {
       const newPreferences = { ...preferences, ...updates };
@@ -256,7 +249,6 @@ export const useTheme = () => {
     },
   });
 
-  // Update accessibility settings mutation
   const updateAccessibilityMutation = useMutation({
     mutationFn: async (updates: Partial<AccessibilitySettings>) => {
       const newSettings = { ...accessibilitySettings, ...updates };
@@ -273,86 +265,94 @@ export const useTheme = () => {
     },
   });
 
-  // Apply theme to document
-  const applyThemeToDocument = useCallback((theme: Theme) => {
-    const root = document.documentElement;
+  return { updatePreferencesMutation, updateAccessibilityMutation };
+};
 
-    // Apply CSS custom properties
-    Object.entries(theme.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--color-${key}`, value);
-    });
+// Apply theme to document
+const applyThemeToDocument = useCallback((theme: Theme) => {
+  const root = document.documentElement;
 
-    // Apply typography
-    root.style.setProperty("--font-family", theme.typography.fontFamily);
-    root.style.setProperty(
-      "--font-size-base",
-      `${theme.typography.baseSize}px`,
-    );
-    root.style.setProperty(
-      "--line-height",
-      theme.typography.lineHeight.toString(),
-    );
-    root.style.setProperty(
-      "--letter-spacing",
-      `${theme.typography.letterSpacing}px`,
-    );
+  // Apply CSS custom properties
+  Object.entries(theme.colors).forEach(([key, value]) => {
+    root.style.setProperty(`--color-${key}`, value);
+  });
 
-    // Apply spacing
-    Object.entries(theme.spacing).forEach(([key, value]) => {
-      root.style.setProperty(`--spacing-${key}`, value);
-    });
-
-    // Apply animations
-    root.style.setProperty(
-      "--animation-duration",
-      `${theme.animations.duration}ms`,
-    );
-    root.style.setProperty("--animation-easing", theme.animations.easing);
-
-    // Set theme class
-    root.className = root.className.replace(/theme-\w+/g, "");
-    root.classList.add(`theme-${theme.category}`);
-  }, []);
-
-  // Apply accessibility settings
-  const applyAccessibilitySettings = useCallback(
-    (settings: AccessibilitySettings) => {
-      const root = document.documentElement;
-
-      // High contrast
-      if (settings.highContrast) {
-        root.classList.add("high-contrast");
-      } else {
-        root.classList.remove("high-contrast");
-      }
-
-      // Reduced motion
-      if (settings.reducedMotion) {
-        root.classList.add("reduced-motion");
-      } else {
-        root.classList.remove("reduced-motion");
-      }
-
-      // Font size
-      root.classList.remove(
-        "font-small",
-        "font-medium",
-        "font-large",
-        "font-extra-large",
-      );
-      root.classList.add(`font-${settings.fontSize}`);
-
-      // Focus outlines
-      if (!settings.focusOutlines) {
-        root.classList.add("no-focus-outlines");
-      } else {
-        root.classList.remove("no-focus-outlines");
-      }
-    },
-    [],
+  // Apply typography
+  root.style.setProperty("--font-family", theme.typography.fontFamily);
+  root.style.setProperty(
+    "--font-size-base",
+    `${theme.typography.baseSize}px`,
+  );
+  root.style.setProperty(
+    "--line-height",
+    theme.typography.lineHeight.toString(),
+  );
+  root.style.setProperty(
+    "--letter-spacing",
+    `${theme.typography.letterSpacing}px`,
   );
 
-  // Auto theme switching based on time
+  // Apply spacing
+  Object.entries(theme.spacing).forEach(([key, value]) => {
+    root.style.setProperty(`--spacing-${key}`, value);
+  });
+
+  // Apply animations
+  root.style.setProperty(
+    "--animation-duration",
+    `${theme.animations.duration}ms`,
+  );
+  root.style.setProperty("--animation-easing", theme.animations.easing);
+
+  // Set theme class
+  root.className = root.className.replace(/theme-\w+/g, "");
+  root.classList.add(`theme-${theme.category}`);
+}, []);
+
+// Apply accessibility settings
+const applyAccessibilitySettings = useCallback(
+  (settings: AccessibilitySettings) => {
+    const root = document.documentElement;
+
+    // High contrast
+    if (settings.highContrast) {
+      root.classList.add("high-contrast");
+    } else {
+      root.classList.remove("high-contrast");
+    }
+
+    // Reduced motion
+    if (settings.reducedMotion) {
+      root.classList.add("reduced-motion");
+    } else {
+      root.classList.remove("reduced-motion");
+    }
+
+    // Font size
+    root.classList.remove(
+      "font-small",
+      "font-medium",
+      "font-large",
+      "font-extra-large",
+    );
+    root.classList.add(`font-${settings.fontSize}`);
+
+    // Focus outlines
+    if (!settings.focusOutlines) {
+      root.classList.add("no-focus-outlines");
+    } else {
+      root.classList.remove("no-focus-outlines");
+    }
+  },
+  [],
+);
+
+// Auto theme switching effect
+const useAutoThemeSwitch = (
+  preferences: ThemePreferences,
+  currentTheme: Theme,
+  setThemeMutation: any,
+) => {
   useEffect(() => {
     if (!preferences.scheduleEnabled) return;
 
@@ -373,12 +373,18 @@ export const useTheme = () => {
     };
 
     checkSchedule();
-    const interval = setInterval(checkSchedule, 60000); // Check every minute
+    const interval = setInterval(checkSchedule, 60000);
 
     return () => clearInterval(interval);
-  }, [preferences, currentTheme.id]); // Removed setThemeMutation from deps
+  }, [preferences, currentTheme.id]);
+};
 
-  // System theme sync
+// System theme sync effect
+const useSystemThemeSync = (
+  preferences: ThemePreferences,
+  currentTheme: Theme,
+  setThemeMutation: any,
+) => {
   useEffect(() => {
     if (!preferences.systemSyncEnabled) return;
 
@@ -395,7 +401,37 @@ export const useTheme = () => {
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [preferences, currentTheme.id]); // Removed setThemeMutation from deps
+  }, [preferences, currentTheme.id]);
+};
+
+/**
+ * Enhanced Theme Hook
+ */
+export const useTheme = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Get theme data
+  const { customThemes, preferences, accessibilitySettings, currentTheme } = useThemeQueries([]);
+
+  // Combined available themes
+  const availableThemes = useMemo(
+    () => [...DEFAULT_THEMES, ...customThemes],
+    [customThemes],
+  );
+
+  // Check if dark mode
+  const isDarkMode = useMemo(
+    () => currentTheme.category === ThemeCategory.DARK,
+    [currentTheme],
+  );
+
+  // Get mutations
+  const { setThemeMutation, createCustomThemeMutation } = useThemeMutations(availableThemes, customThemes);
+  const { updatePreferencesMutation, updateAccessibilityMutation } = usePreferenceMutations(preferences, accessibilitySettings);
+
+  // Auto switching effects
+  useAutoThemeSwitch(preferences, currentTheme, setThemeMutation);
+  useSystemThemeSync(preferences, currentTheme, setThemeMutation);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -405,8 +441,6 @@ export const useTheme = () => {
   }, [
     currentTheme,
     accessibilitySettings,
-    applyThemeToDocument,
-    applyAccessibilitySettings,
   ]);
 
   // Hook return value
