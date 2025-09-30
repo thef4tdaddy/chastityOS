@@ -17,12 +17,12 @@ export interface Rule {
 
 export interface Condition {
   type: string;
-  value: any;
+  value: unknown;
 }
 
 export interface RuleAction {
   type: string;
-  value: any;
+  value: unknown;
 }
 
 export interface CreateRuleInput {
@@ -59,7 +59,10 @@ export interface UseRuleEditorReturn {
   validateRule: (rule: Rule) => ValidationResult;
   isRuleValid: boolean;
   validationErrors: string[];
-  testRule: (rule: Rule, testData: any) => Promise<TestResult>;
+  testRule: (
+    rule: Rule,
+    testData: Record<string, unknown>,
+  ) => Promise<TestResult>;
   isTesting: boolean;
   addCondition: (condition: Condition) => void;
   removeCondition: (index: number) => void;
@@ -138,7 +141,10 @@ export function useRuleEditor(): UseRuleEditorReturn {
   }, []);
 
   const testRule = useCallback(
-    async (_rule: Rule, _testData: any): Promise<TestResult> => {
+    async (
+      _rule: Rule,
+      _testData: Record<string, unknown>,
+    ): Promise<TestResult> => {
       setIsTesting(true);
       try {
         await new Promise((resolve) => setTimeout(resolve, 500));

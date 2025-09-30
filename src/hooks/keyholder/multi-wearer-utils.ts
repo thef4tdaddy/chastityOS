@@ -12,6 +12,7 @@ import {
   getDocs,
   DocumentReference as _DocumentReference,
   CollectionReference,
+  DocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import { MultiWearerSession, Wearer, KeyholderPermissions } from "../../types";
@@ -39,7 +40,7 @@ export function getWearersCollectionRef(
 // Helper to find active session
 export async function findActiveSession(
   keyholderUserId: string,
-): Promise<{ id: string; data: any } | null> {
+): Promise<{ id: string; data: MultiWearerSession } | null> {
   const multiWearerCollectionRef = getMultiWearerCollectionRef();
   const q = query(
     multiWearerCollectionRef,
@@ -55,7 +56,7 @@ export async function findActiveSession(
   const sessionDoc = querySnapshot.docs[0];
   return {
     id: sessionDoc.id,
-    data: sessionDoc.data(),
+    data: sessionDoc.data() as MultiWearerSession,
   };
 }
 
@@ -156,7 +157,7 @@ export async function updateWearerInSession(
 }
 
 // Helper to parse wearer document data
-export function parseWearerData(wearerDoc: any): Wearer {
+export function parseWearerData(wearerDoc: DocumentSnapshot): Wearer {
   const wearerData = wearerDoc.data();
   return {
     id: wearerDoc.id,
@@ -173,7 +174,9 @@ export function parseWearerData(wearerDoc: any): Wearer {
 }
 
 // Helper to parse session data
-export function parseSessionData(sessionDoc: any): MultiWearerSession {
+export function parseSessionData(
+  sessionDoc: DocumentSnapshot,
+): MultiWearerSession {
   const data = sessionDoc.data();
   return {
     keyholderUserId: data.keyholderUserId,

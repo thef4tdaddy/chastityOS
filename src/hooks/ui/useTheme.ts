@@ -6,7 +6,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseMutationResult,
+} from "@tanstack/react-query";
 import {
   Theme,
   CustomTheme,
@@ -351,7 +356,7 @@ function applyAccessibilitySettings(settings: AccessibilitySettings) {
 const useAutoThemeSwitch = (
   preferences: ThemePreferences,
   currentTheme: Theme,
-  setThemeMutation: any,
+  setThemeMutation: UseMutationResult<Theme, Error, string, unknown>,
 ) => {
   useEffect(() => {
     if (!preferences.scheduleEnabled) return;
@@ -383,7 +388,7 @@ const useAutoThemeSwitch = (
 const useSystemThemeSync = (
   preferences: ThemePreferences,
   currentTheme: Theme,
-  setThemeMutation: any,
+  setThemeMutation: UseMutationResult<Theme, Error, string, unknown>,
 ) => {
   useEffect(() => {
     if (!preferences.systemSyncEnabled) return;
