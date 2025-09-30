@@ -489,7 +489,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [syncInterval, updateTimerProgress]);
+    // updateTimerProgress is stable (no deps)
+    // syncInterval is a number variable, not a store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [syncInterval]);
 
   // Start sync interval
   useEffect(() => {
@@ -500,7 +503,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(syncIntervalRef.current);
       }
     };
-  }, [syncActiveTimers, syncInterval]);
+    // syncActiveTimers is stable
+    // syncInterval is a number variable, not a store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [syncInterval]);
 
   // Computed values
   const computedValues = useMemo(() => {
