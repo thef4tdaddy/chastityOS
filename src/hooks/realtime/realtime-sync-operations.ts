@@ -18,7 +18,7 @@ import {
   shouldAttemptReconnection,
   createSubscription,
   notifySubscribers,
-} from "./realtimeSyncHelpers";
+} from "./realtime-sync-utils";
 
 // Helper function to create WebSocket connection functions
 export const createWebSocketFunctions = (

@@ -618,5 +618,3 @@ function calculateGoalProgress(
   const completedGoals = goals.active.filter((goal) => goal.isCompleted).length;
   return Math.floor((completedGoals / goals.active.length) * 100);
 }
-
-export default useSession;

@@ -3,6 +3,7 @@ import { User as FirebaseUser } from "firebase/auth";
 import { User, UserRole } from "../../types/core";
 import { AuthService, authService } from "../../services/auth/auth-service";
 import { logger } from "../../utils/logging";
+import { authKeys } from "./auth-utils";
 
 /**
  * Authentication Hooks - TanStack Query Integration
@@ -13,12 +14,6 @@ import { logger } from "../../utils/logging";
  *
  * Fixes missing authentication hook integration throughout app
  */
-
-// Query Keys
-export const authKeys = {
-  currentUser: ["auth", "currentUser"] as const,
-  profile: (uid: string) => ["auth", "profile", uid] as const,
-} as const;
 
 /**
  * Get current authenticated user

@@ -4,9 +4,7 @@
  * with proper privacy controls
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type {
-  SyncResult,
-} from "../../types/database";
+import type { SyncResult } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useDataSync");
@@ -768,5 +766,3 @@ function getLatestTimestampVersion(
     ? conflict.localVersion
     : conflict.remoteVersion;
 }
-
-export default useDataSync;

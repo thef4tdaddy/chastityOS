@@ -20,7 +20,7 @@ import {
   calculateTimerProgress,
   createTimerSubscription,
   calculateComputedValues,
-} from "./timerOperations";
+} from "./timer-operations";
 
 interface UseLiveTimerOptions {
   userId: string;
@@ -561,7 +561,7 @@ async function logTimerEvent(
   const event: TimerEvent = {
     id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     timerId,
-    type: type as TimerEvent['type'],
+    type: type as TimerEvent["type"],
     timestamp: new Date(),
     userId: "", // Would be filled from context
     data,

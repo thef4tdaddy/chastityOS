@@ -320,6 +320,8 @@ export default [
       'src/hooks/api/queryClient.ts', // QueryClient setup utility
       'src/hooks/**/types.{ts,tsx}', // Type definition files
       'src/hooks/**/constants.{ts,tsx}', // Constants files
+      'src/hooks/**/*-utils.{ts,tsx}', // Utility files (e.g., auth-utils.ts, events-utils.ts)
+      'src/hooks/**/*-operations.{ts,tsx}', // Operations files (e.g., notification-operations.ts)
     ],
     rules: {
       // Hook files must export hooks only - allow types and interfaces

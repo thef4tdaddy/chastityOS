@@ -18,7 +18,7 @@ import {
   updateMultipleNotificationStatus,
   deleteNotification,
   saveNotificationPreferences,
-} from "./notificationHelpers";
+} from "./notification-utils";
 
 // Helper function to create a new notification
 export const createNotificationFactory = (
