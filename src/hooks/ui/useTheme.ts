@@ -174,7 +174,10 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
 };
 
 // Custom hook for theme mutations
-const useThemeMutations = (availableThemes: Theme[], customThemes: CustomTheme[]) => {
+const useThemeMutations = (
+  availableThemes: Theme[],
+  customThemes: CustomTheme[],
+) => {
   const queryClient = useQueryClient();
 
   const setThemeMutation = useMutation({
@@ -231,7 +234,10 @@ const useThemeMutations = (availableThemes: Theme[], customThemes: CustomTheme[]
 };
 
 // Custom hook for preference mutations
-const usePreferenceMutations = (preferences: ThemePreferences, accessibilitySettings: AccessibilitySettings) => {
+const usePreferenceMutations = (
+  preferences: ThemePreferences,
+  accessibilitySettings: AccessibilitySettings,
+) => {
   const queryClient = useQueryClient();
 
   const updatePreferencesMutation = useMutation({
@@ -269,7 +275,7 @@ const usePreferenceMutations = (preferences: ThemePreferences, accessibilitySett
 };
 
 // Apply theme to document
-const applyThemeToDocument = useCallback((theme: Theme) => {
+function applyThemeToDocument(theme: Theme) {
   const root = document.documentElement;
 
   // Apply CSS custom properties
@@ -279,10 +285,7 @@ const applyThemeToDocument = useCallback((theme: Theme) => {
 
   // Apply typography
   root.style.setProperty("--font-family", theme.typography.fontFamily);
-  root.style.setProperty(
-    "--font-size-base",
-    `${theme.typography.baseSize}px`,
-  );
+  root.style.setProperty("--font-size-base", `${theme.typography.baseSize}px`);
   root.style.setProperty(
     "--line-height",
     theme.typography.lineHeight.toString(),
@@ -307,45 +310,42 @@ const applyThemeToDocument = useCallback((theme: Theme) => {
   // Set theme class
   root.className = root.className.replace(/theme-\w+/g, "");
   root.classList.add(`theme-${theme.category}`);
-}, []);
+}
 
 // Apply accessibility settings
-const applyAccessibilitySettings = useCallback(
-  (settings: AccessibilitySettings) => {
-    const root = document.documentElement;
+function applyAccessibilitySettings(settings: AccessibilitySettings) {
+  const root = document.documentElement;
 
-    // High contrast
-    if (settings.highContrast) {
-      root.classList.add("high-contrast");
-    } else {
-      root.classList.remove("high-contrast");
-    }
+  // High contrast
+  if (settings.highContrast) {
+    root.classList.add("high-contrast");
+  } else {
+    root.classList.remove("high-contrast");
+  }
 
-    // Reduced motion
-    if (settings.reducedMotion) {
-      root.classList.add("reduced-motion");
-    } else {
-      root.classList.remove("reduced-motion");
-    }
+  // Reduced motion
+  if (settings.reducedMotion) {
+    root.classList.add("reduced-motion");
+  } else {
+    root.classList.remove("reduced-motion");
+  }
 
-    // Font size
-    root.classList.remove(
-      "font-small",
-      "font-medium",
-      "font-large",
-      "font-extra-large",
-    );
-    root.classList.add(`font-${settings.fontSize}`);
+  // Font size
+  root.classList.remove(
+    "font-small",
+    "font-medium",
+    "font-large",
+    "font-extra-large",
+  );
+  root.classList.add(`font-${settings.fontSize}`);
 
-    // Focus outlines
-    if (!settings.focusOutlines) {
-      root.classList.add("no-focus-outlines");
-    } else {
-      root.classList.remove("no-focus-outlines");
-    }
-  },
-  [],
-);
+  // Focus outlines
+  if (!settings.focusOutlines) {
+    root.classList.add("no-focus-outlines");
+  } else {
+    root.classList.remove("no-focus-outlines");
+  }
+}
 
 // Auto theme switching effect
 const useAutoThemeSwitch = (
@@ -411,7 +411,8 @@ export const useTheme = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Get theme data
-  const { customThemes, preferences, accessibilitySettings, currentTheme } = useThemeQueries([]);
+  const { customThemes, preferences, accessibilitySettings, currentTheme } =
+    useThemeQueries([]);
 
   // Combined available themes
   const availableThemes = useMemo(
@@ -426,8 +427,12 @@ export const useTheme = () => {
   );
 
   // Get mutations
-  const { setThemeMutation, createCustomThemeMutation } = useThemeMutations(availableThemes, customThemes);
-  const { updatePreferencesMutation, updateAccessibilityMutation } = usePreferenceMutations(preferences, accessibilitySettings);
+  const { setThemeMutation, createCustomThemeMutation } = useThemeMutations(
+    availableThemes,
+    customThemes,
+  );
+  const { updatePreferencesMutation, updateAccessibilityMutation } =
+    usePreferenceMutations(preferences, accessibilitySettings);
 
   // Auto switching effects
   useAutoThemeSwitch(preferences, currentTheme, setThemeMutation);
@@ -438,10 +443,7 @@ export const useTheme = () => {
     applyThemeToDocument(currentTheme);
     applyAccessibilitySettings(accessibilitySettings);
     setIsLoading(false);
-  }, [
-    currentTheme,
-    accessibilitySettings,
-  ]);
+  }, [currentTheme, accessibilitySettings]);
 
   // Hook return value
   const state: EnhancedThemeState = {
