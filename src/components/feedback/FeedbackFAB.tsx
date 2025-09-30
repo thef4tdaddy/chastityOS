@@ -8,6 +8,39 @@ import FeedbackModal from "./FeedbackModal";
 import type { FeedbackType, FeedbackData } from "../../types/feedback";
 import { logger } from "../../utils/logging";
 
+// Feedback Options Component
+interface FeedbackOptionsProps {
+  onSelect: (type: FeedbackType) => void;
+}
+
+const FeedbackOptions: React.FC<FeedbackOptionsProps> = ({ onSelect }) => (
+  <div className="space-y-3">
+    <button
+      onClick={() => onSelect("bug")}
+      className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
+    >
+      <FaBug />
+      <span className="text-sm font-medium">Report Bug</span>
+    </button>
+
+    <button
+      onClick={() => onSelect("feature")}
+      className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
+    >
+      <FaLightbulb />
+      <span className="text-sm font-medium">Suggest Feature</span>
+    </button>
+
+    <button
+      onClick={() => onSelect("general")}
+      className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
+    >
+      <FaComment />
+      <span className="text-sm font-medium">General Feedback</span>
+    </button>
+  </div>
+);
+
 const FeedbackFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -42,33 +75,7 @@ const FeedbackFAB: React.FC = () => {
           className={`transition-all duration-300 ${isExpanded ? "space-y-3" : "space-y-0"}`}
         >
           {/* Expanded Options */}
-          {isExpanded && (
-            <div className="space-y-3">
-              <button
-                onClick={() => openFeedback("bug")}
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
-              >
-                <FaBug />
-                <span className="text-sm font-medium">Report Bug</span>
-              </button>
-
-              <button
-                onClick={() => openFeedback("feature")}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
-              >
-                <FaLightbulb />
-                <span className="text-sm font-medium">Suggest Feature</span>
-              </button>
-
-              <button
-                onClick={() => openFeedback("general")}
-                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
-              >
-                <FaComment />
-                <span className="text-sm font-medium">General Feedback</span>
-              </button>
-            </div>
-          )}
+          {isExpanded && <FeedbackOptions onSelect={openFeedback} />}
 
           {/* Main Button */}
           <button

@@ -408,6 +408,33 @@ const getSubmitButtonText = (
   }
 };
 
+// Modal Header Component
+interface ModalHeaderProps {
+  type: FeedbackType;
+  onClose: () => void;
+  isSubmitting: boolean;
+}
+
+const ModalHeader: React.FC<ModalHeaderProps> = ({
+  type,
+  onClose,
+  isSubmitting,
+}) => (
+  <div className="flex items-center justify-between p-6 border-b border-gray-600">
+    <div className="flex items-center gap-3">
+      {getModalIcon(type)}
+      <h2 className="text-xl font-bold text-white">{getModalTitle(type)}</h2>
+    </div>
+    <button
+      onClick={onClose}
+      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+      disabled={isSubmitting}
+    >
+      <FaTimes className="text-gray-400" />
+    </button>
+  </div>
+);
+
 const FeedbackModal: React.FC<FeedbackModalProps> = ({
   type,
   onClose,
@@ -465,23 +492,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 max-w-2xl w-full max-h-[90vh] rounded-lg border border-gray-600 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-600">
-          <div className="flex items-center gap-3">
-            {getModalIcon(type)}
-            <h2 className="text-xl font-bold text-white">
-              {getModalTitle(type)}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            disabled={isSubmitting}
-          >
-            <FaTimes className="text-gray-400" />
-          </button>
-        </div>
-
+        <ModalHeader
+          type={type}
+          onClose={onClose}
+          isSubmitting={isSubmitting}
+        />
         <FeedbackForm
           type={type}
           formData={formData}

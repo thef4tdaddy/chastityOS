@@ -17,6 +17,19 @@ interface RelationshipManagerProps {
   className?: string;
 }
 
+// Helper to convert Relationship to KeyholderRelationship format
+const convertToKeyholderRelationship = (
+  relationship: Relationship,
+): KeyholderRelationship => ({
+  id: relationship.id,
+  submissiveUserId: relationship.submissiveId,
+  keyholderUserId: relationship.keyholderId,
+  status: relationship.status === "active" ? "active" : "ended",
+  permissions: {} as KeyholderPermissions,
+  createdAt: relationship.createdAt,
+  updatedAt: relationship.updatedAt,
+});
+
 const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   className = "",
 }) => {
@@ -37,25 +50,10 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   } = useRelationships();
 
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [requestForm, setRequestForm] = useState({
-    email: "",
-    role: "submissive" as "submissive" | "keyholder",
-    message: "",
-  });
 
-  // Create a wrapper to handle the type conversion between Relationship and KeyholderRelationship
+  // Create a wrapper to handle the type conversion
   const handleSetActiveRelationship = (relationship: Relationship) => {
-    // Convert Relationship to KeyholderRelationship format
-    const keyholderRelationship: KeyholderRelationship = {
-      id: relationship.id,
-      submissiveUserId: relationship.submissiveId,
-      keyholderUserId: relationship.keyholderId,
-      status: relationship.status === "active" ? "active" : "ended",
-      permissions: {} as KeyholderPermissions, // Would be populated from relationship data
-      createdAt: relationship.createdAt,
-      updatedAt: relationship.updatedAt
-    };
-    setActiveRelationship(keyholderRelationship);
+    setActiveRelationship(convertToKeyholderRelationship(relationship));
   };
 
   // Handle sending relationship request
@@ -67,7 +65,6 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     try {
       await sendRelationshipRequest(data.email, data.role, data.message);
       setShowRequestForm(false);
-      setRequestForm({ email: "", role: "submissive", message: "" });
     } catch {
       // Handle error silently or with proper error handling
     }
