@@ -264,7 +264,14 @@ export const useSession = (userId: string, relationshipId?: string) => {
     };
 
     initializeSession();
-  }, [userId, relationshipId]);
+  }, [
+    userId,
+    relationshipId,
+    loadCurrentSession,
+    loadHistory,
+    loadAnalytics,
+    loadGoals,
+  ]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -272,7 +279,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
     // This would integrate with your existing session service
     // For now, return mock data structure
     setCurrentSession(null);
-  }, [userId]);
+  }, []); // userId is passed but not used in mock implementation
 
   const loadGoals = useCallback(async () => {
     // This would integrate with your existing goals service
@@ -281,12 +288,12 @@ export const useSession = (userId: string, relationshipId?: string) => {
       keyholderAssigned: [],
       active: [],
     });
-  }, [userId, relationshipId]);
+  }, []); // userId and relationshipId are passed but not used in mock
 
   const loadHistory = useCallback(async () => {
     // This would integrate with your existing history service
     setHistory([]);
-  }, [userId]);
+  }, []); // userId is passed but not used in mock
 
   const loadAnalytics = useCallback(async () => {
     // This would integrate with your existing analytics service
@@ -297,7 +304,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
       totalSessions: 0,
       consistencyScore: 0,
     });
-  }, [userId]);
+  }, []); // userId is passed but not used in mock
 
   // ==================== SESSION LIFECYCLE ====================
 

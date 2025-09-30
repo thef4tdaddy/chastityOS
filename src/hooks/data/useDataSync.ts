@@ -350,7 +350,15 @@ export const useDataSync = (userId: string) => {
     };
 
     initializeSync();
-  }, [userId]);
+  }, [
+    userId,
+    loadSyncHistory,
+    loadPendingConflicts,
+    loadRelationshipSyncStatus,
+    loadSyncPermissions,
+    initializeRealTimeSync,
+    syncPermissions.allowRealTimeSync,
+  ]);
 
   // ==================== REAL-TIME SYNC ====================
 
@@ -363,7 +371,7 @@ export const useDataSync = (userId: string) => {
     }, syncInterval);
 
     return () => clearInterval(interval);
-  }, [realTimeSyncEnabled, syncPermissions]);
+  }, [realTimeSyncEnabled, syncPermissions, performBackgroundSync]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -687,7 +695,7 @@ export const useDataSync = (userId: string) => {
         throw error;
       }
     },
-    [syncPermissions],
+    [syncPermissions, initializeRealTimeSync],
   );
 
   const configureSyncScope = useCallback(
