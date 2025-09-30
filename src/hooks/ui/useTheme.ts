@@ -376,7 +376,7 @@ const useAutoThemeSwitch = (
     const interval = setInterval(checkSchedule, 60000);
 
     return () => clearInterval(interval);
-  }, [preferences, currentTheme.id]);
+  }, [preferences, currentTheme.id, setThemeMutation]);
 };
 
 // System theme sync effect
@@ -401,7 +401,7 @@ const useSystemThemeSync = (
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [preferences, currentTheme.id]);
+  }, [preferences, currentTheme.id, setThemeMutation]);
 };
 
 /**

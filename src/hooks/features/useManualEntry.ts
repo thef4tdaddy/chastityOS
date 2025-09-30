@@ -45,7 +45,7 @@ export function useManualEntry(): UseManualEntryReturn {
   }, []);
 
   const submitEntry = useCallback(
-    async (type: "reward" | "punishment"): Promise<void> => {
+    async (_type: "reward" | "punishment"): Promise<void> => {
       setIsSubmitting(true);
       setError(null);
       try {

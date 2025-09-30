@@ -14,7 +14,6 @@ import {
   FaUpload,
   FaTrash,
   FaSpinner,
-  FaLock,
   FaShieldAlt,
 } from "../utils/iconImport";
 import { ToggleSwitch } from "../components/settings/ToggleSwitch";

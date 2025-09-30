@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
+import { logger } from "../../utils/logging";
 
 // Types for admin dashboard
 export interface WearerWithSession {
@@ -193,7 +194,7 @@ export function useAdminDashboard(): UseAdminDashboardReturn {
       setError(null);
       try {
         // Mock implementation - in production would call notification service
-        console.log(
+        logger.info(
           `Sending notification to ${wearerIds.length} wearers: ${message}`,
         );
       } catch (err) {

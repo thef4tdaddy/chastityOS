@@ -7,7 +7,6 @@ import {
   RulesEmptyState,
 } from "../components/rules";
 import { useRulesPage } from "../hooks/useRulesPage";
-import { FaTrophy } from "../utils/iconImport";
 
 // Mock rules data
 const mockRules: ChastityRule[] = [
