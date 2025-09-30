@@ -195,7 +195,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load goal history", { error });
     }
-  }, [userId]);
+  }, []);
 
   const loadAchievements = useCallback(async () => {
     try {
@@ -204,7 +204,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load achievements", { error });
     }
-  }, [userId]);
+  }, []);
 
   // ==================== GOAL MANAGEMENT ====================
 
@@ -406,7 +406,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
       logger.error("Failed to check goal completion", { error });
       return [];
     }
-  }, [activeGoals, progress, updateGoal]);
+  }, [activeGoals, progress, updateGoal, checkForAchievements]);
 
   const updateActiveGoalProgress = useCallback(async () => {
     try {
