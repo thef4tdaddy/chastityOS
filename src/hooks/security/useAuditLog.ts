@@ -48,430 +48,50 @@ interface UseAuditLogOptions {
 export const useAuditLog = (options: UseAuditLogOptions) => {
   const { userId, relationshipId, retentionDays = 365 } = options;
 
-  // Audit state
-  const [auditState, setAuditState] = useState<AuditLogState>({
-    recentEntries: [],
-    categories: Object.values(AuditCategory),
-    filters: {},
-    exportOptions: {
-      formats: ["json", "csv", "pdf"],
-      maxRecords: 10000,
-      includeMetadata: true,
-    },
-    privacySettings: {
-      shareWithKeyholder: false,
-      includeIPAddresses: false,
-      includeUserAgent: false,
-      retentionDays,
-      anonymizeAfterDays: 90,
-    },
-  });
-
+  // Initialize state
+  const [auditState, setAuditState] = useState<AuditLogState>(() =>
+    initializeAuditState(retentionDays),
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load recent audit entries on mount
   useEffect(() => {
-    const loadRecentEntries = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // In real implementation, fetch from backend/Firebase
-        const entries = await fetchRecentAuditEntries(userId, relationshipId);
-
-        setAuditState((prev) => ({
-          ...prev,
-          recentEntries: entries,
-        }));
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load audit log",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (userId) {
-      loadRecentEntries();
+      loadAuditEntries(
+        userId,
+        relationshipId,
+        setAuditState,
+        setError,
+        setLoading,
+      );
     }
   }, [userId, relationshipId]);
 
-  // Log an action
-  const logAction = useCallback(
-    async (
-      action: AuditAction,
-      details: AuditDetails,
-      context?: AuditContext,
-    ): Promise<void> => {
-      try {
-        const entry: AuditEntry = {
-          id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          timestamp: new Date(),
-          userId,
-          action,
-          category: getCategoryForAction(action),
-          context: context || { relationshipId },
-          details,
-          severity: AuditSeverity.LOW,
-          outcome: AuditOutcome.SUCCESS,
-          ipAddress: auditState.privacySettings.includeIPAddresses
-            ? await getClientIP()
-            : undefined,
-          userAgent: auditState.privacySettings.includeUserAgent
-            ? navigator.userAgent
-            : undefined,
-        };
-
-        // In real implementation, save to backend
-        await saveAuditEntry(entry);
-
-        // Update local state
-        setAuditState((prev) => ({
-          ...prev,
-          recentEntries: [entry, ...prev.recentEntries.slice(0, 99)], // Keep last 100
-        }));
-      } catch {
-        // Failed to log audit action
-      }
-    },
-    [userId, relationshipId, auditState.privacySettings],
+  // Create action handlers
+  const actionHandlers = useMemo(
+    () =>
+      createActionHandlers(userId, relationshipId, auditState, setAuditState),
+    [userId, relationshipId, auditState],
   );
 
-  // Log security event
-  const logSecurityEvent = useCallback(
-    async (event: SecurityEvent): Promise<void> => {
-      const details: AuditDetails = {
-        description: event.description,
-        metadata: event.metadata,
-      };
-
-      const entry: AuditEntry = {
-        id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: new Date(),
-        userId,
-        action: AuditAction.PERMISSION_CHECK, // Generic security action
-        category: AuditCategory.SECURITY,
-        context: { relationshipId },
-        details,
-        severity: event.severity,
-        outcome:
-          event.type === "failed_login"
-            ? AuditOutcome.FAILURE
-            : AuditOutcome.SUCCESS,
-        ipAddress: auditState.privacySettings.includeIPAddresses
-          ? await getClientIP()
-          : undefined,
-        userAgent: auditState.privacySettings.includeUserAgent
-          ? navigator.userAgent
-          : undefined,
-      };
-
-      await saveAuditEntry(entry);
-
-      setAuditState((prev) => ({
-        ...prev,
-        recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
-      }));
-    },
-    [userId, relationshipId, auditState.privacySettings],
+  // Create query handlers
+  const queryHandlers = useMemo(
+    () => createQueryHandlers(auditState),
+    [auditState],
   );
 
-  // Log permission check
-  const logPermissionCheck = useCallback(
-    async (
-      permission: string,
-      granted: boolean,
-      context?: PermissionContext,
-    ): Promise<void> => {
-      const details: AuditDetails = {
-        description: `Permission check: ${permission}`,
-        metadata: { permission, granted, context },
-      };
-
-      await logAction(
-        AuditAction.PERMISSION_CHECK,
-        details,
-        context as AuditContext,
-      );
-    },
-    [logAction],
-  );
-
-  // Get entries by date range
-  const getEntriesByDateRange = useCallback(
-    async (start: Date, end: Date): Promise<AuditEntry[]> => {
-      // In real implementation, query backend with date filters
-      return auditState.recentEntries.filter(
-        (entry) => entry.timestamp >= start && entry.timestamp <= end,
-      );
-    },
-    [auditState.recentEntries],
-  );
-
-  // Get entries by category
-  const getEntriesByCategory = useCallback(
-    async (category: AuditCategory): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) => entry.category === category,
-      );
-    },
-    [auditState.recentEntries],
-  );
-
-  // Get entries by user
-  const getEntriesByUser = useCallback(
-    async (targetUserId: string): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) =>
-          entry.userId === targetUserId ||
-          entry.context.targetUserId === targetUserId,
-      );
-    },
-    [auditState.recentEntries],
-  );
-
-  // Search entries
-  const searchEntries = useCallback(
-    async (query: AuditSearchQuery): Promise<AuditEntry[]> => {
-      let results = auditState.recentEntries;
-
-      // Apply text search
-      results = applyTextSearch(results, query.query);
-
-      // Apply filters
-      results = applySearchFilters(results, query.filters);
-
-      // Apply sorting
-      results = applySorting(results, query.sortBy, query.sortOrder);
-
-      // Apply pagination
-      results = applyPagination(results, query.limit, query.offset);
-
-      return results;
-    },
-    [auditState.recentEntries],
-  );
-
-  // Apply filters
-  const applyFilters = useCallback((filters: AuditFilter): void => {
-    setAuditState((prev) => ({
-      ...prev,
-      filters,
-    }));
-  }, []);
-
-  // Get security summary
-  const getSecuritySummary = useCallback((): SecurityAuditSummary => {
-    const securityEntries = auditState.recentEntries.filter(
-      (entry) => entry.category === AuditCategory.SECURITY,
-    );
-
-    const failedLogins = auditState.recentEntries.filter(
-      (entry) =>
-        entry.action === AuditAction.LOGIN &&
-        entry.outcome === AuditOutcome.FAILURE,
-    ).length;
-
-    const permissionViolations = auditState.recentEntries.filter(
-      (entry) =>
-        entry.action === AuditAction.PERMISSION_CHECK &&
-        entry.outcome === AuditOutcome.UNAUTHORIZED,
-    ).length;
-
-    const dataExports = auditState.recentEntries.filter(
-      (entry) => entry.action === AuditAction.DATA_EXPORT,
-    ).length;
-
-    const lastSecurityEvent =
-      securityEntries.length > 0 ? securityEntries[0].timestamp : undefined;
-
-    return {
-      totalEntries: auditState.recentEntries.length,
-      securityEvents: securityEntries.length,
-      failedLogins,
-      permissionViolations,
-      dataExports,
-      lastSecurityEvent,
-    };
-  }, [auditState.recentEntries]);
-
-  // Get compliance report
-  const getComplianceReport = useCallback((): ComplianceReport => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const periodEntries = auditState.recentEntries.filter(
-      (entry) => entry.timestamp >= thirtyDaysAgo,
-    );
-
-    const actionsByCategory = periodEntries.reduce(
-      (acc, entry) => {
-        acc[entry.category] = (acc[entry.category] || 0) + 1;
-        return acc;
-      },
-      {} as Record<AuditCategory, number>,
-    );
-
-    const securityScore = calculateSecurityScore(periodEntries);
-
-    return {
-      period: {
-        start: thirtyDaysAgo,
-        end: now,
-      },
-      totalActions: periodEntries.length,
-      actionsByCategory,
-      securityScore,
-      recommendations: generateSecurityRecommendations(periodEntries),
-    };
-  }, [auditState.recentEntries]);
-
-  // Export audit log
-  const exportAuditLog = useCallback(
-    async (
-      format: ExportFormat,
-      filters?: AuditFilter,
-    ): Promise<AuditExport> => {
-      let entries = auditState.recentEntries;
-
-      // Apply filters if provided
-      if (filters) {
-        // Implementation would filter entries based on criteria
-        entries = applyAuditFilters(entries, filters);
-      }
-
-      // Generate export data based on format
-      let data: string | Uint8Array;
-      let filename: string;
-
-      switch (format) {
-        case "json":
-          data = JSON.stringify(entries, null, 2);
-          filename = `audit-log-${Date.now()}.json`;
-          break;
-        case "csv":
-          data = convertToCSV(entries);
-          filename = `audit-log-${Date.now()}.csv`;
-          break;
-        case "pdf":
-          data = await generatePDF(entries);
-          filename = `audit-log-${Date.now()}.pdf`;
-          break;
-        default:
-          throw new Error(`Unsupported export format: ${format}`);
-      }
-
-      return {
-        format,
-        data,
-        filename,
-        generatedAt: new Date(),
-      };
-    },
-    [auditState.recentEntries],
-  );
-
-  // Share with keyholder
-  const shareWithKeyholder = useCallback(
-    async (_entries: string[]): Promise<void> => {
-      if (!relationshipId) {
-        throw new Error("No relationship context for sharing");
-      }
-
-      // In real implementation, this would share selected entries with keyholder
-    },
-    [relationshipId],
-  );
-
-  // Update privacy settings
-  const updatePrivacySettings = useCallback(
-    async (settings: Partial<AuditPrivacySettings>): Promise<void> => {
-      setAuditState((prev) => ({
-        ...prev,
-        privacySettings: {
-          ...prev.privacySettings,
-          ...settings,
-        },
-      }));
-
-      // In real implementation, save to backend
-      await savePrivacySettings(userId, settings);
-    },
-    [userId],
-  );
-
-  // Cleanup old entries
-  const cleanupOldEntries = useCallback(
-    async (retentionDays: number): Promise<CleanupResult> => {
-      const cutoffDate = new Date(
-        Date.now() - retentionDays * 24 * 60 * 60 * 1000,
-      );
-
-      const oldEntries = auditState.recentEntries.filter(
-        (entry) => entry.timestamp < cutoffDate,
-      );
-
-      // In real implementation, delete/anonymize old entries in backend
-      const result: CleanupResult = {
-        deletedEntries: oldEntries.length,
-        anonymizedEntries: 0,
-        errors: [],
-      };
-
-      // Update local state
-      setAuditState((prev) => ({
-        ...prev,
-        recentEntries: prev.recentEntries.filter(
-          (entry) => entry.timestamp >= cutoffDate,
-        ),
-      }));
-
-      return result;
-    },
-    [auditState.recentEntries],
+  // Create management handlers
+  const managementHandlers = useMemo(
+    () => createManagementHandlers(userId, auditState, setAuditState),
+    [userId, auditState],
   );
 
   // Computed values
-  const computedValues = useMemo(() => {
-    const totalEntries = auditState.recentEntries.length;
-    const securityAlerts = auditState.recentEntries.filter(
-      (entry) => entry.severity === AuditSeverity.HIGH,
-    ).length;
-
-    const lastLoginEntry = auditState.recentEntries.find(
-      (entry) => entry.action === AuditAction.LOGIN,
-    );
-    const lastLoginTime = lastLoginEntry?.timestamp;
-
-    const actionCounts = auditState.recentEntries.reduce(
-      (acc, entry) => {
-        acc[entry.action] = (acc[entry.action] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    const mostCommonActions = Object.entries(actionCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5)
-      .map(([action, count]) => ({ action, count }));
-
-    const hasSecurityConcerns = auditState.recentEntries.some(
-      (entry) =>
-        entry.category === AuditCategory.SECURITY &&
-        entry.severity === AuditSeverity.HIGH,
-    );
-
-    return {
-      totalEntries,
-      securityAlerts,
-      lastLoginTime,
-      mostCommonActions,
-      hasSecurityConcerns,
-    };
-  }, [auditState.recentEntries]);
+  const computedValues = useMemo(
+    () => calculateComputedValues(auditState),
+    [auditState],
+  );
 
   return {
     // Audit data
@@ -481,29 +101,14 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
     loading,
     error,
 
-    // Logging actions
-    logAction,
-    logSecurityEvent,
-    logPermissionCheck,
+    // Action handlers
+    ...actionHandlers,
 
-    // Querying audit log
-    getEntriesByDateRange,
-    getEntriesByCategory,
-    getEntriesByUser,
-    searchEntries,
+    // Query handlers
+    ...queryHandlers,
 
-    // Filtering and analysis
-    applyFilters,
-    getSecuritySummary,
-    getComplianceReport,
-
-    // Export and sharing
-    exportAuditLog,
-    shareWithKeyholder,
-
-    // Privacy and retention
-    updatePrivacySettings,
-    cleanupOldEntries,
+    // Management handlers
+    ...managementHandlers,
 
     // Computed values
     ...computedValues,
@@ -607,4 +212,298 @@ function applyPagination(
   const start = offset || 0;
   const end = start + (limit || entries.length);
   return entries.slice(start, end);
+}
+
+// Initialization and handler creation helpers
+function initializeAuditState(retentionDays: number): AuditLogState {
+  return {
+    recentEntries: [],
+    categories: Object.values(AuditCategory),
+    filters: {},
+    exportOptions: {
+      formats: ["json", "csv", "pdf"],
+      maxRecords: 10000,
+      includeMetadata: true,
+    },
+    privacySettings: {
+      shareWithKeyholder: false,
+      includeIPAddresses: false,
+      includeUserAgent: false,
+      retentionDays,
+      anonymizeAfterDays: 90,
+    },
+  };
+}
+
+async function loadAuditEntries(
+  userId: string,
+  relationshipId: string | undefined,
+  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+): Promise<void> {
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    const entries = await fetchRecentAuditEntries(userId, relationshipId);
+
+    setAuditState((prev) => ({
+      ...prev,
+      recentEntries: entries,
+    }));
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to load audit log");
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+function createActionHandlers(
+  userId: string,
+  relationshipId: string | undefined,
+  auditState: AuditLogState,
+  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+) {
+  const logAction = useCallback(
+    async (
+      action: AuditAction,
+      details: AuditDetails,
+      context?: AuditContext,
+    ): Promise<void> => {
+      try {
+        const entry: AuditEntry = {
+          id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: new Date(),
+          userId,
+          action,
+          category: getCategoryForAction(action),
+          context: context || { relationshipId },
+          details,
+          severity: AuditSeverity.LOW,
+          outcome: AuditOutcome.SUCCESS,
+          ipAddress: auditState.privacySettings.includeIPAddresses
+            ? await getClientIP()
+            : undefined,
+          userAgent: auditState.privacySettings.includeUserAgent
+            ? navigator.userAgent
+            : undefined,
+        };
+
+        await saveAuditEntry(entry);
+        setAuditState((prev) => ({
+          ...prev,
+          recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
+        }));
+      } catch {
+        // Failed to log audit action
+      }
+    },
+    [userId, relationshipId, auditState.privacySettings],
+  );
+
+  const logSecurityEvent = useCallback(
+    async (event: SecurityEvent): Promise<void> => {
+      const details: AuditDetails = {
+        description: event.description,
+        metadata: event.metadata,
+      };
+
+      const entry: AuditEntry = {
+        id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date(),
+        userId,
+        action: AuditAction.PERMISSION_CHECK,
+        category: AuditCategory.SECURITY,
+        context: { relationshipId },
+        details,
+        severity: event.severity,
+        outcome:
+          event.type === "failed_login"
+            ? AuditOutcome.FAILURE
+            : AuditOutcome.SUCCESS,
+        ipAddress: auditState.privacySettings.includeIPAddresses
+          ? await getClientIP()
+          : undefined,
+        userAgent: auditState.privacySettings.includeUserAgent
+          ? navigator.userAgent
+          : undefined,
+      };
+
+      await saveAuditEntry(entry);
+      setAuditState((prev) => ({
+        ...prev,
+        recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
+      }));
+    },
+    [userId, relationshipId, auditState.privacySettings],
+  );
+
+  const logPermissionCheck = useCallback(
+    async (
+      permission: string,
+      granted: boolean,
+      context?: PermissionContext,
+    ): Promise<void> => {
+      const details: AuditDetails = {
+        description: `Permission check: ${permission}`,
+        metadata: { permission, granted, context },
+      };
+
+      await logAction(
+        AuditAction.PERMISSION_CHECK,
+        details,
+        context as AuditContext,
+      );
+    },
+    [logAction],
+  );
+
+  return { logAction, logSecurityEvent, logPermissionCheck };
+}
+
+function createQueryHandlers(auditState: AuditLogState) {
+  const getEntriesByDateRange = useCallback(
+    async (start: Date, end: Date): Promise<AuditEntry[]> => {
+      return auditState.recentEntries.filter(
+        (entry) => entry.timestamp >= start && entry.timestamp <= end,
+      );
+    },
+    [auditState.recentEntries],
+  );
+
+  const getEntriesByCategory = useCallback(
+    async (category: AuditCategory): Promise<AuditEntry[]> => {
+      return auditState.recentEntries.filter(
+        (entry) => entry.category === category,
+      );
+    },
+    [auditState.recentEntries],
+  );
+
+  const getEntriesByUser = useCallback(
+    async (targetUserId: string): Promise<AuditEntry[]> => {
+      return auditState.recentEntries.filter(
+        (entry) =>
+          entry.userId === targetUserId ||
+          entry.context.targetUserId === targetUserId,
+      );
+    },
+    [auditState.recentEntries],
+  );
+
+  const searchEntries = useCallback(
+    async (query: AuditSearchQuery): Promise<AuditEntry[]> => {
+      let results = auditState.recentEntries;
+      results = applyTextSearch(results, query.query);
+      results = applySearchFilters(results, query.filters);
+      results = applySorting(results, query.sortBy, query.sortOrder);
+      results = applyPagination(results, query.limit, query.offset);
+      return results;
+    },
+    [auditState.recentEntries],
+  );
+
+  return {
+    getEntriesByDateRange,
+    getEntriesByCategory,
+    getEntriesByUser,
+    searchEntries,
+  };
+}
+
+function createManagementHandlers(
+  userId: string,
+  auditState: AuditLogState,
+  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+) {
+  const applyFilters = useCallback((filters: AuditFilter): void => {
+    setAuditState((prev) => ({ ...prev, filters }));
+  }, []);
+
+  const getSecuritySummary = useCallback((): SecurityAuditSummary => {
+    const securityEntries = auditState.recentEntries.filter(
+      (entry) => entry.category === AuditCategory.SECURITY,
+    );
+
+    const failedLogins = auditState.recentEntries.filter(
+      (entry) =>
+        entry.action === AuditAction.LOGIN &&
+        entry.outcome === AuditOutcome.FAILURE,
+    ).length;
+
+    const permissionViolations = auditState.recentEntries.filter(
+      (entry) =>
+        entry.action === AuditAction.PERMISSION_CHECK &&
+        entry.outcome === AuditOutcome.UNAUTHORIZED,
+    ).length;
+
+    const dataExports = auditState.recentEntries.filter(
+      (entry) => entry.action === AuditAction.DATA_EXPORT,
+    ).length;
+
+    const lastSecurityEvent =
+      securityEntries.length > 0 ? securityEntries[0].timestamp : undefined;
+
+    return {
+      totalEntries: auditState.recentEntries.length,
+      securityEvents: securityEntries.length,
+      failedLogins,
+      permissionViolations,
+      dataExports,
+      lastSecurityEvent,
+    };
+  }, [auditState.recentEntries]);
+
+  const updatePrivacySettings = useCallback(
+    async (settings: Partial<AuditPrivacySettings>): Promise<void> => {
+      setAuditState((prev) => ({
+        ...prev,
+        privacySettings: { ...prev.privacySettings, ...settings },
+      }));
+      await savePrivacySettings(userId, settings);
+    },
+    [userId],
+  );
+
+  return { applyFilters, getSecuritySummary, updatePrivacySettings };
+}
+
+function calculateComputedValues(auditState: AuditLogState) {
+  const totalEntries = auditState.recentEntries.length;
+  const securityAlerts = auditState.recentEntries.filter(
+    (entry) => entry.severity === AuditSeverity.HIGH,
+  ).length;
+
+  const lastLoginEntry = auditState.recentEntries.find(
+    (entry) => entry.action === AuditAction.LOGIN,
+  );
+  const lastLoginTime = lastLoginEntry?.timestamp;
+
+  const actionCounts = auditState.recentEntries.reduce(
+    (acc, entry) => {
+      acc[entry.action] = (acc[entry.action] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const mostCommonActions = Object.entries(actionCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([action, count]) => ({ action, count }));
+
+  const hasSecurityConcerns = auditState.recentEntries.some(
+    (entry) =>
+      entry.category === AuditCategory.SECURITY &&
+      entry.severity === AuditSeverity.HIGH,
+  );
+
+  return {
+    totalEntries,
+    securityAlerts,
+    lastLoginTime,
+    mostCommonActions,
+    hasSecurityConcerns,
+  };
 }
