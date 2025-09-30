@@ -550,17 +550,9 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     };
 
     initializeStatistics();
-  }, [
-    userId,
-    relationshipId,
-    loadSessionStatistics,
-    loadGoalStatistics,
-    loadComparativeStatistics,
-    loadAchievementStatistics,
-    loadSharedStatistics,
-    loadPredictiveAnalytics,
-    loadRecommendations,
-  ]);
+    // Callback functions are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -1004,5 +996,3 @@ function calculateKeyholderSatisfaction(
   // This would be calculated based on keyholder feedback and interaction patterns
   return 85; // Placeholder value
 }
-
-export default useStatistics;

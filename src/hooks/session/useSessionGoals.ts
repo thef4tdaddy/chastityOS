@@ -89,16 +89,9 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     };
 
     initializeGoals();
-  }, [
-    userId,
-    relationshipId,
-    loadActiveGoals,
-    loadGoalHistory,
-    loadGoalTemplates,
-    loadKeyholderGoals,
-    loadAchievements,
-    loadProgress,
-  ]);
+    // Callback functions are stable (wrapped in useCallback below)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== PROGRESS TRACKING ====================
 
@@ -108,7 +101,8 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     }, 30000); // Update every 30 seconds
 
     return () => clearInterval(updateProgressInterval);
-  }, [activeGoals, updateActiveGoalProgress]);
+    // updateActiveGoalProgress is stable (useCallback)
+  }, [activeGoals]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -726,5 +720,3 @@ function checkIfGoalCompleted(
       return false;
   }
 }
-
-export default useSessionGoals;

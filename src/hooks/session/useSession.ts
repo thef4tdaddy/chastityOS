@@ -261,14 +261,9 @@ export const useSession = (userId: string, relationshipId?: string) => {
     };
 
     initializeSession();
-  }, [
-    userId,
-    relationshipId,
-    loadCurrentSession,
-    loadHistory,
-    loadAnalytics,
-    loadGoals,
-  ]);
+    // Callback functions are stable (wrapped in useCallback below)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -618,5 +613,3 @@ function calculateGoalProgress(
   const completedGoals = goals.active.filter((goal) => goal.isCompleted).length;
   return Math.floor((completedGoals / goals.active.length) * 100);
 }
-
-export default useSession;

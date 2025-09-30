@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsDBService } from "../../services/database/SettingsDBService";
 import { UserSettings } from "../../types/database";
 import { logger } from "../../utils/logging";
+import { settingsKeys } from "./settings-utils";
 
 // Types for data import operations
 interface ImportUserData {
@@ -16,14 +17,6 @@ interface ImportUserData {
     format: "json" | "csv" | "xlsx";
   };
 }
-
-// Query Keys
-export const settingsKeys = {
-  all: ["settings"] as const,
-  user: (userId: string) => [...settingsKeys.all, "user", userId] as const,
-  section: (userId: string, section: string) =>
-    [...settingsKeys.user(userId), "section", section] as const,
-} as const;
 
 // Settings section types
 type SettingsSection =
