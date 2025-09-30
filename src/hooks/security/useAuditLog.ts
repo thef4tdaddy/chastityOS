@@ -270,12 +270,11 @@ function createActionHandlers(
   auditState: AuditLogState,
   setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
 ) {
-  const logAction = useCallback(
-    async (
-      action: AuditAction,
-      details: AuditDetails,
-      context?: AuditContext,
-    ): Promise<void> => {
+  const logAction = async (
+    action: AuditAction,
+    details: AuditDetails,
+    context?: AuditContext,
+  ): Promise<void> => {
       try {
         const entry: AuditEntry = {
           id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -303,12 +302,9 @@ function createActionHandlers(
       } catch {
         // Failed to log audit action
       }
-    },
-    [userId, relationshipId, auditState.privacySettings, setAuditState],
-  );
+    };
 
-  const logSecurityEvent = useCallback(
-    async (event: SecurityEvent): Promise<void> => {
+  const logSecurityEvent = async (event: SecurityEvent): Promise<void> => {
       const details: AuditDetails = {
         description: event.description,
         metadata: event.metadata,
@@ -340,16 +336,13 @@ function createActionHandlers(
         ...prev,
         recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
       }));
-    },
-    [userId, relationshipId, auditState.privacySettings, setAuditState],
-  );
+    };
 
-  const logPermissionCheck = useCallback(
-    async (
-      permission: string,
-      granted: boolean,
-      context?: PermissionContext,
-    ): Promise<void> => {
+  const logPermissionCheck = async (
+    permission: string,
+    granted: boolean,
+    context?: PermissionContext,
+  ): Promise<void> => {
       const details: AuditDetails = {
         description: `Permission check: ${permission}`,
         metadata: { permission, granted, context },
@@ -360,45 +353,33 @@ function createActionHandlers(
         details,
         context as AuditContext,
       );
-    },
-    [logAction],
-  );
+    };
 
   return { logAction, logSecurityEvent, logPermissionCheck };
 }
 
 function createQueryHandlers(auditState: AuditLogState) {
-  const getEntriesByDateRange = useCallback(
-    async (start: Date, end: Date): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) => entry.timestamp >= start && entry.timestamp <= end,
-      );
-    },
-    [auditState.recentEntries],
-  );
+  const getEntriesByDateRange = async (start: Date, end: Date): Promise<AuditEntry[]> => {
+    return auditState.recentEntries.filter(
+      (entry) => entry.timestamp >= start && entry.timestamp <= end,
+    );
+  };
 
-  const getEntriesByCategory = useCallback(
-    async (category: AuditCategory): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) => entry.category === category,
-      );
-    },
-    [auditState.recentEntries],
-  );
+  const getEntriesByCategory = async (category: AuditCategory): Promise<AuditEntry[]> => {
+    return auditState.recentEntries.filter(
+      (entry) => entry.category === category,
+    );
+  };
 
-  const getEntriesByUser = useCallback(
-    async (targetUserId: string): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) =>
-          entry.userId === targetUserId ||
-          entry.context.targetUserId === targetUserId,
-      );
-    },
-    [auditState.recentEntries],
-  );
+  const getEntriesByUser = async (targetUserId: string): Promise<AuditEntry[]> => {
+    return auditState.recentEntries.filter(
+      (entry) =>
+        entry.userId === targetUserId ||
+        entry.context.targetUserId === targetUserId,
+    );
+  };
 
-  const searchEntries = useCallback(
-    async (query: AuditSearchQuery): Promise<AuditEntry[]> => {
+  const searchEntries = async (query: AuditSearchQuery): Promise<AuditEntry[]> => {
       let results = auditState.recentEntries;
       results = applyTextSearch(results, query.query);
       results = applySearchFilters(results, query.filters);
