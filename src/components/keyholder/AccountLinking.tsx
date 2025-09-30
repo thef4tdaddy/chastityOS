@@ -15,15 +15,30 @@ import { ActiveInviteCodesDisplay } from "./ActiveInviteCodesDisplay";
 import { AcceptInviteCodeSection } from "./AcceptInviteCodeSection";
 import { SubmissiveRelationshipsDisplay } from "./SubmissiveRelationshipsDisplay";
 import { AccountLinkingHelp } from "./AccountLinkingHelp";
+import { KeyholderRelationship } from "../../types/core";
+import type { KeyholderRelationshipState } from "../../hooks/useKeyholderRelationships";
 
 interface AccountLinkingProps {
   className?: string;
 }
 
+// Local type definition to avoid restricted service import
+type InviteCode = {
+  id: string;
+  code: string;
+  submissiveUserId: string;
+  submissiveName?: string;
+  createdAt: Date;
+  expiresAt: Date;
+  usedAt?: Date;
+  usedByKeyholderId?: string;
+  status: "active" | "used" | "expired" | "revoked";
+};
+
 // Helper functions to reduce complexity
 const useAccountLinkingHandlers = (
-  createInviteCode: (hours: number) => Promise<any>,
-  acceptInviteCode: (code: string, name: string) => Promise<any>,
+  createInviteCode: (hours: number) => Promise<InviteCode | null>,
+  acceptInviteCode: (code: string, name: string) => Promise<boolean>,
   validateInviteCode: (code: string) => boolean,
   inviteCodeInput: string,
   keyholderNameInput: string,
@@ -57,17 +72,88 @@ const useAccountLinkingHandlers = (
   return { handleCreateInvite, handleAcceptInvite, copyToClipboard };
 };
 
+// Header and Messages Section
+const HeaderAndMessages: React.FC<{
+  message: string;
+  messageType: "success" | "error" | "info";
+  clearMessage: () => void;
+  relationshipSummary: KeyholderRelationshipState["relationshipSummary"];
+}> = ({ message, messageType, clearMessage, relationshipSummary }) => (
+  <>
+    <AccountLinkingHeader />
+    <LinkingMessageDisplay
+      message={message}
+      messageType={messageType}
+      onClearMessage={clearMessage}
+    />
+    <RelationshipSummary relationshipSummary={relationshipSummary} />
+  </>
+);
+
+// Invite Code Sections
+const InviteCodeSections: React.FC<{
+  activeInviteCodes: InviteCode[];
+  inviteCodeInput: string;
+  keyholderNameInput: string;
+  isCreatingInvite: boolean;
+  isAcceptingInvite: boolean;
+  linkingState: ReturnType<typeof getAccountLinkingState>;
+  setInviteCodeInput: (code: string) => void;
+  setKeyholderNameInput: (name: string) => void;
+  revokeInviteCode: (id: string) => void;
+  validateInviteCode: (code: string) => boolean;
+  handlers: {
+    handleCreateInvite: () => Promise<void>;
+    handleAcceptInvite: () => Promise<void>;
+    copyToClipboard: (text: string) => Promise<void>;
+  };
+}> = ({
+  activeInviteCodes,
+  inviteCodeInput,
+  keyholderNameInput,
+  isCreatingInvite,
+  isAcceptingInvite,
+  linkingState,
+  setInviteCodeInput,
+  setKeyholderNameInput,
+  revokeInviteCode,
+  validateInviteCode,
+  handlers,
+}) => (
+  <>
+    <InviteCodeCreationSection
+      shouldShow={!linkingState.hasActiveKeyholder}
+      isCreatingInvite={isCreatingInvite}
+      onCreateInvite={handlers.handleCreateInvite}
+    />
+    <ActiveInviteCodesDisplay
+      activeInviteCodes={activeInviteCodes}
+      onCopyCode={handlers.copyToClipboard}
+      onRevokeCode={revokeInviteCode}
+    />
+    <AcceptInviteCodeSection
+      inviteCodeInput={inviteCodeInput}
+      keyholderNameInput={keyholderNameInput}
+      isAcceptingInvite={isAcceptingInvite}
+      onSetInviteCodeInput={setInviteCodeInput}
+      onSetKeyholderNameInput={setKeyholderNameInput}
+      onAcceptInvite={handlers.handleAcceptInvite}
+      validateInviteCode={validateInviteCode}
+    />
+  </>
+);
+
 // Main Component Content
 const AccountLinkingContent: React.FC<{
-  relationships: any;
-  activeKeyholder: any;
-  activeInviteCodes: any;
-  relationshipSummary: any;
+  relationships: KeyholderRelationshipState["relationships"];
+  activeKeyholder: KeyholderRelationship | null;
+  activeInviteCodes: InviteCode[];
+  relationshipSummary: KeyholderRelationshipState["relationshipSummary"];
   message: string;
-  messageType: any;
+  messageType: "success" | "error" | "info";
   clearMessage: () => void;
   endRelationship: (id: string) => void;
-  linkingState: any;
+  linkingState: ReturnType<typeof getAccountLinkingState>;
   isCreatingInvite: boolean;
   inviteCodeInput: string;
   keyholderNameInput: string;
@@ -102,20 +188,13 @@ const AccountLinkingContent: React.FC<{
   handlers,
 }) => (
   <div className="space-y-6">
-    {/* Header */}
-    <AccountLinkingHeader />
-
-    {/* Messages */}
-    <LinkingMessageDisplay
+    <HeaderAndMessages
       message={message}
       messageType={messageType}
-      onClearMessage={clearMessage}
+      clearMessage={clearMessage}
+      relationshipSummary={relationshipSummary}
     />
 
-    {/* Relationship Summary */}
-    <RelationshipSummary relationshipSummary={relationshipSummary} />
-
-    {/* Active Keyholder Relationship */}
     {activeKeyholder && (
       <ActiveKeyholderDisplay
         activeKeyholder={{
@@ -129,41 +208,28 @@ const AccountLinkingContent: React.FC<{
       />
     )}
 
-    {/* Create Invite Code Section */}
-    <InviteCodeCreationSection
-      shouldShow={!linkingState.hasActiveKeyholder}
-      isCreatingInvite={isCreatingInvite}
-      onCreateInvite={handlers.handleCreateInvite}
-    />
-
-    {/* Active Invite Codes */}
-    <ActiveInviteCodesDisplay
+    <InviteCodeSections
       activeInviteCodes={activeInviteCodes}
-      onCopyCode={handlers.copyToClipboard}
-      onRevokeCode={revokeInviteCode}
-    />
-
-    {/* Accept Invite Code Section */}
-    <AcceptInviteCodeSection
       inviteCodeInput={inviteCodeInput}
       keyholderNameInput={keyholderNameInput}
+      isCreatingInvite={isCreatingInvite}
       isAcceptingInvite={isAcceptingInvite}
-      onSetInviteCodeInput={setInviteCodeInput}
-      onSetKeyholderNameInput={setKeyholderNameInput}
-      onAcceptInvite={handlers.handleAcceptInvite}
+      linkingState={linkingState}
+      setInviteCodeInput={setInviteCodeInput}
+      setKeyholderNameInput={setKeyholderNameInput}
+      revokeInviteCode={revokeInviteCode}
       validateInviteCode={validateInviteCode}
+      handlers={handlers}
     />
 
-    {/* Submissive Relationships */}
     <SubmissiveRelationshipsDisplay
-      relationships={relationships.asKeyholder.map((rel: any) => ({
+      relationships={relationships.asKeyholder.map((rel) => ({
         ...rel,
         permissions: rel.permissions as unknown as Record<string, boolean>,
       }))}
       onEndRelationship={endRelationship}
     />
 
-    {/* Help Section */}
     <AccountLinkingHelp />
   </div>
 );

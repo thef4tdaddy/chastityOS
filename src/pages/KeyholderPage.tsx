@@ -3,6 +3,7 @@ import { useAuthState } from "../contexts";
 import { useKeyholderStore } from "../stores/keyholderStore";
 import { sessionDBService } from "../services/database";
 import type { DBSession } from "../types/database";
+import type { User } from "../types";
 import {
   KeyholderPasswordUnlock,
   AccountLinkingPreview,
@@ -70,7 +71,7 @@ const KeyholderSettings: React.FC<{ onLockControls: () => void }> = ({
 );
 
 // Custom hook for data fetching
-const useKeyholderData = (user: any) => {
+const useKeyholderData = (user: User | null) => {
   const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
   const [loading, setLoading] = useState(true);
 

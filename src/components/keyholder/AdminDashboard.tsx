@@ -27,7 +27,7 @@ const AdminLoadingDisplay: React.FC = () => (
 
 // Wearer Selection Component
 const WearerSelection: React.FC<{
-  keyholderRelationships: any[];
+  keyholderRelationships: AdminRelationship[];
   selectedWearerId: string | null;
   onSetSelectedWearer: (id: string | null) => void;
 }> = ({ keyholderRelationships, selectedWearerId, onSetSelectedWearer }) => {
@@ -91,10 +91,12 @@ const AdminSessionStatus: React.FC<{
   </div>
 );
 
-// Navigation Tabs Component  
+// Navigation Tabs Component
 const NavigationTabs: React.FC<{
   selectedTab: string;
-  onSetSelectedTab: (tab: "overview" | "sessions" | "tasks" | "settings") => void;
+  onSetSelectedTab: (
+    tab: "overview" | "sessions" | "tasks" | "settings",
+  ) => void;
 }> = ({ selectedTab, onSetSelectedTab }) => {
   const tabs = [
     { id: "overview", label: "Overview", icon: FaEye },
@@ -126,6 +128,40 @@ const NavigationTabs: React.FC<{
     </div>
   );
 };
+
+// Tab Content Renderer
+const TabContentRenderer: React.FC<{
+  selectedTab: string;
+  selectedRelationship: AdminRelationship;
+  isAdminSessionActive: boolean;
+}> = ({ selectedTab, selectedRelationship, isAdminSessionActive }) => (
+  <div className="space-y-6">
+    {selectedTab === "overview" && (
+      <AdminOverview relationship={selectedRelationship} />
+    )}
+
+    {selectedTab === "sessions" && (
+      <AdminSessions
+        relationship={selectedRelationship}
+        isSessionActive={isAdminSessionActive}
+      />
+    )}
+
+    {selectedTab === "tasks" && (
+      <AdminTasks
+        relationship={selectedRelationship}
+        isSessionActive={isAdminSessionActive}
+      />
+    )}
+
+    {selectedTab === "settings" && (
+      <AdminSettings
+        relationship={selectedRelationship}
+        isSessionActive={isAdminSessionActive}
+      />
+    )}
+  </div>
+);
 
 export const AdminDashboard: React.FC = () => {
   const {
@@ -198,32 +234,11 @@ export const AdminDashboard: React.FC = () => {
           />
 
           {/* Tab Content */}
-          <div className="space-y-6">
-            {selectedTab === "overview" && (
-              <AdminOverview relationship={selectedRelationship} />
-            )}
-
-            {selectedTab === "sessions" && (
-              <AdminSessions
-                relationship={selectedRelationship}
-                isSessionActive={isAdminSessionActive}
-              />
-            )}
-
-            {selectedTab === "tasks" && (
-              <AdminTasks
-                relationship={selectedRelationship}
-                isSessionActive={isAdminSessionActive}
-              />
-            )}
-
-            {selectedTab === "settings" && (
-              <AdminSettings
-                relationship={selectedRelationship}
-                isSessionActive={isAdminSessionActive}
-              />
-            )}
-          </div>
+          <TabContentRenderer
+            selectedTab={selectedTab}
+            selectedRelationship={selectedRelationship}
+            isAdminSessionActive={isAdminSessionActive}
+          />
         </>
       )}
     </div>
