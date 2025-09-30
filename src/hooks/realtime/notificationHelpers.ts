@@ -64,7 +64,7 @@ export async function deliverNotification(
   // Use Promise.all instead of Promise.allSettled for compatibility
   try {
     await Promise.all(deliveryPromises);
-  } catch (error) {
+  } catch (_error) {
     // Handle delivery errors
   }
 }
@@ -86,63 +86,63 @@ export async function deliverPushNotification(
 
 // Helper function to deliver email notification
 export async function deliverEmailNotification(
-  notification: Notification,
+  _notification: Notification,
 ): Promise<void> {
   // In real implementation, send email via backend API
 }
 
 // Helper function to deliver SMS notification
 export async function deliverSMSNotification(
-  notification: Notification,
+  _notification: Notification,
 ): Promise<void> {
   // In real implementation, send SMS via backend API
 }
 
 // Backend API helper functions
 export async function fetchNotificationPreferences(
-  userId: string,
+  _userId: string,
 ): Promise<Partial<NotificationPreferences>> {
   // In real implementation, fetch from backend
   return {};
 }
 
 export async function fetchRecentNotifications(
-  userId: string,
-  relationshipId?: string,
+  _userId: string,
+  _relationshipId?: string,
 ): Promise<Notification[]> {
   // In real implementation, fetch from backend
   return [];
 }
 
 export async function saveNotification(
-  notification: Notification,
+  _notification: Notification,
 ): Promise<void> {
   // In real implementation, save to backend
 }
 
 export async function updateNotificationStatus(
-  notificationId: string,
-  status: Partial<Pick<Notification, "isRead">>,
+  _notificationId: string,
+  _status: Partial<Pick<Notification, "isRead">>,
 ): Promise<void> {
   // In real implementation, update in backend
 }
 
 export async function updateMultipleNotificationStatus(
-  notificationIds: string[],
-  status: Partial<Pick<Notification, "isRead">>,
+  _notificationIds: string[],
+  _status: Partial<Pick<Notification, "isRead">>,
 ): Promise<void> {
   // In real implementation, bulk update in backend
 }
 
 export async function deleteNotification(
-  notificationId: string,
+  _notificationId: string,
 ): Promise<void> {
   // In real implementation, delete from backend
 }
 
 export async function saveNotificationPreferences(
-  userId: string,
-  preferences: NotificationPreferences,
+  _userId: string,
+  _preferences: NotificationPreferences,
 ): Promise<void> {
   // In real implementation, save to backend
 }

@@ -86,7 +86,7 @@ export interface UseTaskManagementReturn {
  * @returns Task management interface with CRUD operations and filtering
  */
 export function useTaskManagement(
-  keyholderMode: boolean = false,
+  _keyholderMode: boolean = false,
 ): UseTaskManagementReturn {
   // State
   const [tasks, setTasks] = useState<Task[]>([]);

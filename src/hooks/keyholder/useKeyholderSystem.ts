@@ -6,7 +6,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "../../contexts";
 import { useKeyholderRelationships } from "../useKeyholderRelationships";
-import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
+import {
+  KeyholderRelationship,
+  KeyholderPermissions as _KeyholderPermissions,
+} from "../../types/core";
 import { Task } from "../../types";
 import { InviteCode } from "../../services/database/KeyholderRelationshipDBService";
 import { serviceLogger } from "../../utils/logging";

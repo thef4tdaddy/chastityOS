@@ -1,6 +1,5 @@
 import React from "react";
 import { FaInfo, FaBook } from "../../utils/iconImport";
-import type { ChastityRule } from "./RuleCard";
 
 // Info Banner Component
 export const RulesInfoBanner: React.FC = () => (

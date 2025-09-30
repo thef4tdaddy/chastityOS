@@ -138,7 +138,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   }, []);
 
   const testRule = useCallback(
-    async (rule: Rule, testData: any): Promise<TestResult> => {
+    async (_rule: Rule, _testData: any): Promise<TestResult> => {
       setIsTesting(true);
       try {
         await new Promise((resolve) => setTimeout(resolve, 500));

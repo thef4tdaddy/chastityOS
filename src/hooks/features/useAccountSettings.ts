@@ -52,7 +52,7 @@ export function useAccountSettings(): UseAccountSettingsReturn {
   }, []);
 
   const updatePassword = useCallback(
-    async (oldPassword: string, newPassword: string): Promise<void> => {
+    async (_oldPassword: string, _newPassword: string): Promise<void> => {
       setIsUpdating(true);
       setError(null);
       try {
@@ -88,7 +88,7 @@ export function useAccountSettings(): UseAccountSettingsReturn {
     }
   }, []);
 
-  const disable2FA = useCallback(async (code: string): Promise<void> => {
+  const disable2FA = useCallback(async (_code: string): Promise<void> => {
     setIsUpdating(true);
     setError(null);
     try {
@@ -105,20 +105,23 @@ export function useAccountSettings(): UseAccountSettingsReturn {
     }
   }, []);
 
-  const deleteAccount = useCallback(async (password: string): Promise<void> => {
-    setIsDeleting(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to delete account");
-      setError(error);
-      throw error;
-    } finally {
-      setIsDeleting(false);
-    }
-  }, []);
+  const deleteAccount = useCallback(
+    async (_password: string): Promise<void> => {
+      setIsDeleting(true);
+      setError(null);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to delete account");
+        setError(error);
+        throw error;
+      } finally {
+        setIsDeleting(false);
+      }
+    },
+    [],
+  );
 
   useState(() => {
     setTimeout(() => setIsLoading(false), 100);

@@ -174,6 +174,81 @@ export const useMigration = () => {
     [migrationState],
   );
 
+  // Migration implementations
+  const migrateThemeSystem = useCallback(
+    async (onProgress: (progress: number) => void) => {
+      onProgress(25);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Convert old theme settings
+      const oldTheme = localStorage.getItem("theme");
+      if (oldTheme) {
+        localStorage.setItem(
+          "chastity-theme-current",
+          JSON.stringify(
+            oldTheme === "dark" ? "default-dark" : "default-light",
+          ),
+        );
+      }
+
+      onProgress(75);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      onProgress(100);
+    },
+    [],
+  );
+
+  const migrateEnhancedGoals = useCallback(
+    async (onProgress: (progress: number) => void) => {
+      onProgress(30);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Convert legacy goals (simplified)
+      const legacyGoals = localStorage.getItem("personal-goals");
+      if (legacyGoals) {
+        // Transform format here
+        onProgress(70);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
+      onProgress(100);
+    },
+    [],
+  );
+
+  const migrateGamificationSystem = useCallback(
+    async (onProgress: (progress: number) => void) => {
+      onProgress(20);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      // Initialize gamification data
+      onProgress(60);
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      onProgress(100);
+    },
+    [],
+  );
+
+  // Execute migration logic
+  const executeMigrationLogic = useCallback(
+    async (migrationId: string, onProgress: (progress: number) => void) => {
+      switch (migrationId) {
+        case "v4.0.0-theme-system":
+          await migrateThemeSystem(onProgress);
+          break;
+        case "v4.0.0-enhanced-goals":
+          await migrateEnhancedGoals(onProgress);
+          break;
+        case "v4.0.0-gamification":
+          await migrateGamificationSystem(onProgress);
+          break;
+        default:
+          throw new Error(`Unknown migration: ${migrationId}`);
+      }
+    },
+    [migrateThemeSystem, migrateEnhancedGoals, migrateGamificationSystem],
+  );
+
   // Execute single migration
   const executeMigration = useCallback(
     async (migration: Migration): Promise<void> => {
@@ -274,74 +349,6 @@ export const useMigration = () => {
     [migrationState, queryClient, createBackup, executeMigrationLogic],
   );
 
-  // Execute migration logic
-  const executeMigrationLogic = async (
-    migrationId: string,
-    onProgress: (progress: number) => void,
-  ) => {
-    switch (migrationId) {
-      case "v4.0.0-theme-system":
-        await migrateThemeSystem(onProgress);
-        break;
-      case "v4.0.0-enhanced-goals":
-        await migrateEnhancedGoals(onProgress);
-        break;
-      case "v4.0.0-gamification":
-        await migrateGamificationSystem(onProgress);
-        break;
-      default:
-        throw new Error(`Unknown migration: ${migrationId}`);
-    }
-  };
-
-  // Migration implementations
-  const migrateThemeSystem = async (onProgress: (progress: number) => void) => {
-    onProgress(25);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Convert old theme settings
-    const oldTheme = localStorage.getItem("theme");
-    if (oldTheme) {
-      localStorage.setItem(
-        "chastity-theme-current",
-        JSON.stringify(oldTheme === "dark" ? "default-dark" : "default-light"),
-      );
-    }
-
-    onProgress(75);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    onProgress(100);
-  };
-
-  const migrateEnhancedGoals = async (
-    onProgress: (progress: number) => void,
-  ) => {
-    onProgress(30);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // Convert legacy goals (simplified)
-    const legacyGoals = localStorage.getItem("personal-goals");
-    if (legacyGoals) {
-      // Transform format here
-      onProgress(70);
-      await new Promise((resolve) => setTimeout(resolve, 300));
-    }
-
-    onProgress(100);
-  };
-
-  const migrateGamificationSystem = async (
-    onProgress: (progress: number) => void,
-  ) => {
-    onProgress(20);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    // Initialize gamification data
-    onProgress(60);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    onProgress(100);
-  };
-
   // Run migrations mutation
   const runMigrationsMutation = useMutation({
     mutationFn: async (migrationIds?: string[]) => {
@@ -398,7 +405,9 @@ export const useMigration = () => {
       const backups = JSON.parse(
         localStorage.getItem(STORAGE_KEYS.MIGRATION_BACKUPS) || "[]",
       );
-      const backup = backups.find((b: { migrationId: string }) => b.migrationId === migrationId);
+      const backup = backups.find(
+        (b: { migrationId: string }) => b.migrationId === migrationId,
+      );
 
       if (!backup) throw new Error("Backup not found");
 
