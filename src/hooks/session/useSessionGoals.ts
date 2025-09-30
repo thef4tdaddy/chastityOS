@@ -11,7 +11,7 @@ const logger = serviceLogger("useSessionGoals");
 
 // ==================== INTERFACES ====================
 
-import type * as Types from "./types/SessionGoals";
+import type * as _Types from "./types/SessionGoals";
 export type * from "./types/SessionGoals";
 
 export const useSessionGoals = (userId: string, relationshipId?: string) => {

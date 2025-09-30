@@ -6,7 +6,7 @@ import {
   Subscription,
   SyncChannel,
   ChannelType,
-  ConnectionStatus,
+  ConnectionStatus as _ConnectionStatus,
 } from "../../types/realtime";
 
 // Helper function to create WebSocket URL
@@ -125,7 +125,7 @@ export function notifySubscribers(
     if (subscription.dataType === update.type && subscription.isActive) {
       try {
         subscription.callback(update);
-      } catch (error) {
+      } catch (_error) {
         // Error in subscription callback
       }
     }

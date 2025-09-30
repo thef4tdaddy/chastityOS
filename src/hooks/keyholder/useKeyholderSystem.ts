@@ -6,7 +6,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "../../contexts";
 import { useKeyholderRelationships } from "../useKeyholderRelationships";
-import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
+import {
+  KeyholderRelationship,
+  KeyholderPermissions as _KeyholderPermissions,
+} from "../../types/core";
 import { Task } from "../../types";
 import { InviteCode } from "../../services/database/KeyholderRelationshipDBService";
 import { serviceLogger } from "../../utils/logging";
@@ -68,10 +71,16 @@ export interface InviteOptions {
 }
 
 export interface BulkOperations {
-  startSessions: (relationshipIds: string[], options?: { duration?: number; message?: string }) => Promise<void>;
+  startSessions: (
+    relationshipIds: string[],
+    options?: { duration?: number; message?: string },
+  ) => Promise<void>;
   stopSessions: (relationshipIds: string[], reason?: string) => Promise<void>;
   sendMessages: (relationshipIds: string[], message: string) => Promise<void>;
-  assignTasks: (relationshipIds: string[], task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
+  assignTasks: (
+    relationshipIds: string[],
+    task: Omit<Task, "id" | "createdAt">,
+  ) => Promise<void>;
 }
 
 export interface KeyholderSystemActions {
@@ -174,7 +183,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
       // Calculate keyholder status and stats
       const { keyholderStatus, stats } = calculateKeyholderStatusAndStats(
         keyholderRelationshipsList,
-        keyholderRelationships
+        keyholderRelationships,
       );
 
       setState((prev) => ({
@@ -244,7 +253,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
         return await handleSubmissiveAcceptance(
           success,
           refreshData,
-          state.activeRelationships
+          state.activeRelationships,
         );
       } catch (error) {
         return handleSubmissiveAcceptanceError(error, setState);
@@ -379,7 +388,10 @@ export const useKeyholderSystem = (keyholderId?: string) => {
 
   const getBulkOperations = useCallback((): BulkOperations => {
     return {
-      startSessions: async (relationshipIds: string[], options?: { duration?: number; message?: string }) => {
+      startSessions: async (
+        relationshipIds: string[],
+        options?: { duration?: number; message?: string },
+      ) => {
         logger.debug("Bulk starting sessions", { relationshipIds, options });
         // TODO: Implement bulk session start
       },
@@ -391,7 +403,10 @@ export const useKeyholderSystem = (keyholderId?: string) => {
         logger.debug("Bulk sending messages", { relationshipIds, message });
         // TODO: Implement bulk messaging
       },
-      assignTasks: async (relationshipIds: string[], task: Omit<Task, 'id' | 'createdAt'>) => {
+      assignTasks: async (
+        relationshipIds: string[],
+        task: Omit<Task, "id" | "createdAt">,
+      ) => {
         logger.debug("Bulk assigning tasks", { relationshipIds, task });
         // TODO: Implement bulk task assignment
       },
@@ -419,7 +434,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
     ) {
       refreshData();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     keyholderRelationships.relationships.asKeyholder.length,
     state.activeRelationships.length,
@@ -464,15 +479,14 @@ export type UseKeyholderSystemReturn = ReturnType<typeof useKeyholderSystem>;
 // Helper functions for useKeyholderSystem
 function calculateKeyholderStatusAndStats(
   keyholderRelationshipsList: KeyholderRelationship[],
-  keyholderRelationships: Record<string, unknown>
+  keyholderRelationships: Record<string, unknown>,
 ): { keyholderStatus: KeyholderStatus; stats: KeyholderStats } {
   // Calculate keyholder status
   const keyholderStatus: KeyholderStatus = {
     isActiveKeyholder: keyholderRelationshipsList.length > 0,
     hasPermissions: keyholderRelationshipsList.some(
       (rel) =>
-        rel.permissions &&
-        Object.values(rel.permissions).some((perm) => perm),
+        rel.permissions && Object.values(rel.permissions).some((perm) => perm),
     ),
     canCreateInvites: keyholderRelationships.canCreateInviteCode
       ? keyholderRelationships.canCreateInviteCode()
@@ -499,7 +513,7 @@ function calculateKeyholderStatusAndStats(
 
 async function handleInviteCodeCreation(
   inviteCode: InviteCode | null,
-  refreshData: () => Promise<void>
+  refreshData: () => Promise<void>,
 ): Promise<string | null> {
   if (inviteCode) {
     // Refresh data to update state
@@ -511,15 +525,13 @@ async function handleInviteCodeCreation(
 
 function handleInviteCodeError(
   error: unknown,
-  setState: React.Dispatch<React.SetStateAction<KeyholderSystemState>>
+  setState: React.Dispatch<React.SetStateAction<KeyholderSystemState>>,
 ): null {
   logger.error("Failed to create invite code", { error: error as Error });
   setState((prev) => ({
     ...prev,
     error:
-      error instanceof Error
-        ? error.message
-        : "Failed to create invite code",
+      error instanceof Error ? error.message : "Failed to create invite code",
   }));
   return null;
 }
@@ -527,7 +539,7 @@ function handleInviteCodeError(
 async function handleSubmissiveAcceptance(
   success: boolean,
   refreshData: () => Promise<void>,
-  activeRelationships: KeyholderRelationship[]
+  activeRelationships: KeyholderRelationship[],
 ): Promise<KeyholderRelationship | null> {
   if (success) {
     // Refresh data to get the new relationship
@@ -545,15 +557,13 @@ async function handleSubmissiveAcceptance(
 
 function handleSubmissiveAcceptanceError(
   error: unknown,
-  setState: React.Dispatch<React.SetStateAction<KeyholderSystemState>>
+  setState: React.Dispatch<React.SetStateAction<KeyholderSystemState>>,
 ): null {
   logger.error("Failed to accept submissive", { error: error as Error });
   setState((prev) => ({
     ...prev,
     error:
-      error instanceof Error
-        ? error.message
-        : "Failed to accept submissive",
+      error instanceof Error ? error.message : "Failed to accept submissive",
   }));
   return null;
 }
