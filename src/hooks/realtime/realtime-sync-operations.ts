@@ -180,7 +180,7 @@ export const createWebSocketFunctions = (
   const sendMessage = useCallback(
 
     (message: RealtimeUpdate | Record<string, unknown>) => {
-      const success = sendWebSocketMessage(wsRef.current, message, () => {
+      sendWebSocketMessage(wsRef.current, message, () => {
         setSyncState((prev) => ({
           ...prev,
           syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
