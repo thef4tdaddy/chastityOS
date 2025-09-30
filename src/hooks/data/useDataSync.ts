@@ -6,11 +6,29 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { SyncResult } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
+import {
+  calculateOverallSyncQuality,
+  getLastSuccessfulSync,
+  getSyncInterval,
+} from "../../utils/dataSyncHelpers";
+import { useConflictResolution } from "./useConflictResolution";
+import { useSyncBackup } from "./useSyncBackup";
+import { useSyncMonitoring } from "./useSyncMonitoring";
 
 const logger = serviceLogger("useDataSync");
 
 // ==================== INTERFACES ====================
 
+import type {
+  SyncStatus,
+  RelationshipSyncStatus,
+  DataConflict,
+  SyncPermissions,
+  SyncMetrics,
+  SyncScope,
+  DataEntityType,
+  RelationshipSyncResult,
+} from "./types/dataSync";
 import type * as _Types from "./types/dataSync";
 export type * from "./types/dataSync";
 
@@ -56,6 +74,18 @@ export const useDataSync = (userId: string) => {
   const [realTimeSyncEnabled, setRealTimeSyncEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ==================== SUB-HOOKS ====================
+
+  const conflictResolution = useConflictResolution({
+    conflicts,
+    setConflicts,
+    setSyncMetrics,
+  });
+
+  const syncBackup = useSyncBackup({ userId });
+
+  const syncMonitoring = useSyncMonitoring({ conflicts, syncMetrics });
 
   // ==================== COMPUTED VALUES ====================
 
@@ -309,125 +339,6 @@ export const useDataSync = (userId: string) => {
     [relationshipSync],
   );
 
-  // ==================== CONFLICT RESOLUTION ====================
-
-  const resolveConflict = useCallback(
-    async (
-      conflictId: string,
-      resolution: ConflictResolution,
-    ): Promise<void> => {
-      try {
-        logger.debug("Resolving conflict", { conflictId, resolution });
-
-        const conflict = conflicts.find((c) => c.id === conflictId);
-        if (!conflict) {
-          throw new Error("Conflict not found");
-        }
-
-        // Apply resolution strategy
-        let _resolvedData: Record<string, unknown>;
-
-        switch (resolution.strategy) {
-          case "local_wins":
-            _resolvedData = conflict.localVersion;
-            break;
-          case "remote_wins":
-            _resolvedData = conflict.remoteVersion;
-            break;
-          case "keyholder_wins":
-            _resolvedData = conflict.keyholderVersion || conflict.remoteVersion;
-            break;
-          case "merge_intelligent":
-            _resolvedData = intelligentMerge(
-              conflict.localVersion,
-              conflict.remoteVersion,
-            );
-            break;
-          case "latest_timestamp":
-            _resolvedData = getLatestTimestampVersion(conflict);
-            break;
-          default:
-            throw new Error(
-              `Unsupported resolution strategy: ${resolution.strategy}`,
-            );
-        }
-
-        // Remove resolved conflict
-        setConflicts((prev) => prev.filter((c) => c.id !== conflictId));
-
-        // Update metrics
-        setSyncMetrics((prev) => ({
-          ...prev,
-          conflictsResolved: prev.conflictsResolved + 1,
-        }));
-
-        logger.info("Conflict resolved successfully", {
-          conflictId,
-          strategy: resolution.strategy,
-        });
-      } catch (error) {
-        logger.error("Failed to resolve conflict", { error, conflictId });
-        throw error;
-      }
-    },
-    [conflicts],
-  );
-
-  const resolveAllConflicts = useCallback(
-    async (
-      strategy: GlobalResolutionStrategy,
-    ): Promise<ConflictResolutionResult[]> => {
-      try {
-        logger.debug("Resolving all conflicts", {
-          strategy,
-          conflictCount: conflicts.length,
-        });
-
-        const results: ConflictResolutionResult[] = [];
-
-        for (const conflict of conflicts) {
-          try {
-            const resolutionStrategy =
-              strategy.strategyByType[conflict.type] ||
-              strategy.defaultStrategy;
-
-            await resolveConflict(conflict.id, {
-              conflictId: conflict.id,
-              strategy: resolutionStrategy,
-              preserveHistory: true,
-            });
-
-            results.push({
-              conflictId: conflict.id,
-              success: true,
-              appliedStrategy: resolutionStrategy,
-              resultingData: {},
-            });
-          } catch (error) {
-            results.push({
-              conflictId: conflict.id,
-              success: false,
-              appliedStrategy: strategy.defaultStrategy,
-              resultingData: {},
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-          }
-        }
-
-        logger.info("Batch conflict resolution completed", {
-          total: conflicts.length,
-          successful: results.filter((r) => r.success).length,
-        });
-
-        return results;
-      } catch (error) {
-        logger.error("Failed to resolve all conflicts", { error });
-        throw error;
-      }
-    },
-    [conflicts, resolveConflict],
-  );
-
   // ==================== PRIVACY AND PERMISSIONS ====================
 
   const updateSyncPermissions = useCallback(
@@ -500,125 +411,6 @@ export const useDataSync = (userId: string) => {
     }
   }, []);
 
-  // ==================== BACKUP AND RECOVERY ====================
-
-  const createBackup = useCallback(async (): Promise<BackupResult> => {
-    try {
-      logger.debug("Creating data backup", { userId });
-
-      const backup: BackupResult = {
-        backupId: `backup_${Date.now()}`,
-        createdAt: new Date(),
-        size: 1048576, // 1MB
-        collections: ["sessions", "goals", "tasks", "events"],
-        compressionRatio: 0.65,
-        storageLocation: "cloud://backups/",
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-        checksumHash: "abc123def456",
-      };
-
-      logger.info("Backup created successfully", { backupId: backup.backupId });
-      return backup;
-    } catch (error) {
-      logger.error("Failed to create backup", { error });
-      throw error;
-    }
-  }, [userId]);
-
-  const restoreFromBackup = useCallback(
-    async (backupId: string): Promise<RestoreResult> => {
-      try {
-        logger.debug("Restoring from backup", { backupId });
-
-        const restore: RestoreResult = {
-          backupId,
-          restoredAt: new Date(),
-          restoredCollections: ["sessions", "goals", "tasks"],
-          conflictsCreated: 3,
-          itemsRestored: 245,
-          errors: [],
-        };
-
-        // Add conflicts for restored items that differ from current data
-        if (restore.conflictsCreated > 0) {
-          // Would add actual conflicts to the conflicts state
-        }
-
-        logger.info("Backup restored successfully", {
-          backupId,
-          itemsRestored: restore.itemsRestored,
-        });
-        return restore;
-      } catch (error) {
-        logger.error("Failed to restore backup", { error, backupId });
-        throw error;
-      }
-    },
-    [],
-  );
-
-  // ==================== MONITORING ====================
-
-  const getSyncHealth = useCallback((): SyncHealthReport => {
-    const issues: SyncIssue[] = [];
-
-    // Check for critical issues
-    if (conflicts.filter((c) => c.priority === "critical").length > 0) {
-      issues.push({
-        severity: "critical",
-        type: "conflicts",
-        description: "Critical data conflicts require immediate attention",
-        affectedRelationships: conflicts
-          .map((c) => c.context.relationshipId)
-          .filter(Boolean) as string[],
-        suggestedActions: ["Review and resolve critical conflicts"],
-      });
-    }
-
-    // Check sync reliability
-    if (syncMetrics.reliabilityScore < 70) {
-      issues.push({
-        severity: "high",
-        type: "performance",
-        description: "Low sync reliability affecting data consistency",
-        affectedRelationships: [],
-        suggestedActions: [
-          "Check network connection",
-          "Review sync permissions",
-        ],
-      });
-    }
-
-    const overallHealth = issues.some((i) => i.severity === "critical")
-      ? "critical"
-      : issues.some((i) => i.severity === "high")
-        ? "warning"
-        : "healthy";
-
-    return {
-      overall: overallHealth,
-      issues,
-      recommendations: [
-        "Maintain regular sync schedule",
-        "Resolve conflicts promptly",
-        "Monitor relationship connectivity",
-      ],
-      metrics: {
-        syncReliability: syncMetrics.reliabilityScore,
-        averageLatency: 150, // ms
-        errorRate:
-          (syncMetrics.failedSyncs / Math.max(1, syncMetrics.totalSyncs)) * 100,
-        dataIntegrityScore: 95,
-      },
-      lastChecked: new Date(),
-    };
-  }, [conflicts, syncMetrics]);
-
-  const getSyncHistory = useCallback((_days = 30): SyncHistoryEntry[] => {
-    // Return sync history for the specified number of days
-    return [];
-  }, []);
-
   // ==================== PRIVATE HELPER FUNCTIONS ====================
 
   const initializeRealTimeSync = useCallback(async (): Promise<void> => {
@@ -653,9 +445,9 @@ export const useDataSync = (userId: string) => {
     forceSyncAll,
     syncRelationshipData,
 
-    // Conflict resolution
-    resolveConflict,
-    resolveAllConflicts,
+    // Conflict resolution (from useConflictResolution hook)
+    resolveConflict: conflictResolution.resolveConflict,
+    resolveAllConflicts: conflictResolution.resolveAllConflicts,
 
     // Privacy and permissions
     updateSyncPermissions,
@@ -665,13 +457,13 @@ export const useDataSync = (userId: string) => {
     enableRealtimeSync,
     disableRealtimeSync,
 
-    // Backup and recovery
-    createBackup,
-    restoreFromBackup,
+    // Backup and recovery (from useSyncBackup hook)
+    createBackup: syncBackup.createBackup,
+    restoreFromBackup: syncBackup.restoreFromBackup,
 
-    // Monitoring
-    getSyncHealth,
-    getSyncHistory,
+    // Monitoring (from useSyncMonitoring hook)
+    getSyncHealth: syncMonitoring.getSyncHealth,
+    getSyncHistory: syncMonitoring.getSyncHistory,
 
     // Computed values
     isSyncing,
@@ -685,80 +477,3 @@ export const useDataSync = (userId: string) => {
     error,
   };
 };
-
-// ==================== HELPER FUNCTIONS ====================
-
-function calculateOverallSyncQuality(
-  relationshipSync: RelationshipSyncStatus[],
-): number {
-  if (relationshipSync.length === 0) return 100;
-
-  const totalQuality = relationshipSync.reduce(
-    (sum, rs) => sum + rs.syncQuality.score,
-    0,
-  );
-  return Math.floor(totalQuality / relationshipSync.length);
-}
-
-function getLastSuccessfulSync(metrics: SyncMetrics): Date | null {
-  return metrics.lastSuccessfulSync;
-}
-
-function getSyncInterval(frequency: SyncPermissions["syncFrequency"]): number {
-  switch (frequency) {
-    case "realtime":
-      return 5000; // 5 seconds
-    case "frequent":
-      return 30000; // 30 seconds
-    case "moderate":
-      return 300000; // 5 minutes
-    case "minimal":
-      return 3600000; // 1 hour
-    default:
-      return 300000;
-  }
-}
-
-function intelligentMerge(
-  local: Record<string, unknown>,
-  remote: Record<string, unknown>,
-): Record<string, unknown> {
-  // Implement intelligent merge strategy
-  // This is a simplified version - real implementation would be more sophisticated
-  const merged = { ...local };
-
-  Object.keys(remote).forEach((key) => {
-    if (!(key in local)) {
-      merged[key] = remote[key];
-    } else if (
-      typeof local[key] === "object" &&
-      typeof remote[key] === "object"
-    ) {
-      // Recursively merge objects
-      merged[key] = intelligentMerge(
-        local[key] as Record<string, unknown>,
-        remote[key] as Record<string, unknown>,
-      );
-    } else {
-      // Use remote value if it's newer (simplified logic)
-      merged[key] = remote[key];
-    }
-  });
-
-  return merged;
-}
-
-function getLatestTimestampVersion(
-  conflict: DataConflict,
-): Record<string, unknown> {
-  const localTimestamp = new Date(
-    (conflict.localVersion.lastModified as string) || 0,
-  ).getTime();
-  const remoteTimestamp = new Date(
-    (conflict.remoteVersion.lastModified as string) || 0,
-  ).getTime();
-
-  return localTimestamp > remoteTimestamp
-    ? conflict.localVersion
-    : conflict.remoteVersion;
-}

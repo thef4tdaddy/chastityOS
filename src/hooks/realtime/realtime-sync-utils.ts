@@ -7,6 +7,7 @@ import {
   SyncChannel,
   ChannelType,
   ConnectionStatus as _ConnectionStatus,
+  RealtimeSyncMetrics,
 } from "../../types/realtime";
 
 // Helper function to create WebSocket URL
@@ -38,7 +39,7 @@ export function createSyncChannel(
 // Helper function to send WebSocket message
 export function sendWebSocketMessage(
   ws: WebSocket | null,
-  message: { [key: string]: any },
+  message: Record<string, unknown>,
   updateMessagesSent: () => void,
 ): boolean {
   if (ws?.readyState === WebSocket.OPEN) {
@@ -51,9 +52,9 @@ export function sendWebSocketMessage(
 
 // Helper function to update sync metrics
 export function updateSyncMetrics(
-  prevMetrics: { [key: string]: any },
+  prevMetrics: RealtimeSyncMetrics,
   type: "success" | "error" | "messageReceived" | "messageSent",
-): { [key: string]: any } {
+): RealtimeSyncMetrics {
   const now = new Date();
 
   switch (type) {

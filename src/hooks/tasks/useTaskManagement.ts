@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { Task, TaskStatus, TaskPriority } from "@/types/core";
+import { Timestamp } from "firebase/firestore";
 
 // Filter and sort types
 export interface TaskFilter {
@@ -211,8 +212,8 @@ export function useTaskManagement(
           status: TaskStatus.PENDING,
           priority: task.priority ?? TaskPriority.MEDIUM,
           assignedBy: task.assignedBy ?? "submissive",
-          createdAt: new Date() as any, // Firestore Timestamp in production
-          dueDate: task.dueDate as any,
+          createdAt: Timestamp.fromDate(new Date()),
+          dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : undefined,
           isRecurring: false,
         };
 
@@ -299,7 +300,7 @@ export function useTaskManagement(
         await updateTask(taskId, {
           // Custom field for wearer assignment (not in base Task type)
           // Would need to extend Task type or use metadata
-        } as any);
+        } as Partial<Task>);
       } catch (err) {
         const error =
           err instanceof Error ? err : new Error("Failed to assign task");
