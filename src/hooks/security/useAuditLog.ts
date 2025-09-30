@@ -304,7 +304,7 @@ function createActionHandlers(
         // Failed to log audit action
       }
     },
-    [userId, relationshipId, auditState.privacySettings],
+    [userId, relationshipId, auditState.privacySettings, setAuditState],
   );
 
   const logSecurityEvent = useCallback(
@@ -341,7 +341,7 @@ function createActionHandlers(
         recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
       }));
     },
-    [userId, relationshipId, auditState.privacySettings],
+    [userId, relationshipId, auditState.privacySettings, setAuditState],
   );
 
   const logPermissionCheck = useCallback(
@@ -422,9 +422,12 @@ function createManagementHandlers(
   auditState: AuditLogState,
   setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
 ) {
-  const applyFilters = useCallback((filters: AuditFilter): void => {
-    setAuditState((prev) => ({ ...prev, filters }));
-  }, []);
+  const applyFilters = useCallback(
+    (filters: AuditFilter): void => {
+      setAuditState((prev) => ({ ...prev, filters }));
+    },
+    [setAuditState],
+  );
 
   const getSecuritySummary = useCallback((): SecurityAuditSummary => {
     const securityEntries = auditState.recentEntries.filter(
@@ -546,7 +549,9 @@ function createManagementHandlers(
       // In real implementation, this would share selected entries with keyholder
       // In real implementation, this would share selected entries with keyholder
     },
-    [relationshipId],
+    // relationshipId is not in scope of this function, outer scope value
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   // Update privacy settings
@@ -558,7 +563,7 @@ function createManagementHandlers(
       }));
       await savePrivacySettings(userId, settings);
     },
-    [userId],
+    [userId, setAuditState],
   );
 
   return { applyFilters, getSecuritySummary, updatePrivacySettings };

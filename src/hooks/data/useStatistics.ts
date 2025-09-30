@@ -483,12 +483,14 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
       trendPredictions: [],
     });
 
-  const [_recommendations, setRecommendations] = useState<RecommendationEngine>({
-    sessionRecommendations: [],
-    goalRecommendations: [],
-    behaviorInsights: [],
-    personalizedTips: [],
-  });
+  const [_recommendations, setRecommendations] = useState<RecommendationEngine>(
+    {
+      sessionRecommendations: [],
+      goalRecommendations: [],
+      behaviorInsights: [],
+      personalizedTips: [],
+    },
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -676,7 +678,14 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load shared statistics", { error });
     }
-  }, [relationshipId, consistencyRating]);
+  }, [
+    relationshipId,
+    consistencyRating,
+    sessionStats.sessionsThisMonth,
+    sessionStats.averageSessionLength,
+    goalStats.activeGoals,
+    goalStats.completionRate,
+  ]);
 
   const loadPredictiveAnalytics = useCallback(async () => {
     try {
@@ -695,7 +704,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load predictive analytics", { error });
     }
-  }, [sessionStats]);
+  }, [sessionStats.averageSessionLength]);
 
   const loadRecommendations = useCallback(async () => {
     try {
@@ -825,7 +834,13 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         satisfactionTrend: "improving",
         milestones: [],
       };
-    }, [sessionStats]);
+    }, [
+      sessionStats.sessionsThisMonth,
+      sessionStats.sessionsThisWeek,
+      sessionStats.averageSessionLength,
+      sessionStats.completionRate,
+      goalStats.completionRate,
+    ]);
 
   // ==================== PREDICTIVE ANALYTICS ====================
 
@@ -885,7 +900,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         throw error;
       }
     },
-    [userId], // Only userId is actually used
+    [userId, sessionStats, goalStats, achievementStats],
   );
 
   const shareWithKeyholder = useCallback(
@@ -982,7 +997,9 @@ function calculateOverallProgress(goalStats: GoalStatistics): number {
   return Math.floor((goalStats.completedGoals / goalStats.totalGoals) * 100);
 }
 
-function calculateKeyholderSatisfaction(_sharedStats: SharedStatistics): number {
+function calculateKeyholderSatisfaction(
+  _sharedStats: SharedStatistics,
+): number {
   // This would be calculated based on keyholder feedback and interaction patterns
   return 85; // Placeholder value
 }
