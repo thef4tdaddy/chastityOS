@@ -5,7 +5,6 @@
  * and export capabilities for detailed analysis.
  */
 
-import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
 
@@ -218,7 +217,7 @@ const STORAGE_KEYS = {
 /**
  * Advanced Reporting Hook
  */
-export const useReporting = (userId?: string, relationshipId?: string) => {
+export const useReporting = (userId?: string, _relationshipId?: string) => {
   const queryClient = useQueryClient();
 
   // Get available templates

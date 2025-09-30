@@ -2,7 +2,6 @@
  * Keyholder Relationship Database Service
  * Handles account linking between keyholders and submissives
  */
-import { BaseDBService } from "./BaseDBService";
 import { db } from "../storage/ChastityDB";
 import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
 import { generateBackupCode } from "../../utils/helpers/hash";
@@ -47,7 +46,7 @@ class KeyholderRelationshipDBService {
   /**
    * Get record by ID - placeholder implementation
    */
-  async getById(id: string): Promise<KeyholderRelationship | undefined> {
+  async getById(_id: string): Promise<KeyholderRelationship | undefined> {
     logger.warn(
       "KeyholderRelationship tables not yet implemented in database schema",
     );
@@ -58,8 +57,8 @@ class KeyholderRelationshipDBService {
    * Update record - placeholder implementation
    */
   async update(
-    id: string,
-    data: Partial<KeyholderRelationship>,
+    _id: string,
+    _data: Partial<KeyholderRelationship>,
   ): Promise<void> {
     logger.warn(
       "KeyholderRelationship tables not yet implemented in database schema",
