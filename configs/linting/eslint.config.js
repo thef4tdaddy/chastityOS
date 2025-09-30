@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import typescriptParser from '@typescript-eslint/parser';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import zustandSafePatterns from './eslint-rules/zustand-safe-patterns.js';
-import noLegacyToast from '../../eslint-rules/no-legacy-toast.js';
+import noLegacyToast from './eslint-rules/no-legacy-toast.js';
 
 export default [
   {
