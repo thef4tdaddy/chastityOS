@@ -27,8 +27,12 @@ export const createWebSocketFunctions = (
   wsRef: React.MutableRefObject<WebSocket | null>,
   subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
   reconnectAttemptsRef: React.MutableRefObject<number>,
-  reconnectTimeoutRef: React.MutableRefObject<any>,
-  heartbeatTimeoutRef: React.MutableRefObject<any>,
+  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
   connectionStartTimeRef: React.MutableRefObject<Date | null>,
   maxReconnectAttempts: number,
   reconnectInterval: number,
@@ -174,7 +178,7 @@ export const createWebSocketFunctions = (
   }, []);
 
   const sendMessage = useCallback(
-    (message: RealtimeUpdate | { type: string; [key: string]: any }) => {
+    (message: RealtimeUpdate | Record<string, unknown>) => {
       const success = sendWebSocketMessage(wsRef.current, message, () => {
         setSyncState((prev) => ({
           ...prev,
@@ -188,7 +192,7 @@ export const createWebSocketFunctions = (
   );
 
   const handleMessage = useCallback(
-    (message: { type: string; [key: string]: any }) => {
+    (message: Record<string, unknown>) => {
       setSyncState((prev) => ({
         ...prev,
         syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
@@ -290,9 +294,7 @@ export const createWebSocketFunctions = (
 // Helper function to create channel management functions
 export const createChannelFunctions = (
   userId: string,
-  sendMessage: (
-    message: RealtimeUpdate | { type: string; [key: string]: any },
-  ) => void,
+  sendMessage: (message: RealtimeUpdate | Record<string, unknown>) => void,
 ) => {
   const joinChannel = useCallback(
     async (channelId: string): Promise<void> => {

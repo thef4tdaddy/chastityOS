@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { Event } from "../../types/events";
 
 export interface EventFormData {
   type: string;
@@ -28,7 +29,7 @@ export interface UseLogEventFormReturn {
   hasDraft: boolean;
   clearDraft: () => void;
   categorySuggestions: string[];
-  recentEvents: any[];
+  recentEvents: Event[];
 }
 
 const defaultFormData: EventFormData = {
