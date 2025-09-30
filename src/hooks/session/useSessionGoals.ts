@@ -4,7 +4,6 @@
  * progress tracking, and achievement integration
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { DBGoal } from "../../types/database";
 import type { KeyholderRelationship } from "../../types/core";
 import { serviceLogger } from "../../utils/logging";
 
@@ -26,7 +25,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
   );
   const [goalHistory, setGoalHistory] = useState<GoalHistoryEntry[]>([]);
   const [achievements, setAchievements] = useState<GoalAchievement[]>([]);
-  const [relationship, setRelationship] =
+  const [_relationship, _setRelationship] =
     useState<KeyholderRelationship | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
