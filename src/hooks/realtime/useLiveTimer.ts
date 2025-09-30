@@ -14,6 +14,13 @@ import {
   TimerEvent,
   TimerSubscription,
 } from "../../types/realtime";
+import {
+  validateTimerPermissions,
+  updateTimerInState,
+  calculateTimerProgress,
+  createTimerSubscription,
+  calculateComputedValues,
+} from "./timerOperations";
 
 interface UseLiveTimerOptions {
   userId: string;
@@ -21,6 +28,62 @@ interface UseLiveTimerOptions {
   syncInterval?: number; // milliseconds
   accuracyThreshold?: number; // milliseconds
 }
+
+// Helper function to create timer sync record
+const createTimerSync = async (timerId: string): Promise<TimerSync> => {
+  const now = new Date();
+  return {
+    timerId,
+    lastSync: now,
+    serverTime: await getServerTime(),
+    clientOffset: 0,
+    syncAccuracy: 1.0,
+  };
+};
+
+// Helper function to create new timer
+const createNewTimer = (
+  userId: string,
+  relationshipId: string | undefined,
+  type: TimerType,
+  duration: number,
+  title: string,
+  options?: {
+    description?: string;
+    canPause?: boolean;
+    canStop?: boolean;
+    canExtend?: boolean;
+    isKeyholderControlled?: boolean;
+    keyholderUserId?: string;
+    sessionId?: string;
+    taskId?: string;
+  },
+): LiveTimer => {
+  const now = new Date();
+  return {
+    id: `timer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    type,
+    status: TimerStatus.STOPPED,
+    startTime: now,
+    currentTime: now,
+    duration,
+    elapsed: 0,
+    remaining: duration,
+    isPaused: false,
+    totalPauseTime: 0,
+    userId,
+    relationshipId,
+    title,
+    description: options?.description,
+    canPause: options?.canPause ?? true,
+    canStop: options?.canStop ?? true,
+    canExtend: options?.canExtend ?? false,
+    isKeyholderControlled: options?.isKeyholderControlled ?? false,
+    keyholderUserId: options?.keyholderUserId,
+    sessionId: options?.sessionId,
+    taskId: options?.taskId,
+  };
+};
 
 export const useLiveTimer = (options: UseLiveTimerOptions) => {
   const {
@@ -60,30 +123,14 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         taskId?: string;
       },
     ): Promise<LiveTimer> => {
-      const now = new Date();
-      const timer: LiveTimer = {
-        id: `timer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type,
-        status: TimerStatus.STOPPED,
-        startTime: now,
-        currentTime: now,
-        duration,
-        elapsed: 0,
-        remaining: duration,
-        isPaused: false,
-        totalPauseTime: 0,
+      const timer = createNewTimer(
         userId,
         relationshipId,
+        type,
+        duration,
         title,
-        description: options?.description,
-        canPause: options?.canPause ?? true,
-        canStop: options?.canStop ?? true,
-        canExtend: options?.canExtend ?? false,
-        isKeyholderControlled: options?.isKeyholderControlled ?? false,
-        keyholderUserId: options?.keyholderUserId,
-        sessionId: options?.sessionId,
-        taskId: options?.taskId,
-      };
+        options,
+      );
 
       setTimerState((prev) => ({
         ...prev,
@@ -91,14 +138,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       }));
 
       // Create sync record
-      const sync: TimerSync = {
-        timerId: timer.id,
-        lastSync: now,
-        serverTime: await getServerTime(),
-        clientOffset: 0,
-        syncAccuracy: 1.0,
-      };
-
+      const sync = await createTimerSync(timer.id);
       setTimerState((prev) => ({
         ...prev,
         timerSyncs: [...prev.timerSyncs, sync],
@@ -120,9 +160,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      if (timer.isKeyholderControlled && timer.keyholderUserId !== userId) {
-        throw new Error("Only the keyholder can control this timer");
-      }
+      validateTimerPermissions(timer, userId, "control");
 
       const now = new Date();
       const updatedTimer: LiveTimer = {
@@ -135,18 +173,16 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
       setTimerState((prev) => ({
         ...prev,
-        activeTimers: prev.activeTimers.map((t) =>
-          t.id === timerId ? updatedTimer : t,
+        activeTimers: updateTimerInState(
+          prev.activeTimers,
+          timerId,
+          updatedTimer,
         ),
       }));
 
-      // Log event
+      // Log event and sync
       await logTimerEvent(timerId, "start", { startTime: now });
-
-      // Sync with server
       await syncTimer(timerId);
-
-      // Notify subscribers
       notifySubscribers(updatedTimer);
     },
     [timerState.activeTimers, userId, notifySubscribers, syncTimer],
@@ -164,9 +200,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer cannot be paused");
       }
 
-      if (timer.isKeyholderControlled && timer.keyholderUserId !== userId) {
-        throw new Error("Only the keyholder can pause this timer");
-      }
+      validateTimerPermissions(timer, userId, "pause");
 
       const now = new Date();
       const updatedTimer: LiveTimer = {
@@ -179,8 +213,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
       setTimerState((prev) => ({
         ...prev,
-        activeTimers: prev.activeTimers.map((t) =>
-          t.id === timerId ? updatedTimer : t,
+        activeTimers: updateTimerInState(
+          prev.activeTimers,
+          timerId,
+          updatedTimer,
         ),
       }));
 
@@ -199,9 +235,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      if (timer.isKeyholderControlled && timer.keyholderUserId !== userId) {
-        throw new Error("Only the keyholder can resume this timer");
-      }
+      validateTimerPermissions(timer, userId, "resume");
 
       const now = new Date();
       const pauseDuration = timer.pausedAt
@@ -219,8 +253,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
       setTimerState((prev) => ({
         ...prev,
-        activeTimers: prev.activeTimers.map((t) =>
-          t.id === timerId ? updatedTimer : t,
+        activeTimers: updateTimerInState(
+          prev.activeTimers,
+          timerId,
+          updatedTimer,
         ),
       }));
 
@@ -243,9 +279,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer cannot be stopped");
       }
 
-      if (timer.isKeyholderControlled && timer.keyholderUserId !== userId) {
-        throw new Error("Only the keyholder can stop this timer");
-      }
+      validateTimerPermissions(timer, userId, "stop");
 
       const now = new Date();
       const updatedTimer: LiveTimer = {
@@ -258,8 +292,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
       setTimerState((prev) => ({
         ...prev,
-        activeTimers: prev.activeTimers.map((t) =>
-          t.id === timerId ? updatedTimer : t,
+        activeTimers: updateTimerInState(
+          prev.activeTimers,
+          timerId,
+          updatedTimer,
         ),
       }));
 
@@ -282,9 +318,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer cannot be extended");
       }
 
-      if (timer.isKeyholderControlled && timer.keyholderUserId !== userId) {
-        throw new Error("Only the keyholder can extend this timer");
-      }
+      validateTimerPermissions(timer, userId, "extend");
 
       const updatedTimer: LiveTimer = {
         ...timer,
@@ -294,8 +328,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
       setTimerState((prev) => ({
         ...prev,
-        activeTimers: prev.activeTimers.map((t) =>
-          t.id === timerId ? updatedTimer : t,
+        activeTimers: updateTimerInState(
+          prev.activeTimers,
+          timerId,
+          updatedTimer,
         ),
       }));
 
@@ -313,33 +349,13 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       callback: (timer: LiveTimer) => void,
       events: string[] = ["start", "pause", "resume", "stop", "update"],
     ): TimerSubscription => {
-      const subscription: TimerSubscription = {
+      return createTimerSubscription(
         timerId,
         callback,
         events,
-        isActive: true,
-      };
-
-      const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      subscriptionsRef.current.set(subscriptionId, subscription);
-
-      setTimerState((prev) => ({
-        ...prev,
-        subscriptions: [...prev.subscriptions, subscription],
-      }));
-
-      return {
-        ...subscription,
-        unsubscribe: () => {
-          subscriptionsRef.current.delete(subscriptionId);
-          setTimerState((prev) => ({
-            ...prev,
-            subscriptions: prev.subscriptions.filter(
-              (sub) => sub !== subscription,
-            ),
-          }));
-        },
-      } as TimerSubscription & { unsubscribe: () => void };
+        setTimerState,
+        subscriptionsRef,
+      );
     },
     [],
   );
@@ -374,27 +390,11 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
     setTimerState((prev) => ({
       ...prev,
       activeTimers: prev.activeTimers.map((timer) => {
-        if (timer.status !== TimerStatus.RUNNING) {
-          return timer;
-        }
-
-        const actualElapsed = Math.floor(
-          (now.getTime() - timer.startTime.getTime() - timer.totalPauseTime) /
-            1000,
-        );
-
-        const remaining = Math.max(0, timer.duration - actualElapsed);
-
-        const updatedTimer: LiveTimer = {
-          ...timer,
-          currentTime: now,
-          elapsed: actualElapsed,
-          remaining,
-          status: remaining <= 0 ? TimerStatus.COMPLETED : timer.status,
-        };
+        const progress = calculateTimerProgress(timer, now);
+        const updatedTimer = { ...timer, ...progress };
 
         // Check if timer completed
-        if (remaining <= 0 && timer.status === TimerStatus.RUNNING) {
+        if (progress.remaining === 0 && timer.status === TimerStatus.RUNNING) {
           logTimerEvent(timer.id, "complete", { completedAt: now });
           notifySubscribers(updatedTimer);
         }
@@ -447,6 +447,39 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
     });
   }, []);
 
+  // Helper function to sync active timers with server
+  const syncActiveTimers = useCallback(async () => {
+    const runningTimers = timerState.activeTimers.filter(
+      (t) => t.status === TimerStatus.RUNNING,
+    );
+
+    for (const timer of runningTimers) {
+      try {
+        const serverTime = await getServerTime();
+        const now = new Date();
+        const clientOffset = now.getTime() - serverTime.getTime();
+
+        setTimerState((prev) => ({
+          ...prev,
+          timerSyncs: prev.timerSyncs.map((sync) =>
+            sync.timerId === timer.id
+              ? {
+                  ...sync,
+                  lastSync: now,
+                  serverTime,
+                  clientOffset,
+                  syncAccuracy:
+                    Math.abs(clientOffset) < accuracyThreshold ? 1.0 : 0.5,
+                }
+              : sync,
+          ),
+        }));
+      } catch (error) {
+        // Failed to sync timer
+      }
+    }
+  }, [timerState.activeTimers, accuracyThreshold]);
+
   // Start update interval
   useEffect(() => {
     updateIntervalRef.current = setInterval(updateTimerProgress, syncInterval);
@@ -460,38 +493,6 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
   // Start sync interval
   useEffect(() => {
-    const syncActiveTimers = async () => {
-      const runningTimers = timerState.activeTimers.filter(
-        (t) => t.status === TimerStatus.RUNNING,
-      );
-
-      for (const timer of runningTimers) {
-        try {
-          const serverTime = await getServerTime();
-          const now = new Date();
-          const clientOffset = now.getTime() - serverTime.getTime();
-
-          setTimerState((prev) => ({
-            ...prev,
-            timerSyncs: prev.timerSyncs.map((sync) =>
-              sync.timerId === timer.id
-                ? {
-                    ...sync,
-                    lastSync: now,
-                    serverTime,
-                    clientOffset,
-                    syncAccuracy:
-                      Math.abs(clientOffset) < accuracyThreshold ? 1.0 : 0.5,
-                  }
-                : sync,
-            ),
-          }));
-        } catch (error) {
-          // Failed to sync timer
-        }
-      }
-    };
-
     syncIntervalRef.current = setInterval(syncActiveTimers, syncInterval * 30); // Sync every 30 seconds
 
     return () => {
@@ -499,36 +500,11 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(syncIntervalRef.current);
       }
     };
-  }, [timerState.activeTimers, syncInterval, accuracyThreshold]);
+  }, [syncActiveTimers, syncInterval]);
 
   // Computed values
   const computedValues = useMemo(() => {
-    const runningCount = timerState.activeTimers.filter(
-      (t) => t.status === TimerStatus.RUNNING,
-    ).length;
-    const pausedCount = timerState.activeTimers.filter(
-      (t) => t.status === TimerStatus.PAUSED,
-    ).length;
-    const completedCount = timerState.activeTimers.filter(
-      (t) => t.status === TimerStatus.COMPLETED,
-    ).length;
-
-    const totalActiveTime = timerState.activeTimers
-      .filter((t) => t.status === TimerStatus.RUNNING)
-      .reduce((total, timer) => total + timer.elapsed, 0);
-
-    const longestRunningTimer =
-      timerState.activeTimers
-        .filter((t) => t.status === TimerStatus.RUNNING)
-        .sort((a, b) => b.elapsed - a.elapsed)[0] || null;
-
-    return {
-      runningCount,
-      pausedCount,
-      completedCount,
-      totalActiveTime,
-      longestRunningTimer,
-    };
+    return calculateComputedValues(timerState.activeTimers);
   }, [timerState.activeTimers]);
 
   return {
