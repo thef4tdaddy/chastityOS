@@ -20,7 +20,7 @@ import {
   calculateTimerProgress,
   createTimerSubscription,
   calculateComputedValues,
-} from "./timerOperations";
+} from "./timer-operations";
 
 interface UseLiveTimerOptions {
   userId: string;

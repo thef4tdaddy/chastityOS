@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taskDBService } from "../../services/database/TaskDBService";
-import { Task, TaskStatus, DBTask } from "../../types/database";
+import { Task, TaskStatus, DBTask, TaskFilters } from "../../types/database";
 import { logger } from "../../utils/logging";
+import { taskKeys } from "./tasks-utils";
 
 /**
  * Task Management Hooks - TanStack Query Integration
@@ -17,32 +18,7 @@ import { logger } from "../../utils/logging";
  * Strategy: Optimistic update + background sync
  */
 
-// Query Keys
-export const taskKeys = {
-  all: ["tasks"] as const,
-  lists: () => [...taskKeys.all, "list"] as const,
-  list: (userId: string, filters?: TaskFilters) =>
-    [...taskKeys.lists(), userId, filters] as const,
-  detail: (taskId: string) => [...taskKeys.all, "detail", taskId] as const,
-  byStatus: (userId: string, status: TaskStatus) =>
-    [...taskKeys.all, "status", userId, status] as const,
-  assigned: (userId: string) => [...taskKeys.all, "assigned", userId] as const,
-  assignedBy: (keyholderUid: string) =>
-    [...taskKeys.all, "assignedBy", keyholderUid] as const,
-} as const;
-
 // Types
-interface TaskFilters {
-  status?: TaskStatus;
-  priority?: "low" | "medium" | "high";
-  category?: string;
-  assignedBy?: string;
-  dueDate?: {
-    start?: Date;
-    end?: Date;
-  };
-}
-
 interface CreateTaskData {
   title: string;
   description?: string;

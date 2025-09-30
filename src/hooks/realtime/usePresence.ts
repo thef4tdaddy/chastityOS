@@ -17,7 +17,7 @@ import {
   createSubscriptionFunctions,
   createQueryFunctions,
   calculatePresenceComputedValues,
-} from "./presenceOperations";
+} from "./presence-operations";
 
 interface UsePresenceOptions {
   userId: string;

@@ -762,5 +762,3 @@ function getLatestTimestampVersion(
     ? conflict.localVersion
     : conflict.remoteVersion;
 }
-
-export default useDataSync;

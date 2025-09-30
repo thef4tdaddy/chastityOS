@@ -720,5 +720,3 @@ function checkIfGoalCompleted(
       return false;
   }
 }
-
-export default useSessionGoals;

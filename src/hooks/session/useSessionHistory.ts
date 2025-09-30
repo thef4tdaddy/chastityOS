@@ -1025,5 +1025,3 @@ function calculateOverallProgressTrend(
   // Implementation would analyze overall progress metrics over time
   return createEmptyTrendData();
 }
-
-export default useSessionHistory;
