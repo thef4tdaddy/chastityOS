@@ -5,10 +5,7 @@
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { DBSession, DBGoal } from "../../types/database";
-import type {
-  KeyholderRelationship,
-  KeyholderPermissions,
-} from "../../types/core";
+import type { KeyholderRelationship } from "../../types/core";
 import { KeyholderRelationshipService } from "../../services/KeyholderRelationshipService";
 import { serviceLogger } from "../../utils/logging";
 
@@ -141,7 +138,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
     keyholderAssigned: [],
     active: [],
   });
-  const [history, setHistory] = useState<SessionHistoryEntry[]>([]);
+  const [_history, setHistory] = useState<SessionHistoryEntry[]>([]);
   const [keyholderControls, setKeyholderControls] =
     useState<KeyholderSessionControls | null>(null);
   const [analytics, setAnalytics] = useState<SessionAnalytics>({

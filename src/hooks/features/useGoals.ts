@@ -24,7 +24,6 @@ import {
   GoalCategory,
   GoalDifficulty,
   GoalStatus,
-  Milestone,
 } from "../../types/goals";
 import { logger } from "../../utils/logging";
 
@@ -323,7 +322,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
   // Helper functions
   const generateSmartRecommendations = (
     personal: EnhancedGoal[],
-    collaborative: CollaborativeGoal[],
+    _collaborative: CollaborativeGoal[],
   ): GoalRecommendation[] => {
     const recommendations: GoalRecommendation[] = [];
 
@@ -462,7 +461,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
     return totalDays / completed.length;
   };
 
-  const generateMonthlyProgress = (goals: EnhancedGoal[]) => {
+  const generateMonthlyProgress = (_goals: EnhancedGoal[]) => {
     // Simplified monthly progress calculation
     return Array.from({ length: 6 }, (_, i) => ({
       month: new Date(
@@ -474,7 +473,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
     }));
   };
 
-  const calculateStreaks = (completed: EnhancedGoal[]) => {
+  const calculateStreaks = (_completed: EnhancedGoal[]) => {
     return Object.values(GoalCategory).map((category) => ({
       category,
       currentStreak: Math.floor(Math.random() * 10),

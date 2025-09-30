@@ -5,7 +5,7 @@
  * for potential issues.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
 
@@ -155,7 +155,7 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
         return HealthStatus.HEALTHY;
       }
       return HealthStatus.WARNING;
-    } catch (error) {
+    } catch (_error) {
       return HealthStatus.CRITICAL;
     }
   };
@@ -180,13 +180,13 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
         return HealthStatus.WARNING;
       }
       return HealthStatus.CRITICAL;
-    } catch (error) {
+    } catch (_error) {
       return HealthStatus.CRITICAL;
     }
   };
 
   // Calculate service uptime (simplified)
-  const calculateUptime = (serviceName: string): number => {
+  const calculateUptime = (_serviceName: string): number => {
     // In a real implementation, this would track actual uptime
     // For now, return a mock value
     return Math.random() * 100;

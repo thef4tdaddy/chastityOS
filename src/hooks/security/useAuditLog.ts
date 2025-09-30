@@ -46,7 +46,12 @@ interface UseAuditLogOptions {
 }
 
 export const useAuditLog = (options: UseAuditLogOptions) => {
-  const { userId, relationshipId, retentionDays = 365 } = options;
+  const {
+    userId,
+    relationshipId,
+    _autoLogActions = true,
+    retentionDays = 365,
+  } = options;
 
   // Initialize state
   const [auditState, setAuditState] = useState<AuditLogState>(() =>
@@ -295,7 +300,7 @@ function createActionHandlers(
           ...prev,
           recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
         }));
-      } catch {
+      } catch (_err) {
         // Failed to log audit action
       }
     },
@@ -455,6 +460,96 @@ function createManagementHandlers(
     };
   }, [auditState.recentEntries]);
 
+  // Get compliance report
+  const getComplianceReport = useCallback((): ComplianceReport => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const periodEntries = auditState.recentEntries.filter(
+      (entry) => entry.timestamp >= thirtyDaysAgo,
+    );
+
+    const actionsByCategory = periodEntries.reduce(
+      (acc, entry) => {
+        acc[entry.category] = (acc[entry.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<AuditCategory, number>,
+    );
+
+    const securityScore = calculateSecurityScore(periodEntries);
+
+    return {
+      period: {
+        start: thirtyDaysAgo,
+        end: now,
+      },
+      totalActions: periodEntries.length,
+      actionsByCategory,
+      securityScore,
+      recommendations: generateSecurityRecommendations(periodEntries),
+    };
+  }, [auditState.recentEntries]);
+
+  // Export audit log
+  const exportAuditLog = useCallback(
+    async (
+      format: ExportFormat,
+      filters?: AuditFilter,
+    ): Promise<AuditExport> => {
+      let entries = auditState.recentEntries;
+
+      // Apply filters if provided
+      if (filters) {
+        // Implementation would filter entries based on criteria
+        entries = applyAuditFilters(entries, filters);
+      }
+
+      // Generate export data based on format
+      let data: string | Uint8Array;
+      let filename: string;
+
+      switch (format) {
+        case "json":
+          data = JSON.stringify(entries, null, 2);
+          filename = `audit-log-${Date.now()}.json`;
+          break;
+        case "csv":
+          data = convertToCSV(entries);
+          filename = `audit-log-${Date.now()}.csv`;
+          break;
+        case "pdf":
+          data = await generatePDF(entries);
+          filename = `audit-log-${Date.now()}.pdf`;
+          break;
+        default:
+          throw new Error(`Unsupported export format: ${format}`);
+      }
+
+      return {
+        format,
+        data,
+        filename,
+        generatedAt: new Date(),
+      };
+    },
+    [auditState.recentEntries],
+  );
+
+  // Share with keyholder
+  const shareWithKeyholder = useCallback(
+    async (_entries: string[]): Promise<void> => {
+      if (!relationshipId) {
+        throw new Error("No relationship context for sharing");
+      }
+
+      // In real implementation, this would share selected entries with keyholder
+      // In real implementation, this would share selected entries with keyholder
+    },
+    [relationshipId],
+  );
+
+  // Update privacy settings
   const updatePrivacySettings = useCallback(
     async (settings: Partial<AuditPrivacySettings>): Promise<void> => {
       setAuditState((prev) => ({

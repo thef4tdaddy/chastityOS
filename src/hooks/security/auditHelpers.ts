@@ -7,7 +7,6 @@ import {
   AuditEntry,
   AuditFilter,
   AuditPrivacySettings,
-  ExportFormat,
 } from "../../types/security";
 
 export function getCategoryForAction(action: AuditAction): AuditCategory {
@@ -44,7 +43,7 @@ export async function getClientIP(): Promise<string> {
 
 export function applyAuditFilters(
   entries: AuditEntry[],
-  filters: AuditFilter,
+  _filters: AuditFilter,
 ): AuditEntry[] {
   // Implementation would apply all filters
   return entries;
@@ -71,7 +70,7 @@ export function convertToCSV(entries: AuditEntry[]): string {
   return [headers, ...rows].map((row) => row.join(",")).join("\n");
 }
 
-export async function generatePDF(entries: AuditEntry[]): Promise<Uint8Array> {
+export async function generatePDF(_entries: AuditEntry[]): Promise<Uint8Array> {
   // In real implementation, generate PDF using library like jsPDF
   return new Uint8Array();
 }
@@ -104,21 +103,21 @@ export function generateSecurityRecommendations(
 }
 
 // API functions
-export async function saveAuditEntry(entry: AuditEntry): Promise<void> {
+export async function saveAuditEntry(_entry: AuditEntry): Promise<void> {
   // In real implementation, save to backend/Firebase
 }
 
 export async function fetchRecentAuditEntries(
-  userId: string,
-  relationshipId?: string,
+  _userId: string,
+  _relationshipId?: string,
 ): Promise<AuditEntry[]> {
   // In real implementation, fetch from backend
   return [];
 }
 
 export async function savePrivacySettings(
-  userId: string,
-  settings: Partial<AuditPrivacySettings>,
+  _userId: string,
+  _settings: Partial<AuditPrivacySettings>,
 ): Promise<void> {
   // In real implementation, save to backend
 }
