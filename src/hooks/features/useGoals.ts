@@ -26,6 +26,11 @@ import {
   GoalStatus,
 } from "../../types/goals";
 import { logger } from "../../utils/logging";
+import {
+  getGoalInsights,
+  getPredictiveAnalytics as getPredictiveAnalyticsHelper,
+  getCompletionTrends as getCompletionTrendsHelper,
+} from "../../utils/goalsHelpers";
 
 // Enhanced goal state
 
@@ -509,85 +514,21 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
     ];
   };
 
-  // Get insights
-  const getGoalInsights = useCallback((): GoalInsights => {
-    return {
-      motivationFactors: [
-        "Progress tracking",
-        "Milestone rewards",
-        "Social support",
-      ],
-      successPatterns: [
-        "Regular check-ins",
-        "Realistic targets",
-        "Clear milestones",
-      ],
-      failureReasons: [
-        "Unrealistic expectations",
-        "Lack of support",
-        "Poor planning",
-      ],
-      optimalDifficulty: GoalDifficulty.MEDIUM,
-      bestCategories: [GoalCategory.CHASTITY, GoalCategory.BEHAVIOR],
-      timeToComplete: {
-        [GoalDifficulty.EASY]: 14,
-        [GoalDifficulty.MEDIUM]: 30,
-        [GoalDifficulty.HARD]: 60,
-        [GoalDifficulty.EXTREME]: 120,
-      },
-    };
-  }, []);
+  // Analytics functions using helpers
+  const getGoalInsightsCallback = useCallback(
+    (): GoalInsights => getGoalInsights(),
+    [],
+  );
 
-  // Get predictive analytics
-  const getPredictiveAnalytics = useCallback((): GoalPredictions => {
-    const activeGoals = personalGoals.filter(
-      (g) => g.progress.status === GoalStatus.ACTIVE,
-    );
+  const getPredictiveAnalyticsCallback = useCallback(
+    (): GoalPredictions => getPredictiveAnalyticsHelper(personalGoals),
+    [personalGoals],
+  );
 
-    return {
-      likelyToComplete: activeGoals.filter((g) => g.progress.percentage > 70),
-      atRisk: activeGoals.filter((g) => g.progress.percentage < 30),
-      completionProbabilities: activeGoals.reduce(
-        (acc, goal) => {
-          acc[goal.id] = Math.random() * 0.5 + 0.5; // 50-100% probability
-          return acc;
-        },
-        {} as Record<string, number>,
-      ),
-      suggestedAdjustments: [],
-    };
-  }, [personalGoals]);
-
-  // Get completion trends
-  const getCompletionTrends = useCallback((): CompletionTrends => {
-    return {
-      weeklyCompletion: Array.from({ length: 12 }, () =>
-        Math.floor(Math.random() * 10),
-      ),
-      monthlyCompletion: Array.from({ length: 6 }, () =>
-        Math.floor(Math.random() * 15),
-      ),
-      categoryTrends: Object.values(GoalCategory).reduce(
-        (acc, cat) => {
-          acc[cat] = Array.from({ length: 6 }, () =>
-            Math.floor(Math.random() * 5),
-          );
-          return acc;
-        },
-        {} as Record<GoalCategory, number[]>,
-      ),
-      difficultyTrends: Object.values(GoalDifficulty).reduce(
-        (acc, diff) => {
-          acc[diff] = Array.from({ length: 6 }, () =>
-            Math.floor(Math.random() * 3),
-          );
-          return acc;
-        },
-        {} as Record<GoalDifficulty, number[]>,
-      ),
-      peakPerformancePeriods: ["Monday mornings", "Weekend evenings"],
-    };
-  }, []);
+  const getCompletionTrendsCallback = useCallback(
+    (): CompletionTrends => getCompletionTrendsHelper(),
+    [],
+  );
 
   return {
     // Goal state
@@ -615,9 +556,9 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
     },
 
     // Analytics
-    getGoalInsights,
-    getPredictiveAnalytics,
-    getCompletionTrends,
+    getGoalInsights: getGoalInsightsCallback,
+    getPredictiveAnalytics: getPredictiveAnalyticsCallback,
+    getCompletionTrends: getCompletionTrendsCallback,
 
     // Loading states
     isCreating: createGoalMutation.isPending,
