@@ -36,7 +36,7 @@ import {
   generatePDF,
   calculateSecurityScore,
   generateSecurityRecommendations,
-} from "./auditHelpers";
+} from "./audit-utils";
 
 interface UseAuditLogOptions {
   userId: string;

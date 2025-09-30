@@ -6,6 +6,7 @@
 import { useMemo } from "react";
 import { useAchievements } from "../useAchievements";
 import { AchievementCategory, UserAchievement, Achievement } from "../../types";
+import { getTypeStyles } from "./profile-achievements-utils";
 
 // Helper function for achievement type mapping
 const getAchievementType = (
@@ -22,19 +23,6 @@ const getAchievementType = (
       return "goal";
     default:
       return "milestone";
-  }
-};
-
-export const getTypeStyles = (type: string): string => {
-  switch (type) {
-    case "milestone":
-      return "bg-nightly-aquamarine/20 text-nightly-aquamarine";
-    case "streak":
-      return "bg-red-400/20 text-red-400";
-    case "goal":
-      return "bg-nightly-lavender-floral/20 text-nightly-lavender-floral";
-    default:
-      return "bg-gray-400/20 text-gray-400";
   }
 };
 
