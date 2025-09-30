@@ -12,6 +12,35 @@ export interface ChastityRule {
   lastModified: Date;
 }
 
+// Helper function for markdown formatting
+const formatMarkdownToReact = (content: string) => {
+  // Simple markdown-to-HTML conversion (in real app, use a proper library)
+  return content.split("\n").map((line, index) => {
+    if (line.startsWith("**") && line.endsWith("**")) {
+      return (
+        <strong key={index} className="text-nightly-honeydew">
+          {line.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (line.startsWith("- ")) {
+      return (
+        <li key={index} className="ml-4 text-nightly-celadon">
+          {line.slice(2)}
+        </li>
+      );
+    }
+    if (line.trim() === "") {
+      return <br key={index} />;
+    }
+    return (
+      <p key={index} className="text-nightly-celadon mb-2">
+        {line}
+      </p>
+    );
+  });
+};
+
 // Rule Card Component
 interface RuleCardProps {
   rule: ChastityRule;
@@ -26,34 +55,6 @@ export const RuleCard: React.FC<RuleCardProps> = ({
   onEdit,
   onToggle,
 }) => {
-  const formatMarkdownToReact = (content: string) => {
-    // Simple markdown-to-HTML conversion (in real app, use a proper library)
-    return content.split("\n").map((line, index) => {
-      if (line.startsWith("**") && line.endsWith("**")) {
-        return (
-          <strong key={index} className="text-nightly-honeydew">
-            {line.slice(2, -2)}
-          </strong>
-        );
-      }
-      if (line.startsWith("- ")) {
-        return (
-          <li key={index} className="ml-4 text-nightly-celadon">
-            {line.slice(2)}
-          </li>
-        );
-      }
-      if (line.trim() === "") {
-        return <br key={index} />;
-      }
-      return (
-        <p key={index} className="text-nightly-celadon mb-2">
-          {line}
-        </p>
-      );
-    });
-  };
-
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
       {/* Header */}
