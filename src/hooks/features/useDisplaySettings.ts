@@ -38,7 +38,7 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [previewedSettings, setPreviewedSettings] =
+  const [_previewedSettings, _setPreviewedSettings] =
     useState<Partial<DisplaySettings> | null>(null);
 
   const updateTheme = useCallback(

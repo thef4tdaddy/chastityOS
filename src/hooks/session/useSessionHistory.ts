@@ -366,6 +366,10 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
   }, [
     userId,
     relationshipId,
+    privacySettings.shareWithKeyholder,
+    privacySettings.shareRatings,
+    privacySettings.shareNotes,
+    privacySettings.sharePauses,
     loadSessions,
     loadPrivacySettings,
     calculateTrends,
@@ -394,7 +398,7 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load sessions", { error });
     }
-  }, [userId, privacySettings.retentionPeriod]);
+  }, [privacySettings.retentionPeriod]);
 
   const loadPrivacySettings = useCallback(async () => {
     try {
@@ -403,7 +407,7 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load privacy settings", { error });
     }
-  }, [userId]);
+  }, []);
 
   const calculateInsights = useCallback(async () => {
     try {

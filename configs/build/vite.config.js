@@ -225,7 +225,7 @@ const createPWAScreenshots = () => {
 };
 
 // Helper function to create PWA manifest
-const createPWAManifest = () => {
+const _createPWAManifest = () => {
   return {
     name: "ChastityOS",
     short_name: "ChastityOS",

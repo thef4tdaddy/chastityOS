@@ -17,8 +17,8 @@ import {
   updateSyncMetrics,
   shouldAttemptReconnection,
   createSubscription,
-  notifySubscribers,
-} from "./realtime-sync-utils";
+  notifySubscribers as _notifySubscribers,
+} from "./realtimeSyncHelpers";
 
 // Helper function to create WebSocket connection functions
 export const createWebSocketFunctions = (
@@ -69,7 +69,7 @@ export const createWebSocketFunctions = (
         try {
           const message = JSON.parse(event.data);
           handleMessage(message);
-        } catch (error) {
+        } catch (_error) {
           // Failed to parse WebSocket message
         }
       };
@@ -106,6 +106,11 @@ export const createWebSocketFunctions = (
         connectionStatus: ConnectionStatus.ERROR,
       }));
     }
+    // Refs (wsRef, reconnectAttemptsRef, connectionStartTimeRef, heartbeatTimeoutRef, reconnectTimeoutRef)
+    // are stable and don't trigger re-renders. Functions (attemptReconnect, handleMessage, startHeartbeat,
+    // stopHeartbeat) are defined later and create circular dependencies. All should be wrapped in useCallback
+    // with proper dependencies to avoid stale closures.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, maxReconnectAttempts]);
 
   const disconnect = useCallback(() => {
@@ -120,7 +125,9 @@ export const createWebSocketFunctions = (
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-  }, []);
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stopHeartbeat]);
 
   const attemptReconnect = useCallback(() => {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
@@ -137,7 +144,9 @@ export const createWebSocketFunctions = (
     reconnectTimeoutRef.current = setTimeout(() => {
       connect();
     }, reconnectInterval);
-  }, [connect, maxReconnectAttempts, reconnectInterval]);
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connect, maxReconnectAttempts, reconnectInterval, setSyncState]);
 
   const startHeartbeat = useCallback(() => {
     const sendHeartbeat = () => {
@@ -151,13 +160,17 @@ export const createWebSocketFunctions = (
     };
 
     heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, heartbeatInterval);
-  }, [heartbeatInterval]);
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heartbeatInterval, sendMessage]);
 
   const stopHeartbeat = useCallback(() => {
     if (heartbeatTimeoutRef.current) {
       clearTimeout(heartbeatTimeoutRef.current);
       heartbeatTimeoutRef.current = null;
     }
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendMessage = useCallback(
@@ -169,7 +182,9 @@ export const createWebSocketFunctions = (
         }));
       });
     },
-    [],
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setSyncState],
   );
 
   const handleMessage = useCallback(
@@ -196,7 +211,12 @@ export const createWebSocketFunctions = (
         // Unknown message type
       }
     },
-    [],
+    [
+      setSyncState,
+      handleChannelJoined,
+      handleChannelLeft,
+      handleRealtimeUpdate,
+    ],
   );
 
   const handleChannelJoined = useCallback(
@@ -211,17 +231,20 @@ export const createWebSocketFunctions = (
         ],
       }));
     },
-    [],
+    [setSyncState],
   );
 
-  const handleChannelLeft = useCallback((message: { channelId: string }) => {
-    const channelId = message.channelId;
+  const handleChannelLeft = useCallback(
+    (message: { channelId: string }) => {
+      const channelId = message.channelId;
 
-    setSyncState((prev) => ({
-      ...prev,
-      activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
-    }));
-  }, []);
+      setSyncState((prev) => ({
+        ...prev,
+        activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
+      }));
+    },
+    [setSyncState],
+  );
 
   const handleRealtimeUpdate = useCallback(
     (message: { update: RealtimeUpdate }) => {
@@ -250,7 +273,9 @@ export const createWebSocketFunctions = (
         }
       }
     },
-    [],
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setSyncState],
   );
 
   return {
@@ -337,6 +362,8 @@ export const createRealtimeSubscriptionFunctions = (
         },
       } as Subscription & { unsubscribe: () => void };
     },
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

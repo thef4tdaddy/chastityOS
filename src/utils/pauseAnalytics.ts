@@ -50,7 +50,9 @@ export function calculateCooldownDuration(
   return 180; // 3 minutes
 }
 
-export function calculatePauseAnalytics(history: PauseHistoryEntry[]): PauseAnalytics {
+export function calculatePauseAnalytics(
+  history: PauseHistoryEntry[],
+): PauseAnalytics {
   if (history.length === 0) {
     return {
       totalPauses: 0,
@@ -80,7 +82,9 @@ export function calculatePauseAnalytics(history: PauseHistoryEntry[]): PauseAnal
   };
 }
 
-export function analyzePausePatterns(history: PauseHistoryEntry[]): PausePattern[] {
+export function analyzePausePatterns(
+  history: PauseHistoryEntry[],
+): PausePattern[] {
   const patterns: PausePattern[] = [];
 
   // Analyze time-based patterns
@@ -104,8 +108,8 @@ export function analyzePausePatterns(history: PauseHistoryEntry[]): PausePattern
 }
 
 export function calculateCooldownEffectiveness(
-  history: PauseHistoryEntry[],
-  cooldownState: CooldownState,
+  _history: PauseHistoryEntry[],
+  _cooldownState: CooldownState,
 ): number {
   // Simple effectiveness calculation based on pause spacing
   // More sophisticated analysis would consider cooldown violations

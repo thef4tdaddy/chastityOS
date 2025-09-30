@@ -678,7 +678,14 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load shared statistics", { error });
     }
-  }, [relationshipId, consistencyRating]);
+  }, [
+    relationshipId,
+    consistencyRating,
+    sessionStats.sessionsThisMonth,
+    sessionStats.averageSessionLength,
+    goalStats.activeGoals,
+    goalStats.completionRate,
+  ]);
 
   const loadPredictiveAnalytics = useCallback(async () => {
     try {
@@ -697,7 +704,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load predictive analytics", { error });
     }
-  }, [sessionStats]);
+  }, [sessionStats.averageSessionLength]);
 
   const loadRecommendations = useCallback(async () => {
     try {
@@ -816,7 +823,14 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         recommendations: [],
       },
     };
-  }, [consistencyRating]); // Only depends on consistency rating
+  }, [
+    consistencyRating,
+    sessionStats.sessionsThisWeek,
+    sessionStats.sessionsThisMonth,
+    sessionStats.averageSessionLength,
+    sessionStats.completionRate,
+    goalStats.completionRate,
+  ]);
 
   const getRelationshipComparison =
     useCallback((): RelationshipComparisonStats => {
@@ -827,7 +841,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         satisfactionTrend: "improving",
         milestones: [],
       };
-    }, [sessionStats]);
+    }, [sessionStats.sessionsThisMonth]);
 
   // ==================== PREDICTIVE ANALYTICS ====================
 
@@ -887,7 +901,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
         throw error;
       }
     },
-    [userId], // Only userId is actually used
+    [userId, sessionStats, goalStats, achievementStats],
   );
 
   const shareWithKeyholder = useCallback(

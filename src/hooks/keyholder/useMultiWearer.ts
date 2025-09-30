@@ -16,7 +16,8 @@ import {
   updateWearerInSession,
   parseWearerData,
   parseSessionData,
-} from "./multi-wearer-utils";
+} from "./multiWearerHelpers";
+import { logger } from "../../utils/logging";
 
 interface UseMultiWearerProps {
   keyholderUserId: string;
@@ -104,7 +105,7 @@ export function useMultiWearer({
           }
           setError(null);
         } catch (err) {
-          console.error("Error processing multi-wearer session data:", err);
+          logger.error("Error processing multi-wearer session data", err);
           setError(
             err instanceof Error
               ? err.message
@@ -115,7 +116,7 @@ export function useMultiWearer({
         }
       },
       (err) => {
-        console.error("Error listening to multi-wearer session:", err);
+        logger.error("Error listening to multi-wearer session", err);
         setError(
           err instanceof Error
             ? err.message
@@ -136,7 +137,7 @@ export function useMultiWearer({
       }
       await createMultiWearerSession(keyholderUserId);
     } catch (err) {
-      console.error("Error creating multi-wearer session:", err);
+      logger.error("Error creating multi-wearer session", err);
       setError(err instanceof Error ? err.message : "Failed to create session");
       throw err;
     }
@@ -148,7 +149,7 @@ export function useMultiWearer({
       if (!session) return;
       await endMultiWearerSession(keyholderUserId);
     } catch (err) {
-      console.error("Error ending multi-wearer session:", err);
+      logger.error("Error ending multi-wearer session", err);
       setError(err instanceof Error ? err.message : "Failed to end session");
       throw err;
     }
@@ -163,7 +164,7 @@ export function useMultiWearer({
         }
         await addWearerToSession(keyholderUserId, wearerData);
       } catch (err) {
-        console.error("Error adding wearer:", err);
+        logger.error("Error adding wearer", err);
         setError(err instanceof Error ? err.message : "Failed to add wearer");
         throw err;
       }
@@ -178,7 +179,7 @@ export function useMultiWearer({
         if (!session) return;
         await removeWearerFromSession(keyholderUserId, wearerId);
       } catch (err) {
-        console.error("Error removing wearer:", err);
+        logger.error("Error removing wearer", err);
         setError(
           err instanceof Error ? err.message : "Failed to remove wearer",
         );
@@ -195,7 +196,7 @@ export function useMultiWearer({
         if (!session) return;
         await updateWearerInSession(keyholderUserId, wearerId, updates);
       } catch (err) {
-        console.error("Error updating wearer:", err);
+        logger.error("Error updating wearer", err);
         setError(
           err instanceof Error ? err.message : "Failed to update wearer",
         );

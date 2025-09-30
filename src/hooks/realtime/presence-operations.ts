@@ -46,7 +46,7 @@ export const createPresenceUpdateFunctions = (
       // Send presence update to backend/WebSocket
       await sendPresenceUpdate(updatedPresence);
     },
-    [userId, presenceState.ownPresence],
+    [userId, presenceState.ownPresence, setPresenceState],
   );
 
   const setOnline = useCallback(
@@ -97,7 +97,7 @@ export const createPresenceUpdateFunctions = (
 
       return sendPresenceUpdate(presence);
     },
-    [userId, presenceState.ownPresence],
+    [userId, presenceState.ownPresence, setPresenceState],
   );
 
   const updateActivity = useCallback(
@@ -174,7 +174,7 @@ export const createSubscriptionFunctions = (
         },
       } as PresenceSubscription & { unsubscribe: () => void };
     },
-    [],
+    [setPresenceState],
   );
 
   return { subscribeToPresence };

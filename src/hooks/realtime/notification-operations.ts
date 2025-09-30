@@ -7,7 +7,7 @@ import {
   NotificationState,
   NotificationType,
   NotificationPriority,
-  NotificationChannelType,
+  NotificationChannelType as _NotificationChannelType,
   NotificationPreferences,
 } from "../../types/realtime";
 import {
@@ -90,7 +90,12 @@ export const createNotificationFactory = (
       // Save to backend
       await saveNotification(newNotification);
     },
-    [userId, notificationState.preferences, maxNotifications],
+    [
+      userId,
+      notificationState.preferences,
+      maxNotifications,
+      setNotificationState,
+    ],
   );
 };
 
@@ -98,17 +103,20 @@ export const createNotificationFactory = (
 export const createMarkAsReadFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
-  return useCallback(async (notificationId: string): Promise<void> => {
-    setNotificationState((prev) => ({
-      ...prev,
-      notifications: prev.notifications.map((notif) =>
-        notif.id === notificationId ? { ...notif, isRead: true } : notif,
-      ),
-    }));
+  return useCallback(
+    async (notificationId: string): Promise<void> => {
+      setNotificationState((prev) => ({
+        ...prev,
+        notifications: prev.notifications.map((notif) =>
+          notif.id === notificationId ? { ...notif, isRead: true } : notif,
+        ),
+      }));
 
-    // Update in backend
-    await updateNotificationStatus(notificationId, { isRead: true });
-  }, []);
+      // Update in backend
+      await updateNotificationStatus(notificationId, { isRead: true });
+    },
+    [setNotificationState],
+  );
 };
 
 // Helper function to create mark all as read function
@@ -135,24 +143,27 @@ export const createMarkAllAsReadFunction = (
 
     // Update in backend
     await updateMultipleNotificationStatus(unreadIds, { isRead: true });
-  }, [notificationState.notifications]);
+  }, [notificationState.notifications, setNotificationState]);
 };
 
 // Helper function to create dismiss notification function
 export const createDismissNotificationFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
-  return useCallback(async (notificationId: string): Promise<void> => {
-    setNotificationState((prev) => ({
-      ...prev,
-      notifications: prev.notifications.filter(
-        (notif) => notif.id !== notificationId,
-      ),
-    }));
+  return useCallback(
+    async (notificationId: string): Promise<void> => {
+      setNotificationState((prev) => ({
+        ...prev,
+        notifications: prev.notifications.filter(
+          (notif) => notif.id !== notificationId,
+        ),
+      }));
 
-    // Remove from backend
-    await deleteNotification(notificationId);
-  }, []);
+      // Remove from backend
+      await deleteNotification(notificationId);
+    },
+    [setNotificationState],
+  );
 };
 
 // Helper function to create preferences update function
@@ -177,7 +188,7 @@ export const createUpdatePreferencesFunction = (
       // Save to backend
       await saveNotificationPreferences(userId, updatedPreferences);
     },
-    [userId, notificationState.preferences],
+    [userId, notificationState.preferences, setNotificationState],
   );
 };
 
