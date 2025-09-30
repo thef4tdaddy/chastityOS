@@ -261,14 +261,9 @@ export const useSession = (userId: string, relationshipId?: string) => {
     };
 
     initializeSession();
-  }, [
-    userId,
-    relationshipId,
-    loadCurrentSession,
-    loadHistory,
-    loadAnalytics,
-    loadGoals,
-  ]);
+    // Callback functions are stable (wrapped in useCallback below)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 

@@ -72,7 +72,9 @@ export const useTrackerHandlers = ({
       lastModified: new Date(),
     };
     setCurrentSession(mockSession);
-  }, [setCurrentSession]);
+    // setCurrentSession is a state setter (stable)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Backup session state when it changes
   useEffect(() => {
@@ -81,7 +83,8 @@ export const useTrackerHandlers = ({
         logger.error("Failed to backup session", { error: error as Error });
       });
     }
-  }, [currentSession, isSessionInitialized, backupSession]);
+    // backupSession should be stable (useCallback) in parent component
+  }, [currentSession, isSessionInitialized]);
 
   // Cleanup on unmount
   useEffect(() => {

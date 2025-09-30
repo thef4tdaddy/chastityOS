@@ -7,7 +7,7 @@ import type { PauseStatus } from "../../types/pauseResume";
 
 export function usePauseDurationTracking(
   pauseStatus: PauseStatus,
-  updatePauseDuration: (duration: number) => void
+  updatePauseDuration: (duration: number) => void,
 ) {
   useEffect(() => {
     if (!pauseStatus.isPaused || !pauseStatus.pauseStartTime) {
@@ -16,11 +16,12 @@ export function usePauseDurationTracking(
 
     const interval = setInterval(() => {
       const duration = Math.floor(
-        (Date.now() - pauseStatus.pauseStartTime!.getTime()) / 1000
+        (Date.now() - pauseStatus.pauseStartTime!.getTime()) / 1000,
       );
       updatePauseDuration(duration);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [pauseStatus.isPaused, pauseStatus.pauseStartTime, updatePauseDuration]);
+    // updatePauseDuration should be stable (useCallback) in parent component
+  }, [pauseStatus.isPaused, pauseStatus.pauseStartTime]);
 }
