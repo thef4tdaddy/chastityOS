@@ -135,7 +135,7 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
         return HealthStatus.HEALTHY;
       }
       return HealthStatus.WARNING;
-    } catch (error) {
+    } catch {
       return HealthStatus.CRITICAL;
     }
   };
@@ -155,7 +155,7 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
         return HealthStatus.HEALTHY;
       }
       return HealthStatus.WARNING;
-    } catch (_error) {
+    } catch {
       return HealthStatus.CRITICAL;
     }
   };
@@ -180,7 +180,7 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
         return HealthStatus.WARNING;
       }
       return HealthStatus.CRITICAL;
-    } catch (_error) {
+    } catch {
       return HealthStatus.CRITICAL;
     }
   };

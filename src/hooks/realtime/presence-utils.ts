@@ -39,7 +39,7 @@ export async function sendPresenceUpdate(
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify(presence),
     // });
-  } catch (_error) {
+  } catch {
     // Failed to send presence update
   }
 }

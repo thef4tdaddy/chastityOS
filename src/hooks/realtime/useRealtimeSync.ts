@@ -110,7 +110,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
         try {
           const message = JSON.parse(event.data);
           handleMessage(message);
-        } catch (_error) {
+        } catch {
           // Failed to parse WebSocket message
         }
       };
@@ -146,7 +146,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
           },
         }));
       };
-    } catch (_error) {
+    } catch {
       // Failed to create WebSocket connection
       setSyncState((prev) => ({
         ...prev,
@@ -302,7 +302,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       if (subscription.dataType === update.type && subscription.isActive) {
         try {
           subscription.callback(update);
-        } catch (_error) {
+        } catch {
           // Error in subscription callback
         }
       }

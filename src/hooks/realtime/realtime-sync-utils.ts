@@ -126,7 +126,7 @@ export function notifySubscribers(
     if (subscription.dataType === update.type && subscription.isActive) {
       try {
         subscription.callback(update);
-      } catch (_error) {
+      } catch {
         // Error in subscription callback
       }
     }

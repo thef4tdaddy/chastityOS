@@ -336,8 +336,12 @@ function contextsMatch(
 }
 
 function evaluateCondition(
-  condition: { type: string; value: string | number | boolean | Date | string[]; operator: string },
-  context?: PermissionContext,
+  _condition: {
+    type: string;
+    value: string | number | boolean | Date | string[];
+    operator: string;
+  },
+  _context?: PermissionContext,
 ): boolean {
   // Simplified condition evaluation
   // In real implementation, this would be more sophisticated
