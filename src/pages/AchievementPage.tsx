@@ -9,16 +9,13 @@ import { useAchievements } from "../hooks/useAchievements";
 import {
   AchievementGallery,
   AchievementDashboard,
+  AchievementLoadingState,
+  AchievementSignInPrompt,
+  AchievementViewToggle,
 } from "../components/achievements";
 import LeaderboardView from "../components/achievements/LeaderboardView";
 import AchievementPrivacySettings from "../components/achievements/AchievementPrivacySettings";
-import {
-  FaTrophy,
-  FaList,
-  FaChartBar,
-  FaUsers,
-  FaCog,
-} from "../utils/iconImport";
+import { FaTrophy } from "../utils/iconImport";
 
 type ViewMode = "dashboard" | "gallery" | "leaderboards" | "privacy";
 
@@ -34,31 +31,11 @@ export const AchievementPage: React.FC = () => {
   } = useAchievements(user?.uid);
 
   if (!user) {
-    return (
-      <div className="text-nightly-spring-green">
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <FaTrophy className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
-            <div className="text-nightly-celadon">
-              Please sign in to view achievements
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AchievementSignInPrompt />;
   }
 
   if (isLoading) {
-    return (
-      <div className="text-nightly-spring-green">
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="animate-spin w-8 h-8 border-2 border-nightly-aquamarine border-t-transparent rounded-full mb-4 mx-auto"></div>
-            <div className="text-nightly-celadon">Loading achievements...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <AchievementLoadingState />;
   }
 
   const achievementsWithProgress = getAchievementsWithProgress();
@@ -75,53 +52,10 @@ export const AchievementPage: React.FC = () => {
             </h1>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-white/10 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode("dashboard")}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                viewMode === "dashboard"
-                  ? "bg-nightly-aquamarine text-black font-semibold"
-                  : "text-nightly-celadon hover:text-nightly-honeydew"
-              }`}
-            >
-              <FaChartBar />
-              <span>Dashboard</span>
-            </button>
-            <button
-              onClick={() => setViewMode("gallery")}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                viewMode === "gallery"
-                  ? "bg-nightly-aquamarine text-black font-semibold"
-                  : "text-nightly-celadon hover:text-nightly-honeydew"
-              }`}
-            >
-              <FaList />
-              <span>Gallery</span>
-            </button>
-            <button
-              onClick={() => setViewMode("leaderboards")}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                viewMode === "leaderboards"
-                  ? "bg-nightly-aquamarine text-black font-semibold"
-                  : "text-nightly-celadon hover:text-nightly-honeydew"
-              }`}
-            >
-              <FaUsers />
-              <span>Leaderboards</span>
-            </button>
-            <button
-              onClick={() => setViewMode("privacy")}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                viewMode === "privacy"
-                  ? "bg-nightly-aquamarine text-black font-semibold"
-                  : "text-nightly-celadon hover:text-nightly-honeydew"
-              }`}
-            >
-              <FaCog />
-              <span>Privacy</span>
-            </button>
-          </div>
+          <AchievementViewToggle 
+            viewMode={viewMode} 
+            onViewModeChange={setViewMode} 
+          />
         </div>
 
         {/* Content */}

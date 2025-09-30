@@ -17,6 +17,10 @@ import {
   FaLock,
   FaShieldAlt,
 } from "../utils/iconImport";
+import { ToggleSwitch } from "../components/settings/ToggleSwitch";
+import { ResetModal } from "../components/settings/ResetModal";
+import { SecuritySettings } from "../components/settings/SecuritySettings";
+import { DataControls } from "../components/settings/DataControls";
 
 type SettingsTab =
   | "account"
@@ -242,194 +246,29 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
       </div>
 
       <div className="space-y-4">
-        {/* Data Collection */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Data Collection
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Allow collection of usage analytics
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" defaultChecked />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-          </label>
-        </div>
-
-        {/* Data Sharing */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Data Sharing
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Share anonymous usage data to improve the app
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-          </label>
-        </div>
-
-        {/* Account Visibility */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Account Discoverable
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Allow others to find your account by username
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" defaultChecked />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-          </label>
-        </div>
-
-        {/* Activity Status */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Show Activity Status
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Let others see when you're active
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-          </label>
-        </div>
+        <ToggleSwitch
+          label="Data Collection"
+          description="Allow collection of usage analytics"
+          checked={true}
+        />
+        <ToggleSwitch
+          label="Data Sharing"
+          description="Share anonymous usage data to improve the app"
+        />
+        <ToggleSwitch
+          label="Account Discoverable"
+          description="Allow others to find your account by username"
+          checked={true}
+        />
+        <ToggleSwitch
+          label="Show Activity Status"
+          description="Let others see when you're active"
+        />
       </div>
     </div>
 
-    {/* Security Settings */}
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaLock className="text-nightly-aquamarine" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Security Settings
-        </h3>
-      </div>
-
-      <div className="space-y-4">
-        {/* Session Timeout */}
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Auto-logout After Inactivity
-          </label>
-          <select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
-            <option value="never">Never</option>
-            <option value="15">15 minutes</option>
-            <option value="30">30 minutes</option>
-            <option value="60">1 hour</option>
-            <option value="240">4 hours</option>
-            <option value="1440">24 hours</option>
-          </select>
-        </div>
-
-        {/* Login Alerts */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Login Alerts
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Get notified of new logins to your account
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" defaultChecked />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-          </label>
-        </div>
-
-        {/* Device Management */}
-        <div>
-          <div className="text-sm font-medium text-nightly-celadon mb-2">
-            Logged In Devices
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between bg-white/5 rounded p-3">
-              <div>
-                <div className="text-sm text-nightly-honeydew">
-                  Current Device (Chrome on macOS)
-                </div>
-                <div className="text-xs text-nightly-celadon/70">
-                  Last used: Just now
-                </div>
-              </div>
-              <span className="text-green-400 text-xs">Active</span>
-            </div>
-            <div className="flex items-center justify-between bg-white/5 rounded p-3">
-              <div>
-                <div className="text-sm text-nightly-honeydew">
-                  iPhone (Safari)
-                </div>
-                <div className="text-xs text-nightly-celadon/70">
-                  Last used: 2 hours ago
-                </div>
-              </div>
-              <button className="text-red-400 hover:text-red-300 text-xs">
-                Remove
-              </button>
-            </div>
-          </div>
-          <button className="mt-2 text-nightly-aquamarine hover:text-nightly-spring-green text-sm">
-            Log out all other devices
-          </button>
-        </div>
-      </div>
-    </div>
-
-    {/* Data Controls */}
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaDatabase className="text-nightly-spring-green" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Data Controls
-        </h3>
-      </div>
-
-      <div className="space-y-4">
-        {/* Data Export */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Export My Data
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Download all your data in JSON format
-            </div>
-          </div>
-          <button className="bg-nightly-spring-green/20 hover:bg-nightly-spring-green/30 text-nightly-spring-green px-4 py-2 rounded font-medium transition-colors flex items-center gap-2">
-            <FaDownload />
-            Export
-          </button>
-        </div>
-
-        {/* Account Deletion */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/10">
-          <div>
-            <div className="text-sm font-medium text-red-400">
-              Delete Account
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Permanently delete your account and all data
-            </div>
-          </div>
-          <button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2">
-            <FaTrash />
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+    <SecuritySettings />
+    <DataControls />
   </div>
 );
 
@@ -611,69 +450,23 @@ const DataSection: React.FC<{ settings: DBSettings | null }> = ({
       </div>
 
       {/* Reset Modal */}
-      {showResetModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-nightly-dark-purple border border-white/10 rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-red-400 mb-4">
-              Confirm Data Reset
-            </h3>
-
-            {resetStatus === "idle" && (
-              <>
-                <p className="text-nightly-celadon mb-6">
-                  Are you sure you want to reset all your data? This action
-                  cannot be undone and will delete:
-                </p>
-                <ul className="text-nightly-celadon text-sm mb-6 list-disc list-inside space-y-1">
-                  <li>All chastity sessions</li>
-                  <li>All logged events</li>
-                  <li>All tasks and goals</li>
-                  <li>All settings and preferences</li>
-                </ul>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setResetStatus("pending");
-                      // Simulate reset process
-                      setTimeout(() => {
-                        setResetStatus("success");
-                        setTimeout(() => {
-                          window.location.reload();
-                        }, 2000);
-                      }, 2000);
-                    }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors"
-                  >
-                    Yes, Reset Everything
-                  </button>
-                  <button
-                    onClick={() => setShowResetModal(false)}
-                    className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
-
-            {resetStatus === "pending" && (
-              <div className="text-center">
-                <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-                <p className="text-nightly-celadon">Resetting all data...</p>
-              </div>
-            )}
-
-            {resetStatus === "success" && (
-              <div className="text-center">
-                <div className="text-2xl text-green-400 mb-4">✓</div>
-                <p className="text-nightly-celadon">
-                  Data reset complete. Refreshing...
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ResetModal
+        show={showResetModal}
+        status={resetStatus}
+        onConfirm={() => {
+          setResetStatus("pending");
+          setTimeout(() => {
+            setResetStatus("success");
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }, 2000);
+        }}
+        onCancel={() => {
+          setShowResetModal(false);
+          setResetStatus("idle");
+        }}
+      />
     </div>
   );
 };

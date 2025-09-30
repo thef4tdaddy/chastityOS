@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { SessionLoader } from "../components/tracker/SessionLoader";
 import { SessionRecoveryModal } from "../components/tracker/SessionRecoveryModal";
@@ -11,12 +11,10 @@ import { ReasonModals } from "../components/tracker/ReasonModals";
 import { TrackerHeader } from "../components/tracker/TrackerHeader";
 import { useSessionPersistence } from "../hooks/useSessionPersistence";
 import { useAuth } from "../hooks/api/useAuth";
+import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
-// TODO: Replace with proper hook pattern
-// import { usePauseState } from "../hooks/usePauseState";
-// import { SessionService } from "../services/api/session-service";
 
 // Helper function to handle session restoration
 const createSessionRestorationHandler =
@@ -255,6 +253,27 @@ const TrackerPage: React.FC = () => {
   // Mock data (replace with real hooks)
   const mockData = useMockData(user);
 
+  // Use tracker handlers hook for event handlers and effects
+  const {
+    handleSessionInitialized,
+    handleEmergencyUnlock,
+    handlePause,
+    handleResume,
+  } = useTrackerHandlers({
+    setCurrentSession,
+    setIsSessionInitialized,
+    startHeartbeat,
+    stopHeartbeat,
+    backupSession,
+    mockData: {
+      sessionId: mockData.sessionId,
+      userId: mockData.userId,
+      refreshPauseState: mockData.refreshPauseState,
+    },
+    currentSession,
+    isSessionInitialized,
+  });
+
   // Create handlers using helper functions
   const handleSessionRestored = createSessionRestorationHandler(
     setCurrentSession,
@@ -277,71 +296,6 @@ const TrackerPage: React.FC = () => {
     setCorruptedSession,
     stopHeartbeat,
   );
-
-  // Handle session persistence initialization
-  const handleSessionInitialized = () => {
-    setIsSessionInitialized(true);
-    logger.debug("Session persistence initialized");
-  };
-
-  const handleEmergencyUnlock = () => {
-    // This would typically refresh the session state or redirect
-    logger.info("Emergency unlock completed - refreshing session state", {
-      sessionId: mockData.sessionId,
-      userId: mockData.userId,
-    });
-  };
-
-  const handlePause = () => {
-    logger.info("Session paused", {
-      sessionId: currentSession?.id,
-      userId: mockData.userId,
-    });
-    mockData.refreshPauseState();
-  };
-
-  const handleResume = () => {
-    logger.info("Session resumed", {
-      sessionId: currentSession?.id,
-      userId: mockData.userId,
-    });
-    mockData.refreshPauseState();
-  };
-
-  // Initialize mock session with real DBSession structure
-  useEffect(() => {
-    const mockSession: DBSession = {
-      id: "session123",
-      userId: "user123",
-      startTime: new Date(Date.now() - 86400000), // 1 day ago
-      endTime: undefined,
-      isPaused: false,
-      pauseStartTime: undefined,
-      accumulatedPauseTime: 3600, // 1 hour of accumulated pause time
-      goalDuration: 172800, // 48 hour goal
-      isHardcoreMode: false,
-      keyholderApprovalRequired: false,
-      syncStatus: "synced" as const,
-      lastModified: new Date(),
-    };
-    setCurrentSession(mockSession);
-  }, [setCurrentSession]);
-
-  // Backup session state when it changes
-  useEffect(() => {
-    if (currentSession && isSessionInitialized) {
-      backupSession(currentSession).catch((error) => {
-        logger.error("Failed to backup session", { error: error as Error });
-      });
-    }
-  }, [currentSession, isSessionInitialized, backupSession]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopHeartbeat();
-    };
-  }, [stopHeartbeat]);
 
   return (
     <div className="text-nightly-spring-green">
