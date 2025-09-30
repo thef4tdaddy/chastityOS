@@ -4,7 +4,7 @@
  * Complete audit logging system for transparency, compliance, and security monitoring
  * across all user actions.
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Dispatch, SetStateAction } from "react";
 import {
   AuditLogState,
   AuditEntry,
@@ -243,9 +243,9 @@ function initializeAuditState(retentionDays: number): AuditLogState {
 async function loadAuditEntries(
   userId: string,
   relationshipId: string | undefined,
-  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setAuditState: Dispatch<SetStateAction<AuditLogState>>,
+  setError: Dispatch<SetStateAction<string | null>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
 ): Promise<void> {
   try {
     setIsLoading(true);
@@ -268,7 +268,7 @@ function createActionHandlers(
   userId: string,
   relationshipId: string | undefined,
   auditState: AuditLogState,
-  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+  setAuditState: Dispatch<SetStateAction<AuditLogState>>,
 ) {
   const logAction = useCallback(
     async (
@@ -420,7 +420,7 @@ function createQueryHandlers(auditState: AuditLogState) {
 function createManagementHandlers(
   userId: string,
   auditState: AuditLogState,
-  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+  setAuditState: Dispatch<SetStateAction<AuditLogState>>,
 ) {
   const applyFilters = useCallback(
     (filters: AuditFilter): void => {
@@ -549,7 +549,7 @@ function createManagementHandlers(
       // In real implementation, this would share selected entries with keyholder
       // In real implementation, this would share selected entries with keyholder
     },
-    [],
+    [relationshipId],
   );
 
   // Update privacy settings
