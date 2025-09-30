@@ -5,7 +5,6 @@ import {
   RewardsPunishmentsContent,
 } from "../components/rewards_punishments";
 import type { RewardPunishmentLog } from "../components/rewards_punishments";
-import { FaTrophy } from "../utils/iconImport";
 // Mock data for demonstration
 const mockRewardsAndPunishments: RewardPunishmentLog[] = [
   {

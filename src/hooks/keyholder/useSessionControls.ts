@@ -5,7 +5,7 @@
  * Handles session time modifications and control permissions.
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo as _useMemo } from "react";
 
 export interface UseSessionControlsReturn {
   // Actions
@@ -37,17 +37,17 @@ export interface UseSessionControlsReturn {
 }
 
 export function useSessionControls(
-  wearerId?: string,
+  _wearerId?: string,
 ): UseSessionControlsReturn {
   const [isExtending, setIsExtending] = useState(false);
   const [isReducing, setIsReducing] = useState(false);
   const [isLocking, setIsLocking] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [extendCooldown, setExtendCooldown] = useState<number | null>(null);
-  const [lockCooldown, setLockCooldown] = useState<number | null>(null);
+  const [_extendCooldown, _setExtendCooldown] = useState<number | null>(null);
+  const [_lockCooldown, _setLockCooldown] = useState<number | null>(null);
 
-  const extendSession = useCallback(async (minutes: number): Promise<void> => {
+  const extendSession = useCallback(async (_minutes: number): Promise<void> => {
     setIsExtending(true);
     setError(null);
     try {
@@ -63,7 +63,7 @@ export function useSessionControls(
     }
   }, []);
 
-  const reduceSession = useCallback(async (minutes: number): Promise<void> => {
+  const reduceSession = useCallback(async (_minutes: number): Promise<void> => {
     setIsReducing(true);
     setError(null);
     try {
@@ -108,7 +108,7 @@ export function useSessionControls(
     }
   }, []);
 
-  const setLockTimer = useCallback(async (duration: number): Promise<void> => {
+  const setLockTimer = useCallback(async (_duration: number): Promise<void> => {
     setError(null);
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));

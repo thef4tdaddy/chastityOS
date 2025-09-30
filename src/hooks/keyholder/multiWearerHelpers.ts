@@ -10,11 +10,11 @@ import {
   query,
   where,
   getDocs,
-  DocumentReference,
+  DocumentReference as _DocumentReference,
   CollectionReference,
-} from 'firebase/firestore';
-import { db } from '../../firebase';
-import { MultiWearerSession, Wearer, KeyholderPermissions } from '../../types';
+} from "firebase/firestore";
+import { db } from "../../firebase";
+import { MultiWearerSession, Wearer, KeyholderPermissions } from "../../types";
 
 export const defaultPermissions: KeyholderPermissions = {
   canApproveTasks: false,
@@ -26,21 +26,25 @@ export const defaultPermissions: KeyholderPermissions = {
 
 // Helper to get multi-wearer collection reference
 export function getMultiWearerCollectionRef(): CollectionReference {
-  return collection(db, 'multiWearerSessions');
+  return collection(db, "multiWearerSessions");
 }
 
 // Helper to get wearers collection reference
-export function getWearersCollectionRef(sessionId: string): CollectionReference {
-  return collection(db, 'multiWearerSessions', sessionId, 'wearers');
+export function getWearersCollectionRef(
+  sessionId: string,
+): CollectionReference {
+  return collection(db, "multiWearerSessions", sessionId, "wearers");
 }
 
 // Helper to find active session
-export async function findActiveSession(keyholderUserId: string): Promise<{id: string; data: any} | null> {
+export async function findActiveSession(
+  keyholderUserId: string,
+): Promise<{ id: string; data: any } | null> {
   const multiWearerCollectionRef = getMultiWearerCollectionRef();
   const q = query(
     multiWearerCollectionRef,
-    where('keyholderUserId', '==', keyholderUserId),
-    where('isActive', '==', true)
+    where("keyholderUserId", "==", keyholderUserId),
+    where("isActive", "==", true),
   );
 
   const querySnapshot = await getDocs(q);
@@ -51,12 +55,14 @@ export async function findActiveSession(keyholderUserId: string): Promise<{id: s
   const sessionDoc = querySnapshot.docs[0];
   return {
     id: sessionDoc.id,
-    data: sessionDoc.data()
+    data: sessionDoc.data(),
   };
 }
 
 // Helper to create a new session
-export async function createMultiWearerSession(keyholderUserId: string): Promise<void> {
+export async function createMultiWearerSession(
+  keyholderUserId: string,
+): Promise<void> {
   const multiWearerCollectionRef = getMultiWearerCollectionRef();
   const sessionData = {
     keyholderUserId,
@@ -69,10 +75,12 @@ export async function createMultiWearerSession(keyholderUserId: string): Promise
 }
 
 // Helper to end a session
-export async function endMultiWearerSession(keyholderUserId: string): Promise<void> {
+export async function endMultiWearerSession(
+  keyholderUserId: string,
+): Promise<void> {
   const sessionInfo = await findActiveSession(keyholderUserId);
   if (sessionInfo) {
-    const sessionRef = doc(db, 'multiWearerSessions', sessionInfo.id);
+    const sessionRef = doc(db, "multiWearerSessions", sessionInfo.id);
     await updateDoc(sessionRef, {
       isActive: false,
       lastUpdated: new Date(),
@@ -83,17 +91,20 @@ export async function endMultiWearerSession(keyholderUserId: string): Promise<vo
 // Helper to add a wearer
 export async function addWearerToSession(
   keyholderUserId: string,
-  wearerData: Omit<Wearer, 'id'>
+  wearerData: Omit<Wearer, "id">,
 ): Promise<void> {
   const sessionInfo = await findActiveSession(keyholderUserId);
   if (!sessionInfo) {
-    throw new Error('No active session found');
+    throw new Error("No active session found");
   }
 
   const wearersCollectionRef = getWearersCollectionRef(sessionInfo.id);
   const newWearerData = {
     ...wearerData,
-    keyholderPermissions: { ...defaultPermissions, ...wearerData.keyholderPermissions },
+    keyholderPermissions: {
+      ...defaultPermissions,
+      ...wearerData.keyholderPermissions,
+    },
     createdAt: new Date(),
   };
 
@@ -103,14 +114,20 @@ export async function addWearerToSession(
 // Helper to remove a wearer
 export async function removeWearerFromSession(
   keyholderUserId: string,
-  wearerId: string
+  wearerId: string,
 ): Promise<void> {
   const sessionInfo = await findActiveSession(keyholderUserId);
   if (!sessionInfo) {
     return;
   }
 
-  const wearerDocRef = doc(db, 'multiWearerSessions', sessionInfo.id, 'wearers', wearerId);
+  const wearerDocRef = doc(
+    db,
+    "multiWearerSessions",
+    sessionInfo.id,
+    "wearers",
+    wearerId,
+  );
   await deleteDoc(wearerDocRef);
 }
 
@@ -118,14 +135,20 @@ export async function removeWearerFromSession(
 export async function updateWearerInSession(
   keyholderUserId: string,
   wearerId: string,
-  updates: Partial<Wearer>
+  updates: Partial<Wearer>,
 ): Promise<void> {
   const sessionInfo = await findActiveSession(keyholderUserId);
   if (!sessionInfo) {
     return;
   }
 
-  const wearerDocRef = doc(db, 'multiWearerSessions', sessionInfo.id, 'wearers', wearerId);
+  const wearerDocRef = doc(
+    db,
+    "multiWearerSessions",
+    sessionInfo.id,
+    "wearers",
+    wearerId,
+  );
   await updateDoc(wearerDocRef, {
     ...updates,
     lastUpdated: new Date(),
@@ -137,12 +160,15 @@ export function parseWearerData(wearerDoc: any): Wearer {
   const wearerData = wearerDoc.data();
   return {
     id: wearerDoc.id,
-    name: wearerData.name || '',
+    name: wearerData.name || "",
     email: wearerData.email,
     isActive: wearerData.isActive || false,
     sessionData: wearerData.sessionData || {},
     tasks: wearerData.tasks || [],
-    keyholderPermissions: { ...defaultPermissions, ...wearerData.keyholderPermissions },
+    keyholderPermissions: {
+      ...defaultPermissions,
+      ...wearerData.keyholderPermissions,
+    },
   };
 }
 
