@@ -1,7 +1,13 @@
-import React, { useState } from "react";
-import { RuleCard, RuleEditor } from "../components/rules";
-import type { ChastityRule } from "../components/rules";
-import { FaBook, FaEdit, FaInfo } from "../utils/iconImport";
+import React from "react";
+import {
+  RuleCard,
+  RuleEditor,
+  RulesPageControls,
+  RulesInfoBanner,
+  RulesEmptyState,
+} from "../components/rules";
+import { useRulesPage } from "../hooks/useRulesPage";
+import { FaTrophy } from "../utils/iconImport";
 
 // Mock rules data
 const mockRules: ChastityRule[] = [
@@ -70,134 +76,35 @@ const mockRules: ChastityRule[] = [
 ];
 
 const RulesPage: React.FC = () => {
-  const [rules, setRules] = useState<ChastityRule[]>(mockRules);
-  const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
-
-  const filteredRules = rules
-    .filter((rule) => {
-      if (filter === "all") return true;
-      if (filter === "active") return rule.isActive;
-      if (filter === "inactive") return !rule.isActive;
-      return true;
-    })
-    .sort((a, b) => {
-      // Active rules first, then by last modified
-      if (a.isActive && !b.isActive) return -1;
-      if (!a.isActive && b.isActive) return 1;
-      return b.lastModified.getTime() - a.lastModified.getTime();
-    });
-
-  const handleEditRule = (ruleId: string) => {
-    const rule = rules.find((r) => r.id === ruleId);
-    setEditingRule(rule || null);
-    setShowEditor(true);
-  };
-
-  const handleToggleRule = (ruleId: string) => {
-    setRules((prev) =>
-      prev.map((rule) =>
-        rule.id === ruleId
-          ? { ...rule, isActive: !rule.isActive, lastModified: new Date() }
-          : rule,
-      ),
-    );
-  };
-
-  const handleSaveRule = (
-    ruleData: Omit<ChastityRule, "id" | "createdAt" | "lastModified">,
-  ) => {
-    const now = new Date();
-
-    if (editingRule) {
-      // Update existing rule
-      setRules((prev) =>
-        prev.map((rule) =>
-          rule.id === editingRule.id
-            ? {
-                ...rule,
-                ...ruleData,
-                lastModified: now,
-              }
-            : rule,
-        ),
-      );
-    } else {
-      // Create new rule
-      const newRule: ChastityRule = {
-        ...ruleData,
-        id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: now,
-        lastModified: now,
-      };
-      setRules((prev) => [newRule, ...prev]);
-    }
-
-    setShowEditor(false);
-    setEditingRule(null);
-  };
-
-  const handleCancelEdit = () => {
-    setShowEditor(false);
-    setEditingRule(null);
-  };
+  const {
+    rules,
+    editingRule,
+    showEditor,
+    filter,
+    filteredRules,
+    setFilter,
+    handleEditRule,
+    handleToggleRule,
+    handleSaveRule,
+    handleCancelEdit,
+    handleCreateNew,
+  } = useRulesPage(mockRules);
 
   return (
     <div className="text-nightly-spring-green">
       {/* Content */}
       <div className="p-4 max-w-4xl mx-auto">
         {/* Info Banner */}
-        <div className="bg-nightly-aquamarine/10 border border-nightly-aquamarine/20 rounded-lg p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <FaInfo className="text-nightly-aquamarine mt-1" />
-            <div>
-              <h3 className="font-medium text-nightly-honeydew mb-1">
-                About Rules
-              </h3>
-              <p className="text-sm text-nightly-celadon">
-                Rules define the expectations and consequences for your chastity
-                relationship. Both submissives and keyholders can create rules,
-                but only active rules are enforced. Use markdown formatting for
-                better organization.
-              </p>
-            </div>
-          </div>
-        </div>
+        <RulesInfoBanner />
 
         {/* Controls */}
         {!showEditor && (
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <FaBook className="text-nightly-celadon" />
-              <select
-                value={filter}
-                onChange={(e) =>
-                  setFilter(e.target.value as "all" | "active" | "inactive")
-                }
-                className="bg-white/10 border border-white/10 rounded p-2 text-nightly-honeydew"
-              >
-                <option value="all">All Rules ({rules.length})</option>
-                <option value="active">
-                  Active ({rules.filter((r) => r.isActive).length})
-                </option>
-                <option value="inactive">
-                  Inactive ({rules.filter((r) => !r.isActive).length})
-                </option>
-              </select>
-            </div>
-
-            <button
-              onClick={() => {
-                setEditingRule(null);
-                setShowEditor(true);
-              }}
-              className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
-            >
-              <FaEdit />
-              Create Rule
-            </button>
-          </div>
+          <RulesPageControls
+            filter={filter}
+            onFilterChange={setFilter}
+            rules={rules}
+            onCreateNew={handleCreateNew}
+          />
         )}
 
         {/* Editor */}
@@ -215,25 +122,15 @@ const RulesPage: React.FC = () => {
         {!showEditor && (
           <div className="space-y-6">
             {filteredRules.length === 0 ? (
-              <div className="text-center py-8">
-                <FaBook className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
-                <div className="text-nightly-celadon">
-                  No {filter === "all" ? "rules" : filter + " rules"} found
-                </div>
-                <div className="text-sm text-nightly-celadon/70">
-                  {filter === "all"
-                    ? "Create your first rule to get started"
-                    : `Switch to 'All' to see other rules`}
-                </div>
-              </div>
+              <RulesEmptyState filter={filter} />
             ) : (
               filteredRules.map((rule) => (
                 <RuleCard
                   key={rule.id}
                   rule={rule}
                   isEditable={true}
-                  onEdit={handleEditRule}
-                  onToggle={handleToggleRule}
+                  onEdit={() => handleEditRule(rule.id)}
+                  onToggle={() => handleToggleRule(rule.id)}
                 />
               ))
             )}

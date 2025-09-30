@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import {
-  LogItem,
   RewardPunishmentStats,
-  ManualEntryForm,
+  RewardsPunishmentsControls,
+  RewardsPunishmentsContent,
 } from "../components/rewards_punishments";
 import type { RewardPunishmentLog } from "../components/rewards_punishments";
-import { FaFilter, FaSpinner, FaTrophy } from "../utils/iconImport";
+import { FaTrophy } from "../utils/iconImport";
 // Mock data for demonstration
 const mockRewardsAndPunishments: RewardPunishmentLog[] = [
   {
@@ -76,57 +76,19 @@ const RewardsPunishmentsPage: React.FC = () => {
         <RewardPunishmentStats logs={logs} />
 
         {/* Controls */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <FaFilter className="text-nightly-celadon" />
-            <select
-              value={filter}
-              onChange={(e) =>
-                setFilter(e.target.value as "all" | "rewards" | "punishments")
-              }
-              className="bg-white/10 border border-white/10 rounded p-2 text-nightly-honeydew"
-            >
-              <option value="all">All ({logs.length})</option>
-              <option value="rewards">
-                Rewards ({logs.filter((l) => l.type === "reward").length})
-              </option>
-              <option value="punishments">
-                Punishments (
-                {logs.filter((l) => l.type === "punishment").length})
-              </option>
-            </select>
-          </div>
+        <RewardsPunishmentsControls
+          filter={filter}
+          onFilterChange={setFilter}
+          logs={logs}
+          onManualEntry={handleManualEntry}
+        />
 
-          <ManualEntryForm onSubmit={handleManualEntry} />
-        </div>
-
-        {/* Logs */}
-        {loading ? (
-          <div className="text-center py-8">
-            <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-            <div className="text-nightly-celadon">
-              Loading rewards and punishments...
-            </div>
-          </div>
-        ) : filteredLogs.length === 0 ? (
-          <div className="text-center py-8">
-            <FaTrophy className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
-            <div className="text-nightly-celadon">
-              No {filter === "all" ? "entries" : filter} found
-            </div>
-            <div className="text-sm text-nightly-celadon/70">
-              {filter === "all"
-                ? "Complete tasks or have your keyholder add entries"
-                : `Switch to 'All' to see other entries`}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredLogs.map((log) => (
-              <LogItem key={log.id} item={log} />
-            ))}
-          </div>
-        )}
+        {/* Content */}
+        <RewardsPunishmentsContent
+          filteredLogs={filteredLogs}
+          loading={loading}
+          filter={filter}
+        />
       </div>
     </div>
   );
