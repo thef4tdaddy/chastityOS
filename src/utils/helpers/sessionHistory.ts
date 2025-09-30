@@ -122,33 +122,33 @@ export function calculateConsistencyScore(
 }
 
 export function calculateSessionLengthTrend(
-  sessions: HistoricalSession[],
+  _sessions: HistoricalSession[],
 ): TrendData {
   // Implementation would analyze session length over time
   return createEmptyTrendData();
 }
 
 export function calculateGoalCompletionTrend(
-  sessions: HistoricalSession[],
+  _sessions: HistoricalSession[],
 ): TrendData {
   return createEmptyTrendData();
 }
 
 export function calculateConsistencyTrend(
-  sessions: HistoricalSession[],
+  _sessions: HistoricalSession[],
 ): TrendData {
   // Implementation would analyze consistency metrics over time
   return createEmptyTrendData();
 }
 
 export function calculatePauseFrequencyTrend(
-  sessions: HistoricalSession[],
+  _sessions: HistoricalSession[],
 ): TrendData {
   return createEmptyTrendData();
 }
 
 export function calculateOverallProgressTrend(
-  sessions: HistoricalSession[],
+  _sessions: HistoricalSession[],
 ): TrendData {
   // Implementation would analyze overall progress metrics over time
   return createEmptyTrendData();

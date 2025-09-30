@@ -11,13 +11,13 @@ import type {
 } from "../../types/pauseResume";
 import { serviceLogger } from "../logging";
 
-const logger = serviceLogger("pauseResumeHelpers");
+const _logger = serviceLogger("pauseResumeHelpers");
 
 export function createPauseHistoryEntry(
   sessionId: string,
   pauseTime: Date,
   reason: PauseReason,
-  initiatedBy: "submissive" | "keyholder" | "system" = "submissive"
+  initiatedBy: "submissive" | "keyholder" | "system" = "submissive",
 ): PauseHistoryEntry {
   return {
     id: `pause_${Date.now()}`,
@@ -32,7 +32,7 @@ export function createPauseHistoryEntry(
 
 export function calculatePauseDuration(
   pauseStartTime: Date | undefined,
-  resumeTime: Date
+  resumeTime: Date,
 ): number {
   return pauseStartTime
     ? Math.floor((resumeTime.getTime() - pauseStartTime.getTime()) / 1000)
@@ -42,7 +42,7 @@ export function calculatePauseDuration(
 export function updatePauseStatusOnStart(
   pauseTime: Date,
   reason: PauseReason,
-  currentStatus: PauseStatus
+  currentStatus: PauseStatus,
 ): PauseStatus {
   return {
     ...currentStatus,
@@ -55,7 +55,7 @@ export function updatePauseStatusOnStart(
 }
 
 export function updatePauseStatusOnResume(
-  currentStatus: PauseStatus
+  currentStatus: PauseStatus,
 ): PauseStatus {
   return {
     ...currentStatus,
@@ -70,7 +70,7 @@ export function updatePauseStatusOnResume(
 export function updatePauseHistoryOnResume(
   history: PauseHistoryEntry[],
   resumeTime: Date,
-  pauseDuration: number
+  pauseDuration: number,
 ): PauseHistoryEntry[] {
   const lastPause = history[history.length - 1];
   if (lastPause && !lastPause.endTime) {
@@ -85,7 +85,7 @@ export function updatePauseHistoryOnResume(
 
 export function createCooldownState(
   cooldownDuration: number,
-  canOverride: boolean
+  canOverride: boolean,
 ): CooldownState {
   return {
     isInCooldown: true,
@@ -108,7 +108,7 @@ export function createKeyholderOverrides(): KeyholderOverrideCapabilities {
 }
 
 export function updateCooldownProgress(
-  currentState: CooldownState
+  currentState: CooldownState,
 ): CooldownState {
   const newRemaining = Math.max(0, currentState.cooldownRemaining - 1);
 

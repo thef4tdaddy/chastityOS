@@ -17,7 +17,7 @@ import {
   updateSyncMetrics,
   shouldAttemptReconnection,
   createSubscription,
-  notifySubscribers,
+  notifySubscribers as _notifySubscribers,
 } from "./realtimeSyncHelpers";
 
 // Helper function to create WebSocket connection functions
@@ -69,7 +69,7 @@ export const createWebSocketFunctions = (
         try {
           const message = JSON.parse(event.data);
           handleMessage(message);
-        } catch (error) {
+        } catch (_error) {
           // Failed to parse WebSocket message
         }
       };

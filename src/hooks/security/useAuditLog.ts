@@ -22,7 +22,7 @@ import {
   ExportFormat,
   AuditExport,
   AuditPrivacySettings,
-  CleanupResult,
+  CleanupResult as _CleanupResult,
 } from "../../types/security";
 import { PermissionContext } from "../../types/security";
 import {

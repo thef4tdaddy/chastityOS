@@ -3,14 +3,14 @@
  * Provides advanced pause/resume functionality with keyholder overrides,
  * intelligent cooldown management, and comprehensive analytics
  */
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { PauseCooldownService } from "../../services/PauseCooldownService";
 import { serviceLogger } from "../../utils/logging";
 import type {
-  PauseStatus,
-  CooldownState,
+  PauseStatus as _PauseStatus,
+  CooldownState as _CooldownState,
   KeyholderOverrideCapabilities,
-  PauseHistoryEntry,
+  PauseHistoryEntry as _PauseHistoryEntry,
   PauseAnalytics,
   PauseReason,
   PauseRequestStatus,

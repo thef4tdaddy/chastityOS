@@ -40,7 +40,7 @@ export function calculateOverallProgress(goalStats: GoalStatistics): number {
 }
 
 export function calculateKeyholderSatisfaction(
-  sharedStats: SharedStatistics,
+  _sharedStats: SharedStatistics,
 ): number {
   // This would be calculated based on keyholder feedback and interaction patterns
   return 85; // Placeholder value

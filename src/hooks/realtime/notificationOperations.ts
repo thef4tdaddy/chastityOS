@@ -7,7 +7,7 @@ import {
   NotificationState,
   NotificationType,
   NotificationPriority,
-  NotificationChannelType,
+  NotificationChannelType as _NotificationChannelType,
   NotificationPreferences,
 } from "../../types/realtime";
 import {
