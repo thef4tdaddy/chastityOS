@@ -179,14 +179,12 @@ export const useLeaderboards = (
     enabled: Boolean(userId),
   });
 
-  // Update privacy settings when data changes
   useEffect(() => {
     if (userPrivacySettings) {
       setPrivacySettings(userPrivacySettings);
     }
   }, [userPrivacySettings]);
 
-  // Opt into leaderboards
   const optInMutation = useMutation({
     mutationFn: createPrivacyUpdateMutation(userId, DEFAULT_OPT_IN_SETTINGS),
     ...createPrivacyMutationCallbacks(
@@ -196,7 +194,6 @@ export const useLeaderboards = (
     ),
   });
 
-  // Opt out of leaderboards
   const optOutMutation = useMutation({
     mutationFn: createPrivacyUpdateMutation(userId, DEFAULT_OPT_OUT_SETTINGS),
     ...createPrivacyMutationCallbacks(
@@ -206,11 +203,9 @@ export const useLeaderboards = (
     ),
   });
 
-  // Update leaderboard privacy settings
   const updatePrivacyMutation = useMutation({
     mutationFn: async (settings: Partial<LeaderboardPrivacySettings>) => {
       if (!userId) throw new Error("User ID required");
-
       const newSettings = { ...privacySettings, ...settings };
       await achievementDBService.updateLeaderboardPrivacy(userId, newSettings);
       return newSettings;
@@ -225,21 +220,14 @@ export const useLeaderboards = (
   const leaderboardData = processLeaderboardData(rawLeaderboardData, userId);
 
   return {
-    // Data
     leaderboardData,
     userRank,
     privacySettings,
-
-    // Loading states
     isLoading: isLoadingLeaderboard || isLoadingUserRank,
     error: leaderboardError,
-
-    // Actions
     optInToLeaderboards: optInMutation.mutateAsync,
     optOutFromLeaderboards: optOutMutation.mutateAsync,
     updateLeaderboardPrivacy: updatePrivacyMutation.mutateAsync,
-
-    // Status
     isOptedIn:
       privacySettings.participateInGlobal ||
       privacySettings.participateInMonthly,
