@@ -235,7 +235,14 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     };
 
     initializePauseSystem();
-  }, [sessionId, relationshipId]);
+  }, [
+    sessionId,
+    relationshipId,
+    loadPauseState,
+    loadPauseHistory,
+    loadPauseAnalytics,
+    loadCooldownState,
+  ]);
 
   // ==================== COOLDOWN COUNTDOWN ====================
 
@@ -298,7 +305,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load pause state", { error });
     }
-  }, [sessionId]);
+  }, []); // sessionId is passed to function but not used in mock
 
   const loadCooldownState = useCallback(async () => {
     try {
@@ -327,7 +334,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     } catch (error) {
       logger.error("Failed to load pause history", { error });
     }
-  }, [sessionId]);
+  }, []); // sessionId is passed to function but not used in mock
 
   const loadPauseAnalytics = useCallback(async () => {
     try {
