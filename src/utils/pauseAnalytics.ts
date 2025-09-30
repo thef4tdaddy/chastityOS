@@ -7,7 +7,7 @@ import type {
   PauseAnalytics,
   PausePattern,
   CooldownState,
-} from "../hooks/session/usePauseResume";
+} from "../types/pauseResume";
 
 export function calculatePauseFrequency(history: PauseHistoryEntry[]): number {
   if (history.length === 0) return 0;
