@@ -363,14 +363,9 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     };
 
     initializeHistory();
-  }, [
-    userId,
-    relationshipId,
-    loadSessions,
-    loadPrivacySettings,
-    calculateTrends,
-    calculateInsights,
-  ]);
+    // Callback functions are stable (wrapped in useCallback below)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 

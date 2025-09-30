@@ -119,6 +119,8 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
 
       return () => clearTimeout(saveTimer);
     }
+    // 'loading' is a state variable, not a store action - safe to include in deps
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
 
   // Update session settings

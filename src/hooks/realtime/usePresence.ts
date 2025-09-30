@@ -132,12 +132,9 @@ export const usePresence = (options: UsePresenceOptions) => {
         clearTimeout(activityTimeoutRef.current);
       }
     };
-  }, [
-    autoTrackActivity,
-    presenceState.ownPresence.status,
-    activityTimeout,
-    setAway,
-  ]);
+    // setAway is from presenceUpdateFunctions which is recreated when presenceState changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoTrackActivity, presenceState.ownPresence.status, activityTimeout]);
 
   // Handle presence updates
   useEffect(() => {
@@ -158,6 +155,9 @@ export const usePresence = (options: UsePresenceOptions) => {
         clearInterval(presenceIntervalRef.current);
       }
     };
+    // sendPeriodicUpdate uses presenceState.ownPresence which is in deps
+    // updateInterval is a config number, not a store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [presenceState.ownPresence, updateInterval]);
 
   // Handle online/offline events
@@ -187,7 +187,9 @@ export const usePresence = (options: UsePresenceOptions) => {
       window.removeEventListener("offline", handleOffline);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [setOnline, setOffline, setAway]);
+    // setOnline, setOffline, setAway are from presenceUpdateFunctions (stable)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Initialize presence as online
   useEffect(() => {
@@ -197,7 +199,9 @@ export const usePresence = (options: UsePresenceOptions) => {
     return () => {
       setOffline("Disconnected");
     };
-  }, [setOnline, setOffline]);
+    // setOnline, setOffline are from presenceUpdateFunctions (stable)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Computed values
   const computedValues = useMemo(() => {

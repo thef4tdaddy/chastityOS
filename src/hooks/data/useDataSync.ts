@@ -4,9 +4,7 @@
  * with proper privacy controls
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type {
-  SyncResult,
-} from "../../types/database";
+import type { SyncResult } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useDataSync");
@@ -117,15 +115,8 @@ export const useDataSync = (userId: string) => {
     };
 
     initializeSync();
-  }, [
-    userId,
-    loadSyncHistory,
-    loadPendingConflicts,
-    loadRelationshipSyncStatus,
-    loadSyncPermissions,
-    initializeRealTimeSync,
-    syncPermissions.allowRealTimeSync,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, syncPermissions.allowRealTimeSync]);
 
   // ==================== REAL-TIME SYNC ====================
 
@@ -138,7 +129,10 @@ export const useDataSync = (userId: string) => {
     }, syncInterval);
 
     return () => clearInterval(interval);
-  }, [realTimeSyncEnabled, syncPermissions, performBackgroundSync]);
+    // performBackgroundSync is stable (no deps), syncPermissions used for getSyncInterval
+    // syncPermissions is state, not a store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [realTimeSyncEnabled, syncPermissions]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 

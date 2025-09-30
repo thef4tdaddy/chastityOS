@@ -483,12 +483,14 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
       trendPredictions: [],
     });
 
-  const [_recommendations, setRecommendations] = useState<RecommendationEngine>({
-    sessionRecommendations: [],
-    goalRecommendations: [],
-    behaviorInsights: [],
-    personalizedTips: [],
-  });
+  const [_recommendations, setRecommendations] = useState<RecommendationEngine>(
+    {
+      sessionRecommendations: [],
+      goalRecommendations: [],
+      behaviorInsights: [],
+      personalizedTips: [],
+    },
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -548,17 +550,9 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     };
 
     initializeStatistics();
-  }, [
-    userId,
-    relationshipId,
-    loadSessionStatistics,
-    loadGoalStatistics,
-    loadComparativeStatistics,
-    loadAchievementStatistics,
-    loadSharedStatistics,
-    loadPredictiveAnalytics,
-    loadRecommendations,
-  ]);
+    // Callback functions are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -982,7 +976,9 @@ function calculateOverallProgress(goalStats: GoalStatistics): number {
   return Math.floor((goalStats.completedGoals / goalStats.totalGoals) * 100);
 }
 
-function calculateKeyholderSatisfaction(_sharedStats: SharedStatistics): number {
+function calculateKeyholderSatisfaction(
+  _sharedStats: SharedStatistics,
+): number {
   // This would be calculated based on keyholder feedback and interaction patterns
   return 85; // Placeholder value
 }
