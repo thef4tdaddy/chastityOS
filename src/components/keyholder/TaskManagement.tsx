@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { TaskStatus } from "../../types/database";
+import type { TaskStatus, DBTask } from "../../types/database";
 import { useTasksQuery, useTaskMutations } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
 import {
@@ -152,18 +152,25 @@ const LoadingDisplay: React.FC = () => (
   <div className="text-center text-nightly-celadon py-4">Loading tasks...</div>
 );
 
-export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
-  const [newTaskText, setNewTaskText] = useState("");
-  const [showAddTask, setShowAddTask] = useState(false);
-
-  // Use TanStack Query hooks instead of direct service calls
-  const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
-  const { updateTaskStatus, createTask } = useTaskMutations();
-  const { showSuccess, showError } = useNotificationActions();
-
-  const pendingTasks = tasks.filter((t) =>
-    ["pending", "submitted"].includes(t.status),
-  );
+// Task action handlers
+const useTaskActions = (params: {
+  userId: string;
+  updateTaskStatus: ReturnType<typeof useTaskMutations>["updateTaskStatus"];
+  createTask: ReturnType<typeof useTaskMutations>["createTask"];
+  showSuccess: (message: string, title: string) => void;
+  showError: (message: string, title: string) => void;
+  setNewTaskText: (text: string) => void;
+  setShowAddTask: (show: boolean) => void;
+}) => {
+  const {
+    userId,
+    updateTaskStatus,
+    createTask,
+    showSuccess,
+    showError,
+    setNewTaskText,
+    setShowAddTask,
+  } = params;
 
   const handleTaskAction = async (
     taskId: string,
@@ -193,7 +200,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
     }
   };
 
-  const handleAddTask = async () => {
+  const handleAddTask = async (newTaskText: string) => {
     if (!newTaskText.trim()) return;
 
     try {
@@ -213,6 +220,59 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
       );
     }
   };
+
+  return { handleTaskAction, handleAddTask };
+};
+
+// Task List Component
+const TaskList: React.FC<{
+  isLoading: boolean;
+  pendingTasks: DBTask[];
+  handleTaskAction: (
+    taskId: string,
+    action: "approve" | "reject",
+    feedback?: string,
+  ) => void;
+  isUpdating: boolean;
+}> = ({ isLoading, pendingTasks, handleTaskAction, isUpdating }) => (
+  <div className="space-y-3">
+    {!isLoading && pendingTasks.length === 0 ? (
+      <p className="text-nightly-celadon">No pending tasks</p>
+    ) : (
+      pendingTasks.map((task) => (
+        <TaskItem
+          key={task.id}
+          task={task}
+          handleTaskAction={handleTaskAction}
+          isUpdating={isUpdating}
+        />
+      ))
+    )}
+  </div>
+);
+
+export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
+  const [newTaskText, setNewTaskText] = useState("");
+  const [showAddTask, setShowAddTask] = useState(false);
+
+  // Use TanStack Query hooks instead of direct service calls
+  const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
+  const { updateTaskStatus, createTask } = useTaskMutations();
+  const { showSuccess, showError } = useNotificationActions();
+
+  const pendingTasks = tasks.filter((t) =>
+    ["pending", "submitted"].includes(t.status),
+  );
+
+  const { handleTaskAction, handleAddTask } = useTaskActions({
+    userId,
+    updateTaskStatus,
+    createTask,
+    showSuccess,
+    showError,
+    setNewTaskText,
+    setShowAddTask,
+  });
 
   if (error) {
     return <ErrorDisplay />;
@@ -241,27 +301,18 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
         setShowAddTask={setShowAddTask}
         newTaskText={newTaskText}
         setNewTaskText={setNewTaskText}
-        handleAddTask={handleAddTask}
+        handleAddTask={() => handleAddTask(newTaskText)}
         isCreating={createTask.isPending}
       />
 
       {isLoading && <LoadingDisplay />}
 
-      {/* Tasks list */}
-      <div className="space-y-3">
-        {!isLoading && pendingTasks.length === 0 ? (
-          <p className="text-nightly-celadon">No pending tasks</p>
-        ) : (
-          pendingTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              handleTaskAction={handleTaskAction}
-              isUpdating={updateTaskStatus.isPending}
-            />
-          ))
-        )}
-      </div>
+      <TaskList
+        isLoading={isLoading}
+        pendingTasks={pendingTasks}
+        handleTaskAction={handleTaskAction}
+        isUpdating={updateTaskStatus.isPending}
+      />
     </div>
   );
 };
