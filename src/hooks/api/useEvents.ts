@@ -6,8 +6,9 @@ import {
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
 import { Event, EventType } from "../../types/events";
-import { DBEvent } from "../../types/database";
+import { DBEvent, EventFilters } from "../../types/database";
 import { logger } from "../../utils/logging";
+import { eventKeys, eventToDBEvent } from "./events-utils";
 
 /**
  * Event Management Hooks - TanStack Query Integration
@@ -22,34 +23,6 @@ import { logger } from "../../utils/logging";
  *
  * Strategy: Dexie-first write, Firebase background sync
  */
-
-// Utility function to convert Event to DBEvent format
-const eventToDBEvent = (
-  event: Event,
-): Omit<DBEvent, "lastModified" | "syncStatus"> => {
-  return {
-    id: event.id,
-    userId: event.userId,
-    type: event.type,
-    timestamp: event.timestamp,
-    details: event.details,
-    isPrivate: false, // Default value, can be overridden
-    sessionId: undefined, // Can be set if available
-  };
-};
-
-// Query Keys
-export const eventKeys = {
-  all: ["events"] as const,
-  lists: () => [...eventKeys.all, "list"] as const,
-  list: (userId: string, filters?: EventFilters) =>
-    [...eventKeys.lists(), userId, filters] as const,
-  infinite: (userId: string, filters?: EventFilters) =>
-    [...eventKeys.all, "infinite", userId, filters] as const,
-  detail: (eventId: string) => [...eventKeys.all, "detail", eventId] as const,
-  recent: (userId: string, limit?: number) =>
-    [...eventKeys.all, "recent", userId, limit] as const,
-} as const;
 
 interface CreateEventData {
   type: EventType;

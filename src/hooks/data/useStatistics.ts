@@ -996,5 +996,3 @@ function calculateKeyholderSatisfaction(
   // This would be calculated based on keyholder feedback and interaction patterns
   return 85; // Placeholder value
 }
-
-export default useStatistics;
