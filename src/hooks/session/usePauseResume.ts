@@ -426,5 +426,3 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     error,
   };
 };
-
-export default usePauseResume;

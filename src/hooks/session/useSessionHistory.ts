@@ -890,5 +890,3 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     error,
   };
 };
-
-export default useSessionHistory;

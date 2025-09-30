@@ -221,17 +221,9 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     };
 
     initializeStatistics();
-  }, [
-    userId,
-    relationshipId,
-    loadSessionStatistics,
-    loadGoalStatistics,
-    loadComparativeStatistics,
-    loadAchievementStatistics,
-    loadSharedStatistics,
-    loadPredictiveAnalytics,
-    loadRecommendations,
-  ]);
+    // Callback functions are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 
@@ -640,5 +632,3 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     error,
   };
 };
-
-export default useStatistics;

@@ -342,16 +342,9 @@ export const useOfflineStatus = () => {
         connection.removeEventListener("change", handleConnectionChange);
       }
     };
-  }, [
-    handleOnline,
-    handleOffline,
-    addNetworkEvent,
-    getNetworkInfo,
-    getNetworkQuality,
-    offlineStatus,
-    queryClient,
-    lastOnline,
-  ]);
+    // addNetworkEvent, getNetworkInfo, getNetworkQuality are stable (no/stable deps)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleOnline, handleOffline, offlineStatus, queryClient, lastOnline]);
 
   return {
     // Status

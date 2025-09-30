@@ -446,7 +446,8 @@ export const useKeyholderSystem = (keyholderId?: string) => {
       logger.info("Admin session expired, ending session");
       endAdminSession();
     }
-  }, [state.adminSession, endAdminSession]);
+    // endAdminSession is stable as it only depends on state.adminSession which is already in deps
+  }, [state.adminSession]);
 
   // ==================== RETURN ====================
 
