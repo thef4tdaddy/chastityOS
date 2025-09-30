@@ -2,6 +2,26 @@ import React from "react";
 import type { DBSession } from "../../types/database";
 import { FaClock, FaPlay, FaPause, FaStop } from "../../utils/iconImport";
 
+// Helper function for duration formatting
+const formatDuration = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${hours}h ${minutes}m`;
+};
+
+// No Session Component
+const NoSessionDisplay: React.FC = () => (
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+    <div className="flex items-center gap-3 mb-4">
+      <FaClock className="text-nightly-aquamarine" />
+      <h3 className="text-lg font-semibold text-nightly-honeydew">
+        Session Control
+      </h3>
+    </div>
+    <p className="text-nightly-celadon">No active session to control.</p>
+  </div>
+);
+
 // Current Session Control (for unlocked keyholder mode)
 interface SessionControlsProps {
   session: DBSession | null;
@@ -11,24 +31,8 @@ export const SessionControls: React.FC<SessionControlsProps> = ({
   session,
 }) => {
   if (!session) {
-    return (
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <FaClock className="text-nightly-aquamarine" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">
-            Session Control
-          </h3>
-        </div>
-        <p className="text-nightly-celadon">No active session to control.</p>
-      </div>
-    );
+    return <NoSessionDisplay />;
   }
-
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
-  };
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">

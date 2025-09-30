@@ -12,6 +12,12 @@ import {
   ActivityContext,
   PresenceSubscription,
 } from "../../types/realtime";
+import {
+  createPresenceUpdateFunctions,
+  createSubscriptionFunctions,
+  createQueryFunctions,
+  calculatePresenceComputedValues,
+} from "./presenceOperations";
 
 interface UsePresenceOptions {
   userId: string;
@@ -44,217 +50,43 @@ export const usePresence = (options: UsePresenceOptions) => {
   const presenceIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update own presence status
-  const updateOwnPresence = useCallback(
-    async (
-      status: PresenceStatus,
-      customMessage?: string,
-      currentActivity?: ActivityContext,
-    ): Promise<void> => {
-      const updatedPresence: UserPresence = {
-        ...presenceState.ownPresence,
-        status,
-        lastSeen: new Date(),
-        customMessage,
-        currentActivity,
-        deviceType: getDeviceType(),
-        platform: navigator.platform,
-      };
-
-      setPresenceState((prev) => ({
-        ...prev,
-        ownPresence: updatedPresence,
-        userPresences: {
-          ...prev.userPresences,
-          [userId]: updatedPresence,
-        },
-      }));
-
-      // Send presence update to backend/WebSocket
-      await sendPresenceUpdate(updatedPresence);
-    },
-    [userId, presenceState.ownPresence],
+  // Create operation functions using helpers
+  const presenceUpdateFunctions = createPresenceUpdateFunctions(
+    userId,
+    presenceState,
+    setPresenceState,
   );
 
-  // Set online status
-  const setOnline = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.ONLINE, customMessage);
-    },
-    [updateOwnPresence],
-  );
+  const subscriptionFunctions = createSubscriptionFunctions(setPresenceState);
+  const queryFunctions = createQueryFunctions(presenceState);
 
-  // Set offline status
-  const setOffline = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.OFFLINE, customMessage);
-    },
-    [updateOwnPresence],
-  );
+  // Extract individual functions for easier use
+  const {
+    updateOwnPresence,
+    setOnline,
+    setOffline,
+    setAway,
+    setBusy,
+    setInSession,
+    updateActivity: updateActivityStatus,
+  } = presenceUpdateFunctions;
 
-  // Set away status
-  const setAway = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.AWAY, customMessage);
-    },
-    [updateOwnPresence],
-  );
-
-  // Set busy status
-  const setBusy = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.BUSY, customMessage);
-    },
-    [updateOwnPresence],
-  );
-
-  // Set in-session status
-  const setInSession = useCallback(
-    (sessionStartTime?: Date) => {
-      const presence: UserPresence = {
-        ...presenceState.ownPresence,
-        status: PresenceStatus.IN_SESSION,
-        isInChastitySession: true,
-        sessionStartTime: sessionStartTime || new Date(),
-      };
-
-      setPresenceState((prev) => ({
-        ...prev,
-        ownPresence: presence,
-        userPresences: {
-          ...prev.userPresences,
-          [userId]: presence,
-        },
-      }));
-
-      return sendPresenceUpdate(presence);
-    },
-    [userId, presenceState.ownPresence],
-  );
+  const { subscribeToPresence } = subscriptionFunctions;
+  const {
+    getUserPresence,
+    getMultipleUserPresence,
+    isUserOnline,
+    isUserInSession,
+    getOnlineCount,
+  } = queryFunctions;
 
   // Update activity
   const updateActivity = useCallback(
     (activity: ActivityContext) => {
       lastActivityRef.current = new Date();
-
-      return updateOwnPresence(
-        presenceState.ownPresence.status,
-        presenceState.ownPresence.customMessage,
-        activity,
-      );
+      return updateActivityStatus(activity);
     },
-    [presenceState.ownPresence, updateOwnPresence],
-  );
-
-  // Subscribe to user presence
-  const subscribeToPresence = useCallback(
-    (
-      userIds: string[],
-      callback: (presences: UserPresence[]) => void,
-    ): PresenceSubscription => {
-      const subscription: PresenceSubscription = {
-        userIds,
-        callback,
-        isActive: true,
-      };
-
-      setPresenceState((prev) => ({
-        ...prev,
-        subscriptions: [...prev.subscriptions, subscription],
-      }));
-
-      // Fetch initial presence data
-      fetchUserPresences(userIds).then((presences) => {
-        const presenceMap = presences.reduce(
-          (acc, presence) => {
-            acc[presence.userId] = presence;
-            return acc;
-          },
-          {} as Record<string, UserPresence>,
-        );
-
-        setPresenceState((prev) => ({
-          ...prev,
-          userPresences: {
-            ...prev.userPresences,
-            ...presenceMap,
-          },
-        }));
-
-        callback(presences);
-      });
-
-      // Return unsubscribe function
-      return {
-        ...subscription,
-        unsubscribe: () => {
-          setPresenceState((prev) => ({
-            ...prev,
-            subscriptions: prev.subscriptions.filter(
-              (sub) => sub !== subscription,
-            ),
-          }));
-        },
-      } as PresenceSubscription & { unsubscribe: () => void };
-    },
-    [],
-  );
-
-  // Get presence for specific user
-  const getUserPresence = useCallback(
-    (targetUserId: string): UserPresence | null => {
-      return presenceState.userPresences[targetUserId] || null;
-    },
-    [presenceState.userPresences],
-  );
-
-  // Get presence for multiple users
-  const getMultipleUserPresence = useCallback(
-    (userIds: string[]): UserPresence[] => {
-      return userIds
-        .map((id) => presenceState.userPresences[id])
-        .filter(Boolean);
-    },
-    [presenceState.userPresences],
-  );
-
-  // Check if user is online
-  const isUserOnline = useCallback(
-    (targetUserId: string): boolean => {
-      const presence = getUserPresence(targetUserId);
-      return presence?.status === PresenceStatus.ONLINE;
-    },
-    [getUserPresence],
-  );
-
-  // Check if user is in session
-  const isUserInSession = useCallback(
-    (targetUserId: string): boolean => {
-      const presence = getUserPresence(targetUserId);
-      return (
-        presence?.status === PresenceStatus.IN_SESSION ||
-        presence?.isInChastitySession === true
-      );
-    },
-    [getUserPresence],
-  );
-
-  // Get online count for a list of users
-  const getOnlineCount = useCallback(
-    (userIds: string[]): number => {
-      return userIds.filter((id) => {
-        const presence = presenceState.userPresences[id];
-        return (
-          presence &&
-          [
-            PresenceStatus.ONLINE,
-            PresenceStatus.BUSY,
-            PresenceStatus.IN_SESSION,
-          ].includes(presence.status)
-        );
-      }).length;
-    },
-    [presenceState.userPresences],
+    [updateActivityStatus],
   );
 
   // Handle activity tracking
@@ -369,29 +201,11 @@ export const usePresence = (options: UsePresenceOptions) => {
 
   // Computed values
   const computedValues = useMemo(() => {
-    const totalUsers = Object.keys(presenceState.userPresences).length;
-    const onlineUsers = Object.values(presenceState.userPresences).filter((p) =>
-      [
-        PresenceStatus.ONLINE,
-        PresenceStatus.BUSY,
-        PresenceStatus.IN_SESSION,
-      ].includes(p.status),
-    ).length;
-
-    const inSessionUsers = Object.values(presenceState.userPresences).filter(
-      (p) => p.status === PresenceStatus.IN_SESSION || p.isInChastitySession,
-    ).length;
-
-    const lastActivity = lastActivityRef.current;
-    const isActive = Date.now() - lastActivity.getTime() < activityTimeout;
-
-    return {
-      totalUsers,
-      onlineUsers,
-      inSessionUsers,
-      lastActivity,
-      isActive,
-    };
+    return calculatePresenceComputedValues(
+      presenceState.userPresences,
+      lastActivityRef.current,
+      activityTimeout,
+    );
   }, [presenceState.userPresences, activityTimeout]);
 
   return {
@@ -421,48 +235,3 @@ export const usePresence = (options: UsePresenceOptions) => {
     ...computedValues,
   };
 };
-
-// Helper functions
-function getDeviceType(): "desktop" | "mobile" | "tablet" {
-  const userAgent = navigator.userAgent.toLowerCase();
-
-  if (/tablet|ipad|playbook|silk/.test(userAgent)) {
-    return "tablet";
-  }
-
-  if (
-    /mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/.test(
-      userAgent,
-    )
-  ) {
-    return "mobile";
-  }
-
-  return "desktop";
-}
-
-async function sendPresenceUpdate(presence: UserPresence): Promise<void> {
-  // In real implementation, send to backend/WebSocket
-
-  // Simulate API call
-  try {
-    // await fetch('/api/presence', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(presence),
-    // });
-  } catch (error) {
-    // Failed to send presence update
-  }
-}
-
-async function fetchUserPresences(userIds: string[]): Promise<UserPresence[]> {
-  // In real implementation, fetch from backend
-
-  // Simulate API response
-  return userIds.map((userId) => ({
-    userId,
-    status: PresenceStatus.OFFLINE,
-    lastSeen: new Date(Date.now() - Math.random() * 3600000), // Random time in last hour
-  }));
-}
