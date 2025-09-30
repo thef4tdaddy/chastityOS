@@ -108,10 +108,17 @@ const CooldownDisplay: React.FC<{
 };
 
 // Debug Panel Component
+interface PauseState {
+  canPause: boolean;
+  cooldownRemaining?: number;
+  lastPauseTime?: Date;
+  nextPauseAvailable?: Date;
+}
+
 const DebugPanel: React.FC<{
-  pauseState: any;
+  pauseState: PauseState | null;
   pauseStateLoading: boolean;
-  pauseStateError: any;
+  pauseStateError: string | null;
 }> = ({ pauseState, pauseStateLoading, pauseStateError }) => {
   if (process.env.NODE_ENV !== "development") return null;
 
@@ -158,9 +165,9 @@ const useSessionState = () => {
 };
 
 // Custom hook for mock data (temporary until real implementation)
-const useMockData = (user: any) => {
+const useMockData = (user: User | null) => {
   // Mock pause state data for now
-  const pauseState = {
+  const pauseState: PauseState = {
     canPause: true,
     cooldownRemaining: undefined,
     lastPauseTime: undefined,

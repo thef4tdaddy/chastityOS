@@ -17,6 +17,14 @@ import {
   UpdateCallback,
 } from "../../types/realtime";
 
+interface WebSocketMessage {
+  type: string;
+  data?: unknown;
+  channelId?: string;
+  userId?: string;
+  timestamp?: Date;
+}
+
 interface UseRealtimeSyncOptions {
   userId: string;
   autoConnect?: boolean;
@@ -147,7 +155,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
         connectionStatus: ConnectionStatus.ERROR,
       }));
     }
-  }, [userId, syncState.activeChannels, maxReconnectAttempts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, maxReconnectAttempts]);
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
@@ -162,7 +171,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // stopHeartbeat is stable
 
   // Attempt reconnection
   const attemptReconnect = useCallback(() => {
@@ -197,7 +207,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
     };
 
     heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, heartbeatInterval);
-  }, [heartbeatInterval]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heartbeatInterval]); // sendMessage is stable
 
   // Stop heartbeat
   const stopHeartbeat = useCallback(() => {
@@ -208,7 +219,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   }, []);
 
   // Send message via WebSocket
-  const sendMessage = useCallback((message: any) => {
+  const sendMessage = useCallback((message: WebSocketMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
 
@@ -223,7 +234,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   }, []);
 
   // Handle incoming messages
-  const handleMessage = useCallback((message: any) => {
+  const handleMessage = useCallback((message: WebSocketMessage) => {
     setSyncState((prev) => ({
       ...prev,
       syncMetrics: {
@@ -249,11 +260,12 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       default:
       // Unknown message type
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // handler functions are stable
 
   // Handle channel joined
-  const handleChannelJoined = useCallback((message: any) => {
-    const channel: SyncChannel = message.channel;
+  const handleChannelJoined = useCallback((message: WebSocketMessage) => {
+    const channel: SyncChannel = message.data as SyncChannel;
 
     setSyncState((prev) => ({
       ...prev,
@@ -265,8 +277,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   }, []);
 
   // Handle channel left
-  const handleChannelLeft = useCallback((message: any) => {
-    const channelId = message.channelId;
+  const handleChannelLeft = useCallback((message: WebSocketMessage) => {
+    const channelId = (message.data as { channelId: string })?.channelId;
 
     setSyncState((prev) => ({
       ...prev,
@@ -275,8 +287,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   }, []);
 
   // Handle realtime update
-  const handleRealtimeUpdate = useCallback((message: any) => {
-    const update: RealtimeUpdate = message.update;
+  const handleRealtimeUpdate = useCallback((message: WebSocketMessage) => {
+    const update: RealtimeUpdate = message.data as RealtimeUpdate;
 
     // Update local data
     setSyncState((prev) => ({

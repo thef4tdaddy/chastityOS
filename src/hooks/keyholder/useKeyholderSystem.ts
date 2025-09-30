@@ -3,10 +3,11 @@
  * Unified management interface for all keyholder functionality
  * Acts as the primary entry point for keyholder operations
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "../../contexts";
 import { useKeyholderRelationships } from "../useKeyholderRelationships";
 import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
+import { Task } from "../../types";
 import { InviteCode } from "../../services/database/KeyholderRelationshipDBService";
 import { serviceLogger } from "../../utils/logging";
 
@@ -67,10 +68,10 @@ export interface InviteOptions {
 }
 
 export interface BulkOperations {
-  startSessions: (relationshipIds: string[], options?: any) => Promise<void>;
+  startSessions: (relationshipIds: string[], options?: { duration?: number; message?: string }) => Promise<void>;
   stopSessions: (relationshipIds: string[], reason?: string) => Promise<void>;
   sendMessages: (relationshipIds: string[], message: string) => Promise<void>;
-  assignTasks: (relationshipIds: string[], task: any) => Promise<void>;
+  assignTasks: (relationshipIds: string[], task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
 }
 
 export interface KeyholderSystemActions {
@@ -170,31 +171,11 @@ export const useKeyholderSystem = (keyholderId?: string) => {
       const keyholderRelationshipsList =
         keyholderRelationships.relationships.asKeyholder;
 
-      // Calculate keyholder status
-      const keyholderStatus: KeyholderStatus = {
-        isActiveKeyholder: keyholderRelationshipsList.length > 0,
-        hasPermissions: keyholderRelationshipsList.some(
-          (rel) =>
-            rel.permissions &&
-            Object.values(rel.permissions).some((perm) => perm),
-        ),
-        canCreateInvites: await keyholderRelationships.canCreateInviteCode(),
-        maxRelationships: 5, // Could be user-specific in the future
-        currentRelationships: keyholderRelationshipsList.length,
-      };
-
-      // Calculate basic stats
-      const stats: KeyholderStats = {
-        totalSubmissives: keyholderRelationshipsList.length,
-        activeRelationships: keyholderRelationshipsList.filter(
-          (rel) => rel.status === "active",
-        ).length,
-        totalSessions: 0, // TODO: Calculate from session data
-        averageSessionDuration: 0, // TODO: Calculate from session data
-        totalRewardsGiven: 0, // TODO: Calculate from reward data
-        totalPunishmentsGiven: 0, // TODO: Calculate from punishment data
-        lastActivity: null, // TODO: Calculate from activity data
-      };
+      // Calculate keyholder status and stats
+      const { keyholderStatus, stats } = calculateKeyholderStatusAndStats(
+        keyholderRelationshipsList,
+        keyholderRelationships
+      );
 
       setState((prev) => ({
         ...prev,
@@ -239,23 +220,9 @@ export const useKeyholderSystem = (keyholderId?: string) => {
           options.expirationHours,
         );
 
-        if (inviteCode) {
-          // Refresh data to update state
-          await refreshData();
-          return inviteCode.code;
-        }
-
-        return null;
+        return await handleInviteCodeCreation(inviteCode, refreshData);
       } catch (error) {
-        logger.error("Failed to create invite code", { error: error as Error });
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to create invite code",
-        }));
-        return null;
+        return handleInviteCodeError(error, setState);
       }
     },
     [effectiveKeyholderId, keyholderRelationships, refreshData],
@@ -274,29 +241,13 @@ export const useKeyholderSystem = (keyholderId?: string) => {
         const success =
           await keyholderRelationships.acceptInviteCode(inviteCode);
 
-        if (success) {
-          // Refresh data to get the new relationship
-          await refreshData();
-
-          // Return the newest relationship (should be the one just created)
-          const newestRelationship = state.activeRelationships.sort(
-            (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-          )[0];
-
-          return newestRelationship || null;
-        }
-
-        return null;
+        return await handleSubmissiveAcceptance(
+          success,
+          refreshData,
+          state.activeRelationships
+        );
       } catch (error) {
-        logger.error("Failed to accept submissive", { error: error as Error });
-        setState((prev) => ({
-          ...prev,
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to accept submissive",
-        }));
-        return null;
+        return handleSubmissiveAcceptanceError(error, setState);
       }
     },
     [
@@ -428,7 +379,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
 
   const getBulkOperations = useCallback((): BulkOperations => {
     return {
-      startSessions: async (relationshipIds: string[], options?: any) => {
+      startSessions: async (relationshipIds: string[], options?: { duration?: number; message?: string }) => {
         logger.debug("Bulk starting sessions", { relationshipIds, options });
         // TODO: Implement bulk session start
       },
@@ -440,7 +391,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
         logger.debug("Bulk sending messages", { relationshipIds, message });
         // TODO: Implement bulk messaging
       },
-      assignTasks: async (relationshipIds: string[], task: any) => {
+      assignTasks: async (relationshipIds: string[], task: Omit<Task, 'id' | 'createdAt'>) => {
         logger.debug("Bulk assigning tasks", { relationshipIds, task });
         // TODO: Implement bulk task assignment
       },
@@ -468,10 +419,10 @@ export const useKeyholderSystem = (keyholderId?: string) => {
     ) {
       refreshData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     keyholderRelationships.relationships.asKeyholder.length,
     state.activeRelationships.length,
-    refreshData,
   ]);
 
   // Admin session auto-expiry
@@ -509,3 +460,100 @@ export const useKeyholderSystem = (keyholderId?: string) => {
 };
 
 export type UseKeyholderSystemReturn = ReturnType<typeof useKeyholderSystem>;
+
+// Helper functions for useKeyholderSystem
+function calculateKeyholderStatusAndStats(
+  keyholderRelationshipsList: KeyholderRelationship[],
+  keyholderRelationships: Record<string, unknown>
+): { keyholderStatus: KeyholderStatus; stats: KeyholderStats } {
+  // Calculate keyholder status
+  const keyholderStatus: KeyholderStatus = {
+    isActiveKeyholder: keyholderRelationshipsList.length > 0,
+    hasPermissions: keyholderRelationshipsList.some(
+      (rel) =>
+        rel.permissions &&
+        Object.values(rel.permissions).some((perm) => perm),
+    ),
+    canCreateInvites: keyholderRelationships.canCreateInviteCode
+      ? keyholderRelationships.canCreateInviteCode()
+      : false,
+    maxRelationships: 5, // Could be user-specific in the future
+    currentRelationships: keyholderRelationshipsList.length,
+  };
+
+  // Calculate basic stats
+  const stats: KeyholderStats = {
+    totalSubmissives: keyholderRelationshipsList.length,
+    activeRelationships: keyholderRelationshipsList.filter(
+      (rel) => rel.status === "active",
+    ).length,
+    totalSessions: 0, // TODO: Calculate from session data
+    averageSessionDuration: 0, // TODO: Calculate from session data
+    totalRewardsGiven: 0, // TODO: Calculate from reward data
+    totalPunishmentsGiven: 0, // TODO: Calculate from punishment data
+    lastActivity: null, // TODO: Calculate from activity data
+  };
+
+  return { keyholderStatus, stats };
+}
+
+async function handleInviteCodeCreation(
+  inviteCode: InviteCode | null,
+  refreshData: () => Promise<void>
+): Promise<string | null> {
+  if (inviteCode) {
+    // Refresh data to update state
+    await refreshData();
+    return inviteCode.code;
+  }
+  return null;
+}
+
+function handleInviteCodeError(
+  error: unknown,
+  setState: React.Dispatch<React.SetStateAction<KeyholderSystemState>>
+): null {
+  logger.error("Failed to create invite code", { error: error as Error });
+  setState((prev) => ({
+    ...prev,
+    error:
+      error instanceof Error
+        ? error.message
+        : "Failed to create invite code",
+  }));
+  return null;
+}
+
+async function handleSubmissiveAcceptance(
+  success: boolean,
+  refreshData: () => Promise<void>,
+  activeRelationships: KeyholderRelationship[]
+): Promise<KeyholderRelationship | null> {
+  if (success) {
+    // Refresh data to get the new relationship
+    await refreshData();
+
+    // Return the newest relationship (should be the one just created)
+    const newestRelationship = activeRelationships.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    )[0];
+
+    return newestRelationship || null;
+  }
+  return null;
+}
+
+function handleSubmissiveAcceptanceError(
+  error: unknown,
+  setState: React.Dispatch<React.SetStateAction<KeyholderSystemState>>
+): null {
+  logger.error("Failed to accept submissive", { error: error as Error });
+  setState((prev) => ({
+    ...prev,
+    error:
+      error instanceof Error
+        ? error.message
+        : "Failed to accept submissive",
+  }));
+  return null;
+}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuthState } from "../contexts";
 import { useTasks, useUpdateTaskStatus } from "../hooks/api/useTasks";
 import type { TaskStatus } from "../types/database";
+import type { Task } from "../types";
 import { TaskItem } from "../components/tasks";
 
 // UI State Components
@@ -55,7 +56,7 @@ const TabNavigation: React.FC<{
 
 // Active Tasks Section Component
 const ActiveTasksSection: React.FC<{
-  tasks: any[];
+  tasks: Task[];
   handleSubmitTask: (taskId: string, note: string) => void;
 }> = ({ tasks, handleSubmitTask }) => {
   if (tasks.length === 0) {
@@ -89,7 +90,7 @@ const ActiveTasksSection: React.FC<{
 };
 
 // Archived Tasks Section Component
-const ArchivedTasksSection: React.FC<{ tasks: any[] }> = ({ tasks }) => {
+const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
       <div className="glass-card text-center py-12">

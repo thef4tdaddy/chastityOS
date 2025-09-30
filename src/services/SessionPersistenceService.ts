@@ -533,8 +533,9 @@ export class SessionPersistenceService {
 
   /**
    * Get current backup state from localStorage
+   * Public method to allow hooks to access backup state through service layer
    */
-  private getBackupState(): SessionPersistenceState | null {
+  getBackupState(): SessionPersistenceState | null {
     try {
       const backup = localStorage.getItem(this.BACKUP_KEY);
       return backup ? JSON.parse(backup) : null;

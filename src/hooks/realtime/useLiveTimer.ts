@@ -149,7 +149,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       // Notify subscribers
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Pause a timer
@@ -188,7 +188,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Resume a timer
@@ -228,7 +228,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Stop a timer
@@ -267,7 +267,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Extend a timer
@@ -303,7 +303,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId],
+    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
   );
 
   // Subscribe to timer updates
@@ -402,7 +402,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         return updatedTimer;
       }),
     }));
-  }, []);
+  }, [notifySubscribers]);
 
   // Sync timer with server
   const syncTimer = useCallback(
@@ -456,7 +456,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [syncInterval]);
+  }, [syncInterval, updateTimerProgress]);
 
   // Start sync interval
   useEffect(() => {
@@ -580,12 +580,12 @@ async function saveTimer(timer: LiveTimer): Promise<void> {
 async function logTimerEvent(
   timerId: string,
   type: string,
-  data?: any,
+  data?: Record<string, string | number | boolean | Date>,
 ): Promise<void> {
   const event: TimerEvent = {
     id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     timerId,
-    type: type as any,
+    type: type as TimerEvent['type'],
     timestamp: new Date(),
     userId: "", // Would be filled from context
     data,

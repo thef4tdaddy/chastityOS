@@ -123,15 +123,43 @@ export const usePerformance = () => {
 
       // Get memory usage
       if ("memory" in performance) {
-        const memory = (performance as any).memory;
-        perfMetrics.memoryUsed = memory.usedJSHeapSize;
-        perfMetrics.memoryTotal = memory.totalJSHeapSize;
-        perfMetrics.memoryUsagePercent =
-          (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
+        const memory = (
+          performance as Performance & {
+            memory?: {
+              usedJSHeapSize: number;
+              totalJSHeapSize: number;
+            };
+          }
+        ).memory;
+        if (memory) {
+          perfMetrics.memoryUsed = memory.usedJSHeapSize;
+          perfMetrics.memoryTotal = memory.totalJSHeapSize;
+          perfMetrics.memoryUsagePercent =
+            (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
+        }
       }
 
       // Get network information
-      const nav = navigator as any;
+      const nav = navigator as Navigator & {
+        connection?: {
+          type?: string;
+          effectiveType?: string;
+          downlink?: number;
+          rtt?: number;
+        };
+        mozConnection?: {
+          type?: string;
+          effectiveType?: string;
+          downlink?: number;
+          rtt?: number;
+        };
+        webkitConnection?: {
+          type?: string;
+          effectiveType?: string;
+          downlink?: number;
+          rtt?: number;
+        };
+      };
       const connection =
         nav.connection || nav.mozConnection || nav.webkitConnection;
       if (connection) {
@@ -266,23 +294,26 @@ export const usePerformance = () => {
   );
 
   // Measure API response time
-  const measureApiTime = useCallback(async (apiCall: () => Promise<any>) => {
-    const startTime = performance.now();
-    try {
-      const result = await apiCall();
-      const endTime = performance.now();
-      const responseTime = endTime - startTime;
+  const measureApiTime = useCallback(
+    async <T>(apiCall: () => Promise<T>): Promise<T> => {
+      const startTime = performance.now();
+      try {
+        const result = await apiCall();
+        const endTime = performance.now();
+        const responseTime = endTime - startTime;
 
-      logger.debug(`API response time: ${responseTime.toFixed(2)}ms`);
-      return { result, responseTime };
-    } catch (error) {
-      const endTime = performance.now();
-      const responseTime = endTime - startTime;
+        logger.debug(`API response time: ${responseTime.toFixed(2)}ms`);
+        return { result, responseTime };
+      } catch (error) {
+        const endTime = performance.now();
+        const responseTime = endTime - startTime;
 
-      logger.warn(`API error after ${responseTime.toFixed(2)}ms`, error);
-      throw error;
-    }
-  }, []);
+        logger.warn(`API error after ${responseTime.toFixed(2)}ms`, error);
+        throw error;
+      }
+    },
+    [],
+  );
 
   // Clear old alerts
   const clearOldAlerts = useCallback(() => {

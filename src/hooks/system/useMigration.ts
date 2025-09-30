@@ -271,7 +271,7 @@ export const useMigration = () => {
         throw error;
       }
     },
-    [migrationState, queryClient, createBackup],
+    [migrationState, queryClient, createBackup, executeMigrationLogic],
   );
 
   // Execute migration logic
@@ -398,7 +398,7 @@ export const useMigration = () => {
       const backups = JSON.parse(
         localStorage.getItem(STORAGE_KEYS.MIGRATION_BACKUPS) || "[]",
       );
-      const backup = backups.find((b: any) => b.migrationId === migrationId);
+      const backup = backups.find((b: { migrationId: string }) => b.migrationId === migrationId);
 
       if (!backup) throw new Error("Backup not found");
 

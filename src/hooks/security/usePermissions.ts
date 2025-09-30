@@ -4,7 +4,7 @@
  * Provides comprehensive permission checking system that validates user permissions
  * in real-time across all application contexts.
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { UserRole } from "../../types/core";
 import {
   Permission,
@@ -19,7 +19,6 @@ import {
   PermissionScope,
   RolePermission,
   ContextPermission,
-  PermissionCache,
   PermissionCheckLog,
 } from "../../types/security";
 
@@ -95,72 +94,23 @@ export const usePermissions = (options: UsePermissionsOptions) => {
         }
       }
 
-      let hasAccess = false;
+      const hasAccess = checkPermissionAccess(
+        permission,
+        contextToUse,
+        permissionState,
+      );
 
-      // Check user permissions
-      for (const userPerm of permissionState.userPermissions) {
-        if (matchesPermission(userPerm, permission, contextToUse)) {
-          hasAccess = true;
-          break;
-        }
-      }
-
-      // Check role permissions if user permission not found
-      if (!hasAccess) {
-        for (const rolePerm of permissionState.rolePermissions) {
-          for (const perm of rolePerm.permissions) {
-            if (matchesPermission(perm, permission, contextToUse)) {
-              hasAccess = true;
-              break;
-            }
-          }
-          if (hasAccess) break;
-        }
-      }
-
-      // Check context permissions
-      if (!hasAccess && contextToUse) {
-        for (const contextPerm of permissionState.contextPermissions) {
-          if (contextsMatch(contextPerm.context, contextToUse)) {
-            for (const perm of contextPerm.permissions) {
-              if (matchesPermission(perm, permission, contextToUse)) {
-                hasAccess = true;
-                break;
-              }
-            }
-          }
-          if (hasAccess) break;
-        }
-      }
-
-      // Cache the result
-      if (cacheEnabled) {
-        setPermissionState((prev) => ({
-          ...prev,
-          permissionCache: {
-            ...prev.permissionCache,
-            [cacheKey]: {
-              result: hasAccess,
-              timestamp: new Date(),
-              expiresAt: new Date(Date.now() + cacheTTL),
-            },
-          },
-        }));
-      }
-
-      // Log the permission check
-      const checkLog: PermissionCheckLog = {
+      // Cache and log the result
+      cacheAndLogPermissionCheck({
+        cacheKey,
+        hasAccess,
         permission,
         context: contextToUse,
-        result: hasAccess,
-        timestamp: new Date(),
         userId,
-      };
-
-      setPermissionState((prev) => ({
-        ...prev,
-        permissionChecks: [...prev.permissionChecks.slice(-99), checkLog], // Keep last 100 checks
-      }));
+        cacheEnabled,
+        cacheTTL,
+        setPermissionState,
+      });
 
       return hasAccess;
     },
@@ -386,7 +336,7 @@ function contextsMatch(
 }
 
 function evaluateCondition(
-  condition: any,
+  condition: { type: string; value: string | number | boolean | Date | string[]; operator: string },
   context?: PermissionContext,
 ): boolean {
   // Simplified condition evaluation
@@ -409,7 +359,7 @@ function calculateOverallPermissionLevel(
   return PermissionLevel.NONE;
 }
 
-async function getDefaultPermissions(userId: string): Promise<{
+async function getDefaultPermissions(_userId: string): Promise<{
   userPermissions: Permission[];
   rolePermissions: RolePermission[];
   contextPermissions: ContextPermission[];
@@ -446,4 +396,101 @@ async function getDefaultPermissions(userId: string): Promise<{
     rolePermissions: defaultRolePermissions,
     contextPermissions: [],
   };
+}
+
+// Permission checking helper functions
+function checkPermissionAccess(
+  permission: string,
+  context: PermissionContext | undefined,
+  permissionState: PermissionState,
+): boolean {
+  let hasAccess = false;
+
+  // Check user permissions
+  for (const userPerm of permissionState.userPermissions) {
+    if (matchesPermission(userPerm, permission, context)) {
+      hasAccess = true;
+      break;
+    }
+  }
+
+  // Check role permissions if user permission not found
+  if (!hasAccess) {
+    for (const rolePerm of permissionState.rolePermissions) {
+      for (const perm of rolePerm.permissions) {
+        if (matchesPermission(perm, permission, context)) {
+          hasAccess = true;
+          break;
+        }
+      }
+      if (hasAccess) break;
+    }
+  }
+
+  // Check context permissions
+  if (!hasAccess && context) {
+    for (const contextPerm of permissionState.contextPermissions) {
+      if (contextsMatch(contextPerm.context, context)) {
+        for (const perm of contextPerm.permissions) {
+          if (matchesPermission(perm, permission, context)) {
+            hasAccess = true;
+            break;
+          }
+        }
+      }
+      if (hasAccess) break;
+    }
+  }
+
+  return hasAccess;
+}
+
+function cacheAndLogPermissionCheck(params: {
+  cacheKey: string;
+  hasAccess: boolean;
+  permission: string;
+  context: PermissionContext | undefined;
+  userId: string;
+  cacheEnabled: boolean;
+  cacheTTL: number;
+  setPermissionState: React.Dispatch<React.SetStateAction<PermissionState>>;
+}): void {
+  const {
+    cacheKey,
+    hasAccess,
+    permission,
+    context,
+    userId,
+    cacheEnabled,
+    cacheTTL,
+    setPermissionState,
+  } = params;
+  // Cache the result
+  if (cacheEnabled) {
+    setPermissionState((prev) => ({
+      ...prev,
+      permissionCache: {
+        ...prev.permissionCache,
+        [cacheKey]: {
+          result: hasAccess,
+          timestamp: new Date(),
+          expiresAt: new Date(Date.now() + cacheTTL),
+        },
+      },
+    }));
+  }
+
+  // Log the permission check
+  const checkLog: PermissionCheckLog = {
+    permission,
+    context,
+    result: hasAccess,
+    timestamp: new Date(),
+    userId,
+  };
+
+  setPermissionState((prev) => ({
+    ...prev,
+    permissionChecks: [...prev.permissionChecks.slice(-99), checkLog], // Keep last 100 checks
+  }));
 }

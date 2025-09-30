@@ -55,7 +55,7 @@ export interface OfflineCapabilities {
 export interface NetworkEvent {
   type: "online" | "offline" | "quality-change";
   timestamp: Date;
-  details?: Record<string, any>;
+  details?: Record<string, string | number | boolean>;
 }
 
 /**
@@ -64,12 +64,34 @@ export interface NetworkEvent {
 export const useOfflineStatus = () => {
   const queryClient = useQueryClient();
   const [networkEvents, setNetworkEvents] = useState<NetworkEvent[]>([]);
-  const [syncQueue, setSyncQueue] = useState<any[]>([]);
+  const [syncQueue, setSyncQueue] = useState<Record<string, unknown>[]>([]);
   const [lastOnline, setLastOnline] = useState<Date | null>(null);
 
   // Get network information if available
   const getNetworkInfo = useCallback(() => {
-    const nav = navigator as any;
+    const nav = navigator as Navigator & {
+      connection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      mozConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      webkitConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+    };
     const connection =
       nav.connection || nav.mozConnection || nav.webkitConnection;
 
@@ -155,7 +177,10 @@ export const useOfflineStatus = () => {
 
   // Add network event
   const addNetworkEvent = useCallback(
-    (type: NetworkEvent["type"], details?: Record<string, any>) => {
+    (
+      type: NetworkEvent["type"],
+      details?: Record<string, string | number | boolean>,
+    ) => {
       const event: NetworkEvent = {
         type,
         timestamp: new Date(),
@@ -182,7 +207,7 @@ export const useOfflineStatus = () => {
     if (syncQueue.length > 0) {
       processSyncQueue();
     }
-  }, [syncQueue, addNetworkEvent, queryClient]);
+  }, [syncQueue, addNetworkEvent, queryClient, processSyncQueue]);
 
   // Handle offline event
   const handleOffline = useCallback(() => {
@@ -200,7 +225,7 @@ export const useOfflineStatus = () => {
 
     logger.info("Processing sync queue", { queueSize: syncQueue.length });
 
-    const processedItems: any[] = [];
+    const processedItems: Record<string, unknown>[] = [];
 
     for (const item of syncQueue) {
       try {
@@ -230,7 +255,7 @@ export const useOfflineStatus = () => {
   }, [syncQueue, queryClient]);
 
   // Add item to sync queue
-  const queueForSync = useCallback((item: any) => {
+  const queueForSync = useCallback((item: Record<string, unknown>) => {
     setSyncQueue((prev) => [...prev, { ...item, queuedAt: new Date() }]);
     logger.debug("Item queued for sync", { item });
   }, []);
@@ -276,7 +301,29 @@ export const useOfflineStatus = () => {
     window.addEventListener("offline", handleOffline);
 
     // Listen for connection changes if supported
-    const nav = navigator as any;
+    const nav = navigator as Navigator & {
+      connection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      mozConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+      webkitConnection?: {
+        downlink?: number;
+        rtt?: number;
+        effectiveType?: string;
+        type?: string;
+        addEventListener?: (type: string, listener: EventListener) => void;
+      };
+    };
     const connection =
       nav.connection || nav.mozConnection || nav.webkitConnection;
     if (connection) {
