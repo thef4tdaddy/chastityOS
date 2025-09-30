@@ -4,7 +4,7 @@
  * Manages comprehensive security settings including session timeouts,
  * IP restrictions, and security policies.
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   SecuritySettingsState,
   SessionSecuritySettings,
@@ -69,7 +69,7 @@ const defaultPrivacySettings: PrivacySecuritySettings = {
 };
 
 export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
-  const { userId, autoSave = true, syncInterval = 5 } = options;
+  const { userId, autoSave = true } = options;
 
   // Security settings state
   const [securityState, setSecurityState] = useState<SecuritySettingsState>({
@@ -92,25 +92,8 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
 
         // In real implementation, fetch from backend/Firebase
         const settings = await fetchSecuritySettings(userId);
-
-        setSecurityState({
-          sessionSettings: {
-            ...defaultSessionSettings,
-            ...settings.sessionSettings,
-          },
-          accessSettings: {
-            ...defaultAccessSettings,
-            ...settings.accessSettings,
-          },
-          monitoringSettings: {
-            ...defaultMonitoringSettings,
-            ...settings.monitoringSettings,
-          },
-          privacySettings: {
-            ...defaultPrivacySettings,
-            ...settings.privacySettings,
-          },
-        });
+        const mergedSettings = mergeWithDefaultSettings(settings);
+        setSecurityState(mergedSettings);
       } catch (err) {
         setError(
           err instanceof Error
@@ -130,20 +113,13 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
   // Auto-save when settings change
   useEffect(() => {
     if (autoSave && hasUnsavedChanges && !loading) {
-      const saveTimer = setTimeout(async () => {
-        try {
-          await saveSecuritySettings(userId, securityState);
-          setHasUnsavedChanges(false);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to save settings",
-          );
-        }
+      const saveTimer = setTimeout(() => {
+        handleAutoSave(userId, securityState, setHasUnsavedChanges, setError);
       }, 2000); // 2 second debounce
 
       return () => clearTimeout(saveTimer);
     }
-  }, [hasUnsavedChanges, autoSave, loading, userId]);
+  }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
 
   // Update session settings
   const updateSessionSettings = useCallback(
@@ -167,7 +143,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave, securityState],
+    [userId, autoSave],
   );
 
   // Set session timeout
@@ -215,7 +191,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave, securityState],
+    [userId, autoSave],
   );
 
   // Add trusted device
@@ -263,7 +239,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave, securityState],
+    [userId, autoSave],
   );
 
   // Enable/disable security alerts
@@ -296,7 +272,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave, securityState],
+    [userId, autoSave],
   );
 
   // Get security score
@@ -392,7 +368,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
 
 // Helper functions
 async function fetchSecuritySettings(
-  userId: string,
+  _userId: string,
 ): Promise<Partial<SecuritySettingsState>> {
   // In real implementation, fetch from backend/Firebase
   // For now, return default settings
@@ -405,10 +381,9 @@ async function fetchSecuritySettings(
 }
 
 async function saveSecuritySettings(
-  userId: string,
-  settings: SecuritySettingsState,
+  _userId: string,
+  _settings: SecuritySettingsState,
 ): Promise<void> {
-  // In real implementation, save to backend/Firebase
   // In real implementation, save to backend/Firebase
 }
 
@@ -598,4 +573,42 @@ function calculateSecurityLevel(
   if (score >= 6) return "high";
   if (score >= 3) return "medium";
   return "low";
+}
+
+// Settings management helper functions
+function mergeWithDefaultSettings(
+  settings: Partial<SecuritySettingsState>,
+): SecuritySettingsState {
+  return {
+    sessionSettings: {
+      ...defaultSessionSettings,
+      ...settings.sessionSettings,
+    },
+    accessSettings: {
+      ...defaultAccessSettings,
+      ...settings.accessSettings,
+    },
+    monitoringSettings: {
+      ...defaultMonitoringSettings,
+      ...settings.monitoringSettings,
+    },
+    privacySettings: {
+      ...defaultPrivacySettings,
+      ...settings.privacySettings,
+    },
+  };
+}
+
+async function handleAutoSave(
+  userId: string,
+  securityState: SecuritySettingsState,
+  setHasUnsavedChanges: React.Dispatch<React.SetStateAction<boolean>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+): Promise<void> {
+  try {
+    await saveSecuritySettings(userId, securityState);
+    setHasUnsavedChanges(false);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to save settings");
+  }
 }

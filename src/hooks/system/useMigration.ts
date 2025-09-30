@@ -271,7 +271,7 @@ export const useMigration = () => {
         throw error;
       }
     },
-    [migrationState, queryClient, createBackup],
+    [migrationState, queryClient, createBackup, executeMigrationLogic],
   );
 
   // Execute migration logic

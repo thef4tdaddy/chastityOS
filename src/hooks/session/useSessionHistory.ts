@@ -364,7 +364,14 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     };
 
     initializeHistory();
-  }, [userId, relationshipId]);
+  }, [
+    userId,
+    relationshipId,
+    loadSessions,
+    loadPrivacySettings,
+    calculateTrends,
+    calculateInsights,
+  ]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
 

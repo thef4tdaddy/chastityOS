@@ -300,7 +300,12 @@ export const usePresence = (options: UsePresenceOptions) => {
         clearTimeout(activityTimeoutRef.current);
       }
     };
-  }, [autoTrackActivity, presenceState.ownPresence.status, activityTimeout]);
+  }, [
+    autoTrackActivity,
+    presenceState.ownPresence.status,
+    activityTimeout,
+    setAway,
+  ]);
 
   // Handle presence updates
   useEffect(() => {
@@ -350,7 +355,7 @@ export const usePresence = (options: UsePresenceOptions) => {
       window.removeEventListener("offline", handleOffline);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [setOnline, setOffline, setAway]);
 
   // Initialize presence as online
   useEffect(() => {
@@ -360,7 +365,7 @@ export const usePresence = (options: UsePresenceOptions) => {
     return () => {
       setOffline("Disconnected");
     };
-  }, []);
+  }, [setOnline, setOffline]);
 
   // Computed values
   const computedValues = useMemo(() => {
