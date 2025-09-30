@@ -333,7 +333,7 @@ export interface SocialActivity {
   type: 'level_up' | 'badge_earned' | 'challenge_completed' | 'achievement_unlocked';
   description: string;
   timestamp: Date;
-  data?: Record<string, any>;
+  data?: Record<string, string | number | boolean | Date>;
 }
 
 // Game group

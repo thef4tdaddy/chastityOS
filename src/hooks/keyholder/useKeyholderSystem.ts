@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "../../contexts";
 import { useKeyholderRelationships } from "../useKeyholderRelationships";
 import { KeyholderRelationship, KeyholderPermissions } from "../../types/core";
+import { Task } from "../../types";
 import { InviteCode } from "../../services/database/KeyholderRelationshipDBService";
 import { serviceLogger } from "../../utils/logging";
 
@@ -67,10 +68,10 @@ export interface InviteOptions {
 }
 
 export interface BulkOperations {
-  startSessions: (relationshipIds: string[], options?: any) => Promise<void>;
+  startSessions: (relationshipIds: string[], options?: { duration?: number; message?: string }) => Promise<void>;
   stopSessions: (relationshipIds: string[], reason?: string) => Promise<void>;
   sendMessages: (relationshipIds: string[], message: string) => Promise<void>;
-  assignTasks: (relationshipIds: string[], task: any) => Promise<void>;
+  assignTasks: (relationshipIds: string[], task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
 }
 
 export interface KeyholderSystemActions {
@@ -428,7 +429,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
 
   const getBulkOperations = useCallback((): BulkOperations => {
     return {
-      startSessions: async (relationshipIds: string[], options?: any) => {
+      startSessions: async (relationshipIds: string[], options?: { duration?: number; message?: string }) => {
         logger.debug("Bulk starting sessions", { relationshipIds, options });
         // TODO: Implement bulk session start
       },
@@ -440,7 +441,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
         logger.debug("Bulk sending messages", { relationshipIds, message });
         // TODO: Implement bulk messaging
       },
-      assignTasks: async (relationshipIds: string[], task: any) => {
+      assignTasks: async (relationshipIds: string[], task: Omit<Task, 'id' | 'createdAt'>) => {
         logger.debug("Bulk assigning tasks", { relationshipIds, task });
         // TODO: Implement bulk task assignment
       },

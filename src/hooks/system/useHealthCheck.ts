@@ -128,7 +128,10 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
   const checkFirebaseHealth = async (): Promise<HealthStatus> => {
     try {
       // Simple connectivity test - try to access Firebase
-      if (typeof window !== "undefined" && (window as any).firebase) {
+      if (
+        typeof window !== "undefined" &&
+        (window as Window & { firebase?: unknown }).firebase
+      ) {
         return HealthStatus.HEALTHY;
       }
       return HealthStatus.WARNING;
@@ -203,9 +206,15 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
     try {
       // Memory usage
       if ("memory" in performance) {
-        const memory = (performance as any).memory;
-        metrics.memoryUsage =
-          (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
+        const memory = (
+          performance as Performance & {
+            memory?: { usedJSHeapSize: number; totalJSHeapSize: number };
+          }
+        ).memory;
+        if (memory) {
+          metrics.memoryUsage =
+            (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
+        }
       }
 
       // Storage usage

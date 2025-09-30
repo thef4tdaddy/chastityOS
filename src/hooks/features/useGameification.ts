@@ -580,7 +580,7 @@ export const useGameification = (userId: string) => {
     },
   ];
 
-  const createBadgeFromReward = (reward: any): Badge => ({
+  const createBadgeFromReward = (reward: ChallengeReward): Badge => ({
     id: `badge-${reward.value}`,
     name: reward.description,
     description: reward.description,

@@ -29,7 +29,7 @@ export enum PermissionScope {
 
 export interface PermissionCondition {
   type: "time" | "location" | "relationship" | "session_status";
-  value: any;
+  value: string | number | boolean | Date | string[];
   operator:
     | "equals"
     | "not_equals"
