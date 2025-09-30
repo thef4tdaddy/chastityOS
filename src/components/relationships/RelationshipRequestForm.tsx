@@ -12,6 +12,81 @@ interface RelationshipRequestFormProps {
   onCancel: () => void;
 }
 
+// Form Fields Components
+interface EmailFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const EmailField: React.FC<EmailFieldProps> = ({ value, onChange }) => (
+  <div>
+    <label
+      htmlFor="email"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Email Address
+    </label>
+    <input
+      type="email"
+      id="email"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+      placeholder="person@example.com"
+      required
+    />
+  </div>
+);
+
+interface RoleFieldProps {
+  value: "submissive" | "keyholder";
+  onChange: (value: "submissive" | "keyholder") => void;
+}
+
+const RoleField: React.FC<RoleFieldProps> = ({ value, onChange }) => (
+  <div>
+    <label
+      htmlFor="role"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Your Role in this Relationship
+    </label>
+    <select
+      id="role"
+      value={value}
+      onChange={(e) => onChange(e.target.value as "submissive" | "keyholder")}
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+    >
+      <option value="submissive">Submissive</option>
+      <option value="keyholder">Keyholder</option>
+    </select>
+  </div>
+);
+
+interface MessageFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const MessageField: React.FC<MessageFieldProps> = ({ value, onChange }) => (
+  <div>
+    <label
+      htmlFor="message"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Message (Optional)
+    </label>
+    <textarea
+      id="message"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={3}
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+      placeholder="Add a personal message..."
+    />
+  </div>
+);
+
 export const RelationshipRequestForm: React.FC<
   RelationshipRequestFormProps
 > = ({ isVisible, isLoading, onSubmit, onCancel }) => {
@@ -34,67 +109,18 @@ export const RelationshipRequestForm: React.FC<
         Send Relationship Request
       </h3>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="person@example.com"
-            required
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="role"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Your Role in this Relationship
-          </label>
-          <select
-            id="role"
-            value={formData.role}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                role: e.target.value as "submissive" | "keyholder",
-              })
-            }
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="submissive">Submissive</option>
-            <option value="keyholder">Keyholder</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Message (Optional)
-          </label>
-          <textarea
-            id="message"
-            value={formData.message}
-            onChange={(e) =>
-              setFormData({ ...formData, message: e.target.value })
-            }
-            rows={3}
-            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Add a personal message..."
-          />
-        </div>
+        <EmailField
+          value={formData.email}
+          onChange={(email) => setFormData({ ...formData, email })}
+        />
+        <RoleField
+          value={formData.role}
+          onChange={(role) => setFormData({ ...formData, role })}
+        />
+        <MessageField
+          value={formData.message}
+          onChange={(message) => setFormData({ ...formData, message })}
+        />
 
         <div className="flex gap-3">
           <button

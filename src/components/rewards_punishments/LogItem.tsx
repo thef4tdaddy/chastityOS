@@ -25,6 +25,32 @@ export interface RewardPunishmentLog {
   notes?: string;
 }
 
+// Helper functions
+const formatDuration = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+const getSourceIcon = (source: RewardPunishmentLog["source"]) => {
+  switch (source) {
+    case "task_completion":
+      return <FaTrophy className="text-nightly-aquamarine" />;
+    case "keyholder_action":
+      return <FaGavel className="text-nightly-lavender-floral" />;
+    case "rule_violation":
+      return <FaExclamationTriangle className="text-red-400" />;
+    case "milestone":
+      return <FaAward className="text-nightly-spring-green" />;
+    default:
+      return <FaClock />;
+  }
+};
+
 // Log Item Component
 interface LogItemProps {
   item: RewardPunishmentLog;
@@ -33,32 +59,6 @@ interface LogItemProps {
 export const LogItem: React.FC<LogItemProps> = ({ item }) => {
   const isReward = item.type === "reward";
   const timeChange = Math.abs(item.timeChangeSeconds);
-
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
-    }
-  };
-
-  const getSourceIcon = () => {
-    switch (item.source) {
-      case "task_completion":
-        return <FaTrophy className="text-nightly-aquamarine" />;
-      case "keyholder_action":
-        return <FaGavel className="text-nightly-lavender-floral" />;
-      case "rule_violation":
-        return <FaExclamationTriangle className="text-red-400" />;
-      case "milestone":
-        return <FaAward className="text-nightly-spring-green" />;
-      default:
-        return <FaClock />;
-    }
-  };
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
@@ -77,7 +77,7 @@ export const LogItem: React.FC<LogItemProps> = ({ item }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {getSourceIcon()}
+          {getSourceIcon(item.source)}
           <span
             className={`px-2 py-1 text-xs rounded ${
               isReward
