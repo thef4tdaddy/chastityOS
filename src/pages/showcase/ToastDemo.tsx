@@ -7,16 +7,16 @@ import { useToast } from "../../contexts";
 import { safeToastFunctions } from "../../utils/toastBridge";
 
 const ToastDemo: React.FC = () => {
-  const { 
-    showSuccess, 
-    showError, 
-    showWarning, 
-    showInfo, 
-    showUrgent, 
-    showHigh, 
-    showMedium, 
+  const {
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo,
+    showUrgent,
+    showHigh,
+    showMedium,
     showLow,
-    clearAllToasts 
+    clearAllToasts,
   } = useToast();
 
   const testBasicToasts = () => {
@@ -38,8 +38,8 @@ const ToastDemo: React.FC = () => {
       title: "Operation Complete",
       action: {
         label: "View Details",
-        onClick: () => alert("Action clicked!")
-      }
+        onClick: () => showInfo("Action clicked!"),
+      },
     });
 
     showError("Persistent error", {
@@ -47,14 +47,14 @@ const ToastDemo: React.FC = () => {
       duration: 0, // Persistent
       action: {
         label: "Report Bug",
-        onClick: () => alert("Bug reported!")
-      }
+        onClick: () => showSuccess("Bug reported!"),
+      },
     });
 
     showWarning("Custom positioned toast", {
       title: "Warning",
       position: "bottom-left",
-      duration: 3000
+      duration: 3000,
     });
   };
 
@@ -70,7 +70,9 @@ const ToastDemo: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">Toast System Demo</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Toast System Demo
+        </h1>
         <p className="text-gray-400">
           Test the new global toast utility with priority levels and animations
         </p>
@@ -79,7 +81,9 @@ const ToastDemo: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Toast Types */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-white mb-4">Basic Toast Types</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Basic Toast Types
+          </h2>
           <div className="space-y-3">
             <button
               onClick={testBasicToasts}
@@ -118,7 +122,9 @@ const ToastDemo: React.FC = () => {
 
         {/* Priority Levels */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-white mb-4">Priority Levels</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Priority Levels
+          </h2>
           <div className="space-y-3">
             <button
               onClick={testPriorityToasts}
@@ -157,7 +163,9 @@ const ToastDemo: React.FC = () => {
 
         {/* Advanced Features */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-white mb-4">Advanced Features</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Advanced Features
+          </h2>
           <div className="space-y-3">
             <button
               onClick={testAdvancedToasts}
@@ -166,14 +174,17 @@ const ToastDemo: React.FC = () => {
               Show Advanced Examples
             </button>
             <p className="text-sm text-gray-400">
-              Includes: Custom titles, action buttons, positioning, and persistent toasts
+              Includes: Custom titles, action buttons, positioning, and
+              persistent toasts
             </p>
           </div>
         </div>
 
         {/* Bridge Functions */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-white mb-4">Bridge Functions</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">
+            Bridge Functions
+          </h2>
           <div className="space-y-3">
             <button
               onClick={testBridgeFunctions}
@@ -203,13 +214,30 @@ const ToastDemo: React.FC = () => {
 
       {/* Accessibility Info */}
       <div className="bg-gray-900 p-6 rounded-lg">
-        <h2 className="text-xl font-semibold text-white mb-4">Accessibility Features</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">
+          Accessibility Features
+        </h2>
         <ul className="text-gray-300 space-y-2 text-sm">
-          <li>• <strong>Keyboard Navigation:</strong> Use Tab to navigate, Enter to activate actions, Escape to dismiss</li>
-          <li>• <strong>Screen Reader Support:</strong> aria-live regions for announcements</li>
-          <li>• <strong>Focus Management:</strong> Urgent toasts automatically receive focus</li>
-          <li>• <strong>Priority-Based Styling:</strong> Visual and semantic importance indicators</li>
-          <li>• <strong>Dismissible Controls:</strong> Clear close buttons with proper labels</li>
+          <li>
+            • <strong>Keyboard Navigation:</strong> Use Tab to navigate, Enter
+            to activate actions, Escape to dismiss
+          </li>
+          <li>
+            • <strong>Screen Reader Support:</strong> aria-live regions for
+            announcements
+          </li>
+          <li>
+            • <strong>Focus Management:</strong> Urgent toasts automatically
+            receive focus
+          </li>
+          <li>
+            • <strong>Priority-Based Styling:</strong> Visual and semantic
+            importance indicators
+          </li>
+          <li>
+            • <strong>Dismissible Controls:</strong> Clear close buttons with
+            proper labels
+          </li>
         </ul>
       </div>
     </div>
