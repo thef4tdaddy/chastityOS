@@ -89,7 +89,7 @@ export function useLogEventForm(
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, validate, resetForm]);
+  }, [validate, resetForm]);
 
   const saveDraft = useCallback(() => {
     localStorage.setItem("eventDraft", JSON.stringify(formData));

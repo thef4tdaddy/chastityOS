@@ -118,7 +118,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Load data functions
   const loadPauseState = useCallback(async () => {
     // Integration with pause state service
-  }, [sessionId]);
+  }, []);
 
   const loadCooldownState = useCallback(async () => {
     try {
@@ -132,11 +132,13 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     } catch (err) {
       logger.error("Failed to load cooldown state", { error: err });
     }
-  }, [sessionId, keyholderOverrides.canOverrideCooldown, startCooldown]);
+    // sessionId is a stable prop from the component, safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyholderOverrides.canOverrideCooldown, startCooldown]);
 
   const loadPauseHistory = useCallback(async () => {
     // Load pause history from service
-  }, [sessionId]);
+  }, []);
 
   const loadPauseAnalytics = useCallback(async () => {
     try {

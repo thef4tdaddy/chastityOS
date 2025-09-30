@@ -174,7 +174,10 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
 };
 
 // Custom hook for theme mutations
-const useThemeMutations = (availableThemes: Theme[], customThemes: CustomTheme[]) => {
+const useThemeMutations = (
+  availableThemes: Theme[],
+  customThemes: CustomTheme[],
+) => {
   const queryClient = useQueryClient();
 
   const setThemeMutation = useMutation({
@@ -231,7 +234,10 @@ const useThemeMutations = (availableThemes: Theme[], customThemes: CustomTheme[]
 };
 
 // Custom hook for preference mutations
-const usePreferenceMutations = (preferences: ThemePreferences, accessibilitySettings: AccessibilitySettings) => {
+const usePreferenceMutations = (
+  preferences: ThemePreferences,
+  accessibilitySettings: AccessibilitySettings,
+) => {
   const queryClient = useQueryClient();
 
   const updatePreferencesMutation = useMutation({
@@ -279,10 +285,7 @@ const applyThemeToDocument = useCallback((theme: Theme) => {
 
   // Apply typography
   root.style.setProperty("--font-family", theme.typography.fontFamily);
-  root.style.setProperty(
-    "--font-size-base",
-    `${theme.typography.baseSize}px`,
-  );
+  root.style.setProperty("--font-size-base", `${theme.typography.baseSize}px`);
   root.style.setProperty(
     "--line-height",
     theme.typography.lineHeight.toString(),
@@ -376,7 +379,7 @@ const useAutoThemeSwitch = (
     const interval = setInterval(checkSchedule, 60000);
 
     return () => clearInterval(interval);
-  }, [preferences, currentTheme.id]);
+  }, [preferences, currentTheme.id, setThemeMutation]);
 };
 
 // System theme sync effect
@@ -401,7 +404,7 @@ const useSystemThemeSync = (
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [preferences, currentTheme.id]);
+  }, [preferences, currentTheme.id, setThemeMutation]);
 };
 
 /**
@@ -411,7 +414,8 @@ export const useTheme = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Get theme data
-  const { customThemes, preferences, accessibilitySettings, currentTheme } = useThemeQueries([]);
+  const { customThemes, preferences, accessibilitySettings, currentTheme } =
+    useThemeQueries([]);
 
   // Combined available themes
   const availableThemes = useMemo(
@@ -426,8 +430,12 @@ export const useTheme = () => {
   );
 
   // Get mutations
-  const { setThemeMutation, createCustomThemeMutation } = useThemeMutations(availableThemes, customThemes);
-  const { updatePreferencesMutation, updateAccessibilityMutation } = usePreferenceMutations(preferences, accessibilitySettings);
+  const { setThemeMutation, createCustomThemeMutation } = useThemeMutations(
+    availableThemes,
+    customThemes,
+  );
+  const { updatePreferencesMutation, updateAccessibilityMutation } =
+    usePreferenceMutations(preferences, accessibilitySettings);
 
   // Auto switching effects
   useAutoThemeSwitch(preferences, currentTheme, setThemeMutation);
@@ -438,10 +446,7 @@ export const useTheme = () => {
     applyThemeToDocument(currentTheme);
     applyAccessibilitySettings(accessibilitySettings);
     setIsLoading(false);
-  }, [
-    currentTheme,
-    accessibilitySettings,
-  ]);
+  }, [currentTheme, accessibilitySettings]);
 
   // Hook return value
   const state: EnhancedThemeState = {

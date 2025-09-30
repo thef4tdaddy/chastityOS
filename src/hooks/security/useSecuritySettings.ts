@@ -143,7 +143,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave],
+    [userId, autoSave, securityState],
   );
 
   // Set session timeout
@@ -191,7 +191,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave],
+    [userId, autoSave, securityState],
   );
 
   // Add trusted device
@@ -239,7 +239,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave],
+    [userId, autoSave, securityState],
   );
 
   // Enable/disable security alerts
@@ -272,7 +272,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
         });
       }
     },
-    [userId, autoSave],
+    [userId, autoSave, securityState],
   );
 
   // Get security score
