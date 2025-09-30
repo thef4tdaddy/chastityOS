@@ -16,9 +16,7 @@ import {
   Subscription,
   UpdateCallback,
 } from "../../types/realtime";
-import {
-  calculateConnectionUptime,
-} from "./realtimeSyncHelpers";
+import { calculateConnectionUptime } from "./realtimeSyncHelpers";
 import {
   createWebSocketFunctions,
   createChannelFunctions,
@@ -60,10 +58,10 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
 
   // Refs for WebSocket and subscriptions
   const wsRef = useRef<WebSocket | null>(null);
-  const subscriptionsRef = useRef<Map<string, Subscription>>(new Map());
+  const subscriptionsRef = useRef<{ [key: string]: Subscription }>({});
   const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<any>(null);
+  const heartbeatTimeoutRef = useRef<any>(null);
   const connectionStartTimeRef = useRef<Date | null>(null);
 
   // Create WebSocket functions using helper
@@ -78,7 +76,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
     connectionStartTimeRef,
     maxReconnectAttempts,
     reconnectInterval,
-    heartbeatInterval
+    heartbeatInterval,
   );
 
   const { connect, disconnect, sendMessage } = webSocketFunctions;
@@ -88,7 +86,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const { joinChannel, leaveChannel, createChannel } = channelFunctions;
 
   // Create subscription functions
-  const subscriptionFunctions = createRealtimeSubscriptionFunctions(subscriptionsRef);
+  const subscriptionFunctions =
+    createRealtimeSubscriptionFunctions(subscriptionsRef);
   const { subscribeToUpdates, publishUpdate } = subscriptionFunctions;
 
   // Create relationship sync functions

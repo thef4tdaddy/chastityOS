@@ -1,7 +1,7 @@
 /**
  * Presence operation helper functions
  */
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   PresenceState,
   UserPresence,
@@ -144,13 +144,11 @@ export const createSubscriptionFunctions = (
 
       // Fetch initial presence data
       fetchUserPresences(userIds).then((presences) => {
-        const presenceMap = presences.reduce(
-          (acc, presence) => {
-            acc[presence.userId] = presence;
-            return acc;
-          },
-          {} as Record<string, UserPresence>,
-        );
+        const presenceMap: Record<string, UserPresence> = {};
+        for (let i = 0; i < presences.length; i++) {
+          const presence = presences[i];
+          presenceMap[presence.userId] = presence;
+        }
 
         setPresenceState((prev) => ({
           ...prev,
@@ -193,9 +191,14 @@ export const createQueryFunctions = (presenceState: PresenceState) => {
 
   const getMultipleUserPresence = useCallback(
     (userIds: string[]): UserPresence[] => {
-      return userIds
-        .map((id) => presenceState.userPresences[id])
-        .filter(Boolean);
+      const result: UserPresence[] = [];
+      for (let i = 0; i < userIds.length; i++) {
+        const presence = presenceState.userPresences[userIds[i]];
+        if (presence) {
+          result.push(presence);
+        }
+      }
+      return result;
     },
     [presenceState.userPresences],
   );
@@ -221,17 +224,21 @@ export const createQueryFunctions = (presenceState: PresenceState) => {
 
   const getOnlineCount = useCallback(
     (userIds: string[]): number => {
-      return userIds.filter((id) => {
-        const presence = presenceState.userPresences[id];
-        return (
+      let count = 0;
+      for (let i = 0; i < userIds.length; i++) {
+        const presence = presenceState.userPresences[userIds[i]];
+        if (
           presence &&
           [
             PresenceStatus.ONLINE,
             PresenceStatus.BUSY,
             PresenceStatus.IN_SESSION,
-          ].includes(presence.status)
-        );
-      }).length;
+          ].indexOf(presence.status) !== -1
+        ) {
+          count++;
+        }
+      }
+      return count;
     },
     [presenceState.userPresences],
   );
@@ -252,17 +259,30 @@ export const calculatePresenceComputedValues = (
   activityTimeout: number,
 ) => {
   const totalUsers = Object.keys(userPresences).length;
-  const onlineUsers = Object.values(userPresences).filter((p) =>
-    [
-      PresenceStatus.ONLINE,
-      PresenceStatus.BUSY,
-      PresenceStatus.IN_SESSION,
-    ].includes(p.status),
-  ).length;
 
-  const inSessionUsers = Object.values(userPresences).filter(
-    (p) => p.status === PresenceStatus.IN_SESSION || p.isInChastitySession,
-  ).length;
+  let onlineUsers = 0;
+  let inSessionUsers = 0;
+
+  const userPresenceValues = Object.keys(userPresences).map(
+    (key) => userPresences[key],
+  );
+
+  for (let i = 0; i < userPresenceValues.length; i++) {
+    const p = userPresenceValues[i];
+    if (
+      [
+        PresenceStatus.ONLINE,
+        PresenceStatus.BUSY,
+        PresenceStatus.IN_SESSION,
+      ].indexOf(p.status) !== -1
+    ) {
+      onlineUsers++;
+    }
+
+    if (p.status === PresenceStatus.IN_SESSION || p.isInChastitySession) {
+      inSessionUsers++;
+    }
+  }
 
   const isActive = Date.now() - lastActivity.getTime() < activityTimeout;
 

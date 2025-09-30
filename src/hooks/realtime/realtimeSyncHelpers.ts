@@ -15,7 +15,7 @@ export function createWebSocketUrl(userId: string): string {
     process.env.NODE_ENV === "development"
       ? "ws://localhost:8080/ws"
       : "wss://api.chastityos.com/ws";
-  
+
   return `${wsUrl}?userId=${userId}`;
 }
 
@@ -23,7 +23,7 @@ export function createWebSocketUrl(userId: string): string {
 export function createSyncChannel(
   type: ChannelType,
   userId: string,
-  participants: string[]
+  participants: string[],
 ): SyncChannel {
   return {
     id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -38,8 +38,8 @@ export function createSyncChannel(
 // Helper function to send WebSocket message
 export function sendWebSocketMessage(
   ws: WebSocket | null,
-  message: any,
-  updateMessagesSent: () => void
+  message: { [key: string]: any },
+  updateMessagesSent: () => void,
 ): boolean {
   if (ws?.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(message));
@@ -51,29 +51,29 @@ export function sendWebSocketMessage(
 
 // Helper function to update sync metrics
 export function updateSyncMetrics(
-  prevMetrics: any,
-  type: 'success' | 'error' | 'messageReceived' | 'messageSent'
-): any {
+  prevMetrics: { [key: string]: any },
+  type: "success" | "error" | "messageReceived" | "messageSent",
+): { [key: string]: any } {
   const now = new Date();
-  
+
   switch (type) {
-    case 'success':
+    case "success":
       return {
         ...prevMetrics,
         lastSuccessfulSync: now,
       };
-    case 'error':
+    case "error":
       return {
         ...prevMetrics,
         syncErrors: prevMetrics.syncErrors + 1,
       };
-    case 'messageReceived':
+    case "messageReceived":
       return {
         ...prevMetrics,
         messagesReceived: prevMetrics.messagesReceived + 1,
         lastSuccessfulSync: now,
       };
-    case 'messageSent':
+    case "messageSent":
       return {
         ...prevMetrics,
         messagesSent: prevMetrics.messagesSent + 1,
@@ -84,7 +84,9 @@ export function updateSyncMetrics(
 }
 
 // Helper function to calculate connection uptime
-export function calculateConnectionUptime(connectionStartTime: Date | null): number {
+export function calculateConnectionUptime(
+  connectionStartTime: Date | null,
+): number {
   if (!connectionStartTime) return 0;
   return Date.now() - connectionStartTime.getTime();
 }
@@ -93,7 +95,7 @@ export function calculateConnectionUptime(connectionStartTime: Date | null): num
 export function shouldAttemptReconnection(
   event: CloseEvent,
   reconnectAttempts: number,
-  maxReconnectAttempts: number
+  maxReconnectAttempts: number,
 ): boolean {
   return event.code !== 1000 && reconnectAttempts < maxReconnectAttempts;
 }
@@ -101,7 +103,7 @@ export function shouldAttemptReconnection(
 // Helper function to create subscription
 export function createSubscription(
   dataType: string,
-  callback: (update: RealtimeUpdate) => void
+  callback: (update: RealtimeUpdate) => void,
 ): Subscription {
   return {
     id: `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -114,10 +116,12 @@ export function createSubscription(
 
 // Helper function to notify subscribers
 export function notifySubscribers(
-  subscriptions: Map<string, Subscription>,
-  update: RealtimeUpdate
+  subscriptions: { [key: string]: Subscription },
+  update: RealtimeUpdate,
 ): void {
-  subscriptions.forEach((subscription) => {
+  const keys = Object.keys(subscriptions);
+  for (let i = 0; i < keys.length; i++) {
+    const subscription = subscriptions[keys[i]];
     if (subscription.dataType === update.type && subscription.isActive) {
       try {
         subscription.callback(update);
@@ -125,5 +129,5 @@ export function notifySubscribers(
         // Error in subscription callback
       }
     }
-  });
+  }
 }

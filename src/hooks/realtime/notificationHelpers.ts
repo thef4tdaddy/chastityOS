@@ -6,6 +6,7 @@ import {
   NotificationChannelType,
   NotificationPriority,
   QuietHours,
+  NotificationPreferences,
 } from "../../types/realtime";
 
 // Helper function to check if current time is in quiet hours
@@ -17,7 +18,15 @@ export function isInQuietHours(quietHours: QuietHours): boolean {
   const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
 
   // Check if current day is in quiet hours days
-  if (!quietHours.days.includes(currentDay)) {
+  let isDayIncluded = false;
+  for (let i = 0; i < quietHours.days.length; i++) {
+    if (quietHours.days[i] === currentDay) {
+      isDayIncluded = true;
+      break;
+    }
+  }
+
+  if (!isDayIncluded) {
     return false;
   }
 
@@ -52,7 +61,12 @@ export async function deliverNotification(
     }
   });
 
-  await Promise.allSettled(deliveryPromises);
+  // Use Promise.all instead of Promise.allSettled for compatibility
+  try {
+    await Promise.all(deliveryPromises);
+  } catch (error) {
+    // Handle delivery errors
+  }
 }
 
 // Helper function to deliver push notification
@@ -87,7 +101,7 @@ export async function deliverSMSNotification(
 // Backend API helper functions
 export async function fetchNotificationPreferences(
   userId: string,
-): Promise<any> {
+): Promise<Partial<NotificationPreferences>> {
   // In real implementation, fetch from backend
   return {};
 }
@@ -100,7 +114,9 @@ export async function fetchRecentNotifications(
   return [];
 }
 
-export async function saveNotification(notification: Notification): Promise<void> {
+export async function saveNotification(
+  notification: Notification,
+): Promise<void> {
   // In real implementation, save to backend
 }
 
@@ -118,13 +134,15 @@ export async function updateMultipleNotificationStatus(
   // In real implementation, bulk update in backend
 }
 
-export async function deleteNotification(notificationId: string): Promise<void> {
+export async function deleteNotification(
+  notificationId: string,
+): Promise<void> {
   // In real implementation, delete from backend
 }
 
 export async function saveNotificationPreferences(
   userId: string,
-  preferences: any,
+  preferences: NotificationPreferences,
 ): Promise<void> {
   // In real implementation, save to backend
 }
