@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { SessionLoader } from "../components/tracker/SessionLoader";
 import { SessionRecoveryModal } from "../components/tracker/SessionRecoveryModal";
@@ -15,6 +15,7 @@ import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
+import type { User } from "../types/auth";
 
 // Helper function to handle session restoration
 const createSessionRestorationHandler =

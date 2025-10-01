@@ -1,7 +1,7 @@
 /**
  * Realtime sync operation helper functions
  */
-import React, { useCallback } from "react";
+import React from "react";
 import {
   RealtimeSyncState,
   ConnectionStatus,
@@ -38,7 +38,7 @@ export const createWebSocketFunctions = (
   reconnectInterval: number,
   heartbeatInterval: number,
 ) => {
-  const connect = useCallback(() => {
+  const connect = () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
     }
@@ -110,14 +110,9 @@ export const createWebSocketFunctions = (
         connectionStatus: ConnectionStatus.ERROR,
       }));
     }
-    // Refs (wsRef, reconnectAttemptsRef, connectionStartTimeRef, heartbeatTimeoutRef, reconnectTimeoutRef)
-    // are stable and don't trigger re-renders. Functions (attemptReconnect, handleMessage, startHeartbeat,
-    // stopHeartbeat) are defined later and create circular dependencies. All should be wrapped in useCallback
-    // with proper dependencies to avoid stale closures.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, maxReconnectAttempts]);
+  };
 
-  const disconnect = useCallback(() => {
+  const disconnect = () => {
     if (wsRef.current) {
       wsRef.current.close(1000, "Intentional disconnect");
       wsRef.current = null;
@@ -129,11 +124,9 @@ export const createWebSocketFunctions = (
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stopHeartbeat]);
+  };
 
-  const attemptReconnect = useCallback(() => {
+  const attemptReconnect = () => {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
       return;
     }
@@ -148,11 +141,9 @@ export const createWebSocketFunctions = (
     reconnectTimeoutRef.current = setTimeout(() => {
       connect();
     }, reconnectInterval);
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connect, maxReconnectAttempts, reconnectInterval, setSyncState]);
+  };
 
-  const startHeartbeat = useCallback(() => {
+  const startHeartbeat = () => {
     const sendHeartbeat = () => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         sendMessage({ type: "heartbeat", timestamp: new Date().toISOString() });
@@ -164,124 +155,95 @@ export const createWebSocketFunctions = (
     };
 
     heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, heartbeatInterval);
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [heartbeatInterval, sendMessage]);
+  };
 
-  const stopHeartbeat = useCallback(() => {
+  const stopHeartbeat = () => {
     if (heartbeatTimeoutRef.current) {
       clearTimeout(heartbeatTimeoutRef.current);
       heartbeatTimeoutRef.current = null;
     }
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
-  const sendMessage = useCallback(
-
-    (message: RealtimeUpdate | Record<string, unknown>) => {
-      const success = sendWebSocketMessage(wsRef.current, message, () => {
-        setSyncState((prev) => ({
-          ...prev,
-          syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
-        }));
-      });
-    },
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setSyncState],
-  );
-
-  const handleMessage = useCallback(
-    (message: Record<string, unknown>) => {
+  const sendMessage = (message: RealtimeUpdate | Record<string, unknown>) => {
+    const success = sendWebSocketMessage(wsRef.current, message, () => {
       setSyncState((prev) => ({
         ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
       }));
+    });
+  };
 
-      switch (message.type) {
-        case "channel_joined":
-          handleChannelJoined(message);
-          break;
-        case "channel_left":
-          handleChannelLeft(message);
-          break;
-        case "realtime_update":
-          handleRealtimeUpdate(message);
-          break;
-        case "heartbeat_ack":
-          // Heartbeat acknowledged
-          break;
-        default:
-        // Unknown message type
-      }
-    },
-    [
-      setSyncState,
-      handleChannelJoined,
-      handleChannelLeft,
-      handleRealtimeUpdate,
-    ],
-  );
+  const handleMessage = (message: Record<string, unknown>) => {
+    setSyncState((prev) => ({
+      ...prev,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+    }));
 
-  const handleChannelJoined = useCallback(
-    (message: { channel: SyncChannel }) => {
-      const channel: SyncChannel = message.channel;
+    switch (message.type) {
+      case "channel_joined":
+        handleChannelJoined(message);
+        break;
+      case "channel_left":
+        handleChannelLeft(message);
+        break;
+      case "realtime_update":
+        handleRealtimeUpdate(message);
+        break;
+      case "heartbeat_ack":
+        // Heartbeat acknowledged
+        break;
+      default:
+      // Unknown message type
+    }
+  };
 
-      setSyncState((prev) => ({
-        ...prev,
-        activeChannels: [
-          ...prev.activeChannels.filter((c) => c.id !== channel.id),
-          channel,
-        ],
-      }));
-    },
-    [setSyncState],
-  );
+  const handleChannelJoined = (message: { channel: SyncChannel }) => {
+    const channel: SyncChannel = message.channel;
 
-  const handleChannelLeft = useCallback(
-    (message: { channelId: string }) => {
-      const channelId = message.channelId;
+    setSyncState((prev) => ({
+      ...prev,
+      activeChannels: [
+        ...prev.activeChannels.filter((c) => c.id !== channel.id),
+        channel,
+      ],
+    }));
+  };
 
-      setSyncState((prev) => ({
-        ...prev,
-        activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
-      }));
-    },
-    [setSyncState],
-  );
+  const handleChannelLeft = (message: { channelId: string }) => {
+    const channelId = message.channelId;
 
-  const handleRealtimeUpdate = useCallback(
-    (message: { update: RealtimeUpdate }) => {
-      const update: RealtimeUpdate = message.update;
+    setSyncState((prev) => ({
+      ...prev,
+      activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
+    }));
+  };
 
-      // Update local data
-      setSyncState((prev) => ({
-        ...prev,
-        realtimeData: {
-          ...prev.realtimeData,
-          [update.type]: update.data,
-        },
-      }));
+  const handleRealtimeUpdate = (message: { update: RealtimeUpdate }) => {
+    const update: RealtimeUpdate = message.update;
 
-      // Notify subscribers - using object instead of Map
-      const subscriptionKeys = Object.keys(subscriptionsRef.current);
-      for (let i = 0; i < subscriptionKeys.length; i++) {
-        const key = subscriptionKeys[i];
-        const subscription = subscriptionsRef.current[key];
-        if (subscription.dataType === update.type && subscription.isActive) {
-          try {
-            subscription.callback(update);
-          } catch {
-            // Error in subscription callback
-          }
+    // Update local data
+    setSyncState((prev) => ({
+      ...prev,
+      realtimeData: {
+        ...prev.realtimeData,
+        [update.type]: update.data,
+      },
+    }));
+
+    // Notify subscribers - using object instead of Map
+    const subscriptionKeys = Object.keys(subscriptionsRef.current);
+    for (let i = 0; i < subscriptionKeys.length; i++) {
+      const key = subscriptionKeys[i];
+      const subscription = subscriptionsRef.current[key];
+      if (subscription.dataType === update.type && subscription.isActive) {
+        try {
+          subscription.callback(update);
+        } catch {
+          // Error in subscription callback
         }
       }
-    },
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setSyncState],
-  );
+    }
+  };
 
   return {
     connect,
@@ -297,42 +259,36 @@ export const createChannelFunctions = (
   userId: string,
   sendMessage: (message: RealtimeUpdate | Record<string, unknown>) => void,
 ) => {
-  const joinChannel = useCallback(
-    async (channelId: string): Promise<void> => {
-      sendMessage({
-        type: "join_channel",
-        channelId,
-        userId,
-      });
-    },
-    [userId, sendMessage],
-  );
+  const joinChannel = async (channelId: string): Promise<void> => {
+    sendMessage({
+      type: "join_channel",
+      channelId,
+      userId,
+    });
+  };
 
-  const leaveChannel = useCallback(
-    async (channelId: string): Promise<void> => {
-      sendMessage({
-        type: "leave_channel",
-        channelId,
-        userId,
-      });
-    },
-    [userId, sendMessage],
-  );
+  const leaveChannel = async (channelId: string): Promise<void> => {
+    sendMessage({
+      type: "leave_channel",
+      channelId,
+      userId,
+    });
+  };
 
-  const createChannel = useCallback(
-    async (type: ChannelType, participants: string[]): Promise<SyncChannel> => {
-      const channel = createSyncChannel(type, userId, participants);
+  const createChannel = async (
+    type: ChannelType,
+    participants: string[],
+  ): Promise<SyncChannel> => {
+    const channel = createSyncChannel(type, userId, participants);
 
-      sendMessage({
-        type: "create_channel",
-        channel,
-        userId,
-      });
+    sendMessage({
+      type: "create_channel",
+      channel,
+      userId,
+    });
 
-      return channel;
-    },
-    [userId, sendMessage],
-  );
+    return channel;
+  };
 
   return {
     joinChannel,
@@ -345,37 +301,29 @@ export const createChannelFunctions = (
 export const createRealtimeSubscriptionFunctions = (
   subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
 ) => {
-  const subscribeToUpdates = useCallback(
-    (
-      dataType: string,
-      callback: (update: RealtimeUpdate) => void,
-    ): Subscription => {
-      const subscription = createSubscription(dataType, callback);
-      subscriptionsRef.current[subscription.id] = subscription;
+  const subscribeToUpdates = (
+    dataType: string,
+    callback: (update: RealtimeUpdate) => void,
+  ): Subscription => {
+    const subscription = createSubscription(dataType, callback);
+    subscriptionsRef.current[subscription.id] = subscription;
 
-      // Return unsubscribe function
-      return {
-        ...subscription,
-        unsubscribe: () => {
-          const sub = subscriptionsRef.current[subscription.id];
-          if (sub) {
-            sub.isActive = false;
-            delete subscriptionsRef.current[subscription.id];
-          }
-        },
-      } as Subscription & { unsubscribe: () => void };
-    },
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+    // Return unsubscribe function
+    return {
+      ...subscription,
+      unsubscribe: () => {
+        const sub = subscriptionsRef.current[subscription.id];
+        if (sub) {
+          sub.isActive = false;
+          delete subscriptionsRef.current[subscription.id];
+        }
+      },
+    } as Subscription & { unsubscribe: () => void };
+  };
 
-  const publishUpdate = useCallback(
-    async (_update: RealtimeUpdate): Promise<void> => {
-      // Implementation would send the update via WebSocket
-    },
-    [],
-  );
+  const publishUpdate = async (_update: RealtimeUpdate): Promise<void> => {
+    // Implementation would send the update via WebSocket
+  };
 
   return {
     subscribeToUpdates,
@@ -387,21 +335,15 @@ export const createRealtimeSubscriptionFunctions = (
 export const createRelationshipSyncFunctions = (
   joinChannel: (channelId: string) => Promise<void>,
 ) => {
-  const syncWithKeyholder = useCallback(
-    async (relationshipId: string): Promise<void> => {
-      const channelId = `relationship_${relationshipId}`;
-      await joinChannel(channelId);
-    },
-    [joinChannel],
-  );
+  const syncWithKeyholder = async (relationshipId: string): Promise<void> => {
+    const channelId = `relationship_${relationshipId}`;
+    await joinChannel(channelId);
+  };
 
-  const syncSessionData = useCallback(
-    async (sessionId: string): Promise<void> => {
-      const channelId = `session_${sessionId}`;
-      await joinChannel(channelId);
-    },
-    [joinChannel],
-  );
+  const syncSessionData = async (sessionId: string): Promise<void> => {
+    const channelId = `session_${sessionId}`;
+    await joinChannel(channelId);
+  };
 
   return {
     syncWithKeyholder,

@@ -138,11 +138,11 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
   }, []);
 
   const previewSettings = useCallback((settings: Partial<DisplaySettings>) => {
-    setPreviewedSettings(settings);
+    _setPreviewedSettings(settings);
   }, []);
 
   const clearPreview = useCallback(() => {
-    setPreviewedSettings(null);
+    _setPreviewedSettings(null);
   }, []);
 
   useState(() => {
