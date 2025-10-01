@@ -8,6 +8,7 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
+import { MigrationStorageService } from "../../services/migrationStorage";
 
 // Migration status
 export enum MigrationStatus {
@@ -52,12 +53,6 @@ export interface MigrationResult {
   duration: number;
 }
 
-// Storage keys
-const STORAGE_KEYS = {
-  MIGRATION_STATE: "chastity-migration-state",
-  MIGRATION_BACKUPS: "chastity-migration-backups",
-};
-
 // Sample migrations (in a real app, these would be defined elsewhere)
 const AVAILABLE_MIGRATIONS: Omit<
   Migration,
@@ -97,9 +92,9 @@ export const useMigration = () => {
   const { data: migrationState } = useQuery({
     queryKey: ["migration", "state"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.MIGRATION_STATE);
+      const stored = MigrationStorageService.getMigrationState();
       if (stored) {
-        return JSON.parse(stored);
+        return stored;
       }
 
       // Initialize migration state
@@ -148,15 +143,11 @@ export const useMigration = () => {
           },
         };
 
-        const existingBackups = JSON.parse(
-          localStorage.getItem(STORAGE_KEYS.MIGRATION_BACKUPS) || "[]",
-        );
+        const existingBackups =
+          MigrationStorageService.getMigrationBackups<typeof backup>();
 
         const updatedBackups = [...existingBackups, backup];
-        localStorage.setItem(
-          STORAGE_KEYS.MIGRATION_BACKUPS,
-          JSON.stringify(updatedBackups),
-        );
+        MigrationStorageService.setMigrationBackups(updatedBackups);
 
         logger.info("Migration backup created", {
           migrationId,
@@ -181,9 +172,9 @@ export const useMigration = () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Convert old theme settings
-      const oldTheme = localStorage.getItem("theme");
+      const oldTheme = MigrationStorageService.getLegacyItem("theme");
       if (oldTheme) {
-        localStorage.setItem(
+        MigrationStorageService.setLegacyItem(
           "chastity-theme-current",
           JSON.stringify(
             oldTheme === "dark" ? "default-dark" : "default-light",
@@ -204,7 +195,8 @@ export const useMigration = () => {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Convert legacy goals (simplified)
-      const legacyGoals = localStorage.getItem("personal-goals");
+      const legacyGoals =
+        MigrationStorageService.getLegacyItem("personal-goals");
       if (legacyGoals) {
         // Transform format here
         onProgress(70);
@@ -267,10 +259,7 @@ export const useMigration = () => {
       );
 
       const newState = { ...migrationState, migrations: updatedMigrations };
-      localStorage.setItem(
-        STORAGE_KEYS.MIGRATION_STATE,
-        JSON.stringify(newState),
-      );
+      MigrationStorageService.setMigrationState(newState);
       queryClient.setQueryData(["migration", "state"], newState);
 
       try {
@@ -290,10 +279,7 @@ export const useMigration = () => {
             ...migrationState,
             migrations: progressUpdatedMigrations,
           };
-          localStorage.setItem(
-            STORAGE_KEYS.MIGRATION_STATE,
-            JSON.stringify(progressState),
-          );
+          MigrationStorageService.setMigrationState(progressState);
           queryClient.setQueryData(["migration", "state"], progressState);
         });
 
@@ -314,10 +300,7 @@ export const useMigration = () => {
           ...migrationState,
           migrations: completedMigrations,
         };
-        localStorage.setItem(
-          STORAGE_KEYS.MIGRATION_STATE,
-          JSON.stringify(completedState),
-        );
+        MigrationStorageService.setMigrationState(completedState);
         queryClient.setQueryData(["migration", "state"], completedState);
 
         logger.info("Migration completed", { migrationId: migration.id });
@@ -336,10 +319,7 @@ export const useMigration = () => {
         );
 
         const failedState = { ...migrationState, migrations: failedMigrations };
-        localStorage.setItem(
-          STORAGE_KEYS.MIGRATION_STATE,
-          JSON.stringify(failedState),
-        );
+        MigrationStorageService.setMigrationState(failedState);
         queryClient.setQueryData(["migration", "state"], failedState);
 
         logger.error("Migration failed", { migrationId: migration.id, error });
@@ -402,18 +382,17 @@ export const useMigration = () => {
       logger.info("Rolling back migration", { migrationId });
 
       // Find and restore backup
-      const backups = JSON.parse(
-        localStorage.getItem(STORAGE_KEYS.MIGRATION_BACKUPS) || "[]",
-      );
-      const backup = backups.find(
-        (b: { migrationId: string }) => b.migrationId === migrationId,
-      );
+      const backups = MigrationStorageService.getMigrationBackups<{
+        migrationId: string;
+        data: { localStorage: Record<string, string> };
+      }>();
+      const backup = backups.find((b) => b.migrationId === migrationId);
 
       if (!backup) throw new Error("Backup not found");
 
       // Restore data from backup
       Object.entries(backup.data.localStorage).forEach(([key, value]) => {
-        localStorage.setItem(key, value as string);
+        MigrationStorageService.setLegacyItem(key, value);
       });
 
       // Update migration status
@@ -428,10 +407,7 @@ export const useMigration = () => {
         ...migrationState,
         migrations: rolledBackMigrations,
       };
-      localStorage.setItem(
-        STORAGE_KEYS.MIGRATION_STATE,
-        JSON.stringify(rolledBackState),
-      );
+      MigrationStorageService.setMigrationState(rolledBackState);
       queryClient.setQueryData(["migration", "state"], rolledBackState);
 
       logger.info("Migration rolled back", { migrationId });
