@@ -3,6 +3,7 @@
  * Handles CRUD operations for goals
  */
 import { useCallback } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { serviceLogger } from "../../utils/logging";
 import type {
   SessionGoal,
@@ -14,9 +15,9 @@ import type {
 const logger = serviceLogger("useGoalMutations");
 
 interface UseGoalMutationsProps {
-  setActiveGoals: React.Dispatch<React.SetStateAction<SessionGoal[]>>;
-  setProgress: React.Dispatch<React.SetStateAction<GoalProgress[]>>;
-  setGoalHistory: React.Dispatch<React.SetStateAction<GoalHistoryEntry[]>>;
+  setActiveGoals: Dispatch<SetStateAction<SessionGoal[]>>;
+  setProgress: Dispatch<SetStateAction<GoalProgress[]>>;
+  setGoalHistory: Dispatch<SetStateAction<GoalHistoryEntry[]>>;
   userId: string;
 }
 

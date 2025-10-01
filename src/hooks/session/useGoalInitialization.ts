@@ -64,16 +64,9 @@ export const useGoalInitialization = ({
     };
 
     initializeGoals();
-  }, [
-    userId,
-    relationshipId,
-    loadActiveGoals,
-    loadGoalTemplates,
-    loadProgress,
-    loadKeyholderGoals,
-    loadGoalHistory,
-    loadAchievements,
-  ]);
+    // Store actions are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, relationshipId]);
 
   useEffect(() => {
     const updateProgressInterval = setInterval(() => {
@@ -81,7 +74,9 @@ export const useGoalInitialization = ({
     }, 30000);
 
     return () => clearInterval(updateProgressInterval);
-  }, [updateActiveGoalProgress]);
+    // updateActiveGoalProgress is a stable store action
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     isLoading,
