@@ -225,7 +225,7 @@ const useMockData = (user: User | null) => {
 
 const TrackerPage: React.FC = () => {
   // Authentication state
-  const { data: user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
   // Session persistence state
   const {

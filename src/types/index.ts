@@ -4,6 +4,7 @@ import { Timestamp, FieldValue } from 'firebase/firestore';
 export interface User {
   uid: string;
   email?: string | null;
+  displayName?: string | null;
   isAnonymous: boolean;
 }
 
