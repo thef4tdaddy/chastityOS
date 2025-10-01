@@ -53,7 +53,6 @@ export function useAccountSettings(): UseAccountSettingsReturn {
       ),
     [],
   );
-
   const updatePassword = useCallback(
     async (oldPassword: string, newPassword: string): Promise<void> =>
       withErrorHandling(
@@ -64,7 +63,6 @@ export function useAccountSettings(): UseAccountSettingsReturn {
       ),
     [],
   );
-
   const enable2FA = useCallback(
     async (): Promise<string> =>
       withErrorHandling(
@@ -75,7 +73,6 @@ export function useAccountSettings(): UseAccountSettingsReturn {
       ),
     [],
   );
-
   const disable2FA = useCallback(
     async (code: string): Promise<void> =>
       withErrorHandling(
@@ -97,9 +94,7 @@ export function useAccountSettings(): UseAccountSettingsReturn {
       ),
     [],
   );
-
   useState(() => setTimeout(() => setIsLoading(false), 100));
-
   return {
     account,
     isLoading,

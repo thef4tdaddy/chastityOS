@@ -48,7 +48,6 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
   const [error, setError] = useState<Error | null>(null);
   const [_previewedSettings, _setPreviewedSettings] =
     useState<Partial<DisplaySettings> | null>(null);
-
   const updateTheme = useCallback(
     async (theme: "light" | "dark" | "auto"): Promise<void> =>
       withErrorHandling(
@@ -59,7 +58,6 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
       ),
     [],
   );
-
   const updateLanguage = useCallback(
     async (language: string): Promise<void> =>
       withErrorHandling(
@@ -70,7 +68,6 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
       ),
     [],
   );
-
   const updateDateFormat = useCallback(
     async (dateFormat: string): Promise<void> =>
       withErrorHandling(
@@ -81,7 +78,6 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
       ),
     [],
   );
-
   const updateTimeFormat = useCallback(
     async (timeFormat: "12h" | "24h"): Promise<void> =>
       withErrorHandling(
@@ -92,7 +88,6 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
       ),
     [],
   );
-
   const resetToDefaults = useCallback(
     async (): Promise<void> =>
       withErrorHandling(
@@ -103,16 +98,12 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
       ),
     [],
   );
-
   const previewSettings = useCallback(
     (settings: Partial<DisplaySettings>) => _setPreviewedSettings(settings),
     [],
   );
-
   const clearPreview = useCallback(() => _setPreviewedSettings(null), []);
-
   useState(() => setTimeout(() => setIsLoading(false), 100));
-
   return {
     displaySettings,
     isLoading,
