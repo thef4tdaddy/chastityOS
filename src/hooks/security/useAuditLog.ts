@@ -36,7 +36,11 @@ import {
   generatePDF,
   calculateSecurityScore,
   generateSecurityRecommendations,
-} from "./audit-utils";
+  applyTextSearch,
+  applySearchFilters,
+  applySorting,
+  applyPagination,
+} from "../../utils/security/audit-utils";
 
 interface UseAuditLogOptions {
   userId: string;
@@ -120,106 +124,6 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
   };
 };
 
-// Search helper functions
-function applyTextSearch(entries: AuditEntry[], query?: string): AuditEntry[] {
-  if (!query) return entries;
-
-  const searchTerm = query.toLowerCase();
-  return entries.filter(
-    (entry) =>
-      entry.details.description.toLowerCase().includes(searchTerm) ||
-      entry.action.toLowerCase().includes(searchTerm),
-  );
-}
-
-function applySearchFilters(
-  entries: AuditEntry[],
-  filters?: AuditFilter,
-): AuditEntry[] {
-  if (!filters) return entries;
-
-  let results = entries;
-
-  if (filters.startDate && filters.endDate) {
-    results = results.filter(
-      (entry) =>
-        entry.timestamp >= filters.startDate! &&
-        entry.timestamp <= filters.endDate!,
-    );
-  }
-
-  if (filters.userId) {
-    results = results.filter((entry) => entry.userId === filters.userId);
-  }
-
-  if (filters.actions && filters.actions.length > 0) {
-    results = results.filter((entry) =>
-      filters.actions!.includes(entry.action),
-    );
-  }
-
-  if (filters.categories && filters.categories.length > 0) {
-    results = results.filter((entry) =>
-      filters.categories!.includes(entry.category),
-    );
-  }
-
-  if (filters.severity) {
-    results = results.filter((entry) => entry.severity === filters.severity);
-  }
-
-  if (filters.outcome) {
-    results = results.filter((entry) => entry.outcome === filters.outcome);
-  }
-
-  return results;
-}
-
-function applySorting(
-  entries: AuditEntry[],
-  sortBy?: string,
-  sortOrder?: "asc" | "desc",
-): AuditEntry[] {
-  if (!sortBy) return entries;
-
-  return [...entries].sort((a, b) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case "timestamp":
-        comparison = a.timestamp.getTime() - b.timestamp.getTime();
-        break;
-      case "severity": {
-        const severityOrder: Record<string, number> = {
-          low: 0,
-          medium: 1,
-          high: 2,
-          critical: 3,
-        };
-        comparison = severityOrder[a.severity] - severityOrder[b.severity];
-        break;
-      }
-      case "category":
-        comparison = a.category.localeCompare(b.category);
-        break;
-    }
-
-    return sortOrder === "desc" ? -comparison : comparison;
-  });
-}
-
-function applyPagination(
-  entries: AuditEntry[],
-  limit?: number,
-  offset?: number,
-): AuditEntry[] {
-  if (!limit && !offset) return entries;
-
-  const start = offset || 0;
-  const end = start + (limit || entries.length);
-  return entries.slice(start, end);
-}
-
 // Initialization and handler creation helpers
 function initializeAuditState(retentionDays: number): AuditLogState {
   return {
@@ -265,6 +169,40 @@ async function loadAuditEntries(
   }
 }
 
+// Helper to create security event entry
+async function createSecurityEventEntry(
+  event: SecurityEvent,
+  userId: string,
+  relationshipId: string | undefined,
+  auditState: AuditLogState,
+): Promise<AuditEntry> {
+  const details: AuditDetails = {
+    description: event.description,
+    metadata: event.metadata,
+  };
+
+  return {
+    id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: new Date(),
+    userId,
+    action: AuditAction.PERMISSION_CHECK,
+    category: AuditCategory.SECURITY,
+    context: { relationshipId },
+    details,
+    severity: event.severity,
+    outcome:
+      event.type === "failed_login"
+        ? AuditOutcome.FAILURE
+        : AuditOutcome.SUCCESS,
+    ipAddress: auditState.privacySettings.includeIPAddresses
+      ? await getClientIP()
+      : undefined,
+    userAgent: auditState.privacySettings.includeUserAgent
+      ? navigator.userAgent
+      : undefined,
+  };
+}
+
 function createActionHandlers(
   userId: string,
   relationshipId: string | undefined,
@@ -306,31 +244,12 @@ function createActionHandlers(
   };
 
   const logSecurityEvent = async (event: SecurityEvent): Promise<void> => {
-    const details: AuditDetails = {
-      description: event.description,
-      metadata: event.metadata,
-    };
-
-    const entry: AuditEntry = {
-      id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date(),
+    const entry = await createSecurityEventEntry(
+      event,
       userId,
-      action: AuditAction.PERMISSION_CHECK,
-      category: AuditCategory.SECURITY,
-      context: { relationshipId },
-      details,
-      severity: event.severity,
-      outcome:
-        event.type === "failed_login"
-          ? AuditOutcome.FAILURE
-          : AuditOutcome.SUCCESS,
-      ipAddress: auditState.privacySettings.includeIPAddresses
-        ? await getClientIP()
-        : undefined,
-      userAgent: auditState.privacySettings.includeUserAgent
-        ? navigator.userAgent
-        : undefined,
-    };
+      relationshipId,
+      auditState,
+    );
 
     await saveAuditEntry(entry);
     setAuditState((prev) => ({
@@ -406,6 +325,90 @@ function createQueryHandlers(auditState: AuditLogState) {
   };
 }
 
+// Helper to get compliance report (future feature)
+function _getComplianceReport(auditState: AuditLogState): ComplianceReport {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const periodEntries = auditState.recentEntries.filter(
+    (entry) => entry.timestamp >= thirtyDaysAgo,
+  );
+
+  const actionsByCategory = periodEntries.reduce(
+    (acc, entry) => {
+      acc[entry.category] = (acc[entry.category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<AuditCategory, number>,
+  );
+
+  const securityScore = calculateSecurityScore(periodEntries);
+
+  return {
+    period: {
+      start: thirtyDaysAgo,
+      end: now,
+    },
+    totalActions: periodEntries.length,
+    actionsByCategory,
+    securityScore,
+    recommendations: generateSecurityRecommendations(periodEntries),
+  };
+}
+
+// Helper to export audit log (future feature)
+async function _exportAuditLog(
+  auditState: AuditLogState,
+  format: ExportFormat,
+  filters?: AuditFilter,
+): Promise<AuditExport> {
+  let entries = auditState.recentEntries;
+
+  // Apply filters if provided
+  if (filters) {
+    entries = applyAuditFilters(entries, filters);
+  }
+
+  // Generate export data based on format
+  let data: string | Uint8Array;
+  let filename: string;
+
+  switch (format) {
+    case "json":
+      data = JSON.stringify(entries, null, 2);
+      filename = `audit-log-${Date.now()}.json`;
+      break;
+    case "csv":
+      data = convertToCSV(entries);
+      filename = `audit-log-${Date.now()}.csv`;
+      break;
+    case "pdf":
+      data = await generatePDF(entries);
+      filename = `audit-log-${Date.now()}.pdf`;
+      break;
+    default:
+      throw new Error(`Unsupported export format: ${format}`);
+  }
+
+  return {
+    format,
+    data,
+    filename,
+    generatedAt: new Date(),
+  };
+}
+
+// Helper to share with keyholder (future feature)
+async function _shareWithKeyholder(
+  _relationshipId: string | undefined,
+  _entries: string[],
+): Promise<void> {
+  if (!_relationshipId) {
+    throw new Error("No relationship context for sharing");
+  }
+  // In real implementation, this would share selected entries with keyholder
+}
+
 function createManagementHandlers(
   userId: string,
   auditState: AuditLogState,
@@ -447,89 +450,6 @@ function createManagementHandlers(
       dataExports,
       lastSecurityEvent,
     };
-  };
-
-  // Get compliance report (not yet exposed in return)
-  const _getComplianceReport = (): ComplianceReport => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const periodEntries = auditState.recentEntries.filter(
-      (entry) => entry.timestamp >= thirtyDaysAgo,
-    );
-
-    const actionsByCategory = periodEntries.reduce(
-      (acc, entry) => {
-        acc[entry.category] = (acc[entry.category] || 0) + 1;
-        return acc;
-      },
-      {} as Record<AuditCategory, number>,
-    );
-
-    const securityScore = calculateSecurityScore(periodEntries);
-
-    return {
-      period: {
-        start: thirtyDaysAgo,
-        end: now,
-      },
-      totalActions: periodEntries.length,
-      actionsByCategory,
-      securityScore,
-      recommendations: generateSecurityRecommendations(periodEntries),
-    };
-  };
-
-  // Export audit log (not yet exposed in return)
-  const _exportAuditLog = async (
-    format: ExportFormat,
-    filters?: AuditFilter,
-  ): Promise<AuditExport> => {
-    let entries = auditState.recentEntries;
-
-    // Apply filters if provided
-    if (filters) {
-      // Implementation would filter entries based on criteria
-      entries = applyAuditFilters(entries, filters);
-    }
-
-    // Generate export data based on format
-    let data: string | Uint8Array;
-    let filename: string;
-
-    switch (format) {
-      case "json":
-        data = JSON.stringify(entries, null, 2);
-        filename = `audit-log-${Date.now()}.json`;
-        break;
-      case "csv":
-        data = convertToCSV(entries);
-        filename = `audit-log-${Date.now()}.csv`;
-        break;
-      case "pdf":
-        data = await generatePDF(entries);
-        filename = `audit-log-${Date.now()}.pdf`;
-        break;
-      default:
-        throw new Error(`Unsupported export format: ${format}`);
-    }
-
-    return {
-      format,
-      data,
-      filename,
-      generatedAt: new Date(),
-    };
-  };
-
-  // Share with keyholder (not yet exposed in return)
-  const _shareWithKeyholder = async (_entries: string[]): Promise<void> => {
-    // eslint-disable-next-line no-undef
-    if (!relationshipId) {
-      throw new Error("No relationship context for sharing");
-    }
-
-    // In real implementation, this would share selected entries with keyholder
   };
 
   // Update privacy settings
