@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useState, useRef } from 'react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { useEffect, useCallback, useState, useRef } from "react";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 /**
  * @typedef {Object} DataSyncOptions
@@ -25,59 +25,63 @@ export const useDataSync = ({ userId, isAuthReady, autoSync = true }) => {
   const [syncState, setSyncState] = useState({
     isLoading: false,
     lastSynced: null,
-    error: null
+    error: null,
   });
-  
+
   const unsubscribeRef = useRef(null);
 
-  const syncData = useCallback(async (data) => {
-    if (!userId || !isAuthReady) {
-      setSyncState(prev => ({ ...prev, error: 'User not authenticated' }));
-      return;
-    }
+  const syncData = useCallback(
+    async (data) => {
+      if (!userId || !isAuthReady) {
+        setSyncState((prev) => ({ ...prev, error: "User not authenticated" }));
+        return;
+      }
 
-    setSyncState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    try {
-      const docRef = doc(db, 'users', userId);
-      await setDoc(docRef, data, { merge: true });
-      setSyncState(prev => ({
-        ...prev,
-        isLoading: false,
-        lastSynced: new Date(),
-        error: null
-      }));
-    } catch (error) {
-      setSyncState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Sync failed'
-      }));
-    }
-  }, [userId, isAuthReady]);
+      setSyncState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      try {
+        const docRef = doc(db, "users", userId);
+        await setDoc(docRef, data, { merge: true });
+        setSyncState((prev) => ({
+          ...prev,
+          isLoading: false,
+          lastSynced: new Date(),
+          error: null,
+        }));
+      } catch (error) {
+        setSyncState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error.message : "Sync failed",
+        }));
+      }
+    },
+    [userId, isAuthReady],
+  );
 
   useEffect(() => {
     if (!autoSync || !userId || !isAuthReady) {
       return;
     }
 
-    const docRef = doc(db, 'users', userId);
-    const unsubscribe = onSnapshot(docRef, 
+    const docRef = doc(db, "users", userId);
+    const unsubscribe = onSnapshot(
+      docRef,
       (docSnap) => {
         if (docSnap.exists()) {
-          setSyncState(prev => ({
+          setSyncState((prev) => ({
             ...prev,
             lastSynced: new Date(),
-            error: null
+            error: null,
           }));
         }
       },
       (error) => {
-        setSyncState(prev => ({
+        setSyncState((prev) => ({
           ...prev,
-          error: error.message
+          error: error.message,
         }));
-      }
+      },
     );
 
     unsubscribeRef.current = unsubscribe;
@@ -91,6 +95,6 @@ export const useDataSync = ({ userId, isAuthReady, autoSync = true }) => {
 
   return {
     syncState,
-    syncData
+    syncData,
   };
 };

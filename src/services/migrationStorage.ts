@@ -107,6 +107,28 @@ export class MigrationStorageService {
   }
 
   /**
+   * Get all localStorage as a snapshot (for backup purposes)
+   */
+  static getAllLocalStorage(): Record<string, string> {
+    try {
+      const snapshot: Record<string, string> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          const value = localStorage.getItem(key);
+          if (value !== null) {
+            snapshot[key] = value;
+          }
+        }
+      }
+      return snapshot;
+    } catch (error) {
+      logger.error("Failed to create localStorage snapshot", { error });
+      return {};
+    }
+  }
+
+  /**
    * Clear all migration storage
    */
   static clearAll(): boolean {
