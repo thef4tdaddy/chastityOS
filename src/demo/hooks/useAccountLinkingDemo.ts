@@ -130,7 +130,9 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
                 id: "rel-2",
                 keyholderId: "demo-user-123",
                 wearerId: "sub-1",
-                establishedAt: toTimestamp(new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)),
+                establishedAt: toTimestamp(
+                  new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+                ),
                 status: "active" as const,
                 permissions: mockActiveKeyholder.permissions,
                 security: mockSecurity,
@@ -141,7 +143,9 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
                 id: "rel-3",
                 keyholderId: "demo-user-123",
                 wearerId: "sub-2",
-                establishedAt: toTimestamp(new Date(Date.now() - 1000 * 60 * 60 * 24 * 5)),
+                establishedAt: toTimestamp(
+                  new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+                ),
                 status: "active" as const,
                 permissions: mockActiveKeyholder.permissions,
                 security: mockSecurity,

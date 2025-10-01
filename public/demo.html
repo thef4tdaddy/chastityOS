@@ -1,328 +1,337 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Special Challenges Demo - ChastityOS</title>
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 50%, #7c2d12 100%);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            color: white;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .demo-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .demo-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #f59e0b, #ef4444);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .challenge-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .challenge-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .challenge-icon {
-            font-size: 24px;
-            margin-right: 12px;
-            color: #a855f7;
-        }
-        
-        .challenge-title {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 0;
-        }
-        
-        .challenge-subtitle {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-bottom: 24px;
-        }
-        
-        .challenge-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-        
-        .challenge-card {
-            padding: 24px;
-            border-radius: 12px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-        }
-        
-        .challenge-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        .challenge-card.locktober {
-            background: rgba(251, 146, 60, 0.2);
-            border-color: rgba(249, 115, 22, 0.5);
-            color: #fed7aa;
-        }
-        
-        .challenge-card.no-nut-november {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: rgba(37, 99, 235, 0.5);
-            color: #dbeafe;
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .card-icon {
-            font-size: 32px;
-            margin-right: 12px;
-        }
-        
-        .card-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 0;
-        }
-        
-        .card-description {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-bottom: 16px;
-        }
-        
-        .card-info {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-        
-        .card-info-icon {
-            margin-right: 8px;
-        }
-        
-        .join-button {
-            width: 100%;
-            background: linear-gradient(45deg, #7c3aed, #ec4899);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .join-button:hover {
-            background: linear-gradient(45deg, #6d28d9, #db2777);
-            transform: translateY(-2px);
-        }
-        
-        .button-icon {
-            margin-right: 8px;
-        }
-        
-        .progress-section {
-            margin-bottom: 16px;
-        }
-        
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(107, 114, 128, 1);
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            border-radius: 9999px;
-            transition: all 0.3s ease;
-        }
-        
-        .progress-fill.locktober {
-            background: linear-gradient(45deg, #fb923c, #ef4444);
-        }
-        
-        .progress-fill.no-nut-november {
-            background: linear-gradient(45deg, #3b82f6, #6366f1);
-        }
-        
-        .active-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #10b981;
-            margin-bottom: 8px;
-        }
-        
-        .active-icon {
-            margin-right: 8px;
-        }
-        
-        .completed-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fbbf24;
-            margin-bottom: 8px;
-        }
-        
-        .trophy-icon {
-            font-size: 32px;
-            margin-right: 8px;
-        }
-        
-        .status-text {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
+      body {
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(
+          135deg,
+          #1e3a8a 0%,
+          #3730a3 50%,
+          #7c2d12 100%
+        );
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: white;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .demo-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .demo-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #f59e0b, #ef4444);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .challenge-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+      }
+
+      .challenge-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .challenge-icon {
+        font-size: 24px;
+        margin-right: 12px;
+        color: #a855f7;
+      }
+
+      .challenge-title {
+        font-size: 32px;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      .challenge-subtitle {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 24px;
+      }
+
+      .challenge-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+      }
+
+      .challenge-card {
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+      }
+
+      .challenge-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .challenge-card.locktober {
+        background: rgba(251, 146, 60, 0.2);
+        border-color: rgba(249, 115, 22, 0.5);
+        color: #fed7aa;
+      }
+
+      .challenge-card.no-nut-november {
+        background: rgba(59, 130, 246, 0.2);
+        border-color: rgba(37, 99, 235, 0.5);
+        color: #dbeafe;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .card-icon {
+        font-size: 32px;
+        margin-right: 12px;
+      }
+
+      .card-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      .card-description {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 16px;
+      }
+
+      .card-info {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .card-info-icon {
+        margin-right: 8px;
+      }
+
+      .join-button {
+        width: 100%;
+        background: linear-gradient(45deg, #7c3aed, #ec4899);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .join-button:hover {
+        background: linear-gradient(45deg, #6d28d9, #db2777);
+        transform: translateY(-2px);
+      }
+
+      .button-icon {
+        margin-right: 8px;
+      }
+
+      .progress-section {
+        margin-bottom: 16px;
+      }
+
+      .progress-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(107, 114, 128, 1);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+      }
+
+      .progress-fill.locktober {
+        background: linear-gradient(45deg, #fb923c, #ef4444);
+      }
+
+      .progress-fill.no-nut-november {
+        background: linear-gradient(45deg, #3b82f6, #6366f1);
+      }
+
+      .active-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #10b981;
+        margin-bottom: 8px;
+      }
+
+      .active-icon {
+        margin-right: 8px;
+      }
+
+      .completed-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fbbf24;
+        margin-bottom: 8px;
+      }
+
+      .trophy-icon {
+        font-size: 32px;
+        margin-right: 8px;
+      }
+
+      .status-text {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-top: 4px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="demo-header">
-            <h1>Special Challenges Demo</h1>
-            <p>Locktober & No Nut November Challenge System</p>
+      <div class="demo-header">
+        <h1>Special Challenges Demo</h1>
+        <p>Locktober & No Nut November Challenge System</p>
+      </div>
+
+      <div class="challenge-section">
+        <div class="challenge-header">
+          <div class="challenge-icon">📅</div>
+          <h2 class="challenge-title">Special Challenges</h2>
         </div>
-        
-        <div class="challenge-section">
-            <div class="challenge-header">
-                <div class="challenge-icon">📅</div>
-                <h2 class="challenge-title">Special Challenges</h2>
+
+        <p class="challenge-subtitle">
+          Take on month-long challenges for special achievements and
+          recognition!
+        </p>
+
+        <div class="challenge-grid">
+          <!-- Locktober Challenge -->
+          <div class="challenge-card locktober">
+            <div class="card-header">
+              <div class="card-icon">🔒</div>
+              <h3 class="card-title">Locktober</h3>
             </div>
-            
-            <p class="challenge-subtitle">
-                Take on month-long challenges for special achievements and recognition!
+
+            <p class="card-description">
+              Stay locked in chastity for the entire month of October
             </p>
-            
-            <div class="challenge-grid">
-                <!-- Locktober Challenge -->
-                <div class="challenge-card locktober">
-                    <div class="card-header">
-                        <div class="card-icon">🔒</div>
-                        <h3 class="card-title">Locktober</h3>
-                    </div>
-                    
-                    <p class="card-description">
-                        Stay locked in chastity for the entire month of October
-                    </p>
-                    
-                    <div class="card-info">
-                        <div class="card-info-icon">📅</div>
-                        <span>Active during October</span>
-                    </div>
-                    
-                    <!-- Demo showing available state -->
-                    <button class="join-button">
-                        <div class="button-icon">🏆</div>
-                        Join Challenge
-                    </button>
-                </div>
-                
-                <!-- No Nut November Challenge -->
-                <div class="challenge-card no-nut-november">
-                    <div class="card-header">
-                        <div class="card-icon">🚫</div>
-                        <h3 class="card-title">No Nut November</h3>
-                    </div>
-                    
-                    <p class="card-description">
-                        Abstain from orgasms for the entire month of November
-                    </p>
-                    
-                    <div class="card-info">
-                        <div class="card-info-icon">📅</div>
-                        <span>Active during November</span>
-                    </div>
-                    
-                    <!-- Demo showing active state with progress -->
-                    <div class="progress-section">
-                        <div class="progress-header">
-                            <span>Progress</span>
-                            <span>67.7%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill no-nut-november" style="width: 67.7%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="active-indicator">
-                        <div class="active-icon">✅</div>
-                        <span style="font-weight: 600;">Challenge Active!</span>
-                    </div>
-                    <p class="status-text">
-                        Keep going to complete the challenge
-                    </p>
-                </div>
+
+            <div class="card-info">
+              <div class="card-info-icon">📅</div>
+              <span>Active during October</span>
             </div>
-        </div>
-        
-        <!-- Demo of completed state -->
-        <div class="challenge-section">
-            <h3 style="margin-top: 0; margin-bottom: 16px;">Previous Year's Achievement</h3>
-            <div class="challenge-grid">
-                <div class="challenge-card locktober">
-                    <div class="card-header">
-                        <div class="card-icon">🔒</div>
-                        <h3 class="card-title">Locktober 2023</h3>
-                    </div>
-                    
-                    <p class="card-description">
-                        Stay locked in chastity for the entire month of October
-                    </p>
-                    
-                    <div class="completed-indicator">
-                        <div class="trophy-icon">🏆</div>
-                        <span style="font-size: 18px; font-weight: bold;">Completed!</span>
-                    </div>
-                    <p class="status-text">
-                        Congratulations on completing the challenge!
-                    </p>
-                </div>
+
+            <!-- Demo showing available state -->
+            <button class="join-button">
+              <div class="button-icon">🏆</div>
+              Join Challenge
+            </button>
+          </div>
+
+          <!-- No Nut November Challenge -->
+          <div class="challenge-card no-nut-november">
+            <div class="card-header">
+              <div class="card-icon">🚫</div>
+              <h3 class="card-title">No Nut November</h3>
             </div>
+
+            <p class="card-description">
+              Abstain from orgasms for the entire month of November
+            </p>
+
+            <div class="card-info">
+              <div class="card-info-icon">📅</div>
+              <span>Active during November</span>
+            </div>
+
+            <!-- Demo showing active state with progress -->
+            <div class="progress-section">
+              <div class="progress-header">
+                <span>Progress</span>
+                <span>67.7%</span>
+              </div>
+              <div class="progress-bar">
+                <div
+                  class="progress-fill no-nut-november"
+                  style="width: 67.7%"
+                ></div>
+              </div>
+            </div>
+
+            <div class="active-indicator">
+              <div class="active-icon">✅</div>
+              <span style="font-weight: 600">Challenge Active!</span>
+            </div>
+            <p class="status-text">Keep going to complete the challenge</p>
+          </div>
         </div>
+      </div>
+
+      <!-- Demo of completed state -->
+      <div class="challenge-section">
+        <h3 style="margin-top: 0; margin-bottom: 16px">
+          Previous Year's Achievement
+        </h3>
+        <div class="challenge-grid">
+          <div class="challenge-card locktober">
+            <div class="card-header">
+              <div class="card-icon">🔒</div>
+              <h3 class="card-title">Locktober 2023</h3>
+            </div>
+
+            <p class="card-description">
+              Stay locked in chastity for the entire month of October
+            </p>
+
+            <div class="completed-indicator">
+              <div class="trophy-icon">🏆</div>
+              <span style="font-size: 18px; font-weight: bold">Completed!</span>
+            </div>
+            <p class="status-text">
+              Congratulations on completing the challenge!
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

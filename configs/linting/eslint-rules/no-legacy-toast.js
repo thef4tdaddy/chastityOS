@@ -5,43 +5,43 @@
 
 const noLegacyToast = {
   meta: {
-    type: "problem",
+    type: 'problem',
     docs: {
-      description: "Disallow legacy toast usage (react-toastify, custom alert banners)",
-      category: "Migration",
+      description: 'Disallow legacy toast usage (react-toastify, custom alert banners)',
+      category: 'Migration',
       recommended: true,
     },
-    fixable: "code",
+    fixable: 'code',
     schema: [
       {
-        type: "object",
+        type: 'object',
         properties: {
           allowedImports: {
-            type: "array",
-            items: { type: "string" },
-            description: "List of allowed legacy imports (for gradual migration)",
+            type: 'array',
+            items: { type: 'string' },
+            description: 'List of allowed legacy imports (for gradual migration)',
           },
           severity: {
-            type: "string",
-            enum: ["warn", "error"],
-            default: "warn",
-            description: "Severity level for the rule",
+            type: 'string',
+            enum: ['warn', 'error'],
+            default: 'warn',
+            description: 'Severity level for the rule',
           },
         },
         additionalProperties: false,
       },
     ],
     messages: {
-      noReactToastifyImport: 
-        "Legacy toast import detected. Use 'import { useToast } from \"@/contexts\"' instead of react-toastify.",
-      noToastCall: 
+      noReactToastifyImport:
+        'Legacy toast import detected. Use \'import { useToast } from "@/contexts"\' instead of react-toastify.',
+      noToastCall:
         "Legacy toast method call detected. Use 'const { showSuccess, showError } = useToast()' instead of toast.{{ methodName }}().",
       noAlertCall:
         "Legacy alert() detected. Use 'const { showError } = useToast()' instead of alert().",
       noConfirmCall:
-        "Legacy confirm() detected. Use toast with action button instead of confirm().",
+        'Legacy confirm() detected. Use toast with action button instead of confirm().',
       useNewToastSystem:
-        "Consider using the new toast system: const { showSuccess, showError, showWarning, showInfo, showUrgent } = useToast()",
+        'Consider using the new toast system: const { showSuccess, showError, showWarning, showInfo, showUrgent } = useToast()',
     },
   },
 
@@ -56,23 +56,20 @@ const noLegacyToast = {
     return {
       // Check for react-toastify imports
       ImportDeclaration(node) {
-        if (node.source.value === "react-toastify") {
+        if (node.source.value === 'react-toastify') {
           // Check if this import is in the allowed list
           const filePath = context.getFilename();
-          const isAllowed = allowedImports.some(pattern => 
-            filePath.includes(pattern) || pattern === "*"
+          const isAllowed = allowedImports.some(
+            pattern => filePath.includes(pattern) || pattern === '*'
           );
 
           if (!isAllowed) {
             context.report({
               node,
-              messageId: "noReactToastifyImport",
+              messageId: 'noReactToastifyImport',
               fix(fixer) {
                 // Suggest replacement import
-                return fixer.replaceText(
-                  node,
-                  'import { useToast } from "@/contexts";'
-                );
+                return fixer.replaceText(node, 'import { useToast } from "@/contexts";');
               },
             });
           } else {
@@ -88,44 +85,43 @@ const noLegacyToast = {
 
         // Check for toast.method() calls
         if (
-          node.callee.type === "MemberExpression" &&
-          node.callee.object.name === "toast" &&
-          node.callee.property.type === "Identifier"
+          node.callee.type === 'MemberExpression' &&
+          node.callee.object.name === 'toast' &&
+          node.callee.property.type === 'Identifier'
         ) {
           const methodName = node.callee.property.name;
           context.report({
             node,
-            messageId: "noToastCall",
+            messageId: 'noToastCall',
             data: { methodName },
             fix(fixer) {
               // Simple replacement for common patterns
-              let replacement = "";
+              let replacement = '';
               switch (methodName) {
-                case "success":
-                  replacement = "showSuccess";
+                case 'success':
+                  replacement = 'showSuccess';
                   break;
-                case "error":
-                  replacement = "showError";
+                case 'error':
+                  replacement = 'showError';
                   break;
-                case "warn":
-                case "warning":
-                  replacement = "showWarning";
+                case 'warn':
+                case 'warning':
+                  replacement = 'showWarning';
                   break;
-                case "info":
-                  replacement = "showInfo";
+                case 'info':
+                  replacement = 'showInfo';
                   break;
                 default:
-                  replacement = "showToast";
+                  replacement = 'showToast';
               }
-              
+
               // Only fix simple cases with string message
-              if (node.arguments.length === 1 && 
-                  node.arguments[0].type === "Literal" &&
-                  typeof node.arguments[0].value === "string") {
-                return fixer.replaceText(
-                  node,
-                  `${replacement}("${node.arguments[0].value}")`
-                );
+              if (
+                node.arguments.length === 1 &&
+                node.arguments[0].type === 'Literal' &&
+                typeof node.arguments[0].value === 'string'
+              ) {
+                return fixer.replaceText(node, `${replacement}("${node.arguments[0].value}")`);
               }
               return null; // Complex cases need manual migration
             },
@@ -133,21 +129,17 @@ const noLegacyToast = {
         }
 
         // Check for alert() calls
-        if (
-          node.callee.type === "Identifier" &&
-          node.callee.name === "alert"
-        ) {
+        if (node.callee.type === 'Identifier' && node.callee.name === 'alert') {
           context.report({
             node,
-            messageId: "noAlertCall",
+            messageId: 'noAlertCall',
             fix(fixer) {
-              if (node.arguments.length === 1 && 
-                  node.arguments[0].type === "Literal" &&
-                  typeof node.arguments[0].value === "string") {
-                return fixer.replaceText(
-                  node,
-                  `showError("${node.arguments[0].value}")`
-                );
+              if (
+                node.arguments.length === 1 &&
+                node.arguments[0].type === 'Literal' &&
+                typeof node.arguments[0].value === 'string'
+              ) {
+                return fixer.replaceText(node, `showError("${node.arguments[0].value}")`);
               }
               return null;
             },
@@ -155,33 +147,30 @@ const noLegacyToast = {
         }
 
         // Check for confirm() calls
-        if (
-          node.callee.type === "Identifier" &&
-          node.callee.name === "confirm"
-        ) {
+        if (node.callee.type === 'Identifier' && node.callee.name === 'confirm') {
           context.report({
             node,
-            messageId: "noConfirmCall",
+            messageId: 'noConfirmCall',
           });
         }
       },
 
       // Provide helpful suggestions at the end of files without toast imports
-      "Program:exit"(node) {
+      'Program:exit'(node) {
         if (hasAllowedLegacyImport) return;
 
         // Check if file uses any toast-related patterns but doesn't import useToast
-        const hasUseToastImport = sourceCode.text.includes("useToast");
-        const hasToastUsage = 
-          sourceCode.text.includes("toast.") ||
-          sourceCode.text.includes("alert(") ||
-          sourceCode.text.includes("confirm(");
+        const hasUseToastImport = sourceCode.text.includes('useToast');
+        const hasToastUsage =
+          sourceCode.text.includes('toast.') ||
+          sourceCode.text.includes('alert(') ||
+          sourceCode.text.includes('confirm(');
 
         if (hasToastUsage && !hasUseToastImport) {
           context.report({
             node,
             loc: { line: 1, column: 0 },
-            messageId: "useNewToastSystem",
+            messageId: 'useNewToastSystem',
           });
         }
       },

@@ -29,7 +29,8 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
   className = "",
   scenario = "submissive-no-keyholder",
 }) => {
-  const actualScenario: DemoScenario = (scenario || "submissive-no-keyholder") as DemoScenario;
+  const actualScenario: DemoScenario = (scenario ||
+    "submissive-no-keyholder") as DemoScenario;
   const {
     // UI State
     showCreateInvite,

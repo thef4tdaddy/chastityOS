@@ -10,8 +10,6 @@ import {
   LiveTimer,
   TimerType,
   TimerStatus,
-  TimerSync,
-  TimerEvent,
   TimerSubscription,
 } from "../../types/realtime";
 import {
@@ -20,6 +18,11 @@ import {
   calculateTimerProgress,
   createTimerSubscription,
   calculateComputedValues,
+  getServerTime,
+  saveTimer,
+  logTimerEvent,
+  createTimerSync,
+  createNewTimer,
 } from "./timer-operations";
 
 interface UseLiveTimerOptions {
@@ -28,76 +31,6 @@ interface UseLiveTimerOptions {
   syncInterval?: number; // milliseconds
   accuracyThreshold?: number; // milliseconds
 }
-
-// Helper function to create timer sync record
-const createTimerSync = async (timerId: string): Promise<TimerSync> => {
-  const now = new Date();
-  return {
-    timerId,
-    lastSync: now,
-    serverTime: await getServerTime(),
-    clientOffset: 0,
-    syncAccuracy: 1.0,
-  };
-};
-
-// Helper function to create new timer
-interface CreateTimerParams {
-  userId: string;
-  relationshipId?: string;
-  type: TimerType;
-  duration: number;
-  title: string;
-  description?: string;
-  canPause?: boolean;
-  canStop?: boolean;
-  canExtend?: boolean;
-  isKeyholderControlled?: boolean;
-  keyholderUserId?: string;
-  sessionId?: string;
-  taskId?: string;
-}
-
-const createNewTimer = ({
-  userId,
-  relationshipId,
-  type,
-  duration,
-  title,
-  description,
-  canPause = true,
-  canStop = true,
-  canExtend = false,
-  isKeyholderControlled = false,
-  keyholderUserId,
-  sessionId,
-  taskId,
-}: CreateTimerParams): LiveTimer => {
-  const now = new Date();
-  return {
-    id: `timer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    type,
-    status: TimerStatus.STOPPED,
-    startTime: now,
-    currentTime: now,
-    duration,
-    elapsed: 0,
-    remaining: duration,
-    isPaused: false,
-    totalPauseTime: 0,
-    userId,
-    relationshipId,
-    title,
-    description,
-    canPause,
-    canStop,
-    canExtend,
-    isKeyholderControlled,
-    keyholderUserId,
-    sessionId,
-    taskId,
-  };
-};
 
 export const useLiveTimer = (options: UseLiveTimerOptions) => {
   const {
@@ -195,7 +128,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       }));
 
       // Log event and sync
-      await logTimerEvent(timerId, "start", { startTime: now });
+      await logTimerEvent(timerId, "start", userId, { startTime: now });
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
@@ -234,7 +167,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         ),
       }));
 
-      await logTimerEvent(timerId, "pause", { pausedAt: now });
+      await logTimerEvent(timerId, "pause", userId, { pausedAt: now });
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
@@ -274,7 +207,10 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         ),
       }));
 
-      await logTimerEvent(timerId, "resume", { resumedAt: now, pauseDuration });
+      await logTimerEvent(timerId, "resume", userId, {
+        resumedAt: now,
+        pauseDuration,
+      });
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
@@ -313,7 +249,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         ),
       }));
 
-      await logTimerEvent(timerId, "stop", { stoppedAt: now });
+      await logTimerEvent(timerId, "stop", userId, { stoppedAt: now });
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
@@ -349,7 +285,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         ),
       }));
 
-      await logTimerEvent(timerId, "extend", { additionalSeconds });
+      await logTimerEvent(timerId, "extend", userId, { additionalSeconds });
       await syncTimer(timerId);
       notifySubscribers(updatedTimer);
     },
@@ -409,7 +345,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
 
         // Check if timer completed
         if (progress.remaining === 0 && timer.status === TimerStatus.RUNNING) {
-          logTimerEvent(timer.id, "complete", { completedAt: now });
+          logTimerEvent(timer.id, "complete", userId, { completedAt: now });
           notifySubscribers(updatedTimer);
         }
 
@@ -553,40 +489,3 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
     ...computedValues,
   };
 };
-
-// Helper functions
-async function getServerTime(): Promise<Date> {
-  // In real implementation, fetch server time from API
-  try {
-    // const response = await fetch('/api/time');
-    // const { timestamp } = await response.json();
-    // return new Date(timestamp);
-    return new Date(); // Fallback to client time
-  } catch {
-    // Fallback to client time
-    return new Date();
-  }
-}
-
-async function saveTimer(_timer: LiveTimer): Promise<void> {
-  // In real implementation, save to backend
-  // In real implementation, save to backend
-}
-
-async function logTimerEvent(
-  timerId: string,
-  type: string,
-  data?: Record<string, string | number | boolean | Date>,
-): Promise<void> {
-  const _event: TimerEvent = {
-    id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    timerId,
-    type: type as TimerEvent["type"],
-    timestamp: new Date(),
-    userId: "", // Would be filled from context
-    data,
-  };
-
-  // In real implementation, save to backend
-  // In real implementation, save to backend
-}

@@ -52,9 +52,9 @@ export const AchievementPage: React.FC = () => {
             </h1>
           </div>
 
-          <AchievementViewToggle 
-            viewMode={viewMode} 
-            onViewModeChange={setViewMode} 
+          <AchievementViewToggle
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         </div>
 

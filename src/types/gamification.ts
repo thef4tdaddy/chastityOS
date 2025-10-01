@@ -4,71 +4,71 @@
 
 // Experience sources
 export enum ExperienceSource {
-  SESSION_COMPLETE = 'session_complete',
-  CHALLENGE_COMPLETE = 'challenge_complete',
-  MILESTONE_REACHED = 'milestone_reached',
-  BEHAVIOR_IMPROVEMENT = 'behavior_improvement',
-  DAILY_CHECK_IN = 'daily_check_in',
-  SOCIAL_INTERACTION = 'social_interaction',
-  GOAL_ACHIEVEMENT = 'goal_achievement'
+  SESSION_COMPLETE = "session_complete",
+  CHALLENGE_COMPLETE = "challenge_complete",
+  MILESTONE_REACHED = "milestone_reached",
+  BEHAVIOR_IMPROVEMENT = "behavior_improvement",
+  DAILY_CHECK_IN = "daily_check_in",
+  SOCIAL_INTERACTION = "social_interaction",
+  GOAL_ACHIEVEMENT = "goal_achievement",
 }
 
 // Challenge types
 export enum ChallengeType {
-  DURATION = 'duration',
-  FREQUENCY = 'frequency',
-  BEHAVIORAL = 'behavioral',
-  SOCIAL = 'social',
-  CREATIVE = 'creative',
-  EDUCATIONAL = 'educational'
+  DURATION = "duration",
+  FREQUENCY = "frequency",
+  BEHAVIORAL = "behavioral",
+  SOCIAL = "social",
+  CREATIVE = "creative",
+  EDUCATIONAL = "educational",
 }
 
 // Challenge difficulty
 export enum ChallengeDifficulty {
-  BEGINNER = 'beginner',
-  INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced',
-  EXPERT = 'expert',
-  LEGENDARY = 'legendary'
+  BEGINNER = "beginner",
+  INTERMEDIATE = "intermediate",
+  ADVANCED = "advanced",
+  EXPERT = "expert",
+  LEGENDARY = "legendary",
 }
 
 // Player titles
 export enum PlayerTitle {
-  NOVICE = 'novice',
-  APPRENTICE = 'apprentice',
-  PRACTITIONER = 'practitioner',
-  ADEPT = 'adept',
-  EXPERT = 'expert',
-  MASTER = 'master',
-  GRANDMASTER = 'grandmaster',
-  LEGEND = 'legend'
+  NOVICE = "novice",
+  APPRENTICE = "apprentice",
+  PRACTITIONER = "practitioner",
+  ADEPT = "adept",
+  EXPERT = "expert",
+  MASTER = "master",
+  GRANDMASTER = "grandmaster",
+  LEGEND = "legend",
 }
 
 // Badge categories
 export enum BadgeCategory {
-  DURATION = 'duration',
-  DEDICATION = 'dedication',
-  ACHIEVEMENT = 'achievement',
-  SOCIAL = 'social',
-  SPECIAL = 'special',
-  SEASONAL = 'seasonal'
+  DURATION = "duration",
+  DEDICATION = "dedication",
+  ACHIEVEMENT = "achievement",
+  SOCIAL = "social",
+  SPECIAL = "special",
+  SEASONAL = "seasonal",
 }
 
 // Leaderboard categories
 export enum LeaderboardCategory {
-  EXPERIENCE = 'experience',
-  DURATION = 'duration',
-  CHALLENGES = 'challenges',
-  STREAKS = 'streaks',
-  SOCIAL = 'social'
+  EXPERIENCE = "experience",
+  DURATION = "duration",
+  CHALLENGES = "challenges",
+  STREAKS = "streaks",
+  SOCIAL = "social",
 }
 
 // Leaderboard periods
 export enum LeaderboardPeriod {
-  DAILY = 'daily',
-  WEEKLY = 'weekly',
-  MONTHLY = 'monthly',
-  ALL_TIME = 'all_time'
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  ALL_TIME = "all_time",
 }
 
 // Player profile
@@ -125,7 +125,7 @@ export interface Badge {
   description: string;
   category: BadgeCategory;
   iconUrl: string;
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary";
   earnedAt: Date;
   requirements: BadgeRequirement[];
   hidden: boolean;
@@ -133,7 +133,7 @@ export interface Badge {
 
 // Badge requirement
 export interface BadgeRequirement {
-  type: 'experience' | 'duration' | 'count' | 'streak' | 'custom';
+  type: "experience" | "duration" | "count" | "streak" | "custom";
   value: number;
   description: string;
 }
@@ -160,7 +160,7 @@ export interface Challenge {
 // Challenge requirement
 export interface ChallengeRequirement {
   id: string;
-  type: 'duration' | 'count' | 'behavior' | 'milestone';
+  type: "duration" | "count" | "behavior" | "milestone";
   description: string;
   targetValue: number;
   currentValue: number;
@@ -169,7 +169,7 @@ export interface ChallengeRequirement {
 
 // Challenge reward
 export interface ChallengeReward {
-  type: 'experience' | 'badge' | 'title' | 'item';
+  type: "experience" | "badge" | "title" | "item";
   value: number;
   description: string;
   claimed: boolean;
@@ -224,7 +224,7 @@ export interface LevelUpResult {
 
 // Level reward
 export interface LevelReward {
-  type: 'badge' | 'title' | 'feature' | 'customization';
+  type: "badge" | "title" | "feature" | "customization";
   value: string;
   description: string;
 }
@@ -280,7 +280,7 @@ export interface SeasonalReward {
   id: string;
   name: string;
   description: string;
-  type: 'badge' | 'title' | 'avatar' | 'theme';
+  type: "badge" | "title" | "avatar" | "theme";
   requirement: RewardRequirement;
   claimed: boolean;
   claimedAt?: Date;
@@ -289,7 +289,7 @@ export interface SeasonalReward {
 
 // Reward requirement
 export interface RewardRequirement {
-  type: 'participation' | 'rank' | 'challenges' | 'points';
+  type: "participation" | "rank" | "challenges" | "points";
   value: number;
   description: string;
 }
@@ -322,7 +322,7 @@ export interface FriendRequest {
   fromDisplayName: string;
   message?: string;
   createdAt: Date;
-  status: 'pending' | 'accepted' | 'declined';
+  status: "pending" | "accepted" | "declined";
 }
 
 // Social activity
@@ -330,7 +330,11 @@ export interface SocialActivity {
   id: string;
   userId: string;
   displayName: string;
-  type: 'level_up' | 'badge_earned' | 'challenge_completed' | 'achievement_unlocked';
+  type:
+    | "level_up"
+    | "badge_earned"
+    | "challenge_completed"
+    | "achievement_unlocked";
   description: string;
   timestamp: Date;
   data?: Record<string, string | number | boolean | Date>;
@@ -353,7 +357,7 @@ export interface GameGroup {
 export interface GameGroupMember {
   userId: string;
   displayName: string;
-  role: 'admin' | 'moderator' | 'member';
+  role: "admin" | "moderator" | "member";
   joinedAt: Date;
   contribution: number;
 }
@@ -363,7 +367,7 @@ export interface FriendComparison {
   friendId: string;
   friendName: string;
   categories: ComparisonCategory[];
-  overallComparison: 'ahead' | 'behind' | 'tied';
+  overallComparison: "ahead" | "behind" | "tied";
 }
 
 // Comparison category
@@ -372,7 +376,7 @@ export interface ComparisonCategory {
   playerValue: number;
   friendValue: number;
   difference: number;
-  status: 'ahead' | 'behind' | 'tied';
+  status: "ahead" | "behind" | "tied";
 }
 
 // Gamification state
@@ -398,7 +402,7 @@ export interface ExperienceEvent {
 
 // Achievement unlock
 export interface AchievementUnlock {
-  type: 'badge' | 'level' | 'title' | 'feature';
+  type: "badge" | "level" | "title" | "feature";
   name: string;
   description: string;
   iconUrl?: string;

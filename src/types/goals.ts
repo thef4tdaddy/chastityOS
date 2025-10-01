@@ -4,44 +4,44 @@
 
 // Goal types
 export enum GoalType {
-  DURATION = 'duration',
-  FREQUENCY = 'frequency',
-  BEHAVIORAL = 'behavioral',
-  MILESTONE = 'milestone',
-  COLLABORATIVE = 'collaborative'
+  DURATION = "duration",
+  FREQUENCY = "frequency",
+  BEHAVIORAL = "behavioral",
+  MILESTONE = "milestone",
+  COLLABORATIVE = "collaborative",
 }
 
 // Goal categories
 export enum GoalCategory {
-  CHASTITY = 'chastity',
-  BEHAVIOR = 'behavior',
-  FITNESS = 'fitness',
-  EDUCATION = 'education',
-  RELATIONSHIP = 'relationship',
-  PERSONAL = 'personal'
+  CHASTITY = "chastity",
+  BEHAVIOR = "behavior",
+  FITNESS = "fitness",
+  EDUCATION = "education",
+  RELATIONSHIP = "relationship",
+  PERSONAL = "personal",
 }
 
 // Goal difficulty
 export enum GoalDifficulty {
-  EASY = 'easy',
-  MEDIUM = 'medium',
-  HARD = 'hard',
-  EXTREME = 'extreme'
+  EASY = "easy",
+  MEDIUM = "medium",
+  HARD = "hard",
+  EXTREME = "extreme",
 }
 
 // Goal status
 export enum GoalStatus {
-  ACTIVE = 'active',
-  COMPLETED = 'completed',
-  PAUSED = 'paused',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-  BEHIND = 'behind'
+  ACTIVE = "active",
+  COMPLETED = "completed",
+  PAUSED = "paused",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
+  BEHIND = "behind",
 }
 
 // Goal target
 export interface GoalTarget {
-  type: 'duration' | 'count' | 'percentage' | 'custom';
+  type: "duration" | "count" | "percentage" | "custom";
   value: number;
   unit: string;
   description: string;
@@ -178,7 +178,7 @@ export interface CreateGoalRequest {
   category: GoalCategory;
   target: GoalTarget;
   difficulty: GoalDifficulty;
-  milestones?: Omit<Milestone, 'id' | 'achieved' | 'achievedAt'>[];
+  milestones?: Omit<Milestone, "id" | "achieved" | "achievedAt">[];
   isPublic?: boolean;
   tags?: string[];
 }
@@ -214,15 +214,15 @@ export interface PlanTimeline {
 // Plan conflict
 export interface PlanConflict {
   goalIds: string[];
-  type: 'resource' | 'time' | 'dependency';
+  type: "resource" | "time" | "dependency";
   description: string;
-  severity: 'low' | 'medium' | 'high';
+  severity: "low" | "medium" | "high";
   suggestions: string[];
 }
 
 // Plan recommendation
 export interface PlanRecommendation {
-  type: 'reorder' | 'adjust' | 'combine' | 'split';
+  type: "reorder" | "adjust" | "combine" | "split";
   description: string;
   impact: string;
   effort: string;
@@ -238,7 +238,7 @@ export interface CollaborationInvite {
   message?: string;
   createdAt: Date;
   expiresAt: Date;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  status: "pending" | "accepted" | "declined" | "expired";
 }
 
 // Goal insights
@@ -262,7 +262,7 @@ export interface GoalPredictions {
 // Goal adjustment
 export interface GoalAdjustment {
   goalId: string;
-  type: 'extend' | 'reduce' | 'modify' | 'pause';
+  type: "extend" | "reduce" | "modify" | "pause";
   description: string;
   reasoning: string;
   impact: string;
