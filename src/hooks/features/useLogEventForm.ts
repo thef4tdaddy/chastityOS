@@ -50,9 +50,11 @@ export function useLogEventForm(
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
 
-  const setFormData = useCallback((data: Partial<EventFormData>) => {
-    setFormDataState((prev) => ({ ...prev, ...data }));
-  }, []);
+  const setFormData = useCallback(
+    (data: Partial<EventFormData>) =>
+      setFormDataState((prev) => ({ ...prev, ...data })),
+    [],
+  );
 
   const resetForm = useCallback(() => {
     setFormDataState(defaultFormData);
@@ -61,11 +63,7 @@ export function useLogEventForm(
 
   const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.type) {
-      newErrors.type = "Event type is required";
-    }
-
+    if (!formData.type) newErrors.type = "Event type is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
@@ -99,9 +97,7 @@ export function useLogEventForm(
 
   const loadDraft = useCallback(() => {
     const draft = localStorage.getItem("eventDraft");
-    if (draft) {
-      setFormDataState(JSON.parse(draft));
-    }
+    if (draft) setFormDataState(JSON.parse(draft));
   }, []);
 
   const clearDraft = useCallback(() => {
