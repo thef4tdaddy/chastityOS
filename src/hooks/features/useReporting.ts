@@ -439,7 +439,9 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
 
   const calculateNextRun = (schedule: ReportSchedule): Date => {
     const now = new Date();
-    const [hours, minutes] = schedule.time.split(":").map(Number);
+    const timeParts = schedule.time.split(":").map(Number);
+    const hours = timeParts[0] ?? 0;
+    const minutes = timeParts[1] ?? 0;
 
     const nextRun = new Date(now);
     nextRun.setHours(hours, minutes, 0, 0);

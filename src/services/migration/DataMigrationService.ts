@@ -307,13 +307,13 @@ class DataMigrationService {
     return {
       id: sessionId,
       relationshipId,
-      startTime: oldSession.startTime || serverTimestamp(),
-      endTime: oldSession.endTime,
-      duration: oldSession.duration || 0,
+      startTime: (oldSession.startTime as Timestamp) || serverTimestamp(),
+      endTime: oldSession.endTime as Timestamp | undefined,
+      duration: (oldSession.duration as number) || 0,
       effectiveDuration:
-        oldSession.effectiveDuration || oldSession.duration || 0,
+        (oldSession.effectiveDuration as number) || (oldSession.duration as number) || 0,
       events: [], // Legacy sessions won't have detailed events
-      goalMet: oldSession.goalMet || false,
+      goalMet: (oldSession.goalMet as boolean) || false,
       keyholderApproval: {
         required: false,
         granted: true,
@@ -376,17 +376,17 @@ class DataMigrationService {
     return {
       id: taskId,
       relationshipId,
-      text: oldTask.text || "Migrated task",
+      text: (oldTask.text as string) || "Migrated task",
       assignedBy: "submissive", // Assume self-assigned for migration
       assignedTo: "submissive",
-      dueDate: oldTask.dueDate,
-      status: this.mapTaskStatus(oldTask.status),
-      submittedAt: oldTask.submittedAt,
-      approvedAt: oldTask.approvedAt,
-      completedAt: oldTask.completedAt,
-      submissiveNote: oldTask.submissiveNote,
-      keyholderFeedback: oldTask.keyholderFeedback,
-      consequence: oldTask.consequence,
+      dueDate: oldTask.dueDate as Timestamp | undefined,
+      status: this.mapTaskStatus(oldTask.status as string | undefined),
+      submittedAt: oldTask.submittedAt as Timestamp | undefined,
+      approvedAt: oldTask.approvedAt as Timestamp | undefined,
+      completedAt: oldTask.completedAt as Timestamp | undefined,
+      submissiveNote: oldTask.submissiveNote as string | undefined,
+      keyholderFeedback: oldTask.keyholderFeedback as string | undefined,
+      consequence: oldTask.consequence as { type: "reward" | "punishment"; duration?: number; description?: string } | undefined,
     };
   }
 
@@ -453,8 +453,8 @@ class DataMigrationService {
         participants: ["submissive"], // Default for migration
       },
       loggedBy: "submissive",
-      isPrivate: oldEvent.isPrivate || false,
-      tags: oldEvent.tags || [],
+      isPrivate: (oldEvent.isPrivate as boolean) || false,
+      tags: (oldEvent.tags as string[]) || [],
     };
   }
 
