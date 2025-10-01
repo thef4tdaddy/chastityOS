@@ -447,6 +447,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
       endAdminSession();
     }
     // endAdminSession is stable as it only depends on state.adminSession which is already in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.adminSession]);
 
   // ==================== RETURN ====================
