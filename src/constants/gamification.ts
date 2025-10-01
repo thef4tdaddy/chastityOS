@@ -10,7 +10,7 @@ import {
   PlayerProfile,
   PlayerTitle,
   LeaderboardCategory,
-  BadgeCategory,
+  BadgeCategory as _BadgeCategory,
   ExperienceSource,
 } from "../../types/gamification";
 

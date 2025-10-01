@@ -5,14 +5,14 @@
 
 import type {
   SessionStatistics,
-  GoalStatistics,
+  GoalStatistics as _GoalStatistics,
   MonthlyTrends,
   WeeklyBreakdown,
   ComparisonResult,
   BenchmarkData,
   TimePeriod,
   PeriodStatistics,
-} from "./types/statistics";
+} from "../../hooks/data/types/statistics";
 
 /**
  * Get statistics for a specific time period

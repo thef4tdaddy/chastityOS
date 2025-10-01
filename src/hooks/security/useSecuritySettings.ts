@@ -183,7 +183,6 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
       }, 2000);
       return () => clearTimeout(saveTimer);
     }
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
 
   const {

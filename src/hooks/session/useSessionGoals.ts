@@ -13,7 +13,7 @@ import {
   calculateGoalProgress,
   checkIfGoalCompleted,
 } from "./session-goals-utils";
-import { DEFAULT_GOAL_TEMPLATES } from "./session-goals-templates";
+import { DEFAULT_GOAL_TEMPLATES } from "../../constants/session-goals-templates";
 
 const logger = serviceLogger("useSessionGoals");
 
@@ -35,7 +35,7 @@ import type {
   GoalCustomization,
   PredictiveGoalSuggestion,
   GoalAnalytics,
-  GoalDifficulty,
+  GoalDifficulty as _GoalDifficulty,
 } from "./types/SessionGoals";
 
 // Complex goal management with templates, progress tracking, and achievements
@@ -631,5 +631,3 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
 };
 
 // ==================== HELPER FUNCTIONS ====================
-
-

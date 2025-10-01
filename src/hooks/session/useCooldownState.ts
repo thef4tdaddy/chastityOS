@@ -20,7 +20,9 @@ const createInitialCooldownState = (): CooldownState => ({
 });
 
 export function useCooldownState() {
-  const [cooldownState, setCooldownState] = useState(createInitialCooldownState);
+  const [cooldownState, setCooldownState] = useState(
+    createInitialCooldownState,
+  );
 
   // Cooldown countdown timer
   useEffect(() => {
@@ -35,11 +37,14 @@ export function useCooldownState() {
     return () => clearInterval(interval);
   }, [cooldownState.isInCooldown, cooldownState.cooldownRemaining]);
 
-  const startCooldown = useCallback((cooldownDuration: number, canOverride: boolean) => {
-    if (cooldownDuration > 0) {
-      setCooldownState(createCooldownState(cooldownDuration, canOverride));
-    }
-  }, []);
+  const startCooldown = useCallback(
+    (cooldownDuration: number, canOverride: boolean) => {
+      if (cooldownDuration > 0) {
+        setCooldownState(createCooldownState(cooldownDuration, canOverride));
+      }
+    },
+    [],
+  );
 
   const clearCooldown = useCallback(() => {
     setCooldownState((prev) => clearCooldownState(prev));

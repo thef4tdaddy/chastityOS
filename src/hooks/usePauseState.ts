@@ -61,7 +61,6 @@ export const usePauseState = ({
 
     const interval = setInterval(refreshPauseState, refreshInterval);
     return () => clearInterval(interval);
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [pauseState, refreshInterval, refreshPauseState]);
 
   // Real-time cooldown countdown
@@ -89,7 +88,6 @@ export const usePauseState = ({
     }, 1000);
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [pauseState, refreshPauseState]);
 
   return {

@@ -1,6 +1,13 @@
-import { useState, useCallback, useEffect } from 'react';
-import { collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { useState, useCallback, useEffect } from "react";
+import {
+  collection,
+  addDoc,
+  query,
+  onSnapshot,
+  orderBy,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../../firebase";
 
 /**
  * @typedef {Object} Reward
@@ -24,33 +31,40 @@ import { db } from '../../firebase';
  * @param {RewardOptions} options
  * @returns {Object}
  */
-export const useKeyholderRewards = ({ userId, isAuthReady, keyholderEmail }) => {
+export const useKeyholderRewards = ({
+  userId,
+  isAuthReady,
+  keyholderEmail,
+}) => {
   const [rewards, setRewards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const addReward = useCallback(async (rewardData) => {
-    if (!userId || !isAuthReady) {
-      setError('User not authenticated');
-      return;
-    }
+  const addReward = useCallback(
+    async (rewardData) => {
+      if (!userId || !isAuthReady) {
+        setError("User not authenticated");
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const rewardsCollection = collection(db, 'users', userId, 'rewards');
-      await addDoc(rewardsCollection, {
-        ...rewardData,
-        createdAt: serverTimestamp(),
-        assignedBy: keyholderEmail || 'Unknown Keyholder'
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add reward');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId, isAuthReady, keyholderEmail]);
+      try {
+        const rewardsCollection = collection(db, "users", userId, "rewards");
+        await addDoc(rewardsCollection, {
+          ...rewardData,
+          createdAt: serverTimestamp(),
+          assignedBy: keyholderEmail || "Unknown Keyholder",
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to add reward");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [userId, isAuthReady, keyholderEmail],
+  );
 
   const fetchRewards = useCallback(() => {
     if (!userId || !isAuthReady) {
@@ -58,17 +72,18 @@ export const useKeyholderRewards = ({ userId, isAuthReady, keyholderEmail }) => 
     }
 
     setIsLoading(true);
-    const rewardsCollection = collection(db, 'users', userId, 'rewards');
-    const q = query(rewardsCollection, orderBy('createdAt', 'desc'));
+    const rewardsCollection = collection(db, "users", userId, "rewards");
+    const q = query(rewardsCollection, orderBy("createdAt", "desc"));
 
-    const unsubscribe = onSnapshot(q,
+    const unsubscribe = onSnapshot(
+      q,
       (querySnapshot) => {
-        const rewardsList = querySnapshot.docs.map(doc => ({
+        const rewardsList = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate()
+          createdAt: doc.data().createdAt?.toDate(),
         }));
-        
+
         setRewards(rewardsList);
         setIsLoading(false);
         setError(null);
@@ -76,7 +91,7 @@ export const useKeyholderRewards = ({ userId, isAuthReady, keyholderEmail }) => 
       (err) => {
         setError(err.message);
         setIsLoading(false);
-      }
+      },
     );
 
     return unsubscribe;
@@ -93,7 +108,10 @@ export const useKeyholderRewards = ({ userId, isAuthReady, keyholderEmail }) => 
 
   const getTotalTimeReduction = useCallback(() => {
     return rewards
-      .filter(reward => reward.type === 'time_reduction' && reward.timeReductionSeconds)
+      .filter(
+        (reward) =>
+          reward.type === "time_reduction" && reward.timeReductionSeconds,
+      )
       .reduce((total, reward) => total + (reward.timeReductionSeconds || 0), 0);
   }, [rewards]);
 
@@ -102,6 +120,6 @@ export const useKeyholderRewards = ({ userId, isAuthReady, keyholderEmail }) => 
     isLoading,
     error,
     addReward,
-    getTotalTimeReduction
+    getTotalTimeReduction,
   };
 };

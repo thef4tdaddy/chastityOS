@@ -3,7 +3,11 @@
  * Manages pause status and basic pause operations
  */
 import { useState, useCallback } from "react";
-import type { PauseStatus, PauseReason, PauseHistoryEntry } from "../../types/pauseResume";
+import type {
+  PauseStatus,
+  PauseReason,
+  PauseHistoryEntry,
+} from "../../types/pauseResume";
 import {
   createPauseHistoryEntry,
   updatePauseStatusOnStart,
@@ -24,17 +28,27 @@ export function usePauseState(sessionId: string) {
   const [pauseHistory, setPauseHistory] = useState<PauseHistoryEntry[]>([]);
 
   const startPause = useCallback(
-    (reason: PauseReason, initiatedBy: "submissive" | "keyholder" | "system" = "submissive") => {
+    (
+      reason: PauseReason,
+      initiatedBy: "submissive" | "keyholder" | "system" = "submissive",
+    ) => {
       const pauseTime = new Date();
-      
-      setPauseStatus((prev) => updatePauseStatusOnStart(pauseTime, reason, prev));
-      
-      const newHistoryEntry = createPauseHistoryEntry(sessionId, pauseTime, reason, initiatedBy);
+
+      setPauseStatus((prev) =>
+        updatePauseStatusOnStart(pauseTime, reason, prev),
+      );
+
+      const newHistoryEntry = createPauseHistoryEntry(
+        sessionId,
+        pauseTime,
+        reason,
+        initiatedBy,
+      );
       setPauseHistory((prev) => [...prev, newHistoryEntry]);
-      
+
       logger.debug("Pause started", { sessionId, reason, initiatedBy });
     },
-    [sessionId]
+    [sessionId],
   );
 
   const updatePauseDuration = useCallback((duration: number) => {

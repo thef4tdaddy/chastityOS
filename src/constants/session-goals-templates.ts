@@ -3,7 +3,7 @@
  * Pre-defined goal templates for common objectives
  */
 
-import type { GoalTemplate } from "./types/SessionGoals";
+import type { GoalTemplate } from "../hooks/session/types/SessionGoals";
 
 /**
  * Default goal templates available to users
