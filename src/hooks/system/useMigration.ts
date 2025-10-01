@@ -137,8 +137,8 @@ export const useMigration = () => {
           migrationId,
           timestamp: new Date(),
           data: {
-            // In a real implementation, this would backup relevant data
-            localStorage: { ...localStorage },
+            // Backup all localStorage via service
+            localStorage: MigrationStorageService.getAllLocalStorage(),
             version: migrationState?.currentVersion,
           },
         };
