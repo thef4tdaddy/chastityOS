@@ -553,17 +553,6 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     updatePreferences,
   );
 
-  // Computed values
-  const computedValues = useMemo(() => ({
-    unreadCount: notificationState.notifications.filter((n) => !n.isRead).length,
-    hasHighPriority: notificationState.notifications.some(
-      (n) =>
-        n.priority === NotificationPriority.HIGH ||
-        n.priority === NotificationPriority.URGENT,
-    ),
-    recentNotifications: notificationState.notifications.slice(0, 10),
-  }), [notificationState.notifications]);
-
   return {
     notifications: notificationState.notifications,
     preferences: notificationState.preferences,
@@ -574,7 +563,13 @@ export const useNotifications = (options: UseNotificationsOptions) => {
     markAllAsRead,
     updatePreferences,
     ...helpers,
-    ...computedValues,
+    unreadCount: notificationState.notifications.filter((n) => !n.isRead).length,
+    hasHighPriority: notificationState.notifications.some(
+      (n) =>
+        n.priority === NotificationPriority.HIGH ||
+        n.priority === NotificationPriority.URGENT,
+    ),
+    recentNotifications: notificationState.notifications.slice(0, 10),
   };
 };
 
