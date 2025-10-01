@@ -196,7 +196,7 @@ function applySorting(
       case "timestamp":
         comparison = a.timestamp.getTime() - b.timestamp.getTime();
         break;
-      case "severity":
+      case "severity": {
         const severityOrder: Record<string, number> = {
           low: 0,
           medium: 1,
@@ -205,6 +205,7 @@ function applySorting(
         };
         comparison = severityOrder[a.severity] - severityOrder[b.severity];
         break;
+      }
       case "category":
         comparison = a.category.localeCompare(b.category);
         break;
