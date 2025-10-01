@@ -31,12 +31,19 @@ import {
   getPredictiveAnalytics as getPredictiveAnalyticsHelper,
   getCompletionTrends as getCompletionTrendsHelper,
 } from "../../utils/goalsHelpers";
+import {
+  GoalStorageService,
+  GOAL_STORAGE_KEYS,
+} from "../../services/goalStorage";
 
 // Enhanced goal state
 
 import type * as _Types from "./types/Goals";
 export type * from "./types/Goals";
-import { STORAGE_KEYS, DEFAULT_TEMPLATES } from "./types/Goals";
+import { DEFAULT_TEMPLATES } from "./types/Goals";
+
+// Use storage keys from service
+const STORAGE_KEYS = GOAL_STORAGE_KEYS;
 
 export const useGoals = (userId?: string, relationshipId?: string) => {
   const queryClient = useQueryClient();
@@ -45,8 +52,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
   const { data: personalGoals = [] } = useQuery<EnhancedGoal[]>({
     queryKey: ["goals", "personal", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.PERSONAL_GOALS);
-      return stored ? JSON.parse(stored) : [];
+      return GoalStorageService.getPersonalGoals<EnhancedGoal>();
     },
     enabled: Boolean(userId),
     staleTime: 30 * 1000,
@@ -56,8 +62,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
   const { data: collaborativeGoals = [] } = useQuery<CollaborativeGoal[]>({
     queryKey: ["goals", "collaborative", userId, relationshipId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.COLLABORATIVE_GOALS);
-      return stored ? JSON.parse(stored) : [];
+      return GoalStorageService.getCollaborativeGoals<CollaborativeGoal>();
     },
     enabled: Boolean(userId) && Boolean(relationshipId),
     staleTime: 30 * 1000,
@@ -67,9 +72,9 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
   const { data: goalTemplates = DEFAULT_TEMPLATES } = useQuery<GoalTemplate[]>({
     queryKey: ["goals", "templates"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.GOAL_TEMPLATES);
-      return stored
-        ? [...DEFAULT_TEMPLATES, ...JSON.parse(stored)]
+      const stored = GoalStorageService.getGoalTemplates<GoalTemplate>();
+      return stored.length > 0
+        ? [...DEFAULT_TEMPLATES, ...stored]
         : DEFAULT_TEMPLATES;
     },
     staleTime: 5 * 60 * 1000,
@@ -142,10 +147,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
       };
 
       const updated = [...personalGoals, newGoal];
-      localStorage.setItem(
-        STORAGE_KEYS.PERSONAL_GOALS,
-        JSON.stringify(updated),
-      );
+      GoalStorageService.setPersonalGoals(updated);
       queryClient.setQueryData(["goals", "personal", userId], updated);
 
       logger.info("Goal created", { goalId: newGoal.id, title: newGoal.title });
@@ -172,10 +174,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
       const updated = [...personalGoals];
       updated[goalIndex] = updatedGoal;
 
-      localStorage.setItem(
-        STORAGE_KEYS.PERSONAL_GOALS,
-        JSON.stringify(updated),
-      );
+      GoalStorageService.setPersonalGoals(updated);
       queryClient.setQueryData(["goals", "personal", userId], updated);
 
       logger.info("Goal updated", { goalId, updates });
@@ -187,10 +186,7 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
   const deleteGoalMutation = useMutation({
     mutationFn: async (goalId: string) => {
       const updated = personalGoals.filter((g) => g.id !== goalId);
-      localStorage.setItem(
-        STORAGE_KEYS.PERSONAL_GOALS,
-        JSON.stringify(updated),
-      );
+      GoalStorageService.setPersonalGoals(updated);
       queryClient.setQueryData(["goals", "personal", userId], updated);
 
       logger.info("Goal deleted", { goalId });

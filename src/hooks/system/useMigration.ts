@@ -8,6 +8,10 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
+import {
+  MigrationStorageService,
+  MIGRATION_STORAGE_KEYS,
+} from "../../services/migrationStorage";
 
 // Migration status
 export enum MigrationStatus {

@@ -7,6 +7,10 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
+import {
+  ReportStorageService,
+  REPORT_STORAGE_KEYS,
+} from "../../services/reportStorage";
 
 // Report types
 export enum ReportType {
@@ -207,12 +211,8 @@ const DEFAULT_TEMPLATES: ReportTemplate[] = [
   },
 ];
 
-// Storage keys
-const STORAGE_KEYS = {
-  CUSTOM_REPORTS: "chastity-reports-custom",
-  RECENT_REPORTS: "chastity-reports-recent",
-  PREFERENCES: "chastity-reports-preferences",
-};
+// Storage keys (imported from service)
+const STORAGE_KEYS = REPORT_STORAGE_KEYS;
 
 /**
  * Advanced Reporting Hook
@@ -233,8 +233,7 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
   const { data: customReports = [] } = useQuery<CustomReport[]>({
     queryKey: ["reports", "custom", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_REPORTS);
-      return stored ? JSON.parse(stored) : [];
+      return ReportStorageService.getCustomReports<CustomReport>();
     },
     enabled: Boolean(userId),
     staleTime: 60 * 1000,
@@ -244,8 +243,7 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
   const { data: recentReports = [] } = useQuery<GeneratedReport[]>({
     queryKey: ["reports", "recent", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.RECENT_REPORTS);
-      return stored ? JSON.parse(stored) : [];
+      return ReportStorageService.getRecentReports<GeneratedReport>();
     },
     enabled: Boolean(userId),
     staleTime: 30 * 1000,
@@ -255,9 +253,10 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
   const { data: preferences } = useQuery<ReportingPreferences>({
     queryKey: ["reports", "preferences", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+      const stored =
+        ReportStorageService.getPreferences<ReportingPreferences>();
       return stored
-        ? JSON.parse(stored)
+        ? stored
         : {
             defaultFormat: ExportFormat.JSON,
             autoRefresh: false,
@@ -302,10 +301,7 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
         0,
         preferences?.maxReports || 50,
       );
-      localStorage.setItem(
-        STORAGE_KEYS.RECENT_REPORTS,
-        JSON.stringify(updated),
-      );
+      ReportStorageService.setRecentReports(updated);
       queryClient.setQueryData(["reports", "recent", userId], updated);
 
       return report;
@@ -322,10 +318,7 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
       };
 
       const updated = [...customReports, customReport];
-      localStorage.setItem(
-        STORAGE_KEYS.CUSTOM_REPORTS,
-        JSON.stringify(updated),
-      );
+      ReportStorageService.setCustomReports(updated);
       queryClient.setQueryData(["reports", "custom", userId], updated);
 
       logger.info("Custom report created", { reportId: customReport.id });

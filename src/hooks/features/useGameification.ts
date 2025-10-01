@@ -31,15 +31,13 @@ import {
   ExperienceEvent,
 } from "../../types/gamification";
 import { logger } from "../../utils/logging";
+import {
+  GamificationStorageService,
+  GAMIFICATION_STORAGE_KEYS,
+} from "../../services/gamificationStorage";
 
-// Storage keys
-const STORAGE_KEYS = {
-  PLAYER_PROFILE: "chastity-gamification-profile",
-  CHALLENGES: "chastity-gamification-challenges",
-  LEADERBOARDS: "chastity-gamification-leaderboards",
-  SOCIAL_FEATURES: "chastity-gamification-social",
-  EXPERIENCE_HISTORY: "chastity-gamification-experience",
-};
+// Storage keys (imported from service)
+const STORAGE_KEYS = GAMIFICATION_STORAGE_KEYS;
 
 // Experience values by source
 const _EXPERIENCE_VALUES = {
@@ -158,9 +156,10 @@ export const useGameification = (userId: string) => {
     useQuery<PlayerProfile>({
       queryKey: ["gamification", "profile", userId],
       queryFn: () => {
-        const stored = localStorage.getItem(STORAGE_KEYS.PLAYER_PROFILE);
+        const stored =
+          GamificationStorageService.getPlayerProfile<PlayerProfile>();
         return stored
-          ? { ...DEFAULT_PLAYER_PROFILE, ...JSON.parse(stored) }
+          ? { ...DEFAULT_PLAYER_PROFILE, ...stored }
           : DEFAULT_PLAYER_PROFILE;
       },
       enabled: Boolean(userId),
@@ -171,8 +170,8 @@ export const useGameification = (userId: string) => {
   const { data: activeChallenges = [] } = useQuery<Challenge[]>({
     queryKey: ["gamification", "challenges", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.CHALLENGES);
-      const userChallenges = stored ? JSON.parse(stored) : [];
+      const userChallenges =
+        GamificationStorageService.getChallenges<Challenge>();
       return [...SAMPLE_CHALLENGES, ...userChallenges].filter(
         (c) => !c.isCompleted,
       );
@@ -217,9 +216,10 @@ export const useGameification = (userId: string) => {
   const { data: socialFeatures } = useQuery<SocialGameFeatures>({
     queryKey: ["gamification", "social", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.SOCIAL_FEATURES);
+      const stored =
+        GamificationStorageService.getSocialFeatures<SocialGameFeatures>();
       return stored
-        ? JSON.parse(stored)
+        ? stored
         : {
             friends: [],
             pendingRequests: [],
@@ -236,8 +236,7 @@ export const useGameification = (userId: string) => {
   const { data: experienceHistory = [] } = useQuery<ExperienceEvent[]>({
     queryKey: ["gamification", "experience", userId],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.EXPERIENCE_HISTORY);
-      return stored ? JSON.parse(stored) : [];
+      return GamificationStorageService.getExperienceHistory<ExperienceEvent>();
     },
     enabled: Boolean(userId),
     staleTime: 60 * 1000,
@@ -274,10 +273,7 @@ export const useGameification = (userId: string) => {
             }
           : c,
       );
-      localStorage.setItem(
-        STORAGE_KEYS.CHALLENGES,
-        JSON.stringify(updatedChallenges),
-      );
+      GamificationStorageService.setChallenges(updatedChallenges);
 
       // Calculate rewards
       const experienceGained = challenge.rewards.reduce(
@@ -320,10 +316,7 @@ export const useGameification = (userId: string) => {
             playerProfile.stats.totalExperience + experienceGained,
         },
       };
-      localStorage.setItem(
-        STORAGE_KEYS.PLAYER_PROFILE,
-        JSON.stringify(updatedProfile),
-      );
+      GamificationStorageService.setPlayerProfile(updatedProfile);
       queryClient.setQueryData(
         ["gamification", "profile", userId],
         updatedProfile,
@@ -383,10 +376,7 @@ export const useGameification = (userId: string) => {
       0,
       100,
     );
-    localStorage.setItem(
-      STORAGE_KEYS.EXPERIENCE_HISTORY,
-      JSON.stringify(updatedHistory),
-    );
+    GamificationStorageService.setExperienceHistory(updatedHistory);
     queryClient.setQueryData(
       ["gamification", "experience", userId],
       updatedHistory,
@@ -405,10 +395,7 @@ export const useGameification = (userId: string) => {
       lastActive: new Date(),
     };
 
-    localStorage.setItem(
-      STORAGE_KEYS.PLAYER_PROFILE,
-      JSON.stringify(updatedProfile),
-    );
+    GamificationStorageService.setPlayerProfile(updatedProfile);
     queryClient.setQueryData(
       ["gamification", "profile", userId],
       updatedProfile,
