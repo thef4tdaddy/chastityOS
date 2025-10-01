@@ -4,7 +4,13 @@
  * Track and display online/offline presence for users in relationships
  * with activity indicators and status messages.
  */
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
   PresenceState,
   UserPresence as _UserPresence,
@@ -26,70 +32,17 @@ interface UsePresenceOptions {
   autoTrackActivity?: boolean;
 }
 
-export const usePresence = (options: UsePresenceOptions) => {
-  const {
-    userId,
-    updateInterval = 30000, // 30 seconds
-    activityTimeout = 300000, // 5 minutes
-    autoTrackActivity = true,
-  } = options;
-
-  // Presence state
-  const [presenceState, setPresenceState] = useState<PresenceState>({
-    userPresences: {},
-    subscriptions: [],
-    ownPresence: {
-      userId,
-      status: PresenceStatus.OFFLINE,
-      lastSeen: new Date(),
-    },
-  });
-
-  // Refs for tracking activity
-  const lastActivityRef = useRef<Date>(new Date());
-  const presenceIntervalRef = useRef<number | null>(null);
-  const activityTimeoutRef = useRef<number | null>(null);
-
-  // Create operation functions using helpers
-  const presenceUpdateFunctions = createPresenceUpdateFunctions(
-    userId,
-    presenceState,
-    setPresenceState,
-  );
-
-  const subscriptionFunctions = createSubscriptionFunctions(setPresenceState);
-  const queryFunctions = createQueryFunctions(presenceState);
-
-  // Extract individual functions for easier use
-  const {
-    updateOwnPresence: _updateOwnPresence,
-    setOnline,
-    setOffline,
-    setAway,
-    setBusy,
-    setInSession,
-    updateActivity: updateActivityStatus,
-  } = presenceUpdateFunctions;
-
-  const { subscribeToPresence } = subscriptionFunctions;
-  const {
-    getUserPresence,
-    getMultipleUserPresence,
-    isUserOnline,
-    isUserInSession,
-    getOnlineCount,
-  } = queryFunctions;
-
-  // Update activity
-  const updateActivity = useCallback(
-    (activity: ActivityContext) => {
-      lastActivityRef.current = new Date();
-      return updateActivityStatus(activity);
-    },
-    [updateActivityStatus],
-  );
-
-  // Handle activity tracking
+// Helper to setup activity tracking listeners
+const useActivityTracking = (
+  autoTrackActivity: boolean,
+  presenceStatus: PresenceStatus,
+  activityTimeout: number,
+  setAway: (statusMessage?: string) => void,
+  lastActivityRef: React.MutableRefObject<Date>,
+  activityTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+) => {
   useEffect(() => {
     if (!autoTrackActivity) return;
 
@@ -103,7 +56,7 @@ export const usePresence = (options: UsePresenceOptions) => {
 
       // Set away status after inactivity
       activityTimeoutRef.current = setTimeout(() => {
-        if (presenceState.ownPresence.status === PresenceStatus.ONLINE) {
+        if (presenceStatus === PresenceStatus.ONLINE) {
           setAway("Away due to inactivity");
         }
       }, activityTimeout);
@@ -134,14 +87,22 @@ export const usePresence = (options: UsePresenceOptions) => {
     };
     // setAway is from presenceUpdateFunctions which is recreated when presenceState changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoTrackActivity, presenceState.ownPresence.status, activityTimeout]);
+  }, [autoTrackActivity, presenceStatus, activityTimeout]);
+};
 
-  // Handle presence updates
+// Helper to handle periodic presence updates
+const usePeriodicPresenceUpdate = (
+  ownPresence: { status: PresenceStatus },
+  updateInterval: number,
+  presenceIntervalRef: React.MutableRefObject<ReturnType<
+    typeof setInterval
+  > | null>,
+) => {
   useEffect(() => {
     const sendPeriodicUpdate = async () => {
-      if (presenceState.ownPresence.status !== PresenceStatus.OFFLINE) {
+      if (ownPresence.status !== PresenceStatus.OFFLINE) {
         // In real implementation, send to backend/WebSocket
-        // await sendPresenceUpdate(presenceState.ownPresence);
+        // await sendPresenceUpdate(ownPresence);
       }
     };
 
@@ -155,12 +116,15 @@ export const usePresence = (options: UsePresenceOptions) => {
         clearInterval(presenceIntervalRef.current);
       }
     };
-    // sendPeriodicUpdate uses presenceState.ownPresence which is in deps
-    // updateInterval is a config number, not a store action
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
-  }, [presenceState.ownPresence, updateInterval]);
+  }, [ownPresence, updateInterval, presenceIntervalRef]);
+};
 
-  // Handle online/offline events
+// Helper to handle online/offline events
+const useConnectionEvents = (
+  setOnline: (statusMessage?: string) => void,
+  setOffline: (statusMessage?: string) => void,
+  setAway: (statusMessage?: string) => void,
+) => {
   useEffect(() => {
     const handleOnline = () => {
       setOnline("Back online");
@@ -190,8 +154,13 @@ export const usePresence = (options: UsePresenceOptions) => {
     // setOnline, setOffline, setAway are from presenceUpdateFunctions (stable)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+};
 
-  // Initialize presence as online
+// Helper to initialize presence on mount
+const usePresenceInitialization = (
+  setOnline: (statusMessage?: string) => void,
+  setOffline: (statusMessage?: string) => void,
+) => {
   useEffect(() => {
     setOnline("Connected");
 
@@ -202,15 +171,125 @@ export const usePresence = (options: UsePresenceOptions) => {
     // setOnline, setOffline are from presenceUpdateFunctions (stable)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+};
 
-  // Computed values
-  const computedValues = useMemo(() => {
-    return calculatePresenceComputedValues(
-      presenceState.userPresences,
-      lastActivityRef.current,
-      activityTimeout,
-    );
-  }, [presenceState.userPresences, activityTimeout]);
+// Helper to create initial presence state
+const createInitialPresenceState = (userId: string): PresenceState => ({
+  userPresences: {},
+  subscriptions: [],
+  ownPresence: {
+    userId,
+    status: PresenceStatus.OFFLINE,
+    lastSeen: new Date(),
+  },
+});
+
+// Helper to setup all presence side effects
+const usePresenceSideEffects = (
+  autoTrackActivity: boolean,
+  presenceStatus: PresenceStatus,
+  activityTimeout: number,
+  ownPresence: { status: PresenceStatus },
+  updateInterval: number,
+  setOnline: (statusMessage?: string) => void,
+  setOffline: (statusMessage?: string) => void,
+  setAway: (statusMessage?: string) => void,
+  lastActivityRef: React.MutableRefObject<Date>,
+  activityTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  presenceIntervalRef: React.MutableRefObject<ReturnType<
+    typeof setInterval
+  > | null>,
+) => {
+  useActivityTracking(
+    autoTrackActivity,
+    presenceStatus,
+    activityTimeout,
+    setAway,
+    lastActivityRef,
+    activityTimeoutRef,
+  );
+
+  usePeriodicPresenceUpdate(ownPresence, updateInterval, presenceIntervalRef);
+
+  useConnectionEvents(setOnline, setOffline, setAway);
+
+  usePresenceInitialization(setOnline, setOffline);
+};
+
+// Helper to create and destructure operation functions
+const usePresenceOperations = (
+  userId: string,
+  presenceState: PresenceState,
+  setPresenceState: React.Dispatch<React.SetStateAction<PresenceState>>,
+) => {
+  const presenceUpdateFunctions = createPresenceUpdateFunctions(
+    userId,
+    presenceState,
+    setPresenceState,
+  );
+
+  const subscriptionFunctions = createSubscriptionFunctions(setPresenceState);
+  const queryFunctions = createQueryFunctions(presenceState);
+
+  const {
+    updateOwnPresence: _updateOwnPresence,
+    setOnline,
+    setOffline,
+    setAway,
+    setBusy,
+    setInSession,
+    updateActivity: updateActivityStatus,
+  } = presenceUpdateFunctions;
+
+  const { subscribeToPresence } = subscriptionFunctions;
+  const {
+    getUserPresence,
+    getMultipleUserPresence,
+    isUserOnline,
+    isUserInSession,
+    getOnlineCount,
+  } = queryFunctions;
+
+  return {
+    presenceUpdateFunctions,
+    subscriptionFunctions,
+    queryFunctions,
+    setOnline,
+    setOffline,
+    setAway,
+    setBusy,
+    setInSession,
+    updateActivityStatus,
+    subscribeToPresence,
+    getUserPresence,
+    getMultipleUserPresence,
+    isUserOnline,
+    isUserInSession,
+    getOnlineCount,
+  };
+};
+
+// Helper to build return object
+const buildPresenceReturn = (
+  presenceState: PresenceState,
+  presenceUpdateFunctions: ReturnType<typeof createPresenceUpdateFunctions>,
+  subscriptionFunctions: ReturnType<typeof createSubscriptionFunctions>,
+  queryFunctions: ReturnType<typeof createQueryFunctions>,
+  updateActivity: (activity: ActivityContext) => void,
+  computedValues: ReturnType<typeof calculatePresenceComputedValues>,
+) => {
+  const { setOnline, setOffline, setAway, setBusy, setInSession } =
+    presenceUpdateFunctions;
+  const { subscribeToPresence } = subscriptionFunctions;
+  const {
+    getUserPresence,
+    getMultipleUserPresence,
+    isUserOnline,
+    isUserInSession,
+    getOnlineCount,
+  } = queryFunctions;
 
   return {
     // Presence state
@@ -238,4 +317,83 @@ export const usePresence = (options: UsePresenceOptions) => {
     // Computed values
     ...computedValues,
   };
+};
+
+export const usePresence = (options: UsePresenceOptions) => {
+  const {
+    userId,
+    updateInterval = 30000, // 30 seconds
+    activityTimeout = 300000, // 5 minutes
+    autoTrackActivity = true,
+  } = options;
+
+  // Presence state
+  const [presenceState, setPresenceState] = useState(() =>
+    createInitialPresenceState(userId),
+  );
+
+  // Refs for tracking activity
+  const lastActivityRef = useRef<Date>(new Date());
+  const presenceIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
+  const activityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Create operation functions using helpers
+  const operations = usePresenceOperations(
+    userId,
+    presenceState,
+    setPresenceState,
+  );
+  const {
+    presenceUpdateFunctions,
+    subscriptionFunctions,
+    queryFunctions,
+    setOnline,
+    setOffline,
+    setAway,
+    updateActivityStatus,
+  } = operations;
+
+  // Update activity
+  const updateActivity = useCallback(
+    (activity: ActivityContext) => {
+      lastActivityRef.current = new Date();
+      return updateActivityStatus(activity);
+    },
+    [updateActivityStatus],
+  );
+
+  // Setup all side effects
+  usePresenceSideEffects(
+    autoTrackActivity,
+    presenceState.ownPresence.status,
+    activityTimeout,
+    presenceState.ownPresence,
+    updateInterval,
+    setOnline,
+    setOffline,
+    setAway,
+    lastActivityRef,
+    activityTimeoutRef,
+    presenceIntervalRef,
+  );
+
+  // Computed values
+  const computedValues = useMemo(() => {
+    return calculatePresenceComputedValues(
+      presenceState.userPresences,
+      lastActivityRef.current,
+      activityTimeout,
+    );
+  }, [presenceState.userPresences, activityTimeout]);
+
+  return buildPresenceReturn(
+    presenceState,
+    presenceUpdateFunctions,
+    subscriptionFunctions,
+    queryFunctions,
+    updateActivity,
+    computedValues,
+  );
 };
