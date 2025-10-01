@@ -68,45 +68,51 @@ const defaultPrivacySettings: PrivacySecuritySettings = {
   requirePasswordForSensitiveActions: true,
 };
 
+// Helper to load security settings
+async function loadSecuritySettings(
+  userId: string,
+  setSecurityState: React.Dispatch<React.SetStateAction<SecuritySettingsState>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+): Promise<void> {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const settings = await fetchSecuritySettings(userId);
+    const mergedSettings = mergeWithDefaultSettings(settings);
+    setSecurityState(mergedSettings);
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Failed to load security settings",
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
+// Initial security state
+const initialSecurityState: SecuritySettingsState = {
+  sessionSettings: defaultSessionSettings,
+  accessSettings: defaultAccessSettings,
+  monitoringSettings: defaultMonitoringSettings,
+  privacySettings: defaultPrivacySettings,
+};
+
 export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
   const { userId, autoSave = true } = options;
 
-  // Security settings state
-  const [securityState, setSecurityState] = useState<SecuritySettingsState>({
-    sessionSettings: defaultSessionSettings,
-    accessSettings: defaultAccessSettings,
-    monitoringSettings: defaultMonitoringSettings,
-    privacySettings: defaultPrivacySettings,
-  });
-
+  const [securityState, setSecurityState] = useState(initialSecurityState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Load settings on mount
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // In real implementation, fetch from backend/Firebase
-        const settings = await fetchSecuritySettings(userId);
-        const mergedSettings = mergeWithDefaultSettings(settings);
-        setSecurityState(mergedSettings);
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load security settings",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (userId) {
-      loadSettings();
+      loadSecuritySettings(userId, setSecurityState, setError, setLoading);
     }
   }, [userId]);
 
@@ -278,36 +284,40 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
   );
 
   // Get security score
-  const getSecurityScore = useCallback((): SecurityScore => {
-    return calculateSecurityScore(securityState);
-  }, [securityState]);
+  const getSecurityScore = useMemo(
+    () => () => calculateSecurityScore(securityState),
+    [securityState],
+  );
 
   // Get security recommendations
-  const getSecurityRecommendations =
-    useCallback((): SecurityRecommendation[] => {
-      return generateSecurityRecommendations(securityState);
-    }, [securityState]);
+  const getSecurityRecommendations = useMemo(
+    () => () => generateSecurityRecommendations(securityState),
+    [securityState],
+  );
 
   // Check security health
-  const checkSecurityHealth = useCallback((): SecurityHealthCheck => {
-    const issues = findSecurityIssues(securityState);
+  const checkSecurityHealth = useMemo(
+    () => (): SecurityHealthCheck => {
+      const issues = findSecurityIssues(securityState);
 
-    let status: SecurityHealthCheck["status"] = "healthy";
-    if (issues.some((issue) => issue.severity === "critical")) {
-      status = "critical";
-    } else if (issues.some((issue) => issue.severity === "high")) {
-      status = "critical";
-    } else if (issues.some((issue) => issue.severity === "medium")) {
-      status = "warning";
-    }
+      let status: SecurityHealthCheck["status"] = "healthy";
+      if (issues.some((issue) => issue.severity === "critical")) {
+        status = "critical";
+      } else if (issues.some((issue) => issue.severity === "high")) {
+        status = "critical";
+      } else if (issues.some((issue) => issue.severity === "medium")) {
+        status = "warning";
+      }
 
-    return {
-      status,
-      issues,
-      lastCheck: new Date(),
-      nextCheck: new Date(Date.now() + 24 * 60 * 60 * 1000), // Next day
-    };
-  }, [securityState]);
+      return {
+        status,
+        issues,
+        lastCheck: new Date(),
+        nextCheck: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      };
+    },
+    [securityState],
+  );
 
   // Computed values
   const computedValues = useMemo(() => {
