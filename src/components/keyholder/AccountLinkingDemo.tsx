@@ -29,6 +29,7 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
   className = "",
   scenario = "submissive-no-keyholder",
 }) => {
+  const actualScenario: DemoScenario = scenario || "submissive-no-keyholder";
   const {
     // UI State
     showCreateInvite,
@@ -54,7 +55,7 @@ export const AccountLinkingDemo: React.FC<AccountLinkingDemoProps> = ({
     activeKeyholder,
     activeInviteCodes,
     relationships,
-  } = useAccountLinkingDemo(scenario);
+  } = useAccountLinkingDemo(actualScenario);
 
   const hasActiveKeyholder = !!activeKeyholder;
 

@@ -125,7 +125,9 @@ export const createSubscriptionFunctions = (
       const presenceMap: Record<string, UserPresence> = {};
       for (let i = 0; i < presences.length; i++) {
         const presence = presences[i];
-        presenceMap[presence.userId] = presence;
+        if (presence) {
+          presenceMap[presence.userId] = presence;
+        }
       }
 
       setPresenceState((prev) => ({

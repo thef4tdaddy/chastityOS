@@ -160,7 +160,7 @@ export class SessionPersistenceService {
         sessionId: session.id,
         userId: session.userId,
         isPaused: session.isPaused,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
       });
 
       logger.debug("Session state backed up", { sessionId: session.id });
@@ -314,7 +314,7 @@ export class SessionPersistenceService {
     this.broadcastSessionEvent("SESSION_RESTORED", {
       sessionId: session.id,
       userId: session.userId,
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
     });
 
     logger.info("Active session restored", { sessionId: session.id });

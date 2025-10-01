@@ -68,7 +68,7 @@ const createNewTimer = ({
   canPause = true,
   canStop = true,
   canExtend = false,
-  isKeyholderControlled,
+  isKeyholderControlled = false,
   keyholderUserId,
   sessionId,
   taskId,
