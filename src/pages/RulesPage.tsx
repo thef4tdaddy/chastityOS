@@ -6,6 +6,7 @@ import {
   RulesInfoBanner,
   RulesEmptyState,
 } from "../components/rules";
+import type { ChastityRule } from "../components/rules";
 import { useRulesPage } from "../hooks/useRulesPage";
 
 // Mock rules data

@@ -174,76 +174,76 @@ export const createWebSocketFunctions = (
   };
 
   const handleMessage = (message: Record<string, unknown>) => {
-      setSyncState((prev) => ({
-        ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
-      }));
+    setSyncState((prev) => ({
+      ...prev,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+    }));
 
-      switch (message.type) {
-        case "channel_joined":
-          handleChannelJoined(message);
-          break;
-        case "channel_left":
-          handleChannelLeft(message);
-          break;
-        case "realtime_update":
-          handleRealtimeUpdate(message);
-          break;
-        case "heartbeat_ack":
-          // Heartbeat acknowledged
-          break;
-        default:
-        // Unknown message type
-      }
-    };
+    switch (message.type) {
+      case "channel_joined":
+        handleChannelJoined(message);
+        break;
+      case "channel_left":
+        handleChannelLeft(message);
+        break;
+      case "realtime_update":
+        handleRealtimeUpdate(message);
+        break;
+      case "heartbeat_ack":
+        // Heartbeat acknowledged
+        break;
+      default:
+      // Unknown message type
+    }
+  };
 
   const handleChannelJoined = (message: { channel: SyncChannel }) => {
-      const channel: SyncChannel = message.channel;
+    const channel: SyncChannel = message.channel;
 
-      setSyncState((prev) => ({
-        ...prev,
-        activeChannels: [
-          ...prev.activeChannels.filter((c) => c.id !== channel.id),
-          channel,
-        ],
-      }));
-    };
+    setSyncState((prev) => ({
+      ...prev,
+      activeChannels: [
+        ...prev.activeChannels.filter((c) => c.id !== channel.id),
+        channel,
+      ],
+    }));
+  };
 
   const handleChannelLeft = (message: { channelId: string }) => {
-      const channelId = message.channelId;
+    const channelId = message.channelId;
 
-      setSyncState((prev) => ({
-        ...prev,
-        activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
-      }));
-    };
+    setSyncState((prev) => ({
+      ...prev,
+      activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
+    }));
+  };
 
   const handleRealtimeUpdate = (message: { update: RealtimeUpdate }) => {
-      const update: RealtimeUpdate = message.update;
+    const update: RealtimeUpdate = message.update;
 
-      // Update local data
-      setSyncState((prev) => ({
-        ...prev,
-        realtimeData: {
-          ...prev.realtimeData,
-          [update.type]: update.data,
-        },
-      }));
+    // Update local data
+    setSyncState((prev) => ({
+      ...prev,
+      realtimeData: {
+        ...prev.realtimeData,
+        [update.type]: update.data,
+      },
+    }));
 
-      // Notify subscribers - using object instead of Map
-      const subscriptionKeys = Object.keys(subscriptionsRef.current);
-      for (let i = 0; i < subscriptionKeys.length; i++) {
-        const key = subscriptionKeys[i];
-        const subscription = subscriptionsRef.current[key];
-        if (subscription.dataType === update.type && subscription.isActive) {
-          try {
-            subscription.callback(update);
-          } catch {
-            // Error in subscription callback
-          }
+    // Notify subscribers - using object instead of Map
+    const subscriptionKeys = Object.keys(subscriptionsRef.current);
+    for (let i = 0; i < subscriptionKeys.length; i++) {
+      const key = subscriptionKeys[i];
+      const subscription = subscriptionsRef.current[key];
+      if (subscription.dataType === update.type && subscription.isActive) {
+        try {
+          subscription.callback(update);
+        } catch {
+          // Error in subscription callback
         }
       }
-    };
+    }
+  };
 
   return {
     connect,
@@ -275,17 +275,20 @@ export const createChannelFunctions = (
     });
   };
 
-  const createChannel = async (type: ChannelType, participants: string[]): Promise<SyncChannel> => {
-      const channel = createSyncChannel(type, userId, participants);
+  const createChannel = async (
+    type: ChannelType,
+    participants: string[],
+  ): Promise<SyncChannel> => {
+    const channel = createSyncChannel(type, userId, participants);
 
-      sendMessage({
-        type: "create_channel",
-        channel,
-        userId,
-      });
+    sendMessage({
+      type: "create_channel",
+      channel,
+      userId,
+    });
 
-      return channel;
-    };
+    return channel;
+  };
 
   return {
     joinChannel,
@@ -302,21 +305,21 @@ export const createRealtimeSubscriptionFunctions = (
     dataType: string,
     callback: (update: RealtimeUpdate) => void,
   ): Subscription => {
-      const subscription = createSubscription(dataType, callback);
-      subscriptionsRef.current[subscription.id] = subscription;
+    const subscription = createSubscription(dataType, callback);
+    subscriptionsRef.current[subscription.id] = subscription;
 
-      // Return unsubscribe function
-      return {
-        ...subscription,
-        unsubscribe: () => {
-          const sub = subscriptionsRef.current[subscription.id];
-          if (sub) {
-            sub.isActive = false;
-            delete subscriptionsRef.current[subscription.id];
-          }
-        },
-      } as Subscription & { unsubscribe: () => void };
-    };
+    // Return unsubscribe function
+    return {
+      ...subscription,
+      unsubscribe: () => {
+        const sub = subscriptionsRef.current[subscription.id];
+        if (sub) {
+          sub.isActive = false;
+          delete subscriptionsRef.current[subscription.id];
+        }
+      },
+    } as Subscription & { unsubscribe: () => void };
+  };
 
   const publishUpdate = async (_update: RealtimeUpdate): Promise<void> => {
     // Implementation would send the update via WebSocket

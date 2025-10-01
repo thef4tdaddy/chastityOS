@@ -13,6 +13,21 @@ const logger = serviceLogger("useSessionGoals");
 
 import type * as _Types from "./types/SessionGoals";
 export type * from "./types/SessionGoals";
+import type {
+  SessionGoal,
+  GoalTemplate,
+  GoalProgress,
+  KeyholderAssignedGoal,
+  GoalHistoryEntry,
+  GoalAchievement,
+  CreateGoalRequest,
+  GoalCompletionStatus,
+  ModificationRequest,
+  GoalSuggestion,
+  GoalCustomization,
+  PredictiveGoalSuggestion,
+  GoalAnalytics,
+} from "./types/SessionGoals";
 
 export const useSessionGoals = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================

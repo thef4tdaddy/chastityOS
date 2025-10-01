@@ -36,6 +36,7 @@ import {
 
 import type * as _Types from "./types/Goals";
 export type * from "./types/Goals";
+import { STORAGE_KEYS, DEFAULT_TEMPLATES } from "./types/Goals";
 
 export const useGoals = (userId?: string, relationshipId?: string) => {
   const queryClient = useQueryClient();

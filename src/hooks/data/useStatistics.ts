@@ -34,10 +34,12 @@ import type {
   ComparisonResult,
   BenchmarkData,
   KeyholderDashboardStats,
+  KeyholderStatisticsView,
   RelationshipComparisonStats,
   PredictiveInsights,
   Recommendation,
   StatisticsExport,
+  StatisticType,
   ExportFormat,
 } from "./types/statistics";
 

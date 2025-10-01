@@ -12,7 +12,7 @@ export interface EnhancedGoalState {
 }
 
 // Storage keys
-const _STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   PERSONAL_GOALS: "chastity-goals-personal",
   COLLABORATIVE_GOALS: "chastity-goals-collaborative",
   GOAL_ANALYTICS: "chastity-goals-analytics",
@@ -20,7 +20,7 @@ const _STORAGE_KEYS = {
 };
 
 // Sample templates
-const _DEFAULT_TEMPLATES: GoalTemplate[] = [
+export const DEFAULT_TEMPLATES: GoalTemplate[] = [
   {
     id: "chastity-duration-30",
     name: "30-Day Chastity Challenge",
