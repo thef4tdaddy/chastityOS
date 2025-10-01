@@ -25,7 +25,7 @@ import {
   updateMultipleNotificationStatus,
   deleteNotification,
   saveNotificationPreferences,
-} from "./notification-helpers";
+} from "../../utils/realtime/notification-helpers";
 
 interface UseNotificationsOptions {
   userId: string;
