@@ -10,7 +10,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   PlayerProfile,
   Challenge,
-  ChallengeReward,
   Leaderboard,
   Season,
   SocialGameFeatures,
@@ -22,122 +21,23 @@ import {
   LeaderboardRank,
   FriendComparison,
   SeasonalReward,
-  PlayerTitle,
-  ChallengeDifficulty,
-  ChallengeType,
-  LeaderboardCategory,
-  LeaderboardPeriod,
-  BadgeCategory,
   ExperienceEvent,
 } from "../../types/gamification";
 import { logger } from "../../utils/logging";
 import { GamificationStorageService } from "../../services/gamificationStorage";
-
-// Experience values by source
-const _EXPERIENCE_VALUES = {
-  [ExperienceSource.SESSION_COMPLETE]: 100,
-  [ExperienceSource.CHALLENGE_COMPLETE]: 250,
-  [ExperienceSource.MILESTONE_REACHED]: 150,
-  [ExperienceSource.BEHAVIOR_IMPROVEMENT]: 75,
-  [ExperienceSource.DAILY_CHECK_IN]: 25,
-  [ExperienceSource.SOCIAL_INTERACTION]: 50,
-  [ExperienceSource.GOAL_ACHIEVEMENT]: 200,
-};
-
-// Level thresholds
-const LEVEL_THRESHOLDS = [
-  0, 100, 250, 500, 1000, 1750, 2750, 4000, 5500, 7500, 10000, 13000, 16500,
-  20500, 25000, 30000, 35500, 41500, 48000, 55000, 62500,
-];
-
-// Default player profile
-const DEFAULT_PLAYER_PROFILE: PlayerProfile = {
-  level: 1,
-  experience: 0,
-  experienceToNext: 100,
-  title: PlayerTitle.NOVICE,
-  badges: [],
-  stats: {
-    totalExperience: 0,
-    challengesCompleted: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    totalDuration: 0,
-    badgesEarned: 0,
-    leaderboardRank: {
-      [LeaderboardCategory.EXPERIENCE]: 0,
-      [LeaderboardCategory.DURATION]: 0,
-      [LeaderboardCategory.CHALLENGES]: 0,
-      [LeaderboardCategory.STREAKS]: 0,
-      [LeaderboardCategory.SOCIAL]: 0,
-    },
-    socialConnections: 0,
-    achievementPoints: 0,
-  },
-  preferences: {
-    showLevel: true,
-    showBadges: true,
-    participateInLeaderboards: true,
-    allowSocialFeatures: true,
-    notificationSettings: {
-      levelUp: true,
-      badgeEarned: true,
-      challengeComplete: true,
-      leaderboardUpdate: false,
-      socialActivity: true,
-      seasonalEvents: true,
-    },
-  },
-  joinedAt: new Date(),
-  lastActive: new Date(),
-};
-
-// Sample challenges
-const SAMPLE_CHALLENGES: Challenge[] = [
-  {
-    id: "challenge-streak-7",
-    type: ChallengeType.DURATION,
-    name: "7-Day Streak",
-    description: "Maintain a 7-day consecutive streak",
-    difficulty: ChallengeDifficulty.BEGINNER,
-    requirements: [
-      {
-        id: "req-1",
-        type: "duration",
-        description: "Complete 7 consecutive days",
-        targetValue: 7,
-        currentValue: 0,
-        completed: false,
-      },
-    ],
-    rewards: [
-      {
-        type: "experience",
-        value: 500,
-        description: "500 XP",
-        claimed: false,
-      },
-      {
-        type: "badge",
-        value: 1,
-        description: "Streak Master Badge",
-        claimed: false,
-      },
-    ],
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    progress: {
-      percentage: 0,
-      requirementsCompleted: 0,
-      totalRequirements: 1,
-      lastUpdated: new Date(),
-      milestones: [],
-    },
-    isCompleted: false,
-    participants: 247,
-    isPublic: true,
-  },
-];
+import {
+  DEFAULT_PLAYER_PROFILE,
+  LEVEL_THRESHOLDS,
+  SAMPLE_CHALLENGES,
+} from "./gamification-constants";
+import {
+  generateSampleLeaderboards,
+  generateSeasonalRewards,
+  createBadgeFromReward,
+  generateLevelRewards,
+  getPlayerTitle,
+  getUnlockedFeatures,
+} from "./gamification-utils";
 
 /**
  * Enhanced Gamification Hook
@@ -525,83 +425,6 @@ export const useGameification = (userId: string) => {
     },
     [userId],
   );
-
-  // Helper functions
-  const generateSampleLeaderboards = (): Leaderboard[] => [
-    {
-      id: "exp-weekly",
-      category: LeaderboardCategory.EXPERIENCE,
-      period: LeaderboardPeriod.WEEKLY,
-      name: "Weekly Experience Leaders",
-      description: "Top experience earners this week",
-      entries: Array.from({ length: 10 }, (_, i) => ({
-        rank: i + 1,
-        userId: `user-${i}`,
-        displayName: `Player ${i + 1}`,
-        value: Math.floor(Math.random() * 5000),
-        change: Math.floor(Math.random() * 10) - 5,
-        badge: i < 3 ? ["gold", "silver", "bronze"][i] : undefined,
-      })),
-      lastUpdated: new Date(),
-      totalParticipants: 1247,
-    },
-  ];
-
-  const generateSeasonalRewards = (): SeasonalReward[] => [
-    {
-      id: "winter-badge",
-      name: "Winter Warrior",
-      description: "Complete 10 challenges during winter season",
-      type: "badge",
-      requirement: {
-        type: "challenges",
-        value: 10,
-        description: "Complete 10 challenges",
-      },
-      claimed: false,
-      exclusive: true,
-    },
-  ];
-
-  const createBadgeFromReward = (reward: ChallengeReward): Badge => ({
-    id: `badge-${reward.value}`,
-    name: reward.description,
-    description: reward.description,
-    category: BadgeCategory.ACHIEVEMENT,
-    iconUrl: "/badges/achievement.png",
-    rarity: "common",
-    earnedAt: new Date(),
-    requirements: [],
-    hidden: false,
-  });
-
-  const generateLevelRewards = (level: number) => [
-    {
-      type: "badge" as const,
-      value: `level-${level}`,
-      description: `Level ${level} Achievement Badge`,
-    },
-  ];
-
-  const getPlayerTitle = (level: number): PlayerTitle => {
-    if (level >= 20) return PlayerTitle.LEGEND;
-    if (level >= 15) return PlayerTitle.GRANDMASTER;
-    if (level >= 12) return PlayerTitle.MASTER;
-    if (level >= 10) return PlayerTitle.EXPERT;
-    if (level >= 8) return PlayerTitle.ADEPT;
-    if (level >= 6) return PlayerTitle.PRACTITIONER;
-    if (level >= 4) return PlayerTitle.APPRENTICE;
-    return PlayerTitle.NOVICE;
-  };
-
-  const getUnlockedFeatures = (level: number): string[] => {
-    const features = [];
-    if (level >= 3) features.push("Custom Challenges");
-    if (level >= 5) features.push("Friend System");
-    if (level >= 8) features.push("Group Challenges");
-    if (level >= 10) features.push("Advanced Analytics");
-    return features;
-  };
 
   // Computed properties
   const currentLevel = playerProfile.level;

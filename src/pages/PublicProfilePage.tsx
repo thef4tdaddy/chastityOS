@@ -27,7 +27,7 @@ const PublicProfilePage: React.FC = () => {
   // Use extracted hooks
   const { profile, loading, error, isOwnProfile } = usePublicProfile(
     username,
-    user,
+    user || undefined,
   );
   const { statItems, isPrivate } = useProfileStats(profile);
   const {

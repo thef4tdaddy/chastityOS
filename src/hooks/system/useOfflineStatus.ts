@@ -320,6 +320,10 @@ export const useOfflineStatus = () => {
           type: string,
           listener: (event: Event) => void,
         ) => void;
+        removeEventListener?: (
+          type: string,
+          listener: (event: Event) => void,
+        ) => void;
       };
       mozConnection?: {
         downlink?: number;
@@ -330,6 +334,10 @@ export const useOfflineStatus = () => {
           type: string,
           listener: (event: Event) => void,
         ) => void;
+        removeEventListener?: (
+          type: string,
+          listener: (event: Event) => void,
+        ) => void;
       };
       webkitConnection?: {
         downlink?: number;
@@ -337,6 +345,10 @@ export const useOfflineStatus = () => {
         effectiveType?: string;
         type?: string;
         addEventListener?: (
+          type: string,
+          listener: (event: Event) => void,
+        ) => void;
+        removeEventListener?: (
           type: string,
           listener: (event: Event) => void,
         ) => void;

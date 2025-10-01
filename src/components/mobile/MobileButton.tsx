@@ -84,12 +84,12 @@ const RippleEffect: React.FC = () => (
 
 // Custom hook for haptic feedback handling
 const useButtonHaptics = (
-  hapticFeedback: "light" | "medium" | "heavy" | "none",
+  hapticFeedback?: "light" | "medium" | "heavy" | "none",
 ) => {
   const { light, medium, heavy } = useHapticFeedback();
 
   const triggerHapticFeedback = () => {
-    if (hapticFeedback === "none") return;
+    if (!hapticFeedback || hapticFeedback === "none") return;
 
     switch (hapticFeedback) {
       case "light":
@@ -109,10 +109,10 @@ const useButtonHaptics = (
 
 // Custom hook for button styling
 const useButtonStyling = (
-  variant: keyof typeof BUTTON_STYLES.variants,
-  size: keyof typeof BUTTON_STYLES.sizes,
-  fullWidth: boolean,
-  className: string,
+  variant?: keyof typeof BUTTON_STYLES.variants,
+  size?: keyof typeof BUTTON_STYLES.sizes,
+  fullWidth?: boolean,
+  className?: string,
 ) => {
   const baseClasses = `
     relative
@@ -137,9 +137,9 @@ const useButtonStyling = (
     disabled:cursor-not-allowed
     disabled:transform-none
     ${fullWidth ? "w-full" : ""}
-    ${BUTTON_STYLES.sizes[size]}
-    ${BUTTON_STYLES.variants[variant]}
-    ${className}
+    ${BUTTON_STYLES.sizes[size || "md"]}
+    ${BUTTON_STYLES.variants[variant || "primary"]}
+    ${className || ""}
   `
     .trim()
     .replace(/\s+/g, " ");
@@ -165,8 +165,13 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
     },
     ref,
   ) => {
-    const triggerHapticFeedback = useButtonHaptics(hapticFeedback);
-    const buttonClasses = useButtonStyling(variant, size, fullWidth, className);
+    const triggerHapticFeedback = useButtonHaptics(hapticFeedback as "light" | "medium" | "heavy" | "none");
+    const buttonClasses = useButtonStyling(
+      variant as keyof typeof BUTTON_STYLES.variants, 
+      size as keyof typeof BUTTON_STYLES.sizes, 
+      fullWidth, 
+      className
+    );
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (disabled || loading) return;
