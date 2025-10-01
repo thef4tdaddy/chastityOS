@@ -3,44 +3,87 @@
  */
 
 import { useState } from "react";
+import { Timestamp } from "firebase/firestore";
+import {
+  LinkCode,
+  AdminRelationship,
+  AdminPermissions,
+  SecuritySettings,
+  PrivacySettings,
+} from "@/types/account-linking";
+
+// Helper to create Timestamp from Date
+const toTimestamp = (date: Date): Timestamp => {
+  return Timestamp.fromDate(date);
+};
+
+// Mock permissions
+const mockPermissions: AdminPermissions = {
+  viewSessions: true,
+  viewEvents: true,
+  viewTasks: true,
+  viewSettings: true,
+  controlSessions: true,
+  manageTasks: true,
+  editSettings: false,
+  setGoals: false,
+  emergencyUnlock: false,
+  forceEnd: false,
+  viewAuditLog: true,
+  exportData: false,
+};
+
+// Mock security settings
+const mockSecurity: SecuritySettings = {
+  requireConfirmation: true,
+  auditLog: true,
+  sessionTimeout: 60,
+  requireReauth: false,
+  ipRestrictions: [],
+};
+
+// Mock privacy settings
+const mockPrivacy: PrivacySettings = {
+  wearerCanSeeAdminActions: true,
+  keyholderCanSeePrivateNotes: false,
+  shareStatistics: true,
+  retainDataAfterDisconnect: true,
+  anonymizeHistoricalData: false,
+};
 
 // Mock data for demonstration
-const mockInviteCodes = [
+const mockInviteCodes: LinkCode[] = [
   {
     id: "invite-1",
-    code: "ABC123",
-    submissiveUserId: "demo-user-123",
-    submissiveName: "Demo User",
-    createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 23.5), // 23.5 hours from now
-    isUsed: false,
+    wearerId: "demo-user-123",
+    createdAt: toTimestamp(new Date(Date.now() - 1000 * 60 * 30)), // 30 minutes ago
+    expiresAt: toTimestamp(new Date(Date.now() + 1000 * 60 * 60 * 23.5)), // 23.5 hours from now
+    status: "pending",
+    maxUses: 1,
+    usedBy: null,
   },
   {
     id: "invite-2",
-    code: "XYZ789",
-    submissiveUserId: "demo-user-123",
-    submissiveName: "Demo User",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 22), // 22 hours from now
-    isUsed: false,
+    wearerId: "demo-user-123",
+    createdAt: toTimestamp(new Date(Date.now() - 1000 * 60 * 60 * 2)), // 2 hours ago
+    expiresAt: toTimestamp(new Date(Date.now() + 1000 * 60 * 60 * 22)), // 22 hours from now
+    status: "pending",
+    maxUses: 1,
+    usedBy: null,
   },
 ];
 
-const mockActiveKeyholder = {
+const mockActiveKeyholder: AdminRelationship = {
   id: "rel-1",
-  submissiveUserId: "demo-user-123",
-  keyholderUserId: "keyholder-456",
-  status: "active" as const,
-  permissions: {
-    canLockSessions: true,
-    canUnlockSessions: false,
-    canCreateTasks: true,
-    canApproveTasks: true,
-    canViewFullHistory: true,
-    canEditGoals: false,
-  },
-  createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 1 week ago
-  acceptedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+  keyholderId: "keyholder-456",
+  wearerId: "demo-user-123",
+  establishedAt: toTimestamp(new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)), // 1 week ago
+  status: "active",
+  permissions: mockPermissions,
+  security: mockSecurity,
+  privacy: mockPrivacy,
+  linkMethod: "code",
+  lastAdminAccess: toTimestamp(new Date(Date.now() - 1000 * 60 * 60)), // 1 hour ago
 };
 
 type DemoScenario =
