@@ -11,6 +11,204 @@ import type { DBGoal } from "../../types/database";
 
 const logger = serviceLogger("useSessionActions");
 
+/**
+ * Helper function to handle session start
+ */
+async function handleStartSession(
+  canStart: boolean,
+  userId: string,
+  config: SessionConfig | undefined,
+  actions: {
+    startSessionCore: (config: {
+      goalDuration?: number;
+      isHardcoreMode: boolean;
+      keyholderApprovalRequired: boolean;
+      notes?: string;
+    }) => Promise<void>;
+    handleError: (err: unknown, context: string) => Error;
+    setIsStarting: (value: boolean) => void;
+    setError: (error: Error | null) => void;
+    onSessionStarted?: () => void;
+  },
+): Promise<void> {
+  if (!canStart) {
+    const err = new Error("Cannot start session");
+    actions.handleError(err, "Start session");
+    return;
+  }
+
+  actions.setIsStarting(true);
+  actions.setError(null);
+
+  try {
+    logger.debug("Starting session", { userId, config });
+
+    await actions.startSessionCore({
+      goalDuration: config?.goalDuration,
+      isHardcoreMode: config?.isHardcoreMode || false,
+      keyholderApprovalRequired: config?.keyholderApprovalRequired || false,
+      notes: config?.notes,
+    });
+
+    logger.info("Session started successfully", { userId });
+    actions.onSessionStarted?.();
+  } catch (err) {
+    actions.handleError(err, "Start session");
+    throw err;
+  } finally {
+    actions.setIsStarting(false);
+  }
+}
+
+/**
+ * Helper function to handle session end
+ */
+async function handleEndSession(
+  canEnd: boolean,
+  userId: string,
+  reason: string | undefined,
+  actions: {
+    stopSessionCore: (reason: string) => Promise<void>;
+    handleError: (err: unknown, context: string) => Error;
+    setIsEnding: (value: boolean) => void;
+    setError: (error: Error | null) => void;
+    onSessionEnded?: () => void;
+  },
+): Promise<void> {
+  if (!canEnd) {
+    const err = new Error("Cannot end session");
+    actions.handleError(err, "End session");
+    return;
+  }
+
+  actions.setIsEnding(true);
+  actions.setError(null);
+
+  try {
+    logger.debug("Ending session", { userId, reason });
+
+    await actions.stopSessionCore(reason || "User ended session");
+
+    logger.info("Session ended successfully", { userId });
+    actions.onSessionEnded?.();
+  } catch (err) {
+    actions.handleError(err, "End session");
+    throw err;
+  } finally {
+    actions.setIsEnding(false);
+  }
+}
+
+/**
+ * Helper function to handle session pause
+ */
+async function handlePauseSession(
+  canPause: boolean,
+  userId: string,
+  reason: string | undefined,
+  actions: {
+    pauseSessionCore: (reason: string) => Promise<void>;
+    handleError: (err: unknown, context: string) => Error;
+    setError: (error: Error | null) => void;
+    onSessionPaused?: () => void;
+  },
+): Promise<void> {
+  if (!canPause) {
+    const err = new Error("Cannot pause session");
+    actions.handleError(err, "Pause session");
+    return;
+  }
+
+  actions.setError(null);
+
+  try {
+    logger.debug("Pausing session", { userId, reason });
+
+    await actions.pauseSessionCore(reason || "bathroom");
+
+    logger.info("Session paused successfully", { userId });
+    actions.onSessionPaused?.();
+  } catch (err) {
+    actions.handleError(err, "Pause session");
+    throw err;
+  }
+}
+
+/**
+ * Helper function to handle session resume
+ */
+async function handleResumeSession(
+  canResume: boolean,
+  userId: string,
+  actions: {
+    resumeSessionCore: () => Promise<void>;
+    handleError: (err: unknown, context: string) => Error;
+    setError: (error: Error | null) => void;
+    onSessionResumed?: () => void;
+  },
+): Promise<void> {
+  if (!canResume) {
+    const err = new Error("Cannot resume session");
+    actions.handleError(err, "Resume session");
+    return;
+  }
+
+  actions.setError(null);
+
+  try {
+    logger.debug("Resuming session", { userId });
+
+    await actions.resumeSessionCore();
+
+    logger.info("Session resumed successfully", { userId });
+    actions.onSessionResumed?.();
+  } catch (err) {
+    actions.handleError(err, "Resume session");
+    throw err;
+  }
+}
+
+/**
+ * Helper hook to calculate session action permissions
+ */
+function useSessionPermissions(params: {
+  isActive: boolean;
+  canSelfModify: boolean;
+  isStarting: boolean;
+  isEnding: boolean;
+  isPaused: boolean;
+  pauseStatus: { canResume: boolean };
+  cooldownState: { isInCooldown: boolean };
+}) {
+  const canStart = useMemo(() => {
+    return !params.isActive && params.canSelfModify && !params.isStarting;
+  }, [params.isActive, params.canSelfModify, params.isStarting]);
+
+  const canEnd = useMemo(() => {
+    return params.isActive && params.canSelfModify && !params.isEnding;
+  }, [params.isActive, params.canSelfModify, params.isEnding]);
+
+  const canPause = useMemo(() => {
+    return (
+      params.isActive &&
+      !params.isPaused &&
+      params.pauseStatus.canResume &&
+      !params.cooldownState.isInCooldown
+    );
+  }, [
+    params.isActive,
+    params.isPaused,
+    params.pauseStatus.canResume,
+    params.cooldownState.isInCooldown,
+  ]);
+
+  const canResume = useMemo(() => {
+    return params.isActive && params.isPaused && params.pauseStatus.canResume;
+  }, [params.isActive, params.isPaused, params.pauseStatus.canResume]);
+
+  return { canStart, canEnd, canPause, canResume };
+}
+
 export interface SessionConfig {
   goalDuration?: number;
   isHardcoreMode?: boolean;
@@ -89,27 +287,16 @@ export function useSessionActions({
   const isPausing = pauseStatus.pauseCount > 0 && pauseStatus.isPaused;
   const isResuming = false; // Track this internally if needed
 
-  // Permissions
-  const canStart = useMemo(() => {
-    return !isActive && canSelfModify && !isStarting;
-  }, [isActive, canSelfModify, isStarting]);
-
-  const canEnd = useMemo(() => {
-    return isActive && canSelfModify && !isEnding;
-  }, [isActive, canSelfModify, isEnding]);
-
-  const canPause = useMemo(() => {
-    return (
-      isActive &&
-      !isPaused &&
-      pauseStatus.canResume &&
-      !cooldownState.isInCooldown
-    );
-  }, [isActive, isPaused, pauseStatus.canResume, cooldownState.isInCooldown]);
-
-  const canResume = useMemo(() => {
-    return isActive && isPaused && pauseStatus.canResume;
-  }, [isActive, isPaused, pauseStatus.canResume]);
+  // Calculate permissions using helper hook
+  const { canStart, canEnd, canPause, canResume } = useSessionPermissions({
+    isActive,
+    canSelfModify,
+    isStarting,
+    isEnding,
+    isPaused,
+    pauseStatus,
+    cooldownState,
+  });
 
   // Clear error
   const clearError = useCallback(() => {
@@ -131,33 +318,13 @@ export function useSessionActions({
   // Start session
   const startSession = useCallback(
     async (config?: SessionConfig): Promise<void> => {
-      if (!canStart) {
-        const err = new Error("Cannot start session");
-        handleError(err, "Start session");
-        return;
-      }
-
-      setIsStarting(true);
-      setError(null);
-
-      try {
-        logger.debug("Starting session", { userId, config });
-
-        await startSessionCore({
-          goalDuration: config?.goalDuration,
-          isHardcoreMode: config?.isHardcoreMode || false,
-          keyholderApprovalRequired: config?.keyholderApprovalRequired || false,
-          notes: config?.notes,
-        });
-
-        logger.info("Session started successfully", { userId });
-        onSessionStarted?.();
-      } catch (err) {
-        handleError(err, "Start session");
-        throw err;
-      } finally {
-        setIsStarting(false);
-      }
+      await handleStartSession(canStart, userId, config, {
+        startSessionCore,
+        handleError,
+        setIsStarting,
+        setError,
+        onSessionStarted,
+      });
     },
     [canStart, userId, startSessionCore, handleError, onSessionStarted],
   );
@@ -165,28 +332,13 @@ export function useSessionActions({
   // End session
   const endSession = useCallback(
     async (reason?: string): Promise<void> => {
-      if (!canEnd) {
-        const err = new Error("Cannot end session");
-        handleError(err, "End session");
-        return;
-      }
-
-      setIsEnding(true);
-      setError(null);
-
-      try {
-        logger.debug("Ending session", { userId, reason });
-
-        await stopSessionCore(reason || "User ended session");
-
-        logger.info("Session ended successfully", { userId });
-        onSessionEnded?.();
-      } catch (err) {
-        handleError(err, "End session");
-        throw err;
-      } finally {
-        setIsEnding(false);
-      }
+      await handleEndSession(canEnd, userId, reason, {
+        stopSessionCore,
+        handleError,
+        setIsEnding,
+        setError,
+        onSessionEnded,
+      });
     },
     [canEnd, userId, stopSessionCore, handleError, onSessionEnded],
   );
@@ -194,50 +346,24 @@ export function useSessionActions({
   // Pause session
   const pauseSession = useCallback(
     async (reason?: string): Promise<void> => {
-      if (!canPause) {
-        const err = new Error("Cannot pause session");
-        handleError(err, "Pause session");
-        return;
-      }
-
-      setError(null);
-
-      try {
-        logger.debug("Pausing session", { userId, reason });
-
-        await pauseSessionCore(reason || "bathroom");
-
-        logger.info("Session paused successfully", { userId });
-        onSessionPaused?.();
-      } catch (err) {
-        handleError(err, "Pause session");
-        throw err;
-      }
+      await handlePauseSession(canPause, userId, reason, {
+        pauseSessionCore,
+        handleError,
+        setError,
+        onSessionPaused,
+      });
     },
     [canPause, userId, pauseSessionCore, handleError, onSessionPaused],
   );
 
   // Resume session
   const resumeSession = useCallback(async (): Promise<void> => {
-    if (!canResume) {
-      const err = new Error("Cannot resume session");
-      handleError(err, "Resume session");
-      return;
-    }
-
-    setError(null);
-
-    try {
-      logger.debug("Resuming session", { userId });
-
-      await resumeSessionCore();
-
-      logger.info("Session resumed successfully", { userId });
-      onSessionResumed?.();
-    } catch (err) {
-      handleError(err, "Resume session");
-      throw err;
-    }
+    await handleResumeSession(canResume, userId, {
+      resumeSessionCore,
+      handleError,
+      setError,
+      onSessionResumed,
+    });
   }, [canResume, userId, resumeSessionCore, handleError, onSessionResumed]);
 
   return {

@@ -56,96 +56,85 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
-export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [state, setState] = useState<AppState>({
-    isInitialized: false,
-    isOnline: navigator.onLine,
-    syncStatus: null,
-    lastSyncTime: null,
-    hasUnreadNotifications: false,
-    connectionType: null,
-    sessionPersistenceReady: false,
-  });
+// Helper function for app initialization
+const performAppInitialization = async (
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
+): Promise<void> => {
+  try {
+    logger.info("Initializing application");
 
-  // Initialize app on mount
+    await db.initialize();
+    logger.info("Dexie database initialized");
+
+    await preloadCriticalServices();
+    await achievementIntegration.initialize();
+
+    logger.info("Session persistence service ready");
+    setState((prev) => ({ ...prev, sessionPersistenceReady: true }));
+
+    const syncStatus = "synced" as SyncStatus;
+    const connection = (navigator as NavigatorWithConnection).connection;
+    const connectionType = connection?.effectiveType || "unknown";
+
+    setState((prev) => ({
+      ...prev,
+      isInitialized: true,
+      syncStatus,
+      connectionType,
+    }));
+
+    logger.info("Application initialized successfully", { connectionType });
+  } catch (error) {
+    logger.error("Failed to initialize application", {
+      error: error as Error,
+    });
+    setState((prev) => ({
+      ...prev,
+      isInitialized: false,
+    }));
+  }
+};
+
+// Helper to create connection event handlers
+const createConnectionHandlers = (
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
+) => {
+  const handleOnline = () => {
+    setState((prev) => ({ ...prev, isOnline: true }));
+    logger.debug("App went online");
+  };
+
+  const handleOffline = () => {
+    setState((prev) => ({ ...prev, isOnline: false }));
+    logger.debug("App went offline");
+  };
+
+  const handleConnectionChange = () => {
+    const connection = (navigator as NavigatorWithConnection).connection;
+    if (connection) {
+      setState((prev) => ({
+        ...prev,
+        connectionType: connection.effectiveType || "unknown",
+      }));
+      logger.debug("Connection type changed", {
+        type: connection.effectiveType,
+      });
+    }
+  };
+
+  return { handleOnline, handleOffline, handleConnectionChange };
+};
+
+// Helper hook for connection event listeners
+const useConnectionListeners = (
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
+) => {
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        logger.info("Initializing application");
-
-        // Initialize Dexie database first
-        await db.initialize();
-        logger.info("Dexie database initialized");
-
-        // Preload critical Firebase services
-        await preloadCriticalServices();
-
-        // Initialize achievement system
-        await achievementIntegration.initialize();
-
-        // Initialize session persistence service
-        // The service initializes automatically as a singleton
-        logger.info("Session persistence service ready");
-        setState((prev) => ({ ...prev, sessionPersistenceReady: true }));
-
-        // Initialize sync service
-        // FirebaseSync initializes automatically
-
-        // Set initial sync status
-        const syncStatus = "synced" as SyncStatus;
-
-        // Detect connection type
-        const connection = (navigator as NavigatorWithConnection).connection;
-        const connectionType = connection?.effectiveType || "unknown";
-
-        setState((prev) => ({
-          ...prev,
-          isInitialized: true,
-          syncStatus,
-          connectionType,
-        }));
-
-        logger.info("Application initialized successfully", { connectionType });
-      } catch (error) {
-        logger.error("Failed to initialize application", {
-          error: error as Error,
-        });
-        setState((prev) => ({
-          ...prev,
-          isInitialized: false,
-        }));
-      }
-    };
-
-    initializeApp();
-
-    // Listen for online/offline events
-    const handleOnline = () => {
-      setState((prev) => ({ ...prev, isOnline: true }));
-      logger.debug("App went online");
-    };
-
-    const handleOffline = () => {
-      setState((prev) => ({ ...prev, isOnline: false }));
-      logger.debug("App went offline");
-    };
+    const { handleOnline, handleOffline, handleConnectionChange } =
+      createConnectionHandlers(setState);
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
-    // Listen for connection changes
-    const handleConnectionChange = () => {
-      const connection = (navigator as NavigatorWithConnection).connection;
-      if (connection) {
-        setState((prev) => ({
-          ...prev,
-          connectionType: connection.effectiveType || "unknown",
-        }));
-        logger.debug("Connection type changed", {
-          type: connection.effectiveType,
-        });
-      }
-    };
 
     if ("connection" in navigator) {
       (navigator as NavigatorWithConnection).connection?.addEventListener(
@@ -165,85 +154,107 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         );
       }
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // setState is stable, no need to include in deps
+};
 
-  const actions: AppActions = {
-    initializeApp: async () => {
-      if (state.isInitialized) {
-        logger.debug("App already initialized, skipping");
-        return;
-      }
+// Helper to create app actions
+const createAppActions = (
+  state: AppState,
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
+): AppActions => ({
+  initializeApp: async () => {
+    if (state.isInitialized) {
+      logger.debug("App already initialized, skipping");
+      return;
+    }
 
-      setState((prev) => ({ ...prev, isInitialized: false }));
+    setState((prev) => ({ ...prev, isInitialized: false }));
 
-      try {
-        // Initialize Dexie database first
-        await db.initialize();
-        logger.info("Dexie database re-initialized");
+    try {
+      await db.initialize();
+      logger.info("Dexie database re-initialized");
+      await preloadCriticalServices();
 
-        await preloadCriticalServices();
-        // FirebaseSync initializes automatically
+      const syncStatus = "synced" as SyncStatus;
+      setState((prev) => ({
+        ...prev,
+        isInitialized: true,
+        syncStatus,
+      }));
+      logger.info("App re-initialized successfully");
+    } catch (error) {
+      logger.error("Failed to re-initialize app", { error: error as Error });
+    }
+  },
 
-        const syncStatus = "synced" as SyncStatus;
+  triggerSync: async (userId: string) => {
+    logger.debug("Triggering manual sync", { userId });
 
+    try {
+      await firebaseSync.sync();
+      const result = {
+        success: true,
+        data: {
+          syncStatus: "synced" as SyncStatus,
+          lastSyncTime: new Date(),
+        },
+      };
+
+      if (result.success && result.data) {
         setState((prev) => ({
           ...prev,
-          isInitialized: true,
-          syncStatus,
+          syncStatus: result.data.syncStatus,
+          lastSyncTime: result.data.lastSyncTime,
         }));
-
-        logger.info("App re-initialized successfully");
-      } catch (error) {
-        logger.error("Failed to re-initialize app", { error: error as Error });
+        logger.info("Manual sync completed", { userId });
       }
-    },
+    } catch (error) {
+      const result = {
+        success: false,
+        error: error instanceof Error ? error.message : "Sync failed",
+      };
+      logger.warn("Manual sync failed", { userId, error: result.error });
+    }
+  },
 
-    triggerSync: async (userId: string) => {
-      logger.debug("Triggering manual sync", { userId });
+  markNotificationsRead: () => {
+    setState((prev) => ({
+      ...prev,
+      hasUnreadNotifications: false,
+    }));
+    logger.debug("Notifications marked as read");
+  },
 
-      try {
-        await firebaseSync.sync();
-        const result = {
-          success: true,
-          data: {
-            syncStatus: "synced" as SyncStatus,
-            lastSyncTime: new Date(),
-          },
-        };
+  updateConnectionStatus: (isOnline: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      isOnline,
+    }));
+    logger.debug("Connection status updated", { isOnline });
+  },
+});
 
-        if (result.success && result.data) {
-          setState((prev) => ({
-            ...prev,
-            syncStatus: result.data.syncStatus,
-            lastSyncTime: result.data.lastSyncTime,
-          }));
-          logger.info("Manual sync completed", { userId });
-        }
-      } catch (error) {
-        const result = {
-          success: false,
-          error: error instanceof Error ? error.message : "Sync failed",
-        };
-        logger.warn("Manual sync failed", { userId, error: result.error });
-      }
-    },
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [state, setState] = useState<AppState>({
+    isInitialized: false,
+    isOnline: navigator.onLine,
+    syncStatus: null,
+    lastSyncTime: null,
+    hasUnreadNotifications: false,
+    connectionType: null,
+    sessionPersistenceReady: false,
+  });
 
-    markNotificationsRead: () => {
-      setState((prev) => ({
-        ...prev,
-        hasUnreadNotifications: false,
-      }));
-      logger.debug("Notifications marked as read");
-    },
+  // Initialize app on mount
+  useEffect(() => {
+    performAppInitialization(setState);
+  }, []);
 
-    updateConnectionStatus: (isOnline: boolean) => {
-      setState((prev) => ({
-        ...prev,
-        isOnline,
-      }));
-      logger.debug("Connection status updated", { isOnline });
-    },
-  };
+  // Setup connection listeners
+  useConnectionListeners(setState);
+
+  const actions = createAppActions(state, setState);
 
   const contextValue: AppContextType = {
     state,

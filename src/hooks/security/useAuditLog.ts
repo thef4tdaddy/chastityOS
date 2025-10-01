@@ -4,7 +4,7 @@
  * Complete audit logging system for transparency, compliance, and security monitoring
  * across all user actions.
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo, Dispatch, SetStateAction } from "react";
 import {
   AuditLogState,
   AuditEntry,
@@ -36,7 +36,11 @@ import {
   generatePDF,
   calculateSecurityScore,
   generateSecurityRecommendations,
-} from "./audit-utils";
+  applyTextSearch,
+  applySearchFilters,
+  applySorting,
+  applyPagination,
+} from "../../utils/security/audit-utils";
 
 interface UseAuditLogOptions {
   userId: string;
@@ -120,105 +124,6 @@ export const useAuditLog = (options: UseAuditLogOptions) => {
   };
 };
 
-// Search helper functions
-function applyTextSearch(entries: AuditEntry[], query?: string): AuditEntry[] {
-  if (!query) return entries;
-
-  const searchTerm = query.toLowerCase();
-  return entries.filter(
-    (entry) =>
-      entry.details.description.toLowerCase().includes(searchTerm) ||
-      entry.action.toLowerCase().includes(searchTerm),
-  );
-}
-
-function applySearchFilters(
-  entries: AuditEntry[],
-  filters?: AuditFilter,
-): AuditEntry[] {
-  if (!filters) return entries;
-
-  let results = entries;
-
-  if (filters.startDate && filters.endDate) {
-    results = results.filter(
-      (entry) =>
-        entry.timestamp >= filters.startDate! &&
-        entry.timestamp <= filters.endDate!,
-    );
-  }
-
-  if (filters.userId) {
-    results = results.filter((entry) => entry.userId === filters.userId);
-  }
-
-  if (filters.actions && filters.actions.length > 0) {
-    results = results.filter((entry) =>
-      filters.actions!.includes(entry.action),
-    );
-  }
-
-  if (filters.categories && filters.categories.length > 0) {
-    results = results.filter((entry) =>
-      filters.categories!.includes(entry.category),
-    );
-  }
-
-  if (filters.severity) {
-    results = results.filter((entry) => entry.severity === filters.severity);
-  }
-
-  if (filters.outcome) {
-    results = results.filter((entry) => entry.outcome === filters.outcome);
-  }
-
-  return results;
-}
-
-function applySorting(
-  entries: AuditEntry[],
-  sortBy?: string,
-  sortOrder?: "asc" | "desc",
-): AuditEntry[] {
-  if (!sortBy) return entries;
-
-  return [...entries].sort((a, b) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case "timestamp":
-        comparison = a.timestamp.getTime() - b.timestamp.getTime();
-        break;
-      case "severity":
-        const severityOrder: Record<string, number> = {
-          low: 0,
-          medium: 1,
-          high: 2,
-          critical: 3,
-        };
-        comparison = severityOrder[a.severity] - severityOrder[b.severity];
-        break;
-      case "category":
-        comparison = a.category.localeCompare(b.category);
-        break;
-    }
-
-    return sortOrder === "desc" ? -comparison : comparison;
-  });
-}
-
-function applyPagination(
-  entries: AuditEntry[],
-  limit?: number,
-  offset?: number,
-): AuditEntry[] {
-  if (!limit && !offset) return entries;
-
-  const start = offset || 0;
-  const end = start + (limit || entries.length);
-  return entries.slice(start, end);
-}
-
 // Initialization and handler creation helpers
 function initializeAuditState(retentionDays: number): AuditLogState {
   return {
@@ -243,9 +148,9 @@ function initializeAuditState(retentionDays: number): AuditLogState {
 async function loadAuditEntries(
   userId: string,
   relationshipId: string | undefined,
-  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setAuditState: Dispatch<SetStateAction<AuditLogState>>,
+  setError: Dispatch<SetStateAction<string | null>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
 ): Promise<void> {
   try {
     setIsLoading(true);
@@ -264,69 +169,62 @@ async function loadAuditEntries(
   }
 }
 
+// Helper to create security event entry
+async function createSecurityEventEntry(
+  event: SecurityEvent,
+  userId: string,
+  relationshipId: string | undefined,
+  auditState: AuditLogState,
+): Promise<AuditEntry> {
+  const details: AuditDetails = {
+    description: event.description,
+    metadata: event.metadata,
+  };
+
+  return {
+    id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timestamp: new Date(),
+    userId,
+    action: AuditAction.PERMISSION_CHECK,
+    category: AuditCategory.SECURITY,
+    context: { relationshipId },
+    details,
+    severity: event.severity,
+    outcome:
+      event.type === "failed_login"
+        ? AuditOutcome.FAILURE
+        : AuditOutcome.SUCCESS,
+    ipAddress: auditState.privacySettings.includeIPAddresses
+      ? await getClientIP()
+      : undefined,
+    userAgent: auditState.privacySettings.includeUserAgent
+      ? navigator.userAgent
+      : undefined,
+  };
+}
+
 function createActionHandlers(
   userId: string,
   relationshipId: string | undefined,
   auditState: AuditLogState,
-  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+  setAuditState: Dispatch<SetStateAction<AuditLogState>>,
 ) {
-  const logAction = useCallback(
-    async (
-      action: AuditAction,
-      details: AuditDetails,
-      context?: AuditContext,
-    ): Promise<void> => {
-      try {
-        const entry: AuditEntry = {
-          id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          timestamp: new Date(),
-          userId,
-          action,
-          category: getCategoryForAction(action),
-          context: context || { relationshipId },
-          details,
-          severity: AuditSeverity.LOW,
-          outcome: AuditOutcome.SUCCESS,
-          ipAddress: auditState.privacySettings.includeIPAddresses
-            ? await getClientIP()
-            : undefined,
-          userAgent: auditState.privacySettings.includeUserAgent
-            ? navigator.userAgent
-            : undefined,
-        };
-
-        await saveAuditEntry(entry);
-        setAuditState((prev) => ({
-          ...prev,
-          recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
-        }));
-      } catch {
-        // Failed to log audit action
-      }
-    },
-    [userId, relationshipId, auditState.privacySettings, setAuditState],
-  );
-
-  const logSecurityEvent = useCallback(
-    async (event: SecurityEvent): Promise<void> => {
-      const details: AuditDetails = {
-        description: event.description,
-        metadata: event.metadata,
-      };
-
+  const logAction = async (
+    action: AuditAction,
+    details: AuditDetails,
+    context?: AuditContext,
+  ): Promise<void> => {
+    try {
       const entry: AuditEntry = {
-        id: `security_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date(),
         userId,
-        action: AuditAction.PERMISSION_CHECK,
-        category: AuditCategory.SECURITY,
-        context: { relationshipId },
+        action,
+        category: getCategoryForAction(action),
+        context: context || { relationshipId },
         details,
-        severity: event.severity,
-        outcome:
-          event.type === "failed_login"
-            ? AuditOutcome.FAILURE
-            : AuditOutcome.SUCCESS,
+        severity: AuditSeverity.LOW,
+        outcome: AuditOutcome.SUCCESS,
         ipAddress: auditState.privacySettings.includeIPAddresses
           ? await getClientIP()
           : undefined,
@@ -340,74 +238,84 @@ function createActionHandlers(
         ...prev,
         recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
       }));
-    },
-    [userId, relationshipId, auditState.privacySettings, setAuditState],
-  );
+    } catch {
+      // Failed to log audit action
+    }
+  };
 
-  const logPermissionCheck = useCallback(
-    async (
-      permission: string,
-      granted: boolean,
-      context?: PermissionContext,
-    ): Promise<void> => {
-      const details: AuditDetails = {
-        description: `Permission check: ${permission}`,
-        metadata: { permission, granted, context },
-      };
+  const logSecurityEvent = async (event: SecurityEvent): Promise<void> => {
+    const entry = await createSecurityEventEntry(
+      event,
+      userId,
+      relationshipId,
+      auditState,
+    );
 
-      await logAction(
-        AuditAction.PERMISSION_CHECK,
-        details,
-        context as AuditContext,
-      );
-    },
-    [logAction],
-  );
+    await saveAuditEntry(entry);
+    setAuditState((prev) => ({
+      ...prev,
+      recentEntries: [entry, ...prev.recentEntries.slice(0, 99)],
+    }));
+  };
+
+  const logPermissionCheck = async (
+    permission: string,
+    granted: boolean,
+    context?: PermissionContext,
+  ): Promise<void> => {
+    const details: AuditDetails = {
+      description: `Permission check: ${permission}`,
+      metadata: { permission, granted, context },
+    };
+
+    await logAction(
+      AuditAction.PERMISSION_CHECK,
+      details,
+      context as AuditContext,
+    );
+  };
 
   return { logAction, logSecurityEvent, logPermissionCheck };
 }
 
 function createQueryHandlers(auditState: AuditLogState) {
-  const getEntriesByDateRange = useCallback(
-    async (start: Date, end: Date): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) => entry.timestamp >= start && entry.timestamp <= end,
-      );
-    },
-    [auditState.recentEntries],
-  );
+  const getEntriesByDateRange = async (
+    start: Date,
+    end: Date,
+  ): Promise<AuditEntry[]> => {
+    return auditState.recentEntries.filter(
+      (entry) => entry.timestamp >= start && entry.timestamp <= end,
+    );
+  };
 
-  const getEntriesByCategory = useCallback(
-    async (category: AuditCategory): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) => entry.category === category,
-      );
-    },
-    [auditState.recentEntries],
-  );
+  const getEntriesByCategory = async (
+    category: AuditCategory,
+  ): Promise<AuditEntry[]> => {
+    return auditState.recentEntries.filter(
+      (entry) => entry.category === category,
+    );
+  };
 
-  const getEntriesByUser = useCallback(
-    async (targetUserId: string): Promise<AuditEntry[]> => {
-      return auditState.recentEntries.filter(
-        (entry) =>
-          entry.userId === targetUserId ||
-          entry.context.targetUserId === targetUserId,
-      );
-    },
-    [auditState.recentEntries],
-  );
+  const getEntriesByUser = async (
+    targetUserId: string,
+  ): Promise<AuditEntry[]> => {
+    return auditState.recentEntries.filter(
+      (entry) =>
+        entry.userId === targetUserId ||
+        entry.context.targetUserId === targetUserId,
+    );
+  };
 
-  const searchEntries = useCallback(
-    async (query: AuditSearchQuery): Promise<AuditEntry[]> => {
-      let results = auditState.recentEntries;
-      results = applyTextSearch(results, query.query);
-      results = applySearchFilters(results, query.filters);
-      results = applySorting(results, query.sortBy, query.sortOrder);
-      results = applyPagination(results, query.limit, query.offset);
-      return results;
-    },
-    [auditState.recentEntries],
-  );
+  const searchEntries = async (
+    query: AuditSearchQuery,
+  ): Promise<AuditEntry[]> => {
+    let results = auditState.recentEntries;
+    results = applyTextSearch(results, query.query);
+    results = applySearchFilters(results, query.filters);
+    results = applySorting(results, query.sortBy, query.sortOrder);
+    results = applyPagination(results, query.limit, query.offset);
+    return results;
+  };
 
   return {
     getEntriesByDateRange,
@@ -417,19 +325,100 @@ function createQueryHandlers(auditState: AuditLogState) {
   };
 }
 
+// Helper to get compliance report (future feature)
+function _getComplianceReport(auditState: AuditLogState): ComplianceReport {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const periodEntries = auditState.recentEntries.filter(
+    (entry) => entry.timestamp >= thirtyDaysAgo,
+  );
+
+  const actionsByCategory = periodEntries.reduce(
+    (acc, entry) => {
+      acc[entry.category] = (acc[entry.category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<AuditCategory, number>,
+  );
+
+  const securityScore = calculateSecurityScore(periodEntries);
+
+  return {
+    period: {
+      start: thirtyDaysAgo,
+      end: now,
+    },
+    totalActions: periodEntries.length,
+    actionsByCategory,
+    securityScore,
+    recommendations: generateSecurityRecommendations(periodEntries),
+  };
+}
+
+// Helper to export audit log (future feature)
+async function _exportAuditLog(
+  auditState: AuditLogState,
+  format: ExportFormat,
+  filters?: AuditFilter,
+): Promise<AuditExport> {
+  let entries = auditState.recentEntries;
+
+  // Apply filters if provided
+  if (filters) {
+    entries = applyAuditFilters(entries, filters);
+  }
+
+  // Generate export data based on format
+  let data: string | Uint8Array;
+  let filename: string;
+
+  switch (format) {
+    case "json":
+      data = JSON.stringify(entries, null, 2);
+      filename = `audit-log-${Date.now()}.json`;
+      break;
+    case "csv":
+      data = convertToCSV(entries);
+      filename = `audit-log-${Date.now()}.csv`;
+      break;
+    case "pdf":
+      data = await generatePDF(entries);
+      filename = `audit-log-${Date.now()}.pdf`;
+      break;
+    default:
+      throw new Error(`Unsupported export format: ${format}`);
+  }
+
+  return {
+    format,
+    data,
+    filename,
+    generatedAt: new Date(),
+  };
+}
+
+// Helper to share with keyholder (future feature)
+async function _shareWithKeyholder(
+  _relationshipId: string | undefined,
+  _entries: string[],
+): Promise<void> {
+  if (!_relationshipId) {
+    throw new Error("No relationship context for sharing");
+  }
+  // In real implementation, this would share selected entries with keyholder
+}
+
 function createManagementHandlers(
   userId: string,
   auditState: AuditLogState,
-  setAuditState: React.Dispatch<React.SetStateAction<AuditLogState>>,
+  setAuditState: Dispatch<SetStateAction<AuditLogState>>,
 ) {
-  const applyFilters = useCallback(
-    (filters: AuditFilter): void => {
-      setAuditState((prev) => ({ ...prev, filters }));
-    },
-    [setAuditState],
-  );
+  const applyFilters = (filters: AuditFilter): void => {
+    setAuditState((prev) => ({ ...prev, filters }));
+  };
 
-  const getSecuritySummary = useCallback((): SecurityAuditSummary => {
+  const getSecuritySummary = (): SecurityAuditSummary => {
     const securityEntries = auditState.recentEntries.filter(
       (entry) => entry.category === AuditCategory.SECURITY,
     );
@@ -461,108 +450,18 @@ function createManagementHandlers(
       dataExports,
       lastSecurityEvent,
     };
-  }, [auditState.recentEntries]);
-
-  // Get compliance report (not yet exposed in return)
-  const _getComplianceReport = useCallback((): ComplianceReport => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const periodEntries = auditState.recentEntries.filter(
-      (entry) => entry.timestamp >= thirtyDaysAgo,
-    );
-
-    const actionsByCategory = periodEntries.reduce(
-      (acc, entry) => {
-        acc[entry.category] = (acc[entry.category] || 0) + 1;
-        return acc;
-      },
-      {} as Record<AuditCategory, number>,
-    );
-
-    const securityScore = calculateSecurityScore(periodEntries);
-
-    return {
-      period: {
-        start: thirtyDaysAgo,
-        end: now,
-      },
-      totalActions: periodEntries.length,
-      actionsByCategory,
-      securityScore,
-      recommendations: generateSecurityRecommendations(periodEntries),
-    };
-  }, [auditState.recentEntries]);
-
-  // Export audit log (not yet exposed in return)
-  const _exportAuditLog = useCallback(
-    async (
-      format: ExportFormat,
-      filters?: AuditFilter,
-    ): Promise<AuditExport> => {
-      let entries = auditState.recentEntries;
-
-      // Apply filters if provided
-      if (filters) {
-        // Implementation would filter entries based on criteria
-        entries = applyAuditFilters(entries, filters);
-      }
-
-      // Generate export data based on format
-      let data: string | Uint8Array;
-      let filename: string;
-
-      switch (format) {
-        case "json":
-          data = JSON.stringify(entries, null, 2);
-          filename = `audit-log-${Date.now()}.json`;
-          break;
-        case "csv":
-          data = convertToCSV(entries);
-          filename = `audit-log-${Date.now()}.csv`;
-          break;
-        case "pdf":
-          data = await generatePDF(entries);
-          filename = `audit-log-${Date.now()}.pdf`;
-          break;
-        default:
-          throw new Error(`Unsupported export format: ${format}`);
-      }
-
-      return {
-        format,
-        data,
-        filename,
-        generatedAt: new Date(),
-      };
-    },
-    [auditState.recentEntries],
-  );
-
-  // Share with keyholder (not yet exposed in return)
-  const _shareWithKeyholder = useCallback(
-    async (_entries: string[]): Promise<void> => {
-      if (!relationshipId) {
-        throw new Error("No relationship context for sharing");
-      }
-
-      // In real implementation, this would share selected entries with keyholder
-      // In real implementation, this would share selected entries with keyholder
-    },
-    [],
-  );
+  };
 
   // Update privacy settings
-  const updatePrivacySettings = useCallback(
-    async (settings: Partial<AuditPrivacySettings>): Promise<void> => {
-      setAuditState((prev) => ({
-        ...prev,
-        privacySettings: { ...prev.privacySettings, ...settings },
-      }));
-      await savePrivacySettings(userId, settings);
-    },
-    [userId, setAuditState],
-  );
+  const updatePrivacySettings = async (
+    settings: Partial<AuditPrivacySettings>,
+  ): Promise<void> => {
+    setAuditState((prev) => ({
+      ...prev,
+      privacySettings: { ...prev.privacySettings, ...settings },
+    }));
+    await savePrivacySettings(userId, settings);
+  };
 
   return { applyFilters, getSecuritySummary, updatePrivacySettings };
 }

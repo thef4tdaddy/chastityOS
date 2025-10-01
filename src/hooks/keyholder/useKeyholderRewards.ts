@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { serverTimestamp } from "firebase/firestore";
 import { KeyholderReward, KeyholderPunishment, TaskData } from "../../types";
 
@@ -28,36 +28,6 @@ export function useKeyholderRewards({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const addReward = useCallback(
-    async (reward: KeyholderReward) => {
-      await handleAddReward({
-        reward,
-        userId,
-        addTask,
-        saveDataToFirestore,
-        requiredKeyholderDurationSeconds,
-        setIsLoading,
-        setError,
-      });
-    },
-    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds],
-  );
-
-  const addPunishment = useCallback(
-    async (punishment: KeyholderPunishment) => {
-      await handleAddPunishment({
-        punishment,
-        userId,
-        addTask,
-        saveDataToFirestore,
-        requiredKeyholderDurationSeconds,
-        setIsLoading,
-        setError,
-      });
-    },
-    [userId, addTask, saveDataToFirestore, requiredKeyholderDurationSeconds],
-  );
-
   const updateDuration = useCallback(
     async (newDurationSeconds: number) => {
       await handleUpdateDuration({
@@ -70,30 +40,22 @@ export function useKeyholderRewards({
     [saveDataToFirestore],
   );
 
-  const adjustTimeFromReward = useCallback(
-    async (timeSeconds: number) => {
-      await handleAdjustTimeFromReward({
-        timeSeconds,
-        requiredKeyholderDurationSeconds,
-        updateDuration,
-        setIsLoading,
-        setError,
-      });
-    },
-    [requiredKeyholderDurationSeconds, updateDuration],
-  );
+  const { addReward, addPunishment } = useRewardPunishmentActions({
+    userId,
+    addTask,
+    saveDataToFirestore,
+    requiredKeyholderDurationSeconds,
+    setIsLoading,
+    setError,
+  });
 
-  const adjustTimeFromPunishment = useCallback(
-    async (timeSeconds: number) => {
-      await handleAdjustTimeFromPunishment({
-        timeSeconds,
-        requiredKeyholderDurationSeconds,
-        updateDuration,
-        setIsLoading,
-        setError,
-      });
+  const { adjustTimeFromReward, adjustTimeFromPunishment } = useTimeAdjustments(
+    {
+      requiredKeyholderDurationSeconds,
+      updateDuration,
+      setIsLoading,
+      setError,
     },
-    [requiredKeyholderDurationSeconds, updateDuration],
   );
 
   return {
@@ -107,6 +69,56 @@ export function useKeyholderRewards({
   };
 }
 
+// Hook to encapsulate reward and punishment actions
+function useRewardPunishmentActions(params: {
+  userId: string;
+  addTask: (taskData: TaskData) => Promise<void>;
+  saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
+  requiredKeyholderDurationSeconds: number;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}) {
+  const addReward = useCallback(
+    async (reward: KeyholderReward) => {
+      await handleAddReward({ reward, ...params });
+    },
+    [params],
+  );
+
+  const addPunishment = useCallback(
+    async (punishment: KeyholderPunishment) => {
+      await handleAddPunishment({ punishment, ...params });
+    },
+    [params],
+  );
+
+  return { addReward, addPunishment };
+}
+
+// Hook to encapsulate time adjustment actions
+function useTimeAdjustments(params: {
+  requiredKeyholderDurationSeconds: number;
+  updateDuration: (newDurationSeconds: number) => Promise<void>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}) {
+  const adjustTimeFromReward = useCallback(
+    async (timeSeconds: number) => {
+      await handleAdjustTimeFromReward({ timeSeconds, ...params });
+    },
+    [params],
+  );
+
+  const adjustTimeFromPunishment = useCallback(
+    async (timeSeconds: number) => {
+      await handleAdjustTimeFromPunishment({ timeSeconds, ...params });
+    },
+    [params],
+  );
+
+  return { adjustTimeFromReward, adjustTimeFromPunishment };
+}
+
 // Helper functions for useKeyholderRewards
 async function handleAddReward(params: {
   reward: KeyholderReward;
@@ -114,8 +126,8 @@ async function handleAddReward(params: {
   addTask: (taskData: TaskData) => Promise<void>;
   saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
   requiredKeyholderDurationSeconds: number;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
 }): Promise<void> {
   const {
     reward,
@@ -171,8 +183,8 @@ async function handleAddPunishment(params: {
   addTask: (taskData: TaskData) => Promise<void>;
   saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
   requiredKeyholderDurationSeconds: number;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
 }): Promise<void> {
   const {
     punishment,
@@ -225,8 +237,8 @@ async function handleAddPunishment(params: {
 async function handleUpdateDuration(params: {
   newDurationSeconds: number;
   saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
 }): Promise<void> {
   const { newDurationSeconds, saveDataToFirestore, setIsLoading, setError } =
     params;
@@ -258,8 +270,8 @@ async function handleAdjustTimeFromReward(params: {
   timeSeconds: number;
   requiredKeyholderDurationSeconds: number;
   updateDuration: (newDurationSeconds: number) => Promise<void>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
 }): Promise<void> {
   const {
     timeSeconds,
@@ -295,8 +307,8 @@ async function handleAdjustTimeFromPunishment(params: {
   timeSeconds: number;
   requiredKeyholderDurationSeconds: number;
   updateDuration: (newDurationSeconds: number) => Promise<void>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
 }): Promise<void> {
   const {
     timeSeconds,

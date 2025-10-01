@@ -86,8 +86,14 @@ interface PauseModalProps {
   onCancel: () => void;
 }
 
-const PauseModal: React.FC<PauseModalProps> = ({
-  show,
+const PAUSE_REASONS: EnhancedPauseReason[] = [
+  "Bathroom Break",
+  "Emergency",
+  "Medical",
+  "Other",
+];
+
+const PauseModalContent: React.FC<PauseModalProps> = ({
   selectedReason,
   customReason,
   isLoading,
@@ -95,78 +101,73 @@ const PauseModal: React.FC<PauseModalProps> = ({
   onCustomReasonChange,
   onConfirm,
   onCancel,
-}) => {
-  if (!show) return null;
+}) => (
+  <div className="glass-morphism p-6 md:p-8 text-center w-full max-w-md text-gray-50 border border-yellow-700/30">
+    <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">
+      Reason for Pausing Session
+    </h3>
 
-  const reasons: EnhancedPauseReason[] = [
-    "Bathroom Break",
-    "Emergency",
-    "Medical",
-    "Other",
-  ];
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-300 mb-2">
+        Select reason:
+      </label>
+      <select
+        value={selectedReason}
+        onChange={(e) => onReasonChange(e.target.value as EnhancedPauseReason)}
+        className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+      >
+        {PAUSE_REASONS.map((reason) => (
+          <option key={reason} value={reason}>
+            {reason}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {selectedReason === "Other" && (
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Custom reason:
+        </label>
+        <input
+          type="text"
+          value={customReason}
+          onChange={(e) => onCustomReasonChange(e.target.value)}
+          placeholder="Enter custom reason"
+          className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+        />
+      </div>
+    )}
+
+    <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
+      <button
+        type="button"
+        onClick={onConfirm}
+        disabled={
+          isLoading || (selectedReason === "Other" && !customReason.trim())
+        }
+        className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 text-white font-bold py-2 px-4 transition-all duration-300 disabled:opacity-50"
+      >
+        {isLoading ? "Pausing..." : "Confirm Pause"}
+      </button>
+      <button
+        type="button"
+        onClick={onCancel}
+        disabled={isLoading}
+        className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 text-white font-bold py-2 px-4 transition-all duration-300 disabled:opacity-50"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+);
+
+const PauseModal: React.FC<PauseModalProps> = (props) => {
+  if (!props.show) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="glass-morphism p-6 md:p-8 text-center w-full max-w-md text-gray-50 border border-yellow-700/30">
-        <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">
-          Reason for Pausing Session
-        </h3>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Select reason:
-          </label>
-          <select
-            value={selectedReason}
-            onChange={(e) =>
-              onReasonChange(e.target.value as EnhancedPauseReason)
-            }
-            className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-          >
-            {reasons.map((reason) => (
-              <option key={reason} value={reason}>
-                {reason}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {selectedReason === "Other" && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Custom reason:
-            </label>
-            <input
-              type="text"
-              value={customReason}
-              onChange={(e) => onCustomReasonChange(e.target.value)}
-              placeholder="Enter custom reason"
-              className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={
-              isLoading || (selectedReason === "Other" && !customReason.trim())
-            }
-            className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 text-white font-bold py-2 px-4 transition-all duration-300 disabled:opacity-50"
-          >
-            {isLoading ? "Pausing..." : "Confirm Pause"}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isLoading}
-            className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 text-white font-bold py-2 px-4 transition-all duration-300 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
+      <PauseModalContent {...props} />
     </div>
   );
 };

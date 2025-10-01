@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { useAccountLinkingDemo } from "../../hooks/useAccountLinkingDemo";
+import { useAccountLinkingDemo } from "../../demo/hooks/useAccountLinkingDemo";
 import {
   MessageDisplay,
   ActiveKeyholder,
