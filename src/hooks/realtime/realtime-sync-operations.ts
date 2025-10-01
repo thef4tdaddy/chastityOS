@@ -20,25 +20,35 @@ import {
   notifySubscribers as _notifySubscribers,
 } from "./realtimeSyncHelpers";
 
-// Helper function to create WebSocket connection functions
-export const createWebSocketFunctions = (
-  userId: string,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+// Helper to create sendMessage function
+const createSendMessage = (
   wsRef: React.MutableRefObject<WebSocket | null>,
-  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
-  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
-    typeof setTimeout
-  > | null>,
-  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
-    typeof setTimeout
-  > | null>,
-  connectionStartTimeRef: React.MutableRefObject<Date | null>,
-  maxReconnectAttempts: number,
-  reconnectInterval: number,
-  heartbeatInterval: number,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
 ) => {
-  const connect = () => {
+  return (message: RealtimeUpdate | Record<string, unknown>) => {
+    sendWebSocketMessage(wsRef.current, message, () => {
+      setSyncState((prev) => ({
+        ...prev,
+        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
+      }));
+    });
+  };
+};
+
+// Helper to create the connect function
+const createConnectFunction = (
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  connectionStartTimeRef: React.MutableRefObject<Date | null>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  maxReconnectAttempts: number,
+  userId: string,
+  handleMessage: (message: Record<string, unknown>) => void,
+  startHeartbeat: () => void,
+  stopHeartbeat: () => void,
+  attemptReconnect: () => void,
+) => {
+  return () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
     }
@@ -53,57 +63,16 @@ export const createWebSocketFunctions = (
       wsRef.current = new WebSocket(wsUrl);
       connectionStartTimeRef.current = new Date();
 
-      wsRef.current.onopen = () => {
-        // WebSocket connected
-        reconnectAttemptsRef.current = 0;
-
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.CONNECTED,
-        }));
-
-        // Start heartbeat
-        startHeartbeat();
-
-        // Rejoin previous channels
-        // Implementation would go here
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          handleMessage(message);
-        } catch {
-          // Failed to parse WebSocket message
-        }
-      };
-
-      wsRef.current.onclose = (event) => {
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.DISCONNECTED,
-        }));
-
-        stopHeartbeat();
-
-        if (
-          shouldAttemptReconnection(
-            event,
-            reconnectAttemptsRef.current,
-            maxReconnectAttempts,
-          )
-        ) {
-          attemptReconnect();
-        }
-      };
-
-      wsRef.current.onerror = (_error) => {
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.ERROR,
-          syncMetrics: updateSyncMetrics(prev.syncMetrics, "error"),
-        }));
-      };
+      setupWebSocketHandlers(
+        wsRef.current,
+        setSyncState,
+        reconnectAttemptsRef,
+        maxReconnectAttempts,
+        handleMessage,
+        startHeartbeat,
+        stopHeartbeat,
+        attemptReconnect,
+      );
     } catch {
       setSyncState((prev) => ({
         ...prev,
@@ -111,21 +80,21 @@ export const createWebSocketFunctions = (
       }));
     }
   };
+};
 
-  const disconnect = () => {
-    if (wsRef.current) {
-      wsRef.current.close(1000, "Intentional disconnect");
-      wsRef.current = null;
-    }
-
-    stopHeartbeat();
-
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-  };
-
+// Helper to create connection control functions
+const createConnectionControlFunctions = (
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  maxReconnectAttempts: number,
+  reconnectInterval: number,
+  stopHeartbeat: () => void,
+  connect: () => void,
+) => {
   const attemptReconnect = () => {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
       return;
@@ -143,6 +112,176 @@ export const createWebSocketFunctions = (
     }, reconnectInterval);
   };
 
+  const disconnect = () => {
+    if (wsRef.current) {
+      wsRef.current.close(1000, "Intentional disconnect");
+      wsRef.current = null;
+    }
+
+    stopHeartbeat();
+
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  };
+
+  return { attemptReconnect, disconnect };
+};
+
+// Helper to setup WebSocket event handlers
+const setupWebSocketHandlers = (
+  ws: WebSocket,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  maxReconnectAttempts: number,
+  handleMessage: (message: Record<string, unknown>) => void,
+  startHeartbeat: () => void,
+  stopHeartbeat: () => void,
+  attemptReconnect: () => void,
+) => {
+  ws.onopen = () => {
+    // WebSocket connected
+    reconnectAttemptsRef.current = 0;
+
+    setSyncState((prev) => ({
+      ...prev,
+      connectionStatus: ConnectionStatus.CONNECTED,
+    }));
+
+    // Start heartbeat
+    startHeartbeat();
+
+    // Rejoin previous channels
+    // Implementation would go here
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data);
+      handleMessage(message);
+    } catch {
+      // Failed to parse WebSocket message
+    }
+  };
+
+  ws.onclose = (event) => {
+    setSyncState((prev) => ({
+      ...prev,
+      connectionStatus: ConnectionStatus.DISCONNECTED,
+    }));
+
+    stopHeartbeat();
+
+    if (
+      shouldAttemptReconnection(
+        event,
+        reconnectAttemptsRef.current,
+        maxReconnectAttempts,
+      )
+    ) {
+      attemptReconnect();
+    }
+  };
+
+  ws.onerror = (_error) => {
+    setSyncState((prev) => ({
+      ...prev,
+      connectionStatus: ConnectionStatus.ERROR,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "error"),
+    }));
+  };
+};
+
+// Helper to create message handlers
+const createMessageHandlers = (
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
+) => {
+  const handleChannelJoined = (message: { channel: SyncChannel }) => {
+    const channel: SyncChannel = message.channel;
+
+    setSyncState((prev) => ({
+      ...prev,
+      activeChannels: [
+        ...prev.activeChannels.filter((c) => c.id !== channel.id),
+        channel,
+      ],
+    }));
+  };
+
+  const handleChannelLeft = (message: { channelId: string }) => {
+    const channelId = message.channelId;
+
+    setSyncState((prev) => ({
+      ...prev,
+      activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
+    }));
+  };
+
+  const handleRealtimeUpdate = (message: { update: RealtimeUpdate }) => {
+    const update: RealtimeUpdate = message.update;
+
+    // Update local data
+    setSyncState((prev) => ({
+      ...prev,
+      realtimeData: {
+        ...prev.realtimeData,
+        [update.type]: update.data,
+      },
+    }));
+
+    // Notify subscribers - using object instead of Map
+    const subscriptionKeys = Object.keys(subscriptionsRef.current);
+    for (let i = 0; i < subscriptionKeys.length; i++) {
+      const key = subscriptionKeys[i];
+      const subscription = subscriptionsRef.current[key];
+      if (subscription.dataType === update.type && subscription.isActive) {
+        try {
+          subscription.callback(update);
+        } catch {
+          // Error in subscription callback
+        }
+      }
+    }
+  };
+
+  const handleMessage = (message: Record<string, unknown>) => {
+    setSyncState((prev) => ({
+      ...prev,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+    }));
+
+    switch (message.type) {
+      case "channel_joined":
+        handleChannelJoined(message);
+        break;
+      case "channel_left":
+        handleChannelLeft(message);
+        break;
+      case "realtime_update":
+        handleRealtimeUpdate(message);
+        break;
+      case "heartbeat_ack":
+        // Heartbeat acknowledged
+        break;
+      default:
+      // Unknown message type
+    }
+  };
+
+  return { handleMessage };
+};
+
+// Helper to create heartbeat functions
+const createHeartbeatFunctions = (
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  heartbeatInterval: number,
+  sendMessage: (message: RealtimeUpdate | Record<string, unknown>) => void,
+) => {
   const startHeartbeat = () => {
     const sendHeartbeat = () => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -164,86 +303,66 @@ export const createWebSocketFunctions = (
     }
   };
 
-  const sendMessage = (message: RealtimeUpdate | Record<string, unknown>) => {
-    const success = sendWebSocketMessage(wsRef.current, message, () => {
-      setSyncState((prev) => ({
-        ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
-      }));
-    });
-  };
+  return { startHeartbeat, stopHeartbeat };
+};
 
-  const handleMessage = (message: Record<string, unknown>) => {
-      setSyncState((prev) => ({
-        ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
-      }));
+// Helper function to create WebSocket connection functions
+export const createWebSocketFunctions = (
+  userId: string,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  connectionStartTimeRef: React.MutableRefObject<Date | null>,
+  maxReconnectAttempts: number,
+  reconnectInterval: number,
+  heartbeatInterval: number,
+) => {
+  const sendMessage = createSendMessage(wsRef, setSyncState);
 
-      switch (message.type) {
-        case "channel_joined":
-          handleChannelJoined(message);
-          break;
-        case "channel_left":
-          handleChannelLeft(message);
-          break;
-        case "realtime_update":
-          handleRealtimeUpdate(message);
-          break;
-        case "heartbeat_ack":
-          // Heartbeat acknowledged
-          break;
-        default:
-        // Unknown message type
-      }
-    };
+  const { startHeartbeat, stopHeartbeat } = createHeartbeatFunctions(
+    wsRef,
+    heartbeatTimeoutRef,
+    heartbeatInterval,
+    sendMessage,
+  );
 
-  const handleChannelJoined = (message: { channel: SyncChannel }) => {
-      const channel: SyncChannel = message.channel;
+  const { handleMessage } = createMessageHandlers(
+    setSyncState,
+    subscriptionsRef,
+  );
 
-      setSyncState((prev) => ({
-        ...prev,
-        activeChannels: [
-          ...prev.activeChannels.filter((c) => c.id !== channel.id),
-          channel,
-        ],
-      }));
-    };
+  let connect: () => void;
 
-  const handleChannelLeft = (message: { channelId: string }) => {
-      const channelId = message.channelId;
+  const { attemptReconnect, disconnect } = createConnectionControlFunctions(
+    wsRef,
+    setSyncState,
+    reconnectAttemptsRef,
+    reconnectTimeoutRef,
+    maxReconnectAttempts,
+    reconnectInterval,
+    stopHeartbeat,
+    () => connect(),
+  );
 
-      setSyncState((prev) => ({
-        ...prev,
-        activeChannels: prev.activeChannels.filter((c) => c.id !== channelId),
-      }));
-    };
-
-  const handleRealtimeUpdate = (message: { update: RealtimeUpdate }) => {
-      const update: RealtimeUpdate = message.update;
-
-      // Update local data
-      setSyncState((prev) => ({
-        ...prev,
-        realtimeData: {
-          ...prev.realtimeData,
-          [update.type]: update.data,
-        },
-      }));
-
-      // Notify subscribers - using object instead of Map
-      const subscriptionKeys = Object.keys(subscriptionsRef.current);
-      for (let i = 0; i < subscriptionKeys.length; i++) {
-        const key = subscriptionKeys[i];
-        const subscription = subscriptionsRef.current[key];
-        if (subscription.dataType === update.type && subscription.isActive) {
-          try {
-            subscription.callback(update);
-          } catch {
-            // Error in subscription callback
-          }
-        }
-      }
-    };
+  connect = createConnectFunction(
+    wsRef,
+    setSyncState,
+    connectionStartTimeRef,
+    reconnectAttemptsRef,
+    maxReconnectAttempts,
+    userId,
+    handleMessage,
+    startHeartbeat,
+    stopHeartbeat,
+    attemptReconnect,
+  );
 
   return {
     connect,
@@ -275,17 +394,20 @@ export const createChannelFunctions = (
     });
   };
 
-  const createChannel = async (type: ChannelType, participants: string[]): Promise<SyncChannel> => {
-      const channel = createSyncChannel(type, userId, participants);
+  const createChannel = async (
+    type: ChannelType,
+    participants: string[],
+  ): Promise<SyncChannel> => {
+    const channel = createSyncChannel(type, userId, participants);
 
-      sendMessage({
-        type: "create_channel",
-        channel,
-        userId,
-      });
+    sendMessage({
+      type: "create_channel",
+      channel,
+      userId,
+    });
 
-      return channel;
-    };
+    return channel;
+  };
 
   return {
     joinChannel,
@@ -302,21 +424,21 @@ export const createRealtimeSubscriptionFunctions = (
     dataType: string,
     callback: (update: RealtimeUpdate) => void,
   ): Subscription => {
-      const subscription = createSubscription(dataType, callback);
-      subscriptionsRef.current[subscription.id] = subscription;
+    const subscription = createSubscription(dataType, callback);
+    subscriptionsRef.current[subscription.id] = subscription;
 
-      // Return unsubscribe function
-      return {
-        ...subscription,
-        unsubscribe: () => {
-          const sub = subscriptionsRef.current[subscription.id];
-          if (sub) {
-            sub.isActive = false;
-            delete subscriptionsRef.current[subscription.id];
-          }
-        },
-      } as Subscription & { unsubscribe: () => void };
-    };
+    // Return unsubscribe function
+    return {
+      ...subscription,
+      unsubscribe: () => {
+        const sub = subscriptionsRef.current[subscription.id];
+        if (sub) {
+          sub.isActive = false;
+          delete subscriptionsRef.current[subscription.id];
+        }
+      },
+    } as Subscription & { unsubscribe: () => void };
+  };
 
   const publishUpdate = async (_update: RealtimeUpdate): Promise<void> => {
     // Implementation would send the update via WebSocket
