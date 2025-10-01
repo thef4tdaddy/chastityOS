@@ -83,7 +83,6 @@ export function useAccountSettings(): UseAccountSettingsReturn {
       ),
     [],
   );
-
   const deleteAccount = useCallback(
     async (password: string): Promise<void> =>
       withDeletionHandling(

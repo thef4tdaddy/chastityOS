@@ -170,7 +170,6 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
   useEffect(() => {
     if (userId) {
       loadSecuritySettings(userId, setSecurityState, setError, setLoading);
@@ -184,7 +183,6 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
       return () => clearTimeout(saveTimer);
     }
   }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
-
   const {
     updateSessionSettings,
     updateAccessSettings,
@@ -237,7 +235,6 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
       securityState.accessSettings.trustedDevices,
     ],
   );
-
   const security = useMemo(
     () => createSecurityAnalysis(securityState),
     [securityState],
