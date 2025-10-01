@@ -1,7 +1,7 @@
 /**
  * Helper functions for useRealtimeSync hook
  */
-import type { MutableRefObject } from "react";
+import React, { type MutableRefObject } from "react";
 import {
   ConnectionStatus,
   type RealtimeSyncState,
