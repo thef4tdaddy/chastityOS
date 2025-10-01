@@ -84,6 +84,7 @@ export const useTrackerHandlers = ({
       });
     }
     // backupSession should be stable (useCallback) in parent component
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSession, isSessionInitialized]);
 
   // Cleanup on unmount
