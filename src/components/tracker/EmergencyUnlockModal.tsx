@@ -20,40 +20,11 @@ interface EmergencyUnlockModalProps {
   isProcessing?: boolean;
 }
 
-export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
-  isOpen,
-  onClose,
-  onEmergencyUnlock,
-  sessionId,
-  isProcessing: _isProcessing = false,
-}) => {
-  const {
-    stage,
-    reason,
-    customReason,
-    confirmText,
-    isSubmitting,
-    setStage,
-    setReason,
-    setCustomReason,
-    setConfirmText,
-    handleEmergencyUnlock,
-    canProceedFromReason,
-    canConfirm,
-    requiredText,
-    confirmInputRef,
-  } = useEmergencyUnlockModal({
-    sessionId,
-    onEmergencyUnlock: async (finalReason, additionalNotes) => {
-      await onEmergencyUnlock(finalReason, additionalNotes);
-      onClose();
-    },
-    isOpen,
-  });
-
-  if (!isOpen) return null;
-
-  const WarningStage = () => (
+// Warning Stage Component
+const WarningStage: React.FC<{
+  setStage: (stage: string) => void;
+  onClose: () => void;
+}> = ({ setStage, onClose }) => (
     <div className="text-center">
       <FaExclamationTriangle className="text-6xl text-red-400 mx-auto mb-6" />
       <h3 className="text-xl font-bold mb-4 text-red-300">
