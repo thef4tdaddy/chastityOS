@@ -8,6 +8,7 @@
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
+import { HealthCheckStorageService } from "../../services/healthCheckStorage";
 
 // Health status enum
 export enum HealthStatus {
@@ -143,18 +144,9 @@ export const useHealthCheck = (config: Partial<HealthCheckConfig> = {}) => {
   // Check storage health
   const checkStorageHealth = async (): Promise<HealthStatus> => {
     try {
-      // Test localStorage availability
-      const testKey = "health-check-test";
-      const testValue = "test";
-
-      localStorage.setItem(testKey, testValue);
-      const retrieved = localStorage.getItem(testKey);
-      localStorage.removeItem(testKey);
-
-      if (retrieved === testValue) {
-        return HealthStatus.HEALTHY;
-      }
-      return HealthStatus.WARNING;
+      // Test localStorage availability using the service
+      const isHealthy = HealthCheckStorageService.testLocalStorage();
+      return isHealthy ? HealthStatus.HEALTHY : HealthStatus.WARNING;
     } catch {
       return HealthStatus.CRITICAL;
     }
