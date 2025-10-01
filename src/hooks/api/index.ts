@@ -5,8 +5,8 @@ export {
   useSessionMutations,
 } from "./useSessionQuery";
 export { useTasksQuery, useTaskMutations } from "./useTaskQuery";
-export { useSettingsQuery, useSettingsMutations } from "./useSettingsQuery";
-export { useEventsQuery, useEventMutations } from "./useEventsQuery";
+export { useSettingsQuery, useSettingsMutations } from "./useSettingsQueries";
+export { useEventsQuery, useEventMutations } from "./useEventQueries";
 export {
   useOfflineQueueStats,
   useOfflineQueueOperations,
