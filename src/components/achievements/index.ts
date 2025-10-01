@@ -15,5 +15,8 @@ export { AchievementDashboard as AchievementDashboardComponent } from "./Achieve
 export { LeaderboardView as LeaderboardViewComponent } from "./LeaderboardView";
 export { AchievementPrivacySettings as AchievementPrivacySettingsComponent } from "./AchievementPrivacySettings";
 
-export { AchievementLoadingState, AchievementSignInPrompt } from "./AchievementPageStates";
+export {
+  AchievementLoadingState,
+  AchievementSignInPrompt,
+} from "./AchievementPageStates";
 export { AchievementViewToggle } from "./AchievementViewToggle";

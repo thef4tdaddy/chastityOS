@@ -98,7 +98,9 @@ const InputIcon: React.FC<{
   icon: React.ReactNode;
   position: "left" | "right";
 }> = ({ icon, position }) => (
-  <div className={`absolute inset-y-0 ${position}-0 p${position === "left" ? "l" : "r"}-3 flex items-center pointer-events-none`}>
+  <div
+    className={`absolute inset-y-0 ${position}-0 p${position === "left" ? "l" : "r"}-3 flex items-center pointer-events-none`}
+  >
     <div className="text-gray-400">{icon}</div>
   </div>
 );
@@ -183,14 +185,14 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
         {/* Input Container */}
         <div className="relative">
           {leftIcon && <InputIcon icon={leftIcon} position="left" />}
-          
+
           <input
             ref={ref}
             type={type}
             className={inputClasses}
             {...mobileInputProps}
           />
-          
+
           {rightIcon && <InputIcon icon={rightIcon} position="right" />}
         </div>
 

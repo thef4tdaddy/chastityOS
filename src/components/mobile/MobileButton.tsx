@@ -165,12 +165,14 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
     },
     ref,
   ) => {
-    const triggerHapticFeedback = useButtonHaptics(hapticFeedback as "light" | "medium" | "heavy" | "none");
+    const triggerHapticFeedback = useButtonHaptics(
+      hapticFeedback as "light" | "medium" | "heavy" | "none",
+    );
     const buttonClasses = useButtonStyling(
-      variant as keyof typeof BUTTON_STYLES.variants, 
-      size as keyof typeof BUTTON_STYLES.sizes, 
-      fullWidth, 
-      className
+      variant as keyof typeof BUTTON_STYLES.variants,
+      size as keyof typeof BUTTON_STYLES.sizes,
+      fullWidth,
+      className,
     );
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {

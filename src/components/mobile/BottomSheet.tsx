@@ -132,7 +132,11 @@ const BottomSheetContent: React.FC<{
 );
 
 // Use escape key hook
-const useEscapeKey = (isOpen: boolean, onClose: () => void, preventClose: boolean) => {
+const useEscapeKey = (
+  isOpen: boolean,
+  onClose: () => void,
+  preventClose: boolean,
+) => {
   useEffect(() => {
     if (!isOpen) return;
 

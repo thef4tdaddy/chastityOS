@@ -30,10 +30,11 @@ const getNavItemStyles = (isActive: boolean): string => {
     transition-all duration-200 ease-in-out
     min-h-[48px] min-w-[48px]
   `;
-  
+
   const activeStyles = "text-white bg-tekhelet shadow-lg transform scale-105";
-  const inactiveStyles = "text-lavender_web hover:text-white hover:bg-tekhelet/20";
-  
+  const inactiveStyles =
+    "text-lavender_web hover:text-white hover:bg-tekhelet/20";
+
   return `${baseStyles} ${isActive ? activeStyles : inactiveStyles}`;
 };
 

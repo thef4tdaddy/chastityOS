@@ -311,7 +311,9 @@ class DataMigrationService {
       endTime: oldSession.endTime as Timestamp | undefined,
       duration: (oldSession.duration as number) || 0,
       effectiveDuration:
-        (oldSession.effectiveDuration as number) || (oldSession.duration as number) || 0,
+        (oldSession.effectiveDuration as number) ||
+        (oldSession.duration as number) ||
+        0,
       events: [], // Legacy sessions won't have detailed events
       goalMet: (oldSession.goalMet as boolean) || false,
       keyholderApproval: {
@@ -386,7 +388,13 @@ class DataMigrationService {
       completedAt: oldTask.completedAt as Timestamp | undefined,
       submissiveNote: oldTask.submissiveNote as string | undefined,
       keyholderFeedback: oldTask.keyholderFeedback as string | undefined,
-      consequence: oldTask.consequence as { type: "reward" | "punishment"; duration?: number; description?: string } | undefined,
+      consequence: oldTask.consequence as
+        | {
+            type: "reward" | "punishment";
+            duration?: number;
+            description?: string;
+          }
+        | undefined,
     };
   }
 
@@ -449,7 +457,9 @@ class DataMigrationService {
       timestamp: oldEvent.timestamp || serverTimestamp(),
       details: {
         duration: details?.duration as number | undefined,
-        notes: (details?.notes as string | undefined) || (oldEvent.notes as string | undefined),
+        notes:
+          (details?.notes as string | undefined) ||
+          (oldEvent.notes as string | undefined),
         mood: details?.mood as string | undefined,
         participants: ["submissive"], // Default for migration
       },

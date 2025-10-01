@@ -32,17 +32,28 @@ interface UsePresenceOptions {
   autoTrackActivity?: boolean;
 }
 
-// Helper to setup activity tracking listeners
-const useActivityTracking = (
-  autoTrackActivity: boolean,
-  presenceStatus: PresenceStatus,
-  activityTimeout: number,
-  setAway: (statusMessage?: string) => void,
-  lastActivityRef: React.MutableRefObject<Date>,
+// Config interface for activity tracking
+interface ActivityTrackingConfig {
+  autoTrackActivity: boolean;
+  presenceStatus: PresenceStatus;
+  activityTimeout: number;
+  setAway: (statusMessage?: string) => void;
+  lastActivityRef: React.MutableRefObject<Date>;
   activityTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
-) => {
+  > | null>;
+}
+
+// Helper to setup activity tracking listeners
+const useActivityTracking = (config: ActivityTrackingConfig) => {
+  const {
+    autoTrackActivity,
+    presenceStatus,
+    activityTimeout,
+    setAway,
+    lastActivityRef,
+    activityTimeoutRef,
+  } = config;
   useEffect(() => {
     if (!autoTrackActivity) return;
 
@@ -202,14 +213,14 @@ const usePresenceSideEffects = (
     typeof setInterval
   > | null>,
 ) => {
-  useActivityTracking(
+  useActivityTracking({
     autoTrackActivity,
     presenceStatus,
     activityTimeout,
     setAway,
     lastActivityRef,
     activityTimeoutRef,
-  );
+  });
 
   usePeriodicPresenceUpdate(ownPresence, updateInterval, presenceIntervalRef);
 

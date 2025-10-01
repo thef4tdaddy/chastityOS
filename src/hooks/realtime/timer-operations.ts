@@ -7,6 +7,9 @@ import {
   TimerStatus,
   LiveTimerState,
   TimerSubscription,
+  TimerSync,
+  TimerEvent,
+  TimerType,
 } from "../../types/realtime";
 
 // Helper function to validate timer permissions
@@ -115,3 +118,109 @@ export const calculateComputedValues = (activeTimers: LiveTimer[]) => {
     longestRunningTimer,
   };
 };
+
+// Server time helper
+export async function getServerTime(): Promise<Date> {
+  // In real implementation, fetch server time from API
+  try {
+    // const response = await fetch('/api/time');
+    // const { timestamp } = await response.json();
+    // return new Date(timestamp);
+    return new Date(); // Fallback to client time
+  } catch {
+    return new Date();
+  }
+}
+
+// Save timer helper
+export async function saveTimer(_timer: LiveTimer): Promise<void> {
+  // In real implementation, save to backend
+}
+
+// Log timer event helper
+export async function logTimerEvent(
+  timerId: string,
+  type: string,
+  userId: string,
+  data?: Record<string, string | number | boolean | Date>,
+): Promise<void> {
+  const _event: TimerEvent = {
+    id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    timerId,
+    type: type as TimerEvent["type"],
+    timestamp: new Date(),
+    userId,
+    data,
+  };
+  // In real implementation, save to backend
+}
+
+// Create timer sync record
+export async function createTimerSync(timerId: string): Promise<TimerSync> {
+  const now = new Date();
+  return {
+    timerId,
+    lastSync: now,
+    serverTime: await getServerTime(),
+    clientOffset: 0,
+    syncAccuracy: 1.0,
+  };
+}
+
+// Create new timer helper
+export interface CreateTimerParams {
+  userId: string;
+  relationshipId?: string;
+  type: TimerType;
+  duration: number;
+  title: string;
+  description?: string;
+  canPause?: boolean;
+  canStop?: boolean;
+  canExtend?: boolean;
+  isKeyholderControlled?: boolean;
+  keyholderUserId?: string;
+  sessionId?: string;
+  taskId?: string;
+}
+
+export function createNewTimer({
+  userId,
+  relationshipId,
+  type,
+  duration,
+  title,
+  description,
+  canPause = true,
+  canStop = true,
+  canExtend = false,
+  isKeyholderControlled = false,
+  keyholderUserId,
+  sessionId,
+  taskId,
+}: CreateTimerParams): LiveTimer {
+  const now = new Date();
+  return {
+    id: `timer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    type,
+    status: TimerStatus.STOPPED,
+    startTime: now,
+    currentTime: now,
+    duration,
+    elapsed: 0,
+    remaining: duration,
+    isPaused: false,
+    totalPauseTime: 0,
+    userId,
+    relationshipId,
+    title,
+    description,
+    canPause,
+    canStop,
+    canExtend,
+    isKeyholderControlled,
+    keyholderUserId,
+    sessionId,
+    taskId,
+  };
+}

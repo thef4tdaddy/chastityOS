@@ -81,7 +81,7 @@ export const AchievementNotification: React.FC<
               label: "Mark Read",
               onClick: () => onMarkRead(notification.id),
             },
-          }
+          },
         );
       }
     });
