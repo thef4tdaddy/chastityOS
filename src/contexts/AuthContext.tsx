@@ -49,6 +49,229 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Helper function for auth initialization
+const performAuthInitialization = async (
+  setState: React.Dispatch<React.SetStateAction<AuthState>>,
+): Promise<(() => void) | undefined> => {
+  try {
+    logger.debug("Initializing auth state");
+
+    const auth = await getFirebaseAuth();
+    const currentUser = await AuthService.getCurrentUser();
+
+    if (currentUser) {
+      setState({
+        user: currentUser,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      logger.info("User already authenticated", { uid: currentUser.uid });
+    } else {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+      }));
+      logger.debug("No authenticated user found");
+    }
+
+    // Listen for auth state changes
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        logger.debug("Firebase auth state changed: user signed in", {
+          uid: firebaseUser.uid,
+        });
+
+        const user = await AuthService.getCurrentUser();
+        if (user) {
+          setState({
+            user,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        }
+      } else {
+        logger.debug("Firebase auth state changed: user signed out");
+        setState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: null,
+        });
+      }
+    });
+
+    return unsubscribe;
+  } catch (error) {
+    logger.error("Failed to initialize auth", { error: error as Error });
+    setState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      error: "Failed to initialize authentication",
+    });
+    return undefined;
+  }
+};
+
+// Helper hook for auth actions
+const useAuthActions = (
+  state: AuthState,
+  setState: React.Dispatch<React.SetStateAction<AuthState>>,
+): AuthActions => {
+  const signIn = async (credentials: LoginForm) => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    const result = await AuthService.signIn(credentials);
+
+    if (result.success && result.data) {
+      setState({
+        user: result.data,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      logger.info("User signed in via context", { uid: result.data.uid });
+    } else {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: result.error || "Sign in failed",
+      }));
+      logger.warn("Sign in failed via context", { error: result.error });
+    }
+    return result;
+  };
+
+  const register = async (userData: RegisterForm) => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    const result = await AuthService.register(userData);
+
+    if (result.success && result.data) {
+      setState({
+        user: result.data,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      logger.info("User registered via context", { uid: result.data.uid });
+    } else {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: result.error || "Registration failed",
+      }));
+      logger.warn("Registration failed via context", { error: result.error });
+    }
+    return result;
+  };
+
+  const signOut = async () => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    const result = await AuthService.signOut();
+
+    if (result.success) {
+      setState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+      });
+      logger.info("User signed out via context");
+    } else {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: result.error || "Sign out failed",
+      }));
+      logger.warn("Sign out failed via context", { error: result.error });
+    }
+    return result;
+  };
+
+  const resetPassword = async (email: string) => {
+    setState((prev) => ({ ...prev, error: null }));
+    const result = await AuthService.resetPassword(email);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error || "Password reset failed",
+      }));
+      logger.warn("Password reset failed via context", {
+        error: result.error,
+        email,
+      });
+    } else {
+      logger.info("Password reset sent via context", { email });
+    }
+    return result;
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    setState((prev) => ({ ...prev, error: null }));
+    const result = await AuthService.updatePassword(newPassword);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error || "Password update failed",
+      }));
+      logger.warn("Password update failed via context", {
+        error: result.error,
+      });
+    } else {
+      logger.info("Password updated via context");
+    }
+    return result;
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    if (!state.user) {
+      const error = "No authenticated user found";
+      setState((prev) => ({ ...prev, error }));
+      return { success: false, error };
+    }
+
+    setState((prev) => ({ ...prev, error: null }));
+    const result = await AuthService.updateUserProfile(
+      state.user.uid,
+      updates,
+    );
+
+    if (result.success && result.data) {
+      setState((prev) => ({
+        ...prev,
+        user: result.data!,
+      }));
+      logger.info("Profile updated via context", { uid: state.user.uid });
+    } else {
+      setState((prev) => ({
+        ...prev,
+        error: result.error || "Profile update failed",
+      }));
+      logger.warn("Profile update failed via context", {
+        error: result.error,
+      });
+    }
+    return result;
+  };
+
+  const clearError = () => {
+    setState((prev) => ({ ...prev, error: null }));
+  };
+
+  return {
+    signIn,
+    register,
+    signOut,
+    resetPassword,
+    updatePassword,
+    updateProfile,
+    clearError,
+  };
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -59,73 +282,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Initialize auth state on mount
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        logger.debug("Initializing auth state");
-
-        const auth = await getFirebaseAuth();
-
-        // Check if user is already authenticated
-        const currentUser = await AuthService.getCurrentUser();
-
-        if (currentUser) {
-          setState({
-            user: currentUser,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-          logger.info("User already authenticated", { uid: currentUser.uid });
-        } else {
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-          }));
-          logger.debug("No authenticated user found");
-        }
-
-        // Listen for auth state changes
-        const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-          if (firebaseUser) {
-            logger.debug("Firebase auth state changed: user signed in", {
-              uid: firebaseUser.uid,
-            });
-
-            // Get full user profile from our service
-            const user = await AuthService.getCurrentUser();
-            if (user) {
-              setState({
-                user,
-                isAuthenticated: true,
-                isLoading: false,
-                error: null,
-              });
-            }
-          } else {
-            logger.debug("Firebase auth state changed: user signed out");
-            setState({
-              user: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: null,
-            });
-          }
-        });
-
-        return unsubscribe;
-      } catch (error) {
-        logger.error("Failed to initialize auth", { error: error as Error });
-        setState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-          error: "Failed to initialize authentication",
-        });
-        return undefined;
-      }
-    };
-
-    const unsubscribePromise = initializeAuth();
+    const unsubscribePromise = performAuthInitialization(setState);
 
     return () => {
       unsubscribePromise.then((unsubscribe) => {
@@ -136,161 +293,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const actions: AuthActions = {
-    signIn: async (credentials: LoginForm) => {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      const result = await AuthService.signIn(credentials);
-
-      if (result.success && result.data) {
-        setState({
-          user: result.data,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
-        logger.info("User signed in via context", { uid: result.data.uid });
-      } else {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: result.error || "Sign in failed",
-        }));
-        logger.warn("Sign in failed via context", { error: result.error });
-      }
-
-      return result;
-    },
-
-    register: async (userData: RegisterForm) => {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      const result = await AuthService.register(userData);
-
-      if (result.success && result.data) {
-        setState({
-          user: result.data,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
-        logger.info("User registered via context", { uid: result.data.uid });
-      } else {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: result.error || "Registration failed",
-        }));
-        logger.warn("Registration failed via context", { error: result.error });
-      }
-
-      return result;
-    },
-
-    signOut: async () => {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-      const result = await AuthService.signOut();
-
-      if (result.success) {
-        setState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-          error: null,
-        });
-        logger.info("User signed out via context");
-      } else {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: result.error || "Sign out failed",
-        }));
-        logger.warn("Sign out failed via context", { error: result.error });
-      }
-
-      return result;
-    },
-
-    resetPassword: async (email: string) => {
-      setState((prev) => ({ ...prev, error: null }));
-
-      const result = await AuthService.resetPassword(email);
-
-      if (!result.success) {
-        setState((prev) => ({
-          ...prev,
-          error: result.error || "Password reset failed",
-        }));
-        logger.warn("Password reset failed via context", {
-          error: result.error,
-          email,
-        });
-      } else {
-        logger.info("Password reset sent via context", { email });
-      }
-
-      return result;
-    },
-
-    updatePassword: async (newPassword: string) => {
-      setState((prev) => ({ ...prev, error: null }));
-
-      const result = await AuthService.updatePassword(newPassword);
-
-      if (!result.success) {
-        setState((prev) => ({
-          ...prev,
-          error: result.error || "Password update failed",
-        }));
-        logger.warn("Password update failed via context", {
-          error: result.error,
-        });
-      } else {
-        logger.info("Password updated via context");
-      }
-
-      return result;
-    },
-
-    updateProfile: async (updates: Partial<User>) => {
-      if (!state.user) {
-        const error = "No authenticated user found";
-        setState((prev) => ({ ...prev, error }));
-        return { success: false, error };
-      }
-
-      setState((prev) => ({ ...prev, error: null }));
-
-      const result = await AuthService.updateUserProfile(
-        state.user.uid,
-        updates,
-      );
-
-      if (result.success && result.data) {
-        setState((prev) => ({
-          ...prev,
-          user: result.data!,
-        }));
-        logger.info("Profile updated via context", { uid: state.user.uid });
-      } else {
-        setState((prev) => ({
-          ...prev,
-          error: result.error || "Profile update failed",
-        }));
-        logger.warn("Profile update failed via context", {
-          error: result.error,
-          uid: state.user.uid,
-        });
-      }
-
-      return result;
-    },
-
-    clearError: () => {
-      setState((prev) => ({ ...prev, error: null }));
-    },
-  };
+  const actions = useAuthActions(state, setState);
 
   const contextValue: AuthContextType = {
     state,
