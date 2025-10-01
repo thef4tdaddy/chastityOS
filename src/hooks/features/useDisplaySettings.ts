@@ -3,6 +3,14 @@
  */
 
 import { useState, useCallback } from "react";
+import {
+  withErrorHandling,
+  handleThemeUpdate,
+  handleLanguageUpdate,
+  handleDateFormatUpdate,
+  handleTimeFormatUpdate,
+  handleResetToDefaults,
+} from "./display-settings-utils";
 
 export interface DisplaySettings {
   theme: "light" | "dark" | "auto";
@@ -40,115 +48,62 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
   const [error, setError] = useState<Error | null>(null);
   const [_previewedSettings, _setPreviewedSettings] =
     useState<Partial<DisplaySettings> | null>(null);
-
   const updateTheme = useCallback(
-    async (theme: "light" | "dark" | "auto"): Promise<void> => {
-      setIsUpdating(true);
-      setError(null);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setDisplaySettings((prev) => ({ ...prev, theme }));
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to update theme");
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
-    },
+    async (theme: "light" | "dark" | "auto"): Promise<void> =>
+      withErrorHandling(
+        () => handleThemeUpdate(theme, setDisplaySettings),
+        setIsUpdating,
+        setError,
+        "Failed to update theme",
+      ),
     [],
   );
-
   const updateLanguage = useCallback(
-    async (language: string): Promise<void> => {
-      setIsUpdating(true);
-      setError(null);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setDisplaySettings((prev) => ({ ...prev, language }));
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to update language");
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
-    },
+    async (language: string): Promise<void> =>
+      withErrorHandling(
+        () => handleLanguageUpdate(language, setDisplaySettings),
+        setIsUpdating,
+        setError,
+        "Failed to update language",
+      ),
     [],
   );
-
   const updateDateFormat = useCallback(
-    async (dateFormat: string): Promise<void> => {
-      setIsUpdating(true);
-      setError(null);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setDisplaySettings((prev) => ({ ...prev, dateFormat }));
-      } catch (err) {
-        const error =
-          err instanceof Error
-            ? err
-            : new Error("Failed to update date format");
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
-    },
+    async (dateFormat: string): Promise<void> =>
+      withErrorHandling(
+        () => handleDateFormatUpdate(dateFormat, setDisplaySettings),
+        setIsUpdating,
+        setError,
+        "Failed to update date format",
+      ),
     [],
   );
-
   const updateTimeFormat = useCallback(
-    async (timeFormat: "12h" | "24h"): Promise<void> => {
-      setIsUpdating(true);
-      setError(null);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setDisplaySettings((prev) => ({ ...prev, timeFormat }));
-      } catch (err) {
-        const error =
-          err instanceof Error
-            ? err
-            : new Error("Failed to update time format");
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
-    },
+    async (timeFormat: "12h" | "24h"): Promise<void> =>
+      withErrorHandling(
+        () => handleTimeFormatUpdate(timeFormat, setDisplaySettings),
+        setIsUpdating,
+        setError,
+        "Failed to update time format",
+      ),
     [],
   );
-
-  const resetToDefaults = useCallback(async (): Promise<void> => {
-    setIsUpdating(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      setDisplaySettings(defaultSettings);
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to reset settings");
-      setError(error);
-      throw error;
-    } finally {
-      setIsUpdating(false);
-    }
-  }, []);
-
-  const previewSettings = useCallback((settings: Partial<DisplaySettings>) => {
-    _setPreviewedSettings(settings);
-  }, []);
-
-  const clearPreview = useCallback(() => {
-    _setPreviewedSettings(null);
-  }, []);
-
-  useState(() => {
-    setTimeout(() => setIsLoading(false), 100);
-  });
-
+  const resetToDefaults = useCallback(
+    async (): Promise<void> =>
+      withErrorHandling(
+        () => handleResetToDefaults(defaultSettings, setDisplaySettings),
+        setIsUpdating,
+        setError,
+        "Failed to reset settings",
+      ),
+    [],
+  );
+  const previewSettings = useCallback(
+    (settings: Partial<DisplaySettings>) => _setPreviewedSettings(settings),
+    [],
+  );
+  const clearPreview = useCallback(() => _setPreviewedSettings(null), []);
+  useState(() => setTimeout(() => setIsLoading(false), 100));
   return {
     displaySettings,
     isLoading,
