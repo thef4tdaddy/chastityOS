@@ -2,7 +2,7 @@
  * Tests for useNotifications hook
  */
 import { renderHook, act } from "@testing-library/react";
-import { vi, beforeAll, afterAll } from "vitest";
+import { vi, beforeAll, afterAll, describe, it, expect } from "vitest";
 import { useNotifications } from "../useNotifications";
 import {
   NotificationType,

@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import { Task } from "@/types/core";
+import { Task, TaskStatus, TaskPriority } from "@/types/core";
 import { applyAllFilters } from "./task-filter-utils";
 import { sortTasks } from "./task-sort-utils";
 import { useTaskCRUD } from "./useTaskCRUD";
