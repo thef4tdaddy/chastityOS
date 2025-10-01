@@ -19,238 +19,33 @@ import {
   calculatePauseFrequencyTrend,
   calculateOverallProgressTrend,
 } from "../../utils/sessionHistoryHelpers";
+import {
+  getSessionsByDateRange as getSessionsByDateRangeUtil,
+  getSessionsByGoal as getSessionsByGoalUtil,
+  searchSessions as searchSessionsUtil,
+  getKeyholderView as getKeyholderViewUtil,
+  getPerformanceTrends as getPerformanceTrendsUtil,
+  getGoalProgressHistory as getGoalProgressHistoryUtil,
+  getComparisonMetrics as getComparisonMetricsUtil,
+} from "../../utils/session-history-helpers";
+import type {
+  HistoricalSession,
+  HistoryPrivacySettings,
+  KeyholderHistoryAccess,
+  HistoryInsights,
+  HistoryTrends,
+  HistorySearchQuery,
+  PersonalDataExport,
+  KeyholderHistoryView,
+  PerformanceTrends,
+  GoalProgressHistory,
+  ComparisonMetrics,
+} from "./types/SessionHistory";
+
+// Re-export types for backward compatibility
+export type * from "./types/SessionHistory";
 
 const logger = serviceLogger("useSessionHistory");
-
-// ==================== INTERFACES ====================
-
-export interface HistoricalSession {
-  id: string;
-  startTime: Date;
-  endTime: Date;
-  duration: number; // Total duration in seconds
-  effectiveDuration: number; // Duration minus pauses
-  goals: SessionGoal[];
-  goalCompletion: GoalCompletionRecord[];
-  pauseEvents: PauseEvent[];
-  keyholderInteractions: KeyholderInteraction[];
-  tags: string[];
-  notes: string;
-  rating?: SessionRating;
-  isHardcoreMode: boolean;
-  wasKeyholderControlled: boolean;
-  endReason?: string;
-  emergencyEnd?: boolean;
-}
-
-export interface SessionGoal {
-  id: string;
-  type: string;
-  target: number;
-  unit: string;
-  completed: boolean;
-  progress: number;
-}
-
-export interface GoalCompletionRecord {
-  goalId: string;
-  goalName: string;
-  targetValue: number;
-  achievedValue: number;
-  completionPercentage: number;
-  completed: boolean;
-  completedAt?: Date;
-}
-
-export interface PauseEvent {
-  id: string;
-  startTime: Date;
-  endTime?: Date;
-  duration: number;
-  reason: string;
-  initiatedBy: "submissive" | "keyholder" | "emergency";
-}
-
-export interface KeyholderInteraction {
-  id: string;
-  type: "message" | "control_action" | "approval" | "modification";
-  timestamp: Date;
-  description: string;
-  keyholderName: string;
-}
-
-export interface SessionRating {
-  overall: number; // 1-5 stars
-  difficulty: number; // 1-5
-  satisfaction: number; // 1-5
-  wouldRepeat: boolean;
-  notes?: string;
-}
-
-export interface HistoryPrivacySettings {
-  shareWithKeyholder: boolean;
-  shareDuration: boolean;
-  shareGoals: boolean;
-  sharePauses: boolean;
-  shareNotes: boolean;
-  shareRatings: boolean;
-  retentionPeriod: number; // Days to keep history
-  allowExport: boolean;
-  anonymizeOldData: boolean;
-}
-
-export interface KeyholderHistoryAccess {
-  hasAccess: boolean;
-  accessLevel: "summary" | "detailed" | "full";
-  canViewRatings: boolean;
-  canViewNotes: boolean;
-  canViewPauses: boolean;
-  lastAccessedAt?: Date;
-}
-
-export interface HistoryInsights {
-  totalSessions: number;
-  totalEffectiveTime: number;
-  averageSessionLength: number;
-  longestSession: HistoricalSession;
-  shortestSession: HistoricalSession;
-  mostRecentSession: HistoricalSession;
-  goalCompletionRate: number;
-  pauseFrequency: number;
-  improvementTrend: "improving" | "stable" | "declining";
-  consistencyScore: number; // 0-100
-  keyholderSatisfactionScore?: number;
-}
-
-export interface HistoryTrends {
-  sessionLength: TrendData;
-  goalCompletion: TrendData;
-  consistency: TrendData;
-  pauseFrequency: TrendData;
-  overallProgress: TrendData;
-}
-
-export interface TrendData {
-  direction: "improving" | "stable" | "declining";
-  changePercentage: number;
-  confidence: number; // 0-100
-  timeframe: "week" | "month" | "quarter" | "year";
-  dataPoints: TrendPoint[];
-}
-
-export interface TrendPoint {
-  date: Date;
-  value: number;
-  label?: string;
-}
-
-export interface SessionHistoryState {
-  sessions: HistoricalSession[];
-  privacySettings: HistoryPrivacySettings;
-  keyholderAccess: KeyholderHistoryAccess;
-  insights: HistoryInsights;
-  trends: HistoryTrends;
-}
-
-export interface HistorySearchQuery {
-  dateRange?: {
-    start: Date;
-    end: Date;
-  };
-  minDuration?: number;
-  maxDuration?: number;
-  goalTypes?: string[];
-  hasKeyholderControl?: boolean;
-  completedGoals?: boolean;
-  tags?: string[];
-  rating?: {
-    min: number;
-    max: number;
-  };
-  textSearch?: string;
-}
-
-export interface PersonalDataExport {
-  exportId: string;
-  generatedAt: Date;
-  format: "json" | "csv" | "pdf";
-  data: {
-    sessions: HistoricalSession[];
-    goals: SessionGoal[];
-    settings: HistoryPrivacySettings;
-    analytics: HistoryInsights;
-  };
-  fileSize: number;
-  downloadUrl: string;
-  expiresAt: Date;
-}
-
-export interface KeyholderHistoryView {
-  allowedSessions: Partial<HistoricalSession>[];
-  summaryStats: {
-    totalSessions: number;
-    averageDuration: number;
-    goalCompletionRate: number;
-    lastSessionDate: Date;
-  };
-  accessLevel: "summary" | "detailed" | "full";
-  restrictions: string[];
-}
-
-export interface PerformanceTrends {
-  sessionDuration: {
-    average: number;
-    trend: "improving" | "stable" | "declining";
-    weeklyChange: number;
-  };
-  goalAchievement: {
-    rate: number;
-    trend: "improving" | "stable" | "declining";
-    weeklyChange: number;
-  };
-  consistency: {
-    score: number;
-    streak: number;
-    trend: "improving" | "stable" | "declining";
-  };
-}
-
-export interface GoalProgressHistory {
-  goalId: string;
-  goalName: string;
-  progressOverTime: {
-    date: Date;
-    progress: number;
-  }[];
-  milestones: {
-    date: Date;
-    description: string;
-    achieved: boolean;
-  }[];
-}
-
-export interface ComparisonMetrics {
-  thisWeek: {
-    sessions: number;
-    totalTime: number;
-    goalCompletion: number;
-  };
-  lastWeek: {
-    sessions: number;
-    totalTime: number;
-    goalCompletion: number;
-  };
-  thisMonth: {
-    sessions: number;
-    totalTime: number;
-    goalCompletion: number;
-  };
-  lastMonth: {
-    sessions: number;
-    totalTime: number;
-    goalCompletion: number;
-  };
-}
 
 // ==================== HOOK IMPLEMENTATION ====================
 
@@ -475,106 +270,20 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
   // ==================== DATA RETRIEVAL ====================
 
   const getSessionsByDateRange = useCallback(
-    (start: Date, end: Date): HistoricalSession[] => {
-      return sessions.filter(
-        (session) => session.startTime >= start && session.startTime <= end,
-      );
-    },
+    (start: Date, end: Date): HistoricalSession[] =>
+      getSessionsByDateRangeUtil(sessions, start, end),
     [sessions],
   );
 
   const getSessionsByGoal = useCallback(
-    (goalType: string): HistoricalSession[] => {
-      return sessions.filter((session) =>
-        session.goals.some((goal) => goal.type === goalType),
-      );
-    },
+    (goalType: string): HistoricalSession[] =>
+      getSessionsByGoalUtil(sessions, goalType),
     [sessions],
   );
 
   const searchSessions = useCallback(
-    (query: HistorySearchQuery): HistoricalSession[] => {
-      let filteredSessions = [...sessions];
-
-      // Date range filter
-      if (query.dateRange) {
-        filteredSessions = filteredSessions.filter(
-          (session) =>
-            session.startTime >= query.dateRange!.start &&
-            session.startTime <= query.dateRange!.end,
-        );
-      }
-
-      // Duration filters
-      if (query.minDuration) {
-        filteredSessions = filteredSessions.filter(
-          (session) => session.effectiveDuration >= query.minDuration!,
-        );
-      }
-
-      if (query.maxDuration) {
-        filteredSessions = filteredSessions.filter(
-          (session) => session.effectiveDuration <= query.maxDuration!,
-        );
-      }
-
-      // Goal type filter
-      if (query.goalTypes && query.goalTypes.length > 0) {
-        filteredSessions = filteredSessions.filter((session) =>
-          session.goals.some((goal) => query.goalTypes!.includes(goal.type)),
-        );
-      }
-
-      // Keyholder control filter
-      if (query.hasKeyholderControl !== undefined) {
-        filteredSessions = filteredSessions.filter(
-          (session) =>
-            session.wasKeyholderControlled === query.hasKeyholderControl,
-        );
-      }
-
-      // Completed goals filter
-      if (query.completedGoals !== undefined) {
-        filteredSessions = filteredSessions.filter((session) => {
-          const hasCompletedGoals = session.goals.some(
-            (goal) => goal.completed,
-          );
-          return hasCompletedGoals === query.completedGoals;
-        });
-      }
-
-      // Tags filter
-      if (query.tags && query.tags.length > 0) {
-        filteredSessions = filteredSessions.filter((session) =>
-          query.tags!.some((tag) => session.tags.includes(tag)),
-        );
-      }
-
-      // Rating filter
-      if (query.rating && query.rating.min && query.rating.max) {
-        filteredSessions = filteredSessions.filter(
-          (session) =>
-            session.rating &&
-            session.rating.overall >= query.rating!.min &&
-            session.rating.overall <= query.rating!.max,
-        );
-      }
-
-      // Text search
-      if (query.textSearch) {
-        const searchTerm = query.textSearch.toLowerCase();
-        filteredSessions = filteredSessions.filter(
-          (session) =>
-            session.notes.toLowerCase().includes(searchTerm) ||
-            session.tags.some((tag) =>
-              tag.toLowerCase().includes(searchTerm),
-            ) ||
-            session.endReason?.toLowerCase().includes(searchTerm),
-        );
-      }
-
-      return filteredSessions;
-    },
+    (query: HistorySearchQuery): HistoricalSession[] =>
+      searchSessionsUtil(sessions, query),
     [sessions],
   );
 
@@ -675,59 +384,23 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
 
   // ==================== KEYHOLDER ACCESS ====================
 
-  const getKeyholderView = useCallback((): KeyholderHistoryView => {
-    if (!keyholderAccess.hasAccess) {
-      return {
-        allowedSessions: [],
-        summaryStats: {
-          totalSessions: 0,
-          averageDuration: 0,
-          goalCompletionRate: 0,
-          lastSessionDate: new Date(),
-        },
-        accessLevel: "summary",
-        restrictions: ["No access granted by submissive"],
-      };
-    }
-
-    const allowedSessions = sessions.map((session) => {
-      const filteredSession: Partial<HistoricalSession> = {
-        id: session.id,
-        startTime: session.startTime,
-        endTime: session.endTime,
-        duration: privacySettings.shareDuration ? session.duration : undefined,
-        effectiveDuration: privacySettings.shareDuration
-          ? session.effectiveDuration
-          : undefined,
-        goals: privacySettings.shareGoals ? session.goals : [],
-        pauseEvents: privacySettings.sharePauses ? session.pauseEvents : [],
-        notes: privacySettings.shareNotes ? session.notes : "",
-        rating: privacySettings.shareRatings ? session.rating : undefined,
-        keyholderInteractions: session.keyholderInteractions,
-      };
-
-      return filteredSession;
-    });
-
-    return {
-      allowedSessions,
-      summaryStats: {
-        totalSessions: sessions.length,
-        averageDuration: averageSessionLength,
+  const getKeyholderView = useCallback(
+    (): KeyholderHistoryView =>
+      getKeyholderViewUtil(
+        sessions,
+        keyholderAccess,
+        privacySettings,
+        averageSessionLength,
         goalCompletionRate,
-        lastSessionDate:
-          sessions.length > 0 ? sessions[0].startTime : new Date(),
-      },
-      accessLevel: keyholderAccess.accessLevel,
-      restrictions: [],
-    };
-  }, [
-    keyholderAccess,
-    sessions,
-    privacySettings,
-    averageSessionLength,
-    goalCompletionRate,
-  ]);
+      ),
+    [
+      keyholderAccess,
+      sessions,
+      privacySettings,
+      averageSessionLength,
+      goalCompletionRate,
+    ],
+  );
 
   const shareHistoryWithKeyholder = useCallback(
     async (sessionIds: string[]): Promise<void> => {
@@ -751,104 +424,33 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
 
   // ==================== ANALYTICS ====================
 
-  const getPerformanceTrends = useCallback((): PerformanceTrends => {
-    return {
-      sessionDuration: {
-        average: averageSessionLength,
-        trend: trends.sessionLength.direction,
-        weeklyChange: trends.sessionLength.changePercentage,
-      },
-      goalAchievement: {
-        rate: goalCompletionRate,
-        trend: trends.goalCompletion.direction,
-        weeklyChange: trends.goalCompletion.changePercentage,
-      },
-      consistency: {
-        score: insights.consistencyScore,
-        streak: longestStreak,
-        trend: trends.consistency.direction,
-      },
-    };
-  }, [
-    averageSessionLength,
-    trends,
-    goalCompletionRate,
-    insights.consistencyScore,
-    longestStreak,
-  ]);
+  const getPerformanceTrends = useCallback(
+    (): PerformanceTrends =>
+      getPerformanceTrendsUtil(
+        averageSessionLength,
+        trends,
+        goalCompletionRate,
+        insights.consistencyScore,
+        longestStreak,
+      ),
+    [
+      averageSessionLength,
+      trends,
+      goalCompletionRate,
+      insights.consistencyScore,
+      longestStreak,
+    ],
+  );
 
-  const getGoalProgressHistory = useCallback((): GoalProgressHistory[] => {
-    const goalProgressMap = new Map<string, GoalProgressHistory>();
+  const getGoalProgressHistory = useCallback(
+    (): GoalProgressHistory[] => getGoalProgressHistoryUtil(sessions),
+    [sessions],
+  );
 
-    sessions.forEach((session) => {
-      session.goals.forEach((goal) => {
-        if (!goalProgressMap.has(goal.id)) {
-          goalProgressMap.set(goal.id, {
-            goalId: goal.id,
-            goalName: goal.type,
-            progressOverTime: [],
-            milestones: [],
-          });
-        }
-
-        const progressHistory = goalProgressMap.get(goal.id)!;
-        progressHistory.progressOverTime.push({
-          date: session.startTime,
-          progress: goal.progress,
-        });
-      });
-    });
-
-    return Array.from(goalProgressMap.values());
-  }, [sessions]);
-
-  const getComparisonMetrics = useCallback((): ComparisonMetrics => {
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const twoMonthsAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-    const thisWeekSessions = getSessionsByDateRange(weekAgo, now);
-    const lastWeekSessions = getSessionsByDateRange(twoWeeksAgo, weekAgo);
-    const thisMonthSessions = getSessionsByDateRange(monthAgo, now);
-    const lastMonthSessions = getSessionsByDateRange(twoMonthsAgo, monthAgo);
-
-    return {
-      thisWeek: {
-        sessions: thisWeekSessions.length,
-        totalTime: thisWeekSessions.reduce(
-          (sum, s) => sum + s.effectiveDuration,
-          0,
-        ),
-        goalCompletion: calculateOverallCompletionRate(thisWeekSessions),
-      },
-      lastWeek: {
-        sessions: lastWeekSessions.length,
-        totalTime: lastWeekSessions.reduce(
-          (sum, s) => sum + s.effectiveDuration,
-          0,
-        ),
-        goalCompletion: calculateOverallCompletionRate(lastWeekSessions),
-      },
-      thisMonth: {
-        sessions: thisMonthSessions.length,
-        totalTime: thisMonthSessions.reduce(
-          (sum, s) => sum + s.effectiveDuration,
-          0,
-        ),
-        goalCompletion: calculateOverallCompletionRate(thisMonthSessions),
-      },
-      lastMonth: {
-        sessions: lastMonthSessions.length,
-        totalTime: lastMonthSessions.reduce(
-          (sum, s) => sum + s.effectiveDuration,
-          0,
-        ),
-        goalCompletion: calculateOverallCompletionRate(lastMonthSessions),
-      },
-    };
-  }, [getSessionsByDateRange]);
+  const getComparisonMetrics = useCallback(
+    (): ComparisonMetrics => getComparisonMetricsUtil(sessions),
+    [sessions],
+  );
 
   // ==================== RETURN HOOK INTERFACE ====================
 
