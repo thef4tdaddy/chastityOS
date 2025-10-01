@@ -246,7 +246,8 @@ export const useGameification = (userId: string) => {
     // Calculate new level
     let newLevel = oldLevel;
     for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
-      if (newExperience >= LEVEL_THRESHOLDS[i]) {
+      const threshold = LEVEL_THRESHOLDS[i];
+      if (threshold !== undefined && newExperience >= threshold) {
         newLevel = i + 1;
       } else {
         break;
@@ -255,7 +256,7 @@ export const useGameification = (userId: string) => {
 
     const experienceToNext =
       newLevel < LEVEL_THRESHOLDS.length
-        ? LEVEL_THRESHOLDS[newLevel] - newExperience
+        ? (LEVEL_THRESHOLDS[newLevel] ?? 0) - newExperience
         : 0;
 
     // Create experience event
@@ -442,7 +443,7 @@ export const useGameification = (userId: string) => {
   const completedChallengesThisWeek = playerProfile.stats.challengesCompleted; // Simplified
 
   const rank =
-    leaderboards.length > 0
+    leaderboards.length > 0 && leaderboards[0]
       ? leaderboards[0].entries.findIndex((e) => e.userId === userId) + 1 || 0
       : 0;
 

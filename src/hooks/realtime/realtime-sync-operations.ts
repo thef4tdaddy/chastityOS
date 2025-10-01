@@ -18,7 +18,7 @@ import {
   shouldAttemptReconnection,
   createSubscription,
   notifySubscribers as _notifySubscribers,
-} from "./realtimeSyncHelpers";
+} from "./realtime-sync-utils";
 
 // Helper to create sendMessage function
 const createSendMessage = (

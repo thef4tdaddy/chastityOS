@@ -8,8 +8,8 @@ import type {
   PauseReason,
   CooldownState,
   KeyholderOverrideCapabilities,
-} from "../../types/pauseResume";
-import { serviceLogger } from "../logging";
+} from "../types/pauseResume";
+import { serviceLogger } from "./logging";
 
 const _logger = serviceLogger("pauseResumeHelpers");
 

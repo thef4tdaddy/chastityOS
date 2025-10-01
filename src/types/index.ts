@@ -1,4 +1,4 @@
-import { Timestamp, FieldValue } from 'firebase/firestore';
+import { Timestamp, FieldValue } from "firebase/firestore";
 
 // User and authentication types
 export interface User {
@@ -19,21 +19,21 @@ export interface UserData {
 
 // Task-related types
 export interface RewardPunishment {
-  type: 'time' | 'note' | 'none';
+  type: "time" | "note" | "none";
   value: number | string;
 }
 
 export interface Task {
   id: string;
   text: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  status: "pending" | "submitted" | "approved" | "rejected";
   deadline?: Date | null;
   reward?: RewardPunishment;
   punishment?: RewardPunishment;
   createdAt?: Date | null;
   submittedAt?: Date | null;
   note?: string;
-  logType?: 'reward' | 'punishment';
+  logType?: "reward" | "punishment";
   sourceText?: string;
   timeChangeSeconds?: number;
 }
@@ -94,14 +94,14 @@ export interface KeyholderPermissions {
 }
 
 export interface KeyholderReward {
-  type: 'time' | 'note' | 'other';
+  type: "time" | "note" | "other";
   timeSeconds?: number;
   note?: string;
   other?: string;
 }
 
 export interface KeyholderPunishment {
-  type: 'time' | 'note' | 'other';
+  type: "time" | "note" | "other";
   timeSeconds?: number;
   note?: string;
   other?: string;
@@ -161,3 +161,97 @@ export interface UseSessionReturn {
   isLoading: boolean;
   error: string | null;
 }
+
+// Re-export types from other modules
+export {
+  // Achievement enums (need to be regular exports, not type-only, to be used as values)
+  AchievementCategory,
+  AchievementDifficulty,
+  // Leaderboard enums
+  LeaderboardCategory,
+  LeaderboardPeriod,
+} from "./achievements";
+
+export type {
+  // Achievement types
+  Achievement,
+  UserAchievement,
+  AchievementProgress,
+  AchievementNotification,
+  AchievementStats,
+  AchievementExportData,
+  AchievementRequirement,
+  // Leaderboard types
+  LeaderboardEntry,
+  LeaderboardPrivacy,
+} from "./achievements";
+
+export type {
+  // Database types
+  DBAchievement,
+  DBAchievementNotification,
+  DBAchievementProgress,
+  DBUserAchievement,
+  DBLeaderboardEntry,
+  DBBase,
+  DBUser,
+  DBSession,
+  DBEvent,
+  DBTask,
+  DBGoal,
+  DBSettings,
+  UserSettings,
+  Task,
+  SyncStatus,
+  EventType,
+  TaskStatus,
+  AchievementCategory as DBAchievementCategory,
+  AchievementDifficulty as DBAchievementDifficulty,
+  SyncOperation,
+  ConflictRecord,
+  DBSyncMeta,
+  SessionWithDuration,
+  TaskWithStatus,
+  GoalWithProgress,
+  SessionFilters,
+  EventFilters,
+  TaskFilters,
+  QueuedOperation,
+  SyncOptions,
+  SyncResult,
+  ConflictInfo,
+  SettingsConflict,
+} from "./database";
+
+export {
+  // Core enums
+  UserRole,
+} from "./core";
+
+export type {
+  // API and Form types from core
+  ApiResponse,
+  LoginForm,
+  RegisterForm,
+} from "./core";
+
+export {
+  // Relationship enums
+  RelationshipStatus,
+  RelationshipRequestStatus,
+} from "./relationships";
+
+export type {
+  // Relationship types
+  Relationship,
+  RelationshipPermissions,
+} from "./relationships";
+
+export type {
+  // Pause/Resume types
+  EnhancedPauseState,
+  CooldownState,
+} from "./pauseResume";
+
+// Note: NavigationActions and BreadcrumbItem are exported from stores/navigationStore
+// not from types/core

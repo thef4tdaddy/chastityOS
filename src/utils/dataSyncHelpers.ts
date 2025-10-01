@@ -6,7 +6,7 @@ import type {
   SyncMetrics,
   SyncPermissions,
   DataConflict,
-} from "../types/dataSync";
+} from "../hooks/data/types/dataSync";
 
 /**
  * Calculate the overall sync quality score across all relationships

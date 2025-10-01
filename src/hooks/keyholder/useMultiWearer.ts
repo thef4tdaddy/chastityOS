@@ -16,7 +16,7 @@ import {
   updateWearerInSession,
   parseWearerData,
   parseSessionData,
-} from "./multiWearerHelpers";
+} from "./multi-wearer-utils";
 import { logger } from "../../utils/logging";
 
 interface UseMultiWearerProps {

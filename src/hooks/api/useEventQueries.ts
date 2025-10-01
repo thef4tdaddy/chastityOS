@@ -155,10 +155,7 @@ export function useEventMutations() {
       updates: Partial<DBEvent>;
     }) => {
       // 1. Update local Dexie immediately
-      const updatedEvent = await eventDBService.updateEvent(
-        params.eventId,
-        params.updates,
-      );
+      await eventDBService.updateEvent(params.eventId, params.updates);
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -167,9 +164,9 @@ export function useEventMutations() {
         });
       }
 
-      return updatedEvent;
+      return params.updates;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Update event in cache
       queryClient.setQueryData(
         ["events", "user", variables.userId],
@@ -177,7 +174,7 @@ export function useEventMutations() {
           if (!oldEvents) return oldEvents;
           return oldEvents.map((event) =>
             event.id === variables.eventId
-              ? { ...event, ...(data as Partial<DBEvent>) }
+              ? { ...event, ...variables.updates }
               : event,
           );
         },

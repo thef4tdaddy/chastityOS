@@ -5,6 +5,11 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
+export interface BreadcrumbItem {
+  label: string;
+  path?: string;
+}
+
 export interface NavigationState {
   // Current page state
   currentPage: string;
@@ -14,7 +19,7 @@ export interface NavigationState {
   pageDescription?: string;
 
   // Breadcrumbs navigation
-  breadcrumbs: Array<{ label: string; path?: string }>;
+  breadcrumbs: BreadcrumbItem[];
 
   // Mobile menu state
   isMobileMenuOpen: boolean;
@@ -26,10 +31,8 @@ export interface NavigationState {
   setCurrentPage: (page: string) => void;
   setPageTitle: (title: string) => void;
   setPageMetadata: (title: string, description?: string) => void;
-  setBreadcrumbs: (
-    breadcrumbs: Array<{ label: string; path?: string }>,
-  ) => void;
-  addBreadcrumb: (breadcrumb: { label: string; path?: string }) => void;
+  setBreadcrumbs: (breadcrumbs: BreadcrumbItem[]) => void;
+  addBreadcrumb: (breadcrumb: BreadcrumbItem) => void;
   removeBreadcrumb: () => void;
   clearBreadcrumbs: () => void;
 
@@ -144,3 +147,23 @@ export const useIsPageLoading = () =>
 
 export const usePageTitle = () =>
   useNavigationStore((state) => state.pageTitle);
+
+// Type exports for external use
+export type NavigationActions = Pick<
+  NavigationState,
+  | "setCurrentPage"
+  | "setPageTitle"
+  | "setPageMetadata"
+  | "setBreadcrumbs"
+  | "addBreadcrumb"
+  | "removeBreadcrumb"
+  | "clearBreadcrumbs"
+  | "toggleMobileMenu"
+  | "openMobileMenu"
+  | "closeMobileMenu"
+  | "setPageLoading"
+  | "setNavigating"
+  | "resetStore"
+>;
+
+export type NavigationStore = NavigationState;

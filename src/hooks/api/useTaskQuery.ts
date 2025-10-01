@@ -112,13 +112,9 @@ export function useTaskMutations() {
       feedback?: string;
     }) => {
       // 1. Update local Dexie immediately
-      const updatedTask = await taskDBService.updateTaskStatus(
-        params.taskId,
-        params.status,
-        {
-          keyholderFeedback: params.feedback,
-        },
-      );
+      await taskDBService.updateTaskStatus(params.taskId, params.status, {
+        keyholderFeedback: params.feedback,
+      });
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -127,9 +123,9 @@ export function useTaskMutations() {
         });
       }
 
-      return updatedTask;
+      return { status: params.status, feedback: params.feedback };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Update specific task in cache
       queryClient.setQueryData(
         ["tasks", "user", variables.userId],
@@ -137,7 +133,11 @@ export function useTaskMutations() {
           if (!oldTasks) return oldTasks;
           return oldTasks.map((task) =>
             task.id === variables.taskId
-              ? { ...task, ...(data as Partial<DBTask>) }
+              ? {
+                  ...task,
+                  status: variables.status,
+                  keyholderFeedback: variables.feedback,
+                }
               : task,
           );
         },
@@ -194,13 +194,9 @@ export function useTaskMutations() {
       note?: string;
     }) => {
       // 1. Update local Dexie immediately
-      const updatedTask = await taskDBService.updateTaskStatus(
-        params.taskId,
-        "submitted",
-        {
-          submissiveNote: params.note,
-        },
-      );
+      await taskDBService.updateTaskStatus(params.taskId, "submitted", {
+        submissiveNote: params.note,
+      });
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -209,9 +205,9 @@ export function useTaskMutations() {
         });
       }
 
-      return updatedTask;
+      return { status: "submitted" as const, submissiveNote: params.note };
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Update task in cache
       queryClient.setQueryData(
         ["tasks", "user", variables.userId],
@@ -219,7 +215,11 @@ export function useTaskMutations() {
           if (!oldTasks) return oldTasks;
           return oldTasks.map((task) =>
             task.id === variables.taskId
-              ? { ...task, ...(data as Partial<DBTask>) }
+              ? {
+                  ...task,
+                  status: "submitted" as TaskStatus,
+                  submissiveNote: variables.note,
+                }
               : task,
           );
         },

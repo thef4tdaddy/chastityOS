@@ -369,7 +369,8 @@ export const useDataSync = (userId: string) => {
         throw error;
       }
     },
-    [syncPermissions, initializeRealTimeSync],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [syncPermissions],
   );
 
   const configureSyncScope = useCallback(
