@@ -29,6 +29,212 @@ export type {
   BaseHookActions,
 } from "./relationships/types";
 
+/**
+ * Hook to load active relationship data when it changes
+ */
+function useActiveRelationshipLoader(
+  activeRelationship: Relationship | null,
+  relationshipStatus: ReturnType<typeof useRelationshipStatus>,
+  relationshipTasks: ReturnType<typeof useRelationshipTasks>,
+) {
+  useEffect(() => {
+    if (activeRelationship) {
+      const relationshipId = activeRelationship.id;
+      relationshipStatus.loadRelationshipData(relationshipId);
+      relationshipTasks.loadRelationshipData(relationshipId);
+    }
+  }, [activeRelationship, relationshipStatus, relationshipTasks]);
+}
+
+/**
+ * Hook to set up real-time listeners for active relationship
+ */
+function useRelationshipSubscriptions(
+  activeRelationship: Relationship | null,
+  relationshipStatus: ReturnType<typeof useRelationshipStatus>,
+  relationshipTasks: ReturnType<typeof useRelationshipTasks>,
+) {
+  useEffect(() => {
+    if (!activeRelationship) return;
+
+    const relationshipId = activeRelationship.id;
+    let unsubscribeChastityData: (() => void) | null = null;
+    let unsubscribeTasks: (() => void) | null = null;
+
+    const setupSubscriptions = async () => {
+      unsubscribeChastityData =
+        await relationshipChastityService.subscribeToChastityData(
+          relationshipId,
+          () => {
+            relationshipStatus.loadRelationshipData(relationshipId);
+          },
+        );
+
+      unsubscribeTasks = await relationshipChastityService.subscribeToTasks(
+        relationshipId,
+        () => {
+          relationshipTasks.loadRelationshipData(relationshipId);
+        },
+      );
+    };
+
+    setupSubscriptions();
+
+    return () => {
+      if (unsubscribeChastityData) unsubscribeChastityData();
+      if (unsubscribeTasks) unsubscribeTasks();
+    };
+  }, [activeRelationship, relationshipStatus, relationshipTasks]);
+}
+
+/**
+ * Hook to combine errors from all relationship hooks
+ */
+function useCombinedErrors(hooks: {
+  relationshipList: ReturnType<typeof useRelationshipList>;
+  relationshipInvites: ReturnType<typeof useRelationshipInvites>;
+  relationshipActions: ReturnType<typeof useRelationshipActions>;
+  relationshipStatus: ReturnType<typeof useRelationshipStatus>;
+  relationshipPermissions: ReturnType<typeof useRelationshipPermissions>;
+  relationshipTasks: ReturnType<typeof useRelationshipTasks>;
+  relationshipValidation: ReturnType<typeof useRelationshipValidation>;
+}) {
+  return useMemo(() => {
+    const errors = [
+      hooks.relationshipList.error,
+      hooks.relationshipInvites.error,
+      hooks.relationshipActions.error,
+      hooks.relationshipStatus.error,
+      hooks.relationshipPermissions.error,
+      hooks.relationshipTasks.error,
+      hooks.relationshipValidation.error,
+    ].filter(Boolean);
+
+    return errors.length > 0 ? errors[0] : null;
+  }, [
+    hooks.relationshipList.error,
+    hooks.relationshipInvites.error,
+    hooks.relationshipActions.error,
+    hooks.relationshipStatus.error,
+    hooks.relationshipPermissions.error,
+    hooks.relationshipTasks.error,
+    hooks.relationshipValidation.error,
+  ]);
+}
+
+/**
+ * Hook to combine loading states from all relationship hooks
+ */
+function useCombinedLoading(hooks: {
+  relationshipList: ReturnType<typeof useRelationshipList>;
+  relationshipInvites: ReturnType<typeof useRelationshipInvites>;
+  relationshipActions: ReturnType<typeof useRelationshipActions>;
+  relationshipStatus: ReturnType<typeof useRelationshipStatus>;
+  relationshipPermissions: ReturnType<typeof useRelationshipPermissions>;
+  relationshipTasks: ReturnType<typeof useRelationshipTasks>;
+  relationshipValidation: ReturnType<typeof useRelationshipValidation>;
+}) {
+  return useMemo(() => {
+    return !!(
+      hooks.relationshipList.isLoading ||
+      hooks.relationshipInvites.isLoading ||
+      hooks.relationshipActions.isLoading ||
+      hooks.relationshipStatus.isLoading ||
+      hooks.relationshipPermissions.isLoading ||
+      hooks.relationshipTasks.isLoading ||
+      hooks.relationshipValidation.isLoading
+    );
+  }, [
+    hooks.relationshipList.isLoading,
+    hooks.relationshipInvites.isLoading,
+    hooks.relationshipActions.isLoading,
+    hooks.relationshipStatus.isLoading,
+    hooks.relationshipPermissions.isLoading,
+    hooks.relationshipTasks.isLoading,
+    hooks.relationshipValidation.isLoading,
+  ]);
+}
+
+/**
+ * Hook for unified error clearing across all relationship hooks
+ */
+function useClearErrors(hooks: {
+  relationshipList: ReturnType<typeof useRelationshipList>;
+  relationshipInvites: ReturnType<typeof useRelationshipInvites>;
+  relationshipActions: ReturnType<typeof useRelationshipActions>;
+  relationshipStatus: ReturnType<typeof useRelationshipStatus>;
+  relationshipPermissions: ReturnType<typeof useRelationshipPermissions>;
+  relationshipTasks: ReturnType<typeof useRelationshipTasks>;
+  relationshipValidation: ReturnType<typeof useRelationshipValidation>;
+}) {
+  return useCallback(() => {
+    hooks.relationshipList.clearError();
+    hooks.relationshipInvites.clearError();
+    hooks.relationshipActions.clearError();
+    hooks.relationshipStatus.clearError();
+    hooks.relationshipPermissions.clearError();
+    hooks.relationshipTasks.clearError();
+    hooks.relationshipValidation.clearError();
+  }, [
+    hooks.relationshipList,
+    hooks.relationshipInvites,
+    hooks.relationshipActions,
+    hooks.relationshipStatus,
+    hooks.relationshipPermissions,
+    hooks.relationshipTasks,
+    hooks.relationshipValidation,
+  ]);
+}
+
+/**
+ * Hook for setting active relationship with data clearing
+ */
+function useSetActiveRelationship(
+  relationshipList: ReturnType<typeof useRelationshipList>,
+) {
+  return useCallback(
+    (relationship: KeyholderRelationship | null) => {
+      relationshipList.setActiveRelationship(
+        relationship as Relationship | null,
+      );
+    },
+    [relationshipList],
+  );
+}
+
+/**
+ * Hook for coordinated data refresh across all relationship hooks
+ */
+function useRefreshData(
+  relationshipList: ReturnType<typeof useRelationshipList>,
+  relationshipInvites: ReturnType<typeof useRelationshipInvites>,
+  relationshipValidation: ReturnType<typeof useRelationshipValidation>,
+  relationshipStatus: ReturnType<typeof useRelationshipStatus>,
+  relationshipTasks: ReturnType<typeof useRelationshipTasks>,
+) {
+  return useCallback(async () => {
+    await Promise.all([
+      relationshipList.refreshRelationships(),
+      relationshipInvites.refreshPendingRequests(),
+      relationshipValidation.checkMigrationStatus(),
+    ]);
+
+    if (relationshipList.activeRelationship) {
+      const relationshipId = relationshipList.activeRelationship.id;
+      await Promise.all([
+        relationshipStatus.loadRelationshipData(relationshipId),
+        relationshipTasks.loadRelationshipData(relationshipId),
+      ]);
+    }
+  }, [
+    relationshipList,
+    relationshipInvites,
+    relationshipValidation,
+    relationshipStatus,
+    relationshipTasks,
+  ]);
+}
+
 // Maintain backward compatibility with the original interface
 export interface RelationshipActions {
   // Relationship management
@@ -113,156 +319,28 @@ export function useRelationships() {
   const relationshipTasks = useRelationshipTasks();
   const relationshipValidation = useRelationshipValidation();
 
-  // Load data for active relationship when it changes
-  useEffect(() => {
-    if (relationshipList.activeRelationship) {
-      const relationshipId = relationshipList.activeRelationship.id;
-      relationshipStatus.loadRelationshipData(relationshipId);
-      relationshipTasks.loadRelationshipData(relationshipId);
-    }
-  }, [
+  // Load data and set up subscriptions for active relationship
+  useActiveRelationshipLoader(
     relationshipList.activeRelationship,
     relationshipStatus,
     relationshipTasks,
-  ]);
-
-  // Set up real-time listeners for active relationship data
-  useEffect(() => {
-    if (!relationshipList.activeRelationship) return;
-
-    const relationshipId = relationshipList.activeRelationship.id;
-    let unsubscribeChastityData: (() => void) | null = null;
-    let unsubscribeTasks: (() => void) | null = null;
-
-    // Set up subscriptions
-    const setupSubscriptions = async () => {
-      unsubscribeChastityData =
-        await relationshipChastityService.subscribeToChastityData(
-          relationshipId,
-          (_chastityData) => {
-            // Update the status hook with new data
-            relationshipStatus.loadRelationshipData(relationshipId);
-          },
-        );
-
-      unsubscribeTasks = await relationshipChastityService.subscribeToTasks(
-        relationshipId,
-        (_tasks) => {
-          // Update the tasks hook with new data
-          relationshipTasks.loadRelationshipData(relationshipId);
-        },
-      );
-    };
-
-    setupSubscriptions();
-
-    return () => {
-      if (unsubscribeChastityData) unsubscribeChastityData();
-      if (unsubscribeTasks) unsubscribeTasks();
-    };
-  }, [
+  );
+  useRelationshipSubscriptions(
     relationshipList.activeRelationship,
     relationshipStatus,
     relationshipTasks,
-  ]);
+  );
 
-  // Enhanced refresh function that coordinates all hooks
-  const refreshData = useCallback(async () => {
-    await Promise.all([
-      relationshipList.refreshRelationships(),
-      relationshipInvites.refreshPendingRequests(),
-      relationshipValidation.checkMigrationStatus(),
-    ]);
-
-    if (relationshipList.activeRelationship) {
-      const relationshipId = relationshipList.activeRelationship.id;
-      await Promise.all([
-        relationshipStatus.loadRelationshipData(relationshipId),
-        relationshipTasks.loadRelationshipData(relationshipId),
-      ]);
-    }
-  }, [
+  const refreshData = useRefreshData(
     relationshipList,
     relationshipInvites,
     relationshipValidation,
     relationshipStatus,
     relationshipTasks,
-  ]);
+  );
 
-  // Unified error handling - combine errors from all hooks
-  const _hasError = useMemo(() => {
-    return !!(
-      relationshipList.error ||
-      relationshipInvites.error ||
-      relationshipActions.error ||
-      relationshipStatus.error ||
-      relationshipPermissions.error ||
-      relationshipTasks.error ||
-      relationshipValidation.error
-    );
-  }, [
-    relationshipList.error,
-    relationshipInvites.error,
-    relationshipActions.error,
-    relationshipStatus.error,
-    relationshipPermissions.error,
-    relationshipTasks.error,
-    relationshipValidation.error,
-  ]);
-
-  const combinedError = useMemo(() => {
-    const errors = [
-      relationshipList.error,
-      relationshipInvites.error,
-      relationshipActions.error,
-      relationshipStatus.error,
-      relationshipPermissions.error,
-      relationshipTasks.error,
-      relationshipValidation.error,
-    ].filter(Boolean);
-
-    return errors.length > 0 ? errors[0] : null;
-  }, [
-    relationshipList.error,
-    relationshipInvites.error,
-    relationshipActions.error,
-    relationshipStatus.error,
-    relationshipPermissions.error,
-    relationshipTasks.error,
-    relationshipValidation.error,
-  ]);
-
-  // Unified loading state - true if any hook is loading
-  const isLoading = useMemo(() => {
-    return !!(
-      relationshipList.isLoading ||
-      relationshipInvites.isLoading ||
-      relationshipActions.isLoading ||
-      relationshipStatus.isLoading ||
-      relationshipPermissions.isLoading ||
-      relationshipTasks.isLoading ||
-      relationshipValidation.isLoading
-    );
-  }, [
-    relationshipList.isLoading,
-    relationshipInvites.isLoading,
-    relationshipActions.isLoading,
-    relationshipStatus.isLoading,
-    relationshipPermissions.isLoading,
-    relationshipTasks.isLoading,
-    relationshipValidation.isLoading,
-  ]);
-
-  // Unified clear error function
-  const clearError = useCallback(() => {
-    relationshipList.clearError();
-    relationshipInvites.clearError();
-    relationshipActions.clearError();
-    relationshipStatus.clearError();
-    relationshipPermissions.clearError();
-    relationshipTasks.clearError();
-    relationshipValidation.clearError();
-  }, [
+  // Combine errors and loading states from all hooks
+  const hooks = {
     relationshipList,
     relationshipInvites,
     relationshipActions,
@@ -270,28 +348,14 @@ export function useRelationships() {
     relationshipPermissions,
     relationshipTasks,
     relationshipValidation,
-  ]);
-
-  // Enhanced setActiveRelationship that clears data when switching
-  const setActiveRelationship = useCallback(
-    (relationship: KeyholderRelationship | null) => {
-      // Cast KeyholderRelationship to Relationship for compatibility
-      // TODO: Align these types in the future
-      relationshipList.setActiveRelationship(
-        relationship as Relationship | null,
-      );
-
-      // Clear old data when switching relationships
-      if (!relationship) {
-        // Data will be automatically cleared since hooks are reactive
-      }
-    },
-    [relationshipList],
-  );
+  };
+  const combinedError = useCombinedErrors(hooks);
+  const isLoading = useCombinedLoading(hooks);
+  const clearError = useClearErrors(hooks);
+  const setActiveRelationship = useSetActiveRelationship(relationshipList);
 
   // Return combined state and actions for backward compatibility
   return {
-    // Combined state - maintaining backward compatibility
     relationships: relationshipList.relationships,
     pendingRequests: relationshipInvites.pendingRequests,
     activeRelationship: relationshipList.activeRelationship,
@@ -302,8 +366,6 @@ export function useRelationships() {
     isLoading,
     error: combinedError,
     needsMigration: relationshipValidation.needsMigration,
-
-    // Combined actions - maintaining backward compatibility
     sendRelationshipRequest: relationshipInvites.sendRelationshipRequest,
     acceptRelationshipRequest: relationshipActions.acceptRelationshipRequest,
     rejectRelationshipRequest: relationshipActions.rejectRelationshipRequest,
