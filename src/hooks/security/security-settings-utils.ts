@@ -1,6 +1,7 @@
 /**
  * Helper functions for security settings
  */
+import React from "react";
 import {
   SecuritySettingsState,
   SessionSecuritySettings,
