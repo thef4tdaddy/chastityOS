@@ -54,8 +54,7 @@ export function useRelationshipStatus(): RelationshipStatusState &
 
   const { clearError: clearErrorFn } = createBaseActions();
 
-  const { loadChastityData, loadSessions, loadRelationshipData } =
-    useDataLoading(setState);
+  const { loadRelationshipData } = useDataLoading(setState);
 
   const { startSession, endSession, pauseSession, resumeSession } =
     useSessionOperations(userId, loadRelationshipData, setState);
@@ -83,7 +82,11 @@ export function useRelationshipStatus(): RelationshipStatusState &
 
 // Hook for data loading operations
 function useDataLoading(
-  setState: React.Dispatch<React.SetStateAction<RelationshipStatusState>>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
 ) {
   const loadChastityData = useCallback(
     async (relationshipId: string) => {
@@ -132,7 +135,36 @@ function useDataLoading(
 function useSessionOperations(
   userId: string | undefined,
   loadRelationshipData: (relationshipId: string) => Promise<void>,
-  setState: React.Dispatch<React.SetStateAction<RelationshipStatusState>>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
+) {
+  const { startSession, endSession } = useStartEndSession(
+    userId,
+    loadRelationshipData,
+    setState,
+  );
+
+  const { pauseSession, resumeSession } = usePauseResumeSession(
+    userId,
+    loadRelationshipData,
+    setState,
+  );
+
+  return { startSession, endSession, pauseSession, resumeSession };
+}
+
+// Hook for start and end session operations
+function useStartEndSession(
+  userId: string | undefined,
+  loadRelationshipData: (relationshipId: string) => Promise<void>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
 ) {
   const startSession = useCallback(
     async (
@@ -182,6 +214,19 @@ function useSessionOperations(
     [userId, loadRelationshipData, setState],
   );
 
+  return { startSession, endSession };
+}
+
+// Hook for pause and resume session operations
+function usePauseResumeSession(
+  userId: string | undefined,
+  loadRelationshipData: (relationshipId: string) => Promise<void>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
+) {
   const pauseSession = useCallback(
     async (relationshipId: string, sessionId: string, reason?: string) => {
       if (!userId) throw new Error("User not authenticated");
@@ -223,5 +268,5 @@ function useSessionOperations(
     [userId, loadRelationshipData, setState],
   );
 
-  return { startSession, endSession, pauseSession, resumeSession };
+  return { pauseSession, resumeSession };
 }

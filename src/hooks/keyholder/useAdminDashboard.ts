@@ -156,10 +156,16 @@ export function useAdminDashboard(): UseAdminDashboardReturn {
 
 // Hook for session management operations
 function useSessionManagement(
-  setWearers: React.Dispatch<React.SetStateAction<WearerWithSession[]>>,
-  setError: React.Dispatch<React.SetStateAction<Error | null>>,
+  setWearers: (
+    value:
+      | WearerWithSession[]
+      | ((prev: WearerWithSession[]) => WearerWithSession[]),
+  ) => void,
+  setError: (value: Error | null) => void,
   wearers: WearerWithSession[],
-  setRecentActivity: React.Dispatch<React.SetStateAction<Activity[]>>,
+  setRecentActivity: (
+    value: Activity[] | ((prev: Activity[]) => Activity[]),
+  ) => void,
 ) {
   const pauseAllSessions = useCallback(async (): Promise<void> => {
     setError(null);
@@ -191,7 +197,30 @@ function useSessionManagement(
     }
   }, [setWearers, setError]);
 
-  const endSession = useCallback(
+  const endSession = useEndSessionHandler(
+    wearers,
+    setWearers,
+    setError,
+    setRecentActivity,
+  );
+
+  return { pauseAllSessions, resumeAllSessions, endSession };
+}
+
+// Separate hook for ending sessions to keep useSessionManagement under limit
+function useEndSessionHandler(
+  wearers: WearerWithSession[],
+  setWearers: (
+    value:
+      | WearerWithSession[]
+      | ((prev: WearerWithSession[]) => WearerWithSession[]),
+  ) => void,
+  setError: (value: Error | null) => void,
+  setRecentActivity: (
+    value: Activity[] | ((prev: Activity[]) => Activity[]),
+  ) => void,
+) {
+  return useCallback(
     async (wearerId: string): Promise<void> => {
       setError(null);
       try {
@@ -234,15 +263,13 @@ function useSessionManagement(
     },
     [wearers, setWearers, setError, setRecentActivity],
   );
-
-  return { pauseAllSessions, resumeAllSessions, endSession };
 }
 
 // Hook for admin actions (notifications, filters, refresh)
 function useAdminActions(
-  setError: React.Dispatch<React.SetStateAction<Error | null>>,
-  setCurrentFilter: React.Dispatch<React.SetStateAction<AdminFilter>>,
-  setLastUpdate: React.Dispatch<React.SetStateAction<Date | null>>,
+  setError: (value: Error | null) => void,
+  setCurrentFilter: (value: AdminFilter) => void,
+  setLastUpdate: (value: Date | null) => void,
 ) {
   const sendBulkNotification = useCallback(
     async (message: string, wearerIds: string[]): Promise<void> => {

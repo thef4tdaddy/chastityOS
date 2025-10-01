@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   doc,
   setDoc,
@@ -95,11 +95,9 @@ function setupKeyholderListener(params: {
   userId: string;
   keyholderName?: string;
   getKeyholderDocRef: () => DocumentReference | null;
-  setKeyholderSession: React.Dispatch<
-    React.SetStateAction<KeyholderSession | null>
-  >;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setKeyholderSession: (value: KeyholderSession | null) => void;
+  setError: (value: string | null) => void;
+  setIsLoading: (value: boolean) => void;
 }) {
   const {
     isAuthReady,
@@ -141,7 +139,7 @@ function useSessionActions(params: {
   userId: string;
   keyholderSession: KeyholderSession | null;
   getKeyholderDocRef: () => DocumentReference | null;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setError: (value: string | null) => void;
 }) {
   const { userId, keyholderSession, getKeyholderDocRef, setError } = params;
 
@@ -193,11 +191,9 @@ function useSessionActions(params: {
 function setupSessionListener(
   keyholderDocRef: DocumentReference,
   keyholderName: string | undefined,
-  setKeyholderSession: React.Dispatch<
-    React.SetStateAction<KeyholderSession | null>
-  >,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setKeyholderSession: (value: KeyholderSession | null) => void,
+  setError: (value: string | null) => void,
+  setIsLoading: (value: boolean) => void,
 ) {
   return onSnapshot(
     keyholderDocRef,
@@ -241,7 +237,7 @@ async function handleStartSession(
   permissions: KeyholderPermissions,
   userId: string,
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
@@ -279,7 +275,7 @@ async function handleStartSession(
 
 async function handleEndSession(
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
@@ -302,7 +298,7 @@ async function handleUpdatePermissions(
   keyholderSession: KeyholderSession | null,
   newPermissions: Partial<KeyholderPermissions>,
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
@@ -333,7 +329,7 @@ async function handleUpdateKeyholderName(
   name: string,
   userId: string,
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
