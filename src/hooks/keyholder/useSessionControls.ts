@@ -144,8 +144,8 @@ export function useSessionControls(
     isReducing,
     isLocking,
     isUnlocking,
-    extendCooldown,
-    lockCooldown,
+    extendCooldown: _extendCooldown,
+    lockCooldown: _lockCooldown,
     error,
     clearError,
   };
