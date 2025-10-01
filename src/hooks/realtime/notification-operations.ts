@@ -1,7 +1,7 @@
 /**
  * Notification operation helper functions
  */
-import React, { useCallback } from "react";
+import React from "react";
 import {
   Notification,
   NotificationState,
@@ -27,13 +27,12 @@ export const createNotificationFactory = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
   maxNotifications: number,
 ) => {
-  return useCallback(
-    async (
-      notification: Omit<
-        Notification,
-        "id" | "timestamp" | "isRead" | "userId"
-      >,
-    ): Promise<void> => {
+  return async (
+    notification: Omit<
+      Notification,
+      "id" | "timestamp" | "isRead" | "userId"
+    >,
+  ): Promise<void> => {
       const newNotification: Notification = {
         ...notification,
         id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -89,22 +88,14 @@ export const createNotificationFactory = (
 
       // Save to backend
       await saveNotification(newNotification);
-    },
-    [
-      userId,
-      notificationState.preferences,
-      maxNotifications,
-      setNotificationState,
-    ],
-  );
+    };
 };
 
 // Helper function to create mark as read function
 export const createMarkAsReadFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
-  return useCallback(
-    async (notificationId: string): Promise<void> => {
+  return async (notificationId: string): Promise<void> => {
       setNotificationState((prev) => ({
         ...prev,
         notifications: prev.notifications.map((notif) =>
@@ -114,9 +105,7 @@ export const createMarkAsReadFunction = (
 
       // Update in backend
       await updateNotificationStatus(notificationId, { isRead: true });
-    },
-    [setNotificationState],
-  );
+    };
 };
 
 // Helper function to create mark all as read function
@@ -124,7 +113,7 @@ export const createMarkAllAsReadFunction = (
   notificationState: NotificationState,
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
-  return useCallback(async (): Promise<void> => {
+  return async (): Promise<void> => {
     const unreadIds: string[] = [];
     for (let i = 0; i < notificationState.notifications.length; i++) {
       const notif = notificationState.notifications[i];
@@ -143,15 +132,14 @@ export const createMarkAllAsReadFunction = (
 
     // Update in backend
     await updateMultipleNotificationStatus(unreadIds, { isRead: true });
-  }, [notificationState.notifications, setNotificationState]);
+  };
 };
 
 // Helper function to create dismiss notification function
 export const createDismissNotificationFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
-  return useCallback(
-    async (notificationId: string): Promise<void> => {
+  return async (notificationId: string): Promise<void> => {
       setNotificationState((prev) => ({
         ...prev,
         notifications: prev.notifications.filter(
@@ -161,9 +149,7 @@ export const createDismissNotificationFunction = (
 
       // Remove from backend
       await deleteNotification(notificationId);
-    },
-    [setNotificationState],
-  );
+    };
 };
 
 // Helper function to create preferences update function
@@ -172,8 +158,7 @@ export const createUpdatePreferencesFunction = (
   notificationState: NotificationState,
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
-  return useCallback(
-    async (prefs: Partial<NotificationPreferences>): Promise<void> => {
+  return async (prefs: Partial<NotificationPreferences>): Promise<void> => {
       const updatedPreferences = {
         ...notificationState.preferences,
         ...prefs,
@@ -187,9 +172,7 @@ export const createUpdatePreferencesFunction = (
 
       // Save to backend
       await saveNotificationPreferences(userId, updatedPreferences);
-    },
-    [userId, notificationState.preferences, setNotificationState],
-  );
+    };
 };
 
 // Helper function to create convenience notification functions
@@ -198,53 +181,41 @@ export const createConvenienceNotificationFunctions = (
     notification: Omit<Notification, "id" | "timestamp" | "isRead" | "userId">,
   ) => Promise<void>,
 ) => {
-  const showSuccess = useCallback(
-    (title: string, message: string) => {
-      return addNotification({
-        type: NotificationType.SUCCESS,
-        title,
-        message,
-        priority: NotificationPriority.LOW,
-      });
-    },
-    [addNotification],
-  );
+  const showSuccess = (title: string, message: string) => {
+    return addNotification({
+      type: NotificationType.SUCCESS,
+      title,
+      message,
+      priority: NotificationPriority.LOW,
+    });
+  };
 
-  const showError = useCallback(
-    (title: string, message: string) => {
-      return addNotification({
-        type: NotificationType.ERROR,
-        title,
-        message,
-        priority: NotificationPriority.HIGH,
-      });
-    },
-    [addNotification],
-  );
+  const showError = (title: string, message: string) => {
+    return addNotification({
+      type: NotificationType.ERROR,
+      title,
+      message,
+      priority: NotificationPriority.HIGH,
+    });
+  };
 
-  const showWarning = useCallback(
-    (title: string, message: string) => {
-      return addNotification({
-        type: NotificationType.WARNING,
-        title,
-        message,
-        priority: NotificationPriority.MEDIUM,
-      });
-    },
-    [addNotification],
-  );
+  const showWarning = (title: string, message: string) => {
+    return addNotification({
+      type: NotificationType.WARNING,
+      title,
+      message,
+      priority: NotificationPriority.MEDIUM,
+    });
+  };
 
-  const showInfo = useCallback(
-    (title: string, message: string) => {
-      return addNotification({
-        type: NotificationType.INFO,
-        title,
-        message,
-        priority: NotificationPriority.LOW,
-      });
-    },
-    [addNotification],
-  );
+  const showInfo = (title: string, message: string) => {
+    return addNotification({
+      type: NotificationType.INFO,
+      title,
+      message,
+      priority: NotificationPriority.LOW,
+    });
+  };
 
   return { showSuccess, showError, showWarning, showInfo };
 };
@@ -256,54 +227,45 @@ export const createRelationshipNotificationFunctions = (
   ) => Promise<void>,
   relationshipId?: string,
 ) => {
-  const notifyTaskAssigned = useCallback(
-    (taskTitle: string, keyholderName: string) => {
-      return addNotification({
-        type: NotificationType.TASK_ASSIGNED,
-        title: "New Task Assigned",
-        message: `${keyholderName} has assigned you: ${taskTitle}`,
-        priority: NotificationPriority.MEDIUM,
-        relationshipId,
-      });
-    },
-    [addNotification, relationshipId],
-  );
+  const notifyTaskAssigned = (taskTitle: string, keyholderName: string) => {
+    return addNotification({
+      type: NotificationType.TASK_ASSIGNED,
+      title: "New Task Assigned",
+      message: `${keyholderName} has assigned you: ${taskTitle}`,
+      priority: NotificationPriority.MEDIUM,
+      relationshipId,
+    });
+  };
 
-  const notifyTaskApproved = useCallback(
-    (taskTitle: string) => {
-      return addNotification({
-        type: NotificationType.TASK_APPROVED,
-        title: "Task Approved",
-        message: `Your task "${taskTitle}" has been approved`,
-        priority: NotificationPriority.LOW,
-        relationshipId,
-      });
-    },
-    [addNotification, relationshipId],
-  );
+  const notifyTaskApproved = (taskTitle: string) => {
+    return addNotification({
+      type: NotificationType.TASK_APPROVED,
+      title: "Task Approved",
+      message: `Your task "${taskTitle}" has been approved`,
+      priority: NotificationPriority.LOW,
+      relationshipId,
+    });
+  };
 
-  const notifySessionStarted = useCallback(() => {
+  const notifySessionStarted = () => {
     return addNotification({
       type: NotificationType.SESSION_STARTED,
       title: "Chastity Session Started",
       message: "Your chastity session has begun",
       priority: NotificationPriority.MEDIUM,
     });
-  }, [addNotification]);
+  };
 
-  const notifyRelationshipRequest = useCallback(
-    (requesterName: string) => {
-      return addNotification({
-        type: NotificationType.RELATIONSHIP_REQUEST,
-        title: "Relationship Request",
-        message: `${requesterName} wants to establish a keyholder relationship with you`,
-        priority: NotificationPriority.HIGH,
-        actionUrl: "/relationships",
-        actionText: "View Request",
-      });
-    },
-    [addNotification],
-  );
+  const notifyRelationshipRequest = (requesterName: string) => {
+    return addNotification({
+      type: NotificationType.RELATIONSHIP_REQUEST,
+      title: "Relationship Request",
+      message: `${requesterName} wants to establish a keyholder relationship with you`,
+      priority: NotificationPriority.HIGH,
+      actionUrl: "/relationships",
+      actionText: "View Request",
+    });
+  };
 
   return {
     notifyTaskAssigned,
