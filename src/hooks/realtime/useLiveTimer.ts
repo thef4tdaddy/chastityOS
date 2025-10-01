@@ -102,8 +102,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
   });
 
   // Refs for intervals and sync
-  const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const updateIntervalRef = useRef<number | null>(null);
+  const syncIntervalRef = useRef<number | null>(null);
   const subscriptionsRef = useRef<Map<string, TimerSubscription>>(new Map());
 
   // Create a new timer
