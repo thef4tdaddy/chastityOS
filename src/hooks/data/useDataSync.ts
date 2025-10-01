@@ -164,6 +164,7 @@ export const useDataSync = (userId: string) => {
     // performBackgroundSync is stable (no deps), syncPermissions used for getSyncInterval
     // syncPermissions is state, not a store action
     // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [realTimeSyncEnabled, syncPermissions]);
 
   // ==================== DATA LOADING FUNCTIONS ====================

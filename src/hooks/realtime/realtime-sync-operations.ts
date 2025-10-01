@@ -1,7 +1,7 @@
 /**
  * Realtime sync operation helper functions
  */
-import React, { useCallback } from "react";
+import React from "react";
 import {
   RealtimeSyncState,
   ConnectionStatus,
@@ -52,7 +52,7 @@ export const createWebSocketFunctions = ({
   reconnectInterval,
   heartbeatInterval,
 }: WebSocketFunctionsParams) => {
-  const connect = useCallback(() => {
+  const connect = () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
     }
@@ -124,15 +124,7 @@ export const createWebSocketFunctions = ({
         connectionStatus: ConnectionStatus.ERROR,
       }));
     }
-  }, [
-    userId,
-    setSyncState,
-    wsRef,
-    connectionStartTimeRef,
-    reconnectAttemptsRef,
-    maxReconnectAttempts,
-    reconnectInterval,
-  ]);
+  };
 
   const disconnect = () => {
     if (wsRef.current) {
@@ -186,48 +178,38 @@ export const createWebSocketFunctions = ({
     }
   };
 
-  const sendMessage = useCallback(
-    (message: RealtimeUpdate | Record<string, unknown>) => {
-      sendWebSocketMessage(wsRef.current, message, () => {
-        setSyncState((prev) => ({
-          ...prev,
-          syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
-        }));
-      });
-    },
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setSyncState],
-  );
-
-  const handleMessage = useCallback(
-    (message: Record<string, unknown>) => {
+  const sendMessage = (message: RealtimeUpdate | Record<string, unknown>) => {
+    sendWebSocketMessage(wsRef.current, message, () => {
       setSyncState((prev) => ({
         ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
       }));
+    });
+  };
 
-      switch (message.type) {
-        case "channel_joined":
-          handleChannelJoined(message);
-          break;
-        case "channel_left":
-          handleChannelLeft(message);
-          break;
-        case "realtime_update":
-          handleRealtimeUpdate(message);
-          break;
-        case "heartbeat_ack":
-          // Heartbeat acknowledged
-          break;
-        default:
-        // Unknown message type
-      }
-    },
-    // Refs are stable and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setSyncState],
-  );
+  const handleMessage = (message: Record<string, unknown>) => {
+    setSyncState((prev) => ({
+      ...prev,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+    }));
+
+    switch (message.type) {
+      case "channel_joined":
+        handleChannelJoined(message);
+        break;
+      case "channel_left":
+        handleChannelLeft(message);
+        break;
+      case "realtime_update":
+        handleRealtimeUpdate(message);
+        break;
+      case "heartbeat_ack":
+        // Heartbeat acknowledged
+        break;
+      default:
+      // Unknown message type
+    }
+  };
 
   const handleChannelJoined = (message: { channel: SyncChannel }) => {
     const channel: SyncChannel = message.channel;

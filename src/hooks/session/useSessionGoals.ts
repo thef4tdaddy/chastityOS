@@ -27,6 +27,7 @@ import type {
   GoalCustomization,
   PredictiveGoalSuggestion,
   GoalAnalytics,
+  GoalDifficulty,
 } from "./types/SessionGoals";
 
 // Complex goal management with templates, progress tracking, and achievements
