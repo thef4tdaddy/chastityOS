@@ -161,9 +161,8 @@ export const useDataSync = (userId: string) => {
     }, syncInterval);
 
     return () => clearInterval(interval);
-    // performBackgroundSync is stable (no deps), syncPermissions used for getSyncInterval
-    // syncPermissions is state, not a store action
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+    // performBackgroundSync is stable (no deps)
+    // realTimeSyncEnabled and syncPermissions trigger re-setup of interval when changed
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [realTimeSyncEnabled, syncPermissions]);
 
