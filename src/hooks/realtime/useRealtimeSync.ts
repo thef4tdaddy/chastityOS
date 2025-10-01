@@ -34,8 +34,9 @@ interface UseRealtimeSyncOptions {
   maxReconnectAttempts?: number;
 }
 
-// Complex real-time synchronization hook with WebSocket management
-// eslint-disable-next-line max-statements
+// Core WebSocket infrastructure - manages connection lifecycle, heartbeat, auto-reconnect,
+// channel subscriptions, and message routing. Splitting would separate tightly coupled logic.
+// eslint-disable-next-line max-statements, max-lines-per-function
 export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const {
     userId,
