@@ -31,6 +31,8 @@ interface UseRealtimeSyncOptions {
   maxReconnectAttempts?: number;
 }
 
+// Complex real-time synchronization hook with WebSocket management
+// eslint-disable-next-line max-statements
 export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const {
     userId,

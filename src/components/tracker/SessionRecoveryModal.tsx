@@ -9,30 +9,71 @@ interface SessionRecoveryModalProps {
   isRecovering?: boolean;
 }
 
+// Helper functions
+const formatDuration = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+const calculateEstimatedDuration = (session: DBSession): number => {
+  const now = new Date();
+  const startTime = new Date(session.startTime);
+  const totalMs = now.getTime() - startTime.getTime();
+  const totalSeconds = Math.floor(totalMs / 1000);
+  return Math.max(0, totalSeconds - session.accumulatedPauseTime);
+};
+
+// Sub-components
+const SessionInfoDisplay: React.FC<{
+  session: DBSession;
+  estimatedDuration: number;
+}> = ({ session, estimatedDuration }) => (
+  <div className="bg-gray-700/50 rounded-lg p-4 mb-6 space-y-3">
+    <div className="flex items-center text-sm text-gray-300">
+      <FaCalendarAlt className="text-blue-400 mr-2" />
+      <span className="font-medium">Session Started:</span>
+      <span className="ml-2">
+        {new Date(session.startTime).toLocaleString()}
+      </span>
+    </div>
+
+    <div className="flex items-center text-sm text-gray-300">
+      <FaClock className="text-green-400 mr-2" />
+      <span className="font-medium">Estimated Duration:</span>
+      <span className="ml-2">{formatDuration(estimatedDuration)}</span>
+    </div>
+
+    {session.isPaused && (
+      <div className="flex items-center text-sm text-yellow-300">
+        <FaExclamationTriangle className="text-yellow-400 mr-2" />
+        <span className="font-medium">Status:</span>
+        <span className="ml-2">Session was paused</span>
+      </div>
+    )}
+
+    {session.accumulatedPauseTime > 0 && (
+      <div className="flex items-center text-sm text-gray-300">
+        <FaClock className="text-orange-400 mr-2" />
+        <span className="font-medium">Total Pause Time:</span>
+        <span className="ml-2">
+          {formatDuration(session.accumulatedPauseTime)}
+        </span>
+      </div>
+    )}
+  </div>
+);
+
 export const SessionRecoveryModal: React.FC<SessionRecoveryModalProps> = ({
   corruptedSession,
   onRecover,
   onDiscard,
   isRecovering = false,
 }) => {
-  const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
-
-  const calculateEstimatedDuration = (session: DBSession): number => {
-    const now = new Date();
-    const startTime = new Date(session.startTime);
-    const totalMs = now.getTime() - startTime.getTime();
-    const totalSeconds = Math.floor(totalMs / 1000);
-    return Math.max(0, totalSeconds - session.accumulatedPauseTime);
-  };
-
   const estimatedDuration = calculateEstimatedDuration(corruptedSession);
 
   return (
@@ -49,39 +90,10 @@ export const SessionRecoveryModal: React.FC<SessionRecoveryModalProps> = ({
           </p>
         </div>
 
-        <div className="bg-gray-700/50 rounded-lg p-4 mb-6 space-y-3">
-          <div className="flex items-center text-sm text-gray-300">
-            <FaCalendarAlt className="text-blue-400 mr-2" />
-            <span className="font-medium">Session Started:</span>
-            <span className="ml-2">
-              {new Date(corruptedSession.startTime).toLocaleString()}
-            </span>
-          </div>
-
-          <div className="flex items-center text-sm text-gray-300">
-            <FaClock className="text-green-400 mr-2" />
-            <span className="font-medium">Estimated Duration:</span>
-            <span className="ml-2">{formatDuration(estimatedDuration)}</span>
-          </div>
-
-          {corruptedSession.isPaused && (
-            <div className="flex items-center text-sm text-yellow-300">
-              <FaExclamationTriangle className="text-yellow-400 mr-2" />
-              <span className="font-medium">Status:</span>
-              <span className="ml-2">Session was paused</span>
-            </div>
-          )}
-
-          {corruptedSession.accumulatedPauseTime > 0 && (
-            <div className="flex items-center text-sm text-gray-300">
-              <FaClock className="text-orange-400 mr-2" />
-              <span className="font-medium">Total Pause Time:</span>
-              <span className="ml-2">
-                {formatDuration(corruptedSession.accumulatedPauseTime)}
-              </span>
-            </div>
-          )}
-        </div>
+        <SessionInfoDisplay
+          session={corruptedSession}
+          estimatedDuration={estimatedDuration}
+        />
 
         <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-3 mb-6">
           <p className="text-xs text-yellow-200">

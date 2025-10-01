@@ -8,6 +8,30 @@ import { useOfflineQueueStats } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
 import { FaWifi, FaWifiSlash, FaSync } from "../../utils/iconImport";
 
+// Helper component for architecture flow display
+const ArchitectureFlow: React.FC = () => (
+  <div className="mt-3 pt-3 border-t border-white/10">
+    <div className="text-xs font-medium text-white mb-2">
+      🎯 Migration Complete
+    </div>
+    <div className="flex items-center justify-between text-xs">
+      <span className="text-blue-400">Firebase</span>
+      <span className="text-gray-400">↔</span>
+      <span className="text-green-400">Dexie</span>
+      <span className="text-gray-400">↔</span>
+      <span className="text-purple-400">TanStack</span>
+      <span className="text-gray-400">↔</span>
+      <span className="text-yellow-400">UI</span>
+    </div>
+    <div className="text-center mt-1">
+      <span className="text-xs text-gray-400">↑</span>
+    </div>
+    <div className="text-center">
+      <span className="text-xs text-orange-400">Zustand</span>
+    </div>
+  </div>
+);
+
 export const OfflineStatus: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { data: queueStats } = useOfflineQueueStats();
@@ -69,27 +93,7 @@ export const OfflineStatus: React.FC = () => {
         </div>
       </div>
 
-      {/* Architecture Flow Indicator */}
-      <div className="mt-3 pt-3 border-t border-white/10">
-        <div className="text-xs font-medium text-white mb-2">
-          🎯 Migration Complete
-        </div>
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-blue-400">Firebase</span>
-          <span className="text-gray-400">↔</span>
-          <span className="text-green-400">Dexie</span>
-          <span className="text-gray-400">↔</span>
-          <span className="text-purple-400">TanStack</span>
-          <span className="text-gray-400">↔</span>
-          <span className="text-yellow-400">UI</span>
-        </div>
-        <div className="text-center mt-1">
-          <span className="text-xs text-gray-400">↑</span>
-        </div>
-        <div className="text-center">
-          <span className="text-xs text-orange-400">Zustand</span>
-        </div>
-      </div>
+      <ArchitectureFlow />
 
       {/* Implementation Status */}
       <div className="mt-3 p-2 bg-green-500/20 rounded text-xs text-green-200">

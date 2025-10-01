@@ -1,4 +1,4 @@
-import { Event, EventType } from "../../types/events";
+import { Event } from "../../types/events";
 import { DBEvent, EventFilters } from "../../types/database";
 
 /**

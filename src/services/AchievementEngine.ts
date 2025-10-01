@@ -314,6 +314,31 @@ export class AchievementEngine {
   }
 
   /**
+   * Check if special condition is met
+   */
+  private checkSpecialCondition(
+    condition: string,
+    startTime: Date,
+    hour: number,
+    isWeekend: boolean,
+  ): boolean {
+    switch (condition) {
+      case "sessions_before_8am":
+        return hour < 8;
+      case "sessions_after_10pm":
+        return hour >= 22;
+      case "weekend_sessions":
+        return isWeekend;
+      case "new_year_session":
+        return startTime.getMonth() === 0 && startTime.getDate() === 1;
+      case "holiday_session":
+        return this.isHoliday(startTime);
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Check special start time conditions
    */
   private async checkSpecialStartConditions(
@@ -338,26 +363,12 @@ export class AchievementEngine {
       if (!requirement) continue; // Skip if no requirements
 
       if (requirement.type === "special_condition") {
-        let shouldIncrement = false;
-
-        switch (requirement.condition) {
-          case "sessions_before_8am":
-            shouldIncrement = hour < 8;
-            break;
-          case "sessions_after_10pm":
-            shouldIncrement = hour >= 22;
-            break;
-          case "weekend_sessions":
-            shouldIncrement = isWeekend;
-            break;
-          case "new_year_session":
-            shouldIncrement =
-              startTime.getMonth() === 0 && startTime.getDate() === 1;
-            break;
-          case "holiday_session":
-            shouldIncrement = this.isHoliday(startTime);
-            break;
-        }
+        const shouldIncrement = this.checkSpecialCondition(
+          requirement.condition,
+          startTime,
+          hour,
+          isWeekend,
+        );
 
         if (shouldIncrement) {
           const progress = await achievementDBService.getAchievementProgress(

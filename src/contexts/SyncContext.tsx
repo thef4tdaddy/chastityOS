@@ -34,6 +34,53 @@ interface SyncProviderProps {
   children: React.ReactNode;
 }
 
+// Helper function to determine sync status
+const getSyncStatus = (
+  error: Error | null,
+  pendingConflicts: ConflictInfo[],
+  isSyncing: boolean,
+): SyncContextType["syncStatus"] => {
+  if (error) return "error";
+  if (pendingConflicts.length > 0) return "conflict";
+  if (isSyncing) return "pending";
+  return "synced";
+};
+
+// Helper hook for conflict resolution handlers
+const useConflictResolutionHandlers = (
+  resolveConflicts: (
+    resolutions: Record<string, "local" | "remote">,
+  ) => Promise<void>,
+  setShowConflictModal: (show: boolean) => void,
+  sync: (userId: string, options?: { force?: boolean }) => Promise<void>,
+  setLastSyncTime: (time: Date | null) => void,
+  userId: string | undefined,
+) => {
+  const handleResolveConflicts = async (
+    resolutions: Record<string, "local" | "remote">,
+  ) => {
+    try {
+      await resolveConflicts(resolutions);
+      setShowConflictModal(false);
+
+      // Trigger a sync after resolving conflicts
+      if (userId) {
+        await sync(userId);
+        setLastSyncTime(new Date());
+      }
+    } catch (error) {
+      logger.error("Failed to resolve conflicts", { error: error as Error });
+    }
+  };
+
+  const handleCancelConflictResolution = () => {
+    setShowConflictModal(false);
+    // Conflicts remain pending - user can resolve them later
+  };
+
+  return { handleResolveConflicts, handleCancelConflictResolution };
+};
+
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   const { data: user } = useAuth();
   const userId = user?.uid;
@@ -48,14 +95,6 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
 
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
-
-  // Determine sync status
-  const getSyncStatus = (): SyncContextType["syncStatus"] => {
-    if (error) return "error";
-    if (pendingConflicts.length > 0) return "conflict";
-    if (isSyncing) return "pending";
-    return "synced";
-  };
 
   // Auto-sync on user change and periodically
   useEffect(() => {
@@ -101,32 +140,19 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     }
   };
 
-  const handleResolveConflicts = async (
-    resolutions: Record<string, "local" | "remote">,
-  ) => {
-    try {
-      await resolveConflicts(resolutions);
-      setShowConflictModal(false);
-
-      // Trigger a sync after resolving conflicts
-      if (userId) {
-        await sync(userId);
-        setLastSyncTime(new Date());
-      }
-    } catch (error) {
-      logger.error("Failed to resolve conflicts", { error: error as Error });
-    }
-  };
-
-  const handleCancelConflictResolution = () => {
-    setShowConflictModal(false);
-    // Conflicts remain pending - user can resolve them later
-  };
+  const { handleResolveConflicts, handleCancelConflictResolution } =
+    useConflictResolutionHandlers(
+      resolveConflicts,
+      setShowConflictModal,
+      sync,
+      setLastSyncTime,
+      userId,
+    );
 
   const contextValue: SyncContextType = {
     isSyncing,
     lastSyncTime,
-    syncStatus: getSyncStatus(),
+    syncStatus: getSyncStatus(error, pendingConflicts, isSyncing),
     pendingConflicts,
     triggerSync,
     hasConflicts: pendingConflicts.length > 0,
