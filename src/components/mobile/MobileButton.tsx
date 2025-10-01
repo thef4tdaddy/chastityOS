@@ -165,8 +165,8 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
     },
     ref,
   ) => {
-    const triggerHapticFeedback = useButtonHaptics(hapticFeedback);
-    const buttonClasses = useButtonStyling(variant, size, fullWidth, className);
+    const triggerHapticFeedback = useButtonHaptics(hapticFeedback as "light" | "medium" | "heavy" | "none");
+    const buttonClasses = useButtonStyling(variant as keyof typeof BUTTON_STYLES.variants, size, fullWidth, className);
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (disabled || loading) return;
