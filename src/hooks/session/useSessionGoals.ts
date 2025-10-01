@@ -14,6 +14,8 @@ const logger = serviceLogger("useSessionGoals");
 import type * as _Types from "./types/SessionGoals";
 export type * from "./types/SessionGoals";
 
+// Complex goal management with templates, progress tracking, and achievements
+// eslint-disable-next-line max-statements
 export const useSessionGoals = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 

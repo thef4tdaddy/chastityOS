@@ -55,6 +55,8 @@ const createInitialPauseAnalytics = (): PauseAnalytics => ({
   patterns: [],
 });
 
+// Complex pause/resume logic with cooldown management and analytics
+// eslint-disable-next-line max-statements
 export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Use sub-hooks for state management
   const {
