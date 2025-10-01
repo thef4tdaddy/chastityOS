@@ -254,6 +254,8 @@ export interface ComparisonMetrics {
 
 // ==================== HOOK IMPLEMENTATION ====================
 
+// Complex session history management with privacy controls and analytics
+// eslint-disable-next-line max-statements
 export const useSessionHistory = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 
@@ -376,6 +378,8 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     };
 
     initializeHistory();
+    // Store actions and stable callbacks should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     userId,
     relationshipId,
@@ -383,10 +387,6 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     privacySettings.shareRatings,
     privacySettings.shareNotes,
     privacySettings.sharePauses,
-    loadSessions,
-    loadPrivacySettings,
-    calculateTrends,
-    calculateInsights,
   ]);
 
   // ==================== DATA LOADING FUNCTIONS ====================

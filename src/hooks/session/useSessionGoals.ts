@@ -29,6 +29,8 @@ import type {
   GoalAnalytics,
 } from "./types/SessionGoals";
 
+// Complex goal management with templates, progress tracking, and achievements
+// eslint-disable-next-line max-statements
 export const useSessionGoals = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 

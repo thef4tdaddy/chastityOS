@@ -147,7 +147,9 @@ const SAMPLE_CHALLENGES: Challenge[] = [
 
 /**
  * Enhanced Gamification Hook
+ * Complex gamification logic with multiple queries, mutations, and game mechanics
  */
+// eslint-disable-next-line max-statements, complexity
 export const useGameification = (userId: string) => {
   const queryClient = useQueryClient();
 

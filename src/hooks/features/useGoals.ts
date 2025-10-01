@@ -45,6 +45,8 @@ import { DEFAULT_TEMPLATES } from "./types/Goals";
 // Use storage keys from service
 const STORAGE_KEYS = GOAL_STORAGE_KEYS;
 
+// Complex goal management hook with multiple goal types and collaborative features
+// eslint-disable-next-line max-statements
 export const useGoals = (userId?: string, relationshipId?: string) => {
   const queryClient = useQueryClient();
 
