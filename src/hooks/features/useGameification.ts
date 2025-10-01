@@ -31,13 +31,7 @@ import {
   ExperienceEvent,
 } from "../../types/gamification";
 import { logger } from "../../utils/logging";
-import {
-  GamificationStorageService,
-  GAMIFICATION_STORAGE_KEYS,
-} from "../../services/gamificationStorage";
-
-// Storage keys (imported from service)
-const STORAGE_KEYS = GAMIFICATION_STORAGE_KEYS;
+import { GamificationStorageService } from "../../services/gamificationStorage";
 
 // Experience values by source
 const _EXPERIENCE_VALUES = {

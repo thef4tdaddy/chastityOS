@@ -31,19 +31,13 @@ import {
   getPredictiveAnalytics as getPredictiveAnalyticsHelper,
   getCompletionTrends as getCompletionTrendsHelper,
 } from "../../utils/goalsHelpers";
-import {
-  GoalStorageService,
-  GOAL_STORAGE_KEYS,
-} from "../../services/goalStorage";
+import { GoalStorageService } from "../../services/goalStorage";
 
 // Enhanced goal state
 
 import type * as _Types from "./types/Goals";
 export type * from "./types/Goals";
 import { DEFAULT_TEMPLATES } from "./types/Goals";
-
-// Use storage keys from service
-const STORAGE_KEYS = GOAL_STORAGE_KEYS;
 
 // Complex goal management hook with multiple goal types and collaborative features
 // eslint-disable-next-line max-statements

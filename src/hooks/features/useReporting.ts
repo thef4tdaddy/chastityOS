@@ -7,10 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
-import {
-  ReportStorageService,
-  REPORT_STORAGE_KEYS,
-} from "../../services/reportStorage";
+import { ReportStorageService } from "../../services/reportStorage";
 
 // Report types
 export enum ReportType {
@@ -210,9 +207,6 @@ const DEFAULT_TEMPLATES: ReportTemplate[] = [
     },
   },
 ];
-
-// Storage keys (imported from service)
-const STORAGE_KEYS = REPORT_STORAGE_KEYS;
 
 /**
  * Advanced Reporting Hook
@@ -488,7 +482,10 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
     return { dataType, filters, records: [] };
   };
 
-  const exportData = async (data: Record<string, unknown> | unknown[], format: ExportFormat) => {
+  const exportData = async (
+    data: Record<string, unknown> | unknown[],
+    format: ExportFormat,
+  ) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: getContentType(format),
     });

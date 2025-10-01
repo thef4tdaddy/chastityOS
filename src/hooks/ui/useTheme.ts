@@ -24,10 +24,7 @@ import {
   ColorPalette,
 } from "../../types/theme";
 import { logger } from "../../utils/logging";
-import {
-  ThemeStorageService,
-  THEME_STORAGE_KEYS,
-} from "../../services/themeStorage";
+import { ThemeStorageService } from "../../services/themeStorage";
 
 // Default themes
 const DEFAULT_LIGHT_THEME: Theme = {
@@ -118,9 +115,6 @@ const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
   screenReaderMode: false,
   keyboardNavigation: true,
 };
-
-// Storage keys (imported from service)
-const STORAGE_KEYS = THEME_STORAGE_KEYS;
 
 // Custom hook for theme queries
 const useThemeQueries = (customThemes: CustomTheme[]) => {

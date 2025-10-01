@@ -8,10 +8,7 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
-import {
-  MigrationStorageService,
-  MIGRATION_STORAGE_KEYS,
-} from "../../services/migrationStorage";
+import { MigrationStorageService } from "../../services/migrationStorage";
 
 // Migration status
 export enum MigrationStatus {
@@ -55,9 +52,6 @@ export interface MigrationResult {
   warnings: string[];
   duration: number;
 }
-
-// Storage keys (imported from service)
-const STORAGE_KEYS = MIGRATION_STORAGE_KEYS;
 
 // Sample migrations (in a real app, these would be defined elsewhere)
 const AVAILABLE_MIGRATIONS: Omit<
@@ -201,7 +195,8 @@ export const useMigration = () => {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Convert legacy goals (simplified)
-      const legacyGoals = MigrationStorageService.getLegacyItem("personal-goals");
+      const legacyGoals =
+        MigrationStorageService.getLegacyItem("personal-goals");
       if (legacyGoals) {
         // Transform format here
         onProgress(70);
@@ -391,9 +386,7 @@ export const useMigration = () => {
         migrationId: string;
         data: { localStorage: Record<string, string> };
       }>();
-      const backup = backups.find(
-        (b) => b.migrationId === migrationId,
-      );
+      const backup = backups.find((b) => b.migrationId === migrationId);
 
       if (!backup) throw new Error("Backup not found");
 
