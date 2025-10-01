@@ -23,5 +23,6 @@ export function usePauseDurationTracking(
 
     return () => clearInterval(interval);
     // updatePauseDuration should be stable (useCallback) in parent component
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pauseStatus.isPaused, pauseStatus.pauseStartTime]);
 }

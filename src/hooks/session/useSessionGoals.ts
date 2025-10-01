@@ -120,6 +120,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
 
     return () => clearInterval(updateProgressInterval);
     // updateActiveGoalProgress is stable (useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGoals]);
 
   // ==================== DATA LOADING FUNCTIONS ====================
