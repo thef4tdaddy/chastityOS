@@ -11,6 +11,21 @@ import {
   calculateOverallProgress,
   calculateKeyholderSatisfaction,
 } from "../../utils/statisticsHelpers";
+import {
+  getStatsForPeriod as calculateStatsForPeriod,
+  getMonthlyTrends as calculateMonthlyTrends,
+  getWeeklyBreakdown as calculateWeeklyBreakdown,
+  compareWithPrevious as compareMetricsWithPrevious,
+  getBenchmarkComparisons as calculateBenchmarkComparisons,
+} from "./statistics-calculations";
+import {
+  generateKeyholderDashboard,
+  generateRelationshipComparison,
+} from "./statistics-keyholder";
+import {
+  generatePredictiveInsights,
+  generateRecommendations,
+} from "./statistics-predictions";
 
 const logger = serviceLogger("useStatistics");
 
@@ -390,157 +405,55 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
   // ==================== TIME-BASED QUERIES ====================
 
   const getStatsForPeriod = useCallback(
-    (period: TimePeriod): PeriodStatistics => {
-      // Filter and calculate statistics for specific time period
-      return {
-        period,
-        sessionCount: 0,
-        totalTime: 0,
-        goalCompletionRate: 0,
-        averageSatisfaction: 0,
-      };
-    },
+    (period: TimePeriod) => calculateStatsForPeriod(period),
     [],
   );
 
-  const getMonthlyTrends = useCallback((_months: number): MonthlyTrends => {
-    // Calculate monthly trends for specified number of months
-    return {
-      months: [],
-      overallTrend: "stable",
-    };
-  }, []);
+  const getMonthlyTrends = useCallback(
+    (months: number) => calculateMonthlyTrends(months),
+    [],
+  );
 
-  const getWeeklyBreakdown = useCallback((): WeeklyBreakdown => {
-    // Analyze sessions by day of week
-    return {
-      weekdays: [],
-      weekendVsWeekday: {
-        weekday: {
-          period: { start: new Date(), end: new Date(), label: "Weekday" },
-          sessionCount: 0,
-          totalTime: 0,
-          goalCompletionRate: 0,
-          averageSatisfaction: 0,
-        },
-        weekend: {
-          period: { start: new Date(), end: new Date(), label: "Weekend" },
-          sessionCount: 0,
-          totalTime: 0,
-          goalCompletionRate: 0,
-          averageSatisfaction: 0,
-        },
-      },
-    };
-  }, []);
+  const getWeeklyBreakdown = useCallback(
+    () => calculateWeeklyBreakdown(),
+    [],
+  );
 
   // ==================== COMPARATIVE ANALYSIS ====================
 
   const compareWithPrevious = useCallback(
-    (_period: TimePeriod): ComparisonResult => {
-      // Compare current metrics with previous period
-      return {
-        metric: "session_duration",
-        currentValue: sessionStats.averageSessionLength,
-        previousValue: sessionStats.averageSessionLength * 0.9,
-        change: sessionStats.averageSessionLength * 0.1,
-        changePercentage: 10,
-        trend: "improving",
-      };
-    },
+    (period: TimePeriod) => compareMetricsWithPrevious(period, sessionStats),
     [sessionStats],
   );
 
-  const getBenchmarkComparisons = useCallback((): BenchmarkData[] => {
-    // Compare user metrics with anonymized community benchmarks
-    return [
-      {
-        userValue: sessionStats.averageSessionLength,
-        averageValue: 3000, // 50 minutes average
-        percentile: 75,
-        category: "session_duration",
-      },
-    ];
-  }, [sessionStats]);
+  const getBenchmarkComparisons = useCallback(
+    () => calculateBenchmarkComparisons(sessionStats),
+    [sessionStats],
+  );
 
   // ==================== KEYHOLDER FEATURES ====================
 
-  const getKeyholderDashboard = useCallback((): KeyholderDashboardStats => {
-    return {
-      submissiveOverview: {
-        name: "Submissive",
-        consistencyScore: consistencyRating,
-        improvementTrend: "improving",
-        lastActiveDate: new Date(),
-      },
-      sessionSummary: {
-        thisWeek: sessionStats.sessionsThisWeek,
-        thisMonth: sessionStats.sessionsThisMonth,
-        averageDuration: sessionStats.averageSessionLength,
-        completionRate: sessionStats.completionRate,
-      },
-      goalTracking: {
-        activeGoals: [],
-        completionRate: goalStats.completionRate,
-        upcomingDeadlines: [],
-      },
-      behaviorInsights: {
-        strengths: [],
-        areasForImprovement: [],
-        recommendations: [],
-      },
-    };
-  }, [
-    consistencyRating,
-    sessionStats.sessionsThisWeek,
-    sessionStats.sessionsThisMonth,
-    sessionStats.averageSessionLength,
-    sessionStats.completionRate,
-    goalStats.completionRate,
-  ]);
+  const getKeyholderDashboard = useCallback(
+    () => generateKeyholderDashboard(consistencyRating, sessionStats, goalStats),
+    [consistencyRating, sessionStats, goalStats],
+  );
 
-  const getRelationshipComparison =
-    useCallback((): RelationshipComparisonStats => {
-      return {
-        relationshipDuration: 90, // days
-        sharedSessions: sessionStats.sessionsThisMonth,
-        collaborationScore: 85,
-        satisfactionTrend: "improving",
-        milestones: [],
-      };
-    }, [sessionStats.sessionsThisMonth]);
+  const getRelationshipComparison = useCallback(
+    () => generateRelationshipComparison(sessionStats),
+    [sessionStats],
+  );
 
   // ==================== PREDICTIVE ANALYTICS ====================
 
-  const getPredictiveInsights = useCallback((): PredictiveInsights => {
-    return {
-      nextSessionSuccess: {
-        probability: 85,
-        factors: ["consistent schedule", "appropriate goal setting"],
-      },
-      goalAchievementLikelihood: [],
-      riskAssessment: {
-        burnoutRisk: "low",
-        consistencyRisk: "low",
-        factors: [],
-      },
-    };
-  }, []);
+  const getPredictiveInsights = useCallback(
+    () => generatePredictiveInsights(),
+    [],
+  );
 
-  const getRecommendations = useCallback((): Recommendation[] => {
-    return [
-      {
-        id: "rec1",
-        type: "session",
-        title: "Optimize Session Timing",
-        description:
-          "Consider starting sessions earlier in the day for better completion rates",
-        priority: "medium",
-        expectedImpact: "Improved session completion rate",
-        actionRequired: "Adjust session start time",
-      },
-    ];
-  }, []);
+  const getRecommendations = useCallback(
+    () => generateRecommendations(),
+    [],
+  );
 
   // ==================== EXPORT AND SHARING ====================
 
