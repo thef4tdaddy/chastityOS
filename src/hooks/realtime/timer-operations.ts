@@ -1,6 +1,7 @@
 /**
  * Timer operation helper functions
  */
+import { Dispatch, SetStateAction, MutableRefObject } from "react";
 import {
   LiveTimer,
   TimerStatus,
@@ -55,8 +56,8 @@ export const createTimerSubscription = (
   timerId: string,
   callback: (timer: LiveTimer) => void,
   events: string[] = ["start", "pause", "resume", "stop", "update"],
-  setTimerState: React.Dispatch<React.SetStateAction<LiveTimerState>>,
-  subscriptionsRef: React.MutableRefObject<Map<string, TimerSubscription>>,
+  setTimerState: Dispatch<SetStateAction<LiveTimerState>>,
+  subscriptionsRef: MutableRefObject<Map<string, TimerSubscription>>,
 ): TimerSubscription => {
   const subscription: TimerSubscription = {
     timerId,
