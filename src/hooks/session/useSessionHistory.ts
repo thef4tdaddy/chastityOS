@@ -254,6 +254,8 @@ export interface ComparisonMetrics {
 
 // ==================== HOOK IMPLEMENTATION ====================
 
+// Complex session history management with privacy controls and analytics
+// eslint-disable-next-line max-statements
 export const useSessionHistory = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 
