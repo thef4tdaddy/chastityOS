@@ -25,6 +25,8 @@ interface UseTimerControlParams {
   notifySubscribers: (timer: LiveTimer) => void;
 }
 
+// Hook manages 6 related timer lifecycle callbacks - splitting would reduce cohesion
+// eslint-disable-next-line max-lines-per-function
 export const useTimerControl = ({
   userId,
   relationshipId,
