@@ -9,10 +9,7 @@ import {
   AchievementDifficulty,
 } from "../types";
 import { AchievementCategory } from "../types/achievements";
-import {
-  getCategoryName,
-  getDifficultyColor,
-} from "./achievement-gallery-utils";
+import { getCategoryName } from "./achievement-gallery-utils";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;

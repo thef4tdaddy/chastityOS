@@ -3,8 +3,8 @@
  * Demonstrates offline-first functionality with Dexie
  */
 import React, { useState, useEffect } from "react";
-import { useDexieSync } from "@/hooks/useDexieSync";
-import { useOfflineDemo } from "@/hooks/useOfflineDemo";
+import { useDexieSync } from "../../demo/hooks/useDexieSync";
+import { useOfflineDemo } from "../../demo/hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
 import type { User } from "@/types";
