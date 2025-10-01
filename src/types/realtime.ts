@@ -176,13 +176,13 @@ export interface NotificationHistoryEntry {
   actionTakenAt?: Date;
 }
 
-export interface NotificationDeliveryStatus {
-  [key in NotificationChannelType]?: {
+export type NotificationDeliveryStatus = {
+  [K in NotificationChannelType]?: {
     status: "pending" | "sent" | "delivered" | "failed";
     timestamp: Date;
     error?: string;
   };
-}
+};
 
 export interface NotificationState {
   notifications: Notification[];

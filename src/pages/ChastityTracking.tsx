@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { SessionLoader } from "../components/tracker/SessionLoader";
 import { SessionRecoveryModal } from "../components/tracker/SessionRecoveryModal";
@@ -15,6 +15,7 @@ import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
+import type { User } from "../types/auth";
 
 // Helper function to handle session restoration
 const createSessionRestorationHandler =
@@ -297,6 +298,38 @@ const TrackerPage: React.FC = () => {
     stopHeartbeat,
   );
 
+  // Helper to compute TrackerStats props based on timer mode
+  const getTrackerStatsProps = () => {
+    const baseProps = {
+      topBoxLabel: mockData.topBoxLabel,
+      timeCageOff: mockData.timeCageOff,
+      isCageOn: mockData.isCageOn,
+      totalChastityTime: mockData.totalChastityTime,
+      totalTimeCageOff: mockData.totalTimeCageOff,
+      isPaused: mockData.isPaused,
+    };
+
+    if (mockData.useRealTimeTimer) {
+      return {
+        ...baseProps,
+        currentSession,
+        mainChastityDisplayTime: undefined,
+        topBoxTime: undefined,
+        livePauseDuration: undefined,
+        accumulatedPauseTimeThisSession: undefined,
+      };
+    }
+
+    return {
+      ...baseProps,
+      currentSession: undefined,
+      mainChastityDisplayTime: mockData.mainChastityDisplayTime,
+      topBoxTime: mockData.topBoxTime,
+      livePauseDuration: mockData.livePauseDuration,
+      accumulatedPauseTimeThisSession: mockData.accumulatedPauseTimeThisSession,
+    };
+  };
+
   return (
     <div className="text-nightly-spring-green">
       {/* Session Persistence Loading */}
@@ -336,31 +369,7 @@ const TrackerPage: React.FC = () => {
         pauseCooldownMessage={mockData.pauseCooldownMessage}
       />
 
-      <TrackerStats
-        // Pass the real session when using real-time timer
-        currentSession={mockData.useRealTimeTimer ? currentSession : undefined}
-        // Legacy props for backward compatibility
-        mainChastityDisplayTime={
-          mockData.useRealTimeTimer
-            ? undefined
-            : mockData.mainChastityDisplayTime
-        }
-        topBoxLabel={mockData.topBoxLabel}
-        topBoxTime={mockData.useRealTimeTimer ? undefined : mockData.topBoxTime}
-        livePauseDuration={
-          mockData.useRealTimeTimer ? undefined : mockData.livePauseDuration
-        }
-        accumulatedPauseTimeThisSession={
-          mockData.useRealTimeTimer
-            ? undefined
-            : mockData.accumulatedPauseTimeThisSession
-        }
-        timeCageOff={mockData.timeCageOff}
-        isCageOn={mockData.isCageOn}
-        totalChastityTime={mockData.totalChastityTime}
-        totalTimeCageOff={mockData.totalTimeCageOff}
-        isPaused={mockData.isPaused}
-      />
+      <TrackerStats {...getTrackerStatsProps()} />
 
       {/* Enhanced Pause Controls with 4-hour cooldown */}
       {mockData.isCageOn && currentSession && (

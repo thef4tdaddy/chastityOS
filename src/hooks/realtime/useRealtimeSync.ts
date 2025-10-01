@@ -31,6 +31,8 @@ interface UseRealtimeSyncOptions {
   maxReconnectAttempts?: number;
 }
 
+// Complex real-time synchronization hook with WebSocket management
+// eslint-disable-next-line max-statements
 export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const {
     userId,
@@ -59,8 +61,8 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const wsRef = useRef<WebSocket | null>(null);
   const subscriptionsRef = useRef<Map<string, Subscription>>(new Map());
   const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const heartbeatTimeoutRef = useRef<number | null>(null);
   const connectionStartTimeRef = useRef<Date | null>(null);
 
   // Connect to WebSocket
