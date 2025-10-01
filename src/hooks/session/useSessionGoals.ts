@@ -27,8 +27,11 @@ import type {
   GoalCustomization,
   PredictiveGoalSuggestion,
   GoalAnalytics,
+  GoalDifficulty,
 } from "./types/SessionGoals";
 
+// Complex goal management with templates, progress tracking, and achievements
+// eslint-disable-next-line max-statements
 export const useSessionGoals = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 
@@ -117,6 +120,7 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
 
     return () => clearInterval(updateProgressInterval);
     // updateActiveGoalProgress is stable (useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGoals]);
 
   // ==================== DATA LOADING FUNCTIONS ====================

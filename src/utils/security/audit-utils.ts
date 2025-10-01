@@ -121,3 +121,106 @@ export async function savePrivacySettings(
 ): Promise<void> {
   // In real implementation, save to backend
 }
+
+// Search and filtering helper functions
+export function applyTextSearch(
+  entries: AuditEntry[],
+  query?: string,
+): AuditEntry[] {
+  if (!query) return entries;
+
+  const searchTerm = query.toLowerCase();
+  return entries.filter(
+    (entry) =>
+      entry.details.description.toLowerCase().includes(searchTerm) ||
+      entry.action.toLowerCase().includes(searchTerm),
+  );
+}
+
+export function applySearchFilters(
+  entries: AuditEntry[],
+  filters?: AuditFilter,
+): AuditEntry[] {
+  if (!filters) return entries;
+
+  let results = entries;
+
+  if (filters.startDate && filters.endDate) {
+    results = results.filter(
+      (entry) =>
+        entry.timestamp >= filters.startDate! &&
+        entry.timestamp <= filters.endDate!,
+    );
+  }
+
+  if (filters.userId) {
+    results = results.filter((entry) => entry.userId === filters.userId);
+  }
+
+  if (filters.actions && filters.actions.length > 0) {
+    results = results.filter((entry) =>
+      filters.actions!.includes(entry.action),
+    );
+  }
+
+  if (filters.categories && filters.categories.length > 0) {
+    results = results.filter((entry) =>
+      filters.categories!.includes(entry.category),
+    );
+  }
+
+  if (filters.severity) {
+    results = results.filter((entry) => entry.severity === filters.severity);
+  }
+
+  if (filters.outcome) {
+    results = results.filter((entry) => entry.outcome === filters.outcome);
+  }
+
+  return results;
+}
+
+export function applySorting(
+  entries: AuditEntry[],
+  sortBy?: string,
+  sortOrder?: "asc" | "desc",
+): AuditEntry[] {
+  if (!sortBy) return entries;
+
+  return [...entries].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy) {
+      case "timestamp":
+        comparison = a.timestamp.getTime() - b.timestamp.getTime();
+        break;
+      case "severity": {
+        const severityOrder: Record<string, number> = {
+          low: 0,
+          medium: 1,
+          high: 2,
+          critical: 3,
+        };
+        comparison = severityOrder[a.severity] - severityOrder[b.severity];
+        break;
+      }
+      case "category":
+        comparison = a.category.localeCompare(b.category);
+        break;
+    }
+
+    return sortOrder === "desc" ? -comparison : comparison;
+  });
+}
+
+export function applyPagination(
+  entries: AuditEntry[],
+  limit?: number,
+  offset?: number,
+): AuditEntry[] {
+  if (!limit && !offset) return entries;
+
+  const start = offset || 0;
+  const end = start + (limit || entries.length);
+  return entries.slice(start, end);
+}

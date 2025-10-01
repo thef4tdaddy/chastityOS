@@ -20,25 +20,35 @@ import {
   notifySubscribers as _notifySubscribers,
 } from "./realtimeSyncHelpers";
 
-// Helper function to create WebSocket connection functions
-export const createWebSocketFunctions = (
-  userId: string,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+// Helper to create sendMessage function
+const createSendMessage = (
   wsRef: React.MutableRefObject<WebSocket | null>,
-  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
-  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
-    typeof setTimeout
-  > | null>,
-  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
-    typeof setTimeout
-  > | null>,
-  connectionStartTimeRef: React.MutableRefObject<Date | null>,
-  maxReconnectAttempts: number,
-  reconnectInterval: number,
-  heartbeatInterval: number,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
 ) => {
-  const connect = () => {
+  return (message: RealtimeUpdate | Record<string, unknown>) => {
+    sendWebSocketMessage(wsRef.current, message, () => {
+      setSyncState((prev) => ({
+        ...prev,
+        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
+      }));
+    });
+  };
+};
+
+// Helper to create the connect function
+const createConnectFunction = (
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  connectionStartTimeRef: React.MutableRefObject<Date | null>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  maxReconnectAttempts: number,
+  userId: string,
+  handleMessage: (message: Record<string, unknown>) => void,
+  startHeartbeat: () => void,
+  stopHeartbeat: () => void,
+  attemptReconnect: () => void,
+) => {
+  return () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
     }
@@ -53,57 +63,16 @@ export const createWebSocketFunctions = (
       wsRef.current = new WebSocket(wsUrl);
       connectionStartTimeRef.current = new Date();
 
-      wsRef.current.onopen = () => {
-        // WebSocket connected
-        reconnectAttemptsRef.current = 0;
-
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.CONNECTED,
-        }));
-
-        // Start heartbeat
-        startHeartbeat();
-
-        // Rejoin previous channels
-        // Implementation would go here
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          handleMessage(message);
-        } catch {
-          // Failed to parse WebSocket message
-        }
-      };
-
-      wsRef.current.onclose = (event) => {
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.DISCONNECTED,
-        }));
-
-        stopHeartbeat();
-
-        if (
-          shouldAttemptReconnection(
-            event,
-            reconnectAttemptsRef.current,
-            maxReconnectAttempts,
-          )
-        ) {
-          attemptReconnect();
-        }
-      };
-
-      wsRef.current.onerror = (_error) => {
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.ERROR,
-          syncMetrics: updateSyncMetrics(prev.syncMetrics, "error"),
-        }));
-      };
+      setupWebSocketHandlers(
+        wsRef.current,
+        setSyncState,
+        reconnectAttemptsRef,
+        maxReconnectAttempts,
+        handleMessage,
+        startHeartbeat,
+        stopHeartbeat,
+        attemptReconnect,
+      );
     } catch {
       setSyncState((prev) => ({
         ...prev,
@@ -111,21 +80,21 @@ export const createWebSocketFunctions = (
       }));
     }
   };
+};
 
-  const disconnect = () => {
-    if (wsRef.current) {
-      wsRef.current.close(1000, "Intentional disconnect");
-      wsRef.current = null;
-    }
-
-    stopHeartbeat();
-
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-  };
-
+// Helper to create connection control functions
+const createConnectionControlFunctions = (
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  maxReconnectAttempts: number,
+  reconnectInterval: number,
+  stopHeartbeat: () => void,
+  connect: () => void,
+) => {
   const attemptReconnect = () => {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
       return;
@@ -143,60 +112,92 @@ export const createWebSocketFunctions = (
     }, reconnectInterval);
   };
 
-  const startHeartbeat = () => {
-    const sendHeartbeat = () => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        sendMessage({ type: "heartbeat", timestamp: new Date().toISOString() });
-        heartbeatTimeoutRef.current = setTimeout(
-          sendHeartbeat,
-          heartbeatInterval,
-        );
-      }
-    };
+  const disconnect = () => {
+    if (wsRef.current) {
+      wsRef.current.close(1000, "Intentional disconnect");
+      wsRef.current = null;
+    }
 
-    heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, heartbeatInterval);
-  };
+    stopHeartbeat();
 
-  const stopHeartbeat = () => {
-    if (heartbeatTimeoutRef.current) {
-      clearTimeout(heartbeatTimeoutRef.current);
-      heartbeatTimeoutRef.current = null;
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
   };
 
-  const sendMessage = (message: RealtimeUpdate | Record<string, unknown>) => {
-    const success = sendWebSocketMessage(wsRef.current, message, () => {
-      setSyncState((prev) => ({
-        ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
-      }));
-    });
-  };
+  return { attemptReconnect, disconnect };
+};
 
-  const handleMessage = (message: Record<string, unknown>) => {
+// Helper to setup WebSocket event handlers
+const setupWebSocketHandlers = (
+  ws: WebSocket,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  maxReconnectAttempts: number,
+  handleMessage: (message: Record<string, unknown>) => void,
+  startHeartbeat: () => void,
+  stopHeartbeat: () => void,
+  attemptReconnect: () => void,
+) => {
+  ws.onopen = () => {
+    // WebSocket connected
+    reconnectAttemptsRef.current = 0;
+
     setSyncState((prev) => ({
       ...prev,
-      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+      connectionStatus: ConnectionStatus.CONNECTED,
     }));
 
-    switch (message.type) {
-      case "channel_joined":
-        handleChannelJoined(message);
-        break;
-      case "channel_left":
-        handleChannelLeft(message);
-        break;
-      case "realtime_update":
-        handleRealtimeUpdate(message);
-        break;
-      case "heartbeat_ack":
-        // Heartbeat acknowledged
-        break;
-      default:
-      // Unknown message type
+    // Start heartbeat
+    startHeartbeat();
+
+    // Rejoin previous channels
+    // Implementation would go here
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data);
+      handleMessage(message);
+    } catch {
+      // Failed to parse WebSocket message
     }
   };
 
+  ws.onclose = (event) => {
+    setSyncState((prev) => ({
+      ...prev,
+      connectionStatus: ConnectionStatus.DISCONNECTED,
+    }));
+
+    stopHeartbeat();
+
+    if (
+      shouldAttemptReconnection(
+        event,
+        reconnectAttemptsRef.current,
+        maxReconnectAttempts,
+      )
+    ) {
+      attemptReconnect();
+    }
+  };
+
+  ws.onerror = (_error) => {
+    setSyncState((prev) => ({
+      ...prev,
+      connectionStatus: ConnectionStatus.ERROR,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "error"),
+    }));
+  };
+};
+
+// Helper to create message handlers
+const createMessageHandlers = (
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
+) => {
   const handleChannelJoined = (message: { channel: SyncChannel }) => {
     const channel: SyncChannel = message.channel;
 
@@ -244,6 +245,124 @@ export const createWebSocketFunctions = (
       }
     }
   };
+
+  const handleMessage = (message: Record<string, unknown>) => {
+    setSyncState((prev) => ({
+      ...prev,
+      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
+    }));
+
+    switch (message.type) {
+      case "channel_joined":
+        handleChannelJoined(message);
+        break;
+      case "channel_left":
+        handleChannelLeft(message);
+        break;
+      case "realtime_update":
+        handleRealtimeUpdate(message);
+        break;
+      case "heartbeat_ack":
+        // Heartbeat acknowledged
+        break;
+      default:
+      // Unknown message type
+    }
+  };
+
+  return { handleMessage };
+};
+
+// Helper to create heartbeat functions
+const createHeartbeatFunctions = (
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  heartbeatInterval: number,
+  sendMessage: (message: RealtimeUpdate | Record<string, unknown>) => void,
+) => {
+  const startHeartbeat = () => {
+    const sendHeartbeat = () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        sendMessage({ type: "heartbeat", timestamp: new Date().toISOString() });
+        heartbeatTimeoutRef.current = setTimeout(
+          sendHeartbeat,
+          heartbeatInterval,
+        );
+      }
+    };
+
+    heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, heartbeatInterval);
+  };
+
+  const stopHeartbeat = () => {
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+      heartbeatTimeoutRef.current = null;
+    }
+  };
+
+  return { startHeartbeat, stopHeartbeat };
+};
+
+// Helper function to create WebSocket connection functions
+export const createWebSocketFunctions = (
+  userId: string,
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
+  wsRef: React.MutableRefObject<WebSocket | null>,
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
+  reconnectAttemptsRef: React.MutableRefObject<number>,
+  reconnectTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
+    typeof setTimeout
+  > | null>,
+  connectionStartTimeRef: React.MutableRefObject<Date | null>,
+  maxReconnectAttempts: number,
+  reconnectInterval: number,
+  heartbeatInterval: number,
+) => {
+  const sendMessage = createSendMessage(wsRef, setSyncState);
+
+  const { startHeartbeat, stopHeartbeat } = createHeartbeatFunctions(
+    wsRef,
+    heartbeatTimeoutRef,
+    heartbeatInterval,
+    sendMessage,
+  );
+
+  const { handleMessage } = createMessageHandlers(
+    setSyncState,
+    subscriptionsRef,
+  );
+
+  let connect: () => void;
+
+  const { attemptReconnect, disconnect } = createConnectionControlFunctions(
+    wsRef,
+    setSyncState,
+    reconnectAttemptsRef,
+    reconnectTimeoutRef,
+    maxReconnectAttempts,
+    reconnectInterval,
+    stopHeartbeat,
+    () => connect(),
+  );
+
+  connect = createConnectFunction(
+    wsRef,
+    setSyncState,
+    connectionStartTimeRef,
+    reconnectAttemptsRef,
+    maxReconnectAttempts,
+    userId,
+    handleMessage,
+    startHeartbeat,
+    stopHeartbeat,
+    attemptReconnect,
+  );
 
   return {
     connect,

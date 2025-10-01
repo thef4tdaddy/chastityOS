@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { onSnapshot, query, where } from "firebase/firestore";
+import { onSnapshot, query, where, QuerySnapshot } from "firebase/firestore";
 import {
   MultiWearerSession,
   Wearer,
@@ -57,78 +57,175 @@ export function useMultiWearer({
 
   // Set up real-time listener for multi-wearer session
   useEffect(() => {
-    if (!isAuthReady || !keyholderUserId) {
-      setIsLoading(false);
-      setSession(null);
-      setWearers([]);
-      return;
-    }
-
-    const multiWearerCollectionRef = getMultiWearerCollectionRef();
-    const q = query(
-      multiWearerCollectionRef,
-      where("keyholderUserId", "==", keyholderUserId),
-      where("isActive", "==", true),
-    );
-
-    setIsLoading(true);
-
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        try {
-          if (!querySnapshot.empty) {
-            const docSnapshot = querySnapshot.docs[0];
-            const sessionData = parseSessionData(docSnapshot);
-            setSession({ ...sessionData, wearers: [] });
-
-            // Set up listener for wearers
-            const wearersCollectionRef = getWearersCollectionRef(
-              docSnapshot.id,
-            );
-            const wearersUnsubscribe = onSnapshot(
-              wearersCollectionRef,
-              (wearersSnapshot) => {
-                const wearersData: Wearer[] =
-                  wearersSnapshot.docs.map(parseWearerData);
-                setWearers(wearersData);
-                setSession((prev) =>
-                  prev ? { ...prev, wearers: wearersData } : null,
-                );
-              },
-            );
-
-            return () => wearersUnsubscribe();
-          } else {
-            setSession(null);
-            setWearers([]);
-          }
-          setError(null);
-        } catch (err) {
-          logger.error("Error processing multi-wearer session data", err);
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to process session data",
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      (err) => {
-        logger.error("Error listening to multi-wearer session", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to listen to session changes",
-        );
-        setIsLoading(false);
-      },
-    );
-
-    return () => unsubscribe();
+    return setupMultiWearerListener({
+      isAuthReady,
+      keyholderUserId,
+      setSession,
+      setWearers,
+      setError,
+      setIsLoading,
+    });
   }, [isAuthReady, keyholderUserId]);
 
+  const { createSession, endSession } = useSessionManagement(
+    keyholderUserId,
+    session,
+    setError,
+  );
+
+  const { addWearer, removeWearer, updateWearer } = useWearerManagement(
+    keyholderUserId,
+    session,
+    setError,
+  );
+
+  const {
+    updateWearerPermissions,
+    updateWearerSession,
+    activateWearer,
+    deactivateWearer,
+  } = useWearerOperations(wearers, updateWearer);
+
+  return {
+    session,
+    wearers,
+    isLoading,
+    error,
+    createSession,
+    endSession,
+    addWearer,
+    removeWearer,
+    updateWearer,
+    updateWearerPermissions,
+    updateWearerSession,
+    activateWearer,
+    deactivateWearer,
+  };
+}
+
+// Hook to setup multi-wearer listener
+function setupMultiWearerListener(params: {
+  isAuthReady: boolean;
+  keyholderUserId: string;
+  setSession: (
+    value:
+      | MultiWearerSession
+      | null
+      | ((prev: MultiWearerSession | null) => MultiWearerSession | null),
+  ) => void;
+  setWearers: (value: Wearer[]) => void;
+  setError: (value: string | null) => void;
+  setIsLoading: (value: boolean) => void;
+}) {
+  const {
+    isAuthReady,
+    keyholderUserId,
+    setSession,
+    setWearers,
+    setError,
+    setIsLoading,
+  } = params;
+
+  if (!isAuthReady || !keyholderUserId) {
+    setIsLoading(false);
+    setSession(null);
+    setWearers([]);
+    return () => {};
+  }
+
+  const multiWearerCollectionRef = getMultiWearerCollectionRef();
+  const q = query(
+    multiWearerCollectionRef,
+    where("keyholderUserId", "==", keyholderUserId),
+    where("isActive", "==", true),
+  );
+
+  setIsLoading(true);
+
+  const unsubscribe = onSnapshot(
+    q,
+    (querySnapshot) =>
+      handleSessionSnapshot(
+        querySnapshot,
+        setSession,
+        setWearers,
+        setError,
+        setIsLoading,
+      ),
+    (err) => handleSnapshotError(err, setError, setIsLoading),
+  );
+
+  return () => unsubscribe();
+}
+
+// Helper to handle session snapshot
+function handleSessionSnapshot(
+  querySnapshot: QuerySnapshot,
+  setSession: (
+    value:
+      | MultiWearerSession
+      | null
+      | ((prev: MultiWearerSession | null) => MultiWearerSession | null),
+  ) => void,
+  setWearers: (value: Wearer[]) => void,
+  setError: (value: string | null) => void,
+  setIsLoading: (value: boolean) => void,
+) {
+  try {
+    if (!querySnapshot.empty) {
+      const docSnapshot = querySnapshot.docs[0];
+      const sessionData = parseSessionData(docSnapshot);
+      setSession({ ...sessionData, wearers: [] });
+
+      // Set up listener for wearers
+      const wearersCollectionRef = getWearersCollectionRef(docSnapshot.id);
+      const wearersUnsubscribe = onSnapshot(
+        wearersCollectionRef,
+        (wearersSnapshot) => {
+          const wearersData: Wearer[] =
+            wearersSnapshot.docs.map(parseWearerData);
+          setWearers(wearersData);
+          setSession((prev) =>
+            prev ? { ...prev, wearers: wearersData } : null,
+          );
+        },
+      );
+
+      return () => wearersUnsubscribe();
+    } else {
+      setSession(null);
+      setWearers([]);
+    }
+    setError(null);
+  } catch (err) {
+    logger.error("Error processing multi-wearer session data", err);
+    setError(
+      err instanceof Error ? err.message : "Failed to process session data",
+    );
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+// Helper to handle snapshot errors
+function handleSnapshotError(
+  err: Error,
+  setError: (value: string | null) => void,
+  setIsLoading: (value: boolean) => void,
+) {
+  logger.error("Error listening to multi-wearer session", err);
+  setError(
+    err instanceof Error ? err.message : "Failed to listen to session changes",
+  );
+  setIsLoading(false);
+}
+
+// Hook for session management
+function useSessionManagement(
+  keyholderUserId: string,
+  session: MultiWearerSession | null,
+  setError: (value: string | null) => void,
+) {
   const createSession = useCallback(async () => {
     try {
       setError(null);
@@ -141,7 +238,7 @@ export function useMultiWearer({
       setError(err instanceof Error ? err.message : "Failed to create session");
       throw err;
     }
-  }, [keyholderUserId]);
+  }, [keyholderUserId, setError]);
 
   const endSession = useCallback(async () => {
     try {
@@ -153,8 +250,17 @@ export function useMultiWearer({
       setError(err instanceof Error ? err.message : "Failed to end session");
       throw err;
     }
-  }, [session, keyholderUserId]);
+  }, [session, keyholderUserId, setError]);
 
+  return { createSession, endSession };
+}
+
+// Hook for wearer management
+function useWearerManagement(
+  keyholderUserId: string,
+  session: MultiWearerSession | null,
+  setError: (value: string | null) => void,
+) {
   const addWearer = useCallback(
     async (wearerData: Omit<Wearer, "id">) => {
       try {
@@ -169,7 +275,7 @@ export function useMultiWearer({
         throw err;
       }
     },
-    [session, keyholderUserId],
+    [session, keyholderUserId, setError],
   );
 
   const removeWearer = useCallback(
@@ -186,7 +292,7 @@ export function useMultiWearer({
         throw err;
       }
     },
-    [session, keyholderUserId],
+    [session, keyholderUserId, setError],
   );
 
   const updateWearer = useCallback(
@@ -203,9 +309,17 @@ export function useMultiWearer({
         throw err;
       }
     },
-    [session, keyholderUserId],
+    [session, keyholderUserId, setError],
   );
 
+  return { addWearer, removeWearer, updateWearer };
+}
+
+// Hook for wearer operations
+function useWearerOperations(
+  wearers: Wearer[],
+  updateWearer: (wearerId: string, updates: Partial<Wearer>) => Promise<void>,
+) {
   const updateWearerPermissions = useCallback(
     async (wearerId: string, permissions: Partial<KeyholderPermissions>) => {
       const wearer = wearers.find((w) => w.id === wearerId);
@@ -248,15 +362,6 @@ export function useMultiWearer({
   );
 
   return {
-    session,
-    wearers,
-    isLoading,
-    error,
-    createSession,
-    endSession,
-    addWearer,
-    removeWearer,
-    updateWearer,
     updateWearerPermissions,
     updateWearerSession,
     activateWearer,
