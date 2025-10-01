@@ -24,6 +24,10 @@ import {
   ColorPalette,
 } from "../../types/theme";
 import { logger } from "../../utils/logging";
+import {
+  ThemeStorageService,
+  THEME_STORAGE_KEYS,
+} from "../../services/themeStorage";
 
 // Default themes
 const DEFAULT_LIGHT_THEME: Theme = {
@@ -115,21 +119,15 @@ const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
   keyboardNavigation: true,
 };
 
-// Storage keys
-const STORAGE_KEYS = {
-  CURRENT_THEME: "chastity-theme-current",
-  CUSTOM_THEMES: "chastity-theme-custom",
-  PREFERENCES: "chastity-theme-preferences",
-  ACCESSIBILITY: "chastity-theme-accessibility",
-};
+// Storage keys (imported from service)
+const STORAGE_KEYS = THEME_STORAGE_KEYS;
 
 // Custom hook for theme queries
 const useThemeQueries = (customThemes: CustomTheme[]) => {
   const customThemesQuery = useQuery<CustomTheme[]>({
     queryKey: ["themes", "custom"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_THEMES);
-      return stored ? JSON.parse(stored) : [];
+      return ThemeStorageService.getCustomThemes<CustomTheme>();
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -137,9 +135,9 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
   const preferencesQuery = useQuery<ThemePreferences>({
     queryKey: ["themes", "preferences"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+      const stored = ThemeStorageService.getPreferences<ThemePreferences>();
       return stored
-        ? { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) }
+        ? { ...DEFAULT_PREFERENCES, ...stored }
         : DEFAULT_PREFERENCES;
     },
     staleTime: 5 * 60 * 1000,
@@ -148,9 +146,10 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
   const accessibilityQuery = useQuery<AccessibilitySettings>({
     queryKey: ["themes", "accessibility"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.ACCESSIBILITY);
+      const stored =
+        ThemeStorageService.getAccessibilitySettings<AccessibilitySettings>();
       return stored
-        ? { ...DEFAULT_ACCESSIBILITY, ...JSON.parse(stored) }
+        ? { ...DEFAULT_ACCESSIBILITY, ...stored }
         : DEFAULT_ACCESSIBILITY;
     },
     staleTime: 5 * 60 * 1000,
