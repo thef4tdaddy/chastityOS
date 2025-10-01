@@ -3,6 +3,7 @@
  * Handles keyholder-specific goal operations
  */
 import { useCallback } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { serviceLogger } from "../../utils/logging";
 import type {
   KeyholderAssignedGoal,
@@ -14,10 +15,8 @@ const logger = serviceLogger("useKeyholderGoalManagement");
 
 interface UseKeyholderGoalManagementProps {
   keyholderGoals: KeyholderAssignedGoal[];
-  setActiveGoals: React.Dispatch<React.SetStateAction<SessionGoal[]>>;
-  setKeyholderGoals: React.Dispatch<
-    React.SetStateAction<KeyholderAssignedGoal[]>
-  >;
+  setActiveGoals: Dispatch<SetStateAction<SessionGoal[]>>;
+  setKeyholderGoals: Dispatch<SetStateAction<KeyholderAssignedGoal[]>>;
   relationshipId?: string;
 }
 

@@ -3,6 +3,7 @@
  * Handles progress tracking and completion checking for goals
  */
 import { useCallback } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { serviceLogger } from "../../utils/logging";
 import { checkIfGoalCompleted } from "./session-goals-utils";
 import type {
@@ -17,9 +18,9 @@ const logger = serviceLogger("useGoalProgress");
 interface UseGoalProgressProps {
   activeGoals: SessionGoal[];
   progress: GoalProgress[];
-  setProgress: React.Dispatch<React.SetStateAction<GoalProgress[]>>;
-  setActiveGoals: React.Dispatch<React.SetStateAction<SessionGoal[]>>;
-  setAchievements: React.Dispatch<React.SetStateAction<GoalAchievement[]>>;
+  setProgress: Dispatch<SetStateAction<GoalProgress[]>>;
+  setActiveGoals: Dispatch<SetStateAction<SessionGoal[]>>;
+  setAchievements: Dispatch<SetStateAction<GoalAchievement[]>>;
   updateGoal: (goalId: string, updates: Partial<SessionGoal>) => Promise<void>;
 }
 
