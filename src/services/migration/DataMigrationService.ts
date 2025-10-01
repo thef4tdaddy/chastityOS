@@ -441,15 +441,16 @@ class DataMigrationService {
     relationshipId: string,
     oldEvent: Record<string, unknown>,
   ): Omit<RelationshipEvent, "createdAt"> {
+    const details = oldEvent.details as Record<string, unknown> | undefined;
     return {
       id: eventId,
       relationshipId,
       type: this.mapEventType(oldEvent.type),
       timestamp: oldEvent.timestamp || serverTimestamp(),
       details: {
-        duration: oldEvent.details?.duration,
-        notes: oldEvent.details?.notes || oldEvent.notes,
-        mood: oldEvent.details?.mood,
+        duration: details?.duration as number | undefined,
+        notes: (details?.notes as string | undefined) || (oldEvent.notes as string | undefined),
+        mood: details?.mood as string | undefined,
         participants: ["submissive"], // Default for migration
       },
       loggedBy: "submissive",
