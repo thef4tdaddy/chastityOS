@@ -33,16 +33,24 @@ interface UsePresenceOptions {
 }
 
 // Helper to setup activity tracking listeners
-const useActivityTracking = (
-  autoTrackActivity: boolean,
-  presenceStatus: PresenceStatus,
-  activityTimeout: number,
-  setAway: (statusMessage?: string) => void,
-  lastActivityRef: React.MutableRefObject<Date>,
+const useActivityTracking = (options: {
+  autoTrackActivity: boolean;
+  presenceStatus: PresenceStatus;
+  activityTimeout: number;
+  setAway: (statusMessage?: string) => void;
+  lastActivityRef: React.MutableRefObject<Date>;
   activityTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
-) => {
+  > | null>;
+}) => {
+  const {
+    autoTrackActivity,
+    presenceStatus,
+    activityTimeout,
+    setAway,
+    lastActivityRef,
+    activityTimeoutRef,
+  } = options;
   useEffect(() => {
     if (!autoTrackActivity) return;
 
@@ -185,31 +193,45 @@ const createInitialPresenceState = (userId: string): PresenceState => ({
 });
 
 // Helper to setup all presence side effects
-const usePresenceSideEffects = (
-  autoTrackActivity: boolean,
-  presenceStatus: PresenceStatus,
-  activityTimeout: number,
-  ownPresence: { status: PresenceStatus },
-  updateInterval: number,
-  setOnline: (statusMessage?: string) => void,
-  setOffline: (statusMessage?: string) => void,
-  setAway: (statusMessage?: string) => void,
-  lastActivityRef: React.MutableRefObject<Date>,
+const usePresenceSideEffects = (options: {
+  autoTrackActivity: boolean;
+  presenceStatus: PresenceStatus;
+  activityTimeout: number;
+  ownPresence: { status: PresenceStatus };
+  updateInterval: number;
+  setOnline: (statusMessage?: string) => void;
+  setOffline: (statusMessage?: string) => void;
+  setAway: (statusMessage?: string) => void;
+  lastActivityRef: React.MutableRefObject<Date>;
   activityTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
+  > | null>;
   presenceIntervalRef: React.MutableRefObject<ReturnType<
     typeof setInterval
-  > | null>,
-) => {
-  useActivityTracking(
+  > | null>;
+}) => {
+  const {
+    autoTrackActivity,
+    presenceStatus,
+    activityTimeout,
+    ownPresence,
+    updateInterval,
+    setOnline,
+    setOffline,
+    setAway,
+    lastActivityRef,
+    activityTimeoutRef,
+    presenceIntervalRef,
+  } = options;
+
+  useActivityTracking({
     autoTrackActivity,
     presenceStatus,
     activityTimeout,
     setAway,
     lastActivityRef,
     activityTimeoutRef,
-  );
+  });
 
   usePeriodicPresenceUpdate(ownPresence, updateInterval, presenceIntervalRef);
 
@@ -272,14 +294,22 @@ const usePresenceOperations = (
 };
 
 // Helper to build return object
-const buildPresenceReturn = (
-  presenceState: PresenceState,
-  presenceUpdateFunctions: ReturnType<typeof createPresenceUpdateFunctions>,
-  subscriptionFunctions: ReturnType<typeof createSubscriptionFunctions>,
-  queryFunctions: ReturnType<typeof createQueryFunctions>,
-  updateActivity: (activity: ActivityContext) => void,
-  computedValues: ReturnType<typeof calculatePresenceComputedValues>,
-) => {
+const buildPresenceReturn = (options: {
+  presenceState: PresenceState;
+  presenceUpdateFunctions: ReturnType<typeof createPresenceUpdateFunctions>;
+  subscriptionFunctions: ReturnType<typeof createSubscriptionFunctions>;
+  queryFunctions: ReturnType<typeof createQueryFunctions>;
+  updateActivity: (activity: ActivityContext) => void;
+  computedValues: ReturnType<typeof calculatePresenceComputedValues>;
+}) => {
+  const {
+    presenceState,
+    presenceUpdateFunctions,
+    subscriptionFunctions,
+    queryFunctions,
+    updateActivity,
+    computedValues,
+  } = options;
   const { setOnline, setOffline, setAway, setBusy, setInSession } =
     presenceUpdateFunctions;
   const { subscribeToPresence } = subscriptionFunctions;
@@ -365,11 +395,11 @@ export const usePresence = (options: UsePresenceOptions) => {
   );
 
   // Setup all side effects
-  usePresenceSideEffects(
+  usePresenceSideEffects({
     autoTrackActivity,
-    presenceState.ownPresence.status,
+    presenceStatus: presenceState.ownPresence.status,
     activityTimeout,
-    presenceState.ownPresence,
+    ownPresence: presenceState.ownPresence,
     updateInterval,
     setOnline,
     setOffline,
@@ -377,7 +407,7 @@ export const usePresence = (options: UsePresenceOptions) => {
     lastActivityRef,
     activityTimeoutRef,
     presenceIntervalRef,
-  );
+  });
 
   // Computed values
   const computedValues = useMemo(() => {
@@ -388,12 +418,12 @@ export const usePresence = (options: UsePresenceOptions) => {
     );
   }, [presenceState.userPresences, activityTimeout]);
 
-  return buildPresenceReturn(
+  return buildPresenceReturn({
     presenceState,
     presenceUpdateFunctions,
     subscriptionFunctions,
     queryFunctions,
     updateActivity,
     computedValues,
-  );
+  });
 };

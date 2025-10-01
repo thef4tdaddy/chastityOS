@@ -36,18 +36,30 @@ const createSendMessage = (
 };
 
 // Helper to create the connect function
-const createConnectFunction = (
-  wsRef: React.MutableRefObject<WebSocket | null>,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
-  connectionStartTimeRef: React.MutableRefObject<Date | null>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
-  maxReconnectAttempts: number,
-  userId: string,
-  handleMessage: (message: Record<string, unknown>) => void,
-  startHeartbeat: () => void,
-  stopHeartbeat: () => void,
-  attemptReconnect: () => void,
-) => {
+const createConnectFunction = (options: {
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>;
+  connectionStartTimeRef: React.MutableRefObject<Date | null>;
+  reconnectAttemptsRef: React.MutableRefObject<number>;
+  maxReconnectAttempts: number;
+  userId: string;
+  handleMessage: (message: Record<string, unknown>) => void;
+  startHeartbeat: () => void;
+  stopHeartbeat: () => void;
+  attemptReconnect: () => void;
+}) => {
+  const {
+    wsRef,
+    setSyncState,
+    connectionStartTimeRef,
+    reconnectAttemptsRef,
+    maxReconnectAttempts,
+    userId,
+    handleMessage,
+    startHeartbeat,
+    stopHeartbeat,
+    attemptReconnect,
+  } = options;
   return () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
@@ -63,8 +75,8 @@ const createConnectFunction = (
       wsRef.current = new WebSocket(wsUrl);
       connectionStartTimeRef.current = new Date();
 
-      setupWebSocketHandlers(
-        wsRef.current,
+      setupWebSocketHandlers({
+        ws: wsRef.current,
         setSyncState,
         reconnectAttemptsRef,
         maxReconnectAttempts,
@@ -72,7 +84,7 @@ const createConnectFunction = (
         startHeartbeat,
         stopHeartbeat,
         attemptReconnect,
-      );
+      });
     } catch {
       setSyncState((prev) => ({
         ...prev,
@@ -83,18 +95,28 @@ const createConnectFunction = (
 };
 
 // Helper to create connection control functions
-const createConnectionControlFunctions = (
-  wsRef: React.MutableRefObject<WebSocket | null>,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
+const createConnectionControlFunctions = (options: {
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>;
+  reconnectAttemptsRef: React.MutableRefObject<number>;
   reconnectTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
-  maxReconnectAttempts: number,
-  reconnectInterval: number,
-  stopHeartbeat: () => void,
-  connect: () => void,
-) => {
+  > | null>;
+  maxReconnectAttempts: number;
+  reconnectInterval: number;
+  stopHeartbeat: () => void;
+  connect: () => void;
+}) => {
+  const {
+    wsRef,
+    setSyncState,
+    reconnectAttemptsRef,
+    reconnectTimeoutRef,
+    maxReconnectAttempts,
+    reconnectInterval,
+    stopHeartbeat,
+    connect,
+  } = options;
   const attemptReconnect = () => {
     if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
       return;
@@ -130,16 +152,26 @@ const createConnectionControlFunctions = (
 };
 
 // Helper to setup WebSocket event handlers
-const setupWebSocketHandlers = (
-  ws: WebSocket,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
-  maxReconnectAttempts: number,
-  handleMessage: (message: Record<string, unknown>) => void,
-  startHeartbeat: () => void,
-  stopHeartbeat: () => void,
-  attemptReconnect: () => void,
-) => {
+const setupWebSocketHandlers = (options: {
+  ws: WebSocket;
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>;
+  reconnectAttemptsRef: React.MutableRefObject<number>;
+  maxReconnectAttempts: number;
+  handleMessage: (message: Record<string, unknown>) => void;
+  startHeartbeat: () => void;
+  stopHeartbeat: () => void;
+  attemptReconnect: () => void;
+}) => {
+  const {
+    ws,
+    setSyncState,
+    reconnectAttemptsRef,
+    maxReconnectAttempts,
+    handleMessage,
+    startHeartbeat,
+    stopHeartbeat,
+    attemptReconnect,
+  } = options;
   ws.onopen = () => {
     // WebSocket connected
     reconnectAttemptsRef.current = 0;
@@ -307,23 +339,36 @@ const createHeartbeatFunctions = (
 };
 
 // Helper function to create WebSocket connection functions
-export const createWebSocketFunctions = (
-  userId: string,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
-  wsRef: React.MutableRefObject<WebSocket | null>,
-  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
+export const createWebSocketFunctions = (options: {
+  userId: string;
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>;
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>;
+  reconnectAttemptsRef: React.MutableRefObject<number>;
   reconnectTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
+  > | null>;
   heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
-  connectionStartTimeRef: React.MutableRefObject<Date | null>,
-  maxReconnectAttempts: number,
-  reconnectInterval: number,
-  heartbeatInterval: number,
-) => {
+  > | null>;
+  connectionStartTimeRef: React.MutableRefObject<Date | null>;
+  maxReconnectAttempts: number;
+  reconnectInterval: number;
+  heartbeatInterval: number;
+}) => {
+  const {
+    userId,
+    setSyncState,
+    wsRef,
+    subscriptionsRef,
+    reconnectAttemptsRef,
+    reconnectTimeoutRef,
+    heartbeatTimeoutRef,
+    connectionStartTimeRef,
+    maxReconnectAttempts,
+    reconnectInterval,
+    heartbeatInterval,
+  } = options;
   const sendMessage = createSendMessage(wsRef, setSyncState);
 
   const { startHeartbeat, stopHeartbeat } = createHeartbeatFunctions(
@@ -340,7 +385,7 @@ export const createWebSocketFunctions = (
 
   let connect: () => void;
 
-  const { attemptReconnect, disconnect } = createConnectionControlFunctions(
+  const { attemptReconnect, disconnect } = createConnectionControlFunctions({
     wsRef,
     setSyncState,
     reconnectAttemptsRef,
@@ -348,10 +393,10 @@ export const createWebSocketFunctions = (
     maxReconnectAttempts,
     reconnectInterval,
     stopHeartbeat,
-    () => connect(),
-  );
+    connect: () => connect(),
+  });
 
-  connect = createConnectFunction(
+  connect = createConnectFunction({
     wsRef,
     setSyncState,
     connectionStartTimeRef,
@@ -362,7 +407,7 @@ export const createWebSocketFunctions = (
     startHeartbeat,
     stopHeartbeat,
     attemptReconnect,
-  );
+  });
 
   return {
     connect,
@@ -469,3 +514,5 @@ export const createRelationshipSyncFunctions = (
     syncSessionData,
   };
 };
+
+// ====== Real-time Sync Hook Helpers ======
