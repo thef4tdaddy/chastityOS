@@ -2,8 +2,19 @@
  * ToastProvider - React Context for global toast notifications
  * Provides unified toast API with priority support and accessibility
  */
-import React, { createContext, useContext, useCallback, useEffect, useMemo, ReactNode } from "react";
-import { useNotificationStore, Notification, NotificationPriority } from "../stores/notificationStore";
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from "react";
+import {
+  useNotificationStore,
+  Notification,
+  NotificationPriority,
+} from "../stores/notificationStore";
 import { toastBridge } from "../utils/toastBridge";
 
 export interface ToastOptions {
@@ -26,22 +37,46 @@ export interface ToastContextValue {
   showToast: (
     message: string,
     type: Notification["type"],
-    options?: ToastOptions
+    options?: ToastOptions,
   ) => string;
   dismissToast: (id: string) => void;
   clearAllToasts: () => void;
 
   // Convenience methods with priority defaults
-  showSuccess: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  showError: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  showWarning: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  showInfo: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  
+  showSuccess: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+  showError: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+  showWarning: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+  showInfo: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+
   // Priority-specific methods
-  showUrgent: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  showHigh: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  showMedium: (message: string, options?: Omit<ToastOptions, "priority">) => string;
-  showLow: (message: string, options?: Omit<ToastOptions, "priority">) => string;
+  showUrgent: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+  showHigh: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+  showMedium: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
+  showLow: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ) => string;
 
   // State access
   toasts: Notification[];
@@ -53,19 +88,96 @@ interface ToastProviderProps {
   children: ReactNode;
 }
 
-export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
-  // Use selective subscription for better performance
-  const addNotification = useNotificationStore((state) => state.addNotification);
-  const removeNotification = useNotificationStore((state) => state.removeNotification);
-  const clearAllNotifications = useNotificationStore((state) => state.clearAllNotifications);
-  const notifications = useNotificationStore((state) => state.notifications);
+// Helper hook for priority-specific toast methods
+const usePriorityToastMethods = (showToast: ToastContextValue["showToast"]) => {
+  const showUrgent = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "error", {
+        priority: "urgent",
+        requireInteraction: true,
+        ...options,
+      });
+    },
+    [showToast],
+  );
 
+  const showHigh = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "warning", { priority: "high", ...options });
+    },
+    [showToast],
+  );
+
+  const showMedium = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "info", { priority: "medium", ...options });
+    },
+    [showToast],
+  );
+
+  const showLow = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "info", { priority: "low", ...options });
+    },
+    [showToast],
+  );
+
+  return { showUrgent, showHigh, showMedium, showLow };
+};
+
+// Helper for convenience toast methods by type
+const useConvenienceToastMethods = (
+  showToast: ToastContextValue["showToast"],
+) => {
+  const showSuccess = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "success", { priority: "low", ...options });
+    },
+    [showToast],
+  );
+
+  const showError = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "error", { priority: "high", ...options });
+    },
+    [showToast],
+  );
+
+  const showWarning = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "warning", { priority: "medium", ...options });
+    },
+    [showToast],
+  );
+
+  const showInfo = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "info", { priority: "low", ...options });
+    },
+    [showToast],
+  );
+
+  return { showSuccess, showError, showWarning, showInfo };
+};
+
+// Helper hook for toast methods - extracted to reduce main component size
+const useToastMethods = (
+  addNotification: ReturnType<
+    typeof useNotificationStore.getState
+  >["addNotification"],
+  removeNotification: ReturnType<
+    typeof useNotificationStore.getState
+  >["removeNotification"],
+  clearAllNotifications: ReturnType<
+    typeof useNotificationStore.getState
+  >["clearAllNotifications"],
+) => {
   // Core toast method
   const showToast = useCallback(
     (
       message: string,
       type: Notification["type"],
-      options: ToastOptions = {}
+      options: ToastOptions = {},
     ): string => {
       return addNotification({
         type,
@@ -81,102 +193,58 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
         metadata: options.metadata,
       });
     },
-    [addNotification]
+    [addNotification],
   );
 
-  // Dismiss toast
   const dismissToast = useCallback(
     (id: string) => {
       removeNotification(id);
     },
-    [removeNotification]
+    [removeNotification],
   );
 
-  // Clear all toasts
   const clearAllToasts = useCallback(() => {
     clearAllNotifications();
   }, [clearAllNotifications]);
 
-  // Convenience methods by type with smart priority defaults
-  const showSuccess = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "success", { priority: "low", ...options });
-    },
-    [showToast]
-  );
+  const convenienceMethods = useConvenienceToastMethods(showToast);
+  const priorityMethods = usePriorityToastMethods(showToast);
 
-  const showError = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "error", { priority: "high", ...options });
-    },
-    [showToast]
-  );
-
-  const showWarning = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "warning", { priority: "medium", ...options });
-    },
-    [showToast]
-  );
-
-  const showInfo = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "info", { priority: "low", ...options });
-    },
-    [showToast]
-  );
-
-  // Priority-specific methods
-  const showUrgent = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "error", { 
-        priority: "urgent", 
-        requireInteraction: true,
-        ...options 
-      });
-    },
-    [showToast]
-  );
-
-  const showHigh = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "warning", { priority: "high", ...options });
-    },
-    [showToast]
-  );
-
-  const showMedium = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "info", { priority: "medium", ...options });
-    },
-    [showToast]
-  );
-
-  const showLow = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "info", { priority: "low", ...options });
-    },
-    [showToast]
-  );
-
-  const contextValue: ToastContextValue = useMemo(() => ({
+  return {
     showToast,
     dismissToast,
     clearAllToasts,
-    showSuccess,
-    showError,
-    showWarning,
-    showInfo,
-    showUrgent,
-    showHigh,
-    showMedium,
-    showLow,
-    toasts: notifications,
-  }), [
-    showToast, dismissToast, clearAllToasts, showSuccess, showError, 
-    showWarning, showInfo, showUrgent, showHigh, showMedium, 
-    showLow, notifications
-  ]);
+    ...convenienceMethods,
+    ...priorityMethods,
+  };
+};
+
+export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
+  // Use selective subscription for better performance
+  const addNotification = useNotificationStore(
+    (state) => state.addNotification,
+  );
+  const removeNotification = useNotificationStore(
+    (state) => state.removeNotification,
+  );
+  const clearAllNotifications = useNotificationStore(
+    (state) => state.clearAllNotifications,
+  );
+  const notifications = useNotificationStore((state) => state.notifications);
+
+  const toastMethods = useToastMethods(
+    addNotification,
+    removeNotification,
+    clearAllNotifications,
+  );
+
+  const contextValue: ToastContextValue = useMemo(
+    () => ({
+      ...toastMethods,
+      toasts: notifications,
+    }),
+    [toastMethods, notifications],
+  );
 
   // Register with the bridge for non-React services
   useEffect(() => {
@@ -195,19 +263,19 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
 
 /**
  * useToast Hook - Primary interface for toast notifications
- * 
+ *
  * @example
  * const { showSuccess, showError, showUrgent } = useToast();
- * 
+ *
  * // Simple usage
  * showSuccess("Data saved successfully!");
- * 
+ *
  * // With options
- * showError("Failed to save", { 
+ * showError("Failed to save", {
  *   title: "Save Error",
  *   action: { label: "Retry", onClick: handleRetry }
  * });
- * 
+ *
  * // Urgent notification
  * showUrgent("Critical system error!", {
  *   title: "System Alert",

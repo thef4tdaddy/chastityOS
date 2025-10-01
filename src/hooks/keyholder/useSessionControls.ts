@@ -39,86 +39,15 @@ export interface UseSessionControlsReturn {
 export function useSessionControls(
   _wearerId?: string,
 ): UseSessionControlsReturn {
-  const [isExtending, setIsExtending] = useState(false);
-  const [isReducing, setIsReducing] = useState(false);
-  const [isLocking, setIsLocking] = useState(false);
-  const [isUnlocking, setIsUnlocking] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [_extendCooldown, _setExtendCooldown] = useState<number | null>(null);
   const [_lockCooldown, _setLockCooldown] = useState<number | null>(null);
 
-  const extendSession = useCallback(async (_minutes: number): Promise<void> => {
-    setIsExtending(true);
-    setError(null);
-    try {
-      // Mock implementation
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to extend session");
-      setError(error);
-      throw error;
-    } finally {
-      setIsExtending(false);
-    }
-  }, []);
+  const { extendSession, reduceSession, isExtending, isReducing } =
+    useSessionTimeControls(setError);
 
-  const reduceSession = useCallback(async (_minutes: number): Promise<void> => {
-    setIsReducing(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to reduce session");
-      setError(error);
-      throw error;
-    } finally {
-      setIsReducing(false);
-    }
-  }, []);
-
-  const lockSession = useCallback(async (): Promise<void> => {
-    setIsLocking(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to lock session");
-      setError(error);
-      throw error;
-    } finally {
-      setIsLocking(false);
-    }
-  }, []);
-
-  const unlockSession = useCallback(async (): Promise<void> => {
-    setIsUnlocking(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to unlock session");
-      setError(error);
-      throw error;
-    } finally {
-      setIsUnlocking(false);
-    }
-  }, []);
-
-  const setLockTimer = useCallback(async (_duration: number): Promise<void> => {
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to set lock timer");
-      setError(error);
-      throw error;
-    }
-  }, []);
+  const { lockSession, unlockSession, setLockTimer, isLocking, isUnlocking } =
+    useSessionLockControls(setError);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -149,4 +78,102 @@ export function useSessionControls(
     error,
     clearError,
   };
+}
+
+// Hook for session time controls
+function useSessionTimeControls(setError: (value: Error | null) => void) {
+  const [isExtending, setIsExtending] = useState(false);
+  const [isReducing, setIsReducing] = useState(false);
+
+  const extendSession = useCallback(
+    async (_minutes: number): Promise<void> => {
+      setIsExtending(true);
+      setError(null);
+      try {
+        // Mock implementation
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to extend session");
+        setError(error);
+        throw error;
+      } finally {
+        setIsExtending(false);
+      }
+    },
+    [setError],
+  );
+
+  const reduceSession = useCallback(
+    async (_minutes: number): Promise<void> => {
+      setIsReducing(true);
+      setError(null);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to reduce session");
+        setError(error);
+        throw error;
+      } finally {
+        setIsReducing(false);
+      }
+    },
+    [setError],
+  );
+
+  return { extendSession, reduceSession, isExtending, isReducing };
+}
+
+// Hook for session lock controls
+function useSessionLockControls(setError: (value: Error | null) => void) {
+  const [isLocking, setIsLocking] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+
+  const lockSession = useCallback(async (): Promise<void> => {
+    setIsLocking(true);
+    setError(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error("Failed to lock session");
+      setError(error);
+      throw error;
+    } finally {
+      setIsLocking(false);
+    }
+  }, [setError]);
+
+  const unlockSession = useCallback(async (): Promise<void> => {
+    setIsUnlocking(true);
+    setError(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error("Failed to unlock session");
+      setError(error);
+      throw error;
+    } finally {
+      setIsUnlocking(false);
+    }
+  }, [setError]);
+
+  const setLockTimer = useCallback(
+    async (_duration: number): Promise<void> => {
+      setError(null);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to set lock timer");
+        setError(error);
+        throw error;
+      }
+    },
+    [setError],
+  );
+
+  return { lockSession, unlockSession, setLockTimer, isLocking, isUnlocking };
 }

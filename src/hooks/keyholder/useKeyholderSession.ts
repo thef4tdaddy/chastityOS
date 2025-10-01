@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   doc,
   setDoc,
@@ -57,71 +57,24 @@ export function useKeyholderSession({
 
   // Set up real-time listener for keyholder session
   useEffect(() => {
-    if (!isAuthReady || !userId) {
-      setIsLoading(false);
-      setKeyholderSession(null);
-      return;
-    }
-
-    const keyholderDocRef = getKeyholderDocRef();
-    if (!keyholderDocRef) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const unsubscribe = setupSessionListener(
-      keyholderDocRef,
+    return setupKeyholderListener({
+      isAuthReady,
+      userId,
       keyholderName,
+      getKeyholderDocRef,
       setKeyholderSession,
       setError,
       setIsLoading,
-    );
-
-    return () => unsubscribe();
+    });
   }, [isAuthReady, userId, keyholderName, getKeyholderDocRef]);
 
-  const startSession = useCallback(
-    async (sessionKeyholderName: string, permissions: KeyholderPermissions) => {
-      await handleStartSession(
-        sessionKeyholderName,
-        permissions,
-        userId,
-        getKeyholderDocRef,
-        setError,
-      );
-    },
-    [userId, getKeyholderDocRef],
-  );
-
-  const endSession = useCallback(async () => {
-    await handleEndSession(getKeyholderDocRef, setError);
-  }, [getKeyholderDocRef]);
-
-  const updatePermissions = useCallback(
-    async (newPermissions: Partial<KeyholderPermissions>) => {
-      await handleUpdatePermissions(
-        keyholderSession,
-        newPermissions,
-        getKeyholderDocRef,
-        setError,
-      );
-    },
-    [keyholderSession, getKeyholderDocRef],
-  );
-
-  const updateKeyholderName = useCallback(
-    async (name: string) => {
-      await handleUpdateKeyholderName(
-        name,
-        userId,
-        getKeyholderDocRef,
-        setError,
-      );
-    },
-    [userId, getKeyholderDocRef],
-  );
+  const { startSession, endSession, updatePermissions, updateKeyholderName } =
+    useSessionActions({
+      userId,
+      keyholderSession,
+      getKeyholderDocRef,
+      setError,
+    });
 
   return {
     keyholderSession,
@@ -136,15 +89,111 @@ export function useKeyholderSession({
   };
 }
 
+// Hook to setup listener and handle cleanup
+function setupKeyholderListener(params: {
+  isAuthReady: boolean;
+  userId: string;
+  keyholderName?: string;
+  getKeyholderDocRef: () => DocumentReference | null;
+  setKeyholderSession: (value: KeyholderSession | null) => void;
+  setError: (value: string | null) => void;
+  setIsLoading: (value: boolean) => void;
+}) {
+  const {
+    isAuthReady,
+    userId,
+    keyholderName,
+    getKeyholderDocRef,
+    setKeyholderSession,
+    setError,
+    setIsLoading,
+  } = params;
+
+  if (!isAuthReady || !userId) {
+    setIsLoading(false);
+    setKeyholderSession(null);
+    return () => {};
+  }
+
+  const keyholderDocRef = getKeyholderDocRef();
+  if (!keyholderDocRef) {
+    setIsLoading(false);
+    return () => {};
+  }
+
+  setIsLoading(true);
+
+  const unsubscribe = setupSessionListener(
+    keyholderDocRef,
+    keyholderName,
+    setKeyholderSession,
+    setError,
+    setIsLoading,
+  );
+
+  return () => unsubscribe();
+}
+
+// Hook to encapsulate session actions
+function useSessionActions(params: {
+  userId: string;
+  keyholderSession: KeyholderSession | null;
+  getKeyholderDocRef: () => DocumentReference | null;
+  setError: (value: string | null) => void;
+}) {
+  const { userId, keyholderSession, getKeyholderDocRef, setError } = params;
+
+  const startSession = useCallback(
+    async (sessionKeyholderName: string, permissions: KeyholderPermissions) => {
+      await handleStartSession(
+        sessionKeyholderName,
+        permissions,
+        userId,
+        getKeyholderDocRef,
+        setError,
+      );
+    },
+    [userId, getKeyholderDocRef, setError],
+  );
+
+  const endSession = useCallback(async () => {
+    await handleEndSession(getKeyholderDocRef, setError);
+  }, [getKeyholderDocRef, setError]);
+
+  const updatePermissions = useCallback(
+    async (newPermissions: Partial<KeyholderPermissions>) => {
+      await handleUpdatePermissions(
+        keyholderSession,
+        newPermissions,
+        getKeyholderDocRef,
+        setError,
+      );
+    },
+    [keyholderSession, getKeyholderDocRef, setError],
+  );
+
+  const updateKeyholderName = useCallback(
+    async (name: string) => {
+      await handleUpdateKeyholderName(
+        name,
+        userId,
+        getKeyholderDocRef,
+        setError,
+      );
+    },
+    [userId, getKeyholderDocRef, setError],
+  );
+
+  return { startSession, endSession, updatePermissions, updateKeyholderName };
+}
+
 // Helper functions for useKeyholderSession
 function setupSessionListener(
   keyholderDocRef: DocumentReference,
   keyholderName: string | undefined,
-  setKeyholderSession: React.Dispatch<
-    React.SetStateAction<KeyholderSession | null>
-  >,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setKeyholderSession: (value: KeyholderSession | null) => void,
+  setError: (value: string | null) => void,
+  setIsLoading: (value: boolean) => void,
 ) {
   return onSnapshot(
     keyholderDocRef,
@@ -188,7 +237,7 @@ async function handleStartSession(
   permissions: KeyholderPermissions,
   userId: string,
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
@@ -226,7 +275,7 @@ async function handleStartSession(
 
 async function handleEndSession(
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
@@ -249,7 +298,7 @@ async function handleUpdatePermissions(
   keyholderSession: KeyholderSession | null,
   newPermissions: Partial<KeyholderPermissions>,
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
@@ -280,7 +329,7 @@ async function handleUpdateKeyholderName(
   name: string,
   userId: string,
   getKeyholderDocRef: () => DocumentReference | null,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: (value: string | null) => void,
 ): Promise<void> {
   try {
     setError(null);
