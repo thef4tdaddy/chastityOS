@@ -4,6 +4,6 @@
  */
 
 export { useTouchGestures, useSwipeGestures } from "./useTouchGestures";
-export { default as useHapticFeedback } from "./useHapticFeedback";
-export { default as useViewport } from "./useViewport";
-export { default as usePullToRefresh } from "./usePullToRefresh";
+export { useHapticFeedback } from "./useHapticFeedback";
+export { useViewport } from "./useViewport";
+export { usePullToRefresh } from "./usePullToRefresh";
