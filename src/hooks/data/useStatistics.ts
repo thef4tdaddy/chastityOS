@@ -43,6 +43,8 @@ import type {
 
 // ==================== HOOK IMPLEMENTATION ====================
 
+// Complex statistics aggregation hook requires many statements for comprehensive metrics
+// eslint-disable-next-line max-statements
 export const useStatistics = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 

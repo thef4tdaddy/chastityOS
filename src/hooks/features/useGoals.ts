@@ -37,6 +37,8 @@ import {
 import type * as _Types from "./types/Goals";
 export type * from "./types/Goals";
 
+// Complex goal management hook with multiple goal types and collaborative features
+// eslint-disable-next-line max-statements
 export const useGoals = (userId?: string, relationshipId?: string) => {
   const queryClient = useQueryClient();
 
