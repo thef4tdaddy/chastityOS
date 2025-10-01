@@ -29,7 +29,17 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'inter': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        inter: [
+          "Inter",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -106,65 +116,65 @@ module.exports = {
       },
       colors: {
         // ChastityOS Design System Colors
-        'tekhelet': {
-          DEFAULT: '#581c87', // Primary accent purple (e.g., Log Event bar, buttons, active states)
-          100: '#12061b', 
-          200: '#240b36', 
-          300: '#351151', 
-          400: '#47166c', 
-          500: '#581c87',
-          600: '#7f28c1', 
-          700: '#a052dc', 
-          800: '#c08ce7', 
-          900: '#dfc5f3'
+        tekhelet: {
+          DEFAULT: "#581c87", // Primary accent purple (e.g., Log Event bar, buttons, active states)
+          100: "#12061b",
+          200: "#240b36",
+          300: "#351151",
+          400: "#47166c",
+          500: "#581c87",
+          600: "#7f28c1",
+          700: "#a052dc",
+          800: "#c08ce7",
+          900: "#dfc5f3",
         },
-        'dark_purple': {
-          DEFAULT: '#282132', // Main dark mode background for the app body
-          100: '#08070a', 
-          200: '#100d14', 
-          300: '#18141d', 
-          400: '#201a27', 
-          500: '#282132',
-          600: '#514364', 
-          700: '#7a6598', 
-          800: '#a698ba', 
-          900: '#d3ccdd'
+        dark_purple: {
+          DEFAULT: "#282132", // Main dark mode background for the app body
+          100: "#08070a",
+          200: "#100d14",
+          300: "#18141d",
+          400: "#201a27",
+          500: "#282132",
+          600: "#514364",
+          700: "#7a6598",
+          800: "#a698ba",
+          900: "#d3ccdd",
         },
-        'lavender_web': {
-          DEFAULT: '#d7d2ea', // Light mode background / Dark mode card background / Light text
-          100: '#231c3c', 
-          200: '#473979', 
-          300: '#6c59b1', 
-          400: '#a296cd', 
-          500: '#d7d2ea',
-          600: '#dfdbee', 
-          700: '#e7e4f2', 
-          800: '#efedf7', 
-          900: '#f7f6fb'
+        lavender_web: {
+          DEFAULT: "#d7d2ea", // Light mode background / Dark mode card background / Light text
+          100: "#231c3c",
+          200: "#473979",
+          300: "#6c59b1",
+          400: "#a296cd",
+          500: "#d7d2ea",
+          600: "#dfdbee",
+          700: "#e7e4f2",
+          800: "#efedf7",
+          900: "#f7f6fb",
         },
-        'rose_quartz': {
-          DEFAULT: '#a39fad', // Secondary text / Subtle elements / Inactive states
-          100: '#201e24', 
-          200: '#403d48', 
-          300: '#605b6b', 
-          400: '#807b8e', 
-          500: '#a39fad',
-          600: '#b5b2bd', 
-          700: '#c8c5ce', 
-          800: '#dad8de', 
-          900: '#edecef'
+        rose_quartz: {
+          DEFAULT: "#a39fad", // Secondary text / Subtle elements / Inactive states
+          100: "#201e24",
+          200: "#403d48",
+          300: "#605b6b",
+          400: "#807b8e",
+          500: "#a39fad",
+          600: "#b5b2bd",
+          700: "#c8c5ce",
+          800: "#dad8de",
+          900: "#edecef",
         },
-        'tangerine': {
-          DEFAULT: '#e88331', // Orange accent (e.g., Chastity Tracker bar, Full Report bar)
-          100: '#321a06', 
-          200: '#65340b', 
-          300: '#974d11', 
-          400: '#ca6716', 
-          500: '#e88331',
-          600: '#ed9c5a', 
-          700: '#f1b583', 
-          800: '#f6cdac', 
-          900: '#fae6d6'
+        tangerine: {
+          DEFAULT: "#e88331", // Orange accent (e.g., Chastity Tracker bar, Full Report bar)
+          100: "#321a06",
+          200: "#65340b",
+          300: "#974d11",
+          400: "#ca6716",
+          500: "#e88331",
+          600: "#ed9c5a",
+          700: "#f1b583",
+          800: "#f6cdac",
+          900: "#fae6d6",
         },
         // Legacy glass effects (keeping for compatibility)
         glass: {
@@ -187,15 +197,15 @@ module.exports = {
         },
         // Legacy prod colors (keeping for compatibility, but updated to match design system)
         prod: {
-          tekhelet: '#581c87',
-          'dark-purple': '#282132',
-          'lavender-web': '#d7d2ea',
-          'rose-quartz': '#a39fad',
-          tangerine: '#e88331',
+          tekhelet: "#581c87",
+          "dark-purple": "#282132",
+          "lavender-web": "#d7d2ea",
+          "rose-quartz": "#a39fad",
+          tangerine: "#e88331",
         },
         // Standard colors for borders and text
-        'black': '#000000', // For hard borders where specified
-        'white': '#ffffff', // For primary text on dark backgrounds
+        black: "#000000", // For hard borders where specified
+        white: "#ffffff", // For primary text on dark backgrounds
       },
     },
   },

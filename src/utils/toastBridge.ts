@@ -6,14 +6,17 @@ import { ToastContextValue, ToastOptions } from "../contexts/ToastProvider";
 import { Notification } from "../stores/notificationStore";
 
 type ShowToastFunction = ToastContextValue["showToast"];
-type ShowConvenienceFunction = (message: string, options?: Omit<ToastOptions, "priority">) => string;
+type ShowConvenienceFunction = (
+  message: string,
+  options?: Omit<ToastOptions, "priority">,
+) => string;
 
 interface ToastBridge {
   // Core methods
   showToast: ShowToastFunction | null;
   dismissToast: ((id: string) => void) | null;
   clearAllToasts: (() => void) | null;
-  
+
   // Convenience methods
   showSuccess: ShowConvenienceFunction | null;
   showError: ShowConvenienceFunction | null;
@@ -26,10 +29,10 @@ interface ToastBridge {
 
   // Registration method for React Context
   registerShowToast: (contextValue: ToastContextValue) => void;
-  
+
   // Unregistration for cleanup
   unregisterShowToast: () => void;
-  
+
   // Check if bridge is ready
   isReady: () => boolean;
 }
@@ -38,7 +41,7 @@ class ToastBridgeImpl implements ToastBridge {
   public showToast: ShowToastFunction | null = null;
   public dismissToast: ((id: string) => void) | null = null;
   public clearAllToasts: (() => void) | null = null;
-  
+
   public showSuccess: ShowConvenienceFunction | null = null;
   public showError: ShowConvenienceFunction | null = null;
   public showWarning: ShowConvenienceFunction | null = null;
@@ -108,7 +111,7 @@ export const safeToastFunctions = {
   showToast: (
     message: string,
     type: Notification["type"],
-    options?: ToastOptions
+    options?: ToastOptions,
   ): string | null => {
     if (toastBridge.isReady() && toastBridge.showToast) {
       return toastBridge.showToast(message, type, options);
@@ -118,7 +121,10 @@ export const safeToastFunctions = {
     return null;
   },
 
-  showSuccess: (message: string, options?: Omit<ToastOptions, "priority">): string | null => {
+  showSuccess: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ): string | null => {
     if (toastBridge.isReady() && toastBridge.showSuccess) {
       return toastBridge.showSuccess(message, options);
     }
@@ -127,7 +133,10 @@ export const safeToastFunctions = {
     return null;
   },
 
-  showError: (message: string, options?: Omit<ToastOptions, "priority">): string | null => {
+  showError: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ): string | null => {
     if (toastBridge.isReady() && toastBridge.showError) {
       return toastBridge.showError(message, options);
     }
@@ -136,7 +145,10 @@ export const safeToastFunctions = {
     return null;
   },
 
-  showWarning: (message: string, options?: Omit<ToastOptions, "priority">): string | null => {
+  showWarning: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ): string | null => {
     if (toastBridge.isReady() && toastBridge.showWarning) {
       return toastBridge.showWarning(message, options);
     }
@@ -145,7 +157,10 @@ export const safeToastFunctions = {
     return null;
   },
 
-  showInfo: (message: string, options?: Omit<ToastOptions, "priority">): string | null => {
+  showInfo: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ): string | null => {
     if (toastBridge.isReady() && toastBridge.showInfo) {
       return toastBridge.showInfo(message, options);
     }
@@ -154,7 +169,10 @@ export const safeToastFunctions = {
     return null;
   },
 
-  showUrgent: (message: string, options?: Omit<ToastOptions, "priority">): string | null => {
+  showUrgent: (
+    message: string,
+    options?: Omit<ToastOptions, "priority">,
+  ): string | null => {
     if (toastBridge.isReady() && toastBridge.showUrgent) {
       return toastBridge.showUrgent(message, options);
     }

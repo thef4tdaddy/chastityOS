@@ -108,7 +108,14 @@ class RelationshipService {
     return relationshipRoleService.checkPermission(
       relationshipId,
       userId,
-      action as "sessions" | "tasks" | "goals" | "settings" | "punishments" | "pauseSession" | "emergencyUnlock",
+      action as
+        | "sessions"
+        | "tasks"
+        | "goals"
+        | "settings"
+        | "punishments"
+        | "pauseSession"
+        | "emergencyUnlock",
     );
   }
 

@@ -107,7 +107,9 @@ const useSwipeLogic = (
 ) => {
   const [translateX, setTranslateX] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [revealedSide, setRevealedSide] = useState<"left" | "right" | null>(null);
+  const [revealedSide, setRevealedSide] = useState<"left" | "right" | null>(
+    null,
+  );
   const { medium, success } = useHapticFeedback();
 
   const maxSwipeDistance = 120;

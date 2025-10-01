@@ -16,21 +16,39 @@
       "short_name": "Log Event",
       "description": "Quickly log a new chastity event",
       "url": "/?shortcut=log-event",
-      "icons": [{ "src": "/icons/shortcut-log.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icons/shortcut-log.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "View Tracker",
       "short_name": "Tracker",
       "description": "View current chastity tracking dashboard",
       "url": "/?shortcut=tracker",
-      "icons": [{ "src": "/icons/shortcut-tracker.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icons/shortcut-tracker.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Keyholder Dashboard",
       "short_name": "Keyholder",
       "description": "Access keyholder controls and tasks",
       "url": "/?shortcut=keyholder",
-      "icons": [{ "src": "/icons/shortcut-keyholder.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icons/shortcut-keyholder.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ],
   "icons": [

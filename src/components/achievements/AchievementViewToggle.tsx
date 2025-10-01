@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  FaChartBar,
-  FaList,
-  FaUsers,
-  FaCog,
-} from "../../utils/iconImport";
+import { FaChartBar, FaList, FaUsers, FaCog } from "../../utils/iconImport";
 
 type ViewMode = "dashboard" | "gallery" | "leaderboards" | "privacy";
 
@@ -13,9 +8,9 @@ interface AchievementViewToggleProps {
   onViewModeChange: (mode: ViewMode) => void;
 }
 
-export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({ 
-  viewMode, 
-  onViewModeChange 
+export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
+  viewMode,
+  onViewModeChange,
 }) => {
   return (
     <div className="flex items-center bg-white/10 rounded-lg p-1">

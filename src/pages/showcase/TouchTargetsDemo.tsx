@@ -10,7 +10,7 @@ export const TouchTargetsDemo: React.FC<TouchTargetsDemoProps> = ({
   onShowBottomSheet,
 }) => {
   const { showInfo, showSuccess } = useToast();
-  
+
   return (
     <MobileCard variant="outlined" className="space-y-4">
       <h2 className="text-fluid-lg font-semibold">Touch Targets</h2>
