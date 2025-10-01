@@ -145,3 +145,9 @@ export const useAchievementGallery = (
     groupedAchievements,
   };
 };
+
+// Re-export utility functions from achievement-gallery-utils
+export {
+  getCategoryName,
+  getDifficultyColor,
+} from "./achievement-gallery-utils";

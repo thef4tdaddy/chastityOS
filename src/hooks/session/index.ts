@@ -9,12 +9,12 @@ export {
   type SessionContext,
   type KeyholderSessionControls,
 } from "./useSession";
-export {
-  usePauseResume,
-  type EnhancedPauseState,
-  type CooldownState,
-  type KeyholderOverrideCapabilities,
-} from "./usePauseResume";
+export { usePauseResume } from "./usePauseResume";
+export type {
+  EnhancedPauseState,
+  CooldownState,
+  KeyholderOverrideCapabilities,
+} from "../../types/pauseResume";
 export {
   useSessionGoals,
   type SessionGoalsState,
