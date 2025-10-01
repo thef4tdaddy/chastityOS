@@ -112,7 +112,7 @@ export const Filters: React.FC<FiltersProps> = ({
         className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
       >
         <option value="all">All Categories</option>
-        {Object.values(AchievementCategory).map((category) => (
+        {(Object.values(AchievementCategory) as AchievementCategory[]).map((category) => (
           <option key={category} value={category}>
             {getCategoryName(category)}
           </option>
@@ -127,7 +127,7 @@ export const Filters: React.FC<FiltersProps> = ({
         className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
       >
         <option value="all">All Difficulties</option>
-        {Object.values(AchievementDifficulty).map((difficulty) => (
+        {(Object.values(AchievementDifficulty) as AchievementDifficulty[]).map((difficulty) => (
           <option key={difficulty} value={difficulty}>
             {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
           </option>

@@ -40,10 +40,10 @@ class SettingsDBService extends BaseDBService<DBSettings> {
       if (settings) {
         await this.update(settings.id, updates);
       } else {
-        const newSettings: Omit<DBSettings, "lastModified" | "syncStatus"> = {
+        const newSettings = {
           id: userId, // Use userId as the id for settings
           userId,
-          theme: "dark",
+          theme: "dark" as const,
           notifications: {
             enabled: true,
             sessionReminders: true,
@@ -69,11 +69,11 @@ class SettingsDBService extends BaseDBService<DBSettings> {
             language: "en",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             dateFormat: "MM/dd/yyyy",
-            timeFormat: "12h",
-            startOfWeek: "sunday",
+            timeFormat: "12h" as const,
+            startOfWeek: "sunday" as const,
           },
           ...updates,
-        };
+        } as Omit<DBSettings, "lastModified" | "syncStatus">;
         await this.create(newSettings);
       }
       logger.info("Updated settings", {
