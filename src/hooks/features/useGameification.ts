@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   PlayerProfile,
   Challenge,
+  ChallengeReward,
   Leaderboard,
   Season,
   SocialGameFeatures,
