@@ -50,3 +50,30 @@ export const withErrorHandling = async <T, S extends LoadingState>(
     setState((prev: S) => ({ ...prev, isLoading: false }));
   }
 };
+
+// Validation utilities
+export const validateEmail = (email: string): string[] => {
+  const errors: string[] = [];
+  if (!email.trim()) {
+    errors.push("Email is required");
+  } else if (!/\S+@\S+\.\S+/.test(email)) {
+    errors.push("Email format is invalid");
+  }
+  return errors;
+};
+
+export const validateRole = (role: string): string[] => {
+  const errors: string[] = [];
+  if (!role) {
+    errors.push("Role is required");
+  }
+  return errors;
+};
+
+export const validateMessage = (message: string | undefined): string[] => {
+  const errors: string[] = [];
+  if (message && message.length > 500) {
+    errors.push("Message cannot exceed 500 characters");
+  }
+  return errors;
+};
