@@ -39,6 +39,83 @@ interface UpdateTaskData {
 }
 
 /**
+ * Apply filters to task list
+ */
+function applyTaskFilters(tasks: Task[], filters?: TaskFilters): Task[] {
+  let filteredTasks = tasks;
+
+  if (filters?.status) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.status === filters.status,
+    );
+  }
+
+  if (filters?.priority) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.priority === filters.priority,
+    );
+  }
+
+  if (filters?.category) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.category === filters.category,
+    );
+  }
+
+  if (filters?.assignedBy) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.assignedBy === filters.assignedBy,
+    );
+  }
+
+  if (filters?.dueDate) {
+    filteredTasks = filteredTasks.filter((task) => {
+      if (!task.dueDate) return false;
+      const taskDue = new Date(task.dueDate);
+
+      if (filters.dueDate?.start && taskDue < filters.dueDate.start)
+        return false;
+      if (filters.dueDate?.end && taskDue > filters.dueDate.end) return false;
+
+      return true;
+    });
+  }
+
+  return filteredTasks;
+}
+
+/**
+ * Sort tasks by priority and due date
+ */
+function sortTasks(tasks: Task[]): Task[] {
+  return tasks.sort((a, b) => {
+    // Priority sorting (urgent > high > medium > low)
+    const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+    const aPriority =
+      priorityOrder[a.priority as keyof typeof priorityOrder] ||
+      priorityOrder.medium;
+    const bPriority =
+      priorityOrder[b.priority as keyof typeof priorityOrder] ||
+      priorityOrder.medium;
+
+    if (aPriority !== bPriority) {
+      return bPriority - aPriority;
+    }
+
+    // Due date sorting (sooner first)
+    if (a.dueDate && b.dueDate) {
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    }
+
+    if (a.dueDate && !b.dueDate) return -1;
+    if (!a.dueDate && b.dueDate) return 1;
+
+    // Created date sorting (newest first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+}
+
+/**
  * Get tasks for a user with optional filtering
  * Fixes: TasksPage.tsx:20 (taskDBService.findByUserId)
  */
@@ -50,86 +127,16 @@ export function useTasks(userId: string, filters?: TaskFilters) {
 
       try {
         const tasks = await taskDBService.findByUserId(userId);
-
-        // Apply filters
-        let filteredTasks = tasks;
-
-        if (filters?.status) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.status === filters.status,
-          );
-        }
-
-        if (filters?.priority) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.priority === filters.priority,
-          );
-        }
-
-        if (filters?.category) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.category === filters.category,
-          );
-        }
-
-        if (filters?.assignedBy) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.assignedBy === filters.assignedBy,
-          );
-        }
-
-        if (filters?.dueDate) {
-          filteredTasks = filteredTasks.filter((task) => {
-            if (!task.dueDate) return false;
-            const taskDue = new Date(task.dueDate);
-
-            if (filters.dueDate?.start && taskDue < filters.dueDate.start)
-              return false;
-            if (filters.dueDate?.end && taskDue > filters.dueDate.end)
-              return false;
-
-            return true;
-          });
-        }
-
-        // Sort by priority and due date
-        filteredTasks.sort((a, b) => {
-          // Priority sorting (urgent > high > medium > low)
-          const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
-          const aPriority =
-            priorityOrder[a.priority as keyof typeof priorityOrder] ||
-            priorityOrder.medium;
-          const bPriority =
-            priorityOrder[b.priority as keyof typeof priorityOrder] ||
-            priorityOrder.medium;
-
-          if (aPriority !== bPriority) {
-            return bPriority - aPriority;
-          }
-
-          // Due date sorting (sooner first)
-          if (a.dueDate && b.dueDate) {
-            return (
-              new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-            );
-          }
-
-          if (a.dueDate && !b.dueDate) return -1;
-          if (!a.dueDate && b.dueDate) return 1;
-
-          // Created date sorting (newest first)
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        });
+        const filteredTasks = applyTaskFilters(tasks, filters);
+        const sortedTasks = sortTasks(filteredTasks);
 
         logger.info("Tasks retrieved successfully", {
           userId,
           totalTasks: tasks.length,
-          filteredTasks: filteredTasks.length,
+          filteredTasks: sortedTasks.length,
         });
 
-        return filteredTasks;
+        return sortedTasks;
       } catch (error) {
         logger.error("Failed to fetch tasks", {
           error: error instanceof Error ? error.message : String(error),
