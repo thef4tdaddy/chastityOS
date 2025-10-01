@@ -4,7 +4,7 @@
  * Provides comprehensive permission checking system that validates user permissions
  * in real-time across all application contexts.
  */
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { UserRole } from "../../types/core";
 import {
   Permission,
@@ -29,6 +29,229 @@ interface UsePermissionsOptions {
   cacheTTL?: number; // milliseconds
 }
 
+// Helper to load user permissions
+async function loadUserPermissions(
+  userId: string,
+  setPermissionState: React.Dispatch<React.SetStateAction<PermissionState>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+): Promise<void> {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const defaultPermissions = await getDefaultPermissions(userId);
+
+    setPermissionState((prev) => ({
+      ...prev,
+      userPermissions: defaultPermissions.userPermissions,
+      rolePermissions: defaultPermissions.rolePermissions,
+      contextPermissions: defaultPermissions.contextPermissions,
+    }));
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to load permissions");
+  } finally {
+    setLoading(false);
+  }
+}
+
+// Helper to create permission request
+async function createPermissionRequest(
+  userId: string,
+  permission: string,
+  justification: string,
+): Promise<PermissionRequest> {
+  const request: PermissionRequest = {
+    id: `req_${Date.now()}`,
+    userId,
+    permission,
+    justification,
+    status: "pending",
+    requestedAt: new Date(),
+  };
+
+  // Simulate async request submission
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(request), 100);
+  });
+}
+
+// Helper to create elevated access request
+async function createElevatedAccessRequest(
+  userId: string,
+  duration: number,
+  reason: string,
+): Promise<ElevatedAccessRequest> {
+  const request: ElevatedAccessRequest = {
+    id: `elev_${Date.now()}`,
+    userId,
+    duration,
+    reason,
+    status: "pending",
+    requestedAt: new Date(),
+  };
+
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(request), 100);
+  });
+}
+
+// Helper to compute permission-based values
+function computePermissionValues(
+  permissionState: PermissionState,
+  hasRole: (role: UserRole) => boolean,
+  hasPermission: (permission: string) => boolean,
+) {
+  const isAdmin = hasRole(UserRole.KEYHOLDER);
+  const isKeyholder = hasRole(UserRole.KEYHOLDER);
+  const canElevate = hasPermission("request_elevation");
+
+  const hasExpiredPermissions = permissionState.userPermissions.some(
+    (p) => p.expiresAt && p.expiresAt < new Date(),
+  );
+
+  const permissionLevel = calculateOverallPermissionLevel(
+    permissionState.userPermissions,
+  );
+
+  return {
+    isAdmin,
+    isKeyholder,
+    canElevate,
+    hasExpiredPermissions,
+    permissionLevel,
+  };
+}
+
+// Helper to create the core hasPermission function
+function createHasPermissionCheck(params: {
+  permissionState: PermissionState;
+  context: PermissionContext | undefined;
+  userId: string;
+  cacheEnabled: boolean;
+  cacheTTL: number;
+  setPermissionState: React.Dispatch<React.SetStateAction<PermissionState>>;
+}) {
+  const {
+    permissionState,
+    context,
+    userId,
+    cacheEnabled,
+    cacheTTL,
+    setPermissionState,
+  } = params;
+
+  return (permission: string, checkContext?: PermissionContext): boolean => {
+    const contextToUse = checkContext || context;
+    const cacheKey = `${permission}_${JSON.stringify(contextToUse)}`;
+
+    // Check cache first if enabled
+    if (cacheEnabled) {
+      const cached = permissionState.permissionCache[cacheKey];
+      if (cached && cached.expiresAt > new Date()) {
+        return cached.result;
+      }
+    }
+
+    const hasAccess = checkPermissionAccess(
+      permission,
+      contextToUse,
+      permissionState,
+    );
+
+    // Cache and log the result
+    cacheAndLogPermissionCheck({
+      cacheKey,
+      hasAccess,
+      permission,
+      context: contextToUse,
+      userId,
+      cacheEnabled,
+      cacheTTL,
+      setPermissionState,
+    });
+
+    return hasAccess;
+  };
+}
+
+// Helper to create permission check callbacks
+function createPermissionChecks(params: {
+  permissionState: PermissionState;
+  context: PermissionContext | undefined;
+  userId: string;
+  cacheEnabled: boolean;
+  cacheTTL: number;
+  setPermissionState: React.Dispatch<React.SetStateAction<PermissionState>>;
+}) {
+  const { permissionState, userId } = params;
+
+  const hasPermission = createHasPermissionCheck(params);
+
+  const hasAnyPermission = (
+    permissions: string[],
+    checkContext?: PermissionContext,
+  ): boolean => {
+    return permissions.some((permission) =>
+      hasPermission(permission, checkContext),
+    );
+  };
+
+  const hasAllPermissions = (
+    permissions: string[],
+    checkContext?: PermissionContext,
+  ): boolean => {
+    return permissions.every((permission) =>
+      hasPermission(permission, checkContext),
+    );
+  };
+
+  return {
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    hasRole: (role: UserRole): boolean =>
+      permissionState.rolePermissions.some((rp) => rp.role === role),
+    canPerformAction: (action: string, target?: string): boolean => {
+      const actionPermission = `${action}${target ? `_${target}` : ""}`;
+      return hasPermission(actionPermission);
+    },
+    canAccessResource: (resource: string, action: string): boolean =>
+      hasPermission(`${resource}_${action}`),
+    canModifyData: (dataType: string, ownerId: string): boolean =>
+      userId === ownerId || hasPermission(`${dataType}_modify_any`),
+  };
+}
+
+// Helper to get permission details
+function getPermissionDetailsHelper(
+  permission: string,
+  permissionState: PermissionState,
+  hasPermission: (permission: string) => boolean,
+): PermissionDetails | null {
+  const userPerm = permissionState.userPermissions.find(
+    (p) => p.name === permission,
+  );
+  if (!userPerm) return null;
+
+  return {
+    permission: userPerm,
+    currentStatus: hasPermission(permission),
+    reasons: ["User permission"],
+    restrictions: [],
+    expiresAt: userPerm.expiresAt,
+  };
+}
+
+// Initial permission state
+const initialPermissionState: PermissionState = {
+  userPermissions: [],
+  rolePermissions: [],
+  contextPermissions: [],
+  permissionCache: {},
+  permissionChecks: [],
+};
+
 export const usePermissions = (options: UsePermissionsOptions) => {
   const {
     userId,
@@ -37,264 +260,77 @@ export const usePermissions = (options: UsePermissionsOptions) => {
     cacheTTL = 5 * 60 * 1000,
   } = options;
 
-  // Permission state
-  const [permissionState, setPermissionState] = useState<PermissionState>({
-    userPermissions: [],
-    rolePermissions: [],
-    contextPermissions: [],
-    permissionCache: {},
-    permissionChecks: [],
-  });
-
+  const [permissionState, setPermissionState] = useState(
+    initialPermissionState,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load user permissions on mount
   useEffect(() => {
-    const loadPermissions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // In a real implementation, this would fetch from your backend/Firebase
-        // For now, we'll simulate with default permissions based on user role
-        const defaultPermissions = await getDefaultPermissions(userId);
-
-        setPermissionState((prev) => ({
-          ...prev,
-          userPermissions: defaultPermissions.userPermissions,
-          rolePermissions: defaultPermissions.rolePermissions,
-          contextPermissions: defaultPermissions.contextPermissions,
-        }));
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load permissions",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (userId) {
-      loadPermissions();
+      loadUserPermissions(userId, setPermissionState, setError, setLoading);
     }
   }, [userId]);
 
-  // Core permission checking function
-  const hasPermission = useCallback(
-    (permission: string, checkContext?: PermissionContext): boolean => {
-      const contextToUse = checkContext || context;
-      const cacheKey = `${permission}_${JSON.stringify(contextToUse)}`;
-
-      // Check cache first if enabled
-      if (cacheEnabled) {
-        const cached = permissionState.permissionCache[cacheKey];
-        if (cached && cached.expiresAt > new Date()) {
-          return cached.result;
-        }
-      }
-
-      const hasAccess = checkPermissionAccess(
-        permission,
-        contextToUse,
+  // Create permission check functions
+  const permissionChecks = useMemo(
+    () =>
+      createPermissionChecks({
         permissionState,
-      );
-
-      // Cache and log the result
-      cacheAndLogPermissionCheck({
-        cacheKey,
-        hasAccess,
-        permission,
-        context: contextToUse,
+        context,
         userId,
         cacheEnabled,
         cacheTTL,
         setPermissionState,
-      });
-
-      return hasAccess;
-    },
+      }),
     [permissionState, context, userId, cacheEnabled, cacheTTL],
   );
 
-  // Check multiple permissions (any)
-  const hasAnyPermission = useCallback(
-    (permissions: string[], checkContext?: PermissionContext): boolean => {
-      return permissions.some((permission) =>
-        hasPermission(permission, checkContext),
-      );
-    },
-    [hasPermission],
+  const {
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    hasRole,
+    canPerformAction,
+    canAccessResource,
+    canModifyData,
+  } = permissionChecks;
+
+  // Permission management functions
+  const management = useMemo(
+    () => ({
+      requestPermission: (permission: string, justification: string) =>
+        createPermissionRequest(userId, permission, justification),
+      requestElevatedAccess: (duration: number, reason: string) =>
+        createElevatedAccessRequest(userId, duration, reason),
+      getPermissionDetails: (permission: string) =>
+        getPermissionDetailsHelper(permission, permissionState, hasPermission),
+      getPermissionHistory: (): PermissionHistoryEntry[] => [],
+    }),
+    [userId, permissionState, hasPermission],
   );
-
-  // Check multiple permissions (all)
-  const hasAllPermissions = useCallback(
-    (permissions: string[], checkContext?: PermissionContext): boolean => {
-      return permissions.every((permission) =>
-        hasPermission(permission, checkContext),
-      );
-    },
-    [hasPermission],
-  );
-
-  // Role-based checks
-  const hasRole = useCallback(
-    (role: UserRole): boolean => {
-      return permissionState.rolePermissions.some((rp) => rp.role === role);
-    },
-    [permissionState.rolePermissions],
-  );
-
-  // Action-based permission check
-  const canPerformAction = useCallback(
-    (action: string, target?: string): boolean => {
-      const actionPermission = `${action}${target ? `_${target}` : ""}`;
-      return hasPermission(actionPermission);
-    },
-    [hasPermission],
-  );
-
-  // Resource access check
-  const canAccessResource = useCallback(
-    (resource: string, action: string): boolean => {
-      return hasPermission(`${resource}_${action}`);
-    },
-    [hasPermission],
-  );
-
-  // Data modification check
-  const canModifyData = useCallback(
-    (dataType: string, ownerId: string): boolean => {
-      // Can modify own data or have admin permissions
-      return userId === ownerId || hasPermission(`${dataType}_modify_any`);
-    },
-    [hasPermission, userId],
-  );
-
-  // Permission request
-  const requestPermission = useCallback(
-    async (
-      permission: string,
-      justification: string,
-    ): Promise<PermissionRequest> => {
-      // In real implementation, this would submit to backend
-      const request: PermissionRequest = {
-        id: `req_${Date.now()}`,
-        userId,
-        permission,
-        justification,
-        status: "pending",
-        requestedAt: new Date(),
-      };
-
-      // Simulate async request submission
-      return new Promise((resolve) => {
-        setTimeout(() => resolve(request), 100);
-      });
-    },
-    [userId],
-  );
-
-  // Elevated access request
-  const requestElevatedAccess = useCallback(
-    async (
-      duration: number,
-      reason: string,
-    ): Promise<ElevatedAccessRequest> => {
-      const request: ElevatedAccessRequest = {
-        id: `elev_${Date.now()}`,
-        userId,
-        duration,
-        reason,
-        status: "pending",
-        requestedAt: new Date(),
-      };
-
-      return new Promise((resolve) => {
-        setTimeout(() => resolve(request), 100);
-      });
-    },
-    [userId],
-  );
-
-  // Get permission details
-  const getPermissionDetails = useCallback(
-    (permission: string): PermissionDetails | null => {
-      const userPerm = permissionState.userPermissions.find(
-        (p) => p.name === permission,
-      );
-      if (!userPerm) return null;
-
-      return {
-        permission: userPerm,
-        currentStatus: hasPermission(permission),
-        reasons: ["User permission"],
-        restrictions: [],
-        expiresAt: userPerm.expiresAt,
-      };
-    },
-    [permissionState.userPermissions, hasPermission],
-  );
-
-  // Get permission history
-  const getPermissionHistory = useCallback((): PermissionHistoryEntry[] => {
-    // In real implementation, this would fetch from backend
-    return [];
-  }, []);
 
   // Computed values
-  const computedValues = useMemo(() => {
-    const isAdmin = hasRole(UserRole.KEYHOLDER);
-    const isKeyholder = hasRole(UserRole.KEYHOLDER);
-    const canElevate = hasPermission("request_elevation");
-
-    const hasExpiredPermissions = permissionState.userPermissions.some(
-      (p) => p.expiresAt && p.expiresAt < new Date(),
-    );
-
-    const permissionLevel = calculateOverallPermissionLevel(
-      permissionState.userPermissions,
-    );
-
-    return {
-      isAdmin,
-      isKeyholder,
-      canElevate,
-      hasExpiredPermissions,
-      permissionLevel,
-    };
-  }, [permissionState.userPermissions, hasRole, hasPermission]);
+  const computedValues = useMemo(
+    () => computePermissionValues(permissionState, hasRole, hasPermission),
+    [permissionState, hasRole, hasPermission],
+  );
 
   return {
-    // Permission state
     permissions: permissionState.userPermissions,
     rolePermissions: permissionState.rolePermissions,
     contextPermissions: permissionState.contextPermissions,
     loading,
     error,
-
-    // Permission checking
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-
-    // Role-based checks
     hasRole,
     canPerformAction,
-
-    // Context-specific checks
     canAccessResource,
     canModifyData,
-
-    // Permission requests
-    requestPermission,
-    requestElevatedAccess,
-
-    // Permission management
-    getPermissionDetails,
-    getPermissionHistory,
-
-    // Computed values
+    ...management,
     ...computedValues,
   };
 };
