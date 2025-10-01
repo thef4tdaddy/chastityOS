@@ -4,7 +4,7 @@
  */
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaLock, FaUsers } from "react-icons/fa";
+import { FaHome, FaLock, FaUsers, FaClipboardList } from "react-icons/fa";
 
 const Navigation: React.FC = () => {
   const location = useLocation();
@@ -13,6 +13,7 @@ const Navigation: React.FC = () => {
     { path: "/", label: "Dashboard", icon: FaHome },
     { path: "/chastity-tracking", label: "Chastity", icon: FaLock },
     { path: "/relationships", label: "Relationships", icon: FaUsers },
+    { path: "/log-event", label: "Log Events", icon: FaClipboardList },
   ];
 
   return (
