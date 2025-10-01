@@ -381,7 +381,9 @@ const useAutoThemeSwitch = (
     const interval = setInterval(checkSchedule, 60000);
 
     return () => clearInterval(interval);
-  }, [preferences, currentTheme.id, setThemeMutation]);
+    // Mutation objects are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, currentTheme.id]);
 };
 
 // System theme sync effect
@@ -406,7 +408,9 @@ const useSystemThemeSync = (
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [preferences, currentTheme.id, setThemeMutation]);
+    // Mutation objects are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, currentTheme.id]);
 };
 
 /**

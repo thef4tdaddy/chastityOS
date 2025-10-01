@@ -20,24 +20,38 @@ import {
   notifySubscribers as _notifySubscribers,
 } from "./realtimeSyncHelpers";
 
-// Helper function to create WebSocket connection functions
-export const createWebSocketFunctions = (
-  userId: string,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
-  wsRef: React.MutableRefObject<WebSocket | null>,
-  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
+interface WebSocketFunctionsParams {
+  userId: string;
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>;
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>;
+  reconnectAttemptsRef: React.MutableRefObject<number>;
   reconnectTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
+  > | null>;
   heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
-  connectionStartTimeRef: React.MutableRefObject<Date | null>,
-  maxReconnectAttempts: number,
-  reconnectInterval: number,
-  heartbeatInterval: number,
-) => {
+  > | null>;
+  connectionStartTimeRef: React.MutableRefObject<Date | null>;
+  maxReconnectAttempts: number;
+  reconnectInterval: number;
+  heartbeatInterval: number;
+}
+
+// Helper function to create WebSocket connection functions
+export const createWebSocketFunctions = ({
+  userId,
+  setSyncState,
+  wsRef,
+  subscriptionsRef,
+  reconnectAttemptsRef,
+  reconnectTimeoutRef,
+  heartbeatTimeoutRef,
+  connectionStartTimeRef,
+  maxReconnectAttempts,
+  reconnectInterval,
+  heartbeatInterval,
+}: WebSocketFunctionsParams) => {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
@@ -178,7 +192,6 @@ export const createWebSocketFunctions = (
   }, []);
 
   const sendMessage = useCallback(
-
     (message: RealtimeUpdate | Record<string, unknown>) => {
       sendWebSocketMessage(wsRef.current, message, () => {
         setSyncState((prev) => ({

@@ -42,23 +42,37 @@ const createTimerSync = async (timerId: string): Promise<TimerSync> => {
 };
 
 // Helper function to create new timer
-const createNewTimer = (
-  userId: string,
-  relationshipId: string | undefined,
-  type: TimerType,
-  duration: number,
-  title: string,
-  options?: {
-    description?: string;
-    canPause?: boolean;
-    canStop?: boolean;
-    canExtend?: boolean;
-    isKeyholderControlled?: boolean;
-    keyholderUserId?: string;
-    sessionId?: string;
-    taskId?: string;
-  },
-): LiveTimer => {
+interface CreateTimerParams {
+  userId: string;
+  relationshipId?: string;
+  type: TimerType;
+  duration: number;
+  title: string;
+  description?: string;
+  canPause?: boolean;
+  canStop?: boolean;
+  canExtend?: boolean;
+  isKeyholderControlled?: boolean;
+  keyholderUserId?: string;
+  sessionId?: string;
+  taskId?: string;
+}
+
+const createNewTimer = ({
+  userId,
+  relationshipId,
+  type,
+  duration,
+  title,
+  description,
+  canPause = true,
+  canStop = true,
+  canExtend = false,
+  isKeyholderControlled,
+  keyholderUserId,
+  sessionId,
+  taskId,
+}: CreateTimerParams): LiveTimer => {
   const now = new Date();
   return {
     id: `timer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -74,14 +88,14 @@ const createNewTimer = (
     userId,
     relationshipId,
     title,
-    description: options?.description,
-    canPause: options?.canPause ?? true,
-    canStop: options?.canStop ?? true,
-    canExtend: options?.canExtend ?? false,
-    isKeyholderControlled: options?.isKeyholderControlled ?? false,
-    keyholderUserId: options?.keyholderUserId,
-    sessionId: options?.sessionId,
-    taskId: options?.taskId,
+    description,
+    canPause,
+    canStop,
+    canExtend,
+    isKeyholderControlled,
+    keyholderUserId,
+    sessionId,
+    taskId,
   };
 };
 
@@ -123,14 +137,14 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         taskId?: string;
       },
     ): Promise<LiveTimer> => {
-      const timer = createNewTimer(
+      const timer = createNewTimer({
         userId,
         relationshipId,
         type,
         duration,
         title,
-        options,
-      );
+        ...options,
+      });
 
       setTimerState((prev) => ({
         ...prev,
