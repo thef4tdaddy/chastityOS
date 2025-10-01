@@ -115,8 +115,85 @@ const performAuthInitialization = async (
   }
 };
 
-// Helper hook for auth actions
-const useAuthActions = (
+// Helper for secondary auth actions (password, profile)
+const createSecondaryAuthActions = (
+  state: AuthState,
+  setState: React.Dispatch<React.SetStateAction<AuthState>>,
+) => {
+  const resetPassword = async (email: string) => {
+    setState((prev) => ({ ...prev, error: null }));
+    const result = await AuthService.resetPassword(email);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error || "Password reset failed",
+      }));
+      logger.warn("Password reset failed via context", {
+        error: result.error,
+        email,
+      });
+    } else {
+      logger.info("Password reset sent via context", { email });
+    }
+    return result;
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    setState((prev) => ({ ...prev, error: null }));
+    const result = await AuthService.updatePassword(newPassword);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error || "Password update failed",
+      }));
+      logger.warn("Password update failed via context", {
+        error: result.error,
+      });
+    } else {
+      logger.info("Password updated via context");
+    }
+    return result;
+  };
+
+  const updateProfile = async (updates: Partial<User>) => {
+    if (!state.user) {
+      const error = "No authenticated user found";
+      setState((prev) => ({ ...prev, error }));
+      return { success: false, error };
+    }
+
+    setState((prev) => ({ ...prev, error: null }));
+    const result = await AuthService.updateUserProfile(state.user.uid, updates);
+
+    if (result.success && result.data) {
+      setState((prev) => ({
+        ...prev,
+        user: result.data!,
+      }));
+      logger.info("Profile updated via context", { uid: state.user.uid });
+    } else {
+      setState((prev) => ({
+        ...prev,
+        error: result.error || "Profile update failed",
+      }));
+      logger.warn("Profile update failed via context", {
+        error: result.error,
+      });
+    }
+    return result;
+  };
+
+  const clearError = () => {
+    setState((prev) => ({ ...prev, error: null }));
+  };
+
+  return { resetPassword, updatePassword, updateProfile, clearError };
+};
+
+// Internal helper hook for auth actions (renamed to avoid conflict with exported hook)
+const useAuthActionsInternal = (
   state: AuthState,
   setState: React.Dispatch<React.SetStateAction<AuthState>>,
 ): AuthActions => {
@@ -189,86 +266,13 @@ const useAuthActions = (
     return result;
   };
 
-  const resetPassword = async (email: string) => {
-    setState((prev) => ({ ...prev, error: null }));
-    const result = await AuthService.resetPassword(email);
-
-    if (!result.success) {
-      setState((prev) => ({
-        ...prev,
-        error: result.error || "Password reset failed",
-      }));
-      logger.warn("Password reset failed via context", {
-        error: result.error,
-        email,
-      });
-    } else {
-      logger.info("Password reset sent via context", { email });
-    }
-    return result;
-  };
-
-  const updatePassword = async (newPassword: string) => {
-    setState((prev) => ({ ...prev, error: null }));
-    const result = await AuthService.updatePassword(newPassword);
-
-    if (!result.success) {
-      setState((prev) => ({
-        ...prev,
-        error: result.error || "Password update failed",
-      }));
-      logger.warn("Password update failed via context", {
-        error: result.error,
-      });
-    } else {
-      logger.info("Password updated via context");
-    }
-    return result;
-  };
-
-  const updateProfile = async (updates: Partial<User>) => {
-    if (!state.user) {
-      const error = "No authenticated user found";
-      setState((prev) => ({ ...prev, error }));
-      return { success: false, error };
-    }
-
-    setState((prev) => ({ ...prev, error: null }));
-    const result = await AuthService.updateUserProfile(
-      state.user.uid,
-      updates,
-    );
-
-    if (result.success && result.data) {
-      setState((prev) => ({
-        ...prev,
-        user: result.data!,
-      }));
-      logger.info("Profile updated via context", { uid: state.user.uid });
-    } else {
-      setState((prev) => ({
-        ...prev,
-        error: result.error || "Profile update failed",
-      }));
-      logger.warn("Profile update failed via context", {
-        error: result.error,
-      });
-    }
-    return result;
-  };
-
-  const clearError = () => {
-    setState((prev) => ({ ...prev, error: null }));
-  };
+  const secondaryActions = createSecondaryAuthActions(state, setState);
 
   return {
     signIn,
     register,
     signOut,
-    resetPassword,
-    updatePassword,
-    updateProfile,
-    clearError,
+    ...secondaryActions,
   };
 };
 
@@ -293,7 +297,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const actions = useAuthActions(state, setState);
+  const actions = useAuthActionsInternal(state, setState);
 
   const contextValue: AuthContextType = {
     state,

@@ -125,6 +125,41 @@ const usePriorityToastMethods = (showToast: ToastContextValue["showToast"]) => {
   return { showUrgent, showHigh, showMedium, showLow };
 };
 
+// Helper for convenience toast methods by type
+const useConvenienceToastMethods = (
+  showToast: ToastContextValue["showToast"],
+) => {
+  const showSuccess = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "success", { priority: "low", ...options });
+    },
+    [showToast],
+  );
+
+  const showError = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "error", { priority: "high", ...options });
+    },
+    [showToast],
+  );
+
+  const showWarning = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "warning", { priority: "medium", ...options });
+    },
+    [showToast],
+  );
+
+  const showInfo = useCallback(
+    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
+      return showToast(message, "info", { priority: "low", ...options });
+    },
+    [showToast],
+  );
+
+  return { showSuccess, showError, showWarning, showInfo };
+};
+
 // Helper hook for toast methods - extracted to reduce main component size
 const useToastMethods = (
   addNotification: ReturnType<
@@ -172,44 +207,14 @@ const useToastMethods = (
     clearAllNotifications();
   }, [clearAllNotifications]);
 
-  const showSuccess = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "success", { priority: "low", ...options });
-    },
-    [showToast],
-  );
-
-  const showError = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "error", { priority: "high", ...options });
-    },
-    [showToast],
-  );
-
-  const showWarning = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "warning", { priority: "medium", ...options });
-    },
-    [showToast],
-  );
-
-  const showInfo = useCallback(
-    (message: string, options: Omit<ToastOptions, "priority"> = {}) => {
-      return showToast(message, "info", { priority: "low", ...options });
-    },
-    [showToast],
-  );
-
+  const convenienceMethods = useConvenienceToastMethods(showToast);
   const priorityMethods = usePriorityToastMethods(showToast);
 
   return {
     showToast,
     dismissToast,
     clearAllToasts,
-    showSuccess,
-    showError,
-    showWarning,
-    showInfo,
+    ...convenienceMethods,
     ...priorityMethods,
   };
 };

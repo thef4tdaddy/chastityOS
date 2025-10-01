@@ -95,33 +95,43 @@ const performAppInitialization = async (
   }
 };
 
+// Helper to create connection event handlers
+const createConnectionHandlers = (
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
+) => {
+  const handleOnline = () => {
+    setState((prev) => ({ ...prev, isOnline: true }));
+    logger.debug("App went online");
+  };
+
+  const handleOffline = () => {
+    setState((prev) => ({ ...prev, isOnline: false }));
+    logger.debug("App went offline");
+  };
+
+  const handleConnectionChange = () => {
+    const connection = (navigator as NavigatorWithConnection).connection;
+    if (connection) {
+      setState((prev) => ({
+        ...prev,
+        connectionType: connection.effectiveType || "unknown",
+      }));
+      logger.debug("Connection type changed", {
+        type: connection.effectiveType,
+      });
+    }
+  };
+
+  return { handleOnline, handleOffline, handleConnectionChange };
+};
+
 // Helper hook for connection event listeners
 const useConnectionListeners = (
   setState: React.Dispatch<React.SetStateAction<AppState>>,
 ) => {
   useEffect(() => {
-    const handleOnline = () => {
-      setState((prev) => ({ ...prev, isOnline: true }));
-      logger.debug("App went online");
-    };
-
-    const handleOffline = () => {
-      setState((prev) => ({ ...prev, isOnline: false }));
-      logger.debug("App went offline");
-    };
-
-    const handleConnectionChange = () => {
-      const connection = (navigator as NavigatorWithConnection).connection;
-      if (connection) {
-        setState((prev) => ({
-          ...prev,
-          connectionType: connection.effectiveType || "unknown",
-        }));
-        logger.debug("Connection type changed", {
-          type: connection.effectiveType,
-        });
-      }
-    };
+    const { handleOnline, handleOffline, handleConnectionChange } =
+      createConnectionHandlers(setState);
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -148,6 +158,83 @@ const useConnectionListeners = (
   }, []); // setState is stable, no need to include in deps
 };
 
+// Helper to create app actions
+const createAppActions = (
+  state: AppState,
+  setState: React.Dispatch<React.SetStateAction<AppState>>,
+): AppActions => ({
+  initializeApp: async () => {
+    if (state.isInitialized) {
+      logger.debug("App already initialized, skipping");
+      return;
+    }
+
+    setState((prev) => ({ ...prev, isInitialized: false }));
+
+    try {
+      await db.initialize();
+      logger.info("Dexie database re-initialized");
+      await preloadCriticalServices();
+
+      const syncStatus = "synced" as SyncStatus;
+      setState((prev) => ({
+        ...prev,
+        isInitialized: true,
+        syncStatus,
+      }));
+      logger.info("App re-initialized successfully");
+    } catch (error) {
+      logger.error("Failed to re-initialize app", { error: error as Error });
+    }
+  },
+
+  triggerSync: async (userId: string) => {
+    logger.debug("Triggering manual sync", { userId });
+
+    try {
+      await firebaseSync.sync();
+      const result = {
+        success: true,
+        data: {
+          syncStatus: "synced" as SyncStatus,
+          lastSyncTime: new Date(),
+        },
+      };
+
+      if (result.success && result.data) {
+        setState((prev) => ({
+          ...prev,
+          syncStatus: result.data.syncStatus,
+          lastSyncTime: result.data.lastSyncTime,
+        }));
+        logger.info("Manual sync completed", { userId });
+      }
+    } catch (error) {
+      const result = {
+        success: false,
+        error: error instanceof Error ? error.message : "Sync failed",
+      };
+      logger.warn("Manual sync failed", { userId, error: result.error });
+    }
+  },
+
+  markNotificationsRead: () => {
+    setState((prev) => ({
+      ...prev,
+      hasUnreadNotifications: false,
+    }));
+    logger.debug("Notifications marked as read");
+  },
+
+  updateConnectionStatus: (isOnline: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      isOnline,
+    }));
+    logger.debug("Connection status updated", { isOnline });
+  },
+});
+
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [state, setState] = useState<AppState>({
     isInitialized: false,
@@ -167,83 +254,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // Setup connection listeners
   useConnectionListeners(setState);
 
-  const actions: AppActions = {
-    initializeApp: async () => {
-      if (state.isInitialized) {
-        logger.debug("App already initialized, skipping");
-        return;
-      }
-
-      setState((prev) => ({ ...prev, isInitialized: false }));
-
-      try {
-        // Initialize Dexie database first
-        await db.initialize();
-        logger.info("Dexie database re-initialized");
-
-        await preloadCriticalServices();
-        // FirebaseSync initializes automatically
-
-        const syncStatus = "synced" as SyncStatus;
-
-        setState((prev) => ({
-          ...prev,
-          isInitialized: true,
-          syncStatus,
-        }));
-
-        logger.info("App re-initialized successfully");
-      } catch (error) {
-        logger.error("Failed to re-initialize app", { error: error as Error });
-      }
-    },
-
-    triggerSync: async (userId: string) => {
-      logger.debug("Triggering manual sync", { userId });
-
-      try {
-        await firebaseSync.sync();
-        const result = {
-          success: true,
-          data: {
-            syncStatus: "synced" as SyncStatus,
-            lastSyncTime: new Date(),
-          },
-        };
-
-        if (result.success && result.data) {
-          setState((prev) => ({
-            ...prev,
-            syncStatus: result.data.syncStatus,
-            lastSyncTime: result.data.lastSyncTime,
-          }));
-          logger.info("Manual sync completed", { userId });
-        }
-      } catch (error) {
-        const result = {
-          success: false,
-          error: error instanceof Error ? error.message : "Sync failed",
-        };
-        logger.warn("Manual sync failed", { userId, error: result.error });
-      }
-    },
-
-    markNotificationsRead: () => {
-      setState((prev) => ({
-        ...prev,
-        hasUnreadNotifications: false,
-      }));
-      logger.debug("Notifications marked as read");
-    },
-
-    updateConnectionStatus: (isOnline: boolean) => {
-      setState((prev) => ({
-        ...prev,
-        isOnline,
-      }));
-      logger.debug("Connection status updated", { isOnline });
-    },
-  };
+  const actions = createAppActions(state, setState);
 
   const contextValue: AppContextType = {
     state,
