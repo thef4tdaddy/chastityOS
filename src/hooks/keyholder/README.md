@@ -5,6 +5,7 @@ This directory contains the 5 critical keyholder system hooks that provide the f
 ## Hooks Overview
 
 ### 1. `useKeyholderSystem`
+
 The main entry point and unified management interface for all keyholder functionality.
 
 ```typescript
@@ -17,11 +18,11 @@ function KeyholderDashboard() {
     keyholderStatus,
     stats,
     selectedRelationship,
-    
+
     // Computed
     hasActiveRelationships,
     activeRelationshipCount,
-    
+
     // Actions
     createInviteCode,
     acceptSubmissive,
@@ -46,6 +47,7 @@ function KeyholderDashboard() {
 ```
 
 ### 2. `useAdminSession`
+
 Manages secure admin sessions with time limits and permission boundaries.
 
 ```typescript
@@ -58,7 +60,7 @@ function AdminControls({ relationshipId }: { relationshipId: string }) {
     isActive,
     timeRemaining,
     permissions,
-    
+
     // Actions
     startSession,
     endSession,
@@ -101,6 +103,7 @@ function AdminControls({ relationshipId }: { relationshipId: string }) {
 ```
 
 ### 3. `useKeyholderRewards`
+
 Manages the reward and punishment system with time modifications and audit logging.
 
 ```typescript
@@ -112,7 +115,7 @@ function RewardsPunishments({ relationshipId }: { relationshipId: string }) {
     system,
     canApplyRewards,
     canApplyPunishments,
-    
+
     // Actions
     applyReward,
     applyPunishment,
@@ -158,6 +161,7 @@ function RewardsPunishments({ relationshipId }: { relationshipId: string }) {
 ```
 
 ### 4. `useKeyholderSession`
+
 Provides session control capabilities with real-time monitoring.
 
 ```typescript
@@ -170,7 +174,7 @@ function SessionControl({ relationshipId }: { relationshipId: string }) {
     isActive,
     sessionDuration,
     goalProgress,
-    
+
     // Actions
     startSession,
     stopSession,
@@ -223,6 +227,7 @@ function SessionControl({ relationshipId }: { relationshipId: string }) {
 ```
 
 ### 5. `useMultiWearer`
+
 Manages multiple submissive relationships with bulk operations.
 
 ```typescript
@@ -235,11 +240,11 @@ function MultiWearerDashboard() {
     filteredOverviews,
     overviewStats,
     activeRelationship,
-    
+
     // Computed
     totalRelationships,
     canPerformBulkOperations,
-    
+
     // Actions
     switchToRelationship,
     bulkStartSessions,
@@ -279,8 +284,8 @@ function MultiWearerDashboard() {
       </div>
 
       <div>
-        <input 
-          type="text" 
+        <input
+          type="text"
           placeholder="Search relationships..."
           onChange={(e) => setFilter('searchTerm', e.target.value)}
         />
@@ -324,18 +329,18 @@ function MultiWearerDashboard() {
 Here's how to use multiple hooks together in a comprehensive keyholder interface:
 
 ```typescript
-import { 
-  useKeyholderSystem, 
-  useAdminSession, 
+import {
+  useKeyholderSystem,
+  useAdminSession,
   useKeyholderRewards,
   useKeyholderSession,
-  useMultiWearer 
+  useMultiWearer
 } from './hooks/keyholder';
 
 function ComprehensiveKeyholderInterface() {
   const keyholderSystem = useKeyholderSystem();
   const multiWearer = useMultiWearer();
-  
+
   // Use admin session for the currently selected relationship
   const selectedRelationshipId = keyholderSystem.selectedRelationship?.id;
   const adminSession = useAdminSession(selectedRelationshipId || '');
@@ -348,7 +353,7 @@ function ComprehensiveKeyholderInterface() {
   return (
     <div>
       <h1>Keyholder Control Panel</h1>
-      
+
       {/* Overview Stats */}
       <div>
         <h2>Overview</h2>
@@ -361,7 +366,7 @@ function ComprehensiveKeyholderInterface() {
       <div>
         <h2>Select Relationship</h2>
         {keyholderSystem.activeRelationships.map(rel => (
-          <button 
+          <button
             key={rel.id}
             onClick={() => keyholderSystem.switchActiveRelationship(rel.id)}
           >
@@ -438,7 +443,7 @@ function ComprehensiveKeyholderInterface() {
 ## Key Benefits
 
 1. **Modular Design**: Each hook handles a specific aspect of keyholder functionality
-2. **Type Safety**: Full TypeScript coverage with comprehensive interfaces  
+2. **Type Safety**: Full TypeScript coverage with comprehensive interfaces
 3. **Error Handling**: Consistent error patterns across all hooks
 4. **Security**: Admin sessions, permission validation, and audit logging
 5. **Scalability**: Efficient bulk operations for managing multiple relationships

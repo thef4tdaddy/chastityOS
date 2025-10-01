@@ -233,7 +233,6 @@ export const useSpecialChallenges = (userId: string | null) => {
   // Load challenge status on mount and when userId changes
   useEffect(() => {
     loadChallengeStatus();
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [userId, checkChallengeAvailability, loadChallengeStatus]);
 
   // Refresh status every hour to check for date changes

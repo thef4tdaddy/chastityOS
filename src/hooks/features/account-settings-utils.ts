@@ -81,8 +81,6 @@ export const handle2FADisable = async (
   setQrCode(null);
 };
 
-export const handleAccountDelete = async (
-  _password: string,
-): Promise<void> => {
+export const handleAccountDelete = async (_password: string): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 100));
 };

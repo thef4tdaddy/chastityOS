@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { useState, useCallback, useEffect, useRef } from "react";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 /**
  * @typedef {Object} PauseEvent
@@ -33,82 +33,103 @@ import { db } from '../../firebase';
  * @param {PauseResumeOptions} options
  * @returns {Object}
  */
-export const usePauseResume = ({ 
-  userId, 
-  isAuthReady, 
-  sessionActive, 
-  onStateChange 
+export const usePauseResume = ({
+  userId,
+  isAuthReady,
+  sessionActive,
+  onStateChange,
 }) => {
   const [pauseState, setPauseState] = useState({
     isPaused: false,
     pauseStartTime: null,
     totalPauseTime: 0,
     pauseEvents: [],
-    cooldownEndTime: null
+    cooldownEndTime: null,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const pauseTimerRef = useRef(null);
   const cooldownTimerRef = useRef(null);
 
-  const saveStateToFirestore = useCallback(async (newState) => {
-    if (!userId || !isAuthReady) {
-      return;
-    }
+  const saveStateToFirestore = useCallback(
+    async (newState) => {
+      if (!userId || !isAuthReady) {
+        return;
+      }
 
-    try {
-      const userDocRef = doc(db, 'users', userId);
-      await setDoc(userDocRef, { pauseResumeState: newState }, { merge: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save pause state');
-    }
-  }, [userId, isAuthReady]);
+      try {
+        const userDocRef = doc(db, "users", userId);
+        await setDoc(
+          userDocRef,
+          { pauseResumeState: newState },
+          { merge: true },
+        );
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to save pause state",
+        );
+      }
+    },
+    [userId, isAuthReady],
+  );
 
-  const pauseSession = useCallback(async (reason = 'Manual pause') => {
-    if (!sessionActive || pauseState.isPaused) {
-      setError('Cannot pause: session not active or already paused');
-      return;
-    }
+  const pauseSession = useCallback(
+    async (reason = "Manual pause") => {
+      if (!sessionActive || pauseState.isPaused) {
+        setError("Cannot pause: session not active or already paused");
+        return;
+      }
 
-    // Check cooldown
-    if (pauseState.cooldownEndTime && new Date() < pauseState.cooldownEndTime) {
-      const remainingTime = Math.ceil((pauseState.cooldownEndTime.getTime() - new Date().getTime()) / 1000);
-      setError(`Pause is on cooldown. Try again in ${remainingTime} seconds.`);
-      return;
-    }
+      // Check cooldown
+      if (
+        pauseState.cooldownEndTime &&
+        new Date() < pauseState.cooldownEndTime
+      ) {
+        const remainingTime = Math.ceil(
+          (pauseState.cooldownEndTime.getTime() - new Date().getTime()) / 1000,
+        );
+        setError(
+          `Pause is on cooldown. Try again in ${remainingTime} seconds.`,
+        );
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const pauseStartTime = new Date();
-      const newPauseEvent = {
-        id: crypto.randomUUID(),
-        startTime: pauseStartTime,
-        reason
-      };
+      try {
+        const pauseStartTime = new Date();
+        const newPauseEvent = {
+          id: crypto.randomUUID(),
+          startTime: pauseStartTime,
+          reason,
+        };
 
-      const newState = {
-        ...pauseState,
-        isPaused: true,
-        pauseStartTime,
-        pauseEvents: [...pauseState.pauseEvents, newPauseEvent]
-      };
+        const newState = {
+          ...pauseState,
+          isPaused: true,
+          pauseStartTime,
+          pauseEvents: [...pauseState.pauseEvents, newPauseEvent],
+        };
 
-      setPauseState(newState);
-      await saveStateToFirestore(newState);
-      if (onStateChange) onStateChange(newState);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to pause session');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [sessionActive, pauseState, saveStateToFirestore, onStateChange]);
+        setPauseState(newState);
+        await saveStateToFirestore(newState);
+        if (onStateChange) onStateChange(newState);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to pause session",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sessionActive, pauseState, saveStateToFirestore, onStateChange],
+  );
 
   const resumeSession = useCallback(async () => {
     if (!pauseState.isPaused || !pauseState.pauseStartTime) {
-      setError('Cannot resume: session not paused');
+      setError("Cannot resume: session not paused");
       return;
     }
 
@@ -117,7 +138,9 @@ export const usePauseResume = ({
 
     try {
       const resumeTime = new Date();
-      const pauseDuration = Math.floor((resumeTime.getTime() - pauseState.pauseStartTime.getTime()) / 1000);
+      const pauseDuration = Math.floor(
+        (resumeTime.getTime() - pauseState.pauseStartTime.getTime()) / 1000,
+      );
 
       // Update the last pause event with end time and duration
       const updatedPauseEvents = [...pauseState.pauseEvents];
@@ -126,12 +149,14 @@ export const usePauseResume = ({
         updatedPauseEvents[lastEventIndex] = {
           ...updatedPauseEvents[lastEventIndex],
           endTime: resumeTime,
-          duration: pauseDuration
+          duration: pauseDuration,
         };
       }
 
       // Set cooldown (12 hours from now)
-      const cooldownEndTime = new Date(resumeTime.getTime() + (12 * 60 * 60 * 1000));
+      const cooldownEndTime = new Date(
+        resumeTime.getTime() + 12 * 60 * 60 * 1000,
+      );
 
       const newState = {
         ...pauseState,
@@ -139,14 +164,14 @@ export const usePauseResume = ({
         pauseStartTime: null,
         totalPauseTime: pauseState.totalPauseTime + pauseDuration,
         pauseEvents: updatedPauseEvents,
-        cooldownEndTime
+        cooldownEndTime,
       };
 
       setPauseState(newState);
       await saveStateToFirestore(newState);
       if (onStateChange) onStateChange(newState);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to resume session');
+      setError(err instanceof Error ? err.message : "Failed to resume session");
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +181,9 @@ export const usePauseResume = ({
     if (!pauseState.isPaused || !pauseState.pauseStartTime) {
       return 0;
     }
-    return Math.floor((new Date().getTime() - pauseState.pauseStartTime.getTime()) / 1000);
+    return Math.floor(
+      (new Date().getTime() - pauseState.pauseStartTime.getTime()) / 1000,
+    );
   }, [pauseState.isPaused, pauseState.pauseStartTime]);
 
   // Timer to update current pause duration
@@ -164,7 +191,7 @@ export const usePauseResume = ({
     if (pauseState.isPaused && pauseState.pauseStartTime) {
       pauseTimerRef.current = setInterval(() => {
         // Force re-render to update current pause duration in UI
-        setPauseState(prev => ({ ...prev }));
+        setPauseState((prev) => ({ ...prev }));
       }, 1000);
     } else {
       if (pauseTimerRef.current) {
@@ -183,10 +210,11 @@ export const usePauseResume = ({
   // Cooldown timer
   useEffect(() => {
     if (pauseState.cooldownEndTime && pauseState.cooldownEndTime > new Date()) {
-      const timeUntilCooldownEnd = pauseState.cooldownEndTime.getTime() - new Date().getTime();
-      
+      const timeUntilCooldownEnd =
+        pauseState.cooldownEndTime.getTime() - new Date().getTime();
+
       cooldownTimerRef.current = setTimeout(() => {
-        setPauseState(prev => ({ ...prev, cooldownEndTime: null }));
+        setPauseState((prev) => ({ ...prev, cooldownEndTime: null }));
       }, timeUntilCooldownEnd);
     }
 
@@ -204,7 +232,10 @@ export const usePauseResume = ({
     pauseSession,
     resumeSession,
     getCurrentPauseDuration,
-    canPause: sessionActive && !pauseState.isPaused && (!pauseState.cooldownEndTime || new Date() >= pauseState.cooldownEndTime),
-    canResume: pauseState.isPaused
+    canPause:
+      sessionActive &&
+      !pauseState.isPaused &&
+      (!pauseState.cooldownEndTime || new Date() >= pauseState.cooldownEndTime),
+    canResume: pauseState.isPaused,
   };
 };

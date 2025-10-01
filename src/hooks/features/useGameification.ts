@@ -13,7 +13,7 @@ import {
   Leaderboard,
   Season,
   SocialGameFeatures,
-  Badge,
+  Badge as _Badge,
   ExperienceSource,
   LevelResult,
   LevelUpResult,
@@ -29,7 +29,7 @@ import {
   DEFAULT_PLAYER_PROFILE,
   LEVEL_THRESHOLDS,
   SAMPLE_CHALLENGES,
-} from "./gamification-constants";
+} from "../../constants/gamification";
 import {
   generateSampleLeaderboards,
   generateSeasonalRewards,
@@ -43,7 +43,6 @@ import {
  * Enhanced Gamification Hook
  * Complex gamification logic with multiple queries, mutations, and game mechanics
  */
-// eslint-disable-next-line max-statements, complexity
 export const useGameification = (userId: string) => {
   const queryClient = useQueryClient();
 

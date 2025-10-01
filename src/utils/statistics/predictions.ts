@@ -6,7 +6,7 @@
 import type {
   PredictiveInsights,
   Recommendation,
-} from "./types/statistics";
+} from "../../hooks/data/types/statistics";
 
 /**
  * Generate predictive insights based on user data

@@ -69,14 +69,14 @@ globalThis.ResizeObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-})) as any;
+})) as unknown as typeof ResizeObserver;
 
 // Mock IntersectionObserver
 globalThis.IntersectionObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-})) as any;
+})) as unknown as typeof IntersectionObserver;
 
 // Mock crypto for hash functions
 Object.defineProperty(globalThis, "crypto", {
@@ -124,13 +124,13 @@ globalThis.TextEncoder = class TextEncoder {
   encode(input: string) {
     return new Uint8Array(input.split("").map((char) => char.charCodeAt(0)));
   }
-} as any;
+} as unknown as typeof TextEncoder;
 
 globalThis.TextDecoder = class TextDecoder {
   decode(input: Uint8Array) {
     return String.fromCharCode(...Array.from(input));
   }
-} as any;
+} as unknown as typeof TextDecoder;
 
 // Mock HTMLCanvasElement.getContext
 HTMLCanvasElement.prototype.getContext = vi.fn();

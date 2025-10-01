@@ -68,10 +68,7 @@ export const filterBySearchText = (
 /**
  * Apply all filters to tasks
  */
-export const applyAllFilters = (
-  tasks: Task[],
-  filter: TaskFilter,
-): Task[] => {
+export const applyAllFilters = (tasks: Task[], filter: TaskFilter): Task[] => {
   let filtered = [...tasks];
   filtered = filterByStatus(filtered, filter.status);
   filtered = filterByPriority(filtered, filter.priority);
