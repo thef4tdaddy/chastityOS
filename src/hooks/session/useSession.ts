@@ -129,6 +129,8 @@ export interface ApprovalStatus {
 
 // ==================== HOOK IMPLEMENTATION ====================
 
+// Complex session management hook with analytics, goals, and keyholder controls
+// eslint-disable-next-line max-statements
 export const useSession = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 

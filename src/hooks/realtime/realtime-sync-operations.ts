@@ -1,7 +1,7 @@
 /**
  * Realtime sync operation helper functions
  */
-import React from "react";
+import React, { useCallback } from "react";
 import {
   RealtimeSyncState,
   ConnectionStatus,
@@ -20,25 +20,39 @@ import {
   notifySubscribers as _notifySubscribers,
 } from "./realtimeSyncHelpers";
 
-// Helper function to create WebSocket connection functions
-export const createWebSocketFunctions = (
-  userId: string,
-  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>,
-  wsRef: React.MutableRefObject<WebSocket | null>,
-  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>,
-  reconnectAttemptsRef: React.MutableRefObject<number>,
+interface WebSocketFunctionsParams {
+  userId: string;
+  setSyncState: React.Dispatch<React.SetStateAction<RealtimeSyncState>>;
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  subscriptionsRef: React.MutableRefObject<{ [key: string]: Subscription }>;
+  reconnectAttemptsRef: React.MutableRefObject<number>;
   reconnectTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
+  > | null>;
   heartbeatTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
-  > | null>,
-  connectionStartTimeRef: React.MutableRefObject<Date | null>,
-  maxReconnectAttempts: number,
-  reconnectInterval: number,
-  heartbeatInterval: number,
-) => {
-  const connect = () => {
+  > | null>;
+  connectionStartTimeRef: React.MutableRefObject<Date | null>;
+  maxReconnectAttempts: number;
+  reconnectInterval: number;
+  heartbeatInterval: number;
+}
+
+// Helper function to create WebSocket connection functions
+export const createWebSocketFunctions = ({
+  userId,
+  setSyncState,
+  wsRef,
+  subscriptionsRef,
+  reconnectAttemptsRef,
+  reconnectTimeoutRef,
+  heartbeatTimeoutRef,
+  connectionStartTimeRef,
+  maxReconnectAttempts,
+  reconnectInterval,
+  heartbeatInterval,
+}: WebSocketFunctionsParams) => {
+  const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return; // Already connected
     }
@@ -110,7 +124,15 @@ export const createWebSocketFunctions = (
         connectionStatus: ConnectionStatus.ERROR,
       }));
     }
-  };
+  }, [
+    userId,
+    setSyncState,
+    wsRef,
+    connectionStartTimeRef,
+    reconnectAttemptsRef,
+    maxReconnectAttempts,
+    reconnectInterval,
+  ]);
 
   const disconnect = () => {
     if (wsRef.current) {
@@ -164,38 +186,48 @@ export const createWebSocketFunctions = (
     }
   };
 
-  const sendMessage = (message: RealtimeUpdate | Record<string, unknown>) => {
-    const success = sendWebSocketMessage(wsRef.current, message, () => {
+  const sendMessage = useCallback(
+    (message: RealtimeUpdate | Record<string, unknown>) => {
+      sendWebSocketMessage(wsRef.current, message, () => {
+        setSyncState((prev) => ({
+          ...prev,
+          syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
+        }));
+      });
+    },
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setSyncState],
+  );
+
+  const handleMessage = useCallback(
+    (message: Record<string, unknown>) => {
       setSyncState((prev) => ({
         ...prev,
-        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageSent"),
+        syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
       }));
-    });
-  };
 
-  const handleMessage = (message: Record<string, unknown>) => {
-    setSyncState((prev) => ({
-      ...prev,
-      syncMetrics: updateSyncMetrics(prev.syncMetrics, "messageReceived"),
-    }));
-
-    switch (message.type) {
-      case "channel_joined":
-        handleChannelJoined(message);
-        break;
-      case "channel_left":
-        handleChannelLeft(message);
-        break;
-      case "realtime_update":
-        handleRealtimeUpdate(message);
-        break;
-      case "heartbeat_ack":
-        // Heartbeat acknowledged
-        break;
-      default:
-      // Unknown message type
-    }
-  };
+      switch (message.type) {
+        case "channel_joined":
+          handleChannelJoined(message);
+          break;
+        case "channel_left":
+          handleChannelLeft(message);
+          break;
+        case "realtime_update":
+          handleRealtimeUpdate(message);
+          break;
+        case "heartbeat_ack":
+          // Heartbeat acknowledged
+          break;
+        default:
+        // Unknown message type
+      }
+    },
+    // Refs are stable and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setSyncState],
+  );
 
   const handleChannelJoined = (message: { channel: SyncChannel }) => {
     const channel: SyncChannel = message.channel;
