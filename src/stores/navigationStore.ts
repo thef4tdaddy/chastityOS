@@ -5,7 +5,28 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
-export interface NavigationState {
+export interface BreadcrumbItem {
+  label: string;
+  path?: string;
+}
+
+export interface NavigationActions {
+  setCurrentPage: (page: string) => void;
+  setPageTitle: (title: string) => void;
+  setPageMetadata: (title: string, description?: string) => void;
+  setBreadcrumbs: (breadcrumbs: BreadcrumbItem[]) => void;
+  addBreadcrumb: (breadcrumb: BreadcrumbItem) => void;
+  removeBreadcrumb: () => void;
+  clearBreadcrumbs: () => void;
+  toggleMobileMenu: () => void;
+  openMobileMenu: () => void;
+  closeMobileMenu: () => void;
+  setPageLoading: (isLoading: boolean) => void;
+  setNavigating: (isNavigating: boolean) => void;
+  resetStore: () => void;
+}
+
+export interface NavigationState extends NavigationActions {
   // Current page state
   currentPage: string;
 
@@ -14,7 +35,7 @@ export interface NavigationState {
   pageDescription?: string;
 
   // Breadcrumbs navigation
-  breadcrumbs: Array<{ label: string; path?: string }>;
+  breadcrumbs: BreadcrumbItem[];
 
   // Mobile menu state
   isMobileMenuOpen: boolean;
@@ -22,29 +43,9 @@ export interface NavigationState {
   // Loading states
   isPageLoading: boolean;
   isNavigating: boolean;
-  // Actions
-  setCurrentPage: (page: string) => void;
-  setPageTitle: (title: string) => void;
-  setPageMetadata: (title: string, description?: string) => void;
-  setBreadcrumbs: (
-    breadcrumbs: Array<{ label: string; path?: string }>,
-  ) => void;
-  addBreadcrumb: (breadcrumb: { label: string; path?: string }) => void;
-  removeBreadcrumb: () => void;
-  clearBreadcrumbs: () => void;
-
-  // Mobile menu actions
-  toggleMobileMenu: () => void;
-  openMobileMenu: () => void;
-  closeMobileMenu: () => void;
-
-  // Loading state actions
-  setPageLoading: (isLoading: boolean) => void;
-  setNavigating: (isNavigating: boolean) => void;
-
-  // Utility
-  resetStore: () => void;
 }
+
+export type NavigationStore = NavigationState;
 
 const initialState = {
   currentPage: "",
