@@ -22,7 +22,7 @@ vi.mock("./services/firebase", () => ({
 }));
 
 // Mock console methods for clean test output
-global.console = {
+globalThis.console = {
   ...console,
   // Suppress console.log in tests unless explicitly needed
   log: vi.fn(),
@@ -30,7 +30,7 @@ global.console = {
   info: vi.fn(),
   warn: vi.fn(),
   error: vi.fn(),
-};
+} as any;
 
 // Mock window.matchMedia for responsive component tests
 Object.defineProperty(window, "matchMedia", {
@@ -48,18 +48,18 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver for UI component tests
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+globalThis.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as any;
 
 // Mock ResizeObserver for responsive component tests
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as any;
 
 // Mock localStorage
 const localStorageMock = {
@@ -92,7 +92,7 @@ Object.defineProperty(window, "indexedDB", {
 });
 
 // Mock crypto.randomUUID for ID generation
-Object.defineProperty(global, "crypto", {
+Object.defineProperty(globalThis, "crypto", {
   value: {
     randomUUID: vi.fn(
       () => "mock-uuid-" + Math.random().toString(36).substr(2, 9),

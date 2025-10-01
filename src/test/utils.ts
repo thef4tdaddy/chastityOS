@@ -131,7 +131,7 @@ export const waitForAsync = (ms = 0) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 export const flushPromises = () =>
-  new Promise((resolve) => setImmediate(resolve));
+  new Promise((resolve) => setTimeout(resolve, 0));
 
 // Error boundary testing
 export const createErrorBoundaryWrapper = () => {

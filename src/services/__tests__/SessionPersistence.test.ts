@@ -57,8 +57,8 @@ if (typeof window !== "undefined") {
   });
 }
 
-(global as any).BroadcastChannel = MockBroadcastChannel;
-(global as any).navigator = {
+(globalThis as any).BroadcastChannel = MockBroadcastChannel;
+(globalThis as any).navigator = {
   onLine: true,
 };
 
