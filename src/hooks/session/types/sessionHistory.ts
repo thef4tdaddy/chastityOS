@@ -1,16 +1,14 @@
 /**
- * Session History Type Definitions
- * Extracted from useSessionHistory hook for better code organization
+ * Session History Types
+ * Type definitions for session history management
  */
-
-// ==================== INTERFACES ====================
 
 export interface HistoricalSession {
   id: string;
   startTime: Date;
   endTime: Date;
-  duration: number; // Total duration in seconds
-  effectiveDuration: number; // Duration minus pauses
+  duration: number;
+  effectiveDuration: number;
   goals: SessionGoal[];
   goalCompletion: GoalCompletionRecord[];
   pauseEvents: PauseEvent[];
@@ -61,9 +59,9 @@ export interface KeyholderInteraction {
 }
 
 export interface SessionRating {
-  overall: number; // 1-5 stars
-  difficulty: number; // 1-5
-  satisfaction: number; // 1-5
+  overall: number;
+  difficulty: number;
+  satisfaction: number;
   wouldRepeat: boolean;
   notes?: string;
 }
@@ -75,7 +73,7 @@ export interface HistoryPrivacySettings {
   sharePauses: boolean;
   shareNotes: boolean;
   shareRatings: boolean;
-  retentionPeriod: number; // Days to keep history
+  retentionPeriod: number;
   allowExport: boolean;
   anonymizeOldData: boolean;
 }
@@ -99,7 +97,7 @@ export interface HistoryInsights {
   goalCompletionRate: number;
   pauseFrequency: number;
   improvementTrend: "improving" | "stable" | "declining";
-  consistencyScore: number; // 0-100
+  consistencyScore: number;
   keyholderSatisfactionScore?: number;
 }
 
@@ -114,7 +112,7 @@ export interface HistoryTrends {
 export interface TrendData {
   direction: "improving" | "stable" | "declining";
   changePercentage: number;
-  confidence: number; // 0-100
+  confidence: number;
   timeframe: "week" | "month" | "quarter" | "year";
   dataPoints: TrendPoint[];
 }

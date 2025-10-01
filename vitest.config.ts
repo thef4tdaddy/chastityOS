@@ -1,42 +1,40 @@
-import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vitest/config";
+import { resolve } from "path";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
     css: true,
-    include: [
-      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     exclude: [
-      'node_modules/',
-      'dist/',
-      'build/',
-      'coverage/',
-      'tests/', // Exclude Playwright tests
-      'tests-examples/', // Exclude Playwright examples
-      '**/*.d.ts',
-      '**/*.config.*',
+      "node_modules/",
+      "dist/",
+      "build/",
+      "coverage/",
+      "tests/", // Exclude Playwright tests
+      "tests-examples/", // Exclude Playwright examples
+      "**/*.d.ts",
+      "**/*.config.*",
     ],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'node_modules/',
-        'dist/',
-        'build/',
-        'coverage/',
-        'tests/',
-        'tests-examples/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        'src/test/**',
-        'src/**/*.test.*',
-        'src/**/*.spec.*',
+        "node_modules/",
+        "dist/",
+        "build/",
+        "coverage/",
+        "tests/",
+        "tests-examples/",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "src/test/**",
+        "src/**/*.test.*",
+        "src/**/*.spec.*",
       ],
       thresholds: {
         global: {
@@ -53,7 +51,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      "@": resolve(__dirname, "./src"),
     },
   },
 });

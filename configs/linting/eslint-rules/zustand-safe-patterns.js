@@ -159,18 +159,18 @@ export default {
 
                   // Exclude common non-action patterns (props, state, config, flags)
                   const nonActionPatterns = [
-                    /Enabled$/,    // realTimeSyncEnabled, featureEnabled, etc.
-                    /Interval$/,   // syncInterval, updateInterval, etc.
+                    /Enabled$/, // realTimeSyncEnabled, featureEnabled, etc.
+                    /Interval$/, // syncInterval, updateInterval, etc.
                     /Permissions$/, // syncPermissions, userPermissions, etc.
-                    /Settings$/,   // appSettings, userSettings, etc.
-                    /Config$/,     // syncConfig, apiConfig, etc.
-                    /Status$/,     // syncStatus, loadStatus, etc.
-                    /^is[A-Z]/,    // isLoading, isOpen, etc.
-                    /^has[A-Z]/,   // hasData, hasError, etc.
-                    /^can[A-Z]/,   // canEdit, canDelete, etc.
+                    /Settings$/, // appSettings, userSettings, etc.
+                    /Config$/, // syncConfig, apiConfig, etc.
+                    /Status$/, // syncStatus, loadStatus, etc.
+                    /^is[A-Z]/, // isLoading, isOpen, etc.
+                    /^has[A-Z]/, // hasData, hasError, etc.
+                    /^can[A-Z]/, // canEdit, canDelete, etc.
                     /^should[A-Z]/, // shouldUpdate, shouldSync, etc.
-                    /Data$/,       // userData, sessionData, etc.
-                    /State$/,      // appState, formState, etc.
+                    /Data$/, // userData, sessionData, etc.
+                    /State$/, // appState, formState, etc.
                   ];
 
                   // Check if it's a non-action pattern
@@ -398,17 +398,16 @@ export default {
             if (
               node.callee &&
               node.callee.name &&
-              (node.callee.name.includes('Store') ||
-                node.callee.name.includes('UI')) &&
+              (node.callee.name.includes('Store') || node.callee.name.includes('UI')) &&
               node.callee.name.startsWith('use')
             ) {
               // Check if this hook call is directly inside a conditional
               const ancestors = context.sourceCode?.getAncestors?.(node) || [];
-              
+
               // Look for immediate conditional parents (not deep nesting)
               for (let i = ancestors.length - 1; i >= 0; i--) {
                 const ancestor = ancestors[i];
-                
+
                 // If we hit a function boundary, stop - we're at top level
                 if (
                   ancestor.type === 'FunctionDeclaration' ||
@@ -417,21 +416,24 @@ export default {
                 ) {
                   break;
                 }
-                
+
                 // Check for conditional patterns
                 if (
                   ancestor.type === 'IfStatement' ||
                   ancestor.type === 'ConditionalExpression' ||
-                  (ancestor.type === 'LogicalExpression' && 
-                   (ancestor.operator === '&&' || ancestor.operator === '||'))
+                  (ancestor.type === 'LogicalExpression' &&
+                    (ancestor.operator === '&&' || ancestor.operator === '||'))
                 ) {
                   // Check if we're in the conditional branches
                   let isInConditionalBranch = false;
-                  
+
                   if (ancestor.type === 'IfStatement') {
                     // For if statements, check if we're in consequent or alternate
                     const nextAncestor = ancestors[i + 1];
-                    if (nextAncestor && (ancestor.consequent === nextAncestor || ancestor.alternate === nextAncestor)) {
+                    if (
+                      nextAncestor &&
+                      (ancestor.consequent === nextAncestor || ancestor.alternate === nextAncestor)
+                    ) {
                       isInConditionalBranch = true;
                     }
                   } else if (ancestor.type === 'ConditionalExpression') {
@@ -445,7 +447,7 @@ export default {
                       isInConditionalBranch = true;
                     }
                   }
-                     
+
                   if (isInConditionalBranch) {
                     context.report({
                       node,

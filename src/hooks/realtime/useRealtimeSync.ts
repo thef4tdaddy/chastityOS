@@ -9,11 +9,14 @@ import {
   RealtimeSyncState,
   ConnectionStatus,
   SyncChannel,
-  ChannelType,
   RealtimeUpdate,
   Subscription,
-  UpdateCallback,
 } from "../../types/realtime";
+import {
+  connectWebSocket,
+  createChannelHelpers,
+  createSubscriptionHelpers,
+} from "./useRealtimeSync-operations";
 
 interface WebSocketMessage {
   type: string;
@@ -31,8 +34,9 @@ interface UseRealtimeSyncOptions {
   maxReconnectAttempts?: number;
 }
 
-// Complex real-time synchronization hook with WebSocket management
-// eslint-disable-next-line max-statements
+// Core WebSocket infrastructure - manages connection lifecycle, heartbeat, auto-reconnect,
+// channel subscriptions, and message routing. Splitting would separate tightly coupled logic.
+// eslint-disable-next-line max-statements, max-lines-per-function
 export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const {
     userId,
@@ -64,99 +68,6 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const reconnectTimeoutRef = useRef<number | null>(null);
   const heartbeatTimeoutRef = useRef<number | null>(null);
   const connectionStartTimeRef = useRef<Date | null>(null);
-
-  // Connect to WebSocket
-  const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return; // Already connected
-    }
-
-    setSyncState((prev) => ({
-      ...prev,
-      connectionStatus: ConnectionStatus.CONNECTING,
-    }));
-
-    try {
-      // In real implementation, use your WebSocket server URL
-      const wsUrl =
-        process.env.NODE_ENV === "development"
-          ? "ws://localhost:8080/ws"
-          : "wss://api.chastityos.com/ws";
-
-      wsRef.current = new WebSocket(`${wsUrl}?userId=${userId}`);
-      connectionStartTimeRef.current = new Date();
-
-      wsRef.current.onopen = () => {
-        // WebSocket connected
-        reconnectAttemptsRef.current = 0;
-
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.CONNECTED,
-        }));
-
-        // Start heartbeat
-        startHeartbeat();
-
-        // Rejoin previous channels
-        syncState.activeChannels.forEach((channel) => {
-          sendMessage({
-            type: "join_channel",
-            channelId: channel.id,
-            userId,
-          });
-        });
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          handleMessage(message);
-        } catch {
-          // Failed to parse WebSocket message
-        }
-      };
-
-      wsRef.current.onclose = (event) => {
-        // WebSocket disconnected
-
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.DISCONNECTED,
-        }));
-
-        stopHeartbeat();
-
-        // Attempt reconnection if not intentional disconnect
-        if (
-          event.code !== 1000 &&
-          reconnectAttemptsRef.current < maxReconnectAttempts
-        ) {
-          attemptReconnect();
-        }
-      };
-
-      wsRef.current.onerror = (_error) => {
-        // WebSocket error
-
-        setSyncState((prev) => ({
-          ...prev,
-          connectionStatus: ConnectionStatus.ERROR,
-          syncMetrics: {
-            ...prev.syncMetrics,
-            syncErrors: prev.syncMetrics.syncErrors + 1,
-          },
-        }));
-      };
-    } catch {
-      // Failed to create WebSocket connection
-      setSyncState((prev) => ({
-        ...prev,
-        connectionStatus: ConnectionStatus.ERROR,
-      }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, maxReconnectAttempts]);
 
   // Disconnect WebSocket
   const disconnect = useCallback(() => {
@@ -311,107 +222,47 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
     });
   }, []);
 
-  // Join a sync channel
-  const joinChannel = useCallback(
-    async (channelId: string): Promise<void> => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        sendMessage({
-          type: "join_channel",
-          channelId,
-          userId,
-        });
-      } else {
-        throw new Error("WebSocket not connected");
-      }
-    },
+  // Connect to WebSocket
+  const connect = useCallback(() => {
+    connectWebSocket({
+      wsRef,
+      userId,
+      connectionStartTimeRef,
+      reconnectAttemptsRef,
+      setSyncState,
+      startHeartbeat,
+      stopHeartbeat,
+      attemptReconnect,
+      sendMessage,
+      handleMessage,
+      activeChannels: syncState.activeChannels,
+      maxReconnectAttempts,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    userId,
+    maxReconnectAttempts,
+    startHeartbeat,
+    stopHeartbeat,
+    attemptReconnect,
+    sendMessage,
+    handleMessage,
+  ]);
+
+  // Channel management functions
+  const channelHelpers = useMemo(
+    () => createChannelHelpers(wsRef, userId, sendMessage),
     [userId, sendMessage],
   );
+  const { joinChannel, leaveChannel, createChannel } = channelHelpers;
 
-  // Leave a sync channel
-  const leaveChannel = useCallback(
-    async (channelId: string): Promise<void> => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        sendMessage({
-          type: "leave_channel",
-          channelId,
-          userId,
-        });
-      }
-    },
+  // Subscription functions
+  const subscriptionHelpers = useMemo(
+    () =>
+      createSubscriptionHelpers(subscriptionsRef, wsRef, userId, sendMessage),
     [userId, sendMessage],
   );
-
-  // Create a new sync channel
-  const createChannel = useCallback(
-    async (type: ChannelType, participants: string[]): Promise<SyncChannel> => {
-      const channel: SyncChannel = {
-        id: `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type,
-        participants: [userId, ...participants],
-        lastActivity: new Date(),
-        isActive: true,
-        encryptionEnabled: type === ChannelType.RELATIONSHIP,
-      };
-
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        sendMessage({
-          type: "create_channel",
-          channel,
-          userId,
-        });
-      }
-
-      return channel;
-    },
-    [userId, sendMessage],
-  );
-
-  // Subscribe to realtime updates
-  const subscribeToUpdates = useCallback(
-    (dataType: string, callback: UpdateCallback): Subscription => {
-      const subscription: Subscription = {
-        id: `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        dataType,
-        callback,
-        isActive: true,
-        created: new Date(),
-      };
-
-      subscriptionsRef.current.set(subscription.id, subscription);
-
-      // Return unsubscribe function
-      return {
-        ...subscription,
-        unsubscribe: () => {
-          const sub = subscriptionsRef.current.get(subscription.id);
-          if (sub) {
-            sub.isActive = false;
-            subscriptionsRef.current.delete(subscription.id);
-          }
-        },
-      } as Subscription & { unsubscribe: () => void };
-    },
-    [],
-  );
-
-  // Publish a realtime update
-  const publishUpdate = useCallback(
-    async (update: RealtimeUpdate): Promise<void> => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        sendMessage({
-          type: "publish_update",
-          update: {
-            ...update,
-            userId,
-            timestamp: new Date(),
-          },
-        });
-      } else {
-        throw new Error("WebSocket not connected");
-      }
-    },
-    [userId, sendMessage],
-  );
+  const { subscribeToUpdates, publishUpdate } = subscriptionHelpers;
 
   // Sync with keyholder
   const syncWithKeyholder = useCallback(

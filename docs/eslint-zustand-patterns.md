@@ -5,17 +5,20 @@ This document explains the patterns that the `zustand-no-conditional-subscriptio
 ## ✅ Correct Patterns (No Warnings)
 
 ### Top-level subscriptions (recommended)
+
 ```tsx
 const MyComponent = () => {
   // ✅ GOOD: Top-level subscriptions are always allowed
-  const isUnlocked = useKeyholderStore(state => state.isKeyholderModeUnlocked);
-  const passwordAttempt = useKeyholderStore(state => state.passwordAttempt);
-  
+  const isUnlocked = useKeyholderStore(
+    (state) => state.isKeyholderModeUnlocked,
+  );
+  const passwordAttempt = useKeyholderStore((state) => state.passwordAttempt);
+
   // ✅ GOOD: Conditional rendering with pre-subscribed values
   if (isUnlocked) {
     return <div>Unlocked content</div>;
   }
-  
+
   return <div>Enter password: {passwordAttempt}</div>;
 };
 ```
@@ -23,22 +26,23 @@ const MyComponent = () => {
 ## ❌ Incorrect Patterns (Will Trigger Warnings)
 
 ### Conditional hook calls
+
 ```tsx
 const MyComponent = ({ condition }) => {
   // ❌ BAD: Hook called inside if statement
   if (condition) {
-    const data = useKeyholderStore(state => state.data); // WARNING
+    const data = useKeyholderStore((state) => state.data); // WARNING
     return <div>{data}</div>;
   }
-  
+
   // ❌ BAD: Hook called inside ternary operator
-  const conditionalData = condition 
-    ? useKeyholderStore(state => state.data)  // WARNING
+  const conditionalData = condition
+    ? useKeyholderStore((state) => state.data) // WARNING
     : null;
-  
+
   // ❌ BAD: Hook called inside logical expression
-  const logicalData = condition && useKeyholderStore(state => state.data); // WARNING
-  
+  const logicalData = condition && useKeyholderStore((state) => state.data); // WARNING
+
   return <div>Content</div>;
 };
 ```
@@ -51,7 +55,7 @@ Replace conditional hook calls with top-level subscriptions and conditional usag
 // Before (incorrect)
 const BadComponent = ({ showData }) => {
   if (showData) {
-    const data = useStore(state => state.data); // ❌ Conditional hook
+    const data = useStore((state) => state.data); // ❌ Conditional hook
     return <div>{data}</div>;
   }
   return <div>No data</div>;
@@ -59,8 +63,8 @@ const BadComponent = ({ showData }) => {
 
 // After (correct)
 const GoodComponent = ({ showData }) => {
-  const data = useStore(state => state.data); // ✅ Top-level subscription
-  
+  const data = useStore((state) => state.data); // ✅ Top-level subscription
+
   if (showData) {
     return <div>{data}</div>; // ✅ Conditional usage
   }
@@ -78,8 +82,9 @@ const GoodComponent = ({ showData }) => {
 ## Rule Implementation
 
 The rule checks for Zustand store hooks (functions starting with `use` and containing `Store` or `UI`) that are called inside:
+
 - `IfStatement` blocks
-- `ConditionalExpression` (ternary operators)  
+- `ConditionalExpression` (ternary operators)
 - `LogicalExpression` with `&&` or `||` operators
 
 It uses AST ancestry analysis to ensure only directly conditional calls are flagged, not hooks that happen to be in components with conditional logic.

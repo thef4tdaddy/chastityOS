@@ -4,7 +4,10 @@
  */
 import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Notification, NotificationPriority } from "../../stores/notificationStore";
+import {
+  Notification,
+  NotificationPriority,
+} from "../../stores/notificationStore";
 
 interface NotificationToastProps {
   notification: Notification;
@@ -51,7 +54,10 @@ const getPriorityStyles = (priority: NotificationPriority) => {
 };
 
 // Type-based icons
-const NotificationIcon: React.FC<{ type: string; priority: NotificationPriority }> = ({ type, priority }) => {
+const NotificationIcon: React.FC<{
+  type: string;
+  priority: NotificationPriority;
+}> = ({ type, priority }) => {
   const styles = getPriorityStyles(priority);
   const iconClass = `w-5 h-5 ${styles.icon}`;
 
@@ -151,7 +157,10 @@ const toastVariants = {
   exit: { opacity: 0, y: -20, scale: 0.95 },
 };
 
-const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onDismiss }) => {
+const NotificationToast: React.FC<NotificationToastProps> = ({
+  notification,
+  onDismiss,
+}) => {
   const toastRef = useRef<HTMLDivElement>(null);
   const styles = getPriorityStyles(notification.priority);
 
@@ -196,11 +205,17 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onD
       onKeyDown={handleKeyDown}
     >
       <div className="flex-shrink-0">
-        <NotificationIcon type={notification.type} priority={notification.priority} />
+        <NotificationIcon
+          type={notification.type}
+          priority={notification.priority}
+        />
       </div>
 
       <div className="ml-3 flex-1">
-        <NotificationHeader title={notification.title} priority={notification.priority} />
+        <NotificationHeader
+          title={notification.title}
+          priority={notification.priority}
+        />
         <p className="text-sm">{notification.message}</p>
 
         {notification.action && (

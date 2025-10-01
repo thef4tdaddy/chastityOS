@@ -1,7 +1,127 @@
-import { Timestamp, FieldValue } from 'firebase/firestore';
+import { Timestamp, FieldValue } from "firebase/firestore";
 
-// User and authentication types
-export interface User {
+// Re-export types from core module
+export type {
+  User,
+  UserRole,
+  UserProfile,
+  UserVerification,
+  UserSettings,
+  ChastitySession,
+  SessionStatus,
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskConsequence,
+  PersonalGoal,
+  SpecialChallengeType,
+  KeyholderRelationship,
+  KeyholderPermissions,
+  KeyholderRule,
+  SessionStats,
+  TaskStats,
+  ApiResponse,
+  PaginatedResponse,
+  AppSettings,
+  LoginForm,
+  RegisterForm,
+  SessionForm,
+  TaskForm,
+  EventLogForm,
+} from "./core";
+
+// Re-export types from achievements module
+export type {
+  AchievementRequirement,
+  Achievement,
+  UserAchievement,
+  AchievementProgress,
+  LeaderboardEntry,
+  LeaderboardPrivacy,
+  AchievementNotification,
+  AchievementStats,
+  AchievementExportData,
+} from "./achievements";
+
+// Re-export enums from achievements module (these are values, not types)
+export {
+  AchievementCategory,
+  AchievementDifficulty,
+  LeaderboardCategory,
+  LeaderboardPeriod,
+} from "./achievements";
+
+// Re-export types from database module
+export type {
+  SyncStatus,
+  EventType,
+  TaskStatus as DBTaskStatus,
+  AchievementCategory as DBAchievementCategory,
+  AchievementDifficulty as DBAchievementDifficulty,
+  DBBase,
+  DBUser,
+  DBSession,
+  DBEvent,
+  DBTask,
+  DBGoal,
+  DBSettings,
+  Task as DBTaskAlias,
+  SyncOperation,
+  ConflictRecord,
+  DBSyncMeta,
+  SessionWithDuration,
+  TaskWithStatus,
+  GoalWithProgress,
+  SessionFilters,
+  EventFilters,
+  TaskFilters,
+  QueuedOperation,
+  SyncOptions,
+  SyncResult,
+  ConflictInfo,
+  SettingsConflict,
+  DBAchievement,
+  DBUserAchievement,
+  DBAchievementProgress,
+  DBAchievementNotification,
+  DBLeaderboardEntry,
+} from "./database";
+
+// Re-export types from relationships module
+export type {
+  RelationshipPermissions,
+  Relationship,
+  RelationshipRequest,
+  EnhancedUserProfile,
+  UserVerification as RelationshipUserVerification,
+  EnhancedUser,
+  RelationshipChastityData,
+  SessionEvent,
+  RelationshipSession,
+  RelationshipTask,
+  RelationshipEvent,
+  DefaultRelationshipPermissions,
+  CreateDefaultPermissions,
+} from "./relationships";
+
+// Re-export enums from relationships module (these are values, not types)
+export {
+  RelationshipStatus,
+  RelationshipRequestStatus,
+  RelationshipTaskStatus,
+} from "./relationships";
+
+// Re-export enums from core module (these are values, not types)
+export {
+  UserRole,
+  SessionStatus,
+  TaskStatus,
+  TaskPriority,
+  SpecialChallengeType,
+} from "./core";
+
+// User and authentication types (legacy - keeping for backwards compatibility)
+export interface UserCompat {
   uid: string;
   email?: string | null;
   displayName?: string | null;
@@ -19,21 +139,21 @@ export interface UserData {
 
 // Task-related types
 export interface RewardPunishment {
-  type: 'time' | 'note' | 'none';
+  type: "time" | "note" | "none";
   value: number | string;
 }
 
 export interface Task {
   id: string;
   text: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  status: "pending" | "submitted" | "approved" | "rejected";
   deadline?: Date | null;
   reward?: RewardPunishment;
   punishment?: RewardPunishment;
   createdAt?: Date | null;
   submittedAt?: Date | null;
   note?: string;
-  logType?: 'reward' | 'punishment';
+  logType?: "reward" | "punishment";
   sourceText?: string;
   timeChangeSeconds?: number;
 }
@@ -94,14 +214,14 @@ export interface KeyholderPermissions {
 }
 
 export interface KeyholderReward {
-  type: 'time' | 'note' | 'other';
+  type: "time" | "note" | "other";
   timeSeconds?: number;
   note?: string;
   other?: string;
 }
 
 export interface KeyholderPunishment {
-  type: 'time' | 'note' | 'other';
+  type: "time" | "note" | "other";
   timeSeconds?: number;
   note?: string;
   other?: string;

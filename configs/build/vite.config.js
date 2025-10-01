@@ -32,7 +32,9 @@ const getGitHash = () => {
 const createEnvironmentDefinitions = (env, appVersion) => {
   return {
     "import.meta.env.VITE_APP_VARIANT": JSON.stringify(env.VITE_APP_VARIANT),
-    "import.meta.env.VITE_SENTRY_PROJECT": JSON.stringify(env.VITE_SENTRY_PROJECT),
+    "import.meta.env.VITE_SENTRY_PROJECT": JSON.stringify(
+      env.VITE_SENTRY_PROJECT,
+    ),
     "import.meta.env.VITE_SENTRY_DSN": JSON.stringify(env.VITE_SENTRY_DSN),
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
   };
@@ -69,7 +71,7 @@ const createPWAConfig = (mode) => {
   return VitePWA({
     registerType: "autoUpdate",
     workbox: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
+      globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
       runtimeCaching: [
         {
           urlPattern: ({ request }) => request.destination === "document",
@@ -118,22 +120,22 @@ const createPWAShortcuts = () => {
       short_name: "Log Event",
       description: "Quickly log a new chastity event",
       url: "/?shortcut=log-event",
-      icons: [{ src: "/icons/shortcut-log.png", sizes: "96x96" }]
+      icons: [{ src: "/icons/shortcut-log.png", sizes: "96x96" }],
     },
     {
       name: "View Tracker",
-      short_name: "Tracker", 
+      short_name: "Tracker",
       description: "View current chastity tracking dashboard",
       url: "/?shortcut=tracker",
-      icons: [{ src: "/icons/shortcut-tracker.png", sizes: "96x96" }]
+      icons: [{ src: "/icons/shortcut-tracker.png", sizes: "96x96" }],
     },
     {
       name: "Keyholder Dashboard",
       short_name: "Keyholder",
-      description: "Access keyholder controls and tasks", 
+      description: "Access keyholder controls and tasks",
       url: "/?shortcut=keyholder",
-      icons: [{ src: "/icons/shortcut-keyholder.png", sizes: "96x96" }]
-    }
+      icons: [{ src: "/icons/shortcut-keyholder.png", sizes: "96x96" }],
+    },
   ];
 };
 
@@ -148,7 +150,7 @@ const createPWAIcons = () => {
     },
     {
       src: "/icons/icon-96x96.png",
-      sizes: "96x96", 
+      sizes: "96x96",
       type: "image/png",
       purpose: "any",
     },
@@ -161,7 +163,7 @@ const createPWAIcons = () => {
     {
       src: "/icons/icon-144x144.png",
       sizes: "144x144",
-      type: "image/png", 
+      type: "image/png",
       purpose: "any",
     },
     {
@@ -177,7 +179,7 @@ const createPWAIcons = () => {
       purpose: "any",
     },
     {
-      src: "/icons/icon-384x384.png", 
+      src: "/icons/icon-384x384.png",
       sizes: "384x384",
       type: "image/png",
       purpose: "any",
@@ -205,22 +207,22 @@ const createPWAScreenshots = () => {
       sizes: "390x844",
       type: "image/png",
       form_factor: "narrow",
-      label: "Mobile view of the chastity tracker dashboard"
+      label: "Mobile view of the chastity tracker dashboard",
     },
     {
-      src: "/screenshots/screenshot-mobile-2.png", 
+      src: "/screenshots/screenshot-mobile-2.png",
       sizes: "390x844",
       type: "image/png",
       form_factor: "narrow",
-      label: "Mobile view of event logging interface"
+      label: "Mobile view of event logging interface",
     },
     {
       src: "/screenshots/screenshot-desktop-1.png",
       sizes: "1280x720",
       type: "image/png",
       form_factor: "wide",
-      label: "Desktop view of the main dashboard"
-    }
+      label: "Desktop view of the main dashboard",
+    },
   ];
 };
 
@@ -242,11 +244,11 @@ const _createPWAManifest = () => {
     screenshots: createPWAScreenshots(),
     prefer_related_applications: false,
     edge_side_panel: {
-      preferred_width: 400
+      preferred_width: 400,
     },
     launch_handler: {
-      client_mode: "focus-existing"
-    }
+      client_mode: "focus-existing",
+    },
   };
 };
 
@@ -300,7 +302,7 @@ export default defineConfig(({ mode }) => {
   const appVersion = packageJson.version;
   const gitHash = getGitHash();
   const releaseVersion = generateReleaseVersion(env, gitHash);
-  
+
   // Build mode flags
   const isNightly = mode === "nightly";
   const isProduction = mode === "production";
