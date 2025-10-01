@@ -28,67 +28,60 @@ export const createNotificationFactory = (
   maxNotifications: number,
 ) => {
   return async (
-    notification: Omit<
-      Notification,
-      "id" | "timestamp" | "isRead" | "userId"
-    >,
+    notification: Omit<Notification, "id" | "timestamp" | "isRead" | "userId">,
   ): Promise<void> => {
-      const newNotification: Notification = {
-        ...notification,
-        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: new Date(),
-        isRead: false,
-        userId,
-      };
-
-      // Check if notifications are enabled globally
-      if (!notificationState.preferences.globalEnabled) {
-        return;
-      }
-
-      // Check category preferences - using manual find for compatibility
-      let categoryPref = null;
-      for (
-        let i = 0;
-        i < notificationState.preferences.categories.length;
-        i++
-      ) {
-        if (
-          notificationState.preferences.categories[i].category ===
-          notification.type
-        ) {
-          categoryPref = notificationState.preferences.categories[i];
-          break;
-        }
-      }
-
-      if (!categoryPref?.enabled) {
-        return;
-      }
-
-      // Check quiet hours
-      if (isInQuietHours(notificationState.preferences.quietHours)) {
-        // Queue for later delivery if not urgent
-        if (notification.priority !== NotificationPriority.URGENT) {
-          return;
-        }
-      }
-
-      // Add to state
-      setNotificationState((prev) => ({
-        ...prev,
-        notifications: [
-          newNotification,
-          ...prev.notifications.slice(0, maxNotifications - 1),
-        ],
-      }));
-
-      // Deliver through enabled channels
-      await deliverNotification(newNotification, categoryPref.channels);
-
-      // Save to backend
-      await saveNotification(newNotification);
+    const newNotification: Notification = {
+      ...notification,
+      id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date(),
+      isRead: false,
+      userId,
     };
+
+    // Check if notifications are enabled globally
+    if (!notificationState.preferences.globalEnabled) {
+      return;
+    }
+
+    // Check category preferences - using manual find for compatibility
+    let categoryPref = null;
+    for (let i = 0; i < notificationState.preferences.categories.length; i++) {
+      if (
+        notificationState.preferences.categories[i].category ===
+        notification.type
+      ) {
+        categoryPref = notificationState.preferences.categories[i];
+        break;
+      }
+    }
+
+    if (!categoryPref?.enabled) {
+      return;
+    }
+
+    // Check quiet hours
+    if (isInQuietHours(notificationState.preferences.quietHours)) {
+      // Queue for later delivery if not urgent
+      if (notification.priority !== NotificationPriority.URGENT) {
+        return;
+      }
+    }
+
+    // Add to state
+    setNotificationState((prev) => ({
+      ...prev,
+      notifications: [
+        newNotification,
+        ...prev.notifications.slice(0, maxNotifications - 1),
+      ],
+    }));
+
+    // Deliver through enabled channels
+    await deliverNotification(newNotification, categoryPref.channels);
+
+    // Save to backend
+    await saveNotification(newNotification);
+  };
 };
 
 // Helper function to create mark as read function
@@ -96,16 +89,16 @@ export const createMarkAsReadFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
   return async (notificationId: string): Promise<void> => {
-      setNotificationState((prev) => ({
-        ...prev,
-        notifications: prev.notifications.map((notif) =>
-          notif.id === notificationId ? { ...notif, isRead: true } : notif,
-        ),
-      }));
+    setNotificationState((prev) => ({
+      ...prev,
+      notifications: prev.notifications.map((notif) =>
+        notif.id === notificationId ? { ...notif, isRead: true } : notif,
+      ),
+    }));
 
-      // Update in backend
-      await updateNotificationStatus(notificationId, { isRead: true });
-    };
+    // Update in backend
+    await updateNotificationStatus(notificationId, { isRead: true });
+  };
 };
 
 // Helper function to create mark all as read function
@@ -140,16 +133,16 @@ export const createDismissNotificationFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
   return async (notificationId: string): Promise<void> => {
-      setNotificationState((prev) => ({
-        ...prev,
-        notifications: prev.notifications.filter(
-          (notif) => notif.id !== notificationId,
-        ),
-      }));
+    setNotificationState((prev) => ({
+      ...prev,
+      notifications: prev.notifications.filter(
+        (notif) => notif.id !== notificationId,
+      ),
+    }));
 
-      // Remove from backend
-      await deleteNotification(notificationId);
-    };
+    // Remove from backend
+    await deleteNotification(notificationId);
+  };
 };
 
 // Helper function to create preferences update function
@@ -159,20 +152,20 @@ export const createUpdatePreferencesFunction = (
   setNotificationState: React.Dispatch<React.SetStateAction<NotificationState>>,
 ) => {
   return async (prefs: Partial<NotificationPreferences>): Promise<void> => {
-      const updatedPreferences = {
-        ...notificationState.preferences,
-        ...prefs,
-      };
-
-      setNotificationState((prev) => ({
-        ...prev,
-        preferences: updatedPreferences,
-        deliveryChannels: updatedPreferences.channels,
-      }));
-
-      // Save to backend
-      await saveNotificationPreferences(userId, updatedPreferences);
+    const updatedPreferences = {
+      ...notificationState.preferences,
+      ...prefs,
     };
+
+    setNotificationState((prev) => ({
+      ...prev,
+      preferences: updatedPreferences,
+      deliveryChannels: updatedPreferences.channels,
+    }));
+
+    // Save to backend
+    await saveNotificationPreferences(userId, updatedPreferences);
+  };
 };
 
 // Helper function to create convenience notification functions
