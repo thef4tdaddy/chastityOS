@@ -3,7 +3,6 @@
  * Provides comprehensive goal management with keyholder controls,
  * progress tracking, and achievement integration
  */
-import { serviceLogger } from "../../utils/logging";
 import { useGoalData } from "./useGoalData";
 import { useGoalMutations } from "./useGoalMutations";
 import { useGoalProgress } from "./useGoalProgress";
@@ -11,8 +10,6 @@ import { useGoalTemplates } from "./useGoalTemplates";
 import { useKeyholderGoalManagement } from "./useKeyholderGoalManagement";
 import { useGoalInitialization } from "./useGoalInitialization";
 import { useGoalComputedValues } from "./useGoalComputedValues";
-
-const logger = serviceLogger("useSessionGoals");
 
 // ==================== INTERFACES ====================
 
@@ -41,42 +38,43 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     loadAchievements,
   } = goalData;
 
-  const mutations = useGoalMutations({
+  const { setGoal, updateGoal, removeGoal } = useGoalMutations({
     setActiveGoals,
     setProgress,
     setGoalHistory,
     userId,
   });
-  const { setGoal, updateGoal, removeGoal } = mutations;
 
-  const progressTracking = useGoalProgress({
-    activeGoals,
-    progress,
-    setProgress,
-    setActiveGoals,
-    setAchievements,
-    updateGoal,
-  });
   const { updateProgress, checkGoalCompletion, updateActiveGoalProgress } =
-    progressTracking;
+    useGoalProgress({
+      activeGoals,
+      progress,
+      setProgress,
+      setActiveGoals,
+      setAchievements,
+      updateGoal,
+    });
 
-  const keyholderManagement = useKeyholderGoalManagement({
-    keyholderGoals,
-    setActiveGoals,
-    setKeyholderGoals,
-    relationshipId,
-  });
-  const { acceptKeyholderGoal, requestGoalModification } = keyholderManagement;
+  const { acceptKeyholderGoal, requestGoalModification } =
+    useKeyholderGoalManagement({
+      keyholderGoals,
+      setActiveGoals,
+      setKeyholderGoals,
+      relationshipId,
+    });
 
-  const templates = useGoalTemplates({ goalTemplates, goalHistory, setGoal });
   const {
     getSuggestedGoals,
     createGoalFromTemplate,
     getGoalAnalytics,
     getPredictiveGoals,
-  } = templates;
+  } = useGoalTemplates({
+    goalTemplates,
+    goalHistory,
+    setGoal,
+  });
 
-  const init = useGoalInitialization({
+  const { isLoading, error } = useGoalInitialization({
     userId,
     relationshipId,
     loadActiveGoals,
@@ -87,16 +85,14 @@ export const useSessionGoals = (userId: string, relationshipId?: string) => {
     loadAchievements,
     updateActiveGoalProgress,
   });
-  const { isLoading, error } = init;
 
-  const computed = useGoalComputedValues({ activeGoals, progress });
   const {
     totalActiveGoals,
     completionRate,
     hasRequiredGoals,
     goalDifficulty,
     estimatedCompletionTime,
-  } = computed;
+  } = useGoalComputedValues({ activeGoals, progress });
 
   return {
     activeGoals,
