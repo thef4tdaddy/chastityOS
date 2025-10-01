@@ -158,9 +158,10 @@ export default [
       'max-lines-per-function': [
         'warn',
         {
-          max: 75,
+          max: 150, // Increased from 75 - React hooks often manage multiple related callbacks
           skipBlankLines: true,
           skipComments: true,
+          IIFEs: true, // Ignore immediately invoked function expressions
         },
       ],
       'max-nested-callbacks': ['warn', 4], // Warn on nested callbacks
