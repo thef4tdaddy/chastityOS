@@ -4,14 +4,7 @@
  * Complete audit logging system for transparency, compliance, and security monitoring
  * across all user actions.
  */
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import { useState, useEffect, useMemo, Dispatch, SetStateAction } from "react";
 import {
   AuditLogState,
   AuditEntry,
@@ -531,6 +524,7 @@ function createManagementHandlers(
 
   // Share with keyholder (not yet exposed in return)
   const _shareWithKeyholder = async (_entries: string[]): Promise<void> => {
+    // eslint-disable-next-line no-undef
     if (!relationshipId) {
       throw new Error("No relationship context for sharing");
     }

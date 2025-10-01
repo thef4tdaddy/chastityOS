@@ -504,8 +504,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
       }
     };
     // updateTimerProgress is stable (no deps)
-    // syncInterval is a number variable, not a store action
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+    // syncInterval triggers re-setup of interval when changed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncInterval]);
 
   // Start sync interval
@@ -517,9 +517,9 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         clearInterval(syncIntervalRef.current);
       }
     };
-    // syncActiveTimers is stable
-    // syncInterval is a number variable, not a store action
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+    // syncActiveTimers is stable (no deps)
+    // syncInterval triggers re-setup of interval when changed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncInterval]);
 
   // Computed values

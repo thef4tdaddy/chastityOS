@@ -153,13 +153,35 @@ export default {
               // Check if dependencies array exists
               if (depsArray && depsArray.type === 'ArrayExpression') {
                 depsArray.elements.forEach(dep => {
+                  if (!dep || dep.type !== 'Identifier') return;
+
+                  const depName = dep.name;
+
+                  // Exclude common non-action patterns (props, state, config, flags)
+                  const nonActionPatterns = [
+                    /Enabled$/,    // realTimeSyncEnabled, featureEnabled, etc.
+                    /Interval$/,   // syncInterval, updateInterval, etc.
+                    /Permissions$/, // syncPermissions, userPermissions, etc.
+                    /Settings$/,   // appSettings, userSettings, etc.
+                    /Config$/,     // syncConfig, apiConfig, etc.
+                    /Status$/,     // syncStatus, loadStatus, etc.
+                    /^is[A-Z]/,    // isLoading, isOpen, etc.
+                    /^has[A-Z]/,   // hasData, hasError, etc.
+                    /^can[A-Z]/,   // canEdit, canDelete, etc.
+                    /^should[A-Z]/, // shouldUpdate, shouldSync, etc.
+                    /Data$/,       // userData, sessionData, etc.
+                    /State$/,      // appState, formState, etc.
+                  ];
+
+                  // Check if it's a non-action pattern
+                  const isNonAction = nonActionPatterns.some(pattern => pattern.test(depName));
+                  if (isNonAction) return;
+
                   // Check for store hook calls that return actions
                   if (
-                    dep &&
-                    dep.type === 'Identifier' &&
-                    // ChastityOS store action patterns
-                    /^(open|close|set|toggle|update|reset|clear|add|remove|save|load|sync|start|end|pause|resume)/.test(
-                      dep.name
+                    // ChastityOS store action patterns (verbs only)
+                    /^(open|close|set|toggle|update|reset|clear|add|remove|save|load|sync|start|end|pause|resume)[A-Z]/.test(
+                      depName
                     )
                   ) {
                     context.report({
