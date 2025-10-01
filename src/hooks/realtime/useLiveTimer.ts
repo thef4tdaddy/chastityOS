@@ -13,16 +13,20 @@ import {
   TimerSubscription,
 } from "../../types/realtime";
 import {
-  validateTimerPermissions,
   updateTimerInState,
   calculateTimerProgress,
   createTimerSubscription,
   calculateComputedValues,
-  getServerTime,
-  saveTimer,
-  logTimerEvent,
   createTimerSync,
   createNewTimer,
+  saveTimer,
+  logTimerEvent,
+  getServerTime,
+  startTimerOperation,
+  pauseTimerOperation,
+  resumeTimerOperation,
+  stopTimerOperation,
+  extendTimerOperation,
 } from "./timer-operations";
 
 interface UseLiveTimerOptions {
@@ -107,16 +111,12 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      validateTimerPermissions(timer, userId, "control");
-
-      const now = new Date();
-      const updatedTimer: LiveTimer = {
-        ...timer,
-        status: TimerStatus.RUNNING,
-        startTime: now,
-        currentTime: now,
-        isPaused: false,
-      };
+      const updatedTimer = await startTimerOperation(
+        timer,
+        userId,
+        syncTimer,
+        notifySubscribers,
+      );
 
       setTimerState((prev) => ({
         ...prev,
@@ -126,13 +126,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
           updatedTimer,
         ),
       }));
-
-      // Log event and sync
-      await logTimerEvent(timerId, "start", userId, { startTime: now });
-      await syncTimer(timerId);
-      notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
+    [timerState.activeTimers, userId, syncTimer, notifySubscribers],
   );
 
   // Pause a timer
@@ -143,20 +138,12 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      if (!timer.canPause) {
-        throw new Error("Timer cannot be paused");
-      }
-
-      validateTimerPermissions(timer, userId, "pause");
-
-      const now = new Date();
-      const updatedTimer: LiveTimer = {
-        ...timer,
-        status: TimerStatus.PAUSED,
-        isPaused: true,
-        pausedAt: now,
-        currentTime: now,
-      };
+      const updatedTimer = await pauseTimerOperation(
+        timer,
+        userId,
+        syncTimer,
+        notifySubscribers,
+      );
 
       setTimerState((prev) => ({
         ...prev,
@@ -166,12 +153,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
           updatedTimer,
         ),
       }));
-
-      await logTimerEvent(timerId, "pause", userId, { pausedAt: now });
-      await syncTimer(timerId);
-      notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
+    [timerState.activeTimers, userId, syncTimer, notifySubscribers],
   );
 
   // Resume a timer
@@ -182,21 +165,12 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      validateTimerPermissions(timer, userId, "resume");
-
-      const now = new Date();
-      const pauseDuration = timer.pausedAt
-        ? now.getTime() - timer.pausedAt.getTime()
-        : 0;
-
-      const updatedTimer: LiveTimer = {
-        ...timer,
-        status: TimerStatus.RUNNING,
-        isPaused: false,
-        pausedAt: undefined,
-        totalPauseTime: timer.totalPauseTime + pauseDuration,
-        currentTime: now,
-      };
+      const updatedTimer = await resumeTimerOperation(
+        timer,
+        userId,
+        syncTimer,
+        notifySubscribers,
+      );
 
       setTimerState((prev) => ({
         ...prev,
@@ -206,15 +180,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
           updatedTimer,
         ),
       }));
-
-      await logTimerEvent(timerId, "resume", userId, {
-        resumedAt: now,
-        pauseDuration,
-      });
-      await syncTimer(timerId);
-      notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
+    [timerState.activeTimers, userId, syncTimer, notifySubscribers],
   );
 
   // Stop a timer
@@ -225,20 +192,12 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      if (!timer.canStop) {
-        throw new Error("Timer cannot be stopped");
-      }
-
-      validateTimerPermissions(timer, userId, "stop");
-
-      const now = new Date();
-      const updatedTimer: LiveTimer = {
-        ...timer,
-        status: TimerStatus.STOPPED,
-        endTime: now,
-        currentTime: now,
-        isPaused: false,
-      };
+      const updatedTimer = await stopTimerOperation(
+        timer,
+        userId,
+        syncTimer,
+        notifySubscribers,
+      );
 
       setTimerState((prev) => ({
         ...prev,
@@ -248,12 +207,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
           updatedTimer,
         ),
       }));
-
-      await logTimerEvent(timerId, "stop", userId, { stoppedAt: now });
-      await syncTimer(timerId);
-      notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
+    [timerState.activeTimers, userId, syncTimer, notifySubscribers],
   );
 
   // Extend a timer
@@ -264,17 +219,13 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         throw new Error("Timer not found");
       }
 
-      if (!timer.canExtend) {
-        throw new Error("Timer cannot be extended");
-      }
-
-      validateTimerPermissions(timer, userId, "extend");
-
-      const updatedTimer: LiveTimer = {
-        ...timer,
-        duration: timer.duration + additionalSeconds,
-        remaining: timer.remaining + additionalSeconds,
-      };
+      const updatedTimer = await extendTimerOperation(
+        timer,
+        userId,
+        additionalSeconds,
+        syncTimer,
+        notifySubscribers,
+      );
 
       setTimerState((prev) => ({
         ...prev,
@@ -284,12 +235,8 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
           updatedTimer,
         ),
       }));
-
-      await logTimerEvent(timerId, "extend", userId, { additionalSeconds });
-      await syncTimer(timerId);
-      notifySubscribers(updatedTimer);
     },
-    [timerState.activeTimers, userId, notifySubscribers, syncTimer],
+    [timerState.activeTimers, userId, syncTimer, notifySubscribers],
   );
 
   // Subscribe to timer updates
@@ -352,7 +299,7 @@ export const useLiveTimer = (options: UseLiveTimerOptions) => {
         return updatedTimer;
       }),
     }));
-  }, [notifySubscribers]);
+  }, [userId, notifySubscribers]);
 
   // Sync timer with server
   const syncTimer = useCallback(

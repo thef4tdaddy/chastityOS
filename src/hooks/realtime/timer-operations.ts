@@ -224,3 +224,142 @@ export function createNewTimer({
     taskId,
   };
 }
+
+// Timer control operations
+export async function startTimerOperation(
+  timer: LiveTimer,
+  userId: string,
+  syncTimerFn: (timerId: string) => Promise<void>,
+  notifySubscribersFn: (timer: LiveTimer) => void,
+): Promise<LiveTimer> {
+  validateTimerPermissions(timer, userId, "control");
+
+  const now = new Date();
+  const updatedTimer: LiveTimer = {
+    ...timer,
+    status: TimerStatus.RUNNING,
+    startTime: now,
+    currentTime: now,
+    isPaused: false,
+  };
+
+  await logTimerEvent(timer.id, "start", userId, { startTime: now });
+  await syncTimerFn(timer.id);
+  notifySubscribersFn(updatedTimer);
+
+  return updatedTimer;
+}
+
+export async function pauseTimerOperation(
+  timer: LiveTimer,
+  userId: string,
+  syncTimerFn: (timerId: string) => Promise<void>,
+  notifySubscribersFn: (timer: LiveTimer) => void,
+): Promise<LiveTimer> {
+  if (!timer.canPause) {
+    throw new Error("Timer cannot be paused");
+  }
+
+  validateTimerPermissions(timer, userId, "pause");
+
+  const now = new Date();
+  const updatedTimer: LiveTimer = {
+    ...timer,
+    status: TimerStatus.PAUSED,
+    isPaused: true,
+    pausedAt: now,
+    currentTime: now,
+  };
+
+  await logTimerEvent(timer.id, "pause", userId, { pausedAt: now });
+  await syncTimerFn(timer.id);
+  notifySubscribersFn(updatedTimer);
+
+  return updatedTimer;
+}
+
+export async function resumeTimerOperation(
+  timer: LiveTimer,
+  userId: string,
+  syncTimerFn: (timerId: string) => Promise<void>,
+  notifySubscribersFn: (timer: LiveTimer) => void,
+): Promise<LiveTimer> {
+  validateTimerPermissions(timer, userId, "resume");
+
+  const now = new Date();
+  const pauseDuration = timer.pausedAt
+    ? now.getTime() - timer.pausedAt.getTime()
+    : 0;
+
+  const updatedTimer: LiveTimer = {
+    ...timer,
+    status: TimerStatus.RUNNING,
+    isPaused: false,
+    pausedAt: undefined,
+    totalPauseTime: timer.totalPauseTime + pauseDuration,
+    currentTime: now,
+  };
+
+  await logTimerEvent(timer.id, "resume", userId, {
+    resumedAt: now,
+    pauseDuration,
+  });
+  await syncTimerFn(timer.id);
+  notifySubscribersFn(updatedTimer);
+
+  return updatedTimer;
+}
+
+export async function stopTimerOperation(
+  timer: LiveTimer,
+  userId: string,
+  syncTimerFn: (timerId: string) => Promise<void>,
+  notifySubscribersFn: (timer: LiveTimer) => void,
+): Promise<LiveTimer> {
+  if (!timer.canStop) {
+    throw new Error("Timer cannot be stopped");
+  }
+
+  validateTimerPermissions(timer, userId, "stop");
+
+  const now = new Date();
+  const updatedTimer: LiveTimer = {
+    ...timer,
+    status: TimerStatus.STOPPED,
+    endTime: now,
+    currentTime: now,
+    isPaused: false,
+  };
+
+  await logTimerEvent(timer.id, "stop", userId, { stoppedAt: now });
+  await syncTimerFn(timer.id);
+  notifySubscribersFn(updatedTimer);
+
+  return updatedTimer;
+}
+
+export async function extendTimerOperation(
+  timer: LiveTimer,
+  userId: string,
+  additionalSeconds: number,
+  syncTimerFn: (timerId: string) => Promise<void>,
+  notifySubscribersFn: (timer: LiveTimer) => void,
+): Promise<LiveTimer> {
+  if (!timer.canExtend) {
+    throw new Error("Timer cannot be extended");
+  }
+
+  validateTimerPermissions(timer, userId, "extend");
+
+  const updatedTimer: LiveTimer = {
+    ...timer,
+    duration: timer.duration + additionalSeconds,
+    remaining: timer.remaining + additionalSeconds,
+  };
+
+  await logTimerEvent(timer.id, "extend", userId, { additionalSeconds });
+  await syncTimerFn(timer.id);
+  notifySubscribersFn(updatedTimer);
+
+  return updatedTimer;
+}
