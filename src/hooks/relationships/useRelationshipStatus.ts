@@ -54,29 +54,69 @@ export function useRelationshipStatus(): RelationshipStatusState &
 
   const { clearError: clearErrorFn } = createBaseActions();
 
-  const loadChastityData = useCallback(async (relationshipId: string) => {
-    return withErrorHandling(
-      async () => {
-        const chastityData =
-          await relationshipChastityService.getChastityData(relationshipId);
-        setState((prev) => ({ ...prev, chastityData }));
-      },
-      "load chastity data",
-      setState,
-    );
+  const { loadRelationshipData } = useDataLoading(setState);
+
+  const { startSession, endSession, pauseSession, resumeSession } =
+    useSessionOperations(userId, loadRelationshipData, setState);
+
+  const clearError = useCallback(() => {
+    clearErrorFn(setState);
+  }, [clearErrorFn]);
+
+  // Set up real-time listeners for active relationship data
+  useEffect(() => {
+    // This would be called externally when activeRelationship changes
+    // The parent hook will need to manage this subscription
   }, []);
 
-  const loadSessions = useCallback(async (relationshipId: string) => {
-    return withErrorHandling(
-      async () => {
-        const sessions =
-          await relationshipChastityService.getSessionHistory(relationshipId);
-        setState((prev) => ({ ...prev, sessions }));
-      },
-      "load sessions",
-      setState,
-    );
-  }, []);
+  return {
+    ...state,
+    startSession,
+    endSession,
+    pauseSession,
+    resumeSession,
+    loadRelationshipData,
+    clearError,
+  };
+}
+
+// Hook for data loading operations
+function useDataLoading(
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
+) {
+  const loadChastityData = useCallback(
+    async (relationshipId: string) => {
+      return withErrorHandling(
+        async () => {
+          const chastityData =
+            await relationshipChastityService.getChastityData(relationshipId);
+          setState((prev) => ({ ...prev, chastityData }));
+        },
+        "load chastity data",
+        setState,
+      );
+    },
+    [setState],
+  );
+
+  const loadSessions = useCallback(
+    async (relationshipId: string) => {
+      return withErrorHandling(
+        async () => {
+          const sessions =
+            await relationshipChastityService.getSessionHistory(relationshipId);
+          setState((prev) => ({ ...prev, sessions }));
+        },
+        "load sessions",
+        setState,
+      );
+    },
+    [setState],
+  );
 
   const loadRelationshipData = useCallback(
     async (relationshipId: string) => {
@@ -88,6 +128,44 @@ export function useRelationshipStatus(): RelationshipStatusState &
     [loadChastityData, loadSessions],
   );
 
+  return { loadChastityData, loadSessions, loadRelationshipData };
+}
+
+// Hook for session operations
+function useSessionOperations(
+  userId: string | undefined,
+  loadRelationshipData: (relationshipId: string) => Promise<void>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
+) {
+  const { startSession, endSession } = useStartEndSession(
+    userId,
+    loadRelationshipData,
+    setState,
+  );
+
+  const { pauseSession, resumeSession } = usePauseResumeSession(
+    userId,
+    loadRelationshipData,
+    setState,
+  );
+
+  return { startSession, endSession, pauseSession, resumeSession };
+}
+
+// Hook for start and end session operations
+function useStartEndSession(
+  userId: string | undefined,
+  loadRelationshipData: (relationshipId: string) => Promise<void>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
+) {
   const startSession = useCallback(
     async (
       relationshipId: string,
@@ -112,7 +190,7 @@ export function useRelationshipStatus(): RelationshipStatusState &
         setState,
       );
     },
-    [userId, loadRelationshipData],
+    [userId, loadRelationshipData, setState],
   );
 
   const endSession = useCallback(
@@ -133,9 +211,22 @@ export function useRelationshipStatus(): RelationshipStatusState &
         setState,
       );
     },
-    [userId, loadRelationshipData],
+    [userId, loadRelationshipData, setState],
   );
 
+  return { startSession, endSession };
+}
+
+// Hook for pause and resume session operations
+function usePauseResumeSession(
+  userId: string | undefined,
+  loadRelationshipData: (relationshipId: string) => Promise<void>,
+  setState: (
+    value:
+      | RelationshipStatusState
+      | ((prev: RelationshipStatusState) => RelationshipStatusState),
+  ) => void,
+) {
   const pauseSession = useCallback(
     async (relationshipId: string, sessionId: string, reason?: string) => {
       if (!userId) throw new Error("User not authenticated");
@@ -154,7 +245,7 @@ export function useRelationshipStatus(): RelationshipStatusState &
         setState,
       );
     },
-    [userId, loadRelationshipData],
+    [userId, loadRelationshipData, setState],
   );
 
   const resumeSession = useCallback(
@@ -174,26 +265,8 @@ export function useRelationshipStatus(): RelationshipStatusState &
         setState,
       );
     },
-    [userId, loadRelationshipData],
+    [userId, loadRelationshipData, setState],
   );
 
-  const clearError = useCallback(() => {
-    clearErrorFn(setState);
-  }, [clearErrorFn]);
-
-  // Set up real-time listeners for active relationship data
-  useEffect(() => {
-    // This would be called externally when activeRelationship changes
-    // The parent hook will need to manage this subscription
-  }, []);
-
-  return {
-    ...state,
-    startSession,
-    endSession,
-    pauseSession,
-    resumeSession,
-    loadRelationshipData,
-    clearError,
-  };
+  return { pauseSession, resumeSession };
 }
