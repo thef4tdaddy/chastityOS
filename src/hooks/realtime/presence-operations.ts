@@ -1,7 +1,7 @@
 /**
  * Presence operation helper functions
  */
-import React, { useCallback } from "react";
+import React from "react";
 import {
   PresenceState,
   UserPresence,
@@ -21,12 +21,11 @@ export const createPresenceUpdateFunctions = (
   presenceState: PresenceState,
   setPresenceState: React.Dispatch<React.SetStateAction<PresenceState>>,
 ) => {
-  const updateOwnPresence = useCallback(
-    async (
-      status: PresenceStatus,
-      customMessage?: string,
-      currentActivity?: ActivityContext,
-    ): Promise<void> => {
+  const updateOwnPresence = async (
+    status: PresenceStatus,
+    customMessage?: string,
+    currentActivity?: ActivityContext,
+  ): Promise<void> => {
       const updatedPresence = createPresenceUpdate(
         presenceState.ownPresence,
         status,
@@ -45,40 +44,25 @@ export const createPresenceUpdateFunctions = (
 
       // Send presence update to backend/WebSocket
       await sendPresenceUpdate(updatedPresence);
-    },
-    [userId, presenceState.ownPresence, setPresenceState],
-  );
+    };
 
-  const setOnline = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.ONLINE, customMessage);
-    },
-    [updateOwnPresence],
-  );
+  const setOnline = (customMessage?: string) => {
+    return updateOwnPresence(PresenceStatus.ONLINE, customMessage);
+  };
 
-  const setOffline = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.OFFLINE, customMessage);
-    },
-    [updateOwnPresence],
-  );
+  const setOffline = (customMessage?: string) => {
+    return updateOwnPresence(PresenceStatus.OFFLINE, customMessage);
+  };
 
-  const setAway = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.AWAY, customMessage);
-    },
-    [updateOwnPresence],
-  );
+  const setAway = (customMessage?: string) => {
+    return updateOwnPresence(PresenceStatus.AWAY, customMessage);
+  };
 
-  const setBusy = useCallback(
-    (customMessage?: string) => {
-      return updateOwnPresence(PresenceStatus.BUSY, customMessage);
-    },
-    [updateOwnPresence],
-  );
+  const setBusy = (customMessage?: string) => {
+    return updateOwnPresence(PresenceStatus.BUSY, customMessage);
+  };
 
-  const setInSession = useCallback(
-    (sessionStartTime?: Date) => {
+  const setInSession = (sessionStartTime?: Date) => {
       const presence: UserPresence = {
         ...presenceState.ownPresence,
         status: PresenceStatus.IN_SESSION,
@@ -96,20 +80,15 @@ export const createPresenceUpdateFunctions = (
       }));
 
       return sendPresenceUpdate(presence);
-    },
-    [userId, presenceState.ownPresence, setPresenceState],
-  );
+    };
 
-  const updateActivity = useCallback(
-    (activity: ActivityContext) => {
-      return updateOwnPresence(
-        presenceState.ownPresence.status,
-        presenceState.ownPresence.customMessage,
-        activity,
-      );
-    },
-    [presenceState.ownPresence, updateOwnPresence],
-  );
+  const updateActivity = (activity: ActivityContext) => {
+    return updateOwnPresence(
+      presenceState.ownPresence.status,
+      presenceState.ownPresence.customMessage,
+      activity,
+    );
+  };
 
   return {
     updateOwnPresence,
@@ -126,11 +105,10 @@ export const createPresenceUpdateFunctions = (
 export const createSubscriptionFunctions = (
   setPresenceState: React.Dispatch<React.SetStateAction<PresenceState>>,
 ) => {
-  const subscribeToPresence = useCallback(
-    (
-      userIds: string[],
-      callback: (presences: UserPresence[]) => void,
-    ): PresenceSubscription => {
+  const subscribeToPresence = (
+    userIds: string[],
+    callback: (presences: UserPresence[]) => void,
+  ): PresenceSubscription => {
       const subscription: PresenceSubscription = {
         userIds,
         callback,
@@ -173,24 +151,18 @@ export const createSubscriptionFunctions = (
           }));
         },
       } as PresenceSubscription & { unsubscribe: () => void };
-    },
-    [setPresenceState],
-  );
+    };
 
   return { subscribeToPresence };
 };
 
 // Helper function to create query functions
 export const createQueryFunctions = (presenceState: PresenceState) => {
-  const getUserPresence = useCallback(
-    (targetUserId: string): UserPresence | null => {
-      return presenceState.userPresences[targetUserId] || null;
-    },
-    [presenceState.userPresences],
-  );
+  const getUserPresence = (targetUserId: string): UserPresence | null => {
+    return presenceState.userPresences[targetUserId] || null;
+  };
 
-  const getMultipleUserPresence = useCallback(
-    (userIds: string[]): UserPresence[] => {
+  const getMultipleUserPresence = (userIds: string[]): UserPresence[] => {
       const result: UserPresence[] = [];
       for (let i = 0; i < userIds.length; i++) {
         const presence = presenceState.userPresences[userIds[i]];
@@ -199,31 +171,22 @@ export const createQueryFunctions = (presenceState: PresenceState) => {
         }
       }
       return result;
-    },
-    [presenceState.userPresences],
-  );
+    };
 
-  const isUserOnline = useCallback(
-    (targetUserId: string): boolean => {
-      const presence = getUserPresence(targetUserId);
-      return presence?.status === PresenceStatus.ONLINE;
-    },
-    [getUserPresence],
-  );
+  const isUserOnline = (targetUserId: string): boolean => {
+    const presence = getUserPresence(targetUserId);
+    return presence?.status === PresenceStatus.ONLINE;
+  };
 
-  const isUserInSession = useCallback(
-    (targetUserId: string): boolean => {
-      const presence = getUserPresence(targetUserId);
-      return (
-        presence?.status === PresenceStatus.IN_SESSION ||
-        presence?.isInChastitySession === true
-      );
-    },
-    [getUserPresence],
-  );
+  const isUserInSession = (targetUserId: string): boolean => {
+    const presence = getUserPresence(targetUserId);
+    return (
+      presence?.status === PresenceStatus.IN_SESSION ||
+      presence?.isInChastitySession === true
+    );
+  };
 
-  const getOnlineCount = useCallback(
-    (userIds: string[]): number => {
+  const getOnlineCount = (userIds: string[]): number => {
       let count = 0;
       for (let i = 0; i < userIds.length; i++) {
         const presence = presenceState.userPresences[userIds[i]];
@@ -239,9 +202,7 @@ export const createQueryFunctions = (presenceState: PresenceState) => {
         }
       }
       return count;
-    },
-    [presenceState.userPresences],
-  );
+    };
 
   return {
     getUserPresence,
