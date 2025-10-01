@@ -111,120 +111,14 @@ export function useAdminDashboard(): UseAdminDashboardReturn {
     };
   }, [wearers]);
 
-  // Pause all active sessions
-  const pauseAllSessions = useCallback(async (): Promise<void> => {
-    setError(null);
-    try {
-      setWearers((prev) =>
-        prev.map((w) =>
-          w.isActive && !w.isPaused ? { ...w, isPaused: true } : w,
-        ),
-      );
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to pause sessions");
-      setError(error);
-      throw error;
-    }
-  }, []);
+  const { pauseAllSessions, resumeAllSessions, endSession } =
+    useSessionManagement(setWearers, setError, wearers, setRecentActivity);
 
-  // Resume all paused sessions
-  const resumeAllSessions = useCallback(async (): Promise<void> => {
-    setError(null);
-    try {
-      setWearers((prev) =>
-        prev.map((w) => (w.isPaused ? { ...w, isPaused: false } : w)),
-      );
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to resume sessions");
-      setError(error);
-      throw error;
-    }
-  }, []);
-
-  // End a specific wearer's session
-  const endSession = useCallback(
-    async (wearerId: string): Promise<void> => {
-      setError(null);
-      try {
-        setWearers((prev) =>
-          prev.map((w) =>
-            w.id === wearerId
-              ? {
-                  ...w,
-                  isActive: false,
-                  sessionStartTime: undefined,
-                  isPaused: false,
-                }
-              : w,
-          ),
-        );
-
-        // Add activity log
-        const wearer = wearers.find((w) => w.id === wearerId);
-        if (wearer) {
-          setRecentActivity((prev) =>
-            [
-              {
-                id: `activity-${Date.now()}`,
-                type: "session_end",
-                wearerId,
-                wearerName: wearer.name,
-                timestamp: new Date(),
-                description: `Session ended for ${wearer.name}`,
-              },
-              ...prev,
-            ].slice(0, 50),
-          ); // Keep last 50 activities
-        }
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to end session");
-        setError(error);
-        throw error;
-      }
-    },
-    [wearers],
+  const { sendBulkNotification, filterBy, refreshData } = useAdminActions(
+    setError,
+    setCurrentFilter,
+    setLastUpdate,
   );
-
-  // Send bulk notification
-  const sendBulkNotification = useCallback(
-    async (message: string, wearerIds: string[]): Promise<void> => {
-      setError(null);
-      try {
-        // Mock implementation - in production would call notification service
-        logger.info(
-          `Sending notification to ${wearerIds.length} wearers: ${message}`,
-        );
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to send notification");
-        setError(error);
-        throw error;
-      }
-    },
-    [],
-  );
-
-  // Apply filter
-  const filterBy = useCallback((filter: AdminFilter) => {
-    setCurrentFilter(filter);
-  }, []);
-
-  // Refresh data
-  const refreshData = useCallback(async (): Promise<void> => {
-    setError(null);
-    try {
-      // Mock implementation - in production would fetch from API/Firebase
-      setLastUpdate(new Date());
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to refresh data");
-      setError(error);
-      throw error;
-    }
-  }, []);
 
   // Simulate initial load
   useState(() => {
@@ -258,4 +152,135 @@ export function useAdminDashboard(): UseAdminDashboardReturn {
     refreshData,
     lastUpdate,
   };
+}
+
+// Hook for session management operations
+function useSessionManagement(
+  setWearers: React.Dispatch<React.SetStateAction<WearerWithSession[]>>,
+  setError: React.Dispatch<React.SetStateAction<Error | null>>,
+  wearers: WearerWithSession[],
+  setRecentActivity: React.Dispatch<React.SetStateAction<Activity[]>>,
+) {
+  const pauseAllSessions = useCallback(async (): Promise<void> => {
+    setError(null);
+    try {
+      setWearers((prev) =>
+        prev.map((w) =>
+          w.isActive && !w.isPaused ? { ...w, isPaused: true } : w,
+        ),
+      );
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error("Failed to pause sessions");
+      setError(error);
+      throw error;
+    }
+  }, [setWearers, setError]);
+
+  const resumeAllSessions = useCallback(async (): Promise<void> => {
+    setError(null);
+    try {
+      setWearers((prev) =>
+        prev.map((w) => (w.isPaused ? { ...w, isPaused: false } : w)),
+      );
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error("Failed to resume sessions");
+      setError(error);
+      throw error;
+    }
+  }, [setWearers, setError]);
+
+  const endSession = useCallback(
+    async (wearerId: string): Promise<void> => {
+      setError(null);
+      try {
+        setWearers((prev) =>
+          prev.map((w) =>
+            w.id === wearerId
+              ? {
+                  ...w,
+                  isActive: false,
+                  sessionStartTime: undefined,
+                  isPaused: false,
+                }
+              : w,
+          ),
+        );
+
+        // Add activity log
+        const wearer = wearers.find((w) => w.id === wearerId);
+        if (wearer) {
+          setRecentActivity((prev) =>
+            [
+              {
+                id: `activity-${Date.now()}`,
+                type: "session_end" as const,
+                wearerId,
+                wearerName: wearer.name,
+                timestamp: new Date(),
+                description: `Session ended for ${wearer.name}`,
+              },
+              ...prev,
+            ].slice(0, 50),
+          );
+        }
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to end session");
+        setError(error);
+        throw error;
+      }
+    },
+    [wearers, setWearers, setError, setRecentActivity],
+  );
+
+  return { pauseAllSessions, resumeAllSessions, endSession };
+}
+
+// Hook for admin actions (notifications, filters, refresh)
+function useAdminActions(
+  setError: React.Dispatch<React.SetStateAction<Error | null>>,
+  setCurrentFilter: React.Dispatch<React.SetStateAction<AdminFilter>>,
+  setLastUpdate: React.Dispatch<React.SetStateAction<Date | null>>,
+) {
+  const sendBulkNotification = useCallback(
+    async (message: string, wearerIds: string[]): Promise<void> => {
+      setError(null);
+      try {
+        // Mock implementation - in production would call notification service
+        logger.info(
+          `Sending notification to ${wearerIds.length} wearers: ${message}`,
+        );
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to send notification");
+        setError(error);
+        throw error;
+      }
+    },
+    [setError],
+  );
+
+  const filterBy = useCallback(
+    (filter: AdminFilter) => {
+      setCurrentFilter(filter);
+    },
+    [setCurrentFilter],
+  );
+
+  const refreshData = useCallback(async (): Promise<void> => {
+    setError(null);
+    try {
+      // Mock implementation - in production would fetch from API/Firebase
+      setLastUpdate(new Date());
+    } catch (err) {
+      const error =
+        err instanceof Error ? err : new Error("Failed to refresh data");
+      setError(error);
+      throw error;
+    }
+  }, [setError, setLastUpdate]);
+
+  return { sendBulkNotification, filterBy, refreshData };
 }
