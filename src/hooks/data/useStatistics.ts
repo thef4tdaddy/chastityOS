@@ -17,15 +17,15 @@ import {
   getWeeklyBreakdown as calculateWeeklyBreakdown,
   compareWithPrevious as compareMetricsWithPrevious,
   getBenchmarkComparisons as calculateBenchmarkComparisons,
-} from "./statistics-calculations";
+} from "../../utils/statistics/calculations";
 import {
   generateKeyholderDashboard,
   generateRelationshipComparison,
-} from "./statistics-keyholder";
+} from "../../utils/statistics/keyholder";
 import {
   generatePredictiveInsights,
   generateRecommendations,
-} from "./statistics-predictions";
+} from "../../utils/statistics/predictions";
 
 const logger = serviceLogger("useStatistics");
 
@@ -43,16 +43,16 @@ import type {
   PredictiveAnalytics,
   RecommendationEngine,
   TimePeriod,
-  PeriodStatistics,
-  MonthlyTrends,
-  WeeklyBreakdown,
-  ComparisonResult,
-  BenchmarkData,
-  KeyholderDashboardStats,
+  PeriodStatistics as _PeriodStatistics,
+  MonthlyTrends as _MonthlyTrends,
+  WeeklyBreakdown as _WeeklyBreakdown,
+  ComparisonResult as _ComparisonResult,
+  BenchmarkData as _BenchmarkData,
+  KeyholderDashboardStats as _KeyholderDashboardStats,
   KeyholderStatisticsView,
-  RelationshipComparisonStats,
-  PredictiveInsights,
-  Recommendation,
+  RelationshipComparisonStats as _RelationshipComparisonStats,
+  PredictiveInsights as _PredictiveInsights,
+  Recommendation as _Recommendation,
   StatisticsExport,
   StatisticType,
   ExportFormat,
@@ -414,10 +414,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     [],
   );
 
-  const getWeeklyBreakdown = useCallback(
-    () => calculateWeeklyBreakdown(),
-    [],
-  );
+  const getWeeklyBreakdown = useCallback(() => calculateWeeklyBreakdown(), []);
 
   // ==================== COMPARATIVE ANALYSIS ====================
 
@@ -434,7 +431,8 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
   // ==================== KEYHOLDER FEATURES ====================
 
   const getKeyholderDashboard = useCallback(
-    () => generateKeyholderDashboard(consistencyRating, sessionStats, goalStats),
+    () =>
+      generateKeyholderDashboard(consistencyRating, sessionStats, goalStats),
     [consistencyRating, sessionStats, goalStats],
   );
 
@@ -450,10 +448,7 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     [],
   );
 
-  const getRecommendations = useCallback(
-    () => generateRecommendations(),
-    [],
-  );
+  const getRecommendations = useCallback(() => generateRecommendations(), []);
 
   // ==================== EXPORT AND SHARING ====================
 

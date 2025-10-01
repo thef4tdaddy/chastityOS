@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { doc, setDoc, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { db } from "../../firebase";
 
 /**
  * @typedef {Object} Session
@@ -37,33 +37,40 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
     currentSession: null,
     isSessionActive: false,
     sessionStartTime: null,
-    elapsedTime: 0
+    elapsedTime: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const timerRef = useRef(null);
   const unsubscribeRef = useRef(null);
 
-  const saveSessionToFirestore = useCallback(async (sessionData) => {
-    if (!userId || !isAuthReady) {
-      return;
-    }
+  const saveSessionToFirestore = useCallback(
+    async (sessionData) => {
+      if (!userId || !isAuthReady) {
+        return;
+      }
 
-    try {
-      const userDocRef = doc(db, 'users', userId);
-      await setDoc(userDocRef, { 
-        currentSession: sessionData,
-        sessionUpdatedAt: serverTimestamp()
-      }, { merge: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save session');
-    }
-  }, [userId, isAuthReady]);
+      try {
+        const userDocRef = doc(db, "users", userId);
+        await setDoc(
+          userDocRef,
+          {
+            currentSession: sessionData,
+            sessionUpdatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to save session");
+      }
+    },
+    [userId, isAuthReady],
+  );
 
   const startSession = useCallback(async () => {
     if (sessionState.isSessionActive) {
-      setError('Session already active');
+      setError("Session already active");
       return;
     }
 
@@ -75,100 +82,111 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
       const newSession = {
         id: crypto.randomUUID(),
         startTime,
-        isActive: true
+        isActive: true,
       };
 
       const newState = {
         currentSession: newSession,
         isSessionActive: true,
         sessionStartTime: startTime,
-        elapsedTime: 0
+        elapsedTime: 0,
       };
 
       setSessionState(newState);
       await saveSessionToFirestore(newSession);
       if (onSessionChange) onSessionChange(newSession);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start session');
+      setError(err instanceof Error ? err.message : "Failed to start session");
     } finally {
       setIsLoading(false);
     }
   }, [sessionState.isSessionActive, saveSessionToFirestore, onSessionChange]);
 
-  const endSession = useCallback(async (reason) => {
-    if (!sessionState.isSessionActive || !sessionState.currentSession) {
-      setError('No active session to end');
-      return;
-    }
+  const endSession = useCallback(
+    async (reason) => {
+      if (!sessionState.isSessionActive || !sessionState.currentSession) {
+        setError("No active session to end");
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const endTime = new Date();
-      const duration = sessionState.sessionStartTime 
-        ? Math.floor((endTime.getTime() - sessionState.sessionStartTime.getTime()) / 1000)
-        : 0;
+      try {
+        const endTime = new Date();
+        const duration = sessionState.sessionStartTime
+          ? Math.floor(
+              (endTime.getTime() - sessionState.sessionStartTime.getTime()) /
+                1000,
+            )
+          : 0;
 
-      const endedSession = {
-        ...sessionState.currentSession,
-        endTime,
-        isActive: false,
-        duration,
-        reason
-      };
+        const endedSession = {
+          ...sessionState.currentSession,
+          endTime,
+          isActive: false,
+          duration,
+          reason,
+        };
 
-      const newState = {
-        currentSession: null,
-        isSessionActive: false,
-        sessionStartTime: null,
-        elapsedTime: 0
-      };
+        const newState = {
+          currentSession: null,
+          isSessionActive: false,
+          sessionStartTime: null,
+          elapsedTime: 0,
+        };
 
-      setSessionState(newState);
-      await saveSessionToFirestore(endedSession);
-      if (onSessionChange) onSessionChange(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to end session');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    sessionState.isSessionActive, 
-    sessionState.currentSession, 
-    sessionState.sessionStartTime,
-    saveSessionToFirestore, 
-    onSessionChange
-  ]);
+        setSessionState(newState);
+        await saveSessionToFirestore(endedSession);
+        if (onSessionChange) onSessionChange(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to end session");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      sessionState.isSessionActive,
+      sessionState.currentSession,
+      sessionState.sessionStartTime,
+      saveSessionToFirestore,
+      onSessionChange,
+    ],
+  );
 
-  const updateSession = useCallback(async (updates) => {
-    if (!sessionState.currentSession) {
-      setError('No active session to update');
-      return;
-    }
+  const updateSession = useCallback(
+    async (updates) => {
+      if (!sessionState.currentSession) {
+        setError("No active session to update");
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const updatedSession = {
-        ...sessionState.currentSession,
-        ...updates
-      };
+      try {
+        const updatedSession = {
+          ...sessionState.currentSession,
+          ...updates,
+        };
 
-      setSessionState(prev => ({
-        ...prev,
-        currentSession: updatedSession
-      }));
+        setSessionState((prev) => ({
+          ...prev,
+          currentSession: updatedSession,
+        }));
 
-      await saveSessionToFirestore(updatedSession);
-      if (onSessionChange) onSessionChange(updatedSession);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update session');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [sessionState.currentSession, saveSessionToFirestore, onSessionChange]);
+        await saveSessionToFirestore(updatedSession);
+        if (onSessionChange) onSessionChange(updatedSession);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to update session",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sessionState.currentSession, saveSessionToFirestore, onSessionChange],
+  );
 
   // Real-time session listener
   useEffect(() => {
@@ -176,8 +194,9 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
       return;
     }
 
-    const userDocRef = doc(db, 'users', userId);
-    const unsubscribe = onSnapshot(userDocRef,
+    const userDocRef = doc(db, "users", userId);
+    const unsubscribe = onSnapshot(
+      userDocRef,
       (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
@@ -185,21 +204,21 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
             const session = {
               ...data.currentSession,
               startTime: data.currentSession.startTime?.toDate(),
-              endTime: data.currentSession.endTime?.toDate()
+              endTime: data.currentSession.endTime?.toDate(),
             };
 
-            setSessionState(prev => ({
+            setSessionState((prev) => ({
               ...prev,
               currentSession: session,
               isSessionActive: session.isActive,
-              sessionStartTime: session.startTime
+              sessionStartTime: session.startTime,
             }));
           } else {
             setSessionState({
               currentSession: null,
               isSessionActive: false,
               sessionStartTime: null,
-              elapsedTime: 0
+              elapsedTime: 0,
             });
           }
         }
@@ -207,7 +226,7 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
       },
       (err) => {
         setError(err.message);
-      }
+      },
     );
 
     unsubscribeRef.current = unsubscribe;
@@ -222,10 +241,13 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
   useEffect(() => {
     if (sessionState.isSessionActive && sessionState.sessionStartTime) {
       timerRef.current = setInterval(() => {
-        const elapsed = Math.floor((new Date().getTime() - sessionState.sessionStartTime.getTime()) / 1000);
-        setSessionState(prev => ({
+        const elapsed = Math.floor(
+          (new Date().getTime() - sessionState.sessionStartTime.getTime()) /
+            1000,
+        );
+        setSessionState((prev) => ({
           ...prev,
-          elapsedTime: elapsed
+          elapsedTime: elapsed,
         }));
       }, 1000);
     } else {
@@ -249,6 +271,6 @@ export const useSession = ({ userId, isAuthReady, onSessionChange }) => {
     startSession,
     endSession,
     updateSession,
-    clearError: useCallback(() => setError(null), [])
+    clearError: useCallback(() => setError(null), []),
   };
 };

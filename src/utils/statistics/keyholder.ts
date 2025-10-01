@@ -8,7 +8,7 @@ import type {
   RelationshipComparisonStats,
   SessionStatistics,
   GoalStatistics,
-} from "./types/statistics";
+} from "../../hooks/data/types/statistics";
 
 /**
  * Generate keyholder dashboard data

@@ -78,7 +78,7 @@ export function useSessionTimer(
         intervalRef.current = null;
       }
     };
-  }, [isSessionActive, updateInterval]); // eslint-disable-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [isSessionActive, updateInterval]);
 
   // Memoized calculations to prevent unnecessary recalculations
   const timerData = useMemo((): SessionTimerData => {
@@ -198,7 +198,7 @@ export function useMultiSessionTimer(
         intervalRef.current = null;
       }
     };
-  }, [enabled, hasActiveSessions, updateInterval]); // eslint-disable-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [enabled, hasActiveSessions, updateInterval]);
 
   // Calculate timer data for each session
   const timerDataArray = useMemo(() => {

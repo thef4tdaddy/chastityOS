@@ -106,21 +106,26 @@ export const useNotificationStore = create<NotificationState>()(
       // Actions
       addNotification: (notification) => {
         const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        
+
         // Determine priority from type if not specified
-        const priority = notification.priority || (
-          notification.type === 'error' ? 'high' : 
-          notification.type === 'warning' ? 'medium' : 'low'
-        );
-        
+        const priority =
+          notification.priority ||
+          (notification.type === "error"
+            ? "high"
+            : notification.type === "warning"
+              ? "medium"
+              : "low");
+
         // Set duration based on priority, with fallback to type
-        const duration = notification.duration !== undefined 
-          ? notification.duration 
-          : DEFAULT_DURATIONS[priority] || TYPE_DURATIONS[notification.type];
-        
+        const duration =
+          notification.duration !== undefined
+            ? notification.duration
+            : DEFAULT_DURATIONS[priority] || TYPE_DURATIONS[notification.type];
+
         // Urgent priority requires interaction
-        const requireInteraction = priority === 'urgent' || notification.requireInteraction;
-        
+        const requireInteraction =
+          priority === "urgent" || notification.requireInteraction;
+
         const newNotification: Notification = {
           id,
           timestamp: new Date(),
@@ -140,7 +145,11 @@ export const useNotificationStore = create<NotificationState>()(
         );
 
         // Auto-remove notification after duration if specified and not requiring interaction
-        if (newNotification.duration && newNotification.duration > 0 && !newNotification.requireInteraction) {
+        if (
+          newNotification.duration &&
+          newNotification.duration > 0 &&
+          !newNotification.requireInteraction
+        ) {
           setTimeout(() => {
             useNotificationStore.getState().removeNotification(id);
           }, newNotification.duration);
