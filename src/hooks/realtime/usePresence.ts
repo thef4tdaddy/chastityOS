@@ -47,8 +47,8 @@ export const usePresence = (options: UsePresenceOptions) => {
 
   // Refs for tracking activity
   const lastActivityRef = useRef<Date>(new Date());
-  const presenceIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const presenceIntervalRef = useRef<number | null>(null);
+  const activityTimeoutRef = useRef<number | null>(null);
 
   // Create operation functions using helpers
   const presenceUpdateFunctions = createPresenceUpdateFunctions(

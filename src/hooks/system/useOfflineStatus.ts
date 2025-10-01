@@ -75,21 +75,21 @@ export const useOfflineStatus = () => {
         rtt?: number;
         effectiveType?: string;
         type?: string;
-        addEventListener?: (type: string, listener: EventListener) => void;
+        addEventListener?: (type: string, listener: (event: Event) => void) => void;
       };
       mozConnection?: {
         downlink?: number;
         rtt?: number;
         effectiveType?: string;
         type?: string;
-        addEventListener?: (type: string, listener: EventListener) => void;
+        addEventListener?: (type: string, listener: (event: Event) => void) => void;
       };
       webkitConnection?: {
         downlink?: number;
         rtt?: number;
         effectiveType?: string;
         type?: string;
-        addEventListener?: (type: string, listener: EventListener) => void;
+        addEventListener?: (type: string, listener: (event: Event) => void) => void;
       };
     };
     const connection =
