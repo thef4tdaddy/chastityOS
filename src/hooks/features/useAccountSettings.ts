@@ -3,6 +3,15 @@
  */
 
 import { useState, useCallback } from "react";
+import {
+  withErrorHandling,
+  withDeletionHandling,
+  handleEmailUpdate,
+  handlePasswordUpdate,
+  handle2FAEnable,
+  handle2FADisable,
+  handleAccountDelete,
+} from "./account-settings-utils";
 
 export interface AccountData {
   email: string;
@@ -34,98 +43,62 @@ export function useAccountSettings(): UseAccountSettingsReturn {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
-
-  const updateEmail = useCallback(async (email: string): Promise<void> => {
-    setIsUpdating(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      setAccount((prev) => ({ ...prev, email }));
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to update email");
-      setError(error);
-      throw error;
-    } finally {
-      setIsUpdating(false);
-    }
-  }, []);
+  const updateEmail = useCallback(
+    async (email: string): Promise<void> =>
+      withErrorHandling(
+        () => handleEmailUpdate(email, setAccount),
+        setIsUpdating,
+        setError,
+        "Failed to update email",
+      ),
+    [],
+  );
 
   const updatePassword = useCallback(
-    async (_oldPassword: string, _newPassword: string): Promise<void> => {
-      setIsUpdating(true);
-      setError(null);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to update password");
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
-    },
+    async (oldPassword: string, newPassword: string): Promise<void> =>
+      withErrorHandling(
+        () => handlePasswordUpdate(oldPassword, newPassword),
+        setIsUpdating,
+        setError,
+        "Failed to update password",
+      ),
     [],
   );
 
-  const enable2FA = useCallback(async (): Promise<string> => {
-    setIsUpdating(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      const mockQR = "data:image/png;base64,mock-qr-code";
-      setQrCode(mockQR);
-      setAccount((prev) => ({ ...prev, has2FA: true }));
-      return mockQR;
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to enable 2FA");
-      setError(error);
-      throw error;
-    } finally {
-      setIsUpdating(false);
-    }
-  }, []);
+  const enable2FA = useCallback(
+    async (): Promise<string> =>
+      withErrorHandling(
+        () => handle2FAEnable(setQrCode, setAccount),
+        setIsUpdating,
+        setError,
+        "Failed to enable 2FA",
+      ),
+    [],
+  );
 
-  const disable2FA = useCallback(async (_code: string): Promise<void> => {
-    setIsUpdating(true);
-    setError(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      setAccount((prev) => ({ ...prev, has2FA: false }));
-      setQrCode(null);
-    } catch (err) {
-      const error =
-        err instanceof Error ? err : new Error("Failed to disable 2FA");
-      setError(error);
-      throw error;
-    } finally {
-      setIsUpdating(false);
-    }
-  }, []);
+  const disable2FA = useCallback(
+    async (code: string): Promise<void> =>
+      withErrorHandling(
+        () => handle2FADisable(code, setQrCode, setAccount),
+        setIsUpdating,
+        setError,
+        "Failed to disable 2FA",
+      ),
+    [],
+  );
 
   const deleteAccount = useCallback(
-    async (_password: string): Promise<void> => {
-      setIsDeleting(true);
-      setError(null);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      } catch (err) {
-        const error =
-          err instanceof Error ? err : new Error("Failed to delete account");
-        setError(error);
-        throw error;
-      } finally {
-        setIsDeleting(false);
-      }
-    },
+    async (password: string): Promise<void> =>
+      withDeletionHandling(
+        () => handleAccountDelete(password),
+        setIsDeleting,
+        setError,
+        "Failed to delete account",
+      ),
     [],
   );
 
-  useState(() => {
-    setTimeout(() => setIsLoading(false), 100);
-  });
+  useState(() => setTimeout(() => setIsLoading(false), 100));
 
   return {
     account,
