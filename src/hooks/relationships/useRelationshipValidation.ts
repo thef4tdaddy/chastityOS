@@ -6,7 +6,13 @@ import { useState, useCallback } from "react";
 import { useAuthState } from "@/contexts/AuthContext";
 import { dataMigrationService } from "@/services/migration/DataMigrationService";
 import { BaseHookState, BaseHookActions } from "./types";
-import { withErrorHandling, createBaseActions } from "./utils";
+import {
+  withErrorHandling,
+  createBaseActions,
+  validateEmail,
+  validateRole,
+  validateMessage,
+} from "./utils";
 import type { KeyholderPermissions } from "@/types/core";
 
 interface RelationshipValidationState extends BaseHookState {
@@ -74,21 +80,11 @@ export function useRelationshipValidation(): RelationshipValidationState &
       role: "submissive" | "keyholder";
       message?: string;
     }) => {
-      const errors: string[] = [];
-
-      if (!formData.email.trim()) {
-        errors.push("Email is required");
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        errors.push("Email format is invalid");
-      }
-
-      if (!formData.role) {
-        errors.push("Role is required");
-      }
-
-      if (formData.message && formData.message.length > 500) {
-        errors.push("Message cannot exceed 500 characters");
-      }
+      const errors: string[] = [
+        ...validateEmail(formData.email),
+        ...validateRole(formData.role),
+        ...validateMessage(formData.message),
+      ];
 
       return {
         isValid: errors.length === 0,
