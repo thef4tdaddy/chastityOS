@@ -323,6 +323,9 @@ export interface EventFilters {
     start: Date;
     end: Date;
   };
+  startDate?: Date;
+  endDate?: Date;
+  limit?: number;
   isPrivate?: boolean;
 }
 
@@ -331,6 +334,11 @@ export interface TaskFilters {
   status?: TaskStatus;
   priority?: "low" | "medium" | "high" | "critical";
   assignedBy?: "submissive" | "keyholder";
+  category?: string;
+  dueDate?: {
+    start?: Date;
+    end?: Date;
+  };
   isOverdue?: boolean;
   hasConsequence?: boolean;
 }
@@ -342,6 +350,7 @@ export interface QueuedOperation<T extends DBBase> {
   payload: T;
   userId: string;
   createdAt: Date;
+  retryCount?: number;
 }
 
 // Sync operation types and interfaces

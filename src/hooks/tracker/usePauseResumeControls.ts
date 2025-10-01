@@ -16,6 +16,7 @@ type PauseState = {
 export interface UsePauseResumeControlsProps {
   sessionId: string;
   userId: string;
+  _userId?: string;
   isPaused: boolean;
   pauseState?: PauseState;
   onPause?: () => void;

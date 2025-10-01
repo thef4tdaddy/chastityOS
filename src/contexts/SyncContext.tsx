@@ -82,7 +82,7 @@ const useConflictResolutionHandlers = (
 };
 
 export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
-  const { data: user } = useAuth();
+  const { user } = useAuth();
   const userId = user?.uid;
   const {
     isSyncing,

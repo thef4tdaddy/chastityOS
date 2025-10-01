@@ -32,6 +32,7 @@ interface UseNotificationsOptions {
   relationshipId?: string;
   enablePush?: boolean;
   enableEmail?: boolean;
+  _enableEmail?: boolean;
   maxNotifications?: number;
 }
 

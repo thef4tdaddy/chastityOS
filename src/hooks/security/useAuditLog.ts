@@ -46,6 +46,7 @@ interface UseAuditLogOptions {
   userId: string;
   relationshipId?: string;
   autoLogActions?: boolean;
+  _autoLogActions?: boolean;
   retentionDays?: number;
 }
 
