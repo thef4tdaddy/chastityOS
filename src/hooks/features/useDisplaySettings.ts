@@ -48,6 +48,7 @@ export function useDisplaySettings(): UseDisplaySettingsReturn {
   const [error, setError] = useState<Error | null>(null);
   const [_previewedSettings, _setPreviewedSettings] =
     useState<Partial<DisplaySettings> | null>(null);
+
   const updateTheme = useCallback(
     async (theme: "light" | "dark" | "auto"): Promise<void> =>
       withErrorHandling(

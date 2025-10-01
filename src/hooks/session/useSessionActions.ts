@@ -282,12 +282,10 @@ export function useSessionActions({
     pauseSession: pauseSessionCore,
     resumeSession: resumeSessionCore,
   } = usePauseResume(userId, session?.id);
-
   const isPaused = pauseStatus.isPaused;
   const isPausing = pauseStatus.pauseCount > 0 && pauseStatus.isPaused;
-  const isResuming = false; // Track this internally if needed
+  const isResuming = false;
 
-  // Calculate permissions using helper hook
   const { canStart, canEnd, canPause, canResume } = useSessionPermissions({
     isActive,
     canSelfModify,
@@ -298,10 +296,7 @@ export function useSessionActions({
     cooldownState,
   });
 
-  // Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const clearError = useCallback(() => setError(null), []);
 
   // Handle errors internally
   const handleError = useCallback(
@@ -315,7 +310,6 @@ export function useSessionActions({
     [userId, onError],
   );
 
-  // Start session
   const startSession = useCallback(
     async (config?: SessionConfig): Promise<void> => {
       await handleStartSession(canStart, userId, config, {
@@ -329,7 +323,6 @@ export function useSessionActions({
     [canStart, userId, startSessionCore, handleError, onSessionStarted],
   );
 
-  // End session
   const endSession = useCallback(
     async (reason?: string): Promise<void> => {
       await handleEndSession(canEnd, userId, reason, {
@@ -343,7 +336,6 @@ export function useSessionActions({
     [canEnd, userId, stopSessionCore, handleError, onSessionEnded],
   );
 
-  // Pause session
   const pauseSession = useCallback(
     async (reason?: string): Promise<void> => {
       await handlePauseSession(canPause, userId, reason, {
@@ -356,7 +348,6 @@ export function useSessionActions({
     [canPause, userId, pauseSessionCore, handleError, onSessionPaused],
   );
 
-  // Resume session
   const resumeSession = useCallback(async (): Promise<void> => {
     await handleResumeSession(canResume, userId, {
       resumeSessionCore,
@@ -367,29 +358,20 @@ export function useSessionActions({
   }, [canResume, userId, resumeSessionCore, handleError, onSessionResumed]);
 
   return {
-    // Actions
     startSession,
     endSession,
     pauseSession,
     resumeSession,
-
-    // State
     isStarting,
     isEnding,
     isPausing,
     isResuming,
-
-    // Permissions
     canStart,
     canEnd,
     canPause,
     canResume,
-
-    // Error handling
     error,
     clearError,
-
-    // Current session info
     isActive,
     isPaused,
     sessionId: session?.id || null,
