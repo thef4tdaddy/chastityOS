@@ -84,10 +84,11 @@ describe("ExampleComponent", () => {
 // Example of testing with async operations
 describe("ExampleComponent - Async Operations", () => {
   it("should handle async state changes", async () => {
+    const { useState, useEffect } = await import("react");
     const AsyncComponent = () => {
-      const [loading, setLoading] = React.useState(true);
+      const [loading, setLoading] = useState(true);
 
-      React.useEffect(() => {
+      useEffect(() => {
         setTimeout(() => setLoading(false), 100);
       }, []);
 

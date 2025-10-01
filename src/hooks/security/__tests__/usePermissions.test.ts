@@ -2,6 +2,7 @@
  * Tests for usePermissions hook
  */
 import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
 import { usePermissions } from "../usePermissions";
 import { UserRole } from "../../../types/core";
 

@@ -65,21 +65,21 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn(() => ({
+globalThis.ResizeObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as any;
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn(() => ({
+globalThis.IntersectionObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}));
+})) as any;
 
 // Mock crypto for hash functions
-Object.defineProperty(global, "crypto", {
+Object.defineProperty(globalThis, "crypto", {
   value: {
     subtle: {
       digest: vi
@@ -120,17 +120,17 @@ Object.defineProperty(global, "crypto", {
 });
 
 // Mock TextEncoder/TextDecoder
-global.TextEncoder = class TextEncoder {
+globalThis.TextEncoder = class TextEncoder {
   encode(input: string) {
     return new Uint8Array(input.split("").map((char) => char.charCodeAt(0)));
   }
-};
+} as any;
 
-global.TextDecoder = class TextDecoder {
+globalThis.TextDecoder = class TextDecoder {
   decode(input: Uint8Array) {
     return String.fromCharCode(...Array.from(input));
   }
-};
+} as any;
 
 // Mock HTMLCanvasElement.getContext
 HTMLCanvasElement.prototype.getContext = vi.fn();
@@ -156,7 +156,7 @@ Object.defineProperty(navigator, "serviceWorker", {
 });
 
 // Global test utilities
-global.console = {
+globalThis.console = {
   ...console,
   // Suppress console.log in tests unless explicitly needed
   log: vi.fn(),
