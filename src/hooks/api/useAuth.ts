@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { User as FirebaseUser } from "firebase/auth";
-import { User, UserRole } from "../../types/core";
+import { User } from "../../types";
+import { UserRole } from "../../types/core";
 import { AuthService, authService } from "../../services/auth/auth-service";
 import { logger } from "../../utils/logging";
 import { authKeys } from "./auth-utils";

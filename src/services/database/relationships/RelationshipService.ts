@@ -17,6 +17,7 @@ import {
   RelationshipPermissions,
   RelationshipStatus,
   UserRole,
+  RelationshipRequestStatus,
 } from "@/types";
 import { DocumentSnapshot, Unsubscribe } from "firebase/firestore";
 
@@ -107,7 +108,7 @@ class RelationshipService {
     return relationshipRoleService.checkPermission(
       relationshipId,
       userId,
-      action,
+      action as "sessions" | "tasks" | "goals" | "settings" | "punishments" | "pauseSession" | "emergencyUnlock",
     );
   }
 
@@ -194,7 +195,7 @@ class RelationshipService {
   async searchRelationshipRequests(
     userId: string,
     direction: "sent" | "received" | "both" = "both",
-    status?: string,
+    status?: RelationshipRequestStatus[],
     pageSize: number = 20,
   ) {
     return relationshipSearchService.searchRelationshipRequests(

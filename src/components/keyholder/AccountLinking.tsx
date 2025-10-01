@@ -22,7 +22,7 @@ interface AccountLinkingProps {
   className?: string;
 }
 
-// Local type definition to avoid restricted service import
+// Local type definition to match service type
 type InviteCode = {
   id: string;
   code: string;
@@ -30,15 +30,16 @@ type InviteCode = {
   submissiveName?: string;
   createdAt: Date;
   expiresAt: Date;
+  isUsed: boolean;
   usedAt?: Date;
-  usedByKeyholderId?: string;
-  status: "active" | "used" | "expired" | "revoked";
+  keyholderUserId?: string;
+  keyholderName?: string;
 };
 
 // Helper functions to reduce complexity
 const useAccountLinkingHandlers = (
-  createInviteCode: (hours: number) => Promise<InviteCode | null>,
-  acceptInviteCode: (code: string, name: string) => Promise<boolean>,
+  createInviteCode: (hours?: number) => Promise<InviteCode | null>,
+  acceptInviteCode: (code: string, name?: string) => Promise<boolean>,
   validateInviteCode: (code: string) => boolean,
   inviteCodeInput: string,
   keyholderNameInput: string,
