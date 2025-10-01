@@ -1,13 +1,12 @@
 import { useState } from "react";
 import type { ChastityRule } from "../components/rules";
 
-export const useRulesPage = (initialRules: ChastityRule[]) => {
-  const [rules, setRules] = useState<ChastityRule[]>(initialRules);
-  const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
-
-  const filteredRules = rules
+// Helper function to filter and sort rules
+const filterAndSortRules = (
+  rules: ChastityRule[],
+  filter: "all" | "active" | "inactive",
+): ChastityRule[] => {
+  return rules
     .filter((rule) => {
       if (filter === "all") return true;
       if (filter === "active") return rule.isActive;
@@ -20,6 +19,15 @@ export const useRulesPage = (initialRules: ChastityRule[]) => {
       if (!a.isActive && b.isActive) return 1;
       return b.lastModified.getTime() - a.lastModified.getTime();
     });
+};
+
+export const useRulesPage = (initialRules: ChastityRule[]) => {
+  const [rules, setRules] = useState<ChastityRule[]>(initialRules);
+  const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+
+  const filteredRules = filterAndSortRules(rules, filter);
 
   const handleEditRule = (ruleId: string) => {
     const rule = rules.find((r) => r.id === ruleId);

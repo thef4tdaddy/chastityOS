@@ -32,6 +32,8 @@ import type {
 import type * as _Types from "./types/dataSync";
 export type * from "./types/dataSync";
 
+// Complex sync orchestration hook requires many statements for proper state management
+// eslint-disable-next-line max-statements
 export const useDataSync = (userId: string) => {
   // ==================== STATE ====================
 

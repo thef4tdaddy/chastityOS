@@ -14,16 +14,27 @@ import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useSessionHistoryQueries");
 
-export const useSessionHistoryQueries = (
-  sessions: HistoricalSession[],
-  privacySettings: HistoryPrivacySettings,
-  insights: HistoryInsights,
-  userId: string,
-  setSessions: (sessions: HistoricalSession[]) => void,
-  setPrivacySettings: (settings: HistoryPrivacySettings) => void,
-  calculateInsights: () => void,
-  calculateTrends: () => void,
-) => {
+interface SessionHistoryQueriesParams {
+  sessions: HistoricalSession[];
+  privacySettings: HistoryPrivacySettings;
+  insights: HistoryInsights;
+  userId: string;
+  setSessions: (sessions: HistoricalSession[]) => void;
+  setPrivacySettings: (settings: HistoryPrivacySettings) => void;
+  calculateInsights: () => void;
+  calculateTrends: () => void;
+}
+
+export const useSessionHistoryQueries = ({
+  sessions,
+  privacySettings,
+  insights,
+  userId,
+  setSessions,
+  setPrivacySettings,
+  calculateInsights,
+  calculateTrends,
+}: SessionHistoryQueriesParams) => {
   // ==================== DATA RETRIEVAL ====================
 
   const getSessionsByDateRange = useCallback(

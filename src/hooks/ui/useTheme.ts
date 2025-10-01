@@ -24,6 +24,7 @@ import {
   ColorPalette,
 } from "../../types/theme";
 import { logger } from "../../utils/logging";
+import { ThemeStorageService } from "../../services/themeStorage";
 
 // Default themes
 const DEFAULT_LIGHT_THEME: Theme = {
@@ -115,21 +116,12 @@ const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
   keyboardNavigation: true,
 };
 
-// Storage keys
-const STORAGE_KEYS = {
-  CURRENT_THEME: "chastity-theme-current",
-  CUSTOM_THEMES: "chastity-theme-custom",
-  PREFERENCES: "chastity-theme-preferences",
-  ACCESSIBILITY: "chastity-theme-accessibility",
-};
-
 // Custom hook for theme queries
 const useThemeQueries = (customThemes: CustomTheme[]) => {
   const customThemesQuery = useQuery<CustomTheme[]>({
     queryKey: ["themes", "custom"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_THEMES);
-      return stored ? JSON.parse(stored) : [];
+      return ThemeStorageService.getCustomThemes<CustomTheme>();
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -137,9 +129,9 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
   const preferencesQuery = useQuery<ThemePreferences>({
     queryKey: ["themes", "preferences"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+      const stored = ThemeStorageService.getPreferences<ThemePreferences>();
       return stored
-        ? { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) }
+        ? { ...DEFAULT_PREFERENCES, ...stored }
         : DEFAULT_PREFERENCES;
     },
     staleTime: 5 * 60 * 1000,
@@ -148,9 +140,10 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
   const accessibilityQuery = useQuery<AccessibilitySettings>({
     queryKey: ["themes", "accessibility"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.ACCESSIBILITY);
+      const stored =
+        ThemeStorageService.getAccessibilitySettings<AccessibilitySettings>();
       return stored
-        ? { ...DEFAULT_ACCESSIBILITY, ...JSON.parse(stored) }
+        ? { ...DEFAULT_ACCESSIBILITY, ...stored }
         : DEFAULT_ACCESSIBILITY;
     },
     staleTime: 5 * 60 * 1000,
@@ -159,11 +152,10 @@ const useThemeQueries = (customThemes: CustomTheme[]) => {
   const currentThemeQuery = useQuery<Theme>({
     queryKey: ["themes", "current"],
     queryFn: () => {
-      const stored = localStorage.getItem(STORAGE_KEYS.CURRENT_THEME);
+      const stored = ThemeStorageService.getCurrentTheme();
       if (stored) {
-        const themeId = JSON.parse(stored);
         const allThemes = [...DEFAULT_THEMES, ...customThemes];
-        return allThemes.find((t) => t.id === themeId) || DEFAULT_LIGHT_THEME;
+        return allThemes.find((t) => t.id === stored) || DEFAULT_LIGHT_THEME;
       }
       return DEFAULT_LIGHT_THEME;
     },
@@ -190,7 +182,7 @@ const useThemeMutations = (
       const theme = availableThemes.find((t) => t.id === themeId);
       if (!theme) throw new Error("Theme not found");
 
-      localStorage.setItem(STORAGE_KEYS.CURRENT_THEME, JSON.stringify(themeId));
+      ThemeStorageService.setCurrentTheme(themeId);
       return theme;
     },
     onSuccess: (theme) => {
@@ -222,10 +214,7 @@ const useThemeMutations = (
       };
 
       const updatedCustomThemes = [...customThemes, newTheme];
-      localStorage.setItem(
-        STORAGE_KEYS.CUSTOM_THEMES,
-        JSON.stringify(updatedCustomThemes),
-      );
+      ThemeStorageService.setCustomThemes(updatedCustomThemes);
 
       return newTheme;
     },
@@ -248,10 +237,7 @@ const usePreferenceMutations = (
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<ThemePreferences>) => {
       const newPreferences = { ...preferences, ...updates };
-      localStorage.setItem(
-        STORAGE_KEYS.PREFERENCES,
-        JSON.stringify(newPreferences),
-      );
+      ThemeStorageService.setPreferences(newPreferences);
       return newPreferences;
     },
     onSuccess: (newPreferences) => {
@@ -263,10 +249,7 @@ const usePreferenceMutations = (
   const updateAccessibilityMutation = useMutation({
     mutationFn: async (updates: Partial<AccessibilitySettings>) => {
       const newSettings = { ...accessibilitySettings, ...updates };
-      localStorage.setItem(
-        STORAGE_KEYS.ACCESSIBILITY,
-        JSON.stringify(newSettings),
-      );
+      ThemeStorageService.setAccessibilitySettings(newSettings);
       return newSettings;
     },
     onSuccess: (newSettings) => {
@@ -381,7 +364,9 @@ const useAutoThemeSwitch = (
     const interval = setInterval(checkSchedule, 60000);
 
     return () => clearInterval(interval);
-  }, [preferences, currentTheme.id, setThemeMutation]);
+    // Mutation objects are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, currentTheme.id]);
 };
 
 // System theme sync effect
@@ -406,7 +391,9 @@ const useSystemThemeSync = (
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [preferences, currentTheme.id, setThemeMutation]);
+    // Mutation objects are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, currentTheme.id]);
 };
 
 /**
