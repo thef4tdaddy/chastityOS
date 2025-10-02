@@ -212,7 +212,17 @@ html {
 
 /* Mobile-safe select styling */
 .select-mobile {
-  @apply input-mobile;
+  min-height: var(--touch-target-min);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--color-border-accent);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  font-size: 16px; /* Prevents iOS zoom */
+  font-family: var(--font-main);
+  transition: all var(--animation-duration-fast) var(--animation-easing);
+  width: 100%;
+  box-sizing: border-box;
   background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23a39fad' d='m2 0-2 2h4zm0 5 2-2H0z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
