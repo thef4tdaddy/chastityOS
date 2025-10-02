@@ -40,10 +40,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-2 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-4 ${
                     location.pathname === item.path
-                      ? "text-white bg-tekhelet border-tekhelet-600 shadow-lg"
-                      : "text-lavender_web hover:text-white hover:bg-tekhelet/20 border-transparent"
+                      ? "text-dark_purple bg-lavender_web border-tekhelet shadow-lg"
+                      : "text-lavender_web hover:text-white hover:bg-lavender_web/20 border-transparent"
                   }`}
                 >
                   {item.label}
