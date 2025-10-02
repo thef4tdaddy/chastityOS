@@ -16,21 +16,21 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
 
   return (
     <div
-      className={`glass-card transition-all duration-500 ${
+      className={`bg-lavender_web dark:bg-dark_purple rounded-lg p-4 transition-all duration-500 ${
         displayData.isPaused ||
         (!displayData.isActive && displayData.timeCageOff > 0)
-          ? "border-red-400/30 shadow-red-400/20"
-          : "glass-card-primary"
+          ? "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20"
+          : "border border-rose_quartz/30"
       }`}
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
+      <p className="text-sm md:text-lg font-medium mb-3 text-dark_purple dark:text-lavender_web">
         Session Off Time:
       </p>
 
       {/* Currently Paused Indicator */}
       {displayData.isPaused && (
         <div className="mb-2">
-          <span className="inline-block bg-yellow-400/20 text-yellow-200 px-2 py-1 rounded text-xs font-semibold">
+          <span className="inline-block bg-nightly-deep_rose/20 text-nightly-deep_rose px-2 py-1 rounded text-xs font-semibold">
             [CURRENTLY PAUSED]
           </span>
         </div>
@@ -38,13 +38,13 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
 
       {/* Current Session Off Time (Live Ticking) */}
       <div className="mb-3">
-        <p className="text-xs text-gray-400 mb-1">Current Off Time:</p>
+        <p className="text-xs text-rose_quartz mb-1">Current Off Time:</p>
         <p
           className={`text-xl md:text-2xl font-bold ${
             displayData.isPaused ||
             (!displayData.isActive && displayData.timeCageOff > 0)
-              ? "text-red-300"
-              : "text-white"
+              ? "text-nightly-deep_rose"
+              : "text-dark_purple dark:text-lavender_web"
           }`}
         >
           {stats.cageOffTimeFormatted}
@@ -54,17 +54,17 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
       {/* Pause Off Time */}
       {displayData.totalPauseTime > 0 && (
         <div className="mb-3">
-          <p className="text-xs text-gray-400 mb-1">Pause Off Time:</p>
-          <p className="text-sm md:text-lg font-semibold text-yellow-200">
+          <p className="text-xs text-rose_quartz mb-1">Pause Off Time:</p>
+          <p className="text-sm md:text-lg font-semibold text-nightly-deep_rose">
             {TimerService.formatDuration(displayData.totalPauseTime)}
           </p>
         </div>
       )}
 
       {/* Total Off Time */}
-      <div className="pt-2 border-t border-gray-600">
-        <p className="text-xs text-gray-400 mb-1">Total Off Time:</p>
-        <p className="text-lg md:text-xl font-bold text-red-400">
+      <div className="pt-2 border-t border-rose_quartz/30">
+        <p className="text-xs text-rose_quartz mb-1">Total Off Time:</p>
+        <p className="text-lg md:text-xl font-bold text-nightly-deep_rose">
           {TimerService.formatDuration(totalOffTime)}
         </p>
       </div>
