@@ -24,17 +24,17 @@ export const PauseStats: React.FC<PauseStatsProps> = ({
   }
 
   return (
-    <div className="glass-card glass-card-accent border-yellow-400/30 shadow-yellow-400/20 transition-all duration-500">
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
+    <div className="bg-lavender_web dark:bg-dark_purple rounded-lg p-4 border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20 transition-all duration-500">
+      <p className="text-sm md:text-lg font-medium mb-3 text-dark_purple dark:text-lavender_web">
         Pause Status:
       </p>
       {displayData.isPaused && (
-        <p className="text-sm md:text-lg text-yellow-200 bg-yellow-400/20 px-3 py-2 rounded-md font-semibold mb-2">
+        <p className="text-sm md:text-lg text-nightly-deep_rose bg-nightly-deep_rose/10 px-3 py-2 rounded-md font-semibold mb-2">
           Currently Paused: {displayData.currentPauseDuration}
         </p>
       )}
       {displayData.isActive && hasAccumulatedPause && (
-        <p className="text-xs text-yellow-200 bg-yellow-400/10 px-2 py-1 rounded-md">
+        <p className="text-xs text-dark_purple dark:text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md">
           Total time paused this session:{" "}
           {currentSession
             ? formatElapsedTime(currentSession.accumulatedPauseTime)
