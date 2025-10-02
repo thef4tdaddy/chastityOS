@@ -19,6 +19,11 @@ class SessionDBService extends BaseDBService<DBSession> {
    * Get the current active session for a user
    */
   async getCurrentSession(userId: string): Promise<DBSession | undefined> {
+    if (!userId) {
+      logger.warn("getCurrentSession called with empty userId");
+      return undefined;
+    }
+
     try {
       const session = await this.table
         .where("userId")
