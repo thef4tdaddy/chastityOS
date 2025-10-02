@@ -40,10 +40,10 @@ import type {
   PerformanceTrends,
   GoalProgressHistory,
   ComparisonMetrics,
-} from "./types/SessionHistory";
+} from "./types/sessionHistory";
 
 // Re-export types for backward compatibility
-export type * from "./types/SessionHistory";
+export type * from "./types/sessionHistory";
 
 const logger = serviceLogger("useSessionHistory");
 
