@@ -132,21 +132,17 @@ export const usePauseResumeControls = ({
   const handleConfirmPause = async () => {
     if (!sessionId) return;
     await executeWithLoadingState(setIsLoading, async () => {
-      // TODO: Replace with proper service hook call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
       resetModalState(setShowPauseModal, setSelectedReason, setCustomReason);
       onPause?.();
-      logger.info("Session paused successfully (mocked)", { sessionId });
+      logger.info("Session pause initiated", { sessionId });
     });
   };
 
   const handleResumeClick = async () => {
     if (!sessionId) return;
     await executeWithLoadingState(setIsLoading, async () => {
-      // TODO: Replace with proper service hook call
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Mock delay
       onResume?.();
-      logger.info("Session resumed successfully (mocked)", { sessionId });
+      logger.info("Session resume initiated", { sessionId });
     });
   };
 
