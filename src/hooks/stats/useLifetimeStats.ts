@@ -60,8 +60,14 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
 
     loadSessions();
 
+    // Reload sessions every 2 seconds to catch updates from pause/resume/end
+    const intervalId = setInterval(() => {
+      loadSessions();
+    }, 2000);
+
     return () => {
       mounted = false;
+      clearInterval(intervalId);
     };
   }, [userId]);
 
