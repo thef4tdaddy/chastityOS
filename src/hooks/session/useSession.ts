@@ -557,16 +557,19 @@ export const useSession = (userId: string, relationshipId?: string) => {
 
   // ==================== SESSION POLLING ====================
 
-  // Poll for session updates every 5 seconds
+  // Poll for session updates every 5 seconds (only if session is active)
   useEffect(() => {
     if (!userId) return;
+
+    // Don't poll if session has ended - we want to keep the ended session for off-time tracking
+    if (currentSession?.endTime) return;
 
     const intervalId = setInterval(() => {
       loadCurrentSession();
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [userId, loadCurrentSession]);
+  }, [userId, currentSession?.endTime, loadCurrentSession]);
 
   // ==================== RETURN HOOK INTERFACE ====================
 
