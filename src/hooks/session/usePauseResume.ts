@@ -199,11 +199,12 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
       }
 
       if (!canPause) {
-        const error = new Error(
-          "Cannot pause: either already paused or in cooldown",
-        );
-        logger.error("Pause session failed", { error, sessionId });
-        throw error;
+        logger.warn("Cannot pause: either already paused or in cooldown", {
+          sessionId,
+          isPaused: pauseStatus.isPaused,
+          isInCooldown: cooldownState.isInCooldown,
+        });
+        return; // Just return instead of throwing
       }
 
       try {

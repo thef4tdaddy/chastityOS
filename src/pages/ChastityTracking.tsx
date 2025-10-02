@@ -275,6 +275,8 @@ const TrackerPage: React.FC = () => {
     goals,
     duration,
     error: sessionError,
+    timeUntilNextPause,
+    cooldownRemaining,
   } = useSessionActions({
     userId: user?.uid || "",
     onSessionStarted: () => logger.info("Session started"),
@@ -463,15 +465,19 @@ const TrackerPage: React.FC = () => {
 
       <TrackerStats {...getTrackerStatsProps()} />
 
-      {/* Enhanced Pause Controls with 4-hour cooldown */}
+      {/* Enhanced Pause Controls with 6-hour cooldown */}
       {USE_REAL_SESSIONS && isActive && (
         <>
-          <CooldownDisplay pauseState={mockData.pauseState} />
           <PauseResumeButtons
             sessionId={sessionId || ""}
             userId={user?.uid || ""}
             isPaused={isPaused}
-            pauseState={mockData.mockPauseState} // Use mock state to show functionality
+            pauseState={{
+              canPause,
+              cooldownRemaining,
+              lastPauseTime: undefined,
+              nextPauseAvailable: undefined,
+            }}
             onPause={() => pauseSession("bathroom")}
             onResume={resumeSession}
           />
