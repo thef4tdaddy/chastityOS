@@ -293,7 +293,7 @@ const TrackerPage: React.FC = () => {
         isPaused,
         sessionId: sessionId || undefined,
         userId: user?.uid,
-        isGoalActive: goals.active.length > 0,
+        isGoalActive: goals?.active?.length > 0,
         isHardcoreGoal: realSession?.isHardcoreMode || false,
         requiredKeyholderDurationSeconds: 0, // TODO: Get from keyholder goals
         hasPendingReleaseRequest: false, // TODO: Implement release requests
@@ -437,18 +437,22 @@ const TrackerPage: React.FC = () => {
 
       <TrackerHeader
         remainingGoalTime={
-          USE_REAL_SESSIONS && goals.active.length > 0
+          USE_REAL_SESSIONS && goals?.active && goals.active.length > 0
             ? goals.active[0].targetValue - goals.active[0].currentValue
             : 0
         }
         keyholderName={
-          USE_REAL_SESSIONS && goals.keyholderAssigned.length > 0
+          USE_REAL_SESSIONS &&
+          goals?.keyholderAssigned &&
+          goals.keyholderAssigned.length > 0
             ? "Keyholder"
             : ""
         }
         savedSubmissivesName=""
         requiredKeyholderDurationSeconds={
-          USE_REAL_SESSIONS && goals.keyholderAssigned.length > 0
+          USE_REAL_SESSIONS &&
+          goals?.keyholderAssigned &&
+          goals.keyholderAssigned.length > 0
             ? goals.keyholderAssigned[0].targetValue
             : 0
         }
