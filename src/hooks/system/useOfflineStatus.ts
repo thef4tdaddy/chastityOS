@@ -128,7 +128,7 @@ export const useOfflineStatus = () => {
   // Current offline status query
   const { data: offlineStatus } = useQuery<OfflineStatus>({
     queryKey: ["network", "status"],
-    queryFn: () => {
+    queryFn: (): OfflineStatus => {
       const networkInfo = getNetworkInfo();
       const quality = getNetworkQuality(networkInfo.downlink, networkInfo.rtt);
       const now = new Date();
@@ -294,9 +294,9 @@ export const useOfflineStatus = () => {
         networkInfo.rtt,
       );
 
-      if (offlineStatus && newQuality !== offlineStatus.networkQuality) {
+      if (offlineStatus && newQuality !== offlineStatus?.networkQuality) {
         addNetworkEvent("quality-change", {
-          oldQuality: offlineStatus.networkQuality,
+          oldQuality: offlineStatus?.networkQuality,
           newQuality,
           networkInfo,
         });
@@ -391,9 +391,9 @@ export const useOfflineStatus = () => {
     processSyncQueue,
 
     // Computed properties
-    connectionStrength: offlineStatus?.networkQuality || NetworkQuality.OFFLINE,
-    canPerformOperations: offlineStatus?.isOnline || false,
-    needsSync: (offlineStatus?.syncQueueSize || 0) > 0,
+    connectionStrength: offlineStatus?.networkQuality ?? NetworkQuality.OFFLINE,
+    canPerformOperations: offlineStatus?.isOnline ?? false,
+    needsSync: (offlineStatus?.syncQueueSize ?? 0) > 0,
 
     // Helper methods
     isGoodConnection:
