@@ -38,11 +38,6 @@ export const DesktopDashboardLayout: React.FC<DashboardLayoutsProps> = ({
   sessionDuration,
 }) => (
   <div className="hidden md:block mb-8">
-    <div className="text-center mb-8">
-      <h2 className="text-3xl font-bold text-white">
-        Welcome to ChastityOS Dashboard
-      </h2>
-    </div>
     <div className="grid grid-cols-2 gap-6">
       <Link to="/chastity-tracking">
         <FeatureCard
