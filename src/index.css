@@ -380,7 +380,14 @@ html {
 }
 
 .bottom-nav-item {
-  @apply touch-target;
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing);
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.5rem;
