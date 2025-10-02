@@ -21,12 +21,8 @@ export {
   type SessionGoal,
   type GoalAnalytics,
 } from "./useSessionGoals";
-export {
-  useSessionHistory,
-  type SessionHistoryState,
-  type HistoricalSession,
-  type HistoryInsights,
-} from "./useSessionHistory";
+export { useSessionHistory } from "./useSessionHistory";
+export type * from "./types/sessionHistory";
 
 // Phase 1 Hooks - Component Migration (#309)
 export {
