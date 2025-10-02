@@ -21,7 +21,7 @@ type ViewMode = "dashboard" | "gallery" | "leaderboards" | "privacy";
 
 export const AchievementPage: React.FC = () => {
   const { user } = useAuthState();
-  const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
+  const [viewMode, setViewMode] = useState<ViewMode>("gallery");
 
   const {
     allAchievements: _allAchievements,
