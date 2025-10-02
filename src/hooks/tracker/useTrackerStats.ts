@@ -25,6 +25,8 @@ export interface UseTrackerStatsReturn {
     accumulatedPause: string;
     totalElapsed: string;
     isActive: boolean;
+    timeCageOff: number;
+    totalPauseTime: number;
   };
 
   // Formatted stats
@@ -74,6 +76,8 @@ export const useTrackerStats = ({
         accumulatedPause: timerData.currentPauseDurationFormatted,
         totalElapsed: timerData.totalElapsedTimeFormatted,
         isActive: timerData.isActive,
+        timeCageOff: timerData.currentCageOffTime,
+        totalPauseTime: timerData.totalSessionPauseTime,
       }
     : {
         effectiveTime: formatTimeFromSeconds(mainChastityDisplayTime),
@@ -84,16 +88,23 @@ export const useTrackerStats = ({
         ),
         totalElapsed: topBoxTime || "0s",
         isActive: isCageOn,
+        timeCageOff: timeCageOff,
+        totalPauseTime: 0,
       };
+
+  // Calculate total cage off time including pause time
+  const calculatedTotalCageOff = currentSession
+    ? totalTimeCageOff + timerData.totalSessionPauseTime
+    : totalTimeCageOff;
 
   // Format all the stats for display
   const stats = {
     topBoxLabel,
     totalElapsedFormatted: displayData.totalElapsed,
     currentSessionFormatted: displayData.effectiveTime,
-    cageOffTimeFormatted: formatTimeFromSeconds(timeCageOff),
+    cageOffTimeFormatted: formatTimeFromSeconds(displayData.timeCageOff),
     totalChastityTimeFormatted: formatTimeFromSeconds(totalChastityTime),
-    totalCageOffTimeFormatted: formatTimeFromSeconds(totalTimeCageOff),
+    totalCageOffTimeFormatted: formatTimeFromSeconds(calculatedTotalCageOff),
   };
 
   return {

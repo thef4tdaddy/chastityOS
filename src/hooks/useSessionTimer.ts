@@ -23,6 +23,12 @@ export interface SessionTimerData {
   remainingGoalTimeFormatted: string;
   isGoalCompleted: boolean;
 
+  // Cage off time data
+  currentCageOffTime: number; // Current session cage off (pause time if paused)
+  currentCageOffTimeFormatted: string;
+  totalSessionPauseTime: number; // Total pause time for current session
+  totalSessionPauseTimeFormatted: string;
+
   // State flags
   isActive: boolean; // Session exists and not ended
   isPaused: boolean;
@@ -94,6 +100,10 @@ export function useSessionTimer(
       remainingGoalTime: 0,
       remainingGoalTimeFormatted: "0s",
       isGoalCompleted: false,
+      currentCageOffTime: 0,
+      currentCageOffTimeFormatted: "0s",
+      totalSessionPauseTime: 0,
+      totalSessionPauseTimeFormatted: "0s",
       isActive: false,
       isPaused: false,
       currentTime,
@@ -128,6 +138,16 @@ export function useSessionTimer(
     );
     const isGoalCompleted = TimerService.isGoalCompleted(session, currentTime);
 
+    // Calculate cage off time data
+    const currentCageOffTime = TimerService.calculateCurrentCageOffTime(
+      session,
+      currentTime,
+    );
+    const totalSessionPauseTime = TimerService.calculateTotalSessionPauseTime(
+      session,
+      currentTime,
+    );
+
     return {
       effectiveTime,
       totalElapsedTime,
@@ -141,6 +161,13 @@ export function useSessionTimer(
       remainingGoalTimeFormatted:
         TimerService.formatDuration(remainingGoalTime),
       isGoalCompleted,
+      currentCageOffTime,
+      currentCageOffTimeFormatted:
+        TimerService.formatDuration(currentCageOffTime),
+      totalSessionPauseTime,
+      totalSessionPauseTimeFormatted: TimerService.formatDuration(
+        totalSessionPauseTime,
+      ),
       isActive: true,
       isPaused: session.isPaused,
       currentTime,
@@ -215,6 +242,10 @@ export function useMultiSessionTimer(
           remainingGoalTime: 0,
           remainingGoalTimeFormatted: "0s",
           isGoalCompleted: false,
+          currentCageOffTime: 0,
+          currentCageOffTimeFormatted: "0s",
+          totalSessionPauseTime: 0,
+          totalSessionPauseTimeFormatted: "0s",
           isActive: false,
           isPaused: false,
           currentTime,
@@ -245,6 +276,14 @@ export function useMultiSessionTimer(
         session,
         currentTime,
       );
+      const currentCageOffTime = TimerService.calculateCurrentCageOffTime(
+        session,
+        currentTime,
+      );
+      const totalSessionPauseTime = TimerService.calculateTotalSessionPauseTime(
+        session,
+        currentTime,
+      );
 
       return {
         effectiveTime,
@@ -260,6 +299,13 @@ export function useMultiSessionTimer(
         remainingGoalTimeFormatted:
           TimerService.formatDuration(remainingGoalTime),
         isGoalCompleted,
+        currentCageOffTime,
+        currentCageOffTimeFormatted:
+          TimerService.formatDuration(currentCageOffTime),
+        totalSessionPauseTime,
+        totalSessionPauseTimeFormatted: TimerService.formatDuration(
+          totalSessionPauseTime,
+        ),
         isActive: true,
         isPaused: session.isPaused,
         currentTime,

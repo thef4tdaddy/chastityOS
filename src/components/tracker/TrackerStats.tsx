@@ -1,7 +1,7 @@
 import React from "react";
-import { formatElapsedTime } from "../../utils";
 import type { DBSession } from "../../types/database";
 import { useTrackerStats } from "../../hooks/tracker/useTrackerStats";
+import { CageOnStats, PauseStats, CageOffStats } from "./stats";
 
 interface TrackerStatsProps {
   // New props for real-time timer
@@ -31,68 +31,14 @@ const CurrentSessionStats: React.FC<{
   currentSession,
   accumulatedPauseTimeThisSession,
 }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div
-      className={`glass-card transition-all duration-500 ${
-        displayData.isActive
-          ? displayData.isPaused
-            ? "glass-card-accent border-yellow-400/30 shadow-yellow-400/20"
-            : "border-green-400/30 shadow-green-400/20"
-          : "glass-card-primary"
-      }`}
-    >
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
-        Current Session In Chastity {displayData.isPaused ? "(Paused)" : ""}:
-      </p>
-      <p
-        className={`text-2xl md:text-4xl font-bold mb-2 ${
-          displayData.isActive
-            ? displayData.isPaused
-              ? "text-yellow-300"
-              : "text-green-300"
-            : "text-white"
-        }`}
-      >
-        {stats.currentSessionFormatted}
-      </p>
-      {displayData.isPaused && (
-        <p className="text-xs text-yellow-200 bg-yellow-400/10 px-2 py-1 rounded-md">
-          Currently paused for: {displayData.currentPauseDuration}
-        </p>
-      )}
-      {displayData.isActive &&
-        (currentSession
-          ? currentSession.accumulatedPauseTime > 0
-          : accumulatedPauseTimeThisSession! > 0) && (
-          <p className="text-xs text-yellow-200 bg-yellow-400/10 px-2 py-1 rounded-md mt-2">
-            Total time paused this session:{" "}
-            {currentSession
-              ? formatElapsedTime(currentSession.accumulatedPauseTime)
-              : displayData.accumulatedPause}
-          </p>
-        )}
-    </div>
-
-    <div
-      className={`glass-card transition-all duration-500 ${
-        !displayData.isActive && displayData.timeCageOff > 0
-          ? "border-red-400/30 shadow-red-400/20"
-          : "glass-card-primary"
-      }`}
-    >
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
-        Current Session Cage Off:
-      </p>
-      <p
-        className={`text-2xl md:text-4xl font-bold ${
-          !displayData.isActive && displayData.timeCageOff > 0
-            ? "text-red-300"
-            : "text-white"
-        }`}
-      >
-        {stats.cageOffTimeFormatted}
-      </p>
-    </div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <CageOnStats displayData={displayData} stats={stats} />
+    <PauseStats
+      displayData={displayData}
+      currentSession={currentSession}
+      accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession}
+    />
+    <CageOffStats displayData={displayData} stats={stats} />
   </div>
 );
 
