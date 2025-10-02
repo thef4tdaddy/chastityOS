@@ -279,6 +279,8 @@ export function useSessionActions({
     startSession: startSessionCore,
     stopSession: stopSessionCore,
     canSelfModify,
+    refreshSession,
+    duration: sessionDuration,
   } = useSession(userId);
 
   const {
@@ -364,8 +366,17 @@ export function useSessionActions({
         setError,
         onSessionPaused,
       });
+      // Immediately refresh session to update UI
+      await refreshSession();
     },
-    [canPause, userId, pauseSessionCore, handleError, onSessionPaused],
+    [
+      canPause,
+      userId,
+      pauseSessionCore,
+      handleError,
+      onSessionPaused,
+      refreshSession,
+    ],
   );
 
   const resumeSession = useCallback(async (): Promise<void> => {
@@ -375,7 +386,16 @@ export function useSessionActions({
       setError,
       onSessionResumed,
     });
-  }, [canResume, userId, resumeSessionCore, handleError, onSessionResumed]);
+    // Immediately refresh session to update UI
+    await refreshSession();
+  }, [
+    canResume,
+    userId,
+    resumeSessionCore,
+    handleError,
+    onSessionResumed,
+    refreshSession,
+  ]);
 
   return {
     startSession,
@@ -397,7 +417,7 @@ export function useSessionActions({
     sessionId: session?.id || null,
     session,
     goals: null, // TODO: Add goals from useSession
-    duration: 0, // TODO: Add duration from useSession
+    duration: sessionDuration,
     timeUntilNextPause,
     cooldownRemaining: timeUntilNextPause,
   };
