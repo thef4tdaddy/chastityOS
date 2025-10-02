@@ -267,13 +267,38 @@ export const useSession = (userId: string, relationshipId?: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, relationshipId]);
 
+  // Poll for session updates every 5 seconds
+  useEffect(() => {
+    if (!userId) return;
+
+    const intervalId = setInterval(() => {
+      loadCurrentSession();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [userId, loadCurrentSession]);
+
   // ==================== DATA LOADING FUNCTIONS ====================
 
   const loadCurrentSession = useCallback(async () => {
-    // This would integrate with your existing session service
-    // For now, return mock data structure
-    setCurrentSession(null);
-  }, []); // userId is passed but not used in mock implementation
+    if (!userId) return;
+
+    try {
+      const { SessionDBService } = await import(
+        "../../services/database/SessionDBService"
+      );
+      const sessionService = new SessionDBService();
+      const session = await sessionService.getCurrentSession(userId);
+      setCurrentSession(session || null);
+      logger.debug("Loaded current session", {
+        userId,
+        sessionId: session?.id,
+      });
+    } catch (error) {
+      logger.error("Failed to load current session", { error, userId });
+      setCurrentSession(null);
+    }
+  }, [userId]);
 
   const loadGoals = useCallback(async () => {
     // This would integrate with your existing goals service
