@@ -386,14 +386,13 @@ export const useSession = (userId: string, relationshipId?: string) => {
           throw new Error("Keyholder approval required to end session");
         }
 
-        const updatedSession: DBSession = {
-          ...currentSession,
-          endTime: new Date(),
-          endReason: reason,
-          lastModified: new Date(),
-        };
+        // End session in database
+        await sessionDBService.endSession(currentSession.id, reason);
 
-        setCurrentSession(updatedSession);
+        // Reload the session to get updated state
+        const updatedSession = await sessionDBService.get(currentSession.id);
+        setCurrentSession(updatedSession || null);
+
         await loadHistory(); // Refresh history
         await loadAnalytics(); // Refresh analytics
 
@@ -424,13 +423,16 @@ export const useSession = (userId: string, relationshipId?: string) => {
           modifications,
         });
 
-        const updatedSession: DBSession = {
-          ...currentSession,
+        // Update session in database
+        await sessionDBService.update(currentSession.id, {
           ...modifications,
           lastModified: new Date(),
-        };
+        });
 
-        setCurrentSession(updatedSession);
+        // Reload the session
+        const updatedSession = await sessionDBService.get(currentSession.id);
+        setCurrentSession(updatedSession || null);
+
         logger.info("Session modified successfully", {
           sessionId: currentSession.id,
         });
