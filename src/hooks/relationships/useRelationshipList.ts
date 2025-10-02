@@ -7,7 +7,7 @@ import { useAuthState } from "@/contexts/AuthContext";
 import { relationshipService } from "@/services/database/relationships/RelationshipService";
 import { Relationship } from "@/types/relationships";
 import { BaseHookState, BaseHookActions } from "./types";
-import { withErrorHandling, createBaseActions } from "./utils";
+import { withErrorHandling, createBaseActions } from "./relationship-utils";
 
 interface RelationshipListState extends BaseHookState {
   relationships: Relationship[];

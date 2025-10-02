@@ -3,7 +3,7 @@
  */
 import { useCallback } from "react";
 import { RelationshipTask } from "@/types/relationships";
-import { withErrorHandling } from "./utils";
+import { withErrorHandling } from "./relationship-utils";
 import {
   loadTasksFromService,
   createTaskInService,
