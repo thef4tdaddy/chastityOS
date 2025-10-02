@@ -6,7 +6,7 @@ import { useState, useCallback } from "react";
 import { useAuthState } from "@/contexts/AuthContext";
 import { relationshipService } from "@/services/database/relationships/RelationshipService";
 import { BaseHookState, BaseHookActions } from "./types";
-import { withErrorHandling, createBaseActions } from "./utils";
+import { withErrorHandling, createBaseActions } from "./relationship-utils";
 
 type RelationshipActionsState = BaseHookState;
 
