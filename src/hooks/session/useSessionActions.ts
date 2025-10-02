@@ -190,17 +190,9 @@ function useSessionPermissions(params: {
 
   const canPause = useMemo(() => {
     return (
-      params.isActive &&
-      !params.isPaused &&
-      params.pauseStatus.canResume &&
-      !params.cooldownState.isInCooldown
+      params.isActive && !params.isPaused && !params.cooldownState.isInCooldown
     );
-  }, [
-    params.isActive,
-    params.isPaused,
-    params.pauseStatus.canResume,
-    params.cooldownState.isInCooldown,
-  ]);
+  }, [params.isActive, params.isPaused, params.cooldownState.isInCooldown]);
 
   const canResume = useMemo(() => {
     return params.isActive && params.isPaused && params.pauseStatus.canResume;
