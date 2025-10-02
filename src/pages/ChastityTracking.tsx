@@ -13,6 +13,7 @@ import { useSessionPersistence } from "../hooks/useSessionPersistence";
 import { useAuth } from "../hooks/api/useAuth";
 import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { useSessionActions } from "../hooks/session/useSessionActions";
+import { useLifetimeStats } from "../hooks/stats/useLifetimeStats";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -285,6 +286,9 @@ const TrackerPage: React.FC = () => {
     onSessionResumed: () => logger.info("Session resumed"),
   });
 
+  // Lifetime stats across all sessions
+  const lifetimeStats = useLifetimeStats(user?.uid);
+
   // Mock data (for demo version - keep for #308)
   const mockData = useMockData(user);
 
@@ -363,13 +367,13 @@ const TrackerPage: React.FC = () => {
   // Helper to compute TrackerStats props based on real vs mock mode
   const getTrackerStatsProps = () => {
     if (USE_REAL_SESSIONS) {
-      // Real session mode - use live data
+      // Real session mode - use live data with lifetime stats
       return {
         topBoxLabel: "Total Locked Time",
-        timeCageOff: 0, // TODO: Track cage-off time
+        timeCageOff: 0, // Current session cage off time (handled by useSessionTimer)
         isCageOn: isActive,
-        totalChastityTime: duration,
-        totalTimeCageOff: 0, // TODO: Track total cage-off time
+        totalChastityTime: lifetimeStats.totalChastityTime,
+        totalTimeCageOff: lifetimeStats.totalCageOffTime,
         isPaused,
         currentSession: realSession,
         mainChastityDisplayTime: undefined,
