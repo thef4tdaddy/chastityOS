@@ -186,12 +186,18 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Pause session
   const pauseSession = useCallback(
     async (reason: PauseReason): Promise<void> => {
-      if (!sessionId) {
-        throw new Error("No active session to pause");
+      if (!sessionId || sessionId.trim() === "") {
+        const error = new Error("No active session to pause");
+        logger.error("Pause session failed", { error, sessionId });
+        throw error;
       }
 
       if (!canPause) {
-        throw new Error("Cannot pause: either already paused or in cooldown");
+        const error = new Error(
+          "Cannot pause: either already paused or in cooldown",
+        );
+        logger.error("Pause session failed", { error, sessionId });
+        throw error;
       }
 
       try {
@@ -199,12 +205,12 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
         // Import sessionDBService dynamically to avoid circular dependencies
         const { sessionDBService } = await import("../../services/database");
-        await sessionDBService.pauseSession(sessionId);
+        await sessionDBService.pauseSession(sessionId, new Date());
 
         startPause(reason);
         logger.info("Session paused successfully", { sessionId, reason });
       } catch (err) {
-        logger.error("Failed to pause session", { error: err });
+        logger.error("Failed to pause session", { error: err, sessionId });
         throw err;
       }
     },
@@ -213,12 +219,16 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
   // Resume session
   const resumeSession = useCallback(async (): Promise<void> => {
-    if (!sessionId) {
-      throw new Error("No active session to resume");
+    if (!sessionId || sessionId.trim() === "") {
+      const error = new Error("No active session to resume");
+      logger.error("Resume session failed", { error, sessionId });
+      throw error;
     }
 
     if (!canResume) {
-      throw new Error("Cannot resume: session is not paused");
+      const error = new Error("Cannot resume: session is not paused");
+      logger.error("Resume session failed", { error, sessionId });
+      throw error;
     }
 
     try {
@@ -247,7 +257,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         pauseDuration: duration,
       });
     } catch (err) {
-      logger.error("Failed to resume session", { error: err });
+      logger.error("Failed to resume session", { error: err, sessionId });
       throw err;
     }
   }, [
