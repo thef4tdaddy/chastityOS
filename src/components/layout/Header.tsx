@@ -16,7 +16,10 @@ export const Header: React.FC<HeaderProps> = ({
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 bg-lavender_web border-b-8 border-black safe-area-inset-top">
+    <header
+      className="sticky top-0 z-50 border-b-8 border-black safe-area-inset-top"
+      style={{ backgroundColor: "var(--color-bg-secondary)" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
