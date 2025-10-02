@@ -14,31 +14,46 @@ export const PauseStats: React.FC<PauseStatsProps> = ({
   currentSession,
   accumulatedPauseTimeThisSession,
 }) => {
-  // Don't show pause stats if not paused and no accumulated pause time
+  // Check if we have accumulated pause time
   const hasAccumulatedPause = currentSession
     ? currentSession.accumulatedPauseTime > 0
     : (accumulatedPauseTimeThisSession ?? 0) > 0;
 
-  if (!displayData.isPaused && !hasAccumulatedPause) {
-    return null;
-  }
-
   return (
-    <div className="bg-lavender_web dark:bg-dark_purple rounded-lg p-4 border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20 transition-all duration-500">
-      <p className="text-sm md:text-lg font-medium mb-3 text-dark_purple dark:text-lavender_web">
+    <div
+      className={`glass-card bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md rounded-lg p-4 transition-all duration-500 h-full flex flex-col ${
+        displayData.isPaused || hasAccumulatedPause
+          ? "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20"
+          : "border border-rose_quartz/30"
+      }`}
+    >
+      <p className="text-sm md:text-lg font-medium mb-3 text-lavender_web">
         Pause Status:
       </p>
-      {displayData.isPaused && (
-        <p className="text-sm md:text-lg text-nightly-deep_rose bg-nightly-deep_rose/10 px-3 py-2 rounded-md font-semibold mb-2">
-          Currently Paused: {displayData.currentPauseDuration}
-        </p>
-      )}
-      {displayData.isActive && hasAccumulatedPause && (
-        <p className="text-xs text-dark_purple dark:text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md">
+      {displayData.isPaused ? (
+        <>
+          <p className="text-sm md:text-lg text-nightly-deep_rose bg-nightly-deep_rose/10 px-3 py-2 rounded-md font-semibold mb-2">
+            Currently Paused: {displayData.currentPauseDuration}
+          </p>
+          {hasAccumulatedPause && (
+            <p className="text-xs text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md">
+              Total time paused this session:{" "}
+              {currentSession
+                ? formatElapsedTime(currentSession.accumulatedPauseTime)
+                : displayData.accumulatedPause}
+            </p>
+          )}
+        </>
+      ) : hasAccumulatedPause ? (
+        <p className="text-xs text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md">
           Total time paused this session:{" "}
           {currentSession
             ? formatElapsedTime(currentSession.accumulatedPauseTime)
             : displayData.accumulatedPause}
+        </p>
+      ) : (
+        <p className="text-2xl md:text-4xl font-bold text-lavender_web/50">
+          No Pauses
         </p>
       )}
     </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import type { DBSession } from "../../types/database";
 import { useTrackerStats } from "../../hooks/tracker/useTrackerStats";
-import { CageOnStats, PauseStats, CageOffStats } from "./stats";
+import { CageOnStats, CageOffStats } from "./stats";
 
 interface TrackerStatsProps {
   // New props for real-time timer
@@ -23,21 +23,9 @@ interface TrackerStatsProps {
 const CurrentSessionStats: React.FC<{
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
   stats: ReturnType<typeof useTrackerStats>["stats"];
-  currentSession?: DBSession | null;
-  accumulatedPauseTimeThisSession?: number;
-}> = ({
-  displayData,
-  stats,
-  currentSession,
-  accumulatedPauseTimeThisSession,
-}) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+}> = ({ displayData, stats }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <CageOnStats displayData={displayData} stats={stats} />
-    <PauseStats
-      displayData={displayData}
-      currentSession={currentSession}
-      accumulatedPauseTimeThisSession={accumulatedPauseTimeThisSession}
-    />
     <CageOffStats displayData={displayData} stats={stats} />
   </div>
 );
@@ -81,12 +69,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
         </p>
       </div>
 
-      <CurrentSessionStats
-        displayData={displayData}
-        stats={stats}
-        currentSession={props.currentSession}
-        accumulatedPauseTimeThisSession={props.accumulatedPauseTimeThisSession}
-      />
+      <CurrentSessionStats displayData={displayData} stats={stats} />
 
       <TotalStats stats={stats} />
     </div>
