@@ -281,7 +281,7 @@ export function useSessionActions({
     cooldownState,
     pauseSession: pauseSessionCore,
     resumeSession: resumeSessionCore,
-  } = usePauseResume(userId, session?.id);
+  } = usePauseResume(session?.id || "", undefined);
   const isPaused = pauseStatus.isPaused;
   const isPausing = pauseStatus.pauseCount > 0 && pauseStatus.isPaused;
   const isResuming = false;
