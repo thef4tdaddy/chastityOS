@@ -610,7 +610,8 @@ function calculateGoalProgress(
   session: DBSession | null,
   goals: SessionGoals | null | undefined,
 ): number {
-  if (!session || !goals || goals.active.length === 0) return 0;
+  if (!session || !goals || !goals.active || goals.active.length === 0)
+    return 0;
 
   const completedGoals = goals.active.filter((goal) => goal.isCompleted).length;
   return Math.floor((completedGoals / goals.active.length) * 100);
