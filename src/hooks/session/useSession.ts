@@ -387,11 +387,14 @@ export const useSession = (userId: string, relationshipId?: string) => {
         }
 
         // End session in database
-        await sessionDBService.endSession(currentSession.id, reason);
+        await sessionDBService.endSession(
+          currentSession.id,
+          new Date(),
+          reason,
+        );
 
-        // Reload the session to get updated state
-        const updatedSession = await sessionDBService.get(currentSession.id);
-        setCurrentSession(updatedSession || null);
+        // Session is ended, clear current session
+        setCurrentSession(null);
 
         await loadHistory(); // Refresh history
         await loadAnalytics(); // Refresh analytics
