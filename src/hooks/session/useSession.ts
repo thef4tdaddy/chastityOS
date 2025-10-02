@@ -395,15 +395,17 @@ export const useSession = (userId: string, relationshipId?: string) => {
           throw new Error("Keyholder approval required to end session");
         }
 
-        // End session in database
-        await sessionDBService.endSession(
-          currentSession.id,
-          new Date(),
-          reason,
-        );
+        const endTime = new Date();
 
-        // Reload session to get updated endTime (don't set to null - we need it for off-time tracking)
-        await loadCurrentSession();
+        // End session in database
+        await sessionDBService.endSession(currentSession.id, endTime, reason);
+
+        // Update local session with endTime (don't set to null - we need it for off-time tracking)
+        setCurrentSession({
+          ...currentSession,
+          endTime,
+          isPaused: false,
+        });
 
         await loadHistory(); // Refresh history
         await loadAnalytics(); // Refresh analytics
@@ -645,10 +647,24 @@ function derivePermissions(
 function calculateDuration(session: DBSession, currentTime: Date): number {
   if (!session.startTime) return 0;
 
+  // Calculate effective time (excluding pauses)
   const endTime = session.endTime || currentTime;
-  const totalTime = endTime.getTime() - session.startTime.getTime();
+  const totalElapsedMs = endTime.getTime() - session.startTime.getTime();
+  const totalElapsedSeconds = Math.floor(totalElapsedMs / 1000);
 
-  return Math.max(0, Math.floor(totalTime / 1000));
+  // Subtract accumulated pause time
+  let effectiveSeconds =
+    totalElapsedSeconds - (session.accumulatedPauseTime || 0);
+
+  // If currently paused, also subtract current pause duration
+  if (session.isPaused && session.pauseStartTime && !session.endTime) {
+    const currentPauseMs =
+      currentTime.getTime() - session.pauseStartTime.getTime();
+    const currentPauseSeconds = Math.floor(currentPauseMs / 1000);
+    effectiveSeconds -= currentPauseSeconds;
+  }
+
+  return Math.max(0, effectiveSeconds);
 }
 
 function calculateGoalProgress(
