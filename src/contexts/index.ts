@@ -26,3 +26,6 @@ export type { AppState, AppActions, AppContextType } from "./AppContext";
 // Toast Context
 export { ToastProvider, useToast } from "./ToastProvider";
 export type { ToastContextValue, ToastOptions } from "./ToastProvider";
+
+// Sync Context
+export { SyncProvider, useSyncContext } from "./SyncContext";

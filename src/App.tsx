@@ -5,7 +5,12 @@ import { firebaseListeners } from "./services/sync";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./hooks/api/queryClient";
-import { AuthProvider, AppProvider, ToastProvider } from "./contexts";
+import {
+  AuthProvider,
+  AppProvider,
+  ToastProvider,
+  SyncProvider,
+} from "./contexts";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -101,10 +106,12 @@ function App(): React.ReactElement {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <AuthProvider>
-          <ToastProvider>
-            <RouterProvider router={router} />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </ToastProvider>
+          <SyncProvider>
+            <ToastProvider>
+              <RouterProvider router={router} />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </ToastProvider>
+          </SyncProvider>
         </AuthProvider>
       </AppProvider>
     </QueryClientProvider>
