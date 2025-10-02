@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
         {/* Dashboard title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Dashboard
+            ChastityOS
           </h1>
         </div>
 
