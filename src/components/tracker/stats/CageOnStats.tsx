@@ -12,7 +12,7 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
 }) => {
   return (
     <div
-      className={`bg-lavender_web dark:bg-dark_purple rounded-lg p-4 transition-all duration-500 ${
+      className={`glass-card bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md rounded-lg p-4 transition-all duration-500 h-full flex flex-col ${
         displayData.isActive
           ? displayData.isPaused
             ? "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20"
@@ -20,7 +20,7 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
           : "border border-rose_quartz/30"
       }`}
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-dark_purple dark:text-lavender_web">
+      <p className="text-sm md:text-lg font-medium mb-3 text-lavender_web">
         Current Session In Chastity {displayData.isPaused ? "(Paused)" : ""}:
       </p>
       <p
@@ -28,8 +28,8 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
           displayData.isActive
             ? displayData.isPaused
               ? "text-nightly-deep_rose"
-              : "text-green-600 dark:text-green-400"
-            : "text-dark_purple dark:text-lavender_web"
+              : "text-green-400"
+            : "text-lavender_web"
         }`}
       >
         {stats.currentSessionFormatted}
