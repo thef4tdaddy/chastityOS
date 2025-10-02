@@ -60,21 +60,21 @@
     "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
 
-  /* --- Nightly (Green) Palette Overrides --- */
-  --color-bg-primary: #0f1d14;
-  --color-bg-secondary: #14532d;
-  --color-bg-tertiary: #14532d;
-  --color-text-primary: #dcfce7;
-  --color-text-secondary: #bbf7d0;
-  --color-text-accent: #86efac;
-  --color-border-primary: #15803d;
-  --color-border-accent: #16a34a;
-  --color-button-bg: #16a34a;
-  --color-button-bg-hover: #22c55e;
+  /* --- Nightly "Ugly" Palette Overrides --- */
+  --color-bg-primary: #ff00aa; /* neon_pink */
+  --color-bg-secondary: #b32066; /* deep_rose */
+  --color-bg-tertiary: #b32066; /* deep_rose */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #ff33cc; /* hot_magenta */
+  --color-text-accent: #ff33cc; /* hot_magenta */
+  --color-border-primary: #7a3150; /* mauve_smudge */
+  --color-border-accent: #ff33cc; /* hot_magenta */
+  --color-button-bg: #ff33cc; /* hot_magenta */
+  --color-button-bg-hover: #ff66d9;
   --color-button-text: #ffffff;
-  --color-accent-orange: #22c55e;
-  --color-accent-purple: #16a34a;
-  --color-focus-ring: #4ade80;
+  --color-accent-orange: #c93f6a; /* faded_punch */
+  --color-accent-purple: #ff33cc; /* hot_magenta */
+  --color-focus-ring: #ff33cc; /* hot_magenta */
 }
 
 /* =============================================
