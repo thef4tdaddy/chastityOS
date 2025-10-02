@@ -68,11 +68,26 @@ const performAuthInitialization = async (
       });
       logger.info("User already authenticated", { uid: currentUser.uid });
     } else {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-      }));
-      logger.debug("No authenticated user found");
+      // No user found - sign in anonymously
+      logger.debug("No authenticated user found, signing in anonymously");
+      const anonResult = await AuthService.signInAnonymously();
+
+      if (anonResult.success && anonResult.data) {
+        setState({
+          user: anonResult.data,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        logger.info("Anonymous user created", { uid: anonResult.data.uid });
+      } else {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: anonResult.error || "Failed to create anonymous user",
+        }));
+        logger.error("Anonymous sign in failed", { error: anonResult.error });
+      }
     }
 
     // Listen for auth state changes
