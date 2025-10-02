@@ -35,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
           <nav className="hidden md:flex space-x-1">
             {navItems
               .filter((item) => item.path !== "/")
-              .slice(0, 5)
+              .slice(0, 7)
               .map((item) => (
                 <Link
                   key={item.path}
