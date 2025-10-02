@@ -436,13 +436,23 @@ const TrackerPage: React.FC = () => {
       )}
 
       <TrackerHeader
-        remainingGoalTime={mockData.remainingGoalTime}
-        keyholderName={mockData.keyholderName}
-        savedSubmissivesName={mockData.savedSubmissivesName}
-        requiredKeyholderDurationSeconds={
-          mockData.requiredKeyholderDurationSeconds
+        remainingGoalTime={
+          USE_REAL_SESSIONS && goals.active.length > 0
+            ? goals.active[0].targetValue - goals.active[0].currentValue
+            : 0
         }
-        isCageOn={mockData.isCageOn}
+        keyholderName={
+          USE_REAL_SESSIONS && goals.keyholderAssigned.length > 0
+            ? "Keyholder"
+            : ""
+        }
+        savedSubmissivesName=""
+        requiredKeyholderDurationSeconds={
+          USE_REAL_SESSIONS && goals.keyholderAssigned.length > 0
+            ? goals.keyholderAssigned[0].targetValue
+            : 0
+        }
+        isCageOn={USE_REAL_SESSIONS ? isActive : mockData.isCageOn}
         denialCooldownActive={mockData.denialCooldownActive}
         pauseCooldownMessage={mockData.pauseCooldownMessage}
       />
@@ -450,13 +460,13 @@ const TrackerPage: React.FC = () => {
       <TrackerStats {...getTrackerStatsProps()} />
 
       {/* Enhanced Pause Controls with 4-hour cooldown */}
-      {mockData.isCageOn && currentSession && (
+      {USE_REAL_SESSIONS && isActive && (
         <>
           <CooldownDisplay pauseState={mockData.pauseState} />
           <PauseResumeButtons
-            sessionId={currentSession.id}
+            sessionId={sessionId || ""}
             userId={user?.uid || ""}
-            isPaused={mockData.isPaused}
+            isPaused={isPaused}
             pauseState={mockData.mockPauseState} // Use mock state to show functionality
             onPause={handlePause}
             onResume={handleResume}
