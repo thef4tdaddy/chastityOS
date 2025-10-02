@@ -52,10 +52,10 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Session Persistence Demo */}
-        <div className="mt-12">
+        {/* TODO: Session Persistence Demo - moved to showcase/demo section */}
+        {/* <div className="mt-12">
           <SessionPersistenceDemo />
-        </div>
+        </div> */}
 
         {/* TODO: Dexie Offline Demo temporarily disabled due to architectural restrictions */}
         {/* <div className="mb-8">
