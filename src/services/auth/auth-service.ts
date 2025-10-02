@@ -385,9 +385,10 @@ export class AuthService {
   private static async createAnonymousUserProfile(
     firebaseUser: FirebaseUser,
   ): Promise<User> {
-    const user: User = {
+    // For anonymous users, create user data without email field
+    // Firestore doesn't allow undefined values, so we omit it from the document
+    const userData = {
       uid: firebaseUser.uid,
-      email: undefined,
       displayName: `Guest_${firebaseUser.uid.substring(0, 8)}`,
       role: "submissive", // Default role for anonymous users
       profile: {
@@ -416,7 +417,10 @@ export class AuthService {
 
     const db = await getFirestore();
     const userRef: DocumentReference = doc(db, "users", firebaseUser.uid);
-    await setDoc(userRef, user);
+    await setDoc(userRef, userData);
+
+    // Return as User type (email will be undefined)
+    const user: User = { ...userData, email: undefined } as User;
 
     logger.debug("Anonymous user profile created in Firestore", {
       uid: firebaseUser.uid,
