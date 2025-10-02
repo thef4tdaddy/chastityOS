@@ -169,6 +169,16 @@ class SessionDBService extends BaseDBService<DBSession> {
       });
 
       logger.info("Ended session", { sessionId, endTime, endReason });
+
+      // Broadcast session end event to persistence service
+      if (typeof window !== "undefined" && window.BroadcastChannel) {
+        const channel = new BroadcastChannel("chastity_session_sync");
+        channel.postMessage({
+          type: "SESSION_ENDED",
+          data: { sessionId, userId: session.userId, timestamp: Date.now() },
+        });
+        channel.close();
+      }
     } catch (error) {
       logger.error("Failed to end session", {
         error: error as Error,
