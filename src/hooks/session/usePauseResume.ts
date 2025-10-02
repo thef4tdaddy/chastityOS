@@ -83,10 +83,16 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   usePauseDurationTracking(pauseStatus, updatePauseDuration);
 
   // Computed values
-  const canPause = useMemo(
-    () => !pauseStatus.isPaused && !cooldownState.isInCooldown,
-    [pauseStatus.isPaused, cooldownState.isInCooldown],
-  );
+  const canPause = useMemo(() => {
+    const result = !pauseStatus.isPaused && !cooldownState.isInCooldown;
+    logger.debug("usePauseResume canPause calculation", {
+      sessionId,
+      isPaused: pauseStatus.isPaused,
+      isInCooldown: cooldownState.isInCooldown,
+      canPause: result,
+    });
+    return result;
+  }, [sessionId, pauseStatus.isPaused, cooldownState.isInCooldown]);
 
   const canResume = useMemo(() => pauseStatus.isPaused, [pauseStatus.isPaused]);
 

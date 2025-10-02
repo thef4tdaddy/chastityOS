@@ -189,9 +189,15 @@ function useSessionPermissions(params: {
   }, [params.isActive, params.canSelfModify, params.isEnding]);
 
   const canPause = useMemo(() => {
-    return (
-      params.isActive && !params.isPaused && !params.cooldownState.isInCooldown
-    );
+    const result =
+      params.isActive && !params.isPaused && !params.cooldownState.isInCooldown;
+    logger.debug("Calculating canPause", {
+      isActive: params.isActive,
+      isPaused: params.isPaused,
+      isInCooldown: params.cooldownState.isInCooldown,
+      canPause: result,
+    });
+    return result;
   }, [params.isActive, params.isPaused, params.cooldownState.isInCooldown]);
 
   const canResume = useMemo(() => {
@@ -280,6 +286,15 @@ export function useSessionActions({
   const isPaused = pauseStatus.isPaused;
   const isPausing = pauseStatus.pauseCount > 0 && pauseStatus.isPaused;
   const isResuming = false;
+
+  logger.debug("Session state for permissions", {
+    isActive,
+    canSelfModify,
+    isPaused,
+    sessionId: session?.id,
+    cooldownIsInCooldown: cooldownState.isInCooldown,
+    pauseStatusIsPaused: pauseStatus.isPaused,
+  });
 
   const { canStart, canEnd, canPause, canResume } = useSessionPermissions({
     isActive,
