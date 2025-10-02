@@ -80,8 +80,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         )}
       </div>
 
-      {/* Emergency Unlock Button with Enhanced Glass Styling */}
-      {isCageOn && sessionId && userId && (
+      {/* Emergency Unlock Button with Enhanced Glass Styling - Only show in hardcore mode */}
+      {isCageOn && isHardcoreGoal && sessionId && userId && (
         <div className="flex justify-center">
           <EmergencyUnlockButton
             sessionId={sessionId}
