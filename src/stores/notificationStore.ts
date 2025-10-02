@@ -243,16 +243,32 @@ export const useNotificationStore = create<NotificationState>()(
 export const useNotifications = () =>
   useNotificationStore((state) => state.notifications);
 
-export const useNotificationActions = () =>
-  useNotificationStore((state) => ({
-    addNotification: state.addNotification,
-    removeNotification: state.removeNotification,
-    clearAllNotifications: state.clearAllNotifications,
-    showSuccess: state.showSuccess,
-    showError: state.showError,
-    showWarning: state.showWarning,
-    showInfo: state.showInfo,
-  }));
+// Export individual action selectors to avoid object creation
+export const useNotificationActions = () => {
+  const addNotification = useNotificationStore(
+    (state) => state.addNotification,
+  );
+  const removeNotification = useNotificationStore(
+    (state) => state.removeNotification,
+  );
+  const clearAllNotifications = useNotificationStore(
+    (state) => state.clearAllNotifications,
+  );
+  const showSuccess = useNotificationStore((state) => state.showSuccess);
+  const showError = useNotificationStore((state) => state.showError);
+  const showWarning = useNotificationStore((state) => state.showWarning);
+  const showInfo = useNotificationStore((state) => state.showInfo);
+
+  return {
+    addNotification,
+    removeNotification,
+    clearAllNotifications,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo,
+  };
+};
 
 // Utility hooks for common notification patterns
 export const useErrorHandler = () => {
