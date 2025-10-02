@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-1">
+          <nav className="hidden md:flex space-x-2">
             {navItems
               .filter((item) => item.path !== "/")
               .slice(0, 7)
@@ -40,10 +40,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-2 ${
                     location.pathname === item.path
-                      ? "text-white border-b-2 border-tekhelet bg-tekhelet/10"
-                      : "text-lavender_web hover:text-white hover:bg-tekhelet/20"
+                      ? "text-white bg-tekhelet border-tekhelet-600 shadow-lg"
+                      : "text-lavender_web hover:text-white hover:bg-tekhelet/20 border-transparent"
                   }`}
                 >
                   {item.label}
