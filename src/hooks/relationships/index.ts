@@ -5,7 +5,7 @@
 
 // Types and utilities
 export * from "./types";
-export * from "./utils";
+export * from "./relationship-utils";
 
 // Focused hooks
 export { useRelationshipList } from "./useRelationshipList";
