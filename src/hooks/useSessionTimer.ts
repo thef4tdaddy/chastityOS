@@ -58,11 +58,12 @@ export function useSessionTimer(
   const sessionId = session?.id;
   const sessionEndTime = session?.endTime;
   const isSessionActive = enabled && sessionId && !sessionEndTime;
+  const shouldTick = enabled && sessionId; // Tick even when session ended (for off-time tracking)
 
   // Update current time every second
   useEffect(() => {
-    if (!isSessionActive) {
-      // Clear interval if timer is disabled or session is not active
+    if (!shouldTick) {
+      // Clear interval if timer is disabled or no session
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -84,7 +85,7 @@ export function useSessionTimer(
         intervalRef.current = null;
       }
     };
-  }, [isSessionActive, updateInterval]);
+  }, [shouldTick, updateInterval]);
 
   // Memoized calculations to prevent unnecessary recalculations
   const timerData = useMemo((): SessionTimerData => {
@@ -109,8 +110,23 @@ export function useSessionTimer(
       currentTime,
     };
 
-    if (!session || session.endTime) {
+    if (!session) {
       return defaultData;
+    }
+
+    // If session has ended, calculate time since end (cage off time)
+    if (session.endTime) {
+      const timeSinceEnd = Math.floor(
+        (currentTime.getTime() - session.endTime.getTime()) / 1000,
+      );
+      return {
+        ...defaultData,
+        currentCageOffTime: timeSinceEnd,
+        currentCageOffTimeFormatted: TimerService.formatDuration(timeSinceEnd),
+        isActive: false,
+        isPaused: false,
+        currentTime,
+      };
     }
 
     // Calculate timer values
