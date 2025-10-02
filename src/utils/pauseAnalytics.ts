@@ -42,12 +42,16 @@ export function calculateCooldownDuration(
   analytics: PauseAnalytics,
   lastPauseDuration: number,
 ): number {
-  // Short pauses get longer cooldowns to prevent abuse
-  if (lastPauseDuration < 60) return 600; // 10 minutes for pauses under 1 minute
-  if (lastPauseDuration < 300) return 300; // 5 minutes for pauses under 5 minutes
+  // TODO: Re-enable cooldowns after testing
+  // For development/testing, use minimal cooldowns
+  return 0; // No cooldown during development
 
+  // Production cooldown logic (currently disabled):
+  // Short pauses get longer cooldowns to prevent abuse
+  // if (lastPauseDuration < 60) return 600; // 10 minutes for pauses under 1 minute
+  // if (lastPauseDuration < 300) return 300; // 5 minutes for pauses under 5 minutes
   // Reasonable pauses get standard cooldown
-  return 180; // 3 minutes
+  // return 180; // 3 minutes
 }
 
 export function calculatePauseAnalytics(

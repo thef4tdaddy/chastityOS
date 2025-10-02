@@ -256,6 +256,11 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
       );
 
       const cooldownDur = calculateCooldownDuration(pauseAnalytics, duration);
+      logger.info("Starting cooldown after resume", {
+        sessionId,
+        cooldownSeconds: cooldownDur,
+        pauseDuration: duration,
+      });
       startCooldown(cooldownDur, keyholderOverrides.canOverrideCooldown);
 
       logger.info("Session resumed successfully", {
