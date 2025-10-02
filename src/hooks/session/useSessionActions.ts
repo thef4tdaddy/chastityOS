@@ -306,7 +306,12 @@ export function useSessionActions({
     (err: unknown, context: string) => {
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
-      logger.error(`${context} failed`, { error, userId });
+      logger.error(`${context} failed`, {
+        error,
+        errorMessage: error.message,
+        errorStack: error.stack,
+        userId,
+      });
       onError?.(error);
       return error;
     },
