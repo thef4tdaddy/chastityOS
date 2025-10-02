@@ -92,28 +92,16 @@ export const useTrackerStats = ({
         totalPauseTime: 0,
       };
 
-  // Calculate total cage off time including pause time
-  // When session ends, currentCageOffTime tracks time since session ended
-  const calculatedTotalCageOff = currentSession
-    ? totalTimeCageOff +
-      timerData.totalSessionPauseTime +
-      timerData.currentCageOffTime
-    : totalTimeCageOff;
-
   // Format all the stats for display
-  // Use timerData.effectiveTime for total chastity time when using real session
-  // This ensures Current Session and Total Time tick together from the same timer source
-  const totalChastityTimeValue = currentSession
-    ? timerData.effectiveTime
-    : totalChastityTime;
-
+  // Note: totalChastityTime and totalTimeCageOff props should come from useLifetimeStats
+  // which already includes all sessions and real-time calculations
   const stats = {
     topBoxLabel,
     totalElapsedFormatted: displayData.totalElapsed,
     currentSessionFormatted: displayData.effectiveTime,
     cageOffTimeFormatted: formatTimeFromSeconds(displayData.timeCageOff),
-    totalChastityTimeFormatted: formatTimeFromSeconds(totalChastityTimeValue),
-    totalCageOffTimeFormatted: formatTimeFromSeconds(calculatedTotalCageOff),
+    totalChastityTimeFormatted: formatTimeFromSeconds(totalChastityTime),
+    totalCageOffTimeFormatted: formatTimeFromSeconds(totalTimeCageOff),
   };
 
   return {
