@@ -155,6 +155,15 @@ export const useSession = (userId: string, relationshipId?: string) => {
     useState<KeyholderRelationship | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every second for live duration calculation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // ==================== COMPUTED VALUES ====================
 
@@ -185,8 +194,8 @@ export const useSession = (userId: string, relationshipId?: string) => {
   );
 
   const duration = useMemo(
-    () => (currentSession ? calculateDuration(currentSession) : 0),
-    [currentSession],
+    () => (currentSession ? calculateDuration(currentSession, currentTime) : 0),
+    [currentSession, currentTime],
   );
 
   const goalProgress = useMemo(
@@ -393,8 +402,8 @@ export const useSession = (userId: string, relationshipId?: string) => {
           reason,
         );
 
-        // Session is ended, clear current session
-        setCurrentSession(null);
+        // Reload session to get updated endTime (don't set to null - we need it for off-time tracking)
+        await loadCurrentSession();
 
         await loadHistory(); // Refresh history
         await loadAnalytics(); // Refresh analytics
@@ -593,6 +602,9 @@ export const useSession = (userId: string, relationshipId?: string) => {
     // Loading states
     isLoading,
     error,
+
+    // Utility
+    refreshSession: loadCurrentSession,
   };
 };
 
@@ -630,10 +642,10 @@ function derivePermissions(
   return permissions;
 }
 
-function calculateDuration(session: DBSession): number {
+function calculateDuration(session: DBSession, currentTime: Date): number {
   if (!session.startTime) return 0;
 
-  const endTime = session.endTime || new Date();
+  const endTime = session.endTime || currentTime;
   const totalTime = endTime.getTime() - session.startTime.getTime();
 
   return Math.max(0, Math.floor(totalTime / 1000));
