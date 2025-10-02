@@ -68,19 +68,6 @@ const ResumeButton: React.FC<ResumeButtonProps> = ({
   </div>
 );
 
-// CooldownDisplay sub-component
-interface CooldownDisplayProps {
-  cooldownDisplay: string;
-}
-
-const CooldownDisplay: React.FC<CooldownDisplayProps> = ({
-  cooldownDisplay,
-}) => (
-  <div className="text-sm text-yellow-600 mb-4 text-center">
-    Next pause available in: {cooldownDisplay}
-  </div>
-);
-
 // PauseModal sub-component
 interface PauseModalProps {
   show: boolean;
@@ -235,10 +222,6 @@ export const PauseResumeButtons: React.FC<PauseResumeButtonsProps> = ({
           pauseButtonText={pauseButtonText}
           cooldownDisplay={cooldownDisplay}
         />
-      )}
-
-      {buttonStates.showCooldown && (
-        <CooldownDisplay cooldownDisplay={cooldownDisplay} />
       )}
 
       <PauseModal
