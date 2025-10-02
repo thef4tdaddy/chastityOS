@@ -52,9 +52,12 @@ export class TimerService {
   ): number {
     if (!session.isPaused || !session.pauseStartTime) return 0;
 
-    return Math.floor(
+    const duration = Math.floor(
       (currentTime.getTime() - session.pauseStartTime.getTime()) / 1000,
     );
+
+    // Ensure we never return negative values
+    return Math.max(0, duration);
   }
 
   /**
