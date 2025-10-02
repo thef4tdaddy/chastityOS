@@ -10,10 +10,12 @@ import { SessionPersistenceDemo } from "../components/demo/SessionPersistenceDem
 // import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
+import { useAchievements } from "../hooks/useAchievements";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthState();
   const [sessionDuration, setSessionDuration] = useState("0s");
+  const { userAchievements } = useAchievements(user?.uid);
 
   useEffect(() => {
     if (user) {
@@ -45,8 +47,8 @@ const Dashboard: React.FC = () => {
         <MobileDashboardLayout sessionDuration={sessionDuration} />
         <DesktopDashboardLayout sessionDuration={sessionDuration} />
 
-        {/* Achievement Dashboard */}
-        {user && (
+        {/* Achievement Dashboard - only show if user has achievements */}
+        {user && userAchievements && userAchievements.length > 0 && (
           <div className="mt-12">
             <AchievementDashboard />
           </div>
