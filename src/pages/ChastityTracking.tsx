@@ -472,8 +472,8 @@ const TrackerPage: React.FC = () => {
             userId={user?.uid || ""}
             isPaused={isPaused}
             pauseState={mockData.mockPauseState} // Use mock state to show functionality
-            onPause={handlePause}
-            onResume={handleResume}
+            onPause={() => pauseSession("bathroom")}
+            onResume={resumeSession}
           />
         </>
       )}

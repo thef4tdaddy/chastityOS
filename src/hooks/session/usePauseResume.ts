@@ -192,6 +192,11 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
       try {
         logger.debug("Pausing session", { sessionId, reason });
+
+        // Import sessionDBService dynamically to avoid circular dependencies
+        const { sessionDBService } = await import("../../services/database");
+        await sessionDBService.pauseSession(sessionId);
+
         startPause(reason);
         logger.info("Session paused successfully", { sessionId, reason });
       } catch (err) {
@@ -216,6 +221,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         pauseStatus.pauseStartTime,
         resumeTime,
       );
+
+      // Import sessionDBService dynamically to avoid circular dependencies
+      const { sessionDBService } = await import("../../services/database");
+      await sessionDBService.resumeSession(sessionId, resumeTime);
 
       setPauseStatus(updatePauseStatusOnResume(pauseStatus));
       setPauseHistory((prev) =>
