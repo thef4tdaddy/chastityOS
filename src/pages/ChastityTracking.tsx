@@ -12,6 +12,8 @@ import { TrackerHeader } from "../components/tracker/TrackerHeader";
 import { useSessionPersistence } from "../hooks/useSessionPersistence";
 import { useAuth } from "../hooks/api/useAuth";
 import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
+import { useSessionActions } from "../hooks/session/useSessionActions";
+import { useSession } from "../hooks/session/useSession";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -163,7 +165,8 @@ const useSessionState = () => {
   };
 };
 
-// Custom hook for mock data (temporary until real implementation)
+// Custom hook for mock data (DEMO VERSION - keep for #308)
+// Real version uses useSessionActions + useSession
 const useMockData = (user: User | null) => {
   // Mock pause state data for now
   const pauseState: PauseState = {
@@ -224,6 +227,9 @@ const useMockData = (user: User | null) => {
 };
 
 const TrackerPage: React.FC = () => {
+  // Feature flag: set to true to use real session hooks, false for demo/mock
+  const USE_REAL_SESSIONS = true; // TODO: Move to env var or settings for #308
+
   // Authentication state
   const { user, isLoading: authLoading } = useAuth();
 
@@ -251,8 +257,62 @@ const TrackerPage: React.FC = () => {
     setCorruptedSession,
   } = useSessionState();
 
-  // Mock data (replace with real hooks)
+  // Real session hooks (when USE_REAL_SESSIONS = true)
+  const {
+    startSession,
+    endSession,
+    pauseSession,
+    resumeSession,
+    isStarting,
+    isEnding,
+    canStart,
+    canEnd,
+    canPause,
+    canResume,
+    isActive,
+    isPaused,
+    sessionId,
+    error: sessionError,
+  } = useSessionActions({
+    userId: user?.uid || "",
+    onSessionStarted: () => logger.info("Session started"),
+    onSessionEnded: () => logger.info("Session ended"),
+    onSessionPaused: () => logger.info("Session paused"),
+    onSessionResumed: () => logger.info("Session resumed"),
+  });
+
+  const { session: realSession, goals, duration } = useSession(user?.uid || "");
+
+  // Mock data (for demo version - keep for #308)
   const mockData = useMockData(user);
+
+  // Data selector: choose between real and mock data
+  const trackerData = USE_REAL_SESSIONS
+    ? {
+        isCageOn: isActive,
+        isPaused,
+        sessionId: sessionId || undefined,
+        userId: user?.uid,
+        isGoalActive: goals.active.length > 0,
+        isHardcoreGoal: realSession?.isHardcoreMode || false,
+        requiredKeyholderDurationSeconds: 0, // TODO: Get from keyholder goals
+        hasPendingReleaseRequest: false, // TODO: Implement release requests
+        mainChastityDisplayTime: duration,
+        totalChastityTime: duration,
+      }
+    : {
+        isCageOn: mockData.isCageOn,
+        isPaused: mockData.isPaused,
+        sessionId: mockData.sessionId,
+        userId: mockData.userId,
+        isGoalActive: mockData.isGoalActive,
+        isHardcoreGoal: mockData.isHardcoreGoal,
+        requiredKeyholderDurationSeconds:
+          mockData.requiredKeyholderDurationSeconds,
+        hasPendingReleaseRequest: mockData.hasPendingReleaseRequest,
+        mainChastityDisplayTime: mockData.mainChastityDisplayTime,
+        totalChastityTime: mockData.totalChastityTime,
+      };
 
   // Use tracker handlers hook for event handlers and effects
   const {
@@ -298,8 +358,26 @@ const TrackerPage: React.FC = () => {
     stopHeartbeat,
   );
 
-  // Helper to compute TrackerStats props based on timer mode
+  // Helper to compute TrackerStats props based on real vs mock mode
   const getTrackerStatsProps = () => {
+    if (USE_REAL_SESSIONS) {
+      // Real session mode - use live data
+      return {
+        topBoxLabel: "Total Locked Time",
+        timeCageOff: 0, // TODO: Track cage-off time
+        isCageOn: isActive,
+        totalChastityTime: duration,
+        totalTimeCageOff: 0, // TODO: Track total cage-off time
+        isPaused,
+        currentSession: realSession,
+        mainChastityDisplayTime: undefined,
+        topBoxTime: undefined,
+        livePauseDuration: undefined,
+        accumulatedPauseTimeThisSession: undefined,
+      };
+    }
+
+    // Mock mode for demo (#308)
     const baseProps = {
       topBoxLabel: mockData.topBoxLabel,
       timeCageOff: mockData.timeCageOff,
@@ -387,15 +465,26 @@ const TrackerPage: React.FC = () => {
       )}
 
       <ActionButtons
-        isCageOn={mockData.isCageOn}
-        isGoalActive={mockData.isGoalActive}
-        isHardcoreGoal={mockData.isHardcoreGoal}
+        isCageOn={trackerData.isCageOn}
+        isGoalActive={trackerData.isGoalActive}
+        isHardcoreGoal={trackerData.isHardcoreGoal}
         requiredKeyholderDurationSeconds={
-          mockData.requiredKeyholderDurationSeconds
+          trackerData.requiredKeyholderDurationSeconds
         }
-        hasPendingReleaseRequest={mockData.hasPendingReleaseRequest}
-        sessionId={mockData.sessionId}
-        userId={mockData.userId}
+        hasPendingReleaseRequest={trackerData.hasPendingReleaseRequest}
+        sessionId={trackerData.sessionId}
+        userId={trackerData.userId}
+        onStartSession={USE_REAL_SESSIONS ? () => startSession() : undefined}
+        onEndSession={
+          USE_REAL_SESSIONS ? () => endSession("User ended session") : undefined
+        }
+        onBegForRelease={
+          USE_REAL_SESSIONS
+            ? () => logger.info("Beg for release - TODO: implement")
+            : undefined
+        }
+        isStarting={USE_REAL_SESSIONS ? isStarting : false}
+        isEnding={USE_REAL_SESSIONS ? isEnding : false}
         onEmergencyUnlock={handleEmergencyUnlock}
       />
 

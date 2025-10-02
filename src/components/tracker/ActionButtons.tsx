@@ -10,7 +10,16 @@ interface ActionButtonsProps {
   hasPendingReleaseRequest: boolean;
   sessionId?: string;
   userId?: string;
+
+  // Action handlers
+  onStartSession?: () => void;
+  onEndSession?: () => void;
+  onBegForRelease?: () => void;
   onEmergencyUnlock?: () => void;
+
+  // Loading states
+  isStarting?: boolean;
+  isEnding?: boolean;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -21,7 +30,12 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   hasPendingReleaseRequest,
   sessionId,
   userId,
+  onStartSession,
+  onEndSession,
+  onBegForRelease,
   onEmergencyUnlock,
+  isStarting = false,
+  isEnding = false,
 }) => {
   return (
     <div className="flex flex-col space-y-4 mb-6">
@@ -30,9 +44,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         {!isCageOn ? (
           <button
             type="button"
-            className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+            onClick={onStartSession}
+            disabled={isStarting}
+            className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cage On / Start Session
+            {isStarting ? "Starting..." : "Cage On / Start Session"}
           </button>
         ) : isGoalActive && isHardcoreGoal ? (
           <button
@@ -46,16 +62,20 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         ) : requiredKeyholderDurationSeconds > 0 ? (
           <button
             type="button"
-            className="glass-button bg-gradient-to-r from-red-600/80 to-pink-600/80 hover:from-red-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+            onClick={onBegForRelease}
+            disabled={hasPendingReleaseRequest}
+            className="glass-button bg-gradient-to-r from-red-600/80 to-pink-600/80 hover:from-red-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {hasPendingReleaseRequest ? "Request Sent" : "Beg for Release"}
           </button>
         ) : (
           <button
             type="button"
-            className="glass-button bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+            onClick={onEndSession}
+            disabled={isEnding}
+            className="glass-button bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cage Off / End Session
+            {isEnding ? "Ending..." : "Cage Off / End Session"}
           </button>
         )}
       </div>
