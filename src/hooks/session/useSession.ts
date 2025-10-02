@@ -267,17 +267,6 @@ export const useSession = (userId: string, relationshipId?: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, relationshipId]);
 
-  // Poll for session updates every 5 seconds
-  useEffect(() => {
-    if (!userId) return;
-
-    const intervalId = setInterval(() => {
-      loadCurrentSession();
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [userId, loadCurrentSession]);
-
   // ==================== DATA LOADING FUNCTIONS ====================
 
   const loadCurrentSession = useCallback(async () => {
@@ -548,6 +537,19 @@ export const useSession = (userId: string, relationshipId?: string) => {
       },
     };
   }, [analytics]);
+
+  // ==================== SESSION POLLING ====================
+
+  // Poll for session updates every 5 seconds
+  useEffect(() => {
+    if (!userId) return;
+
+    const intervalId = setInterval(() => {
+      loadCurrentSession();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [userId, loadCurrentSession]);
 
   // ==================== RETURN HOOK INTERFACE ====================
 
