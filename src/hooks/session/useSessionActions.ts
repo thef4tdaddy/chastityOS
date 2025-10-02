@@ -245,6 +245,10 @@ export interface UseSessionActionsReturn {
   session: DBSession | null;
   goals: any; // TODO: Type this properly
   duration: number;
+
+  // Pause/cooldown info
+  timeUntilNextPause: number;
+  cooldownRemaining: number;
 }
 
 export interface UseSessionActionsOptions {
@@ -282,6 +286,7 @@ export function useSessionActions({
     cooldownState,
     pauseSession: pauseSessionCore,
     resumeSession: resumeSessionCore,
+    timeUntilNextPause,
   } = usePauseResume(session?.id || "", undefined);
   const isPaused = pauseStatus.isPaused;
   const isPausing = pauseStatus.pauseCount > 0 && pauseStatus.isPaused;
@@ -393,5 +398,7 @@ export function useSessionActions({
     session,
     goals: null, // TODO: Add goals from useSession
     duration: 0, // TODO: Add duration from useSession
+    timeUntilNextPause,
+    cooldownRemaining: timeUntilNextPause,
   };
 }
