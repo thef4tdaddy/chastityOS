@@ -185,15 +185,15 @@ module.exports = {
           border: "rgba(255, 255, 255, 0.2)",
           "border-dark": "rgba(255, 255, 255, 0.1)",
         },
-        // Legacy nightly theme (keeping for compatibility)
+        // Nightly "ugly" theme
         nightly: {
-          aquamarine: "#57f6b1ff",
-          "spring-green": "#41e688ff",
-          honeydew: "#e0fce7ff",
-          celadon: "#b1f3c1ff",
-          "lavender-floral": "#c691faff",
-          "mobile-bg": "#282132ff",
-          "desktop-bg": "#1a1423ff",
+          hot_magenta: "#ff33cc",
+          neon_pink: "#ff00aa",
+          deep_rose: "#b32066",
+          mauve_smudge: "#7a3150",
+          faded_punch: "#c93f6a",
+          "mobile-bg": "#ff00aa",
+          "desktop-bg": "#b32066",
         },
         // Legacy prod colors (keeping for compatibility, but updated to match design system)
         prod: {
