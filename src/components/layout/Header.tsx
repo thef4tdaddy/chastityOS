@@ -16,14 +16,14 @@ export const Header: React.FC<HeaderProps> = ({
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 bg-dark_purple border-b border-black safe-area-inset-top">
+    <header className="sticky top-0 z-50 bg-lavender_web border-b-8 border-black safe-area-inset-top">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <Link
               to="/"
-              className="text-2xl font-bold text-white flex items-center space-x-2"
+              className="text-2xl font-bold text-dark_purple flex items-center space-x-2"
             >
               <span className="text-tekhelet">🔐</span>
               <span>ChastityOS</span>
@@ -40,10 +40,10 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-4 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-2 ${
                     location.pathname === item.path
-                      ? "text-dark_purple bg-lavender_web border-tekhelet shadow-lg"
-                      : "text-lavender_web hover:text-white hover:bg-lavender_web/20 border-transparent"
+                      ? "text-white bg-tekhelet border-dark_purple shadow-lg"
+                      : "text-dark_purple hover:text-white hover:bg-tekhelet/80 border-transparent"
                   }`}
                 >
                   {item.label}
@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Mobile menu button */}
           <button
             onClick={toggleMobileMenu}
-            className="md:hidden p-2 rounded-md text-lavender_web hover:text-white hover:bg-tekhelet/20 focus:outline-none focus:ring-2 focus:ring-tekhelet"
+            className="md:hidden p-2 rounded-md text-dark_purple hover:text-white hover:bg-tekhelet/20 focus:outline-none focus:ring-2 focus:ring-tekhelet"
             aria-label="Open menu"
           >
             <svg
