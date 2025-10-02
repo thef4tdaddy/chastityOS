@@ -16,8 +16,8 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isValidTimestamp(timestamp) {
-      return timestamp is timestamp && timestamp == request.time;
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts == request.time;
     }
 
     // ==================== RELATIONSHIP HELPER FUNCTIONS ====================
