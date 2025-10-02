@@ -18,6 +18,7 @@ interface PauseButtonProps {
   onPauseClick: () => void;
   pauseButtonStyling: string;
   pauseButtonText: string;
+  cooldownDisplay?: string;
 }
 
 const PauseButton: React.FC<PauseButtonProps> = ({
@@ -26,8 +27,9 @@ const PauseButton: React.FC<PauseButtonProps> = ({
   onPauseClick,
   pauseButtonStyling,
   pauseButtonText,
+  cooldownDisplay,
 }) => (
-  <div className="flex justify-center mb-8">
+  <div className="flex flex-col items-center mb-8">
     <button
       type="button"
       onClick={onPauseClick}
@@ -36,6 +38,11 @@ const PauseButton: React.FC<PauseButtonProps> = ({
     >
       ⏸️ {pauseButtonText}
     </button>
+    {!canPause && cooldownDisplay && (
+      <p className="text-sm text-nightly-deep_rose/80 mt-2">
+        Next pause in: {cooldownDisplay}
+      </p>
+    )}
   </div>
 );
 
@@ -226,6 +233,7 @@ export const PauseResumeButtons: React.FC<PauseResumeButtonsProps> = ({
           onPauseClick={handlePauseClick}
           pauseButtonStyling={pauseButtonStyling}
           pauseButtonText={pauseButtonText}
+          cooldownDisplay={cooldownDisplay}
         />
       )}
 
