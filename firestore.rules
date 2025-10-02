@@ -115,7 +115,11 @@ service cloud.firestore {
     // ==================== USER COLLECTION ====================
 
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || hasAdminAccess(userId);
+      // Allow user to create their own profile (for anonymous and regular users)
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Allow read/update/delete if owner or has admin access
+      allow read, update, delete: if isOwner(userId) || hasAdminAccess(userId);
 
       allow read: if isAuthenticated() &&
                      resource.data.profile.preferences.publicProfile == true &&
