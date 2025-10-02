@@ -186,6 +186,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Pause session
   const pauseSession = useCallback(
     async (reason: PauseReason): Promise<void> => {
+      if (!sessionId) {
+        throw new Error("No active session to pause");
+      }
+
       if (!canPause) {
         throw new Error("Cannot pause: either already paused or in cooldown");
       }
@@ -209,6 +213,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
   // Resume session
   const resumeSession = useCallback(async (): Promise<void> => {
+    if (!sessionId) {
+      throw new Error("No active session to resume");
+    }
+
     if (!canResume) {
       throw new Error("Cannot resume: session is not paused");
     }
