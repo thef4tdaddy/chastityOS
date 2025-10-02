@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { DBSession, DBGoal } from "../../types/database";
 import type { KeyholderRelationship } from "../../types/core";
 import { KeyholderRelationshipService } from "../../services/KeyholderRelationshipService";
+import { SessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useSession");
@@ -273,18 +274,20 @@ export const useSession = (userId: string, relationshipId?: string) => {
     if (!userId) return;
 
     try {
-      const { SessionDBService } = await import(
-        "../../services/database/SessionDBService"
-      );
       const sessionService = new SessionDBService();
       const session = await sessionService.getCurrentSession(userId);
       setCurrentSession(session || null);
       logger.debug("Loaded current session", {
         userId,
         sessionId: session?.id,
+        hasSession: !!session,
       });
     } catch (error) {
-      logger.error("Failed to load current session", { error, userId });
+      logger.error("Failed to load current session", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+      });
       setCurrentSession(null);
     }
   }, [userId]);
