@@ -244,6 +244,9 @@ export interface UseSessionActionsReturn {
   isActive: boolean;
   isPaused: boolean;
   sessionId: string | null;
+  session: DBSession | null;
+  goals: any; // TODO: Type this properly
+  duration: number;
 }
 
 export interface UseSessionActionsOptions {
@@ -375,5 +378,8 @@ export function useSessionActions({
     isActive,
     isPaused,
     sessionId: session?.id || null,
+    session,
+    goals: null, // TODO: Add goals from useSession
+    duration: 0, // TODO: Add duration from useSession
   };
 }

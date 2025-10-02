@@ -13,7 +13,6 @@ import { useSessionPersistence } from "../hooks/useSessionPersistence";
 import { useAuth } from "../hooks/api/useAuth";
 import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { useSessionActions } from "../hooks/session/useSessionActions";
-import { useSession } from "../hooks/session/useSession";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -272,6 +271,9 @@ const TrackerPage: React.FC = () => {
     isActive,
     isPaused,
     sessionId,
+    session: realSession,
+    goals,
+    duration,
     error: sessionError,
   } = useSessionActions({
     userId: user?.uid || "",
@@ -280,8 +282,6 @@ const TrackerPage: React.FC = () => {
     onSessionPaused: () => logger.info("Session paused"),
     onSessionResumed: () => logger.info("Session resumed"),
   });
-
-  const { session: realSession, goals, duration } = useSession(user?.uid || "");
 
   // Mock data (for demo version - keep for #308)
   const mockData = useMockData(user);
