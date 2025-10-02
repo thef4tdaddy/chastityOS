@@ -336,19 +336,18 @@ export const useSession = (userId: string, relationshipId?: string) => {
           throw new Error("Keyholder approval required to start session");
         }
 
-        // Create new session
-        const newSession: DBSession = {
-          id: `session_${Date.now()}`,
-          userId,
-          startTime: new Date(),
-          isPaused: false,
-          accumulatedPauseTime: 0,
+        // Save session to database
+        const sessionId = await sessionDBService.startSession(userId, {
           isHardcoreMode: false,
           keyholderApprovalRequired:
             sessionContext.sessionType === "keyholder_managed",
-          syncStatus: "pending",
-          lastModified: new Date(),
-        };
+        });
+
+        // Load the newly created session
+        const newSession = await sessionDBService.getCurrentSession(userId);
+        if (!newSession) {
+          throw new Error("Failed to load newly created session");
+        }
 
         // Add goals if provided
         if (sessionGoals) {
