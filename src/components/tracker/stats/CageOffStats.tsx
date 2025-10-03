@@ -1,6 +1,5 @@
 import React from "react";
 import type { useTrackerStats } from "../../../hooks/tracker/useTrackerStats";
-import { TimerService } from "../../../services/TimerService";
 
 interface CageOffStatsProps {
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
