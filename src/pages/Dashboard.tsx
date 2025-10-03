@@ -43,7 +43,10 @@ const Dashboard: React.FC = () => {
             alt="ChastityOS"
             className="h-40 md:h-48"
           />
-          <h1 className="text-5xl md:text-6xl font-bold ml-6 text-lavender_web">
+          <h1
+            className="text-5xl md:text-6xl font-bold ml-6"
+            style={{ color: "#744dfb", textShadow: "none" }}
+          >
             Dashboard
           </h1>
         </div>
