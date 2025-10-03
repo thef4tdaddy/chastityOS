@@ -11,17 +11,7 @@ import {
   TimerEvent,
   TimerType,
 } from "../../types/realtime";
-
-// Helper function to validate timer permissions
-export const validateTimerPermissions = (
-  timer: LiveTimer,
-  userId: string,
-  operation: string,
-): void => {
-  if (timer.isKeyholderControlled && timer.keyholderUserId !== userId) {
-    throw new Error(`Only the keyholder can ${operation} this timer`);
-  }
-};
+import { validateTimerPermissions } from "../../utils/validation/timer";
 
 // Helper function to update timer in state
 export const updateTimerInState = (
