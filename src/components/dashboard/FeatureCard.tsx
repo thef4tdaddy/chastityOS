@@ -30,9 +30,13 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
       ></div>
 
       {/* Content - always use orange/tangerine for text and border */}
-      <div className="border-l-4 border-tangerine pl-4">
-        <h3 className="text-xl font-bold mb-2 text-tangerine">{title}</h3>
-        <p className="text-tangerine/70 text-sm">{description}</p>
+      <div className="border-l-4 pl-4" style={{ borderColor: "#e88331" }}>
+        <h3 className="text-xl font-bold mb-2" style={{ color: "#e88331" }}>
+          {title}
+        </h3>
+        <p className="text-sm" style={{ color: "rgba(232, 131, 49, 0.7)" }}>
+          {description}
+        </p>
       </div>
     </div>
   );
