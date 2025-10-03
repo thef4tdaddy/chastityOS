@@ -59,15 +59,17 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
 
   return (
     <div className="space-y-6 mb-8">
-      {/* Top stat card with enhanced glass effect */}
-      <div className="glass-card-primary text-center glass-float">
-        <p className="text-blue-200 text-sm md:text-lg font-medium mb-2">
-          {stats.topBoxLabel}
-        </p>
-        <p className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
-          {stats.totalElapsedFormatted}
-        </p>
-      </div>
+      {/* Top stat card with timestamp info */}
+      {stats.topBoxLabel && stats.topBoxTimestamp && (
+        <div className="glass-card-primary text-center glass-float">
+          <p className="text-blue-200 text-sm md:text-lg font-medium mb-2">
+            {stats.topBoxLabel}:
+          </p>
+          <p className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+            {stats.topBoxTimestamp}
+          </p>
+        </div>
+      )}
 
       <CurrentSessionStats displayData={displayData} stats={stats} />
 
