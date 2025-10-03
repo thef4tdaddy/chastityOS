@@ -29,10 +29,10 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
         style={{ marginLeft: "-1.5rem" }}
       ></div>
 
-      {/* Content */}
+      {/* Content - always use orange/tangerine for text and border */}
       <div className="border-l-4 border-tangerine pl-4">
         <h3 className="text-xl font-bold mb-2 text-tangerine">{title}</h3>
-        <p className="text-lavender_web/80 text-sm">{description}</p>
+        <p className="text-tangerine/70 text-sm">{description}</p>
       </div>
     </div>
   );
