@@ -22,11 +22,11 @@ const LogEventPage: React.FC = () => {
   return (
     <div className="text-nightly-spring-green">
       {/* Content */}
-      <div className="p-4 max-w-4xl">
+      <div className="p-4 max-w-4xl mx-auto">
         <LogEventForm onEventLogged={handleEventLogged} />
 
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-nighty-honeydew mb-6">
+        <div className="glass-card">
+          <h2 className="text-xl font-semibold text-nightly-honeydew mb-6">
             Recent Events
           </h2>
 

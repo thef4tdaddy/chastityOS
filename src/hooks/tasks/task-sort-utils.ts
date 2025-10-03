@@ -8,16 +8,18 @@ import { TaskSortBy, SortDirection } from "./useTaskManagement";
  * Get comparison value for sorting by created date
  */
 const compareByCreatedAt = (a: Task, b: Task): number => {
-  return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
+  const aTime = a.createdAt?.toDate?.()?.getTime() ?? 0;
+  const bTime = b.createdAt?.toDate?.()?.getTime() ?? 0;
+  return aTime - bTime;
 };
 
 /**
  * Get comparison value for sorting by due date
  */
 const compareByDueDate = (a: Task, b: Task): number => {
-  return (
-    (a.dueDate?.getTime() ?? Infinity) - (b.dueDate?.getTime() ?? Infinity)
-  );
+  const aTime = a.dueDate?.toDate?.()?.getTime() ?? Infinity;
+  const bTime = b.dueDate?.toDate?.()?.getTime() ?? Infinity;
+  return aTime - bTime;
 };
 
 /**

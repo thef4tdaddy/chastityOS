@@ -35,21 +35,25 @@ export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
             Time Remaining on Goal:
           </p>
           <p className="text-3xl font-bold text-blue-100">
-            {remainingGoalTime}
+            {Math.floor(remainingGoalTime / 3600)}h{" "}
+            {Math.floor((remainingGoalTime % 3600) / 60)}m
           </p>
         </div>
       )}
 
-      {keyholderName && requiredKeyholderDurationSeconds > 0 && (
-        <div
-          className={`mb-4 p-3 rounded-lg shadow-sm text-center border bg-white/10 backdrop-blur-xs border-white/20`}
-        >
-          <p className={`text-sm font-semibold text-purple-200`}>
-            {keyholderName} requires {savedSubmissivesName || "the submissive"}{" "}
-            to be in chastity for {requiredKeyholderDurationSeconds}
-          </p>
-        </div>
-      )}
+      {keyholderName &&
+        keyholderName !== "" &&
+        requiredKeyholderDurationSeconds > 0 && (
+          <div
+            className={`mb-4 p-3 rounded-lg shadow-sm text-center border bg-white/10 backdrop-blur-xs border-white/20`}
+          >
+            <p className={`text-sm font-semibold text-purple-200`}>
+              {keyholderName} requires{" "}
+              {savedSubmissivesName || "the submissive"} to be in chastity for{" "}
+              {requiredKeyholderDurationSeconds}
+            </p>
+          </div>
+        )}
 
       {denialCooldownActive && <div>Denial cooldown active</div>}
     </>

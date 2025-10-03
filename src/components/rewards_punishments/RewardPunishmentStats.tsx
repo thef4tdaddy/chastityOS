@@ -33,7 +33,7 @@ export const RewardPunishmentStats: React.FC<RewardPunishmentStatsProps> = ({
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+    <div className="glass-card mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaTrophy className="text-nightly-aquamarine" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">Summary</h2>

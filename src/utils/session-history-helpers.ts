@@ -12,8 +12,8 @@ import type {
   HistoryTrends,
   GoalProgressHistory,
   ComparisonMetrics,
-} from "./types/SessionHistory";
-import { calculateOverallCompletionRate } from "../../utils/sessionHistoryHelpers";
+} from "../hooks/session/types/sessionHistory";
+import { calculateOverallCompletionRate } from "./sessionHistoryHelpers";
 
 export function getSessionsByDateRange(
   sessions: HistoricalSession[],

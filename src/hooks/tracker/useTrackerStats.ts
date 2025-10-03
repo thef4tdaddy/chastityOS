@@ -25,6 +25,7 @@ export interface UseTrackerStatsReturn {
     accumulatedPause: string;
     totalElapsed: string;
     isActive: boolean;
+    timeCageOff: number;
   };
 
   // Formatted stats
@@ -74,6 +75,7 @@ export const useTrackerStats = ({
         accumulatedPause: timerData.currentPauseDurationFormatted,
         totalElapsed: timerData.totalElapsedTimeFormatted,
         isActive: timerData.isActive,
+        timeCageOff: 0, // Real-time session doesn't track cage off time in the same way
       }
     : {
         effectiveTime: formatTimeFromSeconds(mainChastityDisplayTime),
@@ -84,6 +86,7 @@ export const useTrackerStats = ({
         ),
         totalElapsed: topBoxTime || "0s",
         isActive: isCageOn,
+        timeCageOff,
       };
 
   // Format all the stats for display

@@ -121,7 +121,10 @@ export const useTimerSync = ({
 
   // Start update interval
   useEffect(() => {
-    updateIntervalRef.current = setInterval(updateTimerProgress, syncInterval);
+    updateIntervalRef.current = setInterval(
+      updateTimerProgress,
+      syncInterval,
+    ) as unknown as number;
 
     return () => {
       if (updateIntervalRef.current) {
@@ -135,7 +138,10 @@ export const useTimerSync = ({
 
   // Start sync interval
   useEffect(() => {
-    syncIntervalRef.current = setInterval(syncActiveTimers, syncInterval * 30);
+    syncIntervalRef.current = setInterval(
+      syncActiveTimers,
+      syncInterval * 30,
+    ) as unknown as number;
 
     return () => {
       if (syncIntervalRef.current) {

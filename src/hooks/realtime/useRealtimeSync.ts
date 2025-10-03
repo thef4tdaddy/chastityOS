@@ -23,7 +23,7 @@ interface WebSocketMessage {
   data?: unknown;
   channelId?: string;
   userId?: string;
-  timestamp?: Date;
+  timestamp?: Date | string;
 }
 
 interface UseRealtimeSyncOptions {
@@ -102,7 +102,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
     reconnectTimeoutRef.current = setTimeout(() => {
       // Reconnection attempt
       connect();
-    }, reconnectInterval);
+    }, reconnectInterval) as unknown as number;
   }, [connect, maxReconnectAttempts, reconnectInterval]);
 
   // Start heartbeat
@@ -113,11 +113,14 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
         heartbeatTimeoutRef.current = setTimeout(
           sendHeartbeat,
           heartbeatInterval,
-        );
+        ) as unknown as number;
       }
     };
 
-    heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, heartbeatInterval);
+    heartbeatTimeoutRef.current = setTimeout(
+      sendHeartbeat,
+      heartbeatInterval,
+    ) as unknown as number;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [heartbeatInterval]); // sendMessage is stable
 
