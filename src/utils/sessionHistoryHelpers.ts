@@ -4,7 +4,7 @@
 import type {
   HistoricalSession,
   TrendData,
-} from "../hooks/session/types/SessionHistory";
+} from "../hooks/session/types/sessionHistory";
 
 export function createEmptyTrendData(): TrendData {
   return {
