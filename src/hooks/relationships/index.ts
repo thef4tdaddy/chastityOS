@@ -3,9 +3,8 @@
  * Re-exports all focused relationship hooks for easy importing
  */
 
-// Types and utilities
+// Types only (utilities have been moved to @/utils)
 export * from "./types";
-export * from "./relationship-utils";
 
 // Focused hooks
 export { useRelationshipList } from "./useRelationshipList";

@@ -7,8 +7,8 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { Task, TaskStatus, TaskPriority } from "@/types/core";
-import { applyAllFilters } from "./task-filter-utils";
-import { sortTasks } from "./task-sort-utils";
+import { applyAllFilters } from "@/utils/filtering/tasks";
+import { sortTasks } from "@/utils/sorting/tasks";
 import { useTaskCRUD } from "./useTaskCRUD";
 import { useTaskAssignment } from "./useTaskAssignment";
 

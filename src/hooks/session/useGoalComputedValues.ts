@@ -7,7 +7,7 @@ import {
   calculateCompletionRate,
   calculateOverallDifficulty,
   predictCompletionTime,
-} from "./session-goals-utils";
+} from "@/utils/goals/session";
 import type { SessionGoal, GoalProgress } from "./types/SessionGoals";
 
 interface UseGoalComputedValuesProps {

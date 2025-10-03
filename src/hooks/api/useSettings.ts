@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsDBService } from "../../services/database/SettingsDBService";
 import { UserSettings } from "../../types/database";
 import { logger } from "../../utils/logging";
-import { settingsKeys } from "./settings-utils";
+import { settingsKeys } from "@/utils/settings/api";
 
 // Types for data import operations
 interface ImportUserData {

@@ -15,7 +15,7 @@ import { AuthService } from "@/services/auth/auth-service";
 import { getFirebaseAuth } from "@/services/firebase";
 import { User, LoginForm, RegisterForm, ApiResponse } from "@/types";
 import { serviceLogger } from "@/utils/logging";
-import { authKeys } from "@/hooks/api/auth-utils";
+import { authKeys } from "@/utils/auth";
 
 const logger = serviceLogger("AuthContext");
 

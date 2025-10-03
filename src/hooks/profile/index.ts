@@ -5,7 +5,7 @@
 export { usePublicProfile } from "./usePublicProfile";
 export { useProfileStats } from "./useProfileStats";
 export { useProfileAchievements } from "./useProfileAchievements";
-export { getTypeStyles } from "./profile-achievements-utils";
+export { getTypeStyles } from "@/utils/achievements/profile";
 export { useProfilePrivacy } from "./useProfilePrivacy";
 export { useProfileSharing } from "./useProfileSharing";
 

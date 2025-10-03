@@ -7,7 +7,10 @@ import { useAuthState } from "@/contexts/AuthContext";
 import { relationshipService } from "@/services/database/relationships/RelationshipService";
 import { RelationshipPermissions } from "@/types/relationships";
 import { BaseHookState, BaseHookActions } from "./types";
-import { withErrorHandling, createBaseActions } from "./relationship-utils";
+import {
+  withErrorHandling,
+  createBaseActions,
+} from "@/utils/error-handling/handlers";
 
 type RelationshipPermissionsState = BaseHookState;
 

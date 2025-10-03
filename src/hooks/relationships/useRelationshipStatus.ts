@@ -10,7 +10,10 @@ import {
   RelationshipSession,
 } from "@/types/relationships";
 import { BaseHookState, BaseHookActions } from "./types";
-import { withErrorHandling, createBaseActions } from "./relationship-utils";
+import {
+  withErrorHandling,
+  createBaseActions,
+} from "@/utils/error-handling/handlers";
 
 interface RelationshipStatusState extends BaseHookState {
   chastityData: RelationshipChastityData | null;

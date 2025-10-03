@@ -10,7 +10,7 @@ import {
   completeGoalHelper,
   calculateGoalProgress,
   calculateGoalProjection,
-} from "./personal-goals-utils";
+} from "@/utils/goals/personal";
 
 export interface PersonalGoal {
   id: string;
@@ -65,33 +65,41 @@ export function usePersonalGoals(): UsePersonalGoalsReturn {
   const activeGoals = goals.filter((g) => !g.isCompleted);
   const completedGoals = goals.filter((g) => g.isCompleted);
 
-  const createGoal = useCallback(async (goal: CreateGoalInput): Promise<PersonalGoal> => {
-    setIsCreating(true);
-    setError(null);
-    try {
-      return await createGoalHelper(goal, setGoals);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to create goal");
-      setError(error);
-      throw error;
-    } finally {
-      setIsCreating(false);
-    }
-  }, []);
+  const createGoal = useCallback(
+    async (goal: CreateGoalInput): Promise<PersonalGoal> => {
+      setIsCreating(true);
+      setError(null);
+      try {
+        return await createGoalHelper(goal, setGoals);
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to create goal");
+        setError(error);
+        throw error;
+      } finally {
+        setIsCreating(false);
+      }
+    },
+    [],
+  );
 
-  const updateGoal = useCallback(async (id: string, updates: UpdateGoalInput): Promise<PersonalGoal> => {
-    setIsUpdating(true);
-    setError(null);
-    try {
-      return await updateGoalHelper(id, updates, setGoals);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to update goal");
-      setError(error);
-      throw error;
-    } finally {
-      setIsUpdating(false);
-    }
-  }, []);
+  const updateGoal = useCallback(
+    async (id: string, updates: UpdateGoalInput): Promise<PersonalGoal> => {
+      setIsUpdating(true);
+      setError(null);
+      try {
+        return await updateGoalHelper(id, updates, setGoals);
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to update goal");
+        setError(error);
+        throw error;
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [],
+  );
 
   const deleteGoal = useCallback(async (id: string): Promise<void> => {
     setIsDeleting(true);
@@ -99,7 +107,8 @@ export function usePersonalGoals(): UsePersonalGoalsReturn {
     try {
       await deleteGoalHelper(id, setGoals);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to delete goal");
+      const error =
+        err instanceof Error ? err : new Error("Failed to delete goal");
       setError(error);
       throw error;
     } finally {
@@ -112,22 +121,38 @@ export function usePersonalGoals(): UsePersonalGoalsReturn {
     try {
       await completeGoalHelper(id, setGoals);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to complete goal");
+      const error =
+        err instanceof Error ? err : new Error("Failed to complete goal");
       setError(error);
       throw error;
     }
   }, []);
 
-  const getGoalProgress = useCallback((goalId: string): number =>
-    calculateGoalProgress(goalId, goals), [goals]);
-  const getGoalProjection = useCallback((goalId: string): Date | null =>
-    calculateGoalProjection(goalId, goals), [goals]);
+  const getGoalProgress = useCallback(
+    (goalId: string): number => calculateGoalProgress(goalId, goals),
+    [goals],
+  );
+  const getGoalProjection = useCallback(
+    (goalId: string): Date | null => calculateGoalProjection(goalId, goals),
+    [goals],
+  );
 
   useState(() => setTimeout(() => setIsLoading(false), 100));
 
   return {
-    goals, activeGoals, completedGoals, isLoading, createGoal, updateGoal,
-    deleteGoal, completeGoal, isCreating, isUpdating, isDeleting, error,
-    getGoalProgress, getGoalProjection,
+    goals,
+    activeGoals,
+    completedGoals,
+    isLoading,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    completeGoal,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    error,
+    getGoalProgress,
+    getGoalProjection,
   };
 }

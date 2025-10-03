@@ -37,7 +37,7 @@ import {
   generateLevelRewards,
   getPlayerTitle,
   getUnlockedFeatures,
-} from "./gamification-utils";
+} from "@/utils/gamification";
 
 /**
  * Enhanced Gamification Hook

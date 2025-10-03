@@ -37,7 +37,7 @@ import { GoalStorageService } from "../../services/goalStorage";
 
 import type * as _Types from "./types/Goals";
 export type * from "./types/Goals";
-import { DEFAULT_TEMPLATES } from "./goals-utils";
+import { DEFAULT_TEMPLATES } from "@/utils/goals/common";
 
 // Complex goal management hook with multiple goal types and collaborative features
 // eslint-disable-next-line max-statements

@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuthState } from "@/contexts/AuthContext";
 import { RelationshipTask, RelationshipEvent } from "@/types/relationships";
 import { BaseHookState, BaseHookActions } from "./types";
-import { createBaseActions } from "./relationship-utils";
+import { createBaseActions } from "@/utils/error-handling/handlers";
 import { useRelationshipTaskOperations } from "./useRelationshipTaskOperations";
 import { useRelationshipEventOperations } from "./useRelationshipEventOperations";
 

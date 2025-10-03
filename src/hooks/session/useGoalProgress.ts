@@ -5,7 +5,7 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { serviceLogger } from "../../utils/logging";
-import { checkIfGoalCompleted } from "./session-goals-utils";
+import { checkIfGoalCompleted } from "@/utils/goals/session";
 import type {
   SessionGoal,
   GoalProgress,

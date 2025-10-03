@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taskDBService } from "../../services/database/TaskDBService";
 import { Task, TaskStatus, DBTask, TaskFilters } from "../../types/database";
 import { logger } from "../../utils/logging";
-import { taskKeys } from "./tasks-utils";
+import { taskKeys } from "@/utils/tasks";
 
 /**
  * Task Management Hooks - TanStack Query Integration

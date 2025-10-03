@@ -1,9 +1,15 @@
 /**
  * Utility functions for personal goals management
  */
-import type { PersonalGoal, CreateGoalInput, UpdateGoalInput } from "./usePersonalGoals";
+import type {
+  PersonalGoal,
+  CreateGoalInput,
+  UpdateGoalInput,
+} from "./usePersonalGoals";
 
-type SetGoalsFunction = (value: PersonalGoal[] | ((prev: PersonalGoal[]) => PersonalGoal[])) => void;
+type SetGoalsFunction = (
+  value: PersonalGoal[] | ((prev: PersonalGoal[]) => PersonalGoal[]),
+) => void;
 
 export async function createGoalHelper(
   goal: CreateGoalInput,
