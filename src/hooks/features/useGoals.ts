@@ -163,10 +163,10 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
       const goalIndex = personalGoals.findIndex((g) => g.id === goalId);
       if (goalIndex === -1) throw new Error("Goal not found");
 
-      const updatedGoal: EnhancedGoal = {
+      const updatedGoal = {
         ...personalGoals[goalIndex],
         ...updates,
-      };
+      } as EnhancedGoal;
       const updated = [...personalGoals];
       updated[goalIndex] = updatedGoal;
 

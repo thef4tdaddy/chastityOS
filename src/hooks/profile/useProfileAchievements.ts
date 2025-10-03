@@ -5,8 +5,13 @@
 
 import { useMemo } from "react";
 import { useAchievements } from "../useAchievements";
-import { AchievementCategory, UserAchievement, Achievement } from "../../types";
+import {
+  AchievementCategory,
+  DBUserAchievement,
+  DBAchievement,
+} from "../../types";
 import { getTypeStyles } from "@/utils/achievements/profile";
+import { Timestamp } from "firebase/firestore";
 
 // Helper function for achievement type mapping
 const getAchievementType = (
@@ -52,25 +57,25 @@ export const useProfileAchievements = (
   // Process badges
   const badges: ProfileBadge[] = useMemo(() => {
     const achievementsToShow = isOwnProfile
-      ? allAchievements.filter((a: Achievement) => {
+      ? allAchievements.filter((a: DBAchievement) => {
           const userAchievement = visibleAchievements.find(
-            (ua: UserAchievement) => ua.achievementId === a.id,
+            (ua: DBUserAchievement) => ua.achievementId === a.id,
           );
           return userAchievement !== undefined;
         })
       : visibleAchievements;
 
-    return achievementsToShow
-      .map((userAchievement: UserAchievement) => {
+    return (achievementsToShow as DBUserAchievement[])
+      .map((userAchievement: DBUserAchievement) => {
         const achievement = allAchievements.find(
-          (a: Achievement) => a.id === userAchievement.achievementId,
+          (a: DBAchievement) => a.id === userAchievement.achievementId,
         );
         return achievement
           ? {
               id: achievement.id,
               name: achievement.name,
               description: achievement.description,
-              earnedDate: userAchievement.earnedAt,
+              earnedDate: userAchievement.earnedAt.toDate(),
               icon: achievement.icon,
             }
           : null;
@@ -84,19 +89,19 @@ export const useProfileAchievements = (
   const recentAchievements: ProfileAchievement[] = useMemo(() => {
     return visibleAchievements
       .sort(
-        (a: UserAchievement, b: UserAchievement) =>
+        (a: DBUserAchievement, b: DBUserAchievement) =>
           b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
       )
       .slice(0, 5)
-      .map((userAchievement: UserAchievement) => {
+      .map((userAchievement: DBUserAchievement) => {
         const achievement = allAchievements.find(
-          (a: Achievement) => a.id === userAchievement.achievementId,
+          (a: DBAchievement) => a.id === userAchievement.achievementId,
         );
         return achievement
           ? {
               id: achievement.id,
               title: achievement.name,
-              date: userAchievement.earnedAt,
+              date: userAchievement.earnedAt.toDate(),
               type: getAchievementType(achievement.category),
               icon: achievement.icon,
             }

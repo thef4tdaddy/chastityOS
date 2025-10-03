@@ -3,6 +3,11 @@
  * These types are optimized for local storage and sync operations
  */
 
+import type {
+  AchievementCategory,
+  AchievementDifficulty,
+} from "./achievements";
+
 export type SyncStatus = "synced" | "pending" | "conflict";
 export type EventType = string;
 export type TaskStatus =
@@ -13,21 +18,8 @@ export type TaskStatus =
   | "completed"
   | "cancelled";
 
-// Achievement-related enums
-export type AchievementCategory =
-  | "session_milestones"
-  | "consistency_badges"
-  | "streak_achievements"
-  | "goal_based"
-  | "task_completion"
-  | "special_achievements";
-
-export type AchievementDifficulty =
-  | "common"
-  | "uncommon"
-  | "rare"
-  | "epic"
-  | "legendary";
+// Re-export achievement types for consistency
+export type { AchievementCategory, AchievementDifficulty };
 
 export interface DBBase {
   id: string;

@@ -15,7 +15,12 @@ import {
 } from "../../utils/iconImport";
 import { useAchievements } from "../../hooks/useAchievements";
 import { useAuthState } from "../../contexts";
-import { AchievementCategory, UserAchievement, Achievement } from "../../types";
+import {
+  AchievementCategory,
+  DBUserAchievement,
+  DBAchievement,
+  DBAchievementNotification,
+} from "../../types";
 
 // Types
 interface AchievementStats {
@@ -56,7 +61,7 @@ const LoadingState: React.FC = () => (
 // Stats Cards Component
 const StatsCards: React.FC<{
   achievementStats: AchievementStats;
-  unreadNotifications: UnreadNotification[];
+  unreadNotifications: DBAchievementNotification[];
 }> = ({ achievementStats, unreadNotifications }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
     <div className="bg-gradient-to-br from-nightly-aquamarine/20 to-nightly-aquamarine/10 rounded-lg p-4 border border-nightly-aquamarine/30">
@@ -111,8 +116,8 @@ const StatsCards: React.FC<{
 
 // Recent Achievements Component
 const RecentAchievements: React.FC<{
-  recentAchievements: UserAchievement[];
-  allAchievements: Achievement[];
+  recentAchievements: DBUserAchievement[];
+  allAchievements: DBAchievement[];
 }> = ({ recentAchievements, allAchievements }) => {
   if (recentAchievements.length === 0) return null;
 
@@ -122,9 +127,9 @@ const RecentAchievements: React.FC<{
         Recent Achievements
       </h3>
       <div className="space-y-3">
-        {recentAchievements.map((userAchievement: UserAchievement) => {
+        {recentAchievements.map((userAchievement: DBUserAchievement) => {
           const achievement = allAchievements.find(
-            (a: Achievement) => a.id === userAchievement.achievementId,
+            (a: DBAchievement) => a.id === userAchievement.achievementId,
           );
           if (!achievement) return null;
 
@@ -207,7 +212,7 @@ export const AchievementDashboard: React.FC = () => {
 
   const recentAchievements = userAchievements
     .sort(
-      (a: UserAchievement, b: UserAchievement) =>
+      (a: DBUserAchievement, b: DBUserAchievement) =>
         b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
     )
     .slice(0, 3);
