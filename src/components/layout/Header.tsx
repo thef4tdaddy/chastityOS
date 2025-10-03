@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
               <img
-                src="/assets/logo/chastityOS-newlogo-text.webp"
+                src="/assets/logo/chastityOS-newlogo-text.svg"
                 alt="ChastityOS"
                 className="h-12"
               />

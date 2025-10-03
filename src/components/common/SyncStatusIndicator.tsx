@@ -56,7 +56,7 @@ export const SyncStatusIndicator: React.FC = () => {
     if (isSyncing) {
       return (
         <img
-          src="/assets/sync-icon/sync-neutral.webp"
+          src="/assets/sync-icon/sync-neutral.svg"
           alt="Syncing"
           className="w-4 h-4 inline animate-pulse"
         />
@@ -65,7 +65,7 @@ export const SyncStatusIndicator: React.FC = () => {
     if (syncStatus === "synced") {
       return (
         <img
-          src="/assets/sync-icon/sync-good.webp"
+          src="/assets/sync-icon/sync-good.svg"
           alt="Synced"
           className="w-4 h-4 inline"
         />
@@ -73,7 +73,7 @@ export const SyncStatusIndicator: React.FC = () => {
     }
     return (
       <img
-        src="/assets/sync-icon/sync-neutral.webp"
+        src="/assets/sync-icon/sync-neutral.svg"
         alt="Unknown Status"
         className="w-4 h-4 inline"
       />
