@@ -54,14 +54,23 @@ export interface UsePauseResumeControlsReturn {
 }
 
 // Helper function to format cooldown time
+// Show only hours/minutes when > 60s, show seconds when < 60s
 const formatTimeRemaining = (cooldownSeconds: number): string => {
   const hours = Math.floor(cooldownSeconds / 3600);
   const minutes = Math.floor((cooldownSeconds % 3600) / 60);
   const seconds = cooldownSeconds % 60;
 
-  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
-  if (minutes > 0) return `${minutes}m ${seconds}s`;
-  return `${seconds}s`;
+  // When less than 60 seconds, show seconds
+  if (cooldownSeconds < 60) {
+    return `${seconds}s`;
+  }
+
+  // When 60+ seconds, show hours/minutes without seconds
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+
+  return `${minutes}m`;
 };
 
 // Helper function to get button states and conditions

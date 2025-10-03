@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { PauseCooldownService } from "../../services/PauseCooldownService";
+import { useSharedTimer } from "../useSharedTimer";
 import { serviceLogger } from "../../utils/logging";
 import type {
   PauseStatus as _PauseStatus,
@@ -58,6 +59,9 @@ const createInitialPauseAnalytics = (): PauseAnalytics => ({
 // Complex pause/resume logic with cooldown management and analytics
 // eslint-disable-next-line max-statements
 export const usePauseResume = (sessionId: string, relationshipId?: string) => {
+  // Use shared timer for cooldown countdown
+  const currentTime = useSharedTimer();
+
   // Use sub-hooks for state management
   const {
     pauseStatus,
@@ -101,10 +105,11 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     return Math.max(
       0,
       Math.floor(
-        (cooldownState.nextPauseAvailable.getTime() - Date.now()) / 1000,
+        (cooldownState.nextPauseAvailable.getTime() - currentTime.getTime()) /
+          1000,
       ),
     );
-  }, [cooldownState.nextPauseAvailable]);
+  }, [cooldownState.nextPauseAvailable, currentTime]);
 
   const hasKeyholderOverride = useMemo(
     () => keyholderOverrides.canOverrideCooldown,
