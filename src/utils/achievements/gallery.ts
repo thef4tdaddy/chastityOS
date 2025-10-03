@@ -1,4 +1,4 @@
-import { AchievementCategory, AchievementDifficulty } from "../types";
+import { AchievementCategory, AchievementDifficulty } from "../../types";
 
 /**
  * Achievement Gallery Utilities
