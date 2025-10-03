@@ -41,7 +41,7 @@ interface CategoryProgressItem {
 
 // Loading State Component
 const LoadingState: React.FC = () => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+  <div className="glass-card">
     <div className="animate-pulse">
       <div className="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -117,7 +117,7 @@ const RecentAchievements: React.FC<{
   if (recentAchievements.length === 0) return null;
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+    <div className="glass-card">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         Recent Achievements
       </h3>
@@ -162,7 +162,7 @@ const RecentAchievements: React.FC<{
 const CategoryProgress: React.FC<{
   categoryProgress: CategoryProgressItem[];
 }> = ({ categoryProgress }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+  <div className="glass-card">
     <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
       Progress by Category
     </h3>
