@@ -243,7 +243,7 @@ export interface UseSessionActionsReturn {
   isPaused: boolean;
   sessionId: string | null;
   session: DBSession | null;
-  goals: any; // TODO: Type this properly
+  goals: { active: DBGoal[]; completed: DBGoal[] } | null;
   duration: number;
 
   // Pause/cooldown info

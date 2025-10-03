@@ -22,7 +22,7 @@ export interface LifetimeStats {
  * Updates in real-time as sessions change
  */
 export function useLifetimeStats(userId: string | undefined): LifetimeStats {
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<DBSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Use shared timer for perfect synchronization with other timer hooks

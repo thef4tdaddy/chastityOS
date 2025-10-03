@@ -226,7 +226,13 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         throw err;
       }
     },
-    [canPause, sessionId, startPause],
+    [
+      canPause,
+      sessionId,
+      startPause,
+      cooldownState.isInCooldown,
+      pauseStatus.isPaused,
+    ],
   );
 
   // Resume session

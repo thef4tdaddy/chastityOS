@@ -295,13 +295,13 @@ const createMessageHandlers = (
 
     switch (message.type) {
       case "channel_joined":
-        handleChannelJoined(message as any);
+        handleChannelJoined(message as Record<string, unknown>);
         break;
       case "channel_left":
-        handleChannelLeft(message as any);
+        handleChannelLeft(message as Record<string, unknown>);
         break;
       case "realtime_update":
-        handleRealtimeUpdate(message as any);
+        handleRealtimeUpdate(message as RealtimeUpdate);
         break;
       case "heartbeat_ack":
         // Heartbeat acknowledged

@@ -144,9 +144,9 @@ function setupMultiWearerListener(params: {
 
   const unsubscribe = onSnapshot(
     q,
-    (querySnapshot) =>
+    (querySnapshot: QuerySnapshot) =>
       handleSessionSnapshot(
-        querySnapshot as any,
+        querySnapshot,
         setSession,
         setWearers,
         setError,
