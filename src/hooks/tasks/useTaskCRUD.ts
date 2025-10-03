@@ -83,7 +83,7 @@ export function useTaskCRUD({
           throw new Error(`Task with id ${id} not found`);
         }
 
-        const updatedTask = { ...currentTasks[taskIndex], ...updates };
+        const updatedTask = { ...currentTasks[taskIndex], ...updates } as Task;
         const newTasks = [...currentTasks];
         newTasks[taskIndex] = updatedTask;
 

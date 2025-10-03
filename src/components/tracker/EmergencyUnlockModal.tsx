@@ -7,7 +7,10 @@ import {
 } from "react-icons/fa";
 import type { EmergencyUnlockReason } from "../../types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "../../types/events";
-import { useEmergencyUnlockModal } from "../../hooks/tracker/useEmergencyUnlockModal";
+import {
+  useEmergencyUnlockModal,
+  type ModalStage,
+} from "../../hooks/tracker/useEmergencyUnlockModal";
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
@@ -22,7 +25,7 @@ interface EmergencyUnlockModalProps {
 
 // Warning Stage Component
 const WarningStage: React.FC<{
-  setStage: (stage: string) => void;
+  setStage: (stage: ModalStage) => void;
   onClose: () => void;
 }> = ({ setStage, onClose }) => (
   <div className="text-center">
@@ -81,8 +84,8 @@ const getReasonDescription = (reason: EmergencyUnlockReason): string => {
 
 // Reason Selection List Component
 const ReasonSelectionList: React.FC<{
-  reason: EmergencyUnlockReason | null;
-  setReason: (reason: EmergencyUnlockReason) => void;
+  reason: EmergencyUnlockReason | "";
+  setReason: (reason: EmergencyUnlockReason | "") => void;
 }> = ({ reason, setReason }) => (
   <div className="space-y-3 mb-6">
     {EMERGENCY_UNLOCK_REASONS.map((emergencyReason) => (
@@ -115,9 +118,9 @@ const ReasonSelectionList: React.FC<{
 
 // Reason Stage Component
 const ReasonStage: React.FC<{
-  setStage: (stage: string) => void;
-  reason: EmergencyUnlockReason | null;
-  setReason: (reason: EmergencyUnlockReason) => void;
+  setStage: (stage: ModalStage) => void;
+  reason: EmergencyUnlockReason | "";
+  setReason: (reason: EmergencyUnlockReason | "") => void;
   customReason: string;
   setCustomReason: (reason: string) => void;
   canProceedFromReason: boolean;
@@ -191,7 +194,7 @@ const ReasonStage: React.FC<{
 // Final Warning Box Component
 const FinalWarningBox: React.FC<{
   sessionId: string;
-  reason: EmergencyUnlockReason | null;
+  reason: EmergencyUnlockReason | "" | null;
 }> = ({ sessionId, reason }) => (
   <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-4 mb-6">
     <h4 className="font-semibold text-yellow-300 mb-2">⚠️ Final Warning</h4>
@@ -241,9 +244,9 @@ const ConfirmationInput: React.FC<{
 
 // Confirmation Stage Component
 const ConfirmationStage: React.FC<{
-  setStage: (stage: string) => void;
+  setStage: (stage: ModalStage) => void;
   sessionId: string;
-  reason: EmergencyUnlockReason | null;
+  reason: EmergencyUnlockReason | "" | null;
   confirmText: string;
   setConfirmText: (text: string) => void;
   requiredText: string;

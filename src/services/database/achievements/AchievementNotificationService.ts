@@ -18,7 +18,7 @@ export class AchievementNotificationService {
     collection: string,
     operation: string,
     id: string,
-    _data: Record<string, unknown>,
+    _data: Record<string, unknown> | DBAchievementNotification,
   ): Promise<void> {
     // Simplified sync queue - would normally integrate with proper sync service
     logger.debug(`Queued sync: ${operation} ${collection}/${id}`);
