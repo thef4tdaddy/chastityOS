@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
+import { useSharedTimer } from "../useSharedTimer";
 
 const logger = serviceLogger("useLifetimeStats");
 
@@ -23,8 +24,9 @@ export interface LifetimeStats {
 export function useLifetimeStats(userId: string | undefined): LifetimeStats {
   const [sessions, setSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Use shared timer for perfect synchronization with other timer hooks
+  const currentTime = useSharedTimer();
 
   // Manual refresh function
   const refresh = useCallback(async () => {
@@ -85,16 +87,7 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
     return () => {
       mounted = false;
     };
-  }, [userId, refreshTrigger]);
-
-  // Update current time every second for real-time calculations
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  }, [userId]);
 
   // Calculate lifetime stats
   const stats = useMemo((): LifetimeStats => {

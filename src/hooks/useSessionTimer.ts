@@ -2,9 +2,10 @@
  * Session Timer Hook
  * Provides real-time timer updates for active chastity sessions
  */
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import type { DBSession } from "../types/database";
 import { TimerService } from "../services/TimerService";
+import { useSharedTimer } from "./useSharedTimer";
 
 export interface SessionTimerData {
   // Core timer values
@@ -49,43 +50,15 @@ export function useSessionTimer(
   session: DBSession | null | undefined,
   options: UseSessionTimerOptions = {},
 ): SessionTimerData {
-  const { updateInterval = 1000, enabled = true } = options;
+  const { enabled = true } = options;
 
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Use shared timer for perfect synchronization across all components
+  const currentTime = useSharedTimer();
 
   // Track session state changes manually to avoid zustand warnings
   const sessionId = session?.id;
   const sessionEndTime = session?.endTime;
-  const isSessionActive = enabled && sessionId && !sessionEndTime;
   const shouldTick = enabled && sessionId; // Tick even when session ended (for off-time tracking)
-
-  // Update current time every second
-  useEffect(() => {
-    if (!shouldTick) {
-      // Clear interval if timer is disabled or no session
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-
-    const updateCurrentTime = () => {
-      setCurrentTime(new Date());
-    };
-
-    // Set up interval
-    intervalRef.current = setInterval(updateCurrentTime, updateInterval);
-
-    // Cleanup on unmount or dependency change
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [shouldTick, updateInterval]);
 
   // Memoized calculations to prevent unnecessary recalculations
   const timerData = useMemo((): SessionTimerData => {
@@ -210,38 +183,10 @@ export function useMultiSessionTimer(
   sessions: (DBSession | null | undefined)[],
   options: UseSessionTimerOptions = {},
 ): SessionTimerData[] {
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-  const { updateInterval = 1000, enabled = true } = options;
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { enabled = true } = options;
 
-  // Check if we have any active sessions
-  const hasActiveSessions = useMemo(() => {
-    return sessions.some((session) => session && !session.endTime);
-  }, [sessions]);
-
-  // Update current time for all sessions
-  useEffect(() => {
-    if (!enabled || !hasActiveSessions) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-
-    const updateCurrentTime = () => {
-      setCurrentTime(new Date());
-    };
-
-    intervalRef.current = setInterval(updateCurrentTime, updateInterval);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [enabled, hasActiveSessions, updateInterval]);
+  // Use shared timer for perfect synchronization
+  const currentTime = useSharedTimer();
 
   // Calculate timer data for each session
   const timerDataArray = useMemo(() => {
