@@ -41,7 +41,7 @@ const Dashboard: React.FC = () => {
           <img
             src="/assets/logo/chastityOS-newlogo-text.svg"
             alt="ChastityOS"
-            className="h-20 md:h-24 mx-auto"
+            className="h-40 md:h-48 mx-auto"
           />
         </div>
 
