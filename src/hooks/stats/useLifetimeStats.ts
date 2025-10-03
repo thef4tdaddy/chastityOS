@@ -91,7 +91,7 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
   }, [userId]);
 
   // Calculate lifetime stats
-  const stats = useMemo((): LifetimeStats => {
+  const stats = useMemo(() => {
     if (!userId || sessions.length === 0) {
       return {
         totalChastityTime: 0,
@@ -169,9 +169,11 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
       totalCageOffTime,
       totalSessions: sessions.length,
       isLoading,
-      refresh,
     };
-  }, [sessions, currentTime, userId, isLoading, refresh]);
+  }, [sessions, currentTime, userId, isLoading]);
 
-  return stats;
+  return {
+    ...stats,
+    refresh,
+  };
 }
