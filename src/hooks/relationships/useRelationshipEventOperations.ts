@@ -3,7 +3,7 @@
  */
 import { useCallback } from "react";
 import { RelationshipEvent } from "@/types/relationships";
-import { withErrorHandling } from "./utils";
+import { withErrorHandling } from "./relationship-utils";
 import { loadEventsFromService, logEventInService } from "./task-operations";
 
 interface EventState {

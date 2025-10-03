@@ -71,8 +71,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]); // closeMobileMenu omitted - Zustand store actions are stable
 
+  // Determine theme class based on environment
+  const themeClass =
+    import.meta.env.MODE === "production" ? "theme-prod" : "theme-nightly";
+
   return (
-    <div className="bg-dark_purple min-h-screen text-white font-inter">
+    <div
+      className={`${themeClass} bg-dark_purple min-h-screen text-white font-inter`}
+    >
       <Header
         navItems={navItems}
         isMobileMenuOpen={isMobileMenuOpen}

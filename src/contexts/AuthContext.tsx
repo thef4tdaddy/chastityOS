@@ -10,10 +10,12 @@ import React, {
   useState,
   ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { AuthService } from "@/services/auth/auth-service";
 import { getFirebaseAuth } from "@/services/firebase";
 import { User, LoginForm, RegisterForm, ApiResponse } from "@/types";
 import { serviceLogger } from "@/utils/logging";
+import { authKeys } from "@/hooks/api/auth-utils";
 
 const logger = serviceLogger("AuthContext");
 
@@ -68,11 +70,26 @@ const performAuthInitialization = async (
       });
       logger.info("User already authenticated", { uid: currentUser.uid });
     } else {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-      }));
-      logger.debug("No authenticated user found");
+      // No user found - sign in anonymously
+      logger.debug("No authenticated user found, signing in anonymously");
+      const anonResult = await AuthService.signInAnonymously();
+
+      if (anonResult.success && anonResult.data) {
+        setState({
+          user: anonResult.data,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        logger.info("Anonymous user created", { uid: anonResult.data.uid });
+      } else {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: anonResult.error || "Failed to create anonymous user",
+        }));
+        logger.error("Anonymous sign in failed", { error: anonResult.error });
+      }
     }
 
     // Listen for auth state changes
@@ -277,6 +294,7 @@ const useAuthActionsInternal = (
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const queryClient = useQueryClient();
   const [state, setState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
@@ -296,6 +314,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
     };
   }, []);
+
+  // Sync auth state with TanStack Query cache
+  useEffect(() => {
+    if (state.user) {
+      // Update the TanStack Query cache when user changes
+      queryClient.setQueryData(authKeys.currentUser, state.user);
+    } else {
+      // Clear the cache when user signs out
+      queryClient.setQueryData(authKeys.currentUser, null);
+    }
+  }, [state.user, queryClient]);
 
   const actions = useAuthActionsInternal(state, setState);
 

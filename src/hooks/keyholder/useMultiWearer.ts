@@ -146,7 +146,7 @@ function setupMultiWearerListener(params: {
     q,
     (querySnapshot) =>
       handleSessionSnapshot(
-        querySnapshot,
+        querySnapshot as any,
         setSession,
         setWearers,
         setError,

@@ -41,9 +41,19 @@ class ChastityTaskService {
     this.db = await getFirestore();
   }
 
-  private async ensureDb() {
+  private async ensureDb(): Promise<Firestore> {
     if (!this.db) {
       await this.initializeDb();
+    }
+    if (!this.db) {
+      throw new Error("Failed to initialize Firestore");
+    }
+    return this.db;
+  }
+
+  private getDb(): Firestore {
+    if (!this.db) {
+      throw new Error("Firestore not initialized. Call ensureDb() first.");
     }
     return this.db;
   }
@@ -144,14 +154,18 @@ class ChastityTaskService {
 
       if (status === RelationshipTaskStatus.SUBMITTED && !isKeyholder) {
         updateData.submittedAt = serverTimestamp();
-        updateData.submissiveNote = note;
+        if (note) {
+          updateData.submissiveNote = note;
+        }
       } else if (
         (status === RelationshipTaskStatus.APPROVED ||
           status === RelationshipTaskStatus.REJECTED) &&
         isKeyholder
       ) {
         updateData.approvedAt = serverTimestamp();
-        updateData.keyholderFeedback = note;
+        if (note) {
+          updateData.keyholderFeedback = note;
+        }
       } else if (status === RelationshipTaskStatus.COMPLETED) {
         updateData.completedAt = serverTimestamp();
       }
@@ -227,27 +241,26 @@ class ChastityTaskService {
     relationshipId: string,
     callback: (tasks: RelationshipTask[]) => void,
   ): Unsubscribe {
-    return this.ensureDb().then((db) => {
-      return onSnapshot(
-        query(
-          collection(db, "chastityData", relationshipId, "tasks"),
-          orderBy("createdAt", "desc"),
-        ),
-        (snapshot) => {
-          const tasks = snapshot.docs.map((doc) => ({
-            ...doc.data(),
-            id: doc.id,
-          })) as RelationshipTask[];
-          callback(tasks);
-        },
-        (error) => {
-          logger.error("Error in tasks subscription", {
-            error,
-            relationshipId,
-          });
-        },
-      );
-    }) as Unsubscribe;
+    const db = this.getDb();
+    return onSnapshot(
+      query(
+        collection(db, "chastityData", relationshipId, "tasks"),
+        orderBy("createdAt", "desc"),
+      ),
+      (snapshot) => {
+        const tasks = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as RelationshipTask[];
+        callback(tasks);
+      },
+      (error) => {
+        logger.error("Error in tasks subscription", {
+          error,
+          relationshipId,
+        });
+      },
+    );
   }
 }
 

@@ -101,7 +101,7 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
     : sortedSessions.slice(0, 10);
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+    <div className="glass-card mb-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FaHistory className="text-nightly-spring-green" />

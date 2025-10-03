@@ -10,10 +10,12 @@ import { SessionPersistenceDemo } from "../components/demo/SessionPersistenceDem
 // import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
+import { useAchievements } from "../hooks/useAchievements";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthState();
   const [sessionDuration, setSessionDuration] = useState("0s");
+  const { userAchievements } = useAchievements(user?.uid);
 
   useEffect(() => {
     if (user) {
@@ -37,7 +39,7 @@ const Dashboard: React.FC = () => {
         {/* Dashboard title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Dashboard
+            ChastityOS
           </h1>
         </div>
 
@@ -45,17 +47,17 @@ const Dashboard: React.FC = () => {
         <MobileDashboardLayout sessionDuration={sessionDuration} />
         <DesktopDashboardLayout sessionDuration={sessionDuration} />
 
-        {/* Achievement Dashboard */}
-        {user && (
+        {/* Achievement Dashboard - only show if user has achievements */}
+        {user && userAchievements && userAchievements.length > 0 && (
           <div className="mt-12">
             <AchievementDashboard />
           </div>
         )}
 
-        {/* Session Persistence Demo */}
-        <div className="mt-12">
+        {/* TODO: Session Persistence Demo - moved to showcase/demo section */}
+        {/* <div className="mt-12">
           <SessionPersistenceDemo />
-        </div>
+        </div> */}
 
         {/* TODO: Dexie Offline Demo temporarily disabled due to architectural restrictions */}
         {/* <div className="mb-8">
