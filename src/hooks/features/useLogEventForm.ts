@@ -6,6 +6,7 @@
 
 import { useState, useCallback } from "react";
 import { Event } from "../../types/events";
+import { EventDraftStorageService } from "../../services/eventDraftStorage";
 
 export interface EventFormData {
   type: string;
@@ -91,17 +92,17 @@ export function useLogEventForm(
   }, [validate, resetForm]);
 
   const saveDraft = useCallback(() => {
-    localStorage.setItem("eventDraft", JSON.stringify(formData));
+    EventDraftStorageService.saveDraft(formData);
     setHasDraft(true);
   }, [formData]);
 
   const loadDraft = useCallback(() => {
-    const draft = localStorage.getItem("eventDraft");
-    if (draft) setFormDataState(JSON.parse(draft));
+    const draft = EventDraftStorageService.loadDraft();
+    if (draft) setFormDataState(draft);
   }, []);
 
   const clearDraft = useCallback(() => {
-    localStorage.removeItem("eventDraft");
+    EventDraftStorageService.clearDraft();
     setHasDraft(false);
   }, []);
 

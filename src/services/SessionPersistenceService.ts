@@ -561,6 +561,20 @@ export class SessionPersistenceService {
   }
 
   /**
+   * Clear session backup from localStorage
+   * Public method to allow hooks to clear backup through service layer
+   */
+  clearBackup(): void {
+    try {
+      localStorage.removeItem(this.BACKUP_KEY);
+      logger.info("Session backup cleared");
+    } catch (error) {
+      logger.error("Failed to clear backup", { error: error as Error });
+      throw error;
+    }
+  }
+
+  /**
    * Get unique tab identifier
    */
   private getTabId(): string {

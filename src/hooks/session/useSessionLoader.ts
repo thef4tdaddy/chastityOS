@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useSessionPersistence } from "../useSessionPersistence";
 import type { DBSession } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
+import { SessionPersistenceService } from "../../services/SessionPersistenceService";
 
 const logger = serviceLogger("useSessionLoader");
 
@@ -101,12 +102,14 @@ async function handleRestoreFromBackup(
  * Helper function to clear backup data
  */
 async function handleClearBackup(
+  sessionPersistenceService: ReturnType<
+    typeof import("../../services/SessionPersistenceService").SessionPersistenceService.getInstance
+  >,
   setError: (error: Error | null) => void,
 ): Promise<void> {
   try {
     logger.debug("Clearing session backup");
-    localStorage.removeItem("chastity_session_backup");
-    logger.info("Session backup cleared");
+    sessionPersistenceService.clearBackup();
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     setError(error);
@@ -185,7 +188,8 @@ export function useSessionLoader(): UseSessionLoaderReturn {
 
   // Clear backup data
   const clearBackup = useCallback(async (): Promise<void> => {
-    await handleClearBackup(setError);
+    const persistenceService = SessionPersistenceService.getInstance();
+    await handleClearBackup(persistenceService, setError);
   }, []);
 
   // Sync persistence error to local error state
