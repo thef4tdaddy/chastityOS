@@ -63,9 +63,12 @@ export class RelationshipInviteService {
     this.db = await getFirestore();
   }
 
-  private async ensureDb() {
+  private async ensureDb(): Promise<Firestore> {
     if (!this.db) {
       await this.initializeDb();
+    }
+    if (!this.db) {
+      throw new Error("Failed to initialize Firestore");
     }
     return this.db;
   }

@@ -130,7 +130,7 @@ const NotificationActionButton: React.FC<{
   styles: ReturnType<typeof getPriorityStyles>;
   onDismiss: (id: string) => void;
   notificationId: string;
-  dismissible: boolean;
+  dismissible?: boolean;
 }> = ({ action, styles, onDismiss, notificationId, dismissible }) => (
   <div className="mt-3">
     <button

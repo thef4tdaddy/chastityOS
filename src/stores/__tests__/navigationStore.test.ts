@@ -70,18 +70,17 @@ describe("NavigationStore", () => {
     });
 
     it("should open mobile menu explicitly", () => {
-      const { setMobileMenuOpen } = useNavigationStore.getState();
+      const { openMobileMenu } = useNavigationStore.getState();
 
-      setMobileMenuOpen(true);
+      openMobileMenu();
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
     });
 
     it("should close mobile menu explicitly", () => {
-      const { setMobileMenuOpen, closeMobileMenu } =
-        useNavigationStore.getState();
+      const { openMobileMenu, closeMobileMenu } = useNavigationStore.getState();
 
       // First open it
-      setMobileMenuOpen(true);
+      openMobileMenu();
       expect(useNavigationStore.getState().isMobileMenuOpen).toBe(true);
 
       // Then close it
@@ -162,7 +161,7 @@ describe("NavigationStore", () => {
       const {
         setCurrentPage,
         setPageTitle,
-        setMobileMenuOpen,
+        openMobileMenu,
         setBreadcrumbs,
         setPageLoading,
         resetStore,
@@ -171,7 +170,7 @@ describe("NavigationStore", () => {
       // Change all values
       setCurrentPage("custom-page");
       setPageTitle("Custom Title");
-      setMobileMenuOpen(true);
+      openMobileMenu();
       setBreadcrumbs(["Custom", "Path"]);
       setPageLoading(true);
 

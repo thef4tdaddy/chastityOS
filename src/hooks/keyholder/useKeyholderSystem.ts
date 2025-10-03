@@ -183,7 +183,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
       // Calculate keyholder status and stats
       const { keyholderStatus, stats } = calculateKeyholderStatusAndStats(
         keyholderRelationshipsList,
-        keyholderRelationships,
+        keyholderRelationships as unknown as Record<string, unknown>,
       );
 
       setState((prev) => ({
