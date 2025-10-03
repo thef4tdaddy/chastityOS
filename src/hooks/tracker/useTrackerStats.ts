@@ -32,6 +32,7 @@ export interface UseTrackerStatsReturn {
   // Formatted stats
   stats: {
     topBoxLabel: string;
+    topBoxTimestamp: string;
     totalElapsedFormatted: string;
     currentSessionFormatted: string;
     cageOffTimeFormatted: string;
@@ -49,6 +50,20 @@ const formatTimeFromSeconds = (seconds: number): string => {
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
   return `${hours}h ${minutes}m ${remainingSeconds}s`;
+};
+
+// Helper function to format timestamp as HH:MM:SS MM/DD/YYYY
+const formatTimestamp = (date: Date | null | undefined): string => {
+  if (!date) return "";
+
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const seconds = date.getSeconds().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${hours}:${minutes}:${seconds} ${month}/${day}/${year}`;
 };
 
 export const useTrackerStats = ({
@@ -92,11 +107,32 @@ export const useTrackerStats = ({
         totalPauseTime: 0,
       };
 
+  // Determine top box label and timestamp based on session state
+  let topBoxLabelText = "";
+  let topBoxTimestampText = "";
+
+  if (currentSession) {
+    if (currentSession.endTime) {
+      // Session ended - show when cage was taken off
+      topBoxLabelText = "Cage Taken Off";
+      topBoxTimestampText = formatTimestamp(currentSession.endTime);
+    } else if (currentSession.isPaused && currentSession.pauseStartTime) {
+      // Session paused - show when pause started
+      topBoxLabelText = "Pause Started";
+      topBoxTimestampText = formatTimestamp(currentSession.pauseStartTime);
+    } else if (currentSession.startTime) {
+      // Session active - show when caged
+      topBoxLabelText = "Caged At";
+      topBoxTimestampText = formatTimestamp(currentSession.startTime);
+    }
+  }
+
   // Format all the stats for display
   // Note: totalChastityTime and totalTimeCageOff props should come from useLifetimeStats
   // which already includes all sessions and real-time calculations
   const stats = {
-    topBoxLabel,
+    topBoxLabel: topBoxLabelText,
+    topBoxTimestamp: topBoxTimestampText,
     totalElapsedFormatted: displayData.totalElapsed,
     currentSessionFormatted: displayData.effectiveTime,
     cageOffTimeFormatted: formatTimeFromSeconds(displayData.timeCageOff),
