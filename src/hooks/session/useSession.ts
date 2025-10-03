@@ -346,7 +346,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
         }
 
         // Save session to database
-        const sessionId = await sessionDBService.startSession(userId, {
+        await sessionDBService.startSession(userId, {
           isHardcoreMode: false,
           keyholderApprovalRequired:
             sessionContext.sessionType === "keyholder_managed",

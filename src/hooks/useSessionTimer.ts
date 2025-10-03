@@ -48,15 +48,10 @@ export interface UseSessionTimerOptions {
  */
 export function useSessionTimer(
   session: DBSession | null | undefined,
-  options: UseSessionTimerOptions = {},
+  _options: UseSessionTimerOptions = {},
 ): SessionTimerData {
-  const { enabled = true } = options;
-
   // Use shared timer for perfect synchronization across all components
   const currentTime = useSharedTimer();
-
-  // Track session state changes manually to avoid zustand warnings
-  const sessionId = session?.id;
 
   // Memoized calculations to prevent unnecessary recalculations
   const timerData = useMemo((): SessionTimerData => {

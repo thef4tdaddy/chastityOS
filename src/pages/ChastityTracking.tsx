@@ -93,8 +93,8 @@ const SessionPersistenceError: React.FC<{ error: string }> = ({ error }) => (
   </div>
 );
 
-// Cooldown Display Component
-const CooldownDisplay: React.FC<{
+// Cooldown Display Component (currently unused but kept for future use)
+const _CooldownDisplay: React.FC<{
   pauseState: { cooldownRemaining?: number } | null;
 }> = ({ pauseState }) => {
   if (!pauseState?.cooldownRemaining) return null;
@@ -265,18 +265,18 @@ const TrackerPage: React.FC = () => {
     resumeSession: resumeSessionCore,
     isStarting,
     isEnding,
-    canStart,
-    canEnd,
+    canStart: _canStart,
+    canEnd: _canEnd,
     canPause,
-    canResume,
+    canResume: _canResume,
     isActive,
     isPaused,
-    sessionId,
+    sessionId: _sessionId,
     session: realSession,
     goals,
     duration,
-    error: sessionError,
-    timeUntilNextPause,
+    error: _sessionError,
+    timeUntilNextPause: _timeUntilNextPause,
     cooldownRemaining,
   } = useSessionActions({
     userId: user?.uid || "",
@@ -346,8 +346,8 @@ const TrackerPage: React.FC = () => {
   const {
     handleSessionInitialized,
     handleEmergencyUnlock,
-    handlePause,
-    handleResume,
+    handlePause: _handlePause,
+    handleResume: _handleResume,
   } = useTrackerHandlers({
     setCurrentSession,
     setIsSessionInitialized,

@@ -30,11 +30,6 @@ interface AchievementStats {
   categoryCounts: Record<string, number>;
 }
 
-interface UnreadNotification {
-  id: string;
-  [key: string]: unknown;
-}
-
 interface CategoryProgressItem {
   category: AchievementCategory;
   earned: number;

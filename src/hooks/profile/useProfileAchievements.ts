@@ -11,7 +11,6 @@ import {
   DBAchievement,
 } from "../../types";
 import { getTypeStyles } from "@/utils/achievements/profile";
-import { Timestamp } from "firebase/firestore";
 
 // Helper function for achievement type mapping
 const getAchievementType = (
