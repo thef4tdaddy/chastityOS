@@ -39,8 +39,8 @@ export function calculateAdaptiveCooldown(
 }
 
 export function calculateCooldownDuration(
-  analytics: PauseAnalytics,
-  lastPauseDuration: number,
+  _analytics: PauseAnalytics,
+  _lastPauseDuration: number,
 ): number {
   // 6 hour cooldown after any pause to prevent abuse
   return 21600; // 6 hours = 21600 seconds

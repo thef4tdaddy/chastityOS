@@ -271,7 +271,7 @@ const TrackerPage: React.FC = () => {
     canResume: _canResume,
     isActive,
     isPaused,
-    sessionId: _sessionId,
+    sessionId,
     session: realSession,
     goals,
     duration,
@@ -291,7 +291,9 @@ const TrackerPage: React.FC = () => {
   const { refresh: refreshLifetimeStats } = lifetimeStats;
 
   // Wrap session actions to refresh lifetime stats after each action
-  const startSession = async (config?: any) => {
+  const startSession = async (
+    config?: import("../hooks/session/useSessionActions").SessionConfig,
+  ) => {
     await startSessionCore(config);
     await refreshLifetimeStats();
   };

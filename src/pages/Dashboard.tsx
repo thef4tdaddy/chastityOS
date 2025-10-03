@@ -5,8 +5,8 @@ import {
   DesktopDashboardLayout,
 } from "../components/dashboard/DashboardLayouts";
 import { AchievementDashboard } from "../components/achievements";
-import { SessionPersistenceDemo } from "../components/demo/SessionPersistenceDemo";
-// TODO: DexieDemo temporarily disabled due to architectural restrictions
+// TODO: SessionPersistenceDemo and DexieDemo temporarily disabled due to architectural restrictions
+// import { SessionPersistenceDemo } from "../components/demo/SessionPersistenceDemo";
 // import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
