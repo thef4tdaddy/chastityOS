@@ -7,7 +7,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useSession } from "./useSession";
 import { usePauseResume } from "./usePauseResume";
 import { serviceLogger } from "../../utils/logging";
-import type { DBGoal } from "../../types/database";
+import type { DBGoal, DBSession } from "../../types/database";
 
 const logger = serviceLogger("useSessionActions");
 
