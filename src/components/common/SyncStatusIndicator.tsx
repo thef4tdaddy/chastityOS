@@ -102,15 +102,15 @@ export const SyncStatusIndicator: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center space-x-2 text-xs">
-      <span className={`${getStatusColor()}`}>
-        {getStatusIcon()} {getStatusText()}
-      </span>
+    <div className="flex flex-col items-center text-xs">
+      <span className={`${getStatusColor()}`}>{getStatusIcon()}</span>
       {isOnline && lastSyncTime && (
-        <span className="text-gray-500">• Last: {formatLastSync()}</span>
+        <span className="text-gray-500 text-[10px] mt-1">
+          {formatLastSync()}
+        </span>
       )}
       {!isOnline && (
-        <span className="text-gray-500">• Changes will sync when online</span>
+        <span className="text-gray-500 text-[10px] mt-1">Offline</span>
       )}
     </div>
   );
