@@ -31,6 +31,19 @@
 - Updated imports in `timer-operations.ts`
 - All validation functions now properly located in `/src/utils/validation/`
 
+### ESLint Rules - ✅ COMPLETE
+
+**Files:** `configs/linting/eslint-rules/no-architecture-violations.js`, `eslint.config.js`
+
+Created custom ESLint rule to prevent future architecture violations:
+
+- **Blocks localStorage/sessionStorage in hooks** - Must use service layer
+- **Blocks utils files in hooks directory** - Must be in `/src/utils/`
+- **Blocks validation functions outside `/src/utils/validation/`** - Enforces proper structure
+- **Allows storage access in services** - Services are the correct layer for storage
+
+The rule runs on every lint and provides clear error messages with remediation guidance.
+
 ---
 
 ## 1. Utils Files in Wrong Directories (20 violations)
@@ -165,7 +178,7 @@ Direct localStorage access should ONLY be in service layer.
 - [x] No direct storage access outside `/src/services/` ✅
 - [x] All imports updated ✅
 - [x] Build passing ✅
-- [ ] ESLint rules added to prevent future violations
+- [x] ESLint rules added to prevent future violations ✅
 
 ---
 

@@ -6,6 +6,7 @@ import typescriptParser from '@typescript-eslint/parser';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import zustandSafePatterns from './eslint-rules/zustand-safe-patterns.js';
 import noLegacyToast from './eslint-rules/no-legacy-toast.js';
+import noArchitectureViolations from './eslint-rules/no-architecture-violations.js';
 
 export default [
   {
@@ -67,6 +68,9 @@ export default [
       'react-refresh': reactRefresh,
       'zustand-safe-patterns': zustandSafePatterns,
       'no-legacy-toast': { rules: { 'no-legacy-toast': noLegacyToast } },
+      'no-architecture-violations': {
+        rules: { 'no-architecture-violations': noArchitectureViolations },
+      },
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -189,6 +193,14 @@ export default [
             'src/pages/showcase/TouchTargetsDemo.tsx',
           ],
           severity: 'warn',
+        },
+      ],
+
+      // 🏗️ Architecture Violations - Enforce clean architecture patterns (Issue #421)
+      'no-architecture-violations/no-architecture-violations': [
+        'error',
+        {
+          allowStorageInServices: true, // Services can use localStorage
         },
       ],
 
