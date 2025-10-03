@@ -2,7 +2,7 @@
  * Lifetime Stats Hook
  * Calculates cumulative stats across all user sessions
  */
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
 
@@ -13,6 +13,7 @@ export interface LifetimeStats {
   totalCageOffTime: number; // Total pause time + time between sessions
   totalSessions: number;
   isLoading: boolean;
+  refresh: () => Promise<void>; // Manual refresh function
 }
 
 /**
@@ -23,6 +24,27 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
   const [sessions, setSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Manual refresh function
+  const refresh = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      const allSessions = await sessionDBService.getSessionHistory(
+        userId,
+        1000,
+      );
+      setSessions(allSessions);
+      logger.debug("Refreshed sessions for lifetime stats", {
+        count: allSessions.length,
+      });
+    } catch (error) {
+      logger.error("Failed to refresh sessions for lifetime stats", {
+        error: error as Error,
+      });
+    }
+  }, [userId]);
 
   // Load all sessions for the user
   useEffect(() => {
@@ -60,16 +82,10 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
 
     loadSessions();
 
-    // Reload sessions every 2 seconds to catch updates from pause/resume/end
-    const intervalId = setInterval(() => {
-      loadSessions();
-    }, 2000);
-
     return () => {
       mounted = false;
-      clearInterval(intervalId);
     };
-  }, [userId]);
+  }, [userId, refreshTrigger]);
 
   // Update current time every second for real-time calculations
   useEffect(() => {
@@ -159,8 +175,9 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
       totalCageOffTime,
       totalSessions: sessions.length,
       isLoading,
+      refresh,
     };
-  }, [sessions, currentTime, userId, isLoading]);
+  }, [sessions, currentTime, userId, isLoading, refresh]);
 
   return stats;
 }

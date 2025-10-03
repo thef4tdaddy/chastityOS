@@ -259,10 +259,10 @@ const TrackerPage: React.FC = () => {
 
   // Real session hooks (when USE_REAL_SESSIONS = true)
   const {
-    startSession,
-    endSession,
-    pauseSession,
-    resumeSession,
+    startSession: startSessionCore,
+    endSession: endSessionCore,
+    pauseSession: pauseSessionCore,
+    resumeSession: resumeSessionCore,
     isStarting,
     isEnding,
     canStart,
@@ -288,6 +288,28 @@ const TrackerPage: React.FC = () => {
 
   // Lifetime stats across all sessions
   const lifetimeStats = useLifetimeStats(user?.uid);
+  const { refresh: refreshLifetimeStats } = lifetimeStats;
+
+  // Wrap session actions to refresh lifetime stats after each action
+  const startSession = async (config?: any) => {
+    await startSessionCore(config);
+    await refreshLifetimeStats();
+  };
+
+  const endSession = async (reason?: string) => {
+    await endSessionCore(reason);
+    await refreshLifetimeStats();
+  };
+
+  const pauseSession = async (reason?: string) => {
+    await pauseSessionCore(reason);
+    await refreshLifetimeStats();
+  };
+
+  const resumeSession = async () => {
+    await resumeSessionCore();
+    await refreshLifetimeStats();
+  };
 
   // Mock data (for demo version - keep for #308)
   const mockData = useMockData(user);
