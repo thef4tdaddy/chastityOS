@@ -36,13 +36,16 @@ const Dashboard: React.FC = () => {
   return (
     <>
       <main className="font-inter text-nightly-spring-green">
-        {/* Dashboard logo */}
-        <div className="text-center mb-8">
+        {/* Dashboard logo and title */}
+        <div className="flex items-center justify-center mb-8">
           <img
             src="/assets/logo/chastityOS-newlogo-text.svg"
             alt="ChastityOS"
-            className="h-40 md:h-48 mx-auto"
+            className="h-40 md:h-48"
           />
+          <h1 className="text-5xl md:text-6xl font-bold ml-6 text-lavender_web">
+            Dashboard
+          </h1>
         </div>
 
         {/* Mobile and Desktop Layouts */}
