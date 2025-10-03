@@ -23,16 +23,13 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-2">
           {/* Logo */}
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-2">
-              <img
-                src="/assets/logo/chastityOS-newlogo-text.svg"
-                alt="ChastityOS"
-                className="h-20"
-              />
-            </Link>
-            <SyncStatusIndicator />
-          </div>
+          <Link to="/" className="flex items-center">
+            <img
+              src="/assets/logo/chastityOS-newlogo-text.svg"
+              alt="ChastityOS"
+              className="h-20"
+            />
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-2">
