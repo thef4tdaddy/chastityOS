@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
-import { useEventMutations } from "../../hooks/api";
+import { useCreateEvent } from "../../hooks/api/useEvents";
 import { useNotificationActions } from "../../stores";
 import type { EventType } from "../../types/database";
 import {
@@ -268,7 +268,7 @@ const useEventSubmission = (
   onEventLogged?: () => void,
 ) => {
   const { user } = useAuthState();
-  const { createEvent } = useEventMutations();
+  const createEvent = useCreateEvent();
   const { showSuccess, showError } = useNotificationActions();
 
   const handleSubmit = async (e: React.FormEvent) => {

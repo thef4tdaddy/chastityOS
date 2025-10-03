@@ -5,36 +5,30 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
-import { Event, EventType } from "../../types/events";
+import { EventType } from "../../types/events";
 import { DBEvent, EventFilters } from "../../types/database";
-import { logger } from "../../utils/logging";
-import { eventKeys, eventToDBEvent } from "@/utils/events";
+import { serviceLogger } from "../../utils/logging";
+import { eventKeys } from "@/utils/events";
+import { firebaseSync } from "@/services/sync";
+
+const logger = serviceLogger("useEvents");
 
 /**
  * Event Management Hooks - TanStack Query Integration
  *
- * Integrates with:
- * - eventDBService → Dexie → Firebase sync
- * - LogEventPage.tsx, LogEventForm.tsx (critical fixes needed)
- *
- * Fixes:
- * - LogEventForm.tsx:92-93 (commented eventDBService.create)
- * - LogEventPage.tsx:20 (eventDBService.findByUserId)
- *
  * Strategy: Dexie-first write, Firebase background sync
+ * All hooks return DBEvent type for consistency with database
  */
 
-interface CreateEventData {
+interface CreateEventParams {
+  userId: string;
   type: EventType;
-  details: Record<string, unknown>;
   timestamp?: Date;
+  notes?: string;
+  duration?: number;
   isPrivate?: boolean;
-}
-
-interface UpdateEventData {
-  type?: EventType;
-  details?: Record<string, unknown>;
-  timestamp?: Date;
+  sessionId?: string;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -214,82 +208,63 @@ export function useEvent(eventId: string) {
 
 /**
  * Create new event
- * Fixes: LogEventForm.tsx:92-93 (commented eventDBService.create)
  * Strategy: Dexie-first write, Firebase background sync
  */
 export function useCreateEvent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      userId,
-      eventData,
-    }: {
-      userId: string;
-      eventData: CreateEventData;
-    }): Promise<Event> => {
-      logger.info("Creating new event", { userId, eventType: eventData.type });
+    mutationFn: async (params: CreateEventParams): Promise<DBEvent> => {
+      logger.info("Creating new event", {
+        userId: params.userId,
+        eventType: params.type,
+      });
 
-      // Generate event ID
-      const eventId = `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      const newEvent: Event = {
-        id: eventId,
-        userId,
-        type: eventData.type,
-        timestamp: eventData.timestamp || new Date(),
-        details: eventData.details || {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      // Prepare event data for database
+      const { notes, duration, ...restParams } = params;
+      const eventData = {
+        ...restParams,
+        isPrivate: restParams.isPrivate ?? false,
+        details: {
+          notes,
+          duration,
+        },
       };
 
-      // Convert to DBEvent format for database storage
-      const dbEvent: Omit<DBEvent, "lastModified" | "syncStatus"> = {
-        id: eventId,
-        userId,
-        type: eventData.type,
-        timestamp: eventData.timestamp || new Date(),
-        details: eventData.details || {},
-        isPrivate: eventData.isPrivate || false,
-        sessionId: undefined,
-      };
+      // 1. Write to local Dexie immediately
+      const event = await eventDBService.createEvent(eventData);
 
-      // Dexie-first write for immediate UI response
-      await eventDBService.create(dbEvent);
+      // 2. Trigger Firebase sync in background
+      if (navigator.onLine) {
+        firebaseSync.syncUserEvents(params.userId).catch((error) => {
+          logger.warn("Event creation sync failed", { error });
+        });
+      }
 
       logger.info("Event created successfully", {
-        eventId,
-        userId,
-        type: eventData.type,
+        eventId: event.id,
+        userId: params.userId,
       });
 
-      return newEvent;
+      return event;
     },
-    onSuccess: (newEvent, { userId }) => {
-      logger.info("Event creation successful", {
-        eventId: newEvent.id,
-        userId,
+    onSuccess: (data, variables) => {
+      // Invalidate list queries to trigger refetch
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.list(variables.userId),
       });
-
-      // Invalidate relevant queries to trigger refetch
-      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.recent(userId) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.infinite(userId) });
-
-      // Optimistically add to cache if we have existing data
-      queryClient.setQueriesData(
-        { queryKey: eventKeys.list(userId) },
-        (oldData: Event[] | undefined) => {
-          if (!oldData) return undefined;
-          return [newEvent, ...oldData];
-        },
-      );
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.recent(variables.userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.infinite(variables.userId),
+      });
     },
-    onError: (error, { userId, eventData }) => {
-      logger.error("Event creation failed", {
+    onError: (error, variables) => {
+      logger.error("Failed to create event", {
         error: error instanceof Error ? error.message : String(error),
-        userId,
-        eventType: eventData.type,
+        userId: variables.userId,
+        eventType: variables.type,
       });
     },
   });
@@ -302,56 +277,49 @@ export function useUpdateEvent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      eventId,
-      userId,
-      updates,
-    }: {
+    mutationFn: async (params: {
       eventId: string;
       userId: string;
-      updates: UpdateEventData;
-    }): Promise<Event> => {
-      logger.info("Updating event", { eventId, userId });
+      updates: Partial<DBEvent>;
+    }): Promise<DBEvent> => {
+      logger.info("Updating event", {
+        eventId: params.eventId,
+        userId: params.userId,
+      });
 
-      const existingEvent = await eventDBService.findById(eventId);
-      if (!existingEvent) {
-        throw new Error(`Event not found: ${eventId}`);
+      // 1. Update local Dexie immediately
+      const updatedEvent = await eventDBService.updateEvent(
+        params.eventId,
+        params.updates,
+      );
+
+      // 2. Trigger Firebase sync in background
+      if (navigator.onLine) {
+        firebaseSync.syncUserEvents(params.userId).catch((error) => {
+          logger.warn("Event update sync failed", { error });
+        });
       }
 
-      // Convert DBEvent to Event for return type
-      const updatedEvent: Event = {
-        id: existingEvent.id,
-        userId: existingEvent.userId,
-        type: (updates.type || existingEvent.type) as EventType,
-        timestamp: updates.timestamp || existingEvent.timestamp,
-        details: updates.details || existingEvent.details,
-        createdAt: new Date(), // Default createdAt
-        updatedAt: new Date(),
-      };
-
-      // Create updated DBEvent for database
-      const dbUpdatedEvent = eventToDBEvent(updatedEvent);
-      await eventDBService.update(eventId, dbUpdatedEvent);
-
-      logger.info("Event updated successfully", { eventId, userId });
+      logger.info("Event updated successfully", { eventId: params.eventId });
 
       return updatedEvent;
     },
-    onSuccess: (updatedEvent, { userId, eventId }) => {
-      logger.info("Event update successful", { eventId, userId });
-
-      // Update detail cache
-      queryClient.setQueryData(eventKeys.detail(eventId), updatedEvent);
-
-      // Invalidate list queries to reflect changes
-      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.recent(userId) });
+    onSuccess: (data, variables) => {
+      // Invalidate list queries
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.list(variables.userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.recent(variables.userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.detail(variables.eventId),
+      });
     },
-    onError: (error, { eventId, userId }) => {
-      logger.error("Event update failed", {
+    onError: (error, variables) => {
+      logger.error("Failed to update event", {
         error: error instanceof Error ? error.message : String(error),
-        eventId,
-        userId,
+        eventId: variables.eventId,
       });
     },
   });
@@ -364,44 +332,43 @@ export function useDeleteEvent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      eventId,
-      userId,
-    }: {
+    mutationFn: async (params: {
       eventId: string;
       userId: string;
-    }): Promise<void> => {
-      logger.info("Deleting event", { eventId, userId });
+    }): Promise<string> => {
+      logger.info("Deleting event", {
+        eventId: params.eventId,
+        userId: params.userId,
+      });
 
-      await eventDBService.delete(eventId);
+      // 1. Delete from local Dexie immediately
+      await eventDBService.deleteEvent(params.eventId);
 
-      logger.info("Event deleted successfully", { eventId, userId });
+      // 2. Trigger Firebase sync in background
+      if (navigator.onLine) {
+        firebaseSync.syncUserEvents(params.userId).catch((error) => {
+          logger.warn("Event deletion sync failed", { error });
+        });
+      }
+
+      logger.info("Event deleted successfully", { eventId: params.eventId });
+
+      return params.eventId;
     },
-    onSuccess: (_, { eventId, userId }) => {
-      logger.info("Event deletion successful", { eventId, userId });
-
-      // Remove from detail cache
-      queryClient.removeQueries({ queryKey: eventKeys.detail(eventId) });
-
+    onSuccess: (eventId, variables) => {
       // Invalidate list queries
-      queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.recent(userId) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.infinite(userId) });
-
-      // Optimistically remove from cached lists
-      queryClient.setQueriesData(
-        { queryKey: eventKeys.list(userId) },
-        (oldData: Event[] | undefined) => {
-          if (!oldData) return undefined;
-          return oldData.filter((event) => event.id !== eventId);
-        },
-      );
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.list(variables.userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: eventKeys.recent(variables.userId),
+      });
+      queryClient.removeQueries({ queryKey: eventKeys.detail(eventId) });
     },
-    onError: (error, { eventId, userId }) => {
-      logger.error("Event deletion failed", {
+    onError: (error, variables) => {
+      logger.error("Failed to delete event", {
         error: error instanceof Error ? error.message : String(error),
-        eventId,
-        userId,
+        eventId: variables.eventId,
       });
     },
   });
