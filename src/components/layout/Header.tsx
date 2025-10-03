@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
               <img
                 src="/assets/logo/chastityOS-newlogo-text.svg"
                 alt="ChastityOS"
-                className="h-16"
+                className="h-20"
               />
             </Link>
             <SyncStatusIndicator />
