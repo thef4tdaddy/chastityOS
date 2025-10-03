@@ -569,7 +569,8 @@ export const useSession = (userId: string, relationshipId?: string) => {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [userId, currentSession?.endTime, loadCurrentSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, currentSession?.endTime]);
 
   // ==================== RETURN HOOK INTERFACE ====================
 

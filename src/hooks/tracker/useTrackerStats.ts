@@ -68,7 +68,7 @@ const formatTimestamp = (date: Date | null | undefined): string => {
 
 export const useTrackerStats = ({
   currentSession,
-  topBoxLabel = "Total Locked Time",
+  topBoxLabel: _topBoxLabel = "Total Locked Time",
   topBoxTime,
   mainChastityDisplayTime = 0,
   isPaused = false,

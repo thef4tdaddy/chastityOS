@@ -57,8 +57,6 @@ export function useSessionTimer(
 
   // Track session state changes manually to avoid zustand warnings
   const sessionId = session?.id;
-  const sessionEndTime = session?.endTime;
-  const shouldTick = enabled && sessionId; // Tick even when session ended (for off-time tracking)
 
   // Memoized calculations to prevent unnecessary recalculations
   const timerData = useMemo((): SessionTimerData => {
@@ -181,10 +179,8 @@ export function useSessionTimerSnapshot(
  */
 export function useMultiSessionTimer(
   sessions: (DBSession | null | undefined)[],
-  options: UseSessionTimerOptions = {},
+  _options: UseSessionTimerOptions = {},
 ): SessionTimerData[] {
-  const { enabled = true } = options;
-
   // Use shared timer for perfect synchronization
   const currentTime = useSharedTimer();
 
