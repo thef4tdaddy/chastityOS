@@ -1110,11 +1110,11 @@ td {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(215, 210, 234, 0.15); /* lavender_web with more opacity - darker */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 2px solid rgba(179, 32, 102, 0.3); /* deep_rose border - thicker */
+  box-shadow: 0 8px 32px 0 rgba(179, 32, 102, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 1rem;
   padding: 1.5rem;
@@ -1238,12 +1238,11 @@ td {
 
 /* --- Enhanced Card Variants --- */
 .glass-card-primary {
-  background: rgba(147, 197, 253, 0.08);
-  border-color: rgba(147, 197, 253, 0.2);
+  background: rgba(215, 210, 234, 0.15); /* lavender_web with more opacity - darker */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(147, 197, 253, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 2px solid rgba(179, 32, 102, 0.3); /* deep_rose border - thicker */
+  box-shadow: 0 8px 32px 0 rgba(179, 32, 102, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 1rem;
   padding: 1.5rem;
