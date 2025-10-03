@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
-      <main className="font-inter">
+      <main className="font-inter text-nightly-spring-green">
         {/* Dashboard title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
