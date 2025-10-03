@@ -37,6 +37,7 @@ export default [
       'scripts/**',
       'configs/linting/eslint-rules/**',
       'configs/linting/config-modules/**', // Exclude config modules
+      'configs/linting/eslint.config.js', // Exclude main config file
       'src/utils/logging.js',
       'original-app/**',
       'playwright.config.ts',
