@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
 import { useSharedTimer } from "../useSharedTimer";
+import type { DBSession } from "../../types/database";
 
 const logger = serviceLogger("useLifetimeStats");
 
