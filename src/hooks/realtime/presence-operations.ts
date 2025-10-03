@@ -13,7 +13,7 @@ import {
   createPresenceUpdate,
   sendPresenceUpdate,
   fetchUserPresences,
-} from "./presence-utils";
+} from "@/utils/realtime/presence";
 
 // Helper function to create presence update functions
 export const createPresenceUpdateFunctions = (

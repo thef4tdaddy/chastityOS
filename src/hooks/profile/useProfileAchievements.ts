@@ -6,7 +6,7 @@
 import { useMemo } from "react";
 import { useAchievements } from "../useAchievements";
 import { AchievementCategory, UserAchievement, Achievement } from "../../types";
-import { getTypeStyles } from "./profile-achievements-utils";
+import { getTypeStyles } from "@/utils/achievements/profile";
 
 // Helper function for achievement type mapping
 const getAchievementType = (

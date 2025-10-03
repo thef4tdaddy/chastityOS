@@ -9,10 +9,10 @@ import { BaseHookState, BaseHookActions } from "./types";
 import {
   withErrorHandling,
   createBaseActions,
-  validateEmail,
-  validateRole,
-  validateMessage,
-} from "./relationship-utils";
+} from "@/utils/error-handling/handlers";
+import { validateEmail } from "@/utils/validation/email";
+import { validateRole } from "@/utils/validation/role";
+import { validateMessage } from "@/utils/validation/message";
 import type { KeyholderPermissions } from "@/types/core";
 
 interface RelationshipValidationState extends BaseHookState {

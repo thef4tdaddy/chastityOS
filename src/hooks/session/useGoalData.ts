@@ -4,7 +4,7 @@
  */
 import { useState, useCallback } from "react";
 import { serviceLogger } from "../../utils/logging";
-import { calculateGoalProgress } from "./session-goals-utils";
+import { calculateGoalProgress } from "@/utils/goals/session";
 import { DEFAULT_GOAL_TEMPLATES } from "../../constants/session-goals-templates";
 import type {
   SessionGoal,

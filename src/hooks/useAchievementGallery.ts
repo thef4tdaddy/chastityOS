@@ -9,7 +9,7 @@ import {
   AchievementDifficulty,
 } from "../types";
 import { AchievementCategory } from "../types/achievements";
-import { getCategoryName } from "./achievement-gallery-utils";
+import { getCategoryName } from "@/utils/achievements/gallery";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -146,8 +146,8 @@ export const useAchievementGallery = (
   };
 };
 
-// Re-export utility functions from achievement-gallery-utils
+// Re-export utility functions from achievement gallery utils
 export {
   getCategoryName,
   getDifficultyColor,
-} from "./achievement-gallery-utils";
+} from "@/utils/achievements/gallery";

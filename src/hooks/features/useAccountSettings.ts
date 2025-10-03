@@ -11,7 +11,7 @@ import {
   handle2FAEnable,
   handle2FADisable,
   handleAccountDelete,
-} from "./account-settings-utils";
+} from "@/utils/settings/account";
 
 export interface AccountData {
   email: string;

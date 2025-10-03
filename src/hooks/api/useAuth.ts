@@ -4,7 +4,7 @@ import { User } from "../../types";
 import { UserRole } from "../../types/core";
 import { AuthService, authService } from "../../services/auth/auth-service";
 import { logger } from "../../utils/logging";
-import { authKeys } from "./auth-utils";
+import { authKeys } from "@/utils/auth";
 
 /**
  * Authentication Hooks - TanStack Query Integration

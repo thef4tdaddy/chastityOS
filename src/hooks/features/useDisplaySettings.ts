@@ -10,7 +10,7 @@ import {
   handleDateFormatUpdate,
   handleTimeFormatUpdate,
   handleResetToDefaults,
-} from "./display-settings-utils";
+} from "@/utils/settings/display";
 
 export interface DisplaySettings {
   theme: "light" | "dark" | "auto";

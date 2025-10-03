@@ -8,7 +8,7 @@ import { eventDBService } from "../../services/database/EventDBService";
 import { Event, EventType } from "../../types/events";
 import { DBEvent, EventFilters } from "../../types/database";
 import { logger } from "../../utils/logging";
-import { eventKeys, eventToDBEvent } from "./events-utils";
+import { eventKeys, eventToDBEvent } from "@/utils/events";
 
 /**
  * Event Management Hooks - TanStack Query Integration
