@@ -134,4 +134,12 @@ export default [
       'max-lines': 'off', // Temporarily disabled - components well-organized within file
     },
   },
+  {
+    // useSession.ts - composition/facade hook that orchestrates multiple session concerns
+    files: ['src/hooks/session/useSession.ts'],
+    rules: {
+      'max-lines': 'off', // Facade hook coordinating multiple session features
+      'max-lines-per-function': 'off', // Main hook orchestrates state, keyholder, analytics, lifecycle
+    },
+  },
 ];
