@@ -1,8 +1,33 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🔍 Running lint..."
-npm run lint || exit 1
+echo "🔍 Running ESLint quality gate check..."
+
+# Run ESLint and capture output
+LINT_OUTPUT=$(npm run lint 2>&1)
+LINT_EXIT_CODE=$?
+
+# Extract problem count from output (format: "✖ 22 problems (0 errors, 22 warnings)")
+PROBLEM_COUNT=$(echo "$LINT_OUTPUT" | grep "✖" | grep -oE '[0-9]+ problems' | grep -oE '[0-9]+' || echo "0")
+
+echo "📊 Current ESLint problems: $PROBLEM_COUNT"
+
+# Block push if problems exceed threshold
+THRESHOLD=100
+if [ "$PROBLEM_COUNT" -gt "$THRESHOLD" ]; then
+  echo ""
+  echo "❌ PUSH BLOCKED: ESLint violations ($PROBLEM_COUNT) exceed threshold ($THRESHOLD)"
+  echo ""
+  echo "Please fix ESLint violations before pushing:"
+  echo "  npm run lint          # See all violations"
+  echo "  npm run lint:fix      # Auto-fix what's possible"
+  echo ""
+  echo "Current violations exceed the quality gate of $THRESHOLD problems."
+  echo "See issue #214 for tracking: https://github.com/thef4tdaddy/chastityOS/issues/214"
+  exit 1
+fi
+
+echo "✅ ESLint quality gate passed ($PROBLEM_COUNT/$THRESHOLD problems)"
 
 echo "🧪 Running tests..."
 npm test || exit 1

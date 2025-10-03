@@ -1,0 +1,270 @@
+name: ESLint Daily Monitor
+
+on:
+  push:
+    branches: [nightly, develop]
+  schedule:
+    # Run daily at 9 AM UTC
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+  TRACKING_ISSUE: "214"
+  MAX_INCREASE_PERCENT: 20
+  # Disable main branch monitoring until 4.0 release
+  MONITOR_MAIN: "false"
+
+jobs:
+  eslint-monitor:
+    name: ESLint Daily Monitor
+    runs-on: ubuntu-latest
+    # Only run on allowed branches
+    if: |
+      github.ref_name == 'nightly' ||
+      github.ref_name == 'develop' ||
+      (github.ref_name == 'main' && env.MONITOR_MAIN == 'true')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint and generate report
+        id: eslint_run
+        run: |
+          echo "Running ESLint analysis..."
+          npm run lint:report || true
+
+          # Get current count
+          CURRENT_PROBLEMS=$(npm run lint 2>&1 | grep "✖" | grep -oE '[0-9]+ problems' | grep -oE '[0-9]+' || echo "0")
+          CURRENT_ERRORS=$(npm run lint 2>&1 | grep "✖" | grep -oE '[0-9]+ errors' | grep -oE '[0-9]+' || echo "0")
+          CURRENT_WARNINGS=$(npm run lint 2>&1 | grep "✖" | grep -oE '[0-9]+ warnings' | grep -oE '[0-9]+' || echo "0")
+
+          echo "current_problems=$CURRENT_PROBLEMS" >> $GITHUB_OUTPUT
+          echo "current_errors=$CURRENT_ERRORS" >> $GITHUB_OUTPUT
+          echo "current_warnings=$CURRENT_WARNINGS" >> $GITHUB_OUTPUT
+
+          echo "📊 Current Status: $CURRENT_PROBLEMS problems ($CURRENT_ERRORS errors, $CURRENT_WARNINGS warnings)"
+
+      - name: Get previous metrics from issue
+        id: previous_metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.TRACKING_ISSUE)
+            });
+
+            const body = issue.data.body;
+
+            // Extract previous count from issue body
+            const statusMatch = body.match(/\*\*Current Status:\*\*.*?(\d+)\s+problems.*?\((\d+)\s+errors?,\s*(\d+)\s+warnings?\)/);
+
+            if (statusMatch) {
+              const previousProblems = parseInt(statusMatch[1]);
+              const previousErrors = parseInt(statusMatch[2]);
+              const previousWarnings = parseInt(statusMatch[3]);
+
+              core.setOutput('previous_problems', previousProblems);
+              core.setOutput('previous_errors', previousErrors);
+              core.setOutput('previous_warnings', previousWarnings);
+
+              console.log(`📋 Previous: ${previousProblems} problems (${previousErrors} errors, ${previousWarnings} warnings)`);
+            } else {
+              core.setOutput('previous_problems', '22');
+              core.setOutput('previous_errors', '0');
+              core.setOutput('previous_warnings', '22');
+              console.log('⚠️ Could not extract previous metrics, using baseline: 22 problems');
+            }
+
+      - name: Calculate change and check threshold
+        id: check_threshold
+        run: |
+          CURRENT=${{ steps.eslint_run.outputs.current_problems }}
+          PREVIOUS=${{ steps.previous_metrics.outputs.previous_problems }}
+          MAX_INCREASE=${{ env.MAX_INCREASE_PERCENT }}
+
+          if [ "$PREVIOUS" -eq 0 ]; then
+            PREVIOUS=1  # Avoid division by zero
+          fi
+
+          CHANGE=$((CURRENT - PREVIOUS))
+          PERCENT_CHANGE=$(echo "scale=2; ($CHANGE / $PREVIOUS) * 100" | bc)
+
+          echo "change=$CHANGE" >> $GITHUB_OUTPUT
+          echo "percent_change=$PERCENT_CHANGE" >> $GITHUB_OUTPUT
+
+          echo "📈 Change: $CHANGE problems ($PERCENT_CHANGE%)"
+
+          # Check if increase exceeds threshold
+          if (( $(echo "$PERCENT_CHANGE > $MAX_INCREASE" | bc -l) )); then
+            echo "threshold_exceeded=true" >> $GITHUB_OUTPUT
+            echo "❌ THRESHOLD EXCEEDED! Increase of $PERCENT_CHANGE% is above $MAX_INCREASE% limit"
+          else
+            echo "threshold_exceeded=false" >> $GITHUB_OUTPUT
+            echo "✅ Within threshold: $PERCENT_CHANGE% increase (limit: $MAX_INCREASE%)"
+          fi
+
+      - name: Generate detailed breakdown
+        id: breakdown
+        run: |
+          echo "Generating violation breakdown..."
+
+          # Count by type
+          MAX_LINES=$(npm run lint 2>&1 | grep "max-lines-per-function" | wc -l | tr -d ' ')
+          COMPLEXITY=$(npm run lint 2>&1 | grep "complexity" | wc -l | tr -d ' ')
+          OTHER=$((${{ steps.eslint_run.outputs.current_problems }} - MAX_LINES - COMPLEXITY))
+
+          echo "max_lines=$MAX_LINES" >> $GITHUB_OUTPUT
+          echo "complexity=$COMPLEXITY" >> $GITHUB_OUTPUT
+          echo "other=$OTHER" >> $GITHUB_OUTPUT
+
+      - name: Update tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const current = parseInt('${{ steps.eslint_run.outputs.current_problems }}');
+            const currentErrors = parseInt('${{ steps.eslint_run.outputs.current_errors }}');
+            const currentWarnings = parseInt('${{ steps.eslint_run.outputs.current_warnings }}');
+            const previous = parseInt('${{ steps.previous_metrics.outputs.previous_problems }}');
+            const change = parseInt('${{ steps.check_threshold.outputs.change }}');
+            const percentChange = parseFloat('${{ steps.check_threshold.outputs.percent_change }}');
+            const maxLines = parseInt('${{ steps.breakdown.outputs.max_lines }}');
+            const complexity = parseInt('${{ steps.breakdown.outputs.complexity }}');
+            const other = parseInt('${{ steps.breakdown.outputs.other }}');
+
+            const changeEmoji = change > 0 ? '📈' : change < 0 ? '📉' : '➡️';
+            const statusEmoji = currentErrors === 0 ? '✅' : '❌';
+
+            const body = `## Master Tracking Issue - ALL ESLint Problems
+
+**Current Status:** ${statusEmoji} ${current} problems (${currentErrors} errors, ${currentWarnings} warnings)
+
+## Progress
+- **Started:** 483 problems (199 errors, 284 warnings)
+- **After initial cleanup:** 276 problems (65 errors, 211 warnings)
+- **After PR #367:** 142 problems
+- **After architecture cleanup:** 106 problems (9 errors, 97 warnings)
+- **Previous check:** ${previous} problems
+- **Current (${context.ref_name}):** ${current} problems (${currentErrors} errors, ${currentWarnings} warnings)
+- **Change:** ${changeEmoji} ${change > 0 ? '+' : ''}${change} (${percentChange > 0 ? '+' : ''}${percentChange}%)
+- **Total Reduction:** ${((1 - current/483) * 100).toFixed(1)}% from start! 🎉
+
+## Breakdown by Type
+- **max-lines-per-function:** ${maxLines} ${maxLines > 0 ? '⚠️' : '✅'}
+- **complexity:** ${complexity} ${complexity > 0 ? '⚠️' : '✅'}
+- **other:** ${other} ${other > 0 ? '⚠️' : '✅'}
+
+## Remaining Issues
+
+### Refactoring Only (Code Quality, Non-Breaking)
+${maxLines > 0 ? `- **max-lines-per-function** (${maxLines} warnings)
+  - Functions >150 lines that could benefit from extraction
+  - Non-critical, tracked in #158 (Refactoring Master)` : ''}
+${complexity > 0 ? `- **complexity** (${complexity} warnings)
+  - Functions with cyclomatic complexity >15
+  - Non-critical, refactoring opportunities` : ''}
+
+### All Critical Issues Resolved ✅
+- ✅ All errors fixed (was 199 → now ${currentErrors})
+- ✅ no-unused-vars (was 39 → now 0)
+- ✅ no-undef (was 98 → now 0)
+- ✅ no-explicit-any (was 15+ → now 0)
+- ✅ react-hooks/exhaustive-deps (was 28 → now 0)
+- ✅ react-hooks/rules-of-hooks (was 56 → now 0)
+
+## Completed ✅
+- ~~#421~~ - Architecture violations (localStorage, validation placement)
+- ~~#382~~ - Critical errors (all types)
+- ~~#366~~ - Small violations (max-statements, complexity, max-params)
+- ~~#363~~ - react-hooks/rules-of-hooks
+- ~~#362~~ - no-undef
+- ~~#311~~ - Unused variables
+- ~~#312~~ - Exhaustive deps
+- ~~#213~~ - Zustand patterns
+- ~~#330~~ - Max-lines (excluded useSession.ts legitimately)
+
+## Daily Monitoring
+- **Branch:** ${context.ref_name}
+- **Last Check:** ${new Date().toISOString().split('T')[0]}
+- **Threshold:** 20% increase blocks commits
+- **Status:** ${percentChange > 20 ? '🚨 THRESHOLD EXCEEDED' : '✅ Within limits'}
+
+## Related Master Issues
+- #158 - Refactoring Master (complexity, long files/functions)
+- #166 - TypeScript Errors Master
+
+---
+🤖 Last updated: ${new Date().toISOString()}
+📊 Auto-updated daily by [ESLint Monitor Workflow](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.TRACKING_ISSUE),
+              body: body
+            });
+
+      - name: Block if threshold exceeded
+        if: steps.check_threshold.outputs.threshold_exceeded == 'true'
+        run: |
+          echo "❌ ESLint violations increased by ${{ steps.check_threshold.outputs.percent_change }}%"
+          echo "This exceeds the ${{ env.MAX_INCREASE_PERCENT }}% threshold."
+          echo "Current: ${{ steps.eslint_run.outputs.current_problems }}, Previous: ${{ steps.previous_metrics.outputs.previous_problems }}"
+          exit 1
+
+      - name: Comment on PR if threshold exceeded
+        if: |
+          failure() &&
+          github.event_name == 'pull_request' &&
+          steps.check_threshold.outputs.threshold_exceeded == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const current = '${{ steps.eslint_run.outputs.current_problems }}';
+            const previous = '${{ steps.previous_metrics.outputs.previous_problems }}';
+            const percentChange = '${{ steps.check_threshold.outputs.percent_change }}';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🚨 ESLint Quality Gate Failed
+
+**ESLint violations increased by ${percentChange}%**, exceeding the 20% threshold.
+
+### Details
+- **Previous:** ${previous} problems
+- **Current:** ${current} problems
+- **Increase:** ${percentChange}%
+
+### Action Required
+Please reduce ESLint violations before merging. Run:
+\`\`\`bash
+npm run lint
+npm run lint:fix  # Auto-fix what's possible
+\`\`\`
+
+See [issue #214](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/issues/214) for current status.`
+            });
+
+      - name: Upload ESLint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report-${{ github.ref_name }}-${{ github.run_number }}
+          path: eslint_report.json
+          retention-days: 90
