@@ -194,6 +194,12 @@ module.exports = {
           faded_punch: "#c93f6a",
           "mobile-bg": "#ff00aa",
           "desktop-bg": "#b32066",
+          // Additional nightly colors with pink glow
+          "spring-green": "#00ff88",
+          aquamarine: "#7fffd4",
+          honeydew: "#f0fff0",
+          celadon: "#ace1af",
+          "lavender-floral": "#b57edc",
         },
         // Legacy prod colors (keeping for compatibility, but updated to match design system)
         prod: {
@@ -202,6 +208,12 @@ module.exports = {
           "lavender-web": "#d7d2ea",
           "rose-quartz": "#a39fad",
           tangerine: "#e88331",
+          // Production colors with lavender glow
+          "spring-green": "#c8b3e0", // Light lavender for production
+          aquamarine: "#b8a4d4",
+          honeydew: "#f5f0fa",
+          celadon: "#d7cce8",
+          "lavender-floral": "#d7d2ea",
         },
         // Standard colors for borders and text
         black: "#000000", // For hard borders where specified
