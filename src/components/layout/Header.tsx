@@ -17,11 +17,11 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header
-      className="sticky top-0 z-50 border-b-8 border-black safe-area-inset-top"
+      className="sticky top-0 z-50 border-b-4 border-black safe-area-inset-top"
       style={{ backgroundColor: "var(--color-bg-secondary)" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-2">
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
