@@ -70,6 +70,18 @@ export class SessionPersistenceService {
       const activeSession = await sessionDBService.getCurrentSession(userId);
 
       if (activeSession) {
+        // Make sure the session hasn't ended
+        if (activeSession.endTime) {
+          logger.info("Session has ended, clearing backup", {
+            sessionId: activeSession.id,
+          });
+          localStorage.removeItem(this.BACKUP_KEY);
+          return {
+            success: true,
+            wasRestored: false,
+          };
+        }
+
         // 2. Validate session integrity
         const isValid = await this.validateSessionIntegrity(activeSession);
 
@@ -101,7 +113,10 @@ export class SessionPersistenceService {
         return backupResult;
       }
 
-      logger.debug("No session to restore");
+      // 6. Clear any stale backups
+      logger.debug("No session to restore, clearing backup");
+      localStorage.removeItem(this.BACKUP_KEY);
+
       return {
         success: true,
         wasRestored: false,

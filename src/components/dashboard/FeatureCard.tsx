@@ -18,7 +18,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
 
   return (
     <div
-      className={`bg-lavender_web-500 border border-black rounded-lg p-6 hover:bg-lavender_web-600 transition-colors duration-200 ${className}`}
+      className={`glass-card bg-lavender_web-500 border border-black rounded-lg p-6 hover:bg-lavender_web-600 transition-all duration-200 ${className}`}
     >
       {/* Accent bar at the top */}
       <div
@@ -27,8 +27,8 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
 
       {/* Content */}
       <div>
-        <h3 className="text-white text-xl font-bold mb-2">{title}</h3>
-        <p className="text-white text-sm opacity-90">{description}</p>
+        <h3 className="text-dark_purple text-xl font-bold mb-2">{title}</h3>
+        <p className="text-tangerine text-sm">{description}</p>
       </div>
     </div>
   );

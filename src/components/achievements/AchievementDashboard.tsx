@@ -245,18 +245,12 @@ export const AchievementDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <FaTrophy className="text-2xl text-nightly-lavender-floral" />
-          <h2 className="text-2xl font-bold text-nightly-honeydew">
-            Achievements
-          </h2>
-        </div>
+      <div className="flex items-center justify-end">
         <Link
           to="/achievements"
           className="flex items-center space-x-2 text-nightly-aquamarine hover:text-nightly-lavender-floral transition-colors"
         >
-          <span>View All</span>
+          <span>View All Achievements</span>
           <FaArrowRight />
         </Link>
       </div>
