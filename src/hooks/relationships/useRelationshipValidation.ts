@@ -12,7 +12,7 @@ import {
   validateEmail,
   validateRole,
   validateMessage,
-} from "./utils";
+} from "./relationship-utils";
 import type { KeyholderPermissions } from "@/types/core";
 
 interface RelationshipValidationState extends BaseHookState {

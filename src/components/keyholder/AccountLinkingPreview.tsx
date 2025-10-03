@@ -160,7 +160,7 @@ export const AccountLinkingPreview: React.FC = () => {
     redeemLinkCode,
     disconnectKeyholder,
     clearLinkCode,
-    clearErrors,
+    clearAllErrors,
     toggleQRCode,
     showQRCode,
   } = useAccountLinking();
@@ -169,7 +169,7 @@ export const AccountLinkingPreview: React.FC = () => {
     generateLinkCode,
     redeemLinkCode,
     disconnectKeyholder,
-    clearErrors,
+    clearAllErrors,
     currentLinkCode,
   );
 

@@ -53,6 +53,13 @@ export interface MigrationResult {
   duration: number;
 }
 
+// Migration state
+export interface MigrationState {
+  migrations: Migration[];
+  lastRun: Date | null;
+  currentVersion: string;
+}
+
 // Sample migrations (in a real app, these would be defined elsewhere)
 const AVAILABLE_MIGRATIONS: Omit<
   Migration,
@@ -89,9 +96,9 @@ export const useMigration = () => {
   const [isRunning, setIsRunning] = useState(false);
 
   // Get migration state
-  const { data: migrationState } = useQuery({
+  const { data: migrationState } = useQuery<MigrationState>({
     queryKey: ["migration", "state"],
-    queryFn: () => {
+    queryFn: (): MigrationState => {
       const stored = MigrationStorageService.getMigrationState();
       if (stored) {
         return stored;

@@ -51,6 +51,7 @@ export interface User {
   lastLogin: Timestamp;
   isPremium: boolean;
   subscriptionStatus?: "active" | "cancelled" | "expired";
+  isAnonymous?: boolean; // True for anonymous Firebase Auth users
 }
 
 // ==================== SESSION TYPES ====================

@@ -13,7 +13,6 @@ import { useSessionPersistence } from "../hooks/useSessionPersistence";
 import { useAuth } from "../hooks/api/useAuth";
 import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { useSessionActions } from "../hooks/session/useSessionActions";
-import { useSession } from "../hooks/session/useSession";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -272,6 +271,9 @@ const TrackerPage: React.FC = () => {
     isActive,
     isPaused,
     sessionId,
+    session: realSession,
+    goals,
+    duration,
     error: sessionError,
   } = useSessionActions({
     userId: user?.uid || "",
@@ -280,8 +282,6 @@ const TrackerPage: React.FC = () => {
     onSessionPaused: () => logger.info("Session paused"),
     onSessionResumed: () => logger.info("Session resumed"),
   });
-
-  const { session: realSession, goals, duration } = useSession(user?.uid || "");
 
   // Mock data (for demo version - keep for #308)
   const mockData = useMockData(user);
@@ -293,7 +293,7 @@ const TrackerPage: React.FC = () => {
         isPaused,
         sessionId: sessionId || undefined,
         userId: user?.uid,
-        isGoalActive: goals.active.length > 0,
+        isGoalActive: goals?.active?.length > 0,
         isHardcoreGoal: realSession?.isHardcoreMode || false,
         requiredKeyholderDurationSeconds: 0, // TODO: Get from keyholder goals
         hasPendingReleaseRequest: false, // TODO: Implement release requests
@@ -436,13 +436,27 @@ const TrackerPage: React.FC = () => {
       )}
 
       <TrackerHeader
-        remainingGoalTime={mockData.remainingGoalTime}
-        keyholderName={mockData.keyholderName}
-        savedSubmissivesName={mockData.savedSubmissivesName}
-        requiredKeyholderDurationSeconds={
-          mockData.requiredKeyholderDurationSeconds
+        remainingGoalTime={
+          USE_REAL_SESSIONS && goals?.active && goals.active.length > 0
+            ? goals.active[0].targetValue - goals.active[0].currentValue
+            : 0
         }
-        isCageOn={mockData.isCageOn}
+        keyholderName={
+          USE_REAL_SESSIONS &&
+          goals?.keyholderAssigned &&
+          goals.keyholderAssigned.length > 0
+            ? "Keyholder"
+            : ""
+        }
+        savedSubmissivesName=""
+        requiredKeyholderDurationSeconds={
+          USE_REAL_SESSIONS &&
+          goals?.keyholderAssigned &&
+          goals.keyholderAssigned.length > 0
+            ? goals.keyholderAssigned[0].targetValue
+            : 0
+        }
+        isCageOn={USE_REAL_SESSIONS ? isActive : mockData.isCageOn}
         denialCooldownActive={mockData.denialCooldownActive}
         pauseCooldownMessage={mockData.pauseCooldownMessage}
       />
@@ -450,16 +464,16 @@ const TrackerPage: React.FC = () => {
       <TrackerStats {...getTrackerStatsProps()} />
 
       {/* Enhanced Pause Controls with 4-hour cooldown */}
-      {mockData.isCageOn && currentSession && (
+      {USE_REAL_SESSIONS && isActive && (
         <>
           <CooldownDisplay pauseState={mockData.pauseState} />
           <PauseResumeButtons
-            sessionId={currentSession.id}
+            sessionId={sessionId || ""}
             userId={user?.uid || ""}
-            isPaused={mockData.isPaused}
+            isPaused={isPaused}
             pauseState={mockData.mockPauseState} // Use mock state to show functionality
-            onPause={handlePause}
-            onResume={handleResume}
+            onPause={() => pauseSession("bathroom")}
+            onResume={resumeSession}
           />
         </>
       )}

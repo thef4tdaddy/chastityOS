@@ -5,6 +5,7 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   sendPasswordResetEmail,
   updatePassword,
@@ -76,6 +77,39 @@ export class AuthService {
         error: error as Error,
         email: credentials.email,
       });
+      return {
+        success: false,
+        error: this.getAuthErrorMessage(error as AuthError),
+      };
+    }
+  }
+
+  /**
+   * Sign in anonymously
+   * Creates an anonymous user that can later be linked to a permanent account
+   */
+  static async signInAnonymously(): Promise<ApiResponse<User>> {
+    try {
+      logger.debug("Attempting anonymous sign in");
+
+      const auth = await getFirebaseAuth();
+      const userCredential = await signInAnonymously(auth);
+      const firebaseUser = userCredential.user;
+
+      // Create minimal user profile for anonymous user
+      const user = await this.createAnonymousUserProfile(firebaseUser);
+
+      logger.info("Anonymous user signed in successfully", {
+        uid: firebaseUser.uid,
+      });
+
+      return {
+        success: true,
+        data: user,
+        message: "Anonymous sign in successful",
+      };
+    } catch (error) {
+      logger.error("Anonymous sign in failed", { error: error as Error });
       return {
         success: false,
         error: this.getAuthErrorMessage(error as AuthError),
@@ -340,6 +374,55 @@ export class AuthService {
     await setDoc(userRef, user);
 
     logger.debug("User profile created in Firestore", {
+      uid: firebaseUser.uid,
+    });
+    return user;
+  }
+
+  /**
+   * Create anonymous user profile
+   */
+  private static async createAnonymousUserProfile(
+    firebaseUser: FirebaseUser,
+  ): Promise<User> {
+    // For anonymous users, create user data without email field
+    // Firestore doesn't allow undefined values, so we omit it from the document
+    const userData = {
+      uid: firebaseUser.uid,
+      displayName: `Guest_${firebaseUser.uid.substring(0, 8)}`,
+      role: "submissive", // Default role for anonymous users
+      profile: {
+        isPublicProfileEnabled: false,
+        profileToken: generateUUID(),
+      },
+      verification: {
+        emailVerified: false,
+        phoneVerified: false,
+        twoFactorEnabled: false,
+      },
+      settings: {
+        theme: "auto",
+        notifications: true,
+        vanillaMode: false,
+        language: "en",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        dateFormat: "MM/DD/YYYY",
+        timeFormat: "12h",
+      },
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp(),
+      isPremium: false,
+      isAnonymous: true, // Flag to identify anonymous users
+    };
+
+    const db = await getFirestore();
+    const userRef: DocumentReference = doc(db, "users", firebaseUser.uid);
+    await setDoc(userRef, userData);
+
+    // Return as User type (email will be undefined)
+    const user: User = { ...userData, email: undefined } as User;
+
+    logger.debug("Anonymous user profile created in Firestore", {
       uid: firebaseUser.uid,
     });
     return user;

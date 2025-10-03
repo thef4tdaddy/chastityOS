@@ -186,12 +186,21 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Pause session
   const pauseSession = useCallback(
     async (reason: PauseReason): Promise<void> => {
+      if (!sessionId) {
+        throw new Error("No active session to pause");
+      }
+
       if (!canPause) {
         throw new Error("Cannot pause: either already paused or in cooldown");
       }
 
       try {
         logger.debug("Pausing session", { sessionId, reason });
+
+        // Import sessionDBService dynamically to avoid circular dependencies
+        const { sessionDBService } = await import("../../services/database");
+        await sessionDBService.pauseSession(sessionId);
+
         startPause(reason);
         logger.info("Session paused successfully", { sessionId, reason });
       } catch (err) {
@@ -204,6 +213,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
   // Resume session
   const resumeSession = useCallback(async (): Promise<void> => {
+    if (!sessionId) {
+      throw new Error("No active session to resume");
+    }
+
     if (!canResume) {
       throw new Error("Cannot resume: session is not paused");
     }
@@ -216,6 +229,10 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
         pauseStatus.pauseStartTime,
         resumeTime,
       );
+
+      // Import sessionDBService dynamically to avoid circular dependencies
+      const { sessionDBService } = await import("../../services/database");
+      await sessionDBService.resumeSession(sessionId, resumeTime);
 
       setPauseStatus(updatePauseStatusOnResume(pauseStatus));
       setPauseHistory((prev) =>

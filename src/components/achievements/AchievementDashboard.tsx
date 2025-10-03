@@ -15,7 +15,12 @@ import {
 } from "../../utils/iconImport";
 import { useAchievements } from "../../hooks/useAchievements";
 import { useAuthState } from "../../contexts";
-import { AchievementCategory, UserAchievement, Achievement } from "../../types";
+import {
+  AchievementCategory,
+  DBUserAchievement,
+  DBAchievement,
+  DBAchievementNotification,
+} from "../../types";
 
 // Types
 interface AchievementStats {
@@ -56,7 +61,7 @@ const LoadingState: React.FC = () => (
 // Stats Cards Component
 const StatsCards: React.FC<{
   achievementStats: AchievementStats;
-  unreadNotifications: UnreadNotification[];
+  unreadNotifications: DBAchievementNotification[];
 }> = ({ achievementStats, unreadNotifications }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
     <div className="bg-gradient-to-br from-nightly-aquamarine/20 to-nightly-aquamarine/10 rounded-lg p-4 border border-nightly-aquamarine/30">
@@ -111,8 +116,8 @@ const StatsCards: React.FC<{
 
 // Recent Achievements Component
 const RecentAchievements: React.FC<{
-  recentAchievements: UserAchievement[];
-  allAchievements: Achievement[];
+  recentAchievements: DBUserAchievement[];
+  allAchievements: DBAchievement[];
 }> = ({ recentAchievements, allAchievements }) => {
   if (recentAchievements.length === 0) return null;
 
@@ -122,9 +127,9 @@ const RecentAchievements: React.FC<{
         Recent Achievements
       </h3>
       <div className="space-y-3">
-        {recentAchievements.map((userAchievement: UserAchievement) => {
+        {recentAchievements.map((userAchievement: DBUserAchievement) => {
           const achievement = allAchievements.find(
-            (a: Achievement) => a.id === userAchievement.achievementId,
+            (a: DBAchievement) => a.id === userAchievement.achievementId,
           );
           if (!achievement) return null;
 
@@ -207,7 +212,7 @@ export const AchievementDashboard: React.FC = () => {
 
   const recentAchievements = userAchievements
     .sort(
-      (a: UserAchievement, b: UserAchievement) =>
+      (a: DBUserAchievement, b: DBUserAchievement) =>
         b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
     )
     .slice(0, 3);
@@ -240,18 +245,12 @@ export const AchievementDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <FaTrophy className="text-2xl text-nightly-lavender-floral" />
-          <h2 className="text-2xl font-bold text-nightly-honeydew">
-            Achievements
-          </h2>
-        </div>
+      <div className="flex items-center justify-end">
         <Link
           to="/achievements"
           className="flex items-center space-x-2 text-nightly-aquamarine hover:text-nightly-lavender-floral transition-colors"
         >
-          <span>View All</span>
+          <span>View All Achievements</span>
           <FaArrowRight />
         </Link>
       </div>

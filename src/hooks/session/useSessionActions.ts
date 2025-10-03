@@ -244,6 +244,9 @@ export interface UseSessionActionsReturn {
   isActive: boolean;
   isPaused: boolean;
   sessionId: string | null;
+  session: DBSession | null;
+  goals: any; // TODO: Type this properly
+  duration: number;
 }
 
 export interface UseSessionActionsOptions {
@@ -281,7 +284,7 @@ export function useSessionActions({
     cooldownState,
     pauseSession: pauseSessionCore,
     resumeSession: resumeSessionCore,
-  } = usePauseResume(userId, session?.id);
+  } = usePauseResume(session?.id || "", undefined);
   const isPaused = pauseStatus.isPaused;
   const isPausing = pauseStatus.pauseCount > 0 && pauseStatus.isPaused;
   const isResuming = false;
@@ -375,5 +378,8 @@ export function useSessionActions({
     isActive,
     isPaused,
     sessionId: session?.id || null,
+    session,
+    goals: null, // TODO: Add goals from useSession
+    duration: 0, // TODO: Add duration from useSession
   };
 }

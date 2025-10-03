@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { DBSession, DBGoal } from "../../types/database";
 import type { KeyholderRelationship } from "../../types/core";
 import { KeyholderRelationshipService } from "../../services/KeyholderRelationshipService";
+import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
 
 const logger = serviceLogger("useSession");
@@ -270,10 +271,25 @@ export const useSession = (userId: string, relationshipId?: string) => {
   // ==================== DATA LOADING FUNCTIONS ====================
 
   const loadCurrentSession = useCallback(async () => {
-    // This would integrate with your existing session service
-    // For now, return mock data structure
-    setCurrentSession(null);
-  }, []); // userId is passed but not used in mock implementation
+    if (!userId) return;
+
+    try {
+      const session = await sessionDBService.getCurrentSession(userId);
+      setCurrentSession(session || null);
+      logger.info("Loaded current session", {
+        userId,
+        sessionId: session?.id,
+        hasSession: !!session,
+      });
+    } catch (error) {
+      logger.error("Failed to load current session", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+      });
+      setCurrentSession(null);
+    }
+  }, [userId]);
 
   const loadGoals = useCallback(async () => {
     // This would integrate with your existing goals service
@@ -320,19 +336,18 @@ export const useSession = (userId: string, relationshipId?: string) => {
           throw new Error("Keyholder approval required to start session");
         }
 
-        // Create new session
-        const newSession: DBSession = {
-          id: `session_${Date.now()}`,
-          userId,
-          startTime: new Date(),
-          isPaused: false,
-          accumulatedPauseTime: 0,
+        // Save session to database
+        const sessionId = await sessionDBService.startSession(userId, {
           isHardcoreMode: false,
           keyholderApprovalRequired:
             sessionContext.sessionType === "keyholder_managed",
-          syncStatus: "pending",
-          lastModified: new Date(),
-        };
+        });
+
+        // Load the newly created session
+        const newSession = await sessionDBService.getCurrentSession(userId);
+        if (!newSession) {
+          throw new Error("Failed to load newly created session");
+        }
 
         // Add goals if provided
         if (sessionGoals) {
@@ -371,14 +386,16 @@ export const useSession = (userId: string, relationshipId?: string) => {
           throw new Error("Keyholder approval required to end session");
         }
 
-        const updatedSession: DBSession = {
-          ...currentSession,
-          endTime: new Date(),
-          endReason: reason,
-          lastModified: new Date(),
-        };
+        // End session in database
+        await sessionDBService.endSession(
+          currentSession.id,
+          new Date(),
+          reason,
+        );
 
-        setCurrentSession(updatedSession);
+        // Session is ended, clear current session
+        setCurrentSession(null);
+
         await loadHistory(); // Refresh history
         await loadAnalytics(); // Refresh analytics
 
@@ -409,13 +426,16 @@ export const useSession = (userId: string, relationshipId?: string) => {
           modifications,
         });
 
-        const updatedSession: DBSession = {
-          ...currentSession,
+        // Update session in database
+        await sessionDBService.update(currentSession.id, {
           ...modifications,
           lastModified: new Date(),
-        };
+        });
 
-        setCurrentSession(updatedSession);
+        // Reload the session
+        const updatedSession = await sessionDBService.get(currentSession.id);
+        setCurrentSession(updatedSession || null);
+
         logger.info("Session modified successfully", {
           sessionId: currentSession.id,
         });
@@ -524,6 +544,19 @@ export const useSession = (userId: string, relationshipId?: string) => {
     };
   }, [analytics]);
 
+  // ==================== SESSION POLLING ====================
+
+  // Poll for session updates every 5 seconds
+  useEffect(() => {
+    if (!userId) return;
+
+    const intervalId = setInterval(() => {
+      loadCurrentSession();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [userId, loadCurrentSession]);
+
   // ==================== RETURN HOOK INTERFACE ====================
 
   return {
@@ -608,9 +641,10 @@ function calculateDuration(session: DBSession): number {
 
 function calculateGoalProgress(
   session: DBSession | null,
-  goals: SessionGoals,
+  goals: SessionGoals | null | undefined,
 ): number {
-  if (!session || goals.active.length === 0) return 0;
+  if (!session || !goals || !goals.active || goals.active.length === 0)
+    return 0;
 
   const completedGoals = goals.active.filter((goal) => goal.isCompleted).length;
   return Math.floor((completedGoals / goals.active.length) * 100);

@@ -48,7 +48,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             disabled={isStarting}
             className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isStarting ? "Starting..." : "Cage On / Start Session"}
+            {isStarting ? "Starting..." : "ON"}
           </button>
         ) : isGoalActive && isHardcoreGoal ? (
           <button
@@ -75,13 +75,13 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             disabled={isEnding}
             className="glass-button bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isEnding ? "Ending..." : "Cage Off / End Session"}
+            {isEnding ? "Ending..." : "OFF"}
           </button>
         )}
       </div>
 
-      {/* Emergency Unlock Button with Enhanced Glass Styling */}
-      {isCageOn && sessionId && userId && (
+      {/* Emergency Unlock Button with Enhanced Glass Styling - Only show in hardcore mode */}
+      {isCageOn && isHardcoreGoal && sessionId && userId && (
         <div className="flex justify-center">
           <EmergencyUnlockButton
             sessionId={sessionId}

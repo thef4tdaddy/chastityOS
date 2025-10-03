@@ -7,7 +7,7 @@ import { getFirebaseAuth, getFirestore } from "../firebase";
 import { sessionDBService } from "../database";
 import type { Auth } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
-import { doc, Timestamp } from "firebase/firestore";
+import { doc, Timestamp, setDoc } from "firebase/firestore";
 import type {
   SyncOptions,
   SyncResult,
@@ -275,7 +275,7 @@ export class FirebaseSync {
         lastModified: Timestamp.fromDate(session.lastModified),
       };
 
-      await sessionRef.set(firestoreSession);
+      await setDoc(sessionRef, firestoreSession);
 
       // Mark as synced in local DB
       await sessionDBService.update(session.id, { syncStatus: "synced" });

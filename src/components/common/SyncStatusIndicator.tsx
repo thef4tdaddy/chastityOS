@@ -35,12 +35,49 @@ export const SyncStatusIndicator: React.FC = () => {
   };
 
   const getStatusIcon = () => {
-    if (!isOnline) return "⚠️";
-    if (hasConflicts) return "⚠️";
-    if (isSyncing) return "🔄";
-    if (syncStatus === "synced") return "✅";
-    if (syncStatus === "error") return "❌";
-    return "⭕";
+    if (!isOnline || syncStatus === "error") {
+      return (
+        <img
+          src="/assets/sync-icon/sync-error.webp"
+          alt="Sync Error"
+          className="w-4 h-4 inline"
+        />
+      );
+    }
+    if (hasConflicts) {
+      return (
+        <img
+          src="/assets/sync-icon/sync-error.webp"
+          alt="Sync Conflicts"
+          className="w-4 h-4 inline"
+        />
+      );
+    }
+    if (isSyncing) {
+      return (
+        <img
+          src="/assets/sync-icon/sync-neutral.webp"
+          alt="Syncing"
+          className="w-4 h-4 inline animate-pulse"
+        />
+      );
+    }
+    if (syncStatus === "synced") {
+      return (
+        <img
+          src="/assets/sync-icon/sync-good.webp"
+          alt="Synced"
+          className="w-4 h-4 inline"
+        />
+      );
+    }
+    return (
+      <img
+        src="/assets/sync-icon/sync-neutral.webp"
+        alt="Unknown Status"
+        className="w-4 h-4 inline"
+      />
+    );
   };
 
   const getStatusText = () => {
