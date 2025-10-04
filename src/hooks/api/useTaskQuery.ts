@@ -129,21 +129,11 @@ export function useTaskMutations() {
 
       return updatedTask;
     },
-    onSuccess: (data, variables) => {
-      // Update specific task in cache
-      queryClient.setQueryData(
-        ["tasks", "user", variables.userId],
-        (oldTasks: DBTask[] | undefined) => {
-          if (!oldTasks) return oldTasks;
-          return oldTasks.map((task) =>
-            task.id === variables.taskId
-              ? { ...task, ...(data as Partial<DBTask>) }
-              : task,
-          );
-        },
-      );
-
-      // Invalidate related queries
+    onSuccess: (_data, variables) => {
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "user", variables.userId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
@@ -211,21 +201,11 @@ export function useTaskMutations() {
 
       return updatedTask;
     },
-    onSuccess: (data, variables) => {
-      // Update task in cache
-      queryClient.setQueryData(
-        ["tasks", "user", variables.userId],
-        (oldTasks: DBTask[] | undefined) => {
-          if (!oldTasks) return oldTasks;
-          return oldTasks.map((task) =>
-            task.id === variables.taskId
-              ? { ...task, ...(data as Partial<DBTask>) }
-              : task,
-          );
-        },
-      );
-
-      // Invalidate pending tasks since this affects that query
+    onSuccess: (_data, variables) => {
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "user", variables.userId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
@@ -260,20 +240,10 @@ export function useTaskMutations() {
       return updatedTask;
     },
     onSuccess: (data, variables) => {
-      // Update task in cache
-      queryClient.setQueryData(
-        ["tasks", "user", variables.userId],
-        (oldTasks: DBTask[] | undefined) => {
-          if (!oldTasks) return oldTasks;
-          return oldTasks.map((task) =>
-            task.id === variables.taskId
-              ? { ...task, ...(data as Partial<DBTask>) }
-              : task,
-          );
-        },
-      );
-
-      // Invalidate pending tasks query
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "user", variables.userId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
@@ -308,20 +278,10 @@ export function useTaskMutations() {
       return updatedTask;
     },
     onSuccess: (data, variables) => {
-      // Update task in cache
-      queryClient.setQueryData(
-        ["tasks", "user", variables.userId],
-        (oldTasks: DBTask[] | undefined) => {
-          if (!oldTasks) return oldTasks;
-          return oldTasks.map((task) =>
-            task.id === variables.taskId
-              ? { ...task, ...(data as Partial<DBTask>) }
-              : task,
-          );
-        },
-      );
-
-      // Invalidate pending tasks query
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "user", variables.userId],
+      });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
