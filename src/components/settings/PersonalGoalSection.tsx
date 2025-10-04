@@ -1,5 +1,10 @@
 import React from "react";
-import { SpecialChallengeSection } from "@/components/goals/SpecialChallengeSection";
+import {
+  usePersonalGoalQuery,
+  usePersonalGoalMutations,
+} from "@/hooks/api/usePersonalGoalQueries";
+import { PersonalGoalCard } from "./PersonalGoalCard";
+import { CreatePersonalGoalForm } from "./CreatePersonalGoalForm";
 
 interface PersonalGoalSectionProps {
   userId?: string | null;
@@ -8,14 +13,83 @@ interface PersonalGoalSectionProps {
 export const PersonalGoalSection: React.FC<PersonalGoalSectionProps> = ({
   userId,
 }) => {
+  const { data: personalGoal, isLoading } = usePersonalGoalQuery(
+    userId || undefined,
+  );
+  const { createPersonalGoal, updatePersonalGoal, deletePersonalGoal } =
+    usePersonalGoalMutations();
+
+  const handleCreate = (
+    title: string,
+    targetDuration: number,
+    description?: string,
+  ) => {
+    if (!userId) return;
+    createPersonalGoal.mutate({
+      userId,
+      title,
+      targetDuration,
+      description,
+    });
+  };
+
+  const handleUpdate = (
+    goalId: string,
+    title: string,
+    targetDuration: number,
+    description?: string,
+  ) => {
+    if (!userId) return;
+    updatePersonalGoal.mutate({
+      goalId,
+      userId,
+      title,
+      targetDuration,
+      description,
+    });
+  };
+
+  const handleDelete = (goalId: string) => {
+    if (!userId) return;
+    if (confirm("Are you sure you want to delete this goal?")) {
+      deletePersonalGoal.mutate({ goalId, userId });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="glass-card p-6">
+          <p className="text-nightly-celadon">Loading personal goal...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="bg-white/10 backdrop-blur-xs border-white/20 p-4 rounded-lg">
-        <h2 className="text-2xl font-bold">Personal Goal</h2>
-        <p>Manage your personal goal settings.</p>
+      <div className="glass-card p-6">
+        <h2 className="text-2xl font-bold text-nightly-honeydew mb-2">
+          Personal Goal
+        </h2>
+        <p className="text-nightly-celadon">
+          Set a personal chastity duration goal and track your progress. Your
+          goal progress updates automatically based on your session time.
+        </p>
       </div>
 
-      <SpecialChallengeSection userId={userId || null} />
+      {personalGoal ? (
+        <PersonalGoalCard
+          goal={personalGoal}
+          onUpdate={handleUpdate}
+          onDelete={handleDelete}
+        />
+      ) : (
+        <CreatePersonalGoalForm
+          onCreate={handleCreate}
+          isCreating={createPersonalGoal.isPending}
+        />
+      )}
     </div>
   );
 };
