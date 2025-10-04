@@ -31,3 +31,4 @@ export {
   useKeyholderRequiredDurationQuery,
   usePersonalGoalMutations,
 } from "./usePersonalGoalQueries";
+export { useReportData, useGoalsQuery } from "./useReportData";
