@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
-import { useSessionPersistence } from "../../hooks/useSessionPersistence";
-import { logger } from "../../utils/logging";
+import { useSessionLoader } from "../../hooks/session/useSessionLoader";
 
 // Define local interface to avoid restricted import
 interface SessionRestorationResult {
@@ -22,38 +21,31 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
   onSessionRestored,
   onInitialized,
 }) => {
-  const [progress, setProgress] = useState(0);
-  const { initializeSession, isInitializing, error } = useSessionPersistence();
+  const { loadSession, isLoading, error, progress, session } =
+    useSessionLoader();
 
   useEffect(() => {
     const initializeSessionState = async () => {
       if (!userId) return;
 
-      try {
-        setProgress(25);
-
-        // Initialize session state using the hook
-        const result = await initializeSession(userId);
-        setProgress(75);
-
-        if (result.wasRestored) {
-          onSessionRestored(result);
-        }
-
-        setProgress(100);
-        onInitialized();
-      } catch (error) {
-        // Error is already handled by the hook
-        logger.error(
-          "Session initialization failed",
-          { error },
-          "SessionLoader",
-        );
-      }
+      await loadSession(userId);
+      onInitialized();
     };
 
     initializeSessionState();
-  }, [userId, initializeSession, onSessionRestored, onInitialized]);
+    // loadSession is from useSessionLoader hook (useCallback), not a Zustand store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [userId, loadSession, onInitialized]);
+
+  // Separate effect to handle session restoration callback
+  useEffect(() => {
+    if (session) {
+      onSessionRestored({
+        success: true,
+        wasRestored: true,
+      });
+    }
+  }, [session, onSessionRestored]);
 
   if (error) {
     return (
@@ -75,7 +67,7 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
     );
   }
 
-  if (isInitializing) {
+  if (isLoading) {
     return (
       <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
@@ -86,13 +78,17 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
           <p className="text-sm text-gray-400 mb-4">
             Restoring your chastity session
           </p>
-          <div className="w-64 bg-gray-700 rounded-full h-2">
-            <div
-              className="bg-purple-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-2">{progress}%</p>
+          {progress > 0 && (
+            <>
+              <div className="w-64 bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">{progress}%</p>
+            </>
+          )}
         </div>
       </div>
     );
