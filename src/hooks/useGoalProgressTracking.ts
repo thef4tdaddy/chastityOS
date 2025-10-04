@@ -70,5 +70,13 @@ export function useGoalProgressTracking(userId: string | undefined) {
         });
       }
     }
-  }, [userId, personalGoal, currentSession]);
+    // updateGoalProgress and completePersonalGoal are TanStack Query mutations, not Zustand actions
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [
+    userId,
+    personalGoal,
+    currentSession,
+    updateGoalProgress,
+    completePersonalGoal,
+  ]);
 }

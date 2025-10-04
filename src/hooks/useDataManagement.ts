@@ -74,7 +74,7 @@ export function useDataManagement(userId?: string, userEmail?: string) {
         setIsExporting(false);
       }
     },
-    [userId, showSuccess, showError, showInfo, queryClient],
+    [userId, showSuccess, showError, queryClient],
   );
 
   return {

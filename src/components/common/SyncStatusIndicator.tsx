@@ -80,7 +80,7 @@ export const SyncStatusIndicator: React.FC = () => {
     );
   };
 
-  const getStatusText = () => {
+  const _getStatusText = () => {
     if (!isOnline) return "Offline";
     if (hasConflicts) return "Conflicts";
     if (isSyncing) return "Syncing...";
