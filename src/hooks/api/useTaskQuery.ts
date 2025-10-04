@@ -235,10 +235,151 @@ export function useTaskMutations() {
     },
   });
 
+  const approveTask = useMutation({
+    mutationFn: async (params: {
+      taskId: string;
+      userId: string;
+      feedback?: string;
+    }) => {
+      // 1. Update local Dexie immediately
+      const updatedTask = await taskDBService.updateTaskStatus(
+        params.taskId,
+        "approved",
+        {
+          keyholderFeedback: params.feedback,
+        },
+      );
+
+      // 2. Trigger Firebase sync in background
+      if (navigator.onLine) {
+        firebaseSync.syncUserTasks(params.userId).catch((error) => {
+          logger.warn("Task approval sync failed", { error });
+        });
+      }
+
+      return updatedTask;
+    },
+    onSuccess: (data, variables) => {
+      // Update task in cache
+      queryClient.setQueryData(
+        ["tasks", "user", variables.userId],
+        (oldTasks: DBTask[] | undefined) => {
+          if (!oldTasks) return oldTasks;
+          return oldTasks.map((task) =>
+            task.id === variables.taskId
+              ? { ...task, ...(data as Partial<DBTask>) }
+              : task,
+          );
+        },
+      );
+
+      // Invalidate pending tasks query
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
+    },
+    onError: (error) => {
+      logger.error("Failed to approve task", { error });
+    },
+  });
+
+  const rejectTask = useMutation({
+    mutationFn: async (params: {
+      taskId: string;
+      userId: string;
+      feedback?: string;
+    }) => {
+      // 1. Update local Dexie immediately
+      const updatedTask = await taskDBService.updateTaskStatus(
+        params.taskId,
+        "rejected",
+        {
+          keyholderFeedback: params.feedback,
+        },
+      );
+
+      // 2. Trigger Firebase sync in background
+      if (navigator.onLine) {
+        firebaseSync.syncUserTasks(params.userId).catch((error) => {
+          logger.warn("Task rejection sync failed", { error });
+        });
+      }
+
+      return updatedTask;
+    },
+    onSuccess: (data, variables) => {
+      // Update task in cache
+      queryClient.setQueryData(
+        ["tasks", "user", variables.userId],
+        (oldTasks: DBTask[] | undefined) => {
+          if (!oldTasks) return oldTasks;
+          return oldTasks.map((task) =>
+            task.id === variables.taskId
+              ? { ...task, ...(data as Partial<DBTask>) }
+              : task,
+          );
+        },
+      );
+
+      // Invalidate pending tasks query
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
+    },
+    onError: (error) => {
+      logger.error("Failed to reject task", { error });
+    },
+  });
+
+  const assignTask = useMutation({
+    mutationFn: async (params: {
+      userId: string;
+      title: string;
+      description?: string;
+      priority?: DBTask["priority"];
+      dueDate?: Date;
+    }) => {
+      // 1. Write to local Dexie immediately for optimistic update
+      const task = await taskDBService.createTask({
+        userId: params.userId,
+        text: params.title,
+        description: params.description,
+        status: "pending" as TaskStatus,
+        priority: params.priority || "medium",
+        assignedBy: "keyholder" as const,
+        dueDate: params.dueDate,
+      });
+
+      // 2. Trigger Firebase sync in background
+      if (navigator.onLine) {
+        firebaseSync.syncUserTasks(params.userId).catch((error) => {
+          logger.warn("Task assignment sync failed", { error });
+        });
+      }
+
+      return task;
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate and refetch tasks queries
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "user", variables.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "pending", variables.userId],
+      });
+    },
+    onError: (error) => {
+      logger.error("Failed to assign task", { error });
+    },
+  });
+
   return {
     createTask,
     updateTaskStatus,
     deleteTask,
     submitTaskForReview,
+    approveTask,
+    rejectTask,
+    assignTask,
   };
 }
