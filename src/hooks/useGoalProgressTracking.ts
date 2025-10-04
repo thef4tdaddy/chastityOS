@@ -70,11 +70,5 @@ export function useGoalProgressTracking(userId: string | undefined) {
         });
       }
     }
-  }, [
-    userId,
-    personalGoal,
-    currentSession,
-    updateGoalProgress,
-    completePersonalGoal,
-  ]);
+  }, [userId, personalGoal, currentSession]);
 }
