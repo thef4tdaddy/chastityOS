@@ -41,11 +41,11 @@ const Dashboard: React.FC = () => {
           <img
             src="/assets/logo/chastityOS-newlogo-text.svg"
             alt="ChastityOS"
-            className="h-40 md:h-48"
+            className="h-[60px] md:h-[72px]"
           />
           <h1
-            className="text-5xl md:text-6xl font-bold ml-6"
-            style={{ color: "#744dfb", textShadow: "none" }}
+            className="text-4xl md:text-5xl font-bold ml-6 text-tekhelet"
+            style={{ textShadow: "none" }}
           >
             Dashboard
           </h1>
