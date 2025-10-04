@@ -26,3 +26,8 @@ export {
   useActiveRulesQuery,
   useRuleMutations,
 } from "./useRuleQueries";
+export {
+  usePersonalGoalQuery,
+  useKeyholderRequiredDurationQuery,
+  usePersonalGoalMutations,
+} from "./usePersonalGoalQueries";
