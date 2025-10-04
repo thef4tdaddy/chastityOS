@@ -69,7 +69,8 @@ const AddTaskForm: React.FC<{
 const TaskItem: React.FC<{
   task: {
     id: string;
-    title: string;
+    title?: string;
+    text: string;
     status: string;
     priority?: string;
     deadline?: Date;
@@ -85,7 +86,9 @@ const TaskItem: React.FC<{
 }> = ({ task, handleTaskAction, isUpdating }) => (
   <div key={task.id} className="bg-white/5 rounded-lg p-4">
     <div className="mb-3">
-      <h4 className="font-medium text-nightly-honeydew mb-1">{task.title}</h4>
+      <h4 className="font-medium text-nightly-honeydew mb-1">
+        {task.title || task.text}
+      </h4>
       <div className="flex items-center gap-2 text-sm text-nightly-celadon">
         <span>Status: {task.status}</span>
         {task.priority && (
