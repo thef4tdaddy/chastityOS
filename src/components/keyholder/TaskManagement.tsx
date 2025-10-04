@@ -155,7 +155,8 @@ const LoadingDisplay: React.FC = () => (
 // Task action handlers
 const useTaskActions = (params: {
   userId: string;
-  updateTaskStatus: ReturnType<typeof useTaskMutations>["updateTaskStatus"];
+  approveTask: ReturnType<typeof useTaskMutations>["approveTask"];
+  rejectTask: ReturnType<typeof useTaskMutations>["rejectTask"];
   createTask: ReturnType<typeof useTaskMutations>["createTask"];
   showSuccess: (message: string, title: string) => void;
   showError: (message: string, title: string) => void;
@@ -164,7 +165,8 @@ const useTaskActions = (params: {
 }) => {
   const {
     userId,
-    updateTaskStatus,
+    approveTask,
+    rejectTask,
     createTask,
     showSuccess,
     showError,
@@ -178,15 +180,19 @@ const useTaskActions = (params: {
     feedback?: string,
   ) => {
     try {
-      const newStatus: TaskStatus =
-        action === "approve" ? "approved" : "rejected";
-
-      await updateTaskStatus.mutateAsync({
-        taskId,
-        userId,
-        status: newStatus,
-        feedback,
-      });
+      if (action === "approve") {
+        await approveTask.mutateAsync({
+          taskId,
+          userId,
+          feedback,
+        });
+      } else {
+        await rejectTask.mutateAsync({
+          taskId,
+          userId,
+          feedback,
+        });
+      }
 
       showSuccess(
         `Task ${action === "approve" ? "approved" : "rejected"} successfully`,
@@ -257,7 +263,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
 
   // Use TanStack Query hooks instead of direct service calls
   const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
-  const { updateTaskStatus, createTask } = useTaskMutations();
+  const { approveTask, rejectTask, createTask } = useTaskMutations();
   const { showSuccess, showError } = useNotificationActions();
 
   const pendingTasks = tasks.filter((t) =>
@@ -266,7 +272,8 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
 
   const { handleTaskAction, handleAddTask } = useTaskActions({
     userId,
-    updateTaskStatus,
+    approveTask,
+    rejectTask,
     createTask,
     showSuccess,
     showError,
@@ -311,7 +318,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
         isLoading={isLoading}
         pendingTasks={pendingTasks}
         handleTaskAction={handleTaskAction}
-        isUpdating={updateTaskStatus.isPending}
+        isUpdating={approveTask.isPending || rejectTask.isPending}
       />
     </div>
   );
