@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { TaskStatus, DBTask } from "../../types/database";
+import type { DBTask } from "../../types/database";
 import { useTasksQuery, useTaskMutations } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
 import {
