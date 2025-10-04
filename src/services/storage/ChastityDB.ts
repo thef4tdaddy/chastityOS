@@ -21,6 +21,7 @@ import {
   DBAchievementNotification,
   DBLeaderboardEntry,
 } from "@/types/database";
+import { KeyholderRule } from "@/types/core";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("ChastityDB");
@@ -42,6 +43,9 @@ export class ChastityDB extends Dexie {
   achievementProgress!: Table<DBAchievementProgress>;
   achievementNotifications!: Table<DBAchievementNotification>;
   leaderboardEntries!: Table<DBLeaderboardEntry>;
+
+  // Rules table
+  rules!: Table<KeyholderRule>;
 
   // Explicitly declare Dexie methods we use to fix TypeScript issues
   declare transaction: <T>(
@@ -114,6 +118,13 @@ export class ChastityDB extends Dexie {
       // Leaderboard entries
       leaderboardEntries:
         "++id, &[userId+category+period], userId, category, period, rank, isAnonymous, syncStatus, lastModified",
+    });
+
+    // Version 4: Add rules table
+    this.version(4).stores({
+      // Keyholder rules
+      rules:
+        "&id, keyholderUserId, submissiveUserId, [keyholderUserId+isActive], [submissiveUserId+isActive], isActive, createdAt, syncStatus, lastModified",
     });
 
     // Add hooks for automatic timestamp and sync status updates
@@ -321,6 +332,25 @@ export class ChastityDB extends Dexie {
       },
     );
 
+    // Rules table hooks
+    this.rules.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating rule", { id: obj.id, title: obj.title });
+    });
+
+    this.rules.hook(
+      "updating",
+      (modifications: Partial<KeyholderRule>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
     // Global error handler
     this.on("ready", () => {
       logger.info("ChastityOS database ready", {
@@ -366,6 +396,8 @@ export class ChastityDB extends Dexie {
         "achievementProgress",
         "achievementNotifications",
         "leaderboardEntries",
+        // Rules collection
+        "rules",
       ];
 
       for (const collection of collections) {
@@ -402,6 +434,8 @@ export class ChastityDB extends Dexie {
       achievementProgress: await this.achievementProgress.count(),
       achievementNotifications: await this.achievementNotifications.count(),
       leaderboardEntries: await this.leaderboardEntries.count(),
+      // Rules stats
+      rules: await this.rules.count(),
       pendingSync: {
         sessions: await this.sessions
           .where("syncStatus")
@@ -435,6 +469,8 @@ export class ChastityDB extends Dexie {
           .where("syncStatus")
           .equals("pending")
           .count(),
+        // Rules sync status
+        rules: await this.rules.where("syncStatus").equals("pending").count(),
       },
     };
 
@@ -462,6 +498,7 @@ export class ChastityDB extends Dexie {
           this.achievementProgress,
           this.achievementNotifications,
           this.leaderboardEntries,
+          this.rules,
         ],
         async () => {
           await this.users.where("uid").equals(userId).delete();
@@ -481,6 +518,9 @@ export class ChastityDB extends Dexie {
             .equals(userId)
             .delete();
           await this.leaderboardEntries.where("userId").equals(userId).delete();
+          // Clear user-specific rules (both as keyholder and submissive)
+          await this.rules.where("keyholderUserId").equals(userId).delete();
+          await this.rules.where("submissiveUserId").equals(userId).delete();
         },
       );
 
