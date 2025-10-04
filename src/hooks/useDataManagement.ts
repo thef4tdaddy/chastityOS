@@ -17,7 +17,7 @@ const logger = serviceLogger("useDataManagement");
 export function useDataManagement(userId?: string, userEmail?: string) {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const { showSuccess, showError, showInfo } = useToast();
+  const { showSuccess, showError } = useToast();
   const queryClient = useQueryClient();
 
   const handleExport = useCallback(async () => {

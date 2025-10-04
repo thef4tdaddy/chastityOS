@@ -19,8 +19,7 @@ const logger = serviceLogger("useGoalProgressTracking");
 export function useGoalProgressTracking(userId: string | undefined) {
   const { data: personalGoal } = usePersonalGoalQuery(userId);
   const { data: currentSession } = useCurrentSession(userId);
-  const { updateGoalProgress, completePersonalGoal } =
-    usePersonalGoalMutations();
+  const mutations = usePersonalGoalMutations();
 
   useEffect(() => {
     if (
@@ -42,7 +41,7 @@ export function useGoalProgressTracking(userId: string | undefined) {
     // Update goal progress if it has changed significantly (more than 10 seconds difference)
     const currentProgress = personalGoal.currentValue;
     if (Math.abs(elapsedSeconds - currentProgress) > 10) {
-      updateGoalProgress.mutate({
+      mutations.updateGoalProgress.mutate({
         goalId: personalGoal.id,
         userId,
         currentProgress: elapsedSeconds,
@@ -59,7 +58,7 @@ export function useGoalProgressTracking(userId: string | undefined) {
         elapsedSeconds >= personalGoal.targetValue &&
         !personalGoal.isCompleted
       ) {
-        completePersonalGoal.mutate({
+        mutations.completePersonalGoal.mutate({
           goalId: personalGoal.id,
           userId,
         });
@@ -70,13 +69,5 @@ export function useGoalProgressTracking(userId: string | undefined) {
         });
       }
     }
-    // updateGoalProgress and completePersonalGoal are TanStack Query mutations, not Zustand actions
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
-  }, [
-    userId,
-    personalGoal,
-    currentSession,
-    updateGoalProgress,
-    completePersonalGoal,
-  ]);
+  }, [userId, personalGoal, currentSession, mutations]);
 }
