@@ -9,6 +9,7 @@ import {
 } from "@/hooks/api/usePersonalGoalQueries";
 import { FaLock, FaEdit, FaCheck, FaTimes, FaTrash } from "react-icons/fa";
 import type { DBGoal } from "@/types/database";
+import { useToast } from "@/hooks/useToast";
 
 interface KeyholderDurationSectionProps {
   userId?: string | null;
@@ -340,6 +341,7 @@ export const KeyholderDurationSection: React.FC<
     updateKeyholderDuration,
     deletePersonalGoal,
   } = usePersonalGoalMutations();
+  const { showWarning } = useToast();
 
   const handleCreate = (
     title: string,
@@ -373,9 +375,15 @@ export const KeyholderDurationSection: React.FC<
 
   const handleDelete = (goalId: string) => {
     if (!userId) return;
-    if (confirm("Are you sure you want to remove the required duration?")) {
-      deletePersonalGoal.mutate({ goalId, userId });
-    }
+    showWarning("Are you sure you want to remove the required duration?", {
+      duration: 5000,
+      action: {
+        label: "Remove",
+        onClick: () => {
+          deletePersonalGoal.mutate({ goalId, userId });
+        },
+      },
+    });
   };
 
   if (isLoading) {

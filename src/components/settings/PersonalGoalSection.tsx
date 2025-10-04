@@ -5,6 +5,7 @@ import {
 } from "@/hooks/api/usePersonalGoalQueries";
 import { PersonalGoalCard } from "./PersonalGoalCard";
 import { CreatePersonalGoalForm } from "./CreatePersonalGoalForm";
+import { useToast } from "@/hooks/useToast";
 
 interface PersonalGoalSectionProps {
   userId?: string | null;
@@ -18,6 +19,7 @@ export const PersonalGoalSection: React.FC<PersonalGoalSectionProps> = ({
   );
   const { createPersonalGoal, updatePersonalGoal, deletePersonalGoal } =
     usePersonalGoalMutations();
+  const { showWarning } = useToast();
 
   const handleCreate = (
     title: string,
@@ -51,9 +53,15 @@ export const PersonalGoalSection: React.FC<PersonalGoalSectionProps> = ({
 
   const handleDelete = (goalId: string) => {
     if (!userId) return;
-    if (confirm("Are you sure you want to delete this goal?")) {
-      deletePersonalGoal.mutate({ goalId, userId });
-    }
+    showWarning("Are you sure you want to delete this goal?", {
+      duration: 5000,
+      action: {
+        label: "Delete",
+        onClick: () => {
+          deletePersonalGoal.mutate({ goalId, userId });
+        },
+      },
+    });
   };
 
   if (isLoading) {
