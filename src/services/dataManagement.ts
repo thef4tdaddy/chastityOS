@@ -139,7 +139,10 @@ export async function importUserData(
             ]);
 
             // Import new data (update userId to current user)
-            const updateUserId = (item: any) => ({ ...item, userId });
+            const updateUserId = (item: Record<string, unknown>) => ({
+              ...item,
+              userId,
+            });
 
             if (data.sessions?.length) {
               await db.sessions.bulkAdd(data.sessions.map(updateUserId));
@@ -157,7 +160,9 @@ export async function importUserData(
               await db.settings.bulkAdd(data.settings.map(updateUserId));
             }
             if (data.rules?.length) {
-              await db.rules.bulkAdd(data.rules as any[]);
+              await db.rules.bulkAdd(
+                data.rules as Array<Record<string, unknown>>,
+              );
             }
           },
         );
