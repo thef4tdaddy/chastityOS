@@ -16,6 +16,7 @@ export { taskDBService } from "./TaskDBService";
 export { goalDBService } from "./GoalDBService";
 export { settingsDBService } from "./SettingsDBService";
 export { achievementDBService } from "./AchievementDBService";
+export { ruleDBService } from "./RuleDBService";
 
 // Utility services
 export { DBMigrationService } from "./MigrationService";

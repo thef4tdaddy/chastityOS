@@ -21,3 +21,8 @@ export {
   useOfflineQueueOperations,
   useRetryableOperations,
 } from "./useOfflineQueue";
+export {
+  useRulesQuery,
+  useActiveRulesQuery,
+  useRuleMutations,
+} from "./useRuleQueries";

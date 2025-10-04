@@ -212,6 +212,8 @@ export interface KeyholderRule {
   isActive: boolean;
   createdAt: Timestamp;
   consequences?: TaskConsequence[];
+  syncStatus: "pending" | "synced" | "error";
+  lastModified: Date;
 }
 
 // ==================== ANALYTICS TYPES ====================

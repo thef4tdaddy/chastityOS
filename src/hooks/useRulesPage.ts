@@ -1,5 +1,18 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useRulesQuery, useRuleMutations } from "./api/useRuleQueries";
 import type { ChastityRule } from "../components/rules";
+import type { KeyholderRule } from "@/types/core";
+
+// Helper to convert KeyholderRule to ChastityRule for UI compatibility
+const convertToChastityRule = (rule: KeyholderRule): ChastityRule => ({
+  id: rule.id,
+  title: rule.title,
+  content: rule.description,
+  isActive: rule.isActive,
+  createdBy: "keyholder", // Default to keyholder for now
+  createdAt: rule.createdAt.toDate(),
+  lastModified: rule.lastModified || new Date(),
+});
 
 // Helper function to filter and sort rules
 const filterAndSortRules = (
@@ -21,13 +34,24 @@ const filterAndSortRules = (
     });
 };
 
-export const useRulesPage = (initialRules: ChastityRule[]) => {
-  const [rules, setRules] = useState<ChastityRule[]>(initialRules);
+export const useRulesPage = (
+  userId: string | undefined,
+  role: "keyholder" | "submissive",
+) => {
+  const { data: dbRules = [], isLoading } = useRulesQuery(userId, role);
+  const { createRule, updateRule, toggleRule } = useRuleMutations();
+
   const [editingRule, setEditingRule] = useState<ChastityRule | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
 
-  const filteredRules = filterAndSortRules(rules, filter);
+  // Convert database rules to UI format
+  const rules = useMemo(() => dbRules.map(convertToChastityRule), [dbRules]);
+
+  const filteredRules = useMemo(
+    () => filterAndSortRules(rules, filter),
+    [rules, filter],
+  );
 
   const handleEditRule = (ruleId: string) => {
     const rule = rules.find((r) => r.id === ruleId);
@@ -35,43 +59,34 @@ export const useRulesPage = (initialRules: ChastityRule[]) => {
     setShowEditor(true);
   };
 
-  const handleToggleRule = (ruleId: string) => {
-    setRules((prev) =>
-      prev.map((rule) =>
-        rule.id === ruleId
-          ? { ...rule, isActive: !rule.isActive, lastModified: new Date() }
-          : rule,
-      ),
-    );
+  const handleToggleRule = async (ruleId: string) => {
+    await toggleRule.mutateAsync(ruleId);
   };
 
-  const handleSaveRule = (
+  const handleSaveRule = async (
     ruleData: Omit<ChastityRule, "id" | "createdAt" | "lastModified">,
   ) => {
-    const now = new Date();
+    if (!userId) return;
 
     if (editingRule) {
       // Update existing rule
-      setRules((prev) =>
-        prev.map((rule) =>
-          rule.id === editingRule.id
-            ? {
-                ...rule,
-                ...ruleData,
-                lastModified: now,
-              }
-            : rule,
-        ),
-      );
+      await updateRule.mutateAsync({
+        ruleId: editingRule.id,
+        updates: {
+          title: ruleData.title,
+          description: ruleData.content,
+          isActive: ruleData.isActive,
+        },
+      });
     } else {
       // Create new rule
-      const newRule: ChastityRule = {
-        ...ruleData,
-        id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: now,
-        lastModified: now,
-      };
-      setRules((prev) => [newRule, ...prev]);
+      await createRule.mutateAsync({
+        keyholderUserId: role === "keyholder" ? userId : "", // Will need proper keyholder ID
+        submissiveUserId: role === "submissive" ? userId : "", // Will need proper submissive ID
+        title: ruleData.title,
+        description: ruleData.content,
+        isActive: ruleData.isActive,
+      });
     }
 
     setShowEditor(false);
@@ -94,6 +109,7 @@ export const useRulesPage = (initialRules: ChastityRule[]) => {
     showEditor,
     filter,
     filteredRules,
+    isLoading,
     setFilter,
     handleEditRule,
     handleToggleRule,
