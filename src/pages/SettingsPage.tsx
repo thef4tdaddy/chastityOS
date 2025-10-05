@@ -20,6 +20,8 @@ import { ToggleSwitch } from "../components/settings/ToggleSwitch";
 import { ResetModal } from "../components/settings/ResetModal";
 import { SecuritySettings } from "../components/settings/SecuritySettings";
 import { DataControls } from "../components/settings/DataControls";
+import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
+import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
 
 type SettingsTab =
   | "account"
@@ -274,52 +276,63 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
 // Goals Section
 const GoalsSection: React.FC<{ settings: DBSettings | null }> = ({
   settings: _settings,
-}) => (
-  <div className="space-y-6">
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaBullseye className="text-nightly-aquamarine" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Personal Goals
-        </h3>
-      </div>
+}) => {
+  const { user } = useAuthState();
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Default Session Goal (hours)
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="168"
-            className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-            placeholder="24"
-          />
+  return (
+    <div className="space-y-6">
+      {/* Personal Goal Section */}
+      <PersonalGoalSection userId={user?.uid} />
+
+      {/* Keyholder Duration Section */}
+      <KeyholderDurationSection userId={user?.uid} />
+
+      {/* Legacy Goals UI (can be removed later) */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <FaBullseye className="text-nightly-aquamarine" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Additional Goal Settings
+          </h3>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="space-y-4">
           <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Goal Reminders
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Get notified about goal progress
-            </div>
+            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+              Default Session Goal (hours)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="168"
+              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
+              placeholder="24"
+            />
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" defaultChecked />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-          </label>
-        </div>
 
-        <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
-          Create New Goal
-        </button>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-nightly-celadon">
+                Goal Reminders
+              </div>
+              <div className="text-xs text-nightly-celadon/70">
+                Get notified about goal progress
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" defaultChecked />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
+            </label>
+          </div>
+
+          <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
+            Create New Goal
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Session Settings Section
 const SessionSection: React.FC<{ settings: DBSettings | null }> = ({
