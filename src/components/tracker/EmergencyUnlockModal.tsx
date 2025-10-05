@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaTimes,
   FaExclamationTriangle,
   FaArrowLeft,
   FaArrowRight,
+  FaLock,
+  FaSpinner,
 } from "react-icons/fa";
 import type { EmergencyUnlockReason } from "../../types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "../../types/events";
@@ -11,6 +13,8 @@ import {
   useEmergencyUnlockModal,
   type ModalStage,
 } from "../../hooks/tracker/useEmergencyUnlockModal";
+import { useAuthState } from "../../contexts";
+import { EmergencyPinDBService } from "../../services/database/EmergencyPinDBService";
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
@@ -21,6 +25,7 @@ interface EmergencyUnlockModalProps {
   ) => Promise<void>;
   sessionId: string;
   isProcessing?: boolean;
+  requirePin?: boolean; // Whether to require PIN validation (for hardcore mode)
 }
 
 // Warning Stage Component
@@ -254,6 +259,7 @@ const ConfirmationStage: React.FC<{
   handleEmergencyUnlock: () => void;
   canConfirm: boolean;
   isSubmitting: boolean;
+  requirePin?: boolean;
 }> = ({
   setStage,
   sessionId,
@@ -265,6 +271,7 @@ const ConfirmationStage: React.FC<{
   handleEmergencyUnlock,
   canConfirm,
   isSubmitting,
+  requirePin,
 }) => (
   <div>
     <div className="flex items-center mb-6">
@@ -295,7 +302,9 @@ const ConfirmationStage: React.FC<{
       >
         {isSubmitting
           ? "Processing Emergency Unlock..."
-          : "🚨 EMERGENCY UNLOCK 🚨"}
+          : requirePin
+            ? "Continue to PIN Verification →"
+            : "🚨 EMERGENCY UNLOCK 🚨"}
       </button>
       <button
         onClick={() => setStage("reason")}
@@ -308,13 +317,125 @@ const ConfirmationStage: React.FC<{
   </div>
 );
 
+// PIN Validation Stage Component (for hardcore mode)
+const PinValidationStage: React.FC<{
+  userId: string;
+  pin: string;
+  setPin: (pin: string) => void;
+  pinError: string;
+  attemptCount: number;
+  isValidating: boolean;
+  handlePinSubmit: () => Promise<void>;
+  setStage: (stage: ModalStage) => void;
+}> = ({
+  pin,
+  setPin,
+  pinError,
+  attemptCount,
+  isValidating,
+  handlePinSubmit,
+  setStage,
+}) => (
+  <div>
+    <div className="flex items-center mb-6">
+      <button
+        onClick={() => setStage("confirm")}
+        disabled={isValidating}
+        className="mr-3 p-1 text-gray-400 hover:text-white transition disabled:opacity-50"
+        aria-label="Go back"
+      >
+        <FaArrowLeft />
+      </button>
+      <h3 className="text-xl font-bold text-red-300">
+        <FaLock className="inline mr-2" />
+        PIN Verification Required
+      </h3>
+    </div>
+
+    <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-4 mb-6">
+      <p className="text-sm text-yellow-200">
+        This session is in <strong>hardcore mode</strong>. Enter your emergency
+        PIN to proceed with the unlock.
+      </p>
+    </div>
+
+    {pinError && (
+      <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-4">
+        <p className="text-red-400 text-sm">{pinError}</p>
+      </div>
+    )}
+
+    <div className="mb-6">
+      <label className="block text-sm font-medium text-gray-300 mb-2">
+        Emergency PIN
+      </label>
+      <input
+        type="password"
+        value={pin}
+        onChange={(e) => setPin(e.target.value)}
+        placeholder="Enter your emergency PIN"
+        className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 font-mono text-center text-xl tracking-wider"
+        disabled={isValidating || attemptCount >= 5}
+        autoFocus
+        autoComplete="off"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && pin && !isValidating) {
+            handlePinSubmit();
+          }
+        }}
+      />
+      <p className="text-xs text-gray-400 mt-2 text-center">
+        Attempts: {attemptCount}/5
+      </p>
+    </div>
+
+    <div className="flex flex-col space-y-3">
+      <button
+        onClick={handlePinSubmit}
+        disabled={!pin || isValidating || attemptCount >= 5}
+        className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center"
+      >
+        {isValidating ? (
+          <>
+            <FaSpinner className="animate-spin mr-2" />
+            Validating PIN...
+          </>
+        ) : (
+          "🚨 VERIFY & UNLOCK 🚨"
+        )}
+      </button>
+      <button
+        onClick={() => setStage("confirm")}
+        disabled={isValidating}
+        className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
+      >
+        Back
+      </button>
+    </div>
+
+    <p className="text-xs text-gray-400 mt-4 text-center">
+      Forgot your PIN? Contact support or check your account recovery options.
+    </p>
+  </div>
+);
+
 export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   isOpen,
   onClose,
   onEmergencyUnlock,
   sessionId,
   isProcessing: _isProcessing = false,
+  requirePin = false,
 }) => {
+  const { user } = useAuthState();
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [isValidatingPin, setIsValidatingPin] = useState(false);
+  const [pinStage, setPinStage] = useState<
+    "normal" | "pin_required" | "pin_validated"
+  >(requirePin ? "pin_required" : "normal");
+
   const {
     stage,
     reason,
@@ -325,7 +446,7 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
     setReason,
     setCustomReason,
     setConfirmText,
-    handleEmergencyUnlock,
+    handleEmergencyUnlock: originalHandleUnlock,
     canProceedFromReason,
     canConfirm,
     requiredText,
@@ -333,13 +454,86 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   } = useEmergencyUnlockModal({
     sessionId,
     onEmergencyUnlock: async (finalReason, additionalNotes) => {
+      // If PIN is required, validate it first
+      if (requirePin && pinStage !== "pin_validated") {
+        setPinStage("pin_required");
+        return;
+      }
+
       await onEmergencyUnlock(finalReason, additionalNotes);
       onClose();
     },
     isOpen,
   });
 
+  // Handle PIN submission
+  const handlePinSubmit = async () => {
+    if (!user?.uid || !pin) return;
+
+    setPinError("");
+    setIsValidatingPin(true);
+
+    try {
+      const isValid = await EmergencyPinDBService.validatePin(user.uid, pin);
+
+      if (!isValid) {
+        setAttemptCount((prev) => prev + 1);
+        setPinError(`Invalid PIN. Attempt ${attemptCount + 1}/5`);
+        setPin("");
+
+        if (attemptCount >= 4) {
+          setPinError(
+            "Too many failed attempts. Modal will close in 5 seconds.",
+          );
+          setTimeout(() => {
+            setAttemptCount(0);
+            onClose();
+          }, 5000);
+        }
+        return;
+      }
+
+      // PIN validated - proceed with unlock
+      setPinStage("pin_validated");
+      setPin("");
+      setAttemptCount(0);
+
+      // Actually perform the unlock now
+      await onEmergencyUnlock(
+        reason as EmergencyUnlockReason,
+        customReason || undefined,
+      );
+      onClose();
+    } catch (err) {
+      setPinError("Failed to validate PIN. Please try again.");
+    } finally {
+      setIsValidatingPin(false);
+    }
+  };
+
+  // Override handleEmergencyUnlock to redirect to PIN stage if needed
+  const handleEmergencyUnlock = () => {
+    if (requirePin && pinStage !== "pin_validated") {
+      setPinStage("pin_required");
+    } else {
+      originalHandleUnlock();
+    }
+  };
+
+  // Reset PIN state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setPin("");
+      setPinError("");
+      setAttemptCount(0);
+      setPinStage(requirePin ? "pin_required" : "normal");
+    }
+  }, [isOpen, requirePin]);
+
   if (!isOpen) return null;
+
+  // Show PIN validation stage if required and not yet validated
+  const showPinStage = requirePin && pinStage === "pin_required";
 
   return (
     <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -347,39 +541,55 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
         <div className="relative p-6">
           <button
             onClick={onClose}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isValidatingPin}
             className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors disabled:cursor-not-allowed"
             aria-label="Close modal"
           >
             <FaTimes size={20} />
           </button>
 
-          {stage === "warning" && (
-            <WarningStage setStage={setStage} onClose={onClose} />
-          )}
-          {stage === "reason" && (
-            <ReasonStage
-              setStage={setStage}
-              reason={reason}
-              setReason={setReason}
-              customReason={customReason}
-              setCustomReason={setCustomReason}
-              canProceedFromReason={canProceedFromReason}
+          {showPinStage ? (
+            <PinValidationStage
+              userId={user?.uid || ""}
+              pin={pin}
+              setPin={setPin}
+              pinError={pinError}
+              attemptCount={attemptCount}
+              isValidating={isValidatingPin}
+              handlePinSubmit={handlePinSubmit}
+              setStage={() => setPinStage("normal")}
             />
-          )}
-          {stage === "confirm" && (
-            <ConfirmationStage
-              setStage={setStage}
-              sessionId={sessionId}
-              reason={reason}
-              confirmText={confirmText}
-              setConfirmText={setConfirmText}
-              requiredText={requiredText}
-              confirmInputRef={confirmInputRef}
-              handleEmergencyUnlock={handleEmergencyUnlock}
-              canConfirm={canConfirm}
-              isSubmitting={isSubmitting}
-            />
+          ) : (
+            <>
+              {stage === "warning" && (
+                <WarningStage setStage={setStage} onClose={onClose} />
+              )}
+              {stage === "reason" && (
+                <ReasonStage
+                  setStage={setStage}
+                  reason={reason}
+                  setReason={setReason}
+                  customReason={customReason}
+                  setCustomReason={setCustomReason}
+                  canProceedFromReason={canProceedFromReason}
+                />
+              )}
+              {stage === "confirm" && (
+                <ConfirmationStage
+                  setStage={setStage}
+                  sessionId={sessionId}
+                  reason={reason}
+                  confirmText={confirmText}
+                  setConfirmText={setConfirmText}
+                  requiredText={requiredText}
+                  confirmInputRef={confirmInputRef}
+                  handleEmergencyUnlock={handleEmergencyUnlock}
+                  canConfirm={canConfirm}
+                  isSubmitting={isSubmitting}
+                  requirePin={requirePin}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

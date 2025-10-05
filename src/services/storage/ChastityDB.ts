@@ -52,6 +52,14 @@ export class ChastityDB extends Dexie {
   // Release requests table
   releaseRequests!: Table<DBReleaseRequest>;
 
+  // Emergency PINs table
+  emergencyPins!: Table<{
+    userId: string;
+    hashedPin: string;
+    createdAt: Date;
+    lastModified: Date;
+  }>;
+
   // Explicitly declare Dexie methods we use to fix TypeScript issues
   declare transaction: <T>(
     mode: string,
@@ -137,6 +145,12 @@ export class ChastityDB extends Dexie {
       // Release requests for "Beg for Release" workflow
       releaseRequests:
         "&id, submissiveUserId, keyholderUserId, sessionId, [keyholderUserId+status], [sessionId+status], status, requestedAt, syncStatus, lastModified",
+    });
+
+    // Version 6: Add emergency PINs table
+    this.version(6).stores({
+      // Emergency PINs for hardcore mode safety
+      emergencyPins: "&userId, createdAt, lastModified",
     });
 
     // Add hooks for automatic timestamp and sync status updates
