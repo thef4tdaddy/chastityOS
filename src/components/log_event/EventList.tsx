@@ -51,10 +51,11 @@ const formatDate = (date: Date) => {
 
 // Event Item Component
 interface EventItemProps {
-  event: DBEvent;
+  event: DBEvent & { ownerName?: string; ownerId?: string };
+  showOwner?: boolean;
 }
 
-const EventItem: React.FC<EventItemProps> = ({ event }) => {
+const EventItem: React.FC<EventItemProps> = ({ event, showOwner }) => {
   const eventTypeInfo = getEventTypeInfo(event.type);
   const Icon = eventTypeInfo.icon;
 
@@ -65,9 +66,16 @@ const EventItem: React.FC<EventItemProps> = ({ event }) => {
         <div className="flex items-center gap-3">
           <Icon className={eventTypeInfo.color} />
           <div>
-            <h3 className="font-medium text-nighty-honeydew">
-              {eventTypeInfo.label}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-nighty-honeydew">
+                {eventTypeInfo.label}
+              </h3>
+              {showOwner && event.ownerName && (
+                <span className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-0.5 text-xs rounded">
+                  {event.ownerName}
+                </span>
+              )}
+            </div>
             <div className="text-xs text-nightly-celadon">
               {formatDate(event.timestamp)}
             </div>
@@ -112,10 +120,14 @@ const EventItem: React.FC<EventItemProps> = ({ event }) => {
 
 // Event List Component
 interface EventListProps {
-  events: DBEvent[];
+  events: (DBEvent & { ownerName?: string; ownerId?: string })[];
+  showOwner?: boolean;
 }
 
-export const EventList: React.FC<EventListProps> = ({ events }) => {
+export const EventList: React.FC<EventListProps> = ({
+  events,
+  showOwner = false,
+}) => {
   if (events.length === 0) {
     return (
       <div className="space-y-4">
@@ -133,7 +145,7 @@ export const EventList: React.FC<EventListProps> = ({ events }) => {
   return (
     <div className="space-y-4">
       {events.map((event) => (
-        <EventItem key={event.id} event={event} />
+        <EventItem key={event.id} event={event} showOwner={showOwner} />
       ))}
     </div>
   );

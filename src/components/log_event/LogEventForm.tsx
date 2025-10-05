@@ -266,6 +266,7 @@ const useEventSubmission = (
   },
   resetForm: () => void,
   onEventLogged?: () => void,
+  targetUserId?: string,
 ) => {
   const { user } = useAuthState();
   const createEvent = useCreateEvent();
@@ -275,9 +276,12 @@ const useEventSubmission = (
     e.preventDefault();
     if (!user) return;
 
+    // Use targetUserId if provided (for keyholders logging for submissives), otherwise use current user
+    const userId = targetUserId || user.uid;
+
     try {
       await createEvent.mutateAsync({
-        userId: user.uid,
+        userId,
         type: formData.type,
         timestamp: new Date(formData.timestamp),
         notes: formData.notes,
@@ -306,16 +310,19 @@ const useEventSubmission = (
 // Event Form Component
 interface LogEventFormProps {
   onEventLogged?: () => void;
+  targetUserId?: string; // Allow logging for a specific user (for keyholders)
 }
 
 export const LogEventForm: React.FC<LogEventFormProps> = ({
   onEventLogged,
+  targetUserId,
 }) => {
   const { formData, setFormData, resetForm } = useEventFormData();
   const { handleSubmit, isPending } = useEventSubmission(
     formData,
     resetForm,
     onEventLogged,
+    targetUserId,
   );
 
   return (
