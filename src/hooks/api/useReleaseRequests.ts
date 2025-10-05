@@ -4,7 +4,6 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { releaseRequestDBService } from "@/services/database/ReleaseRequestDBService";
-import type { DBReleaseRequest } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useReleaseRequests");

@@ -8,7 +8,7 @@ interface ActionButtonsProps {
   isGoalActive: boolean;
   isHardcoreGoal: boolean;
   requiredKeyholderDurationSeconds: number;
-  hasPendingReleaseRequest: boolean;
+  hasPendingReleaseRequest?: boolean; // Deprecated - now handled by BegForReleaseButton
   sessionId?: string;
   userId?: string;
   keyholderUserId?: string;
@@ -16,7 +16,7 @@ interface ActionButtonsProps {
   // Action handlers
   onStartSession?: () => void;
   onEndSession?: () => void;
-  onBegForRelease?: () => void;
+  onBegForRelease?: () => void; // Deprecated - now handled by BegForReleaseButton
   onEmergencyUnlock?: () => void;
 
   // Loading states
@@ -29,13 +29,11 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   isGoalActive,
   isHardcoreGoal,
   requiredKeyholderDurationSeconds,
-  hasPendingReleaseRequest,
   sessionId,
   userId,
   keyholderUserId,
   onStartSession,
   onEndSession,
-  onBegForRelease,
   onEmergencyUnlock,
   isStarting = false,
   isEnding = false,

@@ -44,12 +44,8 @@ export const BegForReleaseButton: React.FC<BegForReleaseButtonProps> = ({
       showSuccess("Release request sent to your keyholder");
       setShowModal(false);
       setReason("");
-    } catch (error) {
-      showError(
-        error instanceof Error
-          ? error.message
-          : "Failed to send release request",
-      );
+    } catch (_error) {
+      showError("Failed to send release request");
     }
   };
 
