@@ -60,16 +60,24 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             <FaLock className="text-lg" />
             <span>Locked by Goal</span>
           </button>
-        ) : requiredKeyholderDurationSeconds > 0 &&
-          sessionId &&
-          userId &&
-          keyholderUserId ? (
-          <BegForReleaseButton
-            sessionId={sessionId}
-            userId={userId}
-            keyholderUserId={keyholderUserId}
-            className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
-          />
+        ) : requiredKeyholderDurationSeconds > 0 ? (
+          sessionId && userId && keyholderUserId ? (
+            <BegForReleaseButton
+              sessionId={sessionId}
+              userId={userId}
+              keyholderUserId={keyholderUserId}
+              className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+            />
+          ) : (
+            <button
+              type="button"
+              className="glass-button bg-gray-600/60 text-white font-bold py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
+              disabled
+            >
+              <FaLock className="text-lg" />
+              <span>Keyholder Required</span>
+            </button>
+          )
         ) : (
           <button
             type="button"
