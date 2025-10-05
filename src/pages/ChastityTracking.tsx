@@ -14,7 +14,10 @@ import { useAuth } from "../hooks/api/useAuth";
 import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { useSessionActions } from "../hooks/session/useSessionActions";
 import { useLifetimeStats } from "../hooks/stats/useLifetimeStats";
-import { useKeyholderRequiredDurationQuery } from "../hooks/api/usePersonalGoalQueries";
+import {
+  useKeyholderRequiredDurationQuery,
+  usePersonalGoalQuery,
+} from "../hooks/api/usePersonalGoalQueries";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -293,6 +296,12 @@ const TrackerPage: React.FC = () => {
 
   // Keyholder required duration goal
   const { data: keyholderGoal } = useKeyholderRequiredDurationQuery(user?.uid);
+
+  // Personal goal (includes hardcore mode flag)
+  const { data: personalGoal } = usePersonalGoalQuery(user?.uid);
+
+  // Check if current goal is hardcore mode
+  const isHardcoreMode = personalGoal?.isHardcoreMode || false;
 
   // Wrap session actions to refresh lifetime stats after each action
   const startSession = async (
