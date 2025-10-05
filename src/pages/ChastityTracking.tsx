@@ -414,6 +414,7 @@ const TrackerPage: React.FC = () => {
         totalTimeCageOff: lifetimeStats.totalCageOffTime,
         isPaused,
         currentSession: realSession,
+        personalGoal, // Pass personal goal for display
         mainChastityDisplayTime: undefined,
         topBoxTime: undefined,
         livePauseDuration: undefined,
