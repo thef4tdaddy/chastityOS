@@ -32,3 +32,15 @@ export {
   usePersonalGoalMutations,
 } from "./usePersonalGoalQueries";
 export { useReportData, useGoalsQuery } from "./useReportData";
+export {
+  useEmergencyPinStatus,
+  useSetEmergencyPin,
+  useRemoveEmergencyPin,
+  useValidateEmergencyPin,
+  useHasEmergencyPin,
+} from "./useEmergencyPin";
+export {
+  useLockCombination,
+  useSaveLockCombination,
+  useDeleteLockCombination,
+} from "./useLockCombination";
