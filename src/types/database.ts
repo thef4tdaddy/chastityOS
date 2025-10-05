@@ -142,6 +142,9 @@ export interface DBGoal extends DBBase {
   challengeType?: "locktober" | "no_nut_november";
   challengeYear?: number;
   isSpecialChallenge?: boolean;
+  // Hardcore mode fields
+  isHardcoreMode?: boolean; // True if this is a hardcore mode goal
+  requiresEmergencyPin?: boolean; // True if emergency PIN is required for this goal
 }
 
 export interface DBSettings extends DBBase {
