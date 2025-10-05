@@ -55,3 +55,12 @@ export async function canLinkAccounts(): Promise<boolean> {
   const { isSignedInWithGoogle } = await checkGoogleSignIn();
   return isSignedInWithGoogle;
 }
+
+/**
+ * Check if user can use cloud sync (requires Google sign-in)
+ * Anonymous users are local-only for privacy and account recovery reasons
+ */
+export async function canUseCloudSync(): Promise<boolean> {
+  const { isSignedInWithGoogle } = await checkGoogleSignIn();
+  return isSignedInWithGoogle;
+}

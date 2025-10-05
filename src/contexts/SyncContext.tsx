@@ -8,16 +8,18 @@ import { useAuth } from "@/hooks/api/useAuth";
 import { ConflictResolutionModal } from "@/components/common/ConflictResolutionModal";
 import type { ConflictInfo } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
+import { canUseCloudSync } from "@/utils/auth/google-auth-check";
 
 const logger = serviceLogger("SyncContext");
 
 interface SyncContextType {
   isSyncing: boolean;
   lastSyncTime: Date | null;
-  syncStatus: "synced" | "pending" | "conflict" | "error";
+  syncStatus: "synced" | "pending" | "conflict" | "error" | "disabled";
   pendingConflicts: ConflictInfo[];
   triggerSync: () => Promise<void>;
   hasConflicts: boolean;
+  canSync: boolean; // True if user has Google sign-in
 }
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
@@ -39,7 +41,9 @@ const getSyncStatus = (
   error: Error | null,
   pendingConflicts: ConflictInfo[],
   isSyncing: boolean,
+  canSync: boolean,
 ): SyncContextType["syncStatus"] => {
+  if (!canSync) return "disabled";
   if (error) return "error";
   if (pendingConflicts.length > 0) return "conflict";
   if (isSyncing) return "pending";
@@ -95,10 +99,27 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
 
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [canSync, setCanSync] = useState(false);
 
-  // Auto-sync on user change and periodically
+  // Check if user can sync (requires Google sign-in)
   useEffect(() => {
-    if (!userId) return;
+    const checkSyncCapability = async () => {
+      const canSyncCloud = await canUseCloudSync();
+      setCanSync(canSyncCloud);
+
+      if (!canSyncCloud && userId) {
+        logger.info("Cloud sync disabled - Google sign-in required", {
+          userId,
+        });
+      }
+    };
+
+    checkSyncCapability();
+  }, [userId, user]);
+
+  // Auto-sync on user change and periodically (only if user can sync)
+  useEffect(() => {
+    if (!userId || !canSync) return;
 
     const performSync = async () => {
       try {
@@ -116,7 +137,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     const interval = setInterval(performSync, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [userId, sync]);
+  }, [userId, sync, canSync]);
 
   // Show conflict modal when conflicts are detected
   useEffect(() => {
@@ -128,6 +149,12 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   const triggerSync = async (): Promise<void> => {
     if (!userId) {
       throw new Error("No user authenticated");
+    }
+
+    if (!canSync) {
+      throw new Error(
+        "Cloud sync requires Google sign-in. Sign in with Google to enable cross-device synchronization.",
+      );
     }
 
     try {
@@ -151,10 +178,11 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   const contextValue: SyncContextType = {
     isSyncing,
     lastSyncTime,
-    syncStatus: getSyncStatus(error, pendingConflicts, isSyncing),
+    syncStatus: getSyncStatus(error, pendingConflicts, isSyncing, canSync),
     pendingConflicts,
     triggerSync,
     hasConflicts: pendingConflicts.length > 0,
+    canSync,
   };
 
   return (
