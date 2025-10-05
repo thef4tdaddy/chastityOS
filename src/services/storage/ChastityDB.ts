@@ -60,6 +60,17 @@ export class ChastityDB extends Dexie {
     lastModified: Date;
   }>;
 
+  // Lock combinations table (for hardcore mode)
+  lockCombinations!: Table<{
+    id: string;
+    userId: string;
+    sessionId: string;
+    encryptedCombination: string;
+    createdAt: Date;
+    lastModified: Date;
+    syncStatus: string;
+  }>;
+
   // Explicitly declare Dexie methods we use to fix TypeScript issues
   declare transaction: <T>(
     mode: string,
@@ -151,6 +162,13 @@ export class ChastityDB extends Dexie {
     this.version(6).stores({
       // Emergency PINs for hardcore mode safety
       emergencyPins: "&userId, createdAt, lastModified",
+    });
+
+    // Version 7: Add lock combinations table
+    this.version(7).stores({
+      // Lock combinations encrypted with emergency PIN (for hardcore mode)
+      lockCombinations:
+        "&id, userId, sessionId, [userId+sessionId], syncStatus, lastModified",
     });
 
     // Add hooks for automatic timestamp and sync status updates
