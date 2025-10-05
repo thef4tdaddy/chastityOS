@@ -132,7 +132,7 @@ const KeyholderPage: React.FC = () => {
             <AccountLinkingPreview />
 
             {/* Admin Dashboard - Always visible for keyholders */}
-            <AdminDashboard />
+            <AdminDashboard keyholderUserId={user?.uid} />
 
             {/* Current Password System */}
             <KeyholderPasswordUnlock />

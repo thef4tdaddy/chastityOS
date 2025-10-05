@@ -323,6 +323,7 @@ const TrackerPage: React.FC = () => {
         isPaused,
         sessionId: sessionId || undefined,
         userId: user?.uid,
+        keyholderUserId: undefined, // TODO: Get from relationship/session
         isGoalActive: goals?.active?.length > 0,
         isHardcoreGoal: realSession?.isHardcoreMode || false,
         requiredKeyholderDurationSeconds: 0, // TODO: Get from keyholder goals
@@ -522,6 +523,7 @@ const TrackerPage: React.FC = () => {
         hasPendingReleaseRequest={trackerData.hasPendingReleaseRequest}
         sessionId={trackerData.sessionId}
         userId={trackerData.userId}
+        keyholderUserId={trackerData.keyholderUserId}
         onStartSession={USE_REAL_SESSIONS ? () => startSession() : undefined}
         onEndSession={
           USE_REAL_SESSIONS ? () => endSession("User ended session") : undefined
