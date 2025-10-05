@@ -31,7 +31,7 @@ export const GoogleAuthNotice: React.FC<GoogleAuthNoticeProps> = ({
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-medium text-blue-800">
-            Google Sign-In Required
+            Google Sign-In Required for Account Linking
           </h3>
           <div className="mt-2 text-sm text-blue-700">
             <p className="mb-2">
@@ -39,25 +39,29 @@ export const GoogleAuthNotice: React.FC<GoogleAuthNoticeProps> = ({
               <span className="font-semibold">
                 both users must be signed in with Google
               </span>
-              .
+              . You can still use the full app without Google sign-in if you
+              prefer 100% privacy.
             </p>
-            <p className="mb-2 font-medium">Why Google authentication?</p>
+            <p className="mb-2 font-medium">Why require Google for linking?</p>
             <ul className="list-disc space-y-1 pl-5">
               <li>
                 <span className="font-semibold">
                   Prevents losing access to your relationship
                 </span>{" "}
-                - Google accounts provide permanent, recoverable access
+                - If you clear browser data, Google sign-in lets you recover
+                your linked accounts
               </li>
-              <li>Enhanced security for relationship management</li>
-              <li>Reliable identity verification between partners</li>
+              <li>
+                Enhanced security and identity verification between partners
+              </li>
               <li>Protection against unauthorized account linking</li>
               <li>Secure data synchronization across all your devices</li>
             </ul>
             <p className="mt-3 text-xs text-blue-600">
-              Your privacy is important. We only access your basic profile
-              information (name and email) for authentication purposes. Google
-              sign-in ensures you'll never lose access to your linked accounts.
+              <span className="font-semibold">Privacy first:</span> Google
+              sign-in is completely optional. Without it, you still get full
+              access to ChastityOS—you just can't link with a partner. We only
+              access basic profile info (name and email) for authentication.
             </p>
           </div>
         </div>
