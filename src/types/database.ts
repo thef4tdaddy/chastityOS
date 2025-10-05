@@ -249,6 +249,25 @@ export type UserSettings = DBSettings;
 // Alias for Task compatibility
 export type Task = DBTask;
 
+/**
+ * Release Request Type
+ * For "Beg for Release" workflow between submissives and keyholders
+ */
+export interface DBReleaseRequest {
+  id: string;
+  submissiveUserId: string;
+  keyholderUserId: string;
+  sessionId: string;
+  requestedAt: Date;
+  status: "pending" | "approved" | "denied";
+  approvedAt?: Date;
+  deniedAt?: Date;
+  reason?: string; // Submissive's reason for request
+  keyholderResponse?: string; // Keyholder's response message
+  syncStatus: SyncStatus;
+  lastModified: Date;
+}
+
 export interface SyncOperation {
   id: string;
   collection: string;
