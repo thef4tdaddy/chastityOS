@@ -20,6 +20,8 @@ import {
   DBAchievementProgress,
   DBAchievementNotification,
   DBLeaderboardEntry,
+  // Release request type
+  DBReleaseRequest,
 } from "@/types/database";
 import { KeyholderRule } from "@/types/core";
 import { serviceLogger } from "@/utils/logging";
@@ -46,6 +48,9 @@ export class ChastityDB extends Dexie {
 
   // Rules table
   rules!: Table<KeyholderRule>;
+
+  // Release requests table
+  releaseRequests!: Table<DBReleaseRequest>;
 
   // Explicitly declare Dexie methods we use to fix TypeScript issues
   declare transaction: <T>(
@@ -125,6 +130,13 @@ export class ChastityDB extends Dexie {
       // Keyholder rules
       rules:
         "&id, keyholderUserId, submissiveUserId, [keyholderUserId+isActive], [submissiveUserId+isActive], isActive, createdAt, syncStatus, lastModified",
+    });
+
+    // Version 5: Add release requests table
+    this.version(5).stores({
+      // Release requests for "Beg for Release" workflow
+      releaseRequests:
+        "&id, submissiveUserId, keyholderUserId, sessionId, [keyholderUserId+status], [sessionId+status], status, requestedAt, syncStatus, lastModified",
     });
 
     // Add hooks for automatic timestamp and sync status updates
@@ -351,6 +363,28 @@ export class ChastityDB extends Dexie {
       },
     );
 
+    // Release requests table hooks
+    this.releaseRequests.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating release request", {
+        id: obj.id,
+        sessionId: obj.sessionId,
+      });
+    });
+
+    this.releaseRequests.hook(
+      "updating",
+      (modifications: Partial<DBReleaseRequest>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
     // Global error handler
     this.on("ready", () => {
       logger.info("ChastityOS database ready", {
@@ -398,6 +432,8 @@ export class ChastityDB extends Dexie {
         "leaderboardEntries",
         // Rules collection
         "rules",
+        // Release requests collection
+        "releaseRequests",
       ];
 
       for (const collection of collections) {
@@ -436,6 +472,8 @@ export class ChastityDB extends Dexie {
       leaderboardEntries: await this.leaderboardEntries.count(),
       // Rules stats
       rules: await this.rules.count(),
+      // Release requests stats
+      releaseRequests: await this.releaseRequests.count(),
       pendingSync: {
         sessions: await this.sessions
           .where("syncStatus")
@@ -471,6 +509,11 @@ export class ChastityDB extends Dexie {
           .count(),
         // Rules sync status
         rules: await this.rules.where("syncStatus").equals("pending").count(),
+        // Release requests sync status
+        releaseRequests: await this.releaseRequests
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
       },
     };
 
@@ -499,6 +542,7 @@ export class ChastityDB extends Dexie {
           this.achievementNotifications,
           this.leaderboardEntries,
           this.rules,
+          this.releaseRequests,
         ],
         async () => {
           await this.users.where("uid").equals(userId).delete();
@@ -521,6 +565,15 @@ export class ChastityDB extends Dexie {
           // Clear user-specific rules (both as keyholder and submissive)
           await this.rules.where("keyholderUserId").equals(userId).delete();
           await this.rules.where("submissiveUserId").equals(userId).delete();
+          // Clear release requests (both as keyholder and submissive)
+          await this.releaseRequests
+            .where("keyholderUserId")
+            .equals(userId)
+            .delete();
+          await this.releaseRequests
+            .where("submissiveUserId")
+            .equals(userId)
+            .delete();
         },
       );
 
