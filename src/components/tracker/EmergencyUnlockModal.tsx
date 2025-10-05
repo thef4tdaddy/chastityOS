@@ -15,6 +15,10 @@ import {
 } from "../../hooks/tracker/useEmergencyUnlockModal";
 import { useAuthState } from "../../contexts";
 import { EmergencyPinDBService } from "../../services/database/EmergencyPinDBService";
+import { LockCombinationService } from "../../services/database/LockCombinationService";
+import { serviceLogger } from "../../utils/logging";
+
+const logger = serviceLogger("EmergencyUnlockModal");
 
 interface EmergencyUnlockModalProps {
   isOpen: boolean;
@@ -419,6 +423,68 @@ const PinValidationStage: React.FC<{
   </div>
 );
 
+// Lock Combination Display Stage
+const LockCombinationDisplay: React.FC<{
+  combination: string;
+  onContinue: () => void;
+}> = ({ combination, onContinue }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(combination);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  return (
+    <div>
+      <div className="mb-6 text-center">
+        <h3 className="text-xl font-bold text-red-300 mb-2">
+          🔓 Lock Combination Retrieved
+        </h3>
+        <p className="text-sm text-gray-300">
+          Your saved lock combination is displayed below.
+        </p>
+      </div>
+
+      <div className="bg-green-900/20 border border-green-600 rounded-lg p-6 mb-6">
+        <div className="text-center">
+          <p className="text-xs text-gray-400 mb-2">Your Lock Combination:</p>
+          <div className="bg-black/40 rounded-lg p-6 mb-4">
+            <p className="text-3xl font-mono font-bold text-green-400 tracking-widest">
+              {combination}
+            </p>
+          </div>
+          <button
+            onClick={handleCopy}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center justify-center gap-2"
+          >
+            {copied ? <>✓ Copied!</> : <>📋 Copy to Clipboard</>}
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-yellow-900/20 border border-yellow-600 rounded p-4 mb-6">
+        <p className="text-xs text-yellow-300">
+          <strong>Note:</strong> Write this down if needed. Your session will
+          end when you click "Complete Unlock" below.
+        </p>
+      </div>
+
+      <button
+        onClick={onContinue}
+        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+      >
+        Complete Unlock & End Session
+      </button>
+    </div>
+  );
+};
+
 export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   isOpen,
   onClose,
@@ -433,8 +499,9 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   const [attemptCount, setAttemptCount] = useState(0);
   const [isValidatingPin, setIsValidatingPin] = useState(false);
   const [pinStage, setPinStage] = useState<
-    "normal" | "pin_required" | "pin_validated"
+    "normal" | "pin_required" | "pin_validated" | "show_combination"
   >(requirePin ? "pin_required" : "normal");
+  const [lockCombination, setLockCombination] = useState<string | null>(null);
 
   const {
     stage,
@@ -493,12 +560,34 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
         return;
       }
 
-      // PIN validated - proceed with unlock
+      // PIN validated - now try to retrieve lock combination
       setPinStage("pin_validated");
-      setPin("");
       setAttemptCount(0);
 
-      // Actually perform the unlock now
+      // Try to retrieve lock combination for this session
+      try {
+        const combination = await LockCombinationService.getCombination(
+          user.uid,
+          sessionId,
+          pin,
+        );
+
+        if (combination) {
+          // Show the combination to the user
+          setLockCombination(combination);
+          setPinStage("show_combination");
+          setPin(""); // Clear PIN from memory
+          return; // Don't unlock yet, let user see combination
+        }
+      } catch (error) {
+        // No combination or decryption failed - that's OK, continue with unlock
+        logger.warn("No lock combination found or decryption failed", {
+          error: error as Error,
+        });
+      }
+
+      // No combination saved, proceed with unlock immediately
+      setPin("");
       await onEmergencyUnlock(
         reason as EmergencyUnlockReason,
         customReason || undefined,
@@ -558,6 +647,17 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
               isValidating={isValidatingPin}
               handlePinSubmit={handlePinSubmit}
               setStage={() => setPinStage("normal")}
+            />
+          ) : pinStage === "show_combination" && lockCombination ? (
+            <LockCombinationDisplay
+              combination={lockCombination}
+              onContinue={async () => {
+                await onEmergencyUnlock(
+                  reason as EmergencyUnlockReason,
+                  customReason || undefined,
+                );
+                onClose();
+              }}
             />
           ) : (
             <>

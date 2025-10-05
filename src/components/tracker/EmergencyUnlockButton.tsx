@@ -10,6 +10,7 @@ interface EmergencyUnlockButtonProps {
   userId: string;
   className?: string;
   onEmergencyUnlock?: () => void;
+  requirePin?: boolean; // Whether to require PIN validation (for hardcore mode)
 }
 
 export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
@@ -17,6 +18,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
   userId,
   className = "",
   onEmergencyUnlock,
+  requirePin = false,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const emergencyUnlock = useEmergencyUnlock();
@@ -76,6 +78,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
         onEmergencyUnlock={handleEmergencyUnlock}
         sessionId={sessionId}
         isProcessing={emergencyUnlock.isPending}
+        requirePin={requirePin}
       />
     </>
   );
