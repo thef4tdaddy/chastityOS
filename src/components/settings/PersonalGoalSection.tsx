@@ -5,7 +5,7 @@ import {
 } from "@/hooks/api/usePersonalGoalQueries";
 import { PersonalGoalCard } from "./PersonalGoalCard";
 import { CreatePersonalGoalForm } from "./CreatePersonalGoalForm";
-import { useToast } from "@/hooks/useToast";
+import { useToast } from "@/contexts";
 
 interface PersonalGoalSectionProps {
   userId?: string | null;
