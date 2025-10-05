@@ -1,6 +1,6 @@
 import React from "react";
 import type { DBSession } from "../../types/database";
-import { FaClock, FaPlay, FaPause, FaStop } from "../../utils/iconImport";
+import { FaClock, FaPlay, FaPause } from "../../utils/iconImport";
 
 // Helper function for duration formatting
 const formatDuration = (seconds: number) => {
@@ -39,7 +39,7 @@ export const SessionControls: React.FC<SessionControlsProps> = ({
       <div className="flex items-center gap-3 mb-4">
         <FaClock className="text-nightly-aquamarine" />
         <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Session Control
+          Current Session Status
         </h3>
       </div>
 
@@ -76,19 +76,12 @@ export const SessionControls: React.FC<SessionControlsProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          <button
-            disabled={session.isPaused}
-            className="bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            <FaPause />
-            Pause Session
-          </button>
-
-          <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors flex items-center justify-center gap-2">
-            <FaStop />
-            End Session
-          </button>
+        {/* Info Message - No Control Buttons */}
+        <div className="bg-blue-500/20 border border-blue-500 rounded p-3 mt-6">
+          <p className="text-sm text-blue-200">
+            Session control is managed by the submissive. Use the Release
+            Request system to approve early unlock.
+          </p>
         </div>
       </div>
     </div>
