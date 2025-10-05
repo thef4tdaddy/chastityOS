@@ -62,10 +62,42 @@ const SessionItem: React.FC<{ session: DBSession }> = ({ session }) => (
       </div>
     </div>
 
+    {/* Hardcore Mode Indicators */}
     {session.isHardcoreMode && (
-      <span className="inline-block mt-2 bg-red-500/20 text-red-400 px-2 py-1 text-xs rounded">
-        Hardcore Mode
-      </span>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <span className="inline-block bg-red-500/20 text-red-400 px-2 py-1 text-xs rounded">
+          🔒 Hardcore Mode
+        </span>
+        {session.hasLockCombination && (
+          <span className="inline-block bg-purple-500/20 text-purple-400 px-2 py-1 text-xs rounded">
+            🔐 Lock Combo Saved
+          </span>
+        )}
+        {session.emergencyPinUsed && (
+          <span className="inline-block bg-yellow-500/20 text-yellow-400 px-2 py-1 text-xs rounded">
+            ⚠️ Emergency PIN Used
+          </span>
+        )}
+      </div>
+    )}
+
+    {/* Emergency Unlock Info */}
+    {session.isEmergencyUnlock && (
+      <div className="mt-2 bg-yellow-900/20 border border-yellow-600/30 rounded p-2">
+        <div className="text-xs text-yellow-400 font-semibold">
+          🚨 Emergency Unlock
+        </div>
+        {session.emergencyReason && (
+          <div className="text-xs text-yellow-300 mt-1">
+            Reason: {session.emergencyReason}
+          </div>
+        )}
+        {session.emergencyNotes && (
+          <div className="text-xs text-yellow-300 mt-1">
+            {session.emergencyNotes}
+          </div>
+        )}
+      </div>
     )}
 
     {session.notes && (
