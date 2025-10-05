@@ -337,8 +337,9 @@ const TrackerPage: React.FC = () => {
         sessionId: sessionId || undefined,
         userId: user?.uid,
         keyholderUserId: undefined, // TODO: Get from relationship/session
-        isGoalActive: goals?.active?.length > 0 || !!keyholderGoal,
-        isHardcoreGoal: realSession?.isHardcoreMode || false,
+        isGoalActive:
+          goals?.active?.length > 0 || !!keyholderGoal || !!personalGoal,
+        isHardcoreGoal: isHardcoreMode, // Use the hardcore mode flag from personal goal
         requiredKeyholderDurationSeconds: keyholderGoal?.targetValue || 0,
         hasPendingReleaseRequest: false, // Handled by BegForReleaseButton
         mainChastityDisplayTime: duration,

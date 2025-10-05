@@ -52,14 +52,23 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             {isStarting ? "Starting..." : "ON"}
           </button>
         ) : isGoalActive && isHardcoreGoal ? (
-          <button
-            type="button"
-            className="glass-button bg-gray-600/60 text-white font-bold py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
-            disabled
-          >
-            <FaLock className="text-lg" />
-            <span>Locked by Goal</span>
-          </button>
+          sessionId && userId ? (
+            <EmergencyUnlockButton
+              sessionId={sessionId}
+              userId={userId}
+              onEmergencyUnlock={onEmergencyUnlock}
+              className="glass-button bg-gradient-to-r from-orange-600/80 to-red-600/80 hover:from-orange-500/90 hover:to-red-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-orange-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400/50"
+            />
+          ) : (
+            <button
+              type="button"
+              className="glass-button bg-gray-600/60 text-white font-bold py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
+              disabled
+            >
+              <FaLock className="text-lg" />
+              <span>Locked by Goal</span>
+            </button>
+          )
         ) : requiredKeyholderDurationSeconds > 0 ? (
           sessionId && userId && keyholderUserId ? (
             <BegForReleaseButton
@@ -89,18 +98,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           </button>
         )}
       </div>
-
-      {/* Emergency Unlock Button with Enhanced Glass Styling - Only show in hardcore mode */}
-      {isCageOn && isHardcoreGoal && sessionId && userId && (
-        <div className="flex justify-center">
-          <EmergencyUnlockButton
-            sessionId={sessionId}
-            userId={userId}
-            onEmergencyUnlock={onEmergencyUnlock}
-            className="glass-button bg-gradient-to-r from-orange-600/70 to-red-600/70 hover:from-orange-500/80 hover:to-red-500/80 text-white text-sm py-3 px-6 shadow-lg hover:shadow-orange-500/20 transition-all duration-300"
-          />
-        </div>
-      )}
     </div>
   );
 };
