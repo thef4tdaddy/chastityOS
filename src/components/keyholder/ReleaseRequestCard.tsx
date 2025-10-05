@@ -24,6 +24,7 @@ interface ResponseModalProps {
   onMessageChange: (message: string) => void;
 }
 
+// Extracted modal component for approve/deny release request responses
 const ResponseModal: React.FC<ResponseModalProps> = ({
   isOpen,
   responseType,
