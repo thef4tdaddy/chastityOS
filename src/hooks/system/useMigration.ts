@@ -9,6 +9,10 @@ import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
 import { MigrationStorageService } from "../../services/migrationStorage";
+import {
+  createMigrationBackup,
+  executeMigrationLogic,
+} from "./migrationHelpers";
 
 // Migration status
 export enum MigrationStatus {
@@ -99,8 +103,9 @@ export const useMigration = () => {
   const { data: migrationState } = useQuery<MigrationState>({
     queryKey: ["migration", "state"],
     queryFn: (): MigrationState => {
-      const stored = MigrationStorageService.getMigrationState();
-      if (stored) {
+      const stored =
+        MigrationStorageService.getMigrationState<MigrationState>();
+      if (stored && stored.migrations && stored.currentVersion) {
         return stored;
       }
 
@@ -114,11 +119,13 @@ export const useMigration = () => {
         }),
       );
 
-      return {
+      const initialState: MigrationState = {
         migrations: initialMigrations,
         lastRun: null,
         currentVersion: "3.0.0",
       };
+
+      return initialState;
     },
     staleTime: Infinity,
   });
@@ -135,122 +142,13 @@ export const useMigration = () => {
       (m: Migration) => m.status === MigrationStatus.COMPLETED,
     ) || [];
 
-  // Create backup before migration
-  const createBackup = useCallback(
-    async (migrationId: string) => {
-      try {
-        const backup = {
-          id: `backup-${migrationId}-${Date.now()}`,
-          migrationId,
-          timestamp: new Date(),
-          data: {
-            // Backup all localStorage via service
-            localStorage: MigrationStorageService.getAllLocalStorage(),
-            version: migrationState?.currentVersion,
-          },
-        };
-
-        const existingBackups =
-          MigrationStorageService.getMigrationBackups<typeof backup>();
-
-        const updatedBackups = [...existingBackups, backup];
-        MigrationStorageService.setMigrationBackups(updatedBackups);
-
-        logger.info("Migration backup created", {
-          migrationId,
-          backupId: backup.id,
-        });
-        return backup.id;
-      } catch (error) {
-        logger.error("Failed to create migration backup", {
-          migrationId,
-          error,
-        });
-        throw error;
-      }
-    },
-    [migrationState],
-  );
-
-  // Migration implementations
-  const migrateThemeSystem = useCallback(
-    async (onProgress: (progress: number) => void) => {
-      onProgress(25);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Convert old theme settings
-      const oldTheme = MigrationStorageService.getLegacyItem("theme");
-      if (oldTheme) {
-        MigrationStorageService.setLegacyItem(
-          "chastity-theme-current",
-          JSON.stringify(
-            oldTheme === "dark" ? "default-dark" : "default-light",
-          ),
-        );
-      }
-
-      onProgress(75);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      onProgress(100);
-    },
-    [],
-  );
-
-  const migrateEnhancedGoals = useCallback(
-    async (onProgress: (progress: number) => void) => {
-      onProgress(30);
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      // Convert legacy goals (simplified)
-      const legacyGoals =
-        MigrationStorageService.getLegacyItem("personal-goals");
-      if (legacyGoals) {
-        // Transform format here
-        onProgress(70);
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      }
-
-      onProgress(100);
-    },
-    [],
-  );
-
-  const migrateGamificationSystem = useCallback(
-    async (onProgress: (progress: number) => void) => {
-      onProgress(20);
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
-      // Initialize gamification data
-      onProgress(60);
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      onProgress(100);
-    },
-    [],
-  );
-
-  // Execute migration logic
-  const executeMigrationLogic = useCallback(
-    async (migrationId: string, onProgress: (progress: number) => void) => {
-      switch (migrationId) {
-        case "v4.0.0-theme-system":
-          await migrateThemeSystem(onProgress);
-          break;
-        case "v4.0.0-enhanced-goals":
-          await migrateEnhancedGoals(onProgress);
-          break;
-        case "v4.0.0-gamification":
-          await migrateGamificationSystem(onProgress);
-          break;
-        default:
-          throw new Error(`Unknown migration: ${migrationId}`);
-      }
-    },
-    [migrateThemeSystem, migrateEnhancedGoals, migrateGamificationSystem],
-  );
-
   // Execute single migration
   const executeMigration = useCallback(
     async (migration: Migration): Promise<void> => {
+      if (!migrationState) {
+        throw new Error("Migration state not initialized");
+      }
+
       logger.info("Starting migration", { migrationId: migration.id });
 
       // Update migration status
@@ -272,7 +170,10 @@ export const useMigration = () => {
       try {
         // Create backup if rollback is available
         if (migration.rollbackAvailable) {
-          await createBackup(migration.id);
+          await createMigrationBackup(
+            migration.id,
+            migrationState.currentVersion,
+          );
         }
 
         // Execute migration logic based on ID
@@ -333,7 +234,7 @@ export const useMigration = () => {
         throw error;
       }
     },
-    [migrationState, queryClient, createBackup, executeMigrationLogic],
+    [migrationState, queryClient],
   );
 
   // Run migrations mutation
@@ -351,9 +252,9 @@ export const useMigration = () => {
 
       try {
         const migrationsToRun = migrationIds
-          ? migrationState.migrations.filter((m: Migration) =>
+          ? migrationState?.migrations.filter((m: Migration) =>
               migrationIds.includes(m.id),
-            )
+            ) || []
           : pendingMigrations;
 
         for (const migration of migrationsToRun) {
@@ -379,6 +280,10 @@ export const useMigration = () => {
   // Rollback migration mutation
   const rollbackMigrationMutation = useMutation({
     mutationFn: async (migrationId: string) => {
+      if (!migrationState) {
+        throw new Error("Migration state not initialized");
+      }
+
       const migration = migrationState.migrations.find(
         (m: Migration) => m.id === migrationId,
       );

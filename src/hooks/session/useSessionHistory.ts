@@ -236,9 +236,11 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
         totalSessions: sessions.length,
         totalEffectiveTime,
         averageSessionLength: totalEffectiveTime / sessions.length,
-        longestSession: sortedByDuration[0],
-        shortestSession: sortedByDuration[sortedByDuration.length - 1],
-        mostRecentSession: sortedByDate[0],
+        longestSession: sortedByDuration[0] || ({} as HistoricalSession),
+        shortestSession:
+          sortedByDuration[sortedByDuration.length - 1] ||
+          ({} as HistoricalSession),
+        mostRecentSession: sortedByDate[0] || ({} as HistoricalSession),
         goalCompletionRate: calculateOverallCompletionRate(sessions),
         pauseFrequency: calculatePauseFrequency(sessions),
         improvementTrend: calculateImprovementTrend(sessions),
