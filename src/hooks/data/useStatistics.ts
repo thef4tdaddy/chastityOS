@@ -3,7 +3,7 @@
  * Provides analytics and insights for both users and keyholders
  * with appropriate privacy controls
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { serviceLogger } from "../../utils/logging";
 import {
   calculateImprovementScore,
@@ -12,20 +12,21 @@ import {
   calculateKeyholderSatisfaction,
 } from "../../utils/statisticsHelpers";
 import {
-  getStatsForPeriod as calculateStatsForPeriod,
-  getMonthlyTrends as calculateMonthlyTrends,
-  getWeeklyBreakdown as calculateWeeklyBreakdown,
-  compareWithPrevious as compareMetricsWithPrevious,
-  getBenchmarkComparisons as calculateBenchmarkComparisons,
-} from "../../utils/statistics/calculations";
+  useSessionStatisticsLoader,
+  useGoalStatisticsLoader,
+  useAchievementStatisticsLoader,
+  useComparativeStatisticsLoader,
+  useSharedStatisticsLoader,
+  usePredictiveAnalyticsLoader,
+  useRecommendationsLoader,
+} from "./useStatisticsLoaders";
 import {
-  generateKeyholderDashboard,
-  generateRelationshipComparison,
-} from "../../utils/statistics/keyholder";
-import {
-  generatePredictiveInsights,
-  generateRecommendations,
-} from "../../utils/statistics/predictions";
+  useTimeBasedQueries,
+  useComparativeAnalysis,
+  useKeyholderFeatures,
+  usePredictiveAnalytics,
+  useStatisticsExport,
+} from "./useStatisticsOperations";
 
 const logger = serviceLogger("useStatistics");
 
@@ -42,26 +43,12 @@ import type {
   SharedStatistics,
   PredictiveAnalytics,
   RecommendationEngine,
-  TimePeriod,
-  PeriodStatistics as _PeriodStatistics,
-  MonthlyTrends as _MonthlyTrends,
-  WeeklyBreakdown as _WeeklyBreakdown,
-  ComparisonResult as _ComparisonResult,
-  BenchmarkData as _BenchmarkData,
-  KeyholderDashboardStats as _KeyholderDashboardStats,
-  KeyholderStatisticsView,
-  RelationshipComparisonStats as _RelationshipComparisonStats,
-  PredictiveInsights as _PredictiveInsights,
-  Recommendation as _Recommendation,
-  StatisticsExport,
-  StatisticType,
-  ExportFormat,
 } from "./types/statistics";
 
 // ==================== HOOK IMPLEMENTATION ====================
 
-// Complex statistics aggregation hook requires many statements for comprehensive metrics
-// eslint-disable-next-line max-statements
+// Complex statistics aggregation hook requires many statements and lines for comprehensive metrics
+// eslint-disable-next-line max-statements, max-lines-per-function
 export const useStatistics = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 
@@ -244,264 +231,49 @@ export const useStatistics = (userId: string, relationshipId?: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, relationshipId]);
 
-  // ==================== DATA LOADING FUNCTIONS ====================
+  // ==================== DATA LOADING HOOKS ====================
 
-  const loadSessionStatistics = useCallback(async () => {
-    try {
-      // This would integrate with your session database service
-      // Calculate session statistics from historical data
-      const mockStats: SessionStatistics = {
-        totalSessionTime: 7200, // 2 hours
-        averageSessionLength: 3600, // 1 hour
-        longestSession: 7200,
-        shortestSession: 1800,
-        sessionsThisWeek: 3,
-        sessionsThisMonth: 12,
-        sessionFrequency: {
-          daily: 0.4,
-          weekly: 3,
-          monthly: 12,
-          trend: "stable",
-        },
-        completionRate: 85,
-        goalAchievementRate: 75,
-        satisfactionRating: 4.2,
-        trends: [],
-        streaks: {
-          current: 5,
-          longest: 12,
-          type: "session_consistency",
-        },
-      };
-
-      setSessionStats(mockStats);
-    } catch (error) {
-      logger.error("Failed to load session statistics", { error });
-    }
-  }, []); // userId not actually used in mock implementation
-
-  const loadGoalStatistics = useCallback(async () => {
-    try {
-      // Calculate goal statistics from historical goal data
-      setGoalStats({
-        totalGoals: 25,
-        completedGoals: 20,
-        activeGoals: 3,
-        completionRate: 80,
-        averageCompletionTime: 48, // hours
-        mostCommonGoalTypes: [],
-        hardestGoalTypes: [],
-        goalStreaks: {
-          current: 3,
-          longest: 8,
-          type: "goal_completion",
-        },
-      });
-    } catch (error) {
-      logger.error("Failed to load goal statistics", { error });
-    }
-  }, []); // userId not actually used in mock implementation
-
-  const loadAchievementStatistics = useCallback(async () => {
-    try {
-      // Load achievement data
-      setAchievementStats({
-        totalAchievements: 15,
-        recentAchievements: [],
-        achievementsByCategory: [],
-        rareAchievements: [],
-        achievementPoints: 1500,
-        percentileRank: 75,
-      });
-    } catch (error) {
-      logger.error("Failed to load achievement statistics", { error });
-    }
-  }, []);
-
-  const loadComparativeStatistics = useCallback(async () => {
-    try {
-      // Load comparative data (anonymized benchmarks)
-      setComparativeStats((prev) => ({
-        ...prev,
-        userPercentile: 72,
-      }));
-    } catch (error) {
-      logger.error("Failed to load comparative statistics", { error });
-    }
-  }, []); // sessionStats not actually used for computation
-
-  const loadSharedStatistics = useCallback(async () => {
-    try {
-      if (!relationshipId) return;
-
-      // Load keyholder-specific statistics view
-      const keyholderView: KeyholderStatisticsView = {
-        sessionOverview: {
-          totalSessions: sessionStats.sessionsThisMonth,
-          averageDuration: sessionStats.averageSessionLength,
-          lastSessionDate: new Date(),
-        },
-        goalProgress: {
-          activeGoals: goalStats.activeGoals,
-          completionRate: goalStats.completionRate,
-        },
-        behaviorPatterns: {
-          consistency: consistencyRating,
-          pauseFrequency: 0.2,
-          improvementTrend: "improving",
-        },
-        allowedInsights: ["session_duration", "goal_completion"],
-      };
-
-      setSharedStats((prev) => ({
-        ...prev,
-        keyholderView,
-      }));
-    } catch (error) {
-      logger.error("Failed to load shared statistics", { error });
-    }
-  }, [
+  const { loadSessionStatistics } = useSessionStatisticsLoader(setSessionStats);
+  const { loadGoalStatistics } = useGoalStatisticsLoader(setGoalStats);
+  const { loadAchievementStatistics } =
+    useAchievementStatisticsLoader(setAchievementStats);
+  const { loadComparativeStatistics } =
+    useComparativeStatisticsLoader(setComparativeStats);
+  const { loadSharedStatistics } = useSharedStatisticsLoader(
     relationshipId,
+    sessionStats,
+    goalStats,
     consistencyRating,
-    sessionStats.sessionsThisMonth,
-    sessionStats.averageSessionLength,
-    goalStats.activeGoals,
-    goalStats.completionRate,
-  ]);
-
-  const loadPredictiveAnalytics = useCallback(async () => {
-    try {
-      // Generate predictive insights based on historical data
-      setPredictiveAnalytics({
-        nextSessionPrediction: {
-          suggestedDuration: sessionStats.averageSessionLength * 1.1,
-          successProbability: 85,
-          optimalStartTime: new Date(),
-          riskFactors: [],
-        },
-        goalRecommendations: [],
-        improvementOpportunities: [],
-        trendPredictions: [],
-      });
-    } catch (error) {
-      logger.error("Failed to load predictive analytics", { error });
-    }
-  }, [sessionStats.averageSessionLength]);
-
-  const loadRecommendations = useCallback(async () => {
-    try {
-      // Generate personalized recommendations
-      setRecommendations({
-        sessionRecommendations: [],
-        goalRecommendations: [],
-        behaviorInsights: [],
-        personalizedTips: [],
-      });
-    } catch (error) {
-      logger.error("Failed to load recommendations", { error });
-    }
-  }, []); // Static data for recommendations
-
-  // ==================== TIME-BASED QUERIES ====================
-
-  const getStatsForPeriod = useCallback(
-    (period: TimePeriod) => calculateStatsForPeriod(period),
-    [],
+    setSharedStats,
   );
-
-  const getMonthlyTrends = useCallback(
-    (months: number) => calculateMonthlyTrends(months),
-    [],
+  const { loadPredictiveAnalytics } = usePredictiveAnalyticsLoader(
+    sessionStats,
+    setPredictiveAnalytics,
   );
+  const { loadRecommendations } = useRecommendationsLoader(setRecommendations);
 
-  const getWeeklyBreakdown = useCallback(() => calculateWeeklyBreakdown(), []);
+  // ==================== OPERATION HOOKS ====================
 
-  // ==================== COMPARATIVE ANALYSIS ====================
+  const { getStatsForPeriod, getMonthlyTrends, getWeeklyBreakdown } =
+    useTimeBasedQueries();
 
-  const compareWithPrevious = useCallback(
-    (period: TimePeriod) => compareMetricsWithPrevious(period, sessionStats),
-    [sessionStats],
-  );
+  const { compareWithPrevious, getBenchmarkComparisons } =
+    useComparativeAnalysis(sessionStats);
 
-  const getBenchmarkComparisons = useCallback(
-    () => calculateBenchmarkComparisons(sessionStats),
-    [sessionStats],
-  );
+  const { getKeyholderDashboard, getRelationshipComparison } =
+    useKeyholderFeatures(consistencyRating, sessionStats, goalStats);
 
-  // ==================== KEYHOLDER FEATURES ====================
+  const { getPredictiveInsights, getRecommendations } =
+    usePredictiveAnalytics();
 
-  const getKeyholderDashboard = useCallback(
-    () =>
-      generateKeyholderDashboard(consistencyRating, sessionStats, goalStats),
-    [consistencyRating, sessionStats, goalStats],
-  );
-
-  const getRelationshipComparison = useCallback(
-    () => generateRelationshipComparison(sessionStats),
-    [sessionStats],
-  );
-
-  // ==================== PREDICTIVE ANALYTICS ====================
-
-  const getPredictiveInsights = useCallback(
-    () => generatePredictiveInsights(),
-    [],
-  );
-
-  const getRecommendations = useCallback(() => generateRecommendations(), []);
-
-  // ==================== EXPORT AND SHARING ====================
-
-  const exportStatistics = useCallback(
-    async (format: ExportFormat): Promise<StatisticsExport> => {
-      try {
-        logger.debug("Exporting statistics", { format, userId });
-
-        const exportData = {
-          sessionStats,
-          goalStats,
-          achievementStats,
-          exportedAt: new Date(),
-        };
-
-        return {
-          format,
-          data: exportData,
-          generatedAt: new Date(),
-          fileSize: JSON.stringify(exportData).length,
-          downloadUrl: "https://example.com/download/stats",
-        };
-      } catch (error) {
-        logger.error("Failed to export statistics", { error });
-        throw error;
-      }
-    },
-    [userId, sessionStats, goalStats, achievementStats],
-  );
-
-  const shareWithKeyholder = useCallback(
-    async (statTypes: StatisticType[]): Promise<void> => {
-      try {
-        if (!relationshipId) {
-          throw new Error("No keyholder relationship found");
-        }
-
-        logger.debug("Sharing statistics with keyholder", { statTypes });
-
-        setSharedStats((prev) => ({
-          ...prev,
-          allowedMetrics: statTypes,
-          lastSharedAt: new Date(),
-        }));
-
-        logger.info("Statistics shared with keyholder successfully");
-      } catch (error) {
-        logger.error("Failed to share statistics with keyholder", { error });
-        throw error;
-      }
-    },
-    [relationshipId],
-  );
+  const { exportStatistics, shareWithKeyholder } = useStatisticsExport({
+    userId,
+    sessionStats,
+    goalStats,
+    achievementStats,
+    relationshipId,
+    setSharedStats,
+  });
 
   // ==================== RETURN HOOK INTERFACE ====================
 
