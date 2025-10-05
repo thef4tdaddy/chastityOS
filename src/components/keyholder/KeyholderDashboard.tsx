@@ -205,7 +205,7 @@ const TabContentRenderer: React.FC<{
   </div>
 );
 
-export const AdminDashboard: React.FC<{ keyholderUserId?: string }> = ({
+export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
   keyholderUserId,
 }) => {
   const {
@@ -248,7 +248,7 @@ export const AdminDashboard: React.FC<{ keyholderUserId?: string }> = ({
       <div className="flex items-center gap-3 mb-6">
         <FaUserShield className="text-nightly-lavender-floral" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">
-          Keyholder Admin Dashboard
+          Keyholder Dashboard
         </h2>
         <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded">
           KEYHOLDER

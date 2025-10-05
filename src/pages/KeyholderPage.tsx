@@ -8,7 +8,7 @@ import type { AdminRelationship } from "../types/account-linking";
 import {
   KeyholderPasswordUnlock,
   AccountLinkingPreview,
-  AdminDashboard,
+  KeyholderDashboard,
   SessionControls,
   TaskManagement,
 } from "../components/keyholder";
@@ -158,8 +158,8 @@ const KeyholderPage: React.FC = () => {
             {/* Account Linking - Always visible */}
             <AccountLinkingPreview />
 
-            {/* Admin Dashboard - Always visible for keyholders */}
-            <AdminDashboard keyholderUserId={user?.uid} />
+            {/* Keyholder Dashboard - Always visible for keyholders */}
+            <KeyholderDashboard keyholderUserId={user?.uid} />
 
             {/* Current Password System */}
             <KeyholderPasswordUnlock />
