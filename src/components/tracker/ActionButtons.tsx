@@ -57,6 +57,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
               sessionId={sessionId}
               userId={userId}
               onEmergencyUnlock={onEmergencyUnlock}
+              requirePin={true}
               className="glass-button bg-gradient-to-r from-orange-600/80 to-red-600/80 hover:from-orange-500/90 hover:to-red-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-orange-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400/50"
             />
           ) : (

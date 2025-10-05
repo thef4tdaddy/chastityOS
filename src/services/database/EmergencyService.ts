@@ -80,6 +80,7 @@ class EmergencyService {
         isEmergencyUnlock: true,
         emergencyReason: reason,
         emergencyNotes: additionalNotes,
+        emergencyPinUsed: session.isHardcoreMode || false,
         isPaused: false,
         pauseStartTime: undefined,
       });
