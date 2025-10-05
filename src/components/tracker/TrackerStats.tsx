@@ -1,11 +1,13 @@
 import React from "react";
-import type { DBSession } from "../../types/database";
+import type { DBSession, DBGoal } from "../../types/database";
 import { useTrackerStats } from "../../hooks/tracker/useTrackerStats";
 import { CageOnStats, CageOffStats } from "./stats";
+import { FaBullseye, FaLock } from "react-icons/fa";
 
 interface TrackerStatsProps {
   // New props for real-time timer
   currentSession?: DBSession | null;
+  personalGoal?: DBGoal | null; // Personal goal for display
   // Legacy props for backward compatibility
   topBoxLabel?: string;
   topBoxTime?: string;
@@ -18,6 +20,73 @@ interface TrackerStatsProps {
   totalChastityTime?: number;
   totalTimeCageOff?: number;
 }
+
+// Sub-component for personal goal display
+const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
+  const progressPercent = goal.progress || 0;
+  const isHardcoreMode = goal.isHardcoreMode || false;
+
+  // Format remaining time
+  const remaining = goal.targetValue - goal.currentValue;
+  const days = Math.floor(remaining / 86400);
+  const hours = Math.floor((remaining % 86400) / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+
+  const remainingFormatted =
+    days > 0
+      ? `${days}d ${hours}h ${minutes}m`
+      : hours > 0
+        ? `${hours}h ${minutes}m`
+        : `${minutes}m`;
+
+  return (
+    <div
+      className={`glass-card ${isHardcoreMode ? "border-2 border-red-500/50" : ""}`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <FaBullseye className="text-nightly-aquamarine" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            {goal.title}
+          </h3>
+        </div>
+        {isHardcoreMode && (
+          <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded">
+            <FaLock className="text-red-400 text-sm" />
+            <span className="text-xs text-red-400 font-semibold">HARDCORE</span>
+          </div>
+        )}
+      </div>
+
+      {goal.description && (
+        <p className="text-sm text-nightly-celadon mb-3">{goal.description}</p>
+      )}
+
+      {/* Progress bar */}
+      <div className="mb-2">
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all ${
+              isHardcoreMode
+                ? "bg-gradient-to-r from-red-500 to-red-600"
+                : "bg-gradient-to-r from-nightly-aquamarine to-nightly-spring-green"
+            }`}
+            style={{ width: `${Math.min(progressPercent, 100)}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-between text-sm">
+        <span className="text-nightly-celadon">
+          Progress: {progressPercent.toFixed(1)}%
+        </span>
+        <span className="text-nightly-honeydew font-semibold">
+          {remaining > 0 ? `${remainingFormatted} remaining` : "Goal Complete!"}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 // Sub-component for current session stats
 const CurrentSessionStats: React.FC<{
@@ -56,6 +125,7 @@ const TotalStats: React.FC<{
 
 export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
   const { displayData, stats } = useTrackerStats(props);
+  const { personalGoal } = props;
 
   return (
     <div className="space-y-6 mb-8">
@@ -70,6 +140,9 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
           </p>
         </div>
       )}
+
+      {/* Personal Goal Display */}
+      {personalGoal && <PersonalGoalDisplay goal={personalGoal} />}
 
       <CurrentSessionStats displayData={displayData} stats={stats} />
 
