@@ -65,6 +65,8 @@ export interface DBSession extends DBBase {
   isEmergencyUnlock?: boolean; // Flag for emergency unlock sessions
   emergencyReason?: string; // Reason for emergency unlock
   emergencyNotes?: string; // Additional notes for emergency unlock
+  hasLockCombination?: boolean; // True if lock combination was saved for this session
+  emergencyPinUsed?: boolean; // True if emergency PIN was used to unlock this session
 }
 
 export interface DBEvent extends DBBase {
