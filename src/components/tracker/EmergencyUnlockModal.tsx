@@ -436,7 +436,9 @@ const LockCombinationDisplay: React.FC<{
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy:", error);
+      logger.error("Failed to copy combination to clipboard", {
+        error: error as Error,
+      });
     }
   };
 
@@ -593,7 +595,7 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
         customReason || undefined,
       );
       onClose();
-    } catch (err) {
+    } catch {
       setPinError("Failed to validate PIN. Please try again.");
     } finally {
       setIsValidatingPin(false);
