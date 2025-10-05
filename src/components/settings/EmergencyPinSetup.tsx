@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuthState } from "../../contexts";
 import { EmergencyPinDBService } from "../../services/database/EmergencyPinDBService";
+import { useToast } from "../../hooks/state/useToast";
 import {
   FaLock,
   FaUnlock,
@@ -24,6 +25,7 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   isHardcoreMode = false,
 }) => {
   const { user } = useAuthState();
+  const { showWarning } = useToast();
   const [hasPin, setHasPin] = useState(false);
   const [createdAt, setCreatedAt] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(true);
@@ -47,8 +49,8 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
           setHasPin(info.exists);
           setCreatedAt(info.createdAt);
         }
-      } catch (err) {
-        console.error("Failed to load PIN status:", err);
+      } catch {
+        // PIN status load failed - component will show as "not set"
       } finally {
         setIsLoading(false);
       }
@@ -84,7 +86,7 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
       setConfirmPin("");
 
       setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
+    } catch {
       setError("Failed to save PIN. Please try again.");
     } finally {
       setIsSaving(false);
@@ -92,29 +94,32 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   };
 
   const handleRemovePin = async () => {
-    if (
-      !user?.uid ||
-      !confirm(
-        "Are you sure you want to remove your emergency PIN? This is a safety feature for hardcore mode.",
-      )
-    ) {
-      return;
-    }
+    if (!user?.uid) return;
 
-    try {
-      setIsSaving(true);
-      await EmergencyPinDBService.removeEmergencyPin(user.uid);
+    showWarning(
+      "Are you sure you want to remove your emergency PIN? This is a safety feature for hardcore mode.",
+      {
+        action: {
+          label: "Remove PIN",
+          onClick: async () => {
+            try {
+              setIsSaving(true);
+              await EmergencyPinDBService.removeEmergencyPin(user.uid);
 
-      setSuccess("Emergency PIN removed");
-      setHasPin(false);
-      setCreatedAt(undefined);
+              setSuccess("Emergency PIN removed");
+              setHasPin(false);
+              setCreatedAt(undefined);
 
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
-      setError("Failed to remove PIN. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
+              setTimeout(() => setSuccess(""), 3000);
+            } catch {
+              setError("Failed to remove PIN. Please try again.");
+            } finally {
+              setIsSaving(false);
+            }
+          },
+        },
+      },
+    );
   };
 
   const handleCancel = () => {

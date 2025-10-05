@@ -82,7 +82,7 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
         if (user?.uid) {
           try {
             await EmergencyPinDBService.setEmergencyPin(user.uid, emergencyPin);
-          } catch (error) {
+          } catch {
             setPinError("Failed to save emergency PIN");
             return;
           }
