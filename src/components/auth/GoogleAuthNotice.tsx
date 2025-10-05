@@ -39,28 +39,31 @@ export const GoogleAuthNotice: React.FC<GoogleAuthNoticeProps> = ({
               <span className="font-semibold">
                 both users must be signed in with Google
               </span>
-              . You can still use the full app without Google sign-in if you
-              prefer 100% privacy.
+              . You can still use the full app locally without Google sign-in if
+              you prefer 100% privacy.
             </p>
-            <p className="mb-2 font-medium">Why require Google for linking?</p>
+            <p className="mb-2 font-medium">
+              What you get with Google sign-in:
+            </p>
             <ul className="list-disc space-y-1 pl-5">
               <li>
-                <span className="font-semibold">
-                  Prevents losing access to your relationship
-                </span>{" "}
-                - If you clear browser data, Google sign-in lets you recover
-                your linked accounts
+                <span className="font-semibold">Account linking</span> - Connect
+                with a keyholder or submissive
               </li>
               <li>
-                Enhanced security and identity verification between partners
+                <span className="font-semibold">Cloud sync</span> - Access your
+                data across all devices
               </li>
-              <li>Protection against unauthorized account linking</li>
-              <li>Secure data synchronization across all your devices</li>
+              <li>
+                <span className="font-semibold">Account recovery</span> - Never
+                lose your data if you clear browser storage
+              </li>
+              <li>Enhanced security and identity verification</li>
             </ul>
             <p className="mt-3 text-xs text-blue-600">
               <span className="font-semibold">Privacy first:</span> Google
-              sign-in is completely optional. Without it, you still get full
-              access to ChastityOS—you just can't link with a partner. We only
+              sign-in is completely optional. Without it, your data stays
+              local-only on this device (no cloud sync, no linking). We only
               access basic profile info (name and email) for authentication.
             </p>
           </div>
