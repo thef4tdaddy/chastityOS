@@ -35,19 +35,29 @@ export const GoogleAuthNotice: React.FC<GoogleAuthNoticeProps> = ({
           </h3>
           <div className="mt-2 text-sm text-blue-700">
             <p className="mb-2">
-              To link your account with a keyholder or submissive, you must be
-              signed in with Google.
+              To link your account with a keyholder or submissive,{" "}
+              <span className="font-semibold">
+                both users must be signed in with Google
+              </span>
+              .
             </p>
             <p className="mb-2 font-medium">Why Google authentication?</p>
             <ul className="list-disc space-y-1 pl-5">
+              <li>
+                <span className="font-semibold">
+                  Prevents losing access to your relationship
+                </span>{" "}
+                - Google accounts provide permanent, recoverable access
+              </li>
               <li>Enhanced security for relationship management</li>
-              <li>Reliable identity verification</li>
+              <li>Reliable identity verification between partners</li>
               <li>Protection against unauthorized account linking</li>
-              <li>Secure data synchronization across devices</li>
+              <li>Secure data synchronization across all your devices</li>
             </ul>
             <p className="mt-3 text-xs text-blue-600">
               Your privacy is important. We only access your basic profile
-              information (name and email) for authentication purposes.
+              information (name and email) for authentication purposes. Google
+              sign-in ensures you'll never lose access to your linked accounts.
             </p>
           </div>
         </div>
