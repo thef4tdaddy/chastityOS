@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuthState } from "../contexts";
 import { useKeyholderStore } from "../stores/keyholderStore";
+import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { sessionDBService } from "../services/database";
 import type { DBSession } from "../types/database";
-import type { User } from "../types";
+import type { AdminRelationship } from "../types/account-linking";
 import {
   KeyholderPasswordUnlock,
   AccountLinkingPreview,
@@ -70,33 +71,42 @@ const KeyholderSettings: React.FC<{ onLockControls: () => void }> = ({
   </div>
 );
 
-// Custom hook for data fetching
-const useKeyholderData = (user: User | null) => {
-  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
+// Custom hook for fetching submissive's data
+const useSubmissiveData = (
+  selectedRelationship: AdminRelationship | null | undefined,
+) => {
+  const [submissiveSession, setSubmissiveSession] = useState<DBSession | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      if (!selectedRelationship) {
+        setSubmissiveSession(null);
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
-        const [session] = await Promise.all([
-          sessionDBService.getCurrentSession(user.uid),
-        ]);
+        // Fetch submissive's (wearer's) session
+        const session = await sessionDBService.getCurrentSession(
+          selectedRelationship.wearerId,
+        );
 
-        setCurrentSession(session || null);
+        setSubmissiveSession(session || null);
       } catch (error) {
-        logger.error("Error fetching keyholder data:", error, "KeyholderPage");
+        logger.error("Error fetching submissive data:", error, "KeyholderPage");
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user]);
+  }, [selectedRelationship]);
 
-  return { currentSession, loading };
+  return { submissiveSession, loading };
 };
 
 const KeyholderPage: React.FC = () => {
@@ -109,7 +119,17 @@ const KeyholderPage: React.FC = () => {
     (state) => state.lockKeyholderControls,
   );
 
-  const { currentSession, loading } = useKeyholderData(user);
+  // Get keyholder relationships and selected wearer
+  const { relationships, keyholderRelationships, selectedWearerId } =
+    useAccountLinking();
+
+  // Get selected relationship
+  const selectedRelationship = selectedWearerId
+    ? relationships.find((r) => r.wearerId === selectedWearerId)
+    : keyholderRelationships[0];
+
+  const { submissiveSession, loading } =
+    useSubmissiveData(selectedRelationship);
 
   // Auto-lock when leaving page
   useEffect(() => {
@@ -140,8 +160,10 @@ const KeyholderPage: React.FC = () => {
             {/* Keyholder Controls - Only when unlocked */}
             {isKeyholderModeUnlocked && (
               <>
-                <SessionControls session={currentSession} />
-                <TaskManagement userId={user?.uid || ""} />
+                <SessionControls session={submissiveSession} />
+                <TaskManagement
+                  userId={selectedRelationship?.wearerId || user?.uid || ""}
+                />
                 <KeyholderSettings onLockControls={lockKeyholderControls} />
               </>
             )}
