@@ -9,8 +9,11 @@ import {
   FaHistory,
   FaShieldAlt,
   FaSpinner,
+  FaPrayingHands,
 } from "react-icons/fa";
 import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking";
+import { usePendingReleaseRequests } from "../../hooks/api/useReleaseRequests";
+import { ReleaseRequestCard } from "./ReleaseRequestCard";
 import { AdminRelationship } from "../../types/account-linking";
 
 // Loading Component
@@ -49,6 +52,45 @@ const WearerSelection: React.FC<{
           </option>
         ))}
       </select>
+    </div>
+  );
+};
+
+// Pending Release Requests Component
+const PendingReleaseRequests: React.FC<{ keyholderUserId: string }> = ({
+  keyholderUserId,
+}) => {
+  const { data: pendingRequests, isLoading } =
+    usePendingReleaseRequests(keyholderUserId);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white/5 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-2 text-nightly-celadon">
+          <FaSpinner className="animate-spin" />
+          <span>Loading requests...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pendingRequests || pendingRequests.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <FaPrayingHands className="text-purple-400" />
+        <h3 className="font-semibold text-nightly-honeydew">
+          Pending Release Requests ({pendingRequests.length})
+        </h3>
+      </div>
+      <div className="space-y-3">
+        {pendingRequests.map((request) => (
+          <ReleaseRequestCard key={request.id} request={request} />
+        ))}
+      </div>
     </div>
   );
 };
@@ -163,7 +205,9 @@ const TabContentRenderer: React.FC<{
   </div>
 );
 
-export const AdminDashboard: React.FC = () => {
+export const AdminDashboard: React.FC<{ keyholderUserId?: string }> = ({
+  keyholderUserId,
+}) => {
   const {
     relationships,
     keyholderRelationships,
@@ -220,6 +264,11 @@ export const AdminDashboard: React.FC = () => {
 
       {selectedRelationship && (
         <>
+          {/* Pending Release Requests */}
+          {keyholderUserId && (
+            <PendingReleaseRequests keyholderUserId={keyholderUserId} />
+          )}
+
           {/* Admin Session Status */}
           <AdminSessionStatus
             selectedRelationship={selectedRelationship}
