@@ -140,7 +140,7 @@ export const BegForReleaseButton: React.FC<BegForReleaseButtonProps> = ({
       showSuccess("Release request sent to your keyholder");
       setShowModal(false);
       setReason("");
-    } catch (_error) {
+    } catch {
       showError("Failed to send release request");
     }
   };
