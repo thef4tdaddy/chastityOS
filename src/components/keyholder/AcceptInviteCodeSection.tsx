@@ -8,6 +8,7 @@ interface AcceptInviteCodeSectionProps {
   onSetKeyholderNameInput: (value: string) => void;
   onAcceptInvite: () => Promise<void>;
   validateInviteCode: (code: string) => boolean;
+  disabled?: boolean;
 }
 
 export const AcceptInviteCodeSection: React.FC<
@@ -20,21 +21,26 @@ export const AcceptInviteCodeSection: React.FC<
   onSetKeyholderNameInput,
   onAcceptInvite,
   validateInviteCode,
+  disabled = false,
 }) => {
   const [showAcceptInvite, setShowAcceptInvite] = useState(false);
 
   const handleAcceptInvite = async () => {
+    if (disabled) return;
     await onAcceptInvite();
     setShowAcceptInvite(false);
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
+    <div
+      className={`bg-gray-800 rounded-lg p-4 border border-purple-500/30 ${disabled ? "opacity-60" : ""}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-purple-300">Accept Invite Code</h3>
         <button
-          onClick={() => setShowAcceptInvite(!showAcceptInvite)}
-          className="text-purple-400 hover:text-purple-300 text-sm"
+          onClick={() => !disabled && setShowAcceptInvite(!showAcceptInvite)}
+          disabled={disabled}
+          className="text-purple-400 hover:text-purple-300 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           {showAcceptInvite ? "Cancel" : "Enter Code"}
         </button>
@@ -50,7 +56,8 @@ export const AcceptInviteCodeSection: React.FC<
             value={inviteCodeInput}
             onChange={(e) => onSetInviteCodeInput(e.target.value)}
             placeholder="Enter 6-character code"
-            className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 font-mono text-center tracking-wider"
+            disabled={disabled}
+            className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 font-mono text-center tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
             maxLength={6}
           />
           <input
@@ -58,12 +65,17 @@ export const AcceptInviteCodeSection: React.FC<
             value={keyholderNameInput}
             onChange={(e) => onSetKeyholderNameInput(e.target.value)}
             placeholder="Your name (optional)"
-            className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400"
+            disabled={disabled}
+            className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <button
             onClick={handleAcceptInvite}
-            disabled={isAcceptingInvite || !validateInviteCode(inviteCodeInput)}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white py-2 px-4 rounded transition-colors"
+            disabled={
+              disabled ||
+              isAcceptingInvite ||
+              !validateInviteCode(inviteCodeInput)
+            }
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white py-2 px-4 rounded transition-colors disabled:cursor-not-allowed"
           >
             {isAcceptingInvite ? "Accepting..." : "Accept Invite Code"}
           </button>

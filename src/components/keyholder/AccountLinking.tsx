@@ -2,7 +2,7 @@
  * Account Linking Component
  * Manages keyholder-submissive relationship creation and management
  */
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useKeyholderRelationships } from "../../hooks/useKeyholderRelationships";
 import { getAccountLinkingState } from "./AccountLinkingHelpers";
 import { AccountLinkingLoading } from "./AccountLinkingLoading";
@@ -15,8 +15,10 @@ import { ActiveInviteCodesDisplay } from "./ActiveInviteCodesDisplay";
 import { AcceptInviteCodeSection } from "./AcceptInviteCodeSection";
 import { SubmissiveRelationshipsDisplay } from "./SubmissiveRelationshipsDisplay";
 import { AccountLinkingHelp } from "./AccountLinkingHelp";
+import { GoogleAuthNotice } from "../auth/GoogleAuthNotice";
 import { KeyholderRelationship } from "../../types/core";
 import type { KeyholderRelationshipState } from "../../hooks/useKeyholderRelationships";
+import { checkGoogleSignIn } from "../../utils/auth/google-auth-check";
 
 interface AccountLinkingProps {
   className?: string;
@@ -79,9 +81,17 @@ const HeaderAndMessages: React.FC<{
   messageType: "success" | "error" | "info";
   clearMessage: () => void;
   relationshipSummary: KeyholderRelationshipState["relationshipSummary"];
-}> = ({ message, messageType, clearMessage, relationshipSummary }) => (
+  isSignedInWithGoogle: boolean;
+}> = ({
+  message,
+  messageType,
+  clearMessage,
+  relationshipSummary,
+  isSignedInWithGoogle,
+}) => (
   <>
     <AccountLinkingHeader />
+    {!isSignedInWithGoogle && <GoogleAuthNotice className="mb-4" />}
     <LinkingMessageDisplay
       message={message}
       messageType={messageType}
@@ -103,6 +113,7 @@ const InviteCodeSections: React.FC<{
   setKeyholderNameInput: (name: string) => void;
   revokeInviteCode: (id: string) => void;
   validateInviteCode: (code: string) => boolean;
+  isSignedInWithGoogle: boolean;
   handlers: {
     handleCreateInvite: () => Promise<void>;
     handleAcceptInvite: () => Promise<void>;
@@ -119,11 +130,12 @@ const InviteCodeSections: React.FC<{
   setKeyholderNameInput,
   revokeInviteCode,
   validateInviteCode,
+  isSignedInWithGoogle,
   handlers,
 }) => (
   <>
     <InviteCodeCreationSection
-      shouldShow={!linkingState.hasActiveKeyholder}
+      shouldShow={!linkingState.hasActiveKeyholder && isSignedInWithGoogle}
       isCreatingInvite={isCreatingInvite}
       onCreateInvite={handlers.handleCreateInvite}
     />
@@ -140,6 +152,7 @@ const InviteCodeSections: React.FC<{
       onSetKeyholderNameInput={setKeyholderNameInput}
       onAcceptInvite={handlers.handleAcceptInvite}
       validateInviteCode={validateInviteCode}
+      disabled={!isSignedInWithGoogle}
     />
   </>
 );
@@ -163,6 +176,7 @@ const AccountLinkingContent: React.FC<{
   setKeyholderNameInput: (name: string) => void;
   revokeInviteCode: (id: string) => void;
   validateInviteCode: (code: string) => boolean;
+  isSignedInWithGoogle: boolean;
   handlers: {
     handleCreateInvite: () => Promise<void>;
     handleAcceptInvite: () => Promise<void>;
@@ -186,6 +200,7 @@ const AccountLinkingContent: React.FC<{
   setKeyholderNameInput,
   revokeInviteCode,
   validateInviteCode,
+  isSignedInWithGoogle,
   handlers,
 }) => (
   <div className="space-y-6">
@@ -194,6 +209,7 @@ const AccountLinkingContent: React.FC<{
       messageType={messageType}
       clearMessage={clearMessage}
       relationshipSummary={relationshipSummary}
+      isSignedInWithGoogle={isSignedInWithGoogle}
     />
 
     {activeKeyholder && (
@@ -220,6 +236,7 @@ const AccountLinkingContent: React.FC<{
       setKeyholderNameInput={setKeyholderNameInput}
       revokeInviteCode={revokeInviteCode}
       validateInviteCode={validateInviteCode}
+      isSignedInWithGoogle={isSignedInWithGoogle}
       handlers={handlers}
     />
 
@@ -259,6 +276,17 @@ export const AccountLinking: React.FC<AccountLinkingProps> = ({
     clearMessage,
     validateInviteCode,
   } = useKeyholderRelationships();
+
+  const [isSignedInWithGoogle, setIsSignedInWithGoogle] = useState(false);
+
+  // Check Google sign-in status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { isSignedInWithGoogle } = await checkGoogleSignIn();
+      setIsSignedInWithGoogle(isSignedInWithGoogle);
+    };
+    checkAuth();
+  }, []);
 
   const handlers = useAccountLinkingHandlers(
     createInviteCode,
@@ -300,6 +328,7 @@ export const AccountLinking: React.FC<AccountLinkingProps> = ({
         setKeyholderNameInput={setKeyholderNameInput}
         revokeInviteCode={revokeInviteCode}
         validateInviteCode={validateInviteCode}
+        isSignedInWithGoogle={isSignedInWithGoogle}
         handlers={handlers}
       />
     </div>
