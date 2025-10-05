@@ -5,15 +5,18 @@ import {
   DesktopDashboardLayout,
 } from "../components/dashboard/DashboardLayouts";
 import { AchievementDashboard } from "../components/achievements";
+import { KeyholderDashboard } from "../components/keyholder";
 // TODO: SessionPersistenceDemo and DexieDemo temporarily disabled due to architectural restrictions
 // import { SessionPersistenceDemo } from "../components/demo/SessionPersistenceDemo";
 // import { DexieDemo } from "../components/common";
 import { sessionDBService } from "../services/database";
 import { useAuthState } from "../contexts";
 import { useAchievements } from "../hooks/useAchievements";
+import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuthState();
+  const { keyholderRelationships } = useAccountLinking();
   const [sessionDuration, setSessionDuration] = useState("0s");
   const { userAchievements } = useAchievements(user?.uid);
 
@@ -33,6 +36,10 @@ const Dashboard: React.FC = () => {
     }
   }, [user]);
 
+  // Check if user is a keyholder
+  const isKeyholder =
+    keyholderRelationships && keyholderRelationships.length > 0;
+
   return (
     <>
       <main className="font-inter text-nightly-spring-green">
@@ -51,16 +58,28 @@ const Dashboard: React.FC = () => {
           </h1>
         </div>
 
-        {/* Mobile and Desktop Layouts */}
-        <MobileDashboardLayout sessionDuration={sessionDuration} />
-        <DesktopDashboardLayout sessionDuration={sessionDuration} />
-
-        {/* Achievement Dashboard - only show if user has achievements */}
-        {user && userAchievements && userAchievements.length > 0 && (
-          <div className="mt-12">
-            <AchievementDashboard />
+        {/* Show KeyholderDashboard if user is a keyholder, otherwise show regular dashboard */}
+        {isKeyholder ? (
+          <div className="max-w-6xl mx-auto px-4">
+            <KeyholderDashboard keyholderUserId={user?.uid} />
           </div>
+        ) : (
+          <>
+            {/* Mobile and Desktop Layouts */}
+            <MobileDashboardLayout sessionDuration={sessionDuration} />
+            <DesktopDashboardLayout sessionDuration={sessionDuration} />
+          </>
         )}
+
+        {/* Achievement Dashboard - only show if user has achievements and not a keyholder */}
+        {!isKeyholder &&
+          user &&
+          userAchievements &&
+          userAchievements.length > 0 && (
+            <div className="mt-12">
+              <AchievementDashboard />
+            </div>
+          )}
 
         {/* TODO: Session Persistence Demo - moved to showcase/demo section */}
         {/* <div className="mt-12">
@@ -74,14 +93,16 @@ const Dashboard: React.FC = () => {
           </div>
         </div> */}
 
-        {/* Enhanced Keyholder access button */}
-        <div className="text-center mt-8">
-          <Link to="/keyholder">
-            <button className="bg-tekhelet hover:bg-tekhelet-600 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
-              View Keyholder Dashboard
-            </button>
-          </Link>
-        </div>
+        {/* Enhanced Keyholder access button - only show for non-keyholders */}
+        {!isKeyholder && (
+          <div className="text-center mt-8">
+            <Link to="/keyholder">
+              <button className="bg-tekhelet hover:bg-tekhelet-600 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+                View Keyholder Dashboard
+              </button>
+            </Link>
+          </div>
+        )}
       </main>
     </>
   );
