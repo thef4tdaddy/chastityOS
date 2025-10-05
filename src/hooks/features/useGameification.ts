@@ -6,38 +6,32 @@
  */
 
 import { useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  PlayerProfile,
-  Challenge,
-  Leaderboard,
-  Season,
-  SocialGameFeatures,
   Badge as _Badge,
   ExperienceSource,
   LevelResult,
-  LevelUpResult,
-  ChallengeCompletion,
-  LeaderboardRank,
-  FriendComparison,
-  SeasonalReward,
-  ExperienceEvent,
 } from "../../types/gamification";
 import { logger } from "../../utils/logging";
 import { GamificationStorageService } from "../../services/gamificationStorage";
+import { LEVEL_THRESHOLDS } from "../../constants/gamification";
 import {
-  DEFAULT_PLAYER_PROFILE,
-  LEVEL_THRESHOLDS,
-  SAMPLE_CHALLENGES,
-} from "../../constants/gamification";
-import {
-  generateSampleLeaderboards,
-  generateSeasonalRewards,
-  createBadgeFromReward,
   generateLevelRewards,
   getPlayerTitle,
   getUnlockedFeatures,
 } from "@/utils/gamification";
+import {
+  calculateLevel,
+  calculateExperienceToNext,
+  createExperienceEvent,
+  updateExperienceHistory,
+  updatePlayerProfileWithExperience,
+  calculateLevelResult,
+  calculateProgressToNext,
+  calculatePercentile,
+} from "./gamificationHelpers";
+import { useGamificationMutations } from "./useGamificationMutations";
+import { useGamificationData } from "./useGamificationData";
 
 /**
  * Enhanced Gamification Hook
@@ -46,193 +40,15 @@ import {
 export const useGameification = (userId: string) => {
   const queryClient = useQueryClient();
 
-  // Get player profile
-  const { data: playerProfile = DEFAULT_PLAYER_PROFILE } =
-    useQuery<PlayerProfile>({
-      queryKey: ["gamification", "profile", userId],
-      queryFn: () => {
-        const stored =
-          GamificationStorageService.getPlayerProfile<PlayerProfile>();
-        return stored
-          ? { ...DEFAULT_PLAYER_PROFILE, ...stored }
-          : DEFAULT_PLAYER_PROFILE;
-      },
-      enabled: Boolean(userId),
-      staleTime: 30 * 1000,
-    });
-
-  // Get active challenges
-  const { data: activeChallenges = [] } = useQuery<Challenge[]>({
-    queryKey: ["gamification", "challenges", userId],
-    queryFn: () => {
-      const userChallenges =
-        GamificationStorageService.getChallenges<Challenge>();
-      return [...SAMPLE_CHALLENGES, ...userChallenges].filter(
-        (c) => !c.isCompleted,
-      );
-    },
-    enabled: Boolean(userId),
-    staleTime: 60 * 1000,
-  });
-
-  // Get leaderboards
-  const { data: leaderboards = [] } = useQuery<Leaderboard[]>({
-    queryKey: ["gamification", "leaderboards"],
-    queryFn: async () => {
-      // Simulate leaderboard data
-      return generateSampleLeaderboards();
-    },
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 10 * 60 * 1000,
-  });
-
-  // Get current season
-  const { data: currentSeason } = useQuery<Season | null>({
-    queryKey: ["gamification", "season"],
-    queryFn: () => {
-      return {
-        id: "season-winter-2024",
-        name: "Winter Challenge 2024",
-        description:
-          "Embrace the cold season with special winter-themed challenges",
-        theme: "winter",
-        startDate: new Date("2024-12-01"),
-        endDate: new Date("2024-02-28"),
-        rewards: generateSeasonalRewards(),
-        challenges: ["winter-endurance", "cold-discipline"],
-        leaderboards: ["winter-champions"],
-        isActive: true,
-      };
-    },
-    staleTime: 60 * 60 * 1000, // 1 hour
-  });
-
-  // Get social features
-  const { data: socialFeatures } = useQuery<SocialGameFeatures>({
-    queryKey: ["gamification", "social", userId],
-    queryFn: () => {
-      const stored =
-        GamificationStorageService.getSocialFeatures<SocialGameFeatures>();
-      return stored
-        ? stored
-        : {
-            friends: [],
-            pendingRequests: [],
-            recentActivity: [],
-            groups: [],
-            comparisons: [],
-          };
-    },
-    enabled: Boolean(userId) && playerProfile.preferences.allowSocialFeatures,
-    staleTime: 2 * 60 * 1000,
-  });
-
-  // Get experience history
-  const { data: experienceHistory = [] } = useQuery<ExperienceEvent[]>({
-    queryKey: ["gamification", "experience", userId],
-    queryFn: () => {
-      return GamificationStorageService.getExperienceHistory<ExperienceEvent>();
-    },
-    enabled: Boolean(userId),
-    staleTime: 60 * 1000,
-  });
-
-  // Accept challenge mutation
-  const acceptChallengeMutation = useMutation({
-    mutationFn: async (challengeId: string) => {
-      const challenge = activeChallenges.find((c) => c.id === challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-
-      logger.info("Challenge accepted", { challengeId, userId });
-
-      // In a real implementation, this would register the user for the challenge
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    },
-  });
-
-  // Complete challenge mutation
-  const completeChallengeMutation = useMutation({
-    mutationFn: async (challengeId: string): Promise<ChallengeCompletion> => {
-      const challenge = activeChallenges.find((c) => c.id === challengeId);
-      if (!challenge) throw new Error("Challenge not found");
-
-      logger.info("Challenge completed", { challengeId, userId });
-
-      // Mark challenge as completed
-      const updatedChallenges = activeChallenges.map((c) =>
-        c.id === challengeId
-          ? {
-              ...c,
-              isCompleted: true,
-              progress: { ...c.progress, percentage: 100 },
-            }
-          : c,
-      );
-      GamificationStorageService.setChallenges(updatedChallenges);
-
-      // Calculate rewards
-      const experienceGained = challenge.rewards.reduce(
-        (total, reward) =>
-          reward.type === "experience" ? total + reward.value : total,
-        0,
-      );
-
-      // Add experience
-      const levelResult = await addExperienceInternal(
-        experienceGained,
-        ExperienceSource.CHALLENGE_COMPLETE,
-      );
-
-      // Create completion result
-      const completion: ChallengeCompletion = {
-        challengeId,
-        completedAt: new Date(),
-        rewards: challenge.rewards,
-        experience: experienceGained,
-        newBadges: challenge.rewards
-          .filter((r) => r.type === "badge")
-          .map((r) => createBadgeFromReward(r)),
-        levelUp: levelResult.leveledUp
-          ? {
-              newLevel: levelResult.newLevel,
-              rewards: [],
-              unlockedFeatures: [],
-            }
-          : undefined,
-      };
-
-      // Update stats
-      const updatedProfile = {
-        ...playerProfile,
-        stats: {
-          ...playerProfile.stats,
-          challengesCompleted: playerProfile.stats.challengesCompleted + 1,
-          totalExperience:
-            playerProfile.stats.totalExperience + experienceGained,
-        },
-      };
-      GamificationStorageService.setPlayerProfile(updatedProfile);
-      queryClient.setQueryData(
-        ["gamification", "profile", userId],
-        updatedProfile,
-      );
-
-      return completion;
-    },
-  });
-
-  // Add experience mutation
-  const addExperienceMutation = useMutation({
-    mutationFn: async ({
-      amount,
-      source,
-    }: {
-      amount: number;
-      source: ExperienceSource;
-    }): Promise<LevelResult> => {
-      return addExperienceInternal(amount, source);
-    },
-  });
+  // Fetch all data
+  const {
+    playerProfile,
+    activeChallenges,
+    leaderboards,
+    currentSeason,
+    socialFeatures,
+    experienceHistory,
+  } = useGamificationData(userId);
 
   // Internal add experience function
   const addExperienceInternal = async (
@@ -241,35 +57,14 @@ export const useGameification = (userId: string) => {
   ): Promise<LevelResult> => {
     const oldLevel = playerProfile.level;
     const newExperience = playerProfile.experience + amount;
+    const newLevel = calculateLevel(newExperience);
+    const experienceToNext = calculateExperienceToNext(newExperience, newLevel);
 
-    // Calculate new level
-    let newLevel = oldLevel;
-    for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
-      if (newExperience >= LEVEL_THRESHOLDS[i]) {
-        newLevel = i + 1;
-      } else {
-        break;
-      }
-    }
-
-    const experienceToNext =
-      newLevel < LEVEL_THRESHOLDS.length
-        ? LEVEL_THRESHOLDS[newLevel] - newExperience
-        : 0;
-
-    // Create experience event
-    const experienceEvent: ExperienceEvent = {
-      id: `exp-${Date.now()}`,
-      source,
-      amount,
-      description: `Gained ${amount} XP from ${source}`,
-      timestamp: new Date(),
-    };
-
-    // Update experience history
-    const updatedHistory = [experienceEvent, ...experienceHistory].slice(
-      0,
-      100,
+    // Create and store experience event
+    const experienceEvent = createExperienceEvent(amount, source);
+    const updatedHistory = updateExperienceHistory(
+      experienceHistory,
+      experienceEvent,
     );
     GamificationStorageService.setExperienceHistory(updatedHistory);
     queryClient.setQueryData(
@@ -278,18 +73,13 @@ export const useGameification = (userId: string) => {
     );
 
     // Update profile
-    const updatedProfile = {
-      ...playerProfile,
-      level: newLevel,
-      experience: newExperience,
+    const updatedProfile = updatePlayerProfileWithExperience(
+      playerProfile,
+      amount,
+      newLevel,
+      newExperience,
       experienceToNext,
-      stats: {
-        ...playerProfile.stats,
-        totalExperience: playerProfile.stats.totalExperience + amount,
-      },
-      lastActive: new Date(),
-    };
-
+    );
     GamificationStorageService.setPlayerProfile(updatedProfile);
     queryClient.setQueryData(
       ["gamification", "profile", userId],
@@ -304,56 +94,52 @@ export const useGameification = (userId: string) => {
       userId,
     });
 
-    return {
-      leveledUp: newLevel > oldLevel,
-      oldLevel,
-      newLevel,
-      experience: amount,
-    };
+    return calculateLevelResult(oldLevel, newLevel, amount);
   };
 
+  const {
+    acceptChallengeMutation,
+    completeChallengeMutation,
+    addExperienceMutation,
+  } = useGamificationMutations(
+    userId,
+    activeChallenges,
+    playerProfile,
+    addExperienceInternal,
+  );
+
   // Check level up
-  const checkLevelUp = useCallback(async (): Promise<LevelUpResult | null> => {
-    const _currentLevelThreshold =
-      LEVEL_THRESHOLDS[playerProfile.level - 1] || 0;
+  const checkLevelUp = useCallback(async () => {
     const nextLevelThreshold =
       LEVEL_THRESHOLDS[playerProfile.level] || Infinity;
-
     if (playerProfile.experience >= nextLevelThreshold) {
       const newLevel = playerProfile.level + 1;
-      const rewards = generateLevelRewards(newLevel);
-
       return {
         newLevel,
-        rewards,
+        rewards: generateLevelRewards(newLevel),
         newTitle: getPlayerTitle(newLevel),
         unlockedFeatures: getUnlockedFeatures(newLevel),
       };
     }
-
     return null;
   }, [playerProfile]);
 
   // Get leaderboard rank
   const getLeaderboardRank = useCallback(
-    async (leaderboardId: string): Promise<LeaderboardRank> => {
+    async (leaderboardId: string) => {
       const leaderboard = leaderboards.find((l) => l.id === leaderboardId);
       if (!leaderboard) throw new Error("Leaderboard not found");
-
-      // Find user's rank (simulated)
       const userRank =
         Math.floor(Math.random() * leaderboard.totalParticipants) + 1;
-      const percentile =
-        ((leaderboard.totalParticipants - userRank) /
-          leaderboard.totalParticipants) *
-        100;
-
       return {
         category: leaderboard.category,
         period: leaderboard.period,
         rank: userRank,
         totalParticipants: leaderboard.totalParticipants,
-        percentile,
+        percentile: calculatePercentile(
+          userRank,
+          leaderboard.totalParticipants,
+        ),
         value: playerProfile.stats.totalExperience,
       };
     },
@@ -361,11 +147,8 @@ export const useGameification = (userId: string) => {
   );
 
   // Compare with friends
-  const compareWithFriends = useCallback(async (): Promise<
-    FriendComparison[]
-  > => {
+  const compareWithFriends = useCallback(async () => {
     if (!socialFeatures?.friends) return [];
-
     return socialFeatures.friends.map((friend) => ({
       friendId: friend.userId,
       friendName: friend.displayName,
@@ -394,7 +177,6 @@ export const useGameification = (userId: string) => {
     }));
   }, [socialFeatures, playerProfile]);
 
-  // Send challenge to friend
   const sendChallenge = useCallback(
     async (friendId: string, challengeId: string) => {
       logger.info("Challenge sent to friend", {
@@ -402,113 +184,76 @@ export const useGameification = (userId: string) => {
         challengeId,
         userId,
       });
-      // In a real implementation, this would create a challenge invitation
       await new Promise((resolve) => setTimeout(resolve, 500));
     },
     [userId],
   );
 
-  // Get seasonal rewards
-  const getSeasonalRewards = useCallback(async (): Promise<
-    SeasonalReward[]
-  > => {
-    return currentSeason?.rewards || [];
-  }, [currentSeason]);
-
-  // Claim seasonal reward
+  const getSeasonalRewards = useCallback(
+    async () => currentSeason?.rewards || [],
+    [currentSeason],
+  );
   const claimSeasonalReward = useCallback(
     async (rewardId: string) => {
       logger.info("Seasonal reward claimed", { rewardId, userId });
-      // In a real implementation, this would claim the reward and update user data
       await new Promise((resolve) => setTimeout(resolve, 500));
     },
     [userId],
   );
 
-  // Computed properties
+  // Computed values
   const currentLevel = playerProfile.level;
-  const progressToNext =
-    playerProfile.experienceToNext > 0
-      ? ((playerProfile.experience -
-          (LEVEL_THRESHOLDS[playerProfile.level - 1] || 0)) /
-          ((LEVEL_THRESHOLDS[playerProfile.level] ||
-            playerProfile.experienceToNext) -
-            (LEVEL_THRESHOLDS[playerProfile.level - 1] || 0))) *
-        100
-      : 100;
-
+  const progressToNext = calculateProgressToNext(
+    playerProfile.level,
+    playerProfile.experience,
+    playerProfile.experienceToNext,
+  );
   const activeChallengeCount = activeChallenges.length;
-  const completedChallengesThisWeek = playerProfile.stats.challengesCompleted; // Simplified
-
+  const completedChallengesThisWeek = playerProfile.stats.challengesCompleted;
   const rank =
     leaderboards.length > 0
       ? leaderboards[0].entries.findIndex((e) => e.userId === userId) + 1 || 0
       : 0;
-
   const hasUnclaimedRewards =
     currentSeason?.rewards.some((r) => !r.claimed) || false;
+  const getChallengeProgress = (id: string) =>
+    activeChallenges.find((c) => c.id === id)?.progress;
 
   return {
-    // Player state
     playerProfile,
     activeChallenges,
     leaderboards,
     currentSeason,
     socialFeatures,
     experienceHistory,
-
-    // Challenge management
     acceptChallenge: acceptChallengeMutation.mutate,
     completeChallenge: completeChallengeMutation.mutate,
-    getChallengeProgress: (challengeId: string) => {
-      const challenge = activeChallenges.find((c) => c.id === challengeId);
-      return challenge?.progress;
-    },
-
-    // Experience and leveling
+    getChallengeProgress,
     addExperience: addExperienceMutation.mutate,
     checkLevelUp,
-
-    // Leaderboard features
     getLeaderboardRank,
-    joinLeaderboard: async (leaderboardId: string) => {
-      logger.info("Joined leaderboard", { leaderboardId, userId });
-    },
-    leaveLeaderboard: async (leaderboardId: string) => {
-      logger.info("Left leaderboard", { leaderboardId, userId });
-    },
-
-    // Social features
+    joinLeaderboard: async (id: string) =>
+      logger.info("Joined leaderboard", { leaderboardId: id, userId }),
+    leaveLeaderboard: async (id: string) =>
+      logger.info("Left leaderboard", { leaderboardId: id, userId }),
     compareWithFriends,
     sendChallenge,
-
-    // Seasonal events
     getSeasonalRewards,
     claimSeasonalReward,
-
-    // Loading states
     isAcceptingChallenge: acceptChallengeMutation.isPending,
     isCompletingChallenge: completeChallengeMutation.isPending,
     isAddingExperience: addExperienceMutation.isPending,
-
-    // Results
     lastChallengeCompletion: completeChallengeMutation.data,
     lastLevelResult: addExperienceMutation.data,
-
-    // Computed properties
     currentLevel,
     progressToNext,
     activeChallengeCount,
     completedChallengesThisWeek,
     rank,
     hasUnclaimedRewards,
-
-    // Quick stats
     totalExperience: playerProfile.stats.totalExperience,
     totalBadges: playerProfile.badges.length,
     currentStreak: playerProfile.stats.currentStreak,
-
-    // Errors
     error:
       acceptChallengeMutation.error ||
       completeChallengeMutation.error ||
