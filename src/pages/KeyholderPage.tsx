@@ -12,6 +12,7 @@ import {
   SessionControls,
   TaskManagement,
 } from "../components/keyholder";
+import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
 import { logger } from "../utils/logging";
 import { FaLock, FaCog, FaEye, FaSpinner } from "../utils/iconImport";
 
@@ -24,50 +25,56 @@ const LoadingDisplay: React.FC = () => (
 );
 
 // Settings Component
-const KeyholderSettings: React.FC<{ onLockControls: () => void }> = ({
-  onLockControls,
-}) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-    <div className="flex items-center gap-3 mb-4">
-      <FaCog className="text-nightly-spring-green" />
-      <h3 className="text-lg font-semibold text-nightly-honeydew">
-        Keyholder Settings
-      </h3>
-    </div>
+const KeyholderSettings: React.FC<{
+  onLockControls: () => void;
+  submissiveUserId?: string;
+}> = ({ onLockControls, submissiveUserId }) => (
+  <div className="space-y-6">
+    {/* Keyholder Duration Goal */}
+    {submissiveUserId && <KeyholderDurationSection userId={submissiveUserId} />}
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
-        <div className="flex items-center gap-3 mb-2">
-          <FaEye className="text-nightly-aquamarine" />
-          <span className="font-medium text-nightly-honeydew">
-            View Full Report
-          </span>
-        </div>
-        <p className="text-sm text-nightly-celadon">
-          See complete session history and statistics
-        </p>
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <FaCog className="text-nightly-spring-green" />
+        <h3 className="text-lg font-semibold text-nightly-honeydew">
+          Keyholder Settings
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
+          <div className="flex items-center gap-3 mb-2">
+            <FaEye className="text-nightly-aquamarine" />
+            <span className="font-medium text-nightly-honeydew">
+              View Full Report
+            </span>
+          </div>
+          <p className="text-sm text-nightly-celadon">
+            See complete session history and statistics
+          </p>
+        </button>
+
+        <button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
+          <div className="flex items-center gap-3 mb-2">
+            <FaCog className="text-nightly-lavender-floral" />
+            <span className="font-medium text-nightly-honeydew">
+              Manage Rules
+            </span>
+          </div>
+          <p className="text-sm text-nightly-celadon">
+            Set requirements and restrictions
+          </p>
+        </button>
+      </div>
+
+      <button
+        onClick={onLockControls}
+        className="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+      >
+        <FaLock />
+        Lock Controls
       </button>
-
-      <button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
-        <div className="flex items-center gap-3 mb-2">
-          <FaCog className="text-nightly-lavender-floral" />
-          <span className="font-medium text-nightly-honeydew">
-            Manage Rules
-          </span>
-        </div>
-        <p className="text-sm text-nightly-celadon">
-          Set requirements and restrictions
-        </p>
-      </button>
     </div>
-
-    <button
-      onClick={onLockControls}
-      className="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
-    >
-      <FaLock />
-      Lock Controls
-    </button>
   </div>
 );
 
@@ -164,7 +171,10 @@ const KeyholderPage: React.FC = () => {
                 <TaskManagement
                   userId={selectedRelationship?.wearerId || user?.uid || ""}
                 />
-                <KeyholderSettings onLockControls={lockKeyholderControls} />
+                <KeyholderSettings
+                  onLockControls={lockKeyholderControls}
+                  submissiveUserId={selectedRelationship?.wearerId}
+                />
               </>
             )}
           </div>

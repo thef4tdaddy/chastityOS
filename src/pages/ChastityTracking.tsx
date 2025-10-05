@@ -14,6 +14,7 @@ import { useAuth } from "../hooks/api/useAuth";
 import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
 import { useSessionActions } from "../hooks/session/useSessionActions";
 import { useLifetimeStats } from "../hooks/stats/useLifetimeStats";
+import { useKeyholderRequiredDurationQuery } from "../hooks/api/usePersonalGoalQueries";
 import { logger } from "../utils/logging";
 import type { DBSession } from "../types/database";
 import type { SessionRestorationResult } from "../services/SessionPersistenceService";
@@ -290,6 +291,9 @@ const TrackerPage: React.FC = () => {
   const lifetimeStats = useLifetimeStats(user?.uid);
   const { refresh: refreshLifetimeStats } = lifetimeStats;
 
+  // Keyholder required duration goal
+  const { data: keyholderGoal } = useKeyholderRequiredDurationQuery(user?.uid);
+
   // Wrap session actions to refresh lifetime stats after each action
   const startSession = async (
     config?: import("../hooks/session/useSessionActions").SessionConfig,
@@ -324,10 +328,10 @@ const TrackerPage: React.FC = () => {
         sessionId: sessionId || undefined,
         userId: user?.uid,
         keyholderUserId: undefined, // TODO: Get from relationship/session
-        isGoalActive: goals?.active?.length > 0,
+        isGoalActive: goals?.active?.length > 0 || !!keyholderGoal,
         isHardcoreGoal: realSession?.isHardcoreMode || false,
-        requiredKeyholderDurationSeconds: 0, // TODO: Get from keyholder goals
-        hasPendingReleaseRequest: false, // TODO: Implement release requests
+        requiredKeyholderDurationSeconds: keyholderGoal?.targetValue || 0,
+        hasPendingReleaseRequest: false, // Handled by BegForReleaseButton
         mainChastityDisplayTime: duration,
         totalChastityTime: duration,
       }
