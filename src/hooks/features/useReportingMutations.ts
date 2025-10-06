@@ -26,7 +26,7 @@ import {
   exportReportData,
   getRawData,
   exportData,
-} from "./reportingHelpers";
+} from "../../utils/reporting/reportingHelpers";
 
 export function useReportingMutations(
   userId: string | undefined,
