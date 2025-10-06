@@ -31,14 +31,12 @@ export const useGoals = (userId?: string, relationshipId?: string) => {
     goalTemplates,
     recommendedGoals,
     goalAnalytics,
-  } = useGoalData(
+  } = useGoalData({
     userId,
     relationshipId,
-    undefined,
-    undefined,
-    generateSmartRecommendations,
-    calculateGoalAnalytics,
-  );
+    generateRecommendations: generateSmartRecommendations,
+    calculateAnalytics: calculateGoalAnalytics,
+  });
 
   // CRUD mutations
   const { createGoalMutation, updateGoalMutation, deleteGoalMutation } =

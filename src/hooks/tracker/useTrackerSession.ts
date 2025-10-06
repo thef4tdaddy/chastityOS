@@ -9,62 +9,6 @@ import { useTrackerHandlers } from "../useTrackerHandlers";
 import type { DBSession } from "@/types/database";
 import type { SessionRestorationResult } from "@/services/SessionPersistenceService";
 
-// Helper function to handle session restoration
-const createSessionRestorationHandler =
-  (
-    setCurrentSession: (session: DBSession | null) => void,
-    startHeartbeat: (sessionId: string) => void,
-    setCorruptedSession: (session: DBSession | null) => void,
-    setShowSessionRecovery: (show: boolean) => void,
-  ) =>
-  (result: SessionRestorationResult) => {
-    if (result.session) {
-      setCurrentSession(result.session);
-      startHeartbeat(result.session.id);
-
-      if (result.error && result.session) {
-        setCorruptedSession(result.session);
-        setShowSessionRecovery(true);
-      }
-    }
-  };
-
-// Helper function to handle session recovery
-const createSessionRecoveryHandler =
-  (
-    setCurrentSession: (session: DBSession | null) => void,
-    backupSession: (session: DBSession) => Promise<void>,
-    startHeartbeat: (sessionId: string) => void,
-    setShowSessionRecovery: (show: boolean) => void,
-    setCorruptedSession: (session: DBSession | null) => void,
-  ) =>
-  async (session: DBSession) => {
-    try {
-      await backupSession(session);
-      setCurrentSession(session);
-      startHeartbeat(session.id);
-      setShowSessionRecovery(false);
-      setCorruptedSession(null);
-    } catch (_error) {
-      // Error already logged by service
-    }
-  };
-
-// Helper function to handle session discard
-const createSessionDiscardHandler =
-  (
-    setCurrentSession: (session: DBSession | null) => void,
-    setShowSessionRecovery: (show: boolean) => void,
-    setCorruptedSession: (session: DBSession | null) => void,
-    stopHeartbeat: () => void,
-  ) =>
-  () => {
-    setCurrentSession(null);
-    setShowSessionRecovery(false);
-    setCorruptedSession(null);
-    stopHeartbeat();
-  };
-
 export const useTrackerSession = (
   userId: string | undefined,
   mockData: {
@@ -108,35 +52,41 @@ export const useTrackerSession = (
 
   // Create handler functions
   const handleSessionRestored = useCallback(
-    createSessionRestorationHandler(
-      setCurrentSession,
-      startHeartbeat,
-      setCorruptedSession,
-      setShowSessionRecovery,
-    ),
+    (result: SessionRestorationResult) => {
+      if (result.session) {
+        setCurrentSession(result.session);
+        startHeartbeat(result.session.id);
+
+        if (result.error && result.session) {
+          setCorruptedSession(result.session);
+          setShowSessionRecovery(true);
+        }
+      }
+    },
     [startHeartbeat],
   );
 
   const handleRecoverSession = useCallback(
-    createSessionRecoveryHandler(
-      setCurrentSession,
-      backupSession,
-      startHeartbeat,
-      setShowSessionRecovery,
-      setCorruptedSession,
-    ),
+    async (session: DBSession) => {
+      try {
+        await backupSession(session);
+        setCurrentSession(session);
+        startHeartbeat(session.id);
+        setShowSessionRecovery(false);
+        setCorruptedSession(null);
+      } catch {
+        // Error already logged by service
+      }
+    },
     [backupSession, startHeartbeat],
   );
 
-  const handleDiscardSession = useCallback(
-    createSessionDiscardHandler(
-      setCurrentSession,
-      setShowSessionRecovery,
-      setCorruptedSession,
-      stopHeartbeat,
-    ),
-    [stopHeartbeat],
-  );
+  const handleDiscardSession = useCallback(() => {
+    setCurrentSession(null);
+    setShowSessionRecovery(false);
+    setCorruptedSession(null);
+    stopHeartbeat();
+  }, [stopHeartbeat]);
 
   return {
     // State

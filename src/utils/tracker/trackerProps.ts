@@ -5,6 +5,26 @@
 
 import type { DBSession, DBGoal } from "@/types/database";
 
+interface MockTrackerData {
+  isCageOn: boolean;
+  isPaused: boolean;
+  sessionId?: string;
+  userId?: string;
+  isGoalActive?: boolean;
+  isHardcoreGoal?: boolean;
+  requiredKeyholderDurationSeconds?: number;
+  hasPendingReleaseRequest?: boolean;
+  mainChastityDisplayTime?: number;
+  totalChastityTime: number;
+  totalTimeCageOff?: number;
+  topBoxLabel?: string;
+  timeCageOff?: number;
+  useRealTimeTimer?: boolean;
+  remainingGoalTime?: number;
+  keyholderName?: string;
+  savedSubmissivesName?: string;
+}
+
 interface TrackerStatsPropsReal {
   topBoxLabel: string;
   timeCageOff: number;
@@ -115,7 +135,7 @@ export const buildTrackerHeaderProps = (
 /**
  * Build mock tracker data
  */
-export const buildMockTrackerData = (mockData: any) => {
+export const buildMockTrackerData = (mockData: MockTrackerData) => {
   return {
     isCageOn: mockData.isCageOn,
     isPaused: mockData.isPaused,
@@ -134,7 +154,7 @@ export const buildMockTrackerData = (mockData: any) => {
  * Build mock tracker stats props
  */
 export const buildMockTrackerStatsProps = (
-  mockData: any,
+  mockData: MockTrackerData,
   currentSession?: DBSession | null,
 ) => {
   const baseProps = {

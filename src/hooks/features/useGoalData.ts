@@ -14,20 +14,30 @@ import {
 import { GoalStorageService } from "../../services/goalStorage";
 import { DEFAULT_TEMPLATES } from "@/utils/goals/common";
 
-export function useGoalData(
-  userId?: string,
-  relationshipId?: string,
-  personalGoals?: EnhancedGoal[],
-  collaborativeGoals?: CollaborativeGoal[],
+export interface UseGoalDataOptions {
+  userId?: string;
+  relationshipId?: string;
+  personalGoals?: EnhancedGoal[];
+  collaborativeGoals?: CollaborativeGoal[];
   generateRecommendations?: (
     personal: EnhancedGoal[],
     collaborative: CollaborativeGoal[],
-  ) => GoalRecommendation[],
+  ) => GoalRecommendation[];
   calculateAnalytics?: (
     personal: EnhancedGoal[],
     collaborative: CollaborativeGoal[],
-  ) => GoalAnalytics,
-) {
+  ) => GoalAnalytics;
+}
+
+export function useGoalData(options: UseGoalDataOptions) {
+  const {
+    userId,
+    relationshipId,
+    personalGoals,
+    collaborativeGoals,
+    generateRecommendations,
+    calculateAnalytics,
+  } = options;
   // Get personal goals
   const personalGoalsQuery = useQuery<EnhancedGoal[]>({
     queryKey: ["goals", "personal", userId],
