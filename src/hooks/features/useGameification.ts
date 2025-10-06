@@ -29,7 +29,7 @@ import {
   calculateLevelResult,
   calculateProgressToNext,
   calculatePercentile,
-} from "./gamificationHelpers";
+} from "../../utils/gamification/gamificationHelpers";
 import { useGamificationMutations } from "./useGamificationMutations";
 import { useGamificationData } from "./useGamificationData";
 
