@@ -17,6 +17,7 @@ import {
   LeaderboardPrivacy,
 } from "../../types";
 import { logger } from "../../utils/logging";
+import { eventDBService } from "./EventDBService";
 
 interface UpdateLeaderboardEntryOptions {
   userId: string;
@@ -191,6 +192,32 @@ export class AchievementDBService extends BaseDBService<DBAchievement> {
         `Achievement ${achievementId} awarded to user ${userId}`,
         "AchievementDBService",
       );
+
+      // Get achievement details for logging
+      const achievement = await this.getAchievementById(achievementId);
+
+      // AUTO-LOG: Achievement unlocked
+      await eventDBService.logEvent(
+        userId,
+        "achievement",
+        {
+          action: "unlocked",
+          title: "Achievement Unlocked",
+          description: achievement
+            ? `Unlocked: ${achievement.name}`
+            : `Achievement unlocked: ${achievementId}`,
+          metadata: {
+            achievementId,
+            achievementName: achievement?.name,
+            category: achievement?.category,
+            difficulty: achievement?.difficulty,
+            points: achievement?.points,
+            progress,
+          },
+        },
+        {},
+      );
+
       return userAchievement.id;
     } catch (error) {
       logger.error(

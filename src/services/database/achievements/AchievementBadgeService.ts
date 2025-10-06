@@ -6,6 +6,7 @@
 import { db } from "../../storage/ChastityDB";
 import { DBUserAchievement } from "../../../types";
 import { logger } from "../../../utils/logging";
+import { eventDBService } from "../EventDBService";
 
 export class AchievementBadgeService {
   private userAchievementsTable = db.userAchievements;
@@ -73,6 +74,35 @@ export class AchievementBadgeService {
         `Achievement ${achievementId} awarded to user ${userId}`,
         "AchievementBadgeService",
       );
+
+      // Get achievement details for logging
+      const achievementRecord = await db.achievements.get(achievementId);
+
+      // AUTO-LOG: Achievement/Badge unlocked
+      await eventDBService.logEvent(
+        userId,
+        "achievement",
+        {
+          action: "unlocked",
+          title:
+            achievementRecord?.category === "milestone"
+              ? "Milestone Reached"
+              : "Achievement Unlocked",
+          description: achievementRecord
+            ? `Unlocked: ${achievementRecord.name}`
+            : `Achievement unlocked: ${achievementId}`,
+          metadata: {
+            achievementId,
+            achievementName: achievementRecord?.name,
+            category: achievementRecord?.category,
+            difficulty: achievementRecord?.difficulty,
+            points: achievementRecord?.points,
+            progress,
+          },
+        },
+        {},
+      );
+
       return userAchievement.id;
     } catch (error) {
       logger.error(

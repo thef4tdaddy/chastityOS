@@ -7,6 +7,7 @@ import { db } from "../storage/ChastityDB";
 import type { DBTask, TaskFilters, TaskStatus } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
+import { eventDBService } from "./EventDBService";
 
 const logger = serviceLogger("TaskDBService");
 
@@ -45,6 +46,25 @@ class TaskDBService extends BaseDBService<DBTask> {
       await this.create(task);
 
       logger.info("Added new task", { taskId, userId, text });
+
+      // AUTO-LOG: Task created
+      await eventDBService.logEvent(
+        userId,
+        "task",
+        {
+          action: "created",
+          title: "Task Created",
+          description: `New task: ${text}`,
+          metadata: {
+            taskId,
+            priority: task.priority,
+            assignedBy: task.assignedBy,
+            dueDate: task.dueDate?.toISOString(),
+          },
+        },
+        {},
+      );
+
       return taskId;
     } catch (error) {
       logger.error("Failed to add task", {
@@ -121,6 +141,11 @@ class TaskDBService extends BaseDBService<DBTask> {
     } = {},
   ): Promise<void> {
     try {
+      const task = await this.findById(taskId);
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
       const updateData: Partial<DBTask> = { status };
       if (status === "submitted") {
         updateData.submittedAt = new Date();
@@ -137,6 +162,41 @@ class TaskDBService extends BaseDBService<DBTask> {
       await this.update(taskId, updateData);
 
       logger.info("Updated task status", { taskId, status });
+
+      // AUTO-LOG: Task status change
+      const eventTitles: Record<TaskStatus, string> = {
+        pending: "Task Pending",
+        submitted: "Task Submitted",
+        approved: "Task Approved",
+        rejected: "Task Rejected",
+        completed: "Task Completed",
+      };
+
+      const eventDescriptions: Record<TaskStatus, string> = {
+        pending: `Task "${task.text}" is pending`,
+        submitted: `Task "${task.text}" submitted for review`,
+        approved: `Task "${task.text}" approved by keyholder`,
+        rejected: `Task "${task.text}" rejected by keyholder`,
+        completed: `Task "${task.text}" completed`,
+      };
+
+      await eventDBService.logEvent(
+        task.userId,
+        "task",
+        {
+          action: status,
+          title: eventTitles[status],
+          description: eventDescriptions[status],
+          metadata: {
+            taskId,
+            previousStatus: task.status,
+            newStatus: status,
+            submissiveNote: options.submissiveNote,
+            keyholderFeedback: options.keyholderFeedback,
+          },
+        },
+        {},
+      );
     } catch (error) {
       logger.error("Failed to update task status", {
         error: error as Error,
@@ -218,6 +278,25 @@ class TaskDBService extends BaseDBService<DBTask> {
 
       await this.create(task);
       logger.info("Created new task", { taskId, userId: taskData.userId });
+
+      // AUTO-LOG: Task created
+      await eventDBService.logEvent(
+        taskData.userId,
+        "task",
+        {
+          action: "created",
+          title: "Task Created",
+          description: `New task: ${taskData.text}`,
+          metadata: {
+            taskId,
+            priority: taskData.priority,
+            assignedBy: taskData.assignedBy,
+            dueDate: taskData.dueDate?.toISOString(),
+          },
+        },
+        {},
+      );
+
       return taskId;
     } catch (error) {
       logger.error("Failed to create task", { error: error as Error });

@@ -29,6 +29,7 @@ import {
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 import { relationshipCRUDService } from "./RelationshipCRUDService";
+import { eventDBService } from "../EventDBService";
 
 const logger = serviceLogger("RelationshipInviteService");
 
@@ -236,6 +237,39 @@ export class RelationshipInviteService {
         submissiveId,
         keyholderId,
       });
+
+      // AUTO-LOG: Account linked (for both users)
+      await eventDBService.logEvent(
+        submissiveId,
+        "relationship",
+        {
+          action: "linked",
+          title: "Account Linked",
+          description: "Connected with keyholder",
+          metadata: {
+            relationshipId,
+            keyholderId,
+            role: "submissive",
+          },
+        },
+        {},
+      );
+
+      await eventDBService.logEvent(
+        keyholderId,
+        "relationship",
+        {
+          action: "linked",
+          title: "Account Linked",
+          description: "Connected with submissive",
+          metadata: {
+            relationshipId,
+            submissiveId,
+            role: "keyholder",
+          },
+        },
+        {},
+      );
 
       return relationshipId;
     } catch (error) {

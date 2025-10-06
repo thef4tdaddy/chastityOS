@@ -7,6 +7,7 @@ import { getFirestore } from "@/services/firebase";
 import { RelationshipStatus } from "@/types/relationships";
 import { serviceLogger } from "@/utils/logging";
 import { relationshipCRUDService } from "./RelationshipCRUDService";
+import { eventDBService } from "../EventDBService";
 
 const logger = serviceLogger("RelationshipStatusService");
 
@@ -68,6 +69,39 @@ export class RelationshipStatusService {
         relationshipId,
         endingUserId,
       });
+
+      // AUTO-LOG: Account unlinked (for both users)
+      await eventDBService.logEvent(
+        relationship.submissiveId,
+        "relationship",
+        {
+          action: "unlinked",
+          title: "Account Unlinked",
+          description: "Disconnected from keyholder",
+          metadata: {
+            relationshipId,
+            keyholderId: relationship.keyholderId,
+            endedBy: endingUserId,
+          },
+        },
+        {},
+      );
+
+      await eventDBService.logEvent(
+        relationship.keyholderId,
+        "relationship",
+        {
+          action: "unlinked",
+          title: "Account Unlinked",
+          description: "Disconnected from submissive",
+          metadata: {
+            relationshipId,
+            submissiveId: relationship.submissiveId,
+            endedBy: endingUserId,
+          },
+        },
+        {},
+      );
     } catch (error) {
       logger.error("Failed to end relationship", {
         error: error as Error,
