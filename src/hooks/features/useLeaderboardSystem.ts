@@ -49,7 +49,7 @@ export function useLeaderboardSystem(
 
   // Calculate user's rank in leaderboards
   const rank =
-    leaderboards.length > 0
+    leaderboards.length > 0 && leaderboards[0]?.entries
       ? leaderboards[0].entries.findIndex((e) => e.userId === userId) + 1 || 0
       : 0;
 
