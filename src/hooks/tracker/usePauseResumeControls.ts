@@ -149,6 +149,14 @@ export const usePauseResumeControls = ({
 
   const handleResumeClick = async () => {
     if (!sessionId) return;
+    // Prevent resume if session is not actually paused
+    if (!isPaused) {
+      logger.warn("Attempted to resume a session that is not paused", {
+        sessionId,
+        isPaused,
+      });
+      return;
+    }
     await executeWithLoadingState(setIsLoading, async () => {
       onResume?.();
       logger.info("Session resume initiated", { sessionId });

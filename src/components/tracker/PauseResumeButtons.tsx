@@ -61,7 +61,7 @@ const ResumeButton: React.FC<ResumeButtonProps> = ({
       type="button"
       onClick={onResumeClick}
       disabled={isLoading}
-      className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 text-white font-bold py-3 px-6 shadow-lg hover:shadow-green-500/20 transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
+      className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 text-white font-bold py-3 px-6 shadow-lg hover:shadow-green-500/20 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       ▶️ {isLoading ? "Resuming..." : "Resume Session"}
     </button>
