@@ -120,6 +120,16 @@ export interface TaskConsequence {
   points?: number;
 }
 
+export interface RecurringConfig {
+  frequency: "daily" | "weekly" | "monthly" | "custom";
+  interval?: number; // For custom: every N days/weeks/months
+  daysOfWeek?: number[]; // For weekly: [0=Sun, 1=Mon, ..., 6=Sat]
+  dayOfMonth?: number; // For monthly: day of month (1-31)
+  nextDueDate?: Date; // Calculated next due date
+  parentTaskId?: string; // Link to original recurring task
+  instanceNumber?: number; // Which instance in the series
+}
+
 export interface Task {
   id: string;
   userId: string;
@@ -154,6 +164,10 @@ export interface Task {
   isRecurring: boolean;
   recurringPattern?: string;
   attachments?: string[];
+
+  // Recurring configuration
+  recurringConfig?: RecurringConfig;
+  recurringSeriesId?: string; // Same ID for all instances in series
 }
 
 // ==================== GOAL TYPES ====================
