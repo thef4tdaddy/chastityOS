@@ -2,9 +2,13 @@
  * Emergency PIN Setup Component
  * Allows users to set/update/remove emergency unlock PIN for hardcore mode
  */
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
-import { EmergencyPinDBService } from "../../services/database/EmergencyPinDBService";
+import {
+  useEmergencyPinStatus,
+  useSetEmergencyPin,
+  useRemoveEmergencyPin,
+} from "../../hooks/api/useEmergencyPin";
 import { useToast } from "../../hooks/state/useToast";
 import {
   FaLock,
@@ -26,38 +30,21 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
 }) => {
   const { user } = useAuthState();
   const { showWarning } = useToast();
-  const [hasPin, setHasPin] = useState(false);
-  const [createdAt, setCreatedAt] = useState<Date | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Use TanStack Query hooks
+  const { data: pinStatus, isLoading } = useEmergencyPinStatus(user?.uid);
+  const setEmergencyPin = useSetEmergencyPin();
+  const removeEmergencyPin = useRemoveEmergencyPin();
+
+  const hasPin = pinStatus?.exists || false;
+  const createdAt = pinStatus?.createdAt;
+
   const [isEditing, setIsEditing] = useState(false);
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  // Load PIN status on mount
-  useEffect(() => {
-    const loadPinStatus = async () => {
-      if (!user?.uid) return;
-
-      try {
-        setIsLoading(true);
-        const info = await EmergencyPinDBService.getEmergencyPinInfo(user.uid);
-
-        if (info) {
-          setHasPin(info.exists);
-          setCreatedAt(info.createdAt);
-        }
-      } catch {
-        // PIN status load failed - component will show as "not set"
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPinStatus();
-  }, [user?.uid]);
 
   const handleSavePin = async () => {
     if (!user?.uid) return;
@@ -76,11 +63,9 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
     try {
       setIsSaving(true);
       setError("");
-      await EmergencyPinDBService.setEmergencyPin(user.uid, pin);
+      await setEmergencyPin.mutateAsync({ userId: user.uid, pin });
 
       setSuccess("Emergency PIN saved successfully");
-      setHasPin(true);
-      setCreatedAt(new Date());
       setIsEditing(false);
       setPin("");
       setConfirmPin("");
@@ -104,11 +89,9 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
           onClick: async () => {
             try {
               setIsSaving(true);
-              await EmergencyPinDBService.removeEmergencyPin(user.uid);
+              await removeEmergencyPin.mutateAsync(user.uid);
 
               setSuccess("Emergency PIN removed");
-              setHasPin(false);
-              setCreatedAt(undefined);
 
               setTimeout(() => setSuccess(""), 3000);
             } catch {
