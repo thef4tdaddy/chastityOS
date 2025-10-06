@@ -25,16 +25,27 @@ import type {
   HistoryInsights,
 } from "./types/sessionHistory";
 
-export function useSessionHistoryRetrieval(
-  sessions: HistoricalSession[],
-  keyholderAccess: KeyholderHistoryAccess,
-  privacySettings: HistoryPrivacySettings,
-  averageSessionLength: number,
-  goalCompletionRate: number,
-  trends: HistoryTrends,
-  insights: HistoryInsights,
-  longestStreak: number,
-) {
+export interface UseSessionHistoryRetrievalOptions {
+  sessions: HistoricalSession[];
+  keyholderAccess: KeyholderHistoryAccess;
+  privacySettings: HistoryPrivacySettings;
+  averageSessionLength: number;
+  goalCompletionRate: number;
+  trends: HistoryTrends;
+  insights: HistoryInsights;
+  longestStreak: number;
+}
+
+export function useSessionHistoryRetrieval({
+  sessions,
+  keyholderAccess,
+  privacySettings,
+  averageSessionLength,
+  goalCompletionRate,
+  trends,
+  insights,
+  longestStreak,
+}: UseSessionHistoryRetrievalOptions) {
   // Data retrieval callbacks
   const getSessionsByDateRange = useCallback(
     (start: Date, end: Date): HistoricalSession[] =>
@@ -91,14 +102,12 @@ export function useSessionHistoryRetrieval(
   );
 
   const getGoalProgressHistory = useCallback(
-    (goalId: string): GoalProgressHistory =>
-      getGoalProgressHistoryUtil(sessions, goalId),
+    (): GoalProgressHistory[] => getGoalProgressHistoryUtil(sessions),
     [sessions],
   );
 
   const getComparisonMetrics = useCallback(
-    (period1: { start: Date; end: Date }, period2: { start: Date; end: Date }): ComparisonMetrics =>
-      getComparisonMetricsUtil(sessions, period1, period2),
+    (): ComparisonMetrics => getComparisonMetricsUtil(sessions),
     [sessions],
   );
 
