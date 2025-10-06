@@ -24,18 +24,18 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
   });
 
   // Determine color based on state
-  let timeColor = "text-lavender_web"; // default when active (not ticking)
+  let timeColor = "!text-lavender_web"; // default when active (not ticking)
   let borderClass = "border border-rose_quartz/30";
 
   if (isTickingOff) {
     if (isPaused) {
       // Yellow when paused
-      timeColor = "text-yellow-500";
+      timeColor = "!text-yellow-500";
       borderClass =
         "border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20";
     } else {
       // Red when off
-      timeColor = "text-nightly-deep_rose";
+      timeColor = "!text-nightly-deep_rose";
       borderClass =
         "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20";
     }
