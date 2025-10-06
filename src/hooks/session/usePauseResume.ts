@@ -106,7 +106,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   );
 
   // Use session actions hook
-  const { pauseSession, resumeSession } = usePauseSessionActions(
+  const { pauseSession, resumeSession } = usePauseSessionActions({
     sessionId,
     canPause,
     canResume,
@@ -118,7 +118,7 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     setPauseStatus,
     setPauseHistory,
     startCooldown,
-  );
+  });
 
   // Use sub-hooks for requests and keyholder actions
   const { requestEmergencyPause, requestCooldownOverride } = usePauseRequests(

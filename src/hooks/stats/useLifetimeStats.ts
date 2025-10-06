@@ -7,6 +7,12 @@ import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
 import { useSharedTimer } from "../useSharedTimer";
 import type { DBSession } from "../../types/database";
+import {
+  calculateSessionEffectiveTime,
+  calculateSessionPauseTime,
+  calculateTimeBetweenSessions,
+  calculateTimeSinceSessionEnd,
+} from "../../utils/stats/lifetimeStatsHelpers";
 
 const logger = serviceLogger("useLifetimeStats");
 
@@ -105,62 +111,21 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
     let totalCageOffTime = 0;
 
     sessions.forEach((session, index) => {
-      // Calculate effective chastity time (total time - pauses)
-      const startTime = session.startTime;
-      const endTime = session.endTime || currentTime;
+      // Calculate effective chastity time using helper
+      totalChastityTime += calculateSessionEffectiveTime(session, currentTime);
 
-      if (startTime) {
-        const sessionDuration = Math.floor(
-          (endTime.getTime() - startTime.getTime()) / 1000,
-        );
-        const effectiveTime = Math.max(
-          0,
-          sessionDuration - (session.accumulatedPauseTime || 0),
-        );
+      // Calculate pause time using helper
+      totalCageOffTime += calculateSessionPauseTime(session, currentTime);
 
-        // If session is currently paused, subtract current pause duration
-        if (session.isPaused && session.pauseStartTime && !session.endTime) {
-          const currentPauseDuration = Math.floor(
-            (currentTime.getTime() - session.pauseStartTime.getTime()) / 1000,
-          );
-          totalChastityTime += Math.max(
-            0,
-            effectiveTime - currentPauseDuration,
-          );
-        } else {
-          totalChastityTime += effectiveTime;
-        }
-
-        // Add accumulated pause time to cage-off time
-        totalCageOffTime += session.accumulatedPauseTime || 0;
-
-        // If currently paused, add current pause duration
-        if (session.isPaused && session.pauseStartTime && !session.endTime) {
-          const currentPauseDuration = Math.floor(
-            (currentTime.getTime() - session.pauseStartTime.getTime()) / 1000,
-          );
-          totalCageOffTime += currentPauseDuration;
-        }
-      }
-
-      // Calculate time between this session and the next one (cage off time)
+      // Calculate time between sessions using helper
       if (session.endTime && index > 0) {
         const nextSession = sessions[index - 1]; // Sessions are sorted newest first
-        if (nextSession && nextSession.startTime) {
-          const timeBetween = Math.floor(
-            (nextSession.startTime.getTime() - session.endTime.getTime()) /
-              1000,
-          );
-          totalCageOffTime += Math.max(0, timeBetween);
-        }
+        totalCageOffTime += calculateTimeBetweenSessions(session, nextSession);
       }
 
       // If this is the most recent session and it has ended, add time since end
       if (index === 0 && session.endTime) {
-        const timeSinceEnd = Math.floor(
-          (currentTime.getTime() - session.endTime.getTime()) / 1000,
-        );
-        totalCageOffTime += Math.max(0, timeSinceEnd);
+        totalCageOffTime += calculateTimeSinceSessionEnd(session, currentTime);
       }
     });
 
