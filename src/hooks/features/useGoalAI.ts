@@ -11,14 +11,17 @@ import {
   GoalCategory,
   GoalStatus,
   GoalDifficulty,
+  PlanTimeline,
+  PlanConflict,
+  PlanRecommendation,
 } from "../../types/goals";
 import { logger } from "../../utils/logging";
 
 export function useGoalAI(
   personalGoals: EnhancedGoal[],
-  generateTimeline: (goals: EnhancedGoal[]) => any[],
-  detectConflicts: (goals: EnhancedGoal[]) => any[],
-  generatePlanRecommendations: (goals: EnhancedGoal[]) => any[],
+  generateTimeline: (goals: EnhancedGoal[]) => PlanTimeline[],
+  detectConflicts: (goals: EnhancedGoal[]) => PlanConflict[],
+  generatePlanRecommendations: (goals: EnhancedGoal[]) => PlanRecommendation[],
 ) {
   // Generate goal from prompt mutation
   const generateGoalFromPromptMutation = useMutation({
