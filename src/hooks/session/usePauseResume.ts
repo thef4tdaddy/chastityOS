@@ -35,29 +35,13 @@ import {
 import { usePauseState } from "./usePauseState";
 import { useCooldownState } from "./useCooldownState";
 import { usePauseDurationTracking } from "./usePauseDurationTracking";
+import { usePauseKeyholderActions } from "./usePauseKeyholderActions";
+import { usePauseRequests } from "./usePauseRequests";
+import { usePauseInitialization } from "./usePauseInitialization";
+import { usePauseSessionActions } from "./usePauseSessionActions";
 
 const logger = serviceLogger("usePauseResume");
 
-const createInitialKeyholderOverrides = (): KeyholderOverrideCapabilities => ({
-  canOverrideCooldown: false,
-  canForcePause: false,
-  canForceResume: false,
-  canModifyCooldownDuration: false,
-  requiresReason: true,
-});
-
-const createInitialPauseAnalytics = (): PauseAnalytics => ({
-  totalPauses: 0,
-  averagePauseDuration: 0,
-  pauseFrequency: 0,
-  emergencyPauseCount: 0,
-  keyholderInitiatedCount: 0,
-  cooldownViolations: 0,
-  patterns: [],
-});
-
-// Complex pause/resume logic with cooldown management and analytics
-// eslint-disable-next-line max-statements
 export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   // Use shared timer for cooldown countdown
   const currentTime = useSharedTimer();
@@ -74,14 +58,18 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
 
   const { cooldownState, startCooldown, clearCooldown } = useCooldownState();
 
-  const [keyholderOverrides, setKeyholderOverrides] = useState(
-    createInitialKeyholderOverrides,
+  // Use initialization hook
+  const {
+    keyholderOverrides,
+    pauseAnalytics,
+    isLoading,
+    error,
+  } = usePauseInitialization(
+    sessionId,
+    relationshipId,
+    pauseHistory,
+    startCooldown,
   );
-  const [pauseAnalytics, setPauseAnalytics] = useState(
-    createInitialPauseAnalytics,
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Track pause duration
   usePauseDurationTracking(pauseStatus, updatePauseDuration);
@@ -121,308 +109,39 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
     [pauseHistory],
   );
 
-  // Initialize keyholder overrides
-  const initializeKeyholderOverrides = useCallback(() => {
-    if (relationshipId) {
-      setKeyholderOverrides(createKeyholderOverrides());
-    }
-  }, [relationshipId]);
-
-  // Load data functions
-  const loadPauseState = useCallback(async () => {
-    // Integration with pause state service
-  }, []);
-
-  const loadCooldownState = useCallback(async () => {
-    try {
-      const cooldownInfo = await PauseCooldownService.canUserPause(sessionId);
-      if (cooldownInfo && !cooldownInfo.canPause) {
-        startCooldown(
-          cooldownInfo.cooldownRemaining || 0,
-          keyholderOverrides.canOverrideCooldown,
-        );
-      }
-    } catch (err) {
-      logger.error("Failed to load cooldown state", { error: err });
-    }
-    // sessionId is a stable prop from the component, safe to omit from deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyholderOverrides.canOverrideCooldown, startCooldown]);
-
-  const loadPauseHistory = useCallback(async () => {
-    // Load pause history from service
-  }, []);
-
-  const loadPauseAnalytics = useCallback(async () => {
-    try {
-      const analytics = calculatePauseAnalytics(pauseHistory);
-      setPauseAnalytics(analytics);
-    } catch (err) {
-      logger.error("Failed to load pause analytics", { error: err });
-    }
-  }, [pauseHistory]);
-
-  // Initialization
-  useEffect(() => {
-    const initializePauseSystem = async () => {
-      if (!sessionId) return;
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        initializeKeyholderOverrides();
-        await Promise.all([
-          loadPauseState(),
-          loadCooldownState(),
-          loadPauseHistory(),
-          loadPauseAnalytics(),
-        ]);
-      } catch (err) {
-        logger.error("Failed to initialize pause system", { error: err });
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to initialize pause system",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializePauseSystem();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, relationshipId]);
-
-  // Pause session
-  const pauseSession = useCallback(
-    async (reason: PauseReason): Promise<void> => {
-      if (!sessionId || sessionId.trim() === "") {
-        const error = new Error("No active session to pause");
-        logger.error("Pause session failed", { error, sessionId });
-        throw error;
-      }
-
-      if (!canPause) {
-        logger.warn("Cannot pause: either already paused or in cooldown", {
-          sessionId,
-          isPaused: pauseStatus.isPaused,
-          isInCooldown: cooldownState.isInCooldown,
-        });
-        return; // Just return instead of throwing
-      }
-
-      try {
-        logger.debug("Pausing session", { sessionId, reason });
-
-        // Import sessionDBService dynamically to avoid circular dependencies
-        const { sessionDBService } = await import("../../services/database");
-        await sessionDBService.pauseSession(sessionId, new Date());
-
-        startPause(reason);
-        logger.info("Session paused successfully", { sessionId, reason });
-      } catch (err) {
-        logger.error("Failed to pause session", { error: err, sessionId });
-        throw err;
-      }
-    },
-    [
-      canPause,
-      sessionId,
-      startPause,
-      cooldownState.isInCooldown,
-      pauseStatus.isPaused,
-    ],
-  );
-
-  // Resume session
-  const resumeSession = useCallback(async (): Promise<void> => {
-    if (!sessionId || sessionId.trim() === "") {
-      const error = new Error("No active session to resume");
-      logger.error("Resume session failed", { error, sessionId });
-      throw error;
-    }
-
-    if (!canResume) {
-      const error = new Error("Cannot resume: session is not paused");
-      logger.error("Resume session failed", { error, sessionId });
-      throw error;
-    }
-
-    try {
-      logger.debug("Resuming session", { sessionId });
-
-      const resumeTime = new Date();
-      const duration = calculatePauseDuration(
-        pauseStatus.pauseStartTime,
-        resumeTime,
-      );
-
-      // Import sessionDBService dynamically to avoid circular dependencies
-      const { sessionDBService } = await import("../../services/database");
-      await sessionDBService.resumeSession(sessionId, resumeTime);
-
-      setPauseStatus(updatePauseStatusOnResume(pauseStatus));
-      setPauseHistory((prev) =>
-        updatePauseHistoryOnResume(prev, resumeTime, duration),
-      );
-
-      const cooldownDur = calculateCooldownDuration(pauseAnalytics, duration);
-      logger.info("Starting cooldown after resume", {
-        sessionId,
-        cooldownSeconds: cooldownDur,
-        pauseDuration: duration,
-      });
-      startCooldown(cooldownDur, keyholderOverrides.canOverrideCooldown);
-
-      logger.info("Session resumed successfully", {
-        sessionId,
-        pauseDuration: duration,
-      });
-    } catch (err) {
-      logger.error("Failed to resume session", { error: err, sessionId });
-      throw err;
-    }
-  }, [
-    canResume,
+  // Use session actions hook
+  const { pauseSession, resumeSession } = usePauseSessionActions(
     sessionId,
+    canPause,
+    canResume,
     pauseStatus,
+    cooldownState,
     pauseAnalytics,
-    keyholderOverrides.canOverrideCooldown,
+    keyholderOverrides,
+    startPause,
     setPauseStatus,
     setPauseHistory,
     startCooldown,
-  ]);
-
-  // Emergency pause
-  const requestEmergencyPause = useCallback(
-    async (reason: string): Promise<PauseRequestStatus> => {
-      try {
-        logger.debug("Requesting emergency pause", { sessionId, reason });
-
-        if (cooldownState.isInCooldown) {
-          logger.warn("Emergency pause bypassing cooldown", { sessionId });
-        }
-
-        await pauseSession("emergency");
-
-        return {
-          approved: true,
-          reason: "Emergency pause approved automatically",
-          requestId: `emergency_${Date.now()}`,
-          approvedBy: "emergency_protocol",
-          approvedAt: new Date(),
-        };
-      } catch (err) {
-        logger.error("Failed to request emergency pause", { error: err });
-        return {
-          approved: false,
-          reason: err instanceof Error ? err.message : "Unknown error",
-          requestId: `emergency_${Date.now()}`,
-        };
-      }
-    },
-    [sessionId, cooldownState.isInCooldown, pauseSession],
   );
 
-  // Request cooldown override
-  const requestCooldownOverride = useCallback(
-    async (justification: string): Promise<OverrideRequestStatus> => {
-      if (!relationshipId) {
-        return {
-          approved: false,
-          reason: "Cooldown override requires keyholder relationship",
-          requestId: `override_${Date.now()}`,
-          overrideType: "cooldown",
-        };
-      }
-
-      try {
-        logger.debug("Requesting cooldown override", {
-          sessionId,
-          justification,
-        });
-
-        return {
-          approved: false,
-          reason: "Override request sent to keyholder",
-          requestId: `override_${Date.now()}`,
-          overrideType: "cooldown",
-        };
-      } catch (err) {
-        logger.error("Failed to request cooldown override", { error: err });
-        return {
-          approved: false,
-          reason: err instanceof Error ? err.message : "Unknown error",
-          requestId: `override_${Date.now()}`,
-          overrideType: "cooldown",
-        };
-      }
-    },
-    [sessionId, relationshipId],
+  // Use sub-hooks for requests and keyholder actions
+  const { requestEmergencyPause, requestCooldownOverride } = usePauseRequests(
+    sessionId,
+    relationshipId,
+    cooldownState,
+    pauseSession,
   );
 
-  // Keyholder force pause
-  const keyholderForcePause = useCallback(
-    async (reason: string): Promise<void> => {
-      if (!keyholderOverrides.canForcePause) {
-        throw new Error("Keyholder does not have force pause permissions");
-      }
-
-      try {
-        logger.debug("Keyholder forcing pause", { sessionId, reason });
-        startPause("keyholder_request", "keyholder");
-        logger.info("Keyholder force pause successful", { sessionId });
-      } catch (err) {
-        logger.error("Failed to execute keyholder force pause", { error: err });
-        throw err;
-      }
-    },
-    [keyholderOverrides.canForcePause, sessionId, startPause],
-  );
-
-  // Keyholder force resume
-  const keyholderForceResume = useCallback(
-    async (reason: string): Promise<void> => {
-      if (!keyholderOverrides.canForceResume) {
-        throw new Error("Keyholder does not have force resume permissions");
-      }
-
-      try {
-        logger.debug("Keyholder forcing resume", { sessionId, reason });
-        await resumeSession();
-        logger.info("Keyholder force resume successful", { sessionId });
-      } catch (err) {
-        logger.error("Failed to execute keyholder force resume", {
-          error: err,
-        });
-        throw err;
-      }
-    },
-    [keyholderOverrides.canForceResume, sessionId, resumeSession],
-  );
-
-  // Keyholder override cooldown
-  const keyholderOverrideCooldown = useCallback(
-    async (reason: string): Promise<void> => {
-      if (!keyholderOverrides.canOverrideCooldown) {
-        throw new Error(
-          "Keyholder does not have cooldown override permissions",
-        );
-      }
-
-      try {
-        logger.debug("Keyholder overriding cooldown", { sessionId, reason });
-        clearCooldown();
-        logger.info("Keyholder cooldown override successful", { sessionId });
-      } catch (err) {
-        logger.error("Failed to execute keyholder cooldown override", {
-          error: err,
-        });
-        throw err;
-      }
-    },
-    [keyholderOverrides.canOverrideCooldown, sessionId, clearCooldown],
+  const {
+    keyholderForcePause,
+    keyholderForceResume,
+    keyholderOverrideCooldown,
+  } = usePauseKeyholderActions(
+    sessionId,
+    keyholderOverrides,
+    startPause,
+    resumeSession,
+    clearCooldown,
   );
 
   // Analytics
