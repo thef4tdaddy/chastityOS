@@ -7,17 +7,36 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getNetworkInfo, getNetworkQuality } from "./offlineStatusHelpers";
 import type { OfflineStatus, NetworkEvent } from "./useOfflineStatus";
 
-export function useConnectionMonitoring(
-  handleOnline: () => void,
-  handleOffline: () => void,
-  addNetworkEvent: (
-    type: NetworkEvent["type"],
-    details?: Record<string, unknown>,
-  ) => void,
-  offlineStatus: OfflineStatus | undefined,
-  lastOnline: Date | null,
-  setLastOnline: (date: Date) => void,
-) {
+/**
+ * Options for the useConnectionMonitoring hook
+ */
+export interface ConnectionMonitoringOptions {
+  /** Handlers for network events */
+  handlers: {
+    /** Called when the browser goes online */
+    onOnline: () => void;
+    /** Called when the browser goes offline */
+    onOffline: () => void;
+    /** Called to add a network event to the log */
+    addNetworkEvent: (
+      type: NetworkEvent["type"],
+      details?: Record<string, unknown>,
+    ) => void;
+  };
+  /** Current offline status */
+  offlineStatus: OfflineStatus | undefined;
+  /** State for last online timestamp */
+  lastOnline: {
+    /** Current last online timestamp */
+    value: Date | null;
+    /** Setter for last online timestamp */
+    setValue: (date: Date) => void;
+  };
+}
+
+export function useConnectionMonitoring(options: ConnectionMonitoringOptions) {
+  const { handlers, offlineStatus, lastOnline } = options;
+  const { onOnline, onOffline, addNetworkEvent } = handlers;
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -40,8 +59,8 @@ export function useConnectionMonitoring(
     };
 
     // Listen for online/offline events
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
 
     // Listen for connection changes if supported
     const nav = navigator as Navigator & {
@@ -95,18 +114,18 @@ export function useConnectionMonitoring(
     }
 
     // Set initial online status
-    if (navigator.onLine && !lastOnline) {
-      setLastOnline(new Date());
+    if (navigator.onLine && !lastOnline.value) {
+      lastOnline.setValue(new Date());
     }
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
       if (connection && connection.removeEventListener) {
         connection.removeEventListener("change", handleConnectionChange);
       }
     };
     // addNetworkEvent, getNetworkInfo, getNetworkQuality are stable (no/stable deps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleOnline, handleOffline, offlineStatus, queryClient, lastOnline]);
+  }, [onOnline, onOffline, offlineStatus, queryClient, lastOnline]);
 }
