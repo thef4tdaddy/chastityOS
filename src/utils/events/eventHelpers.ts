@@ -6,7 +6,7 @@ interface EventWithOwner {
   timestamp: Date | number;
   ownerName?: string;
   ownerId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface EventOwnerInfo {
