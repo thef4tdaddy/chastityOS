@@ -34,12 +34,11 @@ const calculateProgress = (current: number, target: number): number => {
   return Math.min(Math.round((current / target) * 100), 100);
 };
 
-export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
-  goal,
-  onUpdate,
-  onDelete,
-}) => {
-  const [isEditing, setIsEditing] = useState(false);
+const PersonalGoalEditForm: React.FC<{
+  goal: DBGoal;
+  onSave: (title: string, duration: number, description?: string) => void;
+  onCancel: () => void;
+}> = ({ goal, onSave, onCancel }) => {
   const [editTitle, setEditTitle] = useState(goal.title);
   const [editDays, setEditDays] = useState(
     Math.floor(goal.targetValue / 86400),
@@ -51,113 +50,107 @@ export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
     goal.description || "",
   );
 
-  const progress = calculateProgress(goal.currentValue, goal.targetValue);
-  const isCompleted = goal.isCompleted;
-
   const handleSave = () => {
     const totalSeconds = editDays * 86400 + editHours * 3600;
     if (totalSeconds > 0) {
-      onUpdate(goal.id, editTitle, totalSeconds, editDescription);
-      setIsEditing(false);
+      onSave(editTitle, totalSeconds, editDescription);
     }
   };
 
-  const handleCancel = () => {
-    setEditTitle(goal.title);
-    setEditDays(Math.floor(goal.targetValue / 86400));
-    setEditHours(Math.floor((goal.targetValue % 86400) / 3600));
-    setEditDescription(goal.description || "");
-    setIsEditing(false);
-  };
+  return (
+    <div className="glass-card p-6">
+      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+        Edit Personal Goal
+      </h3>
 
-  if (isEditing) {
-    return (
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
-          Edit Personal Goal
-        </h3>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm text-nightly-celadon mb-2">
+            Goal Title
+          </label>
+          <input
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine"
+            placeholder="My chastity goal"
+          />
+        </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-nightly-celadon mb-2">
-              Goal Title
-            </label>
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine"
-              placeholder="My chastity goal"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-nightly-celadon mb-2">
-              Target Duration
-            </label>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <input
-                  type="number"
-                  min="0"
-                  value={editDays}
-                  onChange={(e) => setEditDays(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine"
-                  placeholder="Days"
-                />
-                <span className="text-xs text-nightly-celadon mt-1 block">
-                  Days
-                </span>
-              </div>
-              <div className="flex-1">
-                <input
-                  type="number"
-                  min="0"
-                  max="23"
-                  value={editHours}
-                  onChange={(e) => setEditHours(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine"
-                  placeholder="Hours"
-                />
-                <span className="text-xs text-nightly-celadon mt-1 block">
-                  Hours
-                </span>
-              </div>
+        <div>
+          <label className="block text-sm text-nightly-celadon mb-2">
+            Target Duration
+          </label>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <input
+                type="number"
+                min="0"
+                value={editDays}
+                onChange={(e) => setEditDays(parseInt(e.target.value) || 0)}
+                className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine"
+                placeholder="Days"
+              />
+              <span className="text-xs text-nightly-celadon mt-1 block">
+                Days
+              </span>
+            </div>
+            <div className="flex-1">
+              <input
+                type="number"
+                min="0"
+                max="23"
+                value={editHours}
+                onChange={(e) => setEditHours(parseInt(e.target.value) || 0)}
+                className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine"
+                placeholder="Hours"
+              />
+              <span className="text-xs text-nightly-celadon mt-1 block">
+                Hours
+              </span>
             </div>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm text-nightly-celadon mb-2">
-              Description (optional)
-            </label>
-            <textarea
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine resize-none"
-              rows={3}
-              placeholder="What's your motivation?"
-            />
-          </div>
+        <div>
+          <label className="block text-sm text-nightly-celadon mb-2">
+            Description (optional)
+          </label>
+          <textarea
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine resize-none"
+            rows={3}
+            placeholder="What's your motivation?"
+          />
+        </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={handleSave}
-              className="flex-1 bg-nightly-aquamarine/20 border border-nightly-aquamarine hover:bg-nightly-aquamarine/30 text-nightly-aquamarine font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <FaCheck /> Save
-            </button>
-            <button
-              onClick={handleCancel}
-              className="flex-1 bg-white/5 border border-white/20 hover:bg-white/10 text-nightly-celadon font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <FaTimes /> Cancel
-            </button>
-          </div>
+        <div className="flex gap-3">
+          <button
+            onClick={handleSave}
+            className="flex-1 bg-nightly-aquamarine/20 border border-nightly-aquamarine hover:bg-nightly-aquamarine/30 text-nightly-aquamarine font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <FaCheck /> Save
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex-1 bg-white/5 border border-white/20 hover:bg-white/10 text-nightly-celadon font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <FaTimes /> Cancel
+          </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+};
 
+const PersonalGoalDisplay: React.FC<{
+  goal: DBGoal;
+  isCompleted: boolean;
+  progress: number;
+  onEdit: () => void;
+  onDelete: () => void;
+}> = ({ goal, isCompleted, progress, onEdit, onDelete }) => {
   return (
     <div
       className={`glass-card p-6 ${isCompleted ? "border-2 border-nightly-aquamarine" : ""}`}
@@ -180,14 +173,14 @@ export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
         {!isCompleted && (
           <div className="flex gap-2">
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={onEdit}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors text-nightly-aquamarine"
               title="Edit goal"
             >
               <FaEdit />
             </button>
             <button
-              onClick={() => onDelete(goal.id)}
+              onClick={onDelete}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors text-red-400"
               title="Delete goal"
             >
@@ -229,5 +222,45 @@ export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
         </div>
       </div>
     </div>
+  );
+};
+
+export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
+  goal,
+  onUpdate,
+  onDelete,
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const progress = calculateProgress(goal.currentValue, goal.targetValue);
+  const isCompleted = goal.isCompleted;
+
+  const handleSave = (
+    title: string,
+    duration: number,
+    description?: string,
+  ) => {
+    onUpdate(goal.id, title, duration, description);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <PersonalGoalEditForm
+        goal={goal}
+        onSave={handleSave}
+        onCancel={() => setIsEditing(false)}
+      />
+    );
+  }
+
+  return (
+    <PersonalGoalDisplay
+      goal={goal}
+      isCompleted={isCompleted}
+      progress={progress}
+      onEdit={() => setIsEditing(true)}
+      onDelete={() => onDelete(goal.id)}
+    />
   );
 };
