@@ -5,9 +5,15 @@
  * sync when connection is restored.
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tantml:react-query";
 import { logger } from "../../utils/logging";
+import {
+  getNetworkInfo,
+  getNetworkQuality,
+  processSyncQueueItems,
+} from "./offlineStatusHelpers";
+import { useConnectionMonitoring } from "./useConnectionMonitoring";
 
 // Network quality enum
 export enum NetworkQuality {
@@ -55,7 +61,7 @@ export interface OfflineCapabilities {
 export interface NetworkEvent {
   type: "online" | "offline" | "quality-change";
   timestamp: Date;
-  details?: Record<string, string | number | boolean>;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -66,64 +72,6 @@ export const useOfflineStatus = () => {
   const [networkEvents, setNetworkEvents] = useState<NetworkEvent[]>([]);
   const [syncQueue, setSyncQueue] = useState<Record<string, unknown>[]>([]);
   const [lastOnline, setLastOnline] = useState<Date | null>(null);
-
-  // Get network information if available
-  const getNetworkInfo = useCallback(() => {
-    const nav = navigator as Navigator & {
-      connection?: {
-        downlink?: number;
-        rtt?: number;
-        effectiveType?: string;
-        type?: string;
-        addEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-      };
-      mozConnection?: {
-        downlink?: number;
-        rtt?: number;
-        effectiveType?: string;
-        type?: string;
-        addEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-      };
-      webkitConnection?: {
-        downlink?: number;
-        rtt?: number;
-        effectiveType?: string;
-        type?: string;
-        addEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-      };
-    };
-    const connection =
-      nav.connection || nav.mozConnection || nav.webkitConnection;
-
-    return {
-      downlink: connection?.downlink || 0,
-      rtt: connection?.rtt || 0,
-      effectiveType: connection?.effectiveType || "unknown",
-      type: connection?.type || ConnectionType.UNKNOWN,
-    };
-  }, []);
-
-  // Determine network quality
-  const getNetworkQuality = useCallback(
-    (downlink: number, rtt: number): NetworkQuality => {
-      if (!navigator.onLine) return NetworkQuality.OFFLINE;
-
-      if (downlink >= 10 && rtt < 100) return NetworkQuality.EXCELLENT;
-      if (downlink >= 5 && rtt < 200) return NetworkQuality.GOOD;
-      if (downlink >= 1.5 && rtt < 500) return NetworkQuality.FAIR;
-      return NetworkQuality.POOR;
-    },
-    [],
-  );
 
   // Current offline status query
   const { data: offlineStatus } = useQuery<OfflineStatus>({
@@ -186,10 +134,7 @@ export const useOfflineStatus = () => {
 
   // Add network event
   const addNetworkEvent = useCallback(
-    (
-      type: NetworkEvent["type"],
-      details?: Record<string, string | number | boolean>,
-    ) => {
+    (type: NetworkEvent["type"], details?: Record<string, unknown>) => {
       const event: NetworkEvent = {
         type,
         timestamp: new Date(),
@@ -201,6 +146,22 @@ export const useOfflineStatus = () => {
     },
     [],
   );
+
+  // Process sync queue
+  const processSyncQueue = useCallback(async () => {
+    if (!navigator.onLine || syncQueue.length === 0) return;
+
+    const { processedItems } = await processSyncQueueItems(syncQueue);
+
+    // Remove processed items from queue
+    setSyncQueue((prev) =>
+      prev.filter((item) => !processedItems.includes(item)),
+    );
+
+    if (processedItems.length > 0) {
+      queryClient.invalidateQueries({ queryKey: ["network"] });
+    }
+  }, [syncQueue, queryClient]);
 
   // Handle online event
   const handleOnline = useCallback(() => {
@@ -226,42 +187,7 @@ export const useOfflineStatus = () => {
     });
 
     queryClient.invalidateQueries({ queryKey: ["network"] });
-  }, [lastOnline, addNetworkEvent, getNetworkInfo, queryClient]);
-
-  // Process sync queue
-  const processSyncQueue = useCallback(async () => {
-    if (!navigator.onLine || syncQueue.length === 0) return;
-
-    logger.info("Processing sync queue", { queueSize: syncQueue.length });
-
-    const processedItems: Record<string, unknown>[] = [];
-
-    for (const item of syncQueue) {
-      try {
-        // Here you would implement actual sync logic
-        // For now, we'll just simulate processing
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        processedItems.push(item);
-        logger.debug("Sync item processed", { item });
-      } catch (error) {
-        logger.error("Failed to sync item", { item, error });
-        break; // Stop processing on error
-      }
-    }
-
-    // Remove processed items from queue
-    setSyncQueue((prev) =>
-      prev.filter((item) => !processedItems.includes(item)),
-    );
-
-    if (processedItems.length > 0) {
-      queryClient.invalidateQueries({ queryKey: ["network"] });
-      logger.info("Sync queue processed", {
-        processedCount: processedItems.length,
-        remainingCount: syncQueue.length - processedItems.length,
-      });
-    }
-  }, [syncQueue, queryClient]);
+  }, [lastOnline, addNetworkEvent, queryClient]);
 
   // Add item to sync queue
   const queueForSync = useCallback((item: Record<string, unknown>) => {
@@ -286,95 +212,14 @@ export const useOfflineStatus = () => {
   }, [processSyncQueue]);
 
   // Monitor connection changes
-  useEffect(() => {
-    const handleConnectionChange = () => {
-      const networkInfo = getNetworkInfo();
-      const newQuality = getNetworkQuality(
-        networkInfo.downlink,
-        networkInfo.rtt,
-      );
-
-      if (offlineStatus && newQuality !== offlineStatus?.networkQuality) {
-        addNetworkEvent("quality-change", {
-          oldQuality: offlineStatus?.networkQuality,
-          newQuality,
-          networkInfo,
-        });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ["network", "status"] });
-    };
-
-    // Listen for online/offline events
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    // Listen for connection changes if supported
-    const nav = navigator as Navigator & {
-      connection?: {
-        downlink?: number;
-        rtt?: number;
-        effectiveType?: string;
-        type?: string;
-        addEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-        removeEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-      };
-      mozConnection?: {
-        downlink?: number;
-        rtt?: number;
-        effectiveType?: string;
-        type?: string;
-        addEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-        removeEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-      };
-      webkitConnection?: {
-        downlink?: number;
-        rtt?: number;
-        effectiveType?: string;
-        type?: string;
-        addEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-        removeEventListener?: (
-          type: string,
-          listener: (event: Event) => void,
-        ) => void;
-      };
-    };
-    const connection =
-      nav.connection || nav.mozConnection || nav.webkitConnection;
-    if (connection) {
-      connection.addEventListener("change", handleConnectionChange);
-    }
-
-    // Set initial online status
-    if (navigator.onLine && !lastOnline) {
-      setLastOnline(new Date());
-    }
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-      if (connection) {
-        connection.removeEventListener("change", handleConnectionChange);
-      }
-    };
-    // addNetworkEvent, getNetworkInfo, getNetworkQuality are stable (no/stable deps)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleOnline, handleOffline, offlineStatus, queryClient, lastOnline]);
+  useConnectionMonitoring(
+    handleOnline,
+    handleOffline,
+    addNetworkEvent,
+    offlineStatus,
+    lastOnline,
+    setLastOnline,
+  );
 
   return {
     // Status
