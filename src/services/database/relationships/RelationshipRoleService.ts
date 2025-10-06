@@ -7,6 +7,7 @@ import { getFirestore } from "@/services/firebase";
 import { RelationshipPermissions } from "@/types/relationships";
 import { serviceLogger } from "@/utils/logging";
 import { relationshipCRUDService } from "./RelationshipCRUDService";
+import { eventDBService } from "../EventDBService";
 
 const logger = serviceLogger("RelationshipRoleService");
 
@@ -63,6 +64,39 @@ export class RelationshipRoleService {
         relationshipId,
         updatingUserId,
       });
+
+      // AUTO-LOG: Permissions changed (for both users)
+      await eventDBService.logEvent(
+        relationship.keyholderId,
+        "relationship",
+        {
+          action: "permissions_changed",
+          title: "Permissions Updated",
+          description: "Updated relationship permissions",
+          metadata: {
+            relationshipId,
+            updatedBy: updatingUserId,
+            newPermissions: permissions,
+          },
+        },
+        {},
+      );
+
+      await eventDBService.logEvent(
+        relationship.submissiveId,
+        "relationship",
+        {
+          action: "permissions_changed",
+          title: "Permissions Updated",
+          description: "Keyholder updated relationship permissions",
+          metadata: {
+            relationshipId,
+            updatedBy: updatingUserId,
+            newPermissions: permissions,
+          },
+        },
+        {},
+      );
     } catch (error) {
       logger.error("Failed to update relationship permissions", {
         error: error as Error,

@@ -7,6 +7,7 @@ import { db } from "../storage/ChastityDB";
 import type { DBSession } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
+import { eventDBService } from "./EventDBService";
 
 const logger = serviceLogger("SessionDBService");
 
@@ -132,6 +133,25 @@ class SessionDBService extends BaseDBService<DBSession> {
         userId,
         options,
       });
+
+      // AUTO-LOG: Session started
+      await eventDBService.logEvent(
+        userId,
+        "session",
+        {
+          action: "started",
+          title: "Session Started",
+          description: `Started ${session.isHardcoreMode ? "hardcore" : "normal"} session${session.goalDuration ? ` with ${Math.floor(session.goalDuration / 3600)} hour goal` : ""}`,
+          metadata: {
+            sessionId: session.id,
+            duration: session.goalDuration,
+            hardcoreMode: session.isHardcoreMode,
+            keyholderApprovalRequired: session.keyholderApprovalRequired,
+          },
+        },
+        { sessionId: session.id },
+      );
+
       return sessionId;
     } catch (error) {
       logger.error("Failed to start session", {
@@ -169,6 +189,30 @@ class SessionDBService extends BaseDBService<DBSession> {
       });
 
       logger.info("Ended session", { sessionId, endTime, endReason });
+
+      // Calculate session duration
+      const duration = this.calculateEffectiveDuration({
+        ...session,
+        endTime,
+      });
+
+      // AUTO-LOG: Session ended
+      await eventDBService.logEvent(
+        session.userId,
+        "session",
+        {
+          action: "ended",
+          title: "Session Ended",
+          description: `Session ended: ${endReason || "completed"}`,
+          metadata: {
+            sessionId: session.id,
+            duration,
+            endReason: endReason || "completed",
+            hardcoreMode: session.isHardcoreMode,
+          },
+        },
+        { sessionId: session.id },
+      );
 
       // Broadcast session end event to persistence service
       if (typeof window !== "undefined" && window.BroadcastChannel) {
@@ -216,6 +260,22 @@ class SessionDBService extends BaseDBService<DBSession> {
       });
 
       logger.info("Paused session", { sessionId, pauseTime });
+
+      // AUTO-LOG: Session paused
+      await eventDBService.logEvent(
+        session.userId,
+        "session",
+        {
+          action: "paused",
+          title: "Session Paused",
+          description: "Session paused",
+          metadata: {
+            sessionId: session.id,
+            pauseTime: pauseTime.toISOString(),
+          },
+        },
+        { sessionId: session.id },
+      );
     } catch (error) {
       logger.error("Failed to pause session", {
         error: error as Error,
@@ -263,6 +323,23 @@ class SessionDBService extends BaseDBService<DBSession> {
         pauseSeconds,
         totalPauseTime: session.accumulatedPauseTime + pauseSeconds,
       });
+
+      // AUTO-LOG: Session resumed
+      await eventDBService.logEvent(
+        session.userId,
+        "session",
+        {
+          action: "resumed",
+          title: "Session Resumed",
+          description: `Session resumed after ${Math.floor(pauseSeconds / 60)} minutes`,
+          metadata: {
+            sessionId: session.id,
+            pauseDuration: pauseSeconds,
+            totalPauseTime: session.accumulatedPauseTime + pauseSeconds,
+          },
+        },
+        { sessionId: session.id },
+      );
     } catch (error) {
       logger.error("Failed to resume session", {
         error: error as Error,
