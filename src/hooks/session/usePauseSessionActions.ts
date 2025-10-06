@@ -21,21 +21,35 @@ import type {
 
 const logger = serviceLogger("usePauseSessionActions");
 
-export function usePauseSessionActions(
-  sessionId: string,
-  canPause: boolean,
-  canResume: boolean,
-  pauseStatus: PauseStatus,
-  cooldownState: CooldownState,
-  pauseAnalytics: PauseAnalytics,
-  keyholderOverrides: KeyholderOverrideCapabilities,
-  startPause: (reason: PauseReason, initiatedBy?: string) => void,
-  setPauseStatus: (status: PauseStatus) => void,
+export interface UsePauseSessionActionsOptions {
+  sessionId: string;
+  canPause: boolean;
+  canResume: boolean;
+  pauseStatus: PauseStatus;
+  cooldownState: CooldownState;
+  pauseAnalytics: PauseAnalytics;
+  keyholderOverrides: KeyholderOverrideCapabilities;
+  startPause: (reason: PauseReason, initiatedBy?: string) => void;
+  setPauseStatus: (status: PauseStatus) => void;
   setPauseHistory: (
     updater: (prev: PauseHistoryEntry[]) => PauseHistoryEntry[],
-  ) => void,
-  startCooldown: (duration: number, canOverride: boolean) => void,
-) {
+  ) => void;
+  startCooldown: (duration: number, canOverride: boolean) => void;
+}
+
+export function usePauseSessionActions({
+  sessionId,
+  canPause,
+  canResume,
+  pauseStatus,
+  cooldownState,
+  pauseAnalytics,
+  keyholderOverrides,
+  startPause,
+  setPauseStatus,
+  setPauseHistory,
+  startCooldown,
+}: UsePauseSessionActionsOptions) {
   // Pause session
   const pauseSession = useCallback(
     async (reason: PauseReason): Promise<void> => {
