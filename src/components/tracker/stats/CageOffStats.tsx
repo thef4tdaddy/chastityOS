@@ -40,15 +40,15 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
         "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20";
     }
   } else {
-    // Lavender when active (not ticking)
-    textColorStyle = { color: "#c19bf5" }; // lavender_web approximation
+    // White when active (not ticking) - matches Total stats
+    textColorStyle = { color: "#ffffff" }; // white
   }
 
   return (
     <div
       className={`glass-card bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md rounded-lg p-4 transition-all duration-500 h-full flex flex-col ${borderClass}`}
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-lavender_web">
+      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Current Time Off: {isTickingOff ? (isPaused ? "🟡" : "🔴") : "💜"}
       </p>
       <p className="text-2xl md:text-4xl font-bold" style={textColorStyle}>
