@@ -1,5 +1,6 @@
 import React from "react";
 import type { useTrackerStats } from "../../../hooks/tracker/useTrackerStats";
+import { logger } from "@/utils/logging";
 
 interface CageOffStatsProps {
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
@@ -14,8 +15,8 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
   const isTickingOff = !displayData.isActive || displayData.isPaused;
   const isPaused = displayData.isPaused;
 
-  // DEBUG: Log the state
-  console.log("CageOffStats:", {
+  // Debug logging
+  logger.debug("CageOffStats state", {
     isActive: displayData.isActive,
     isPaused: displayData.isPaused,
     isTickingOff,
