@@ -21,7 +21,7 @@ import {
   filterUserAchievementsByCategory,
   mapAchievementsWithProgress,
   getRecentAchievements,
-} from "./achievementsHelpers";
+} from "../utils/achievements/achievementsHelpers";
 import { useAchievementMutations } from "./useAchievementMutations";
 
 export interface AchievementStats {

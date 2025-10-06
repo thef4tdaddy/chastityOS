@@ -12,7 +12,7 @@ import {
   addActionToRule,
   removeActionFromRule,
   updateActionInRule,
-} from "./ruleEditorHelpers";
+} from "../../utils/rules/ruleEditorHelpers";
 
 export interface Rule {
   id: string;
