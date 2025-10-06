@@ -242,25 +242,6 @@ export interface AdminPermissions {
   canAccessLogs: boolean;
 }
 
-// Multi-wearer functionality types
-export interface Wearer {
-  id: string;
-  name: string;
-  email?: string;
-  isActive: boolean;
-  sessionData: SessionData;
-  tasks: Task[];
-  keyholderPermissions: KeyholderPermissions;
-}
-
-export interface MultiWearerSession {
-  keyholderUserId: string;
-  wearers: Wearer[];
-  isActive: boolean;
-  createdAt: Date;
-  lastUpdated: Date;
-}
-
 // Utility types for Firebase operations
 export interface FirestoreTimestamp {
   toDate(): Date;

@@ -86,7 +86,6 @@ src / hooks / keyholder / useKeyholderSystem.ts; // ❌ Unified keyholder manage
 src / hooks / keyholder / useAdminSession.ts; // ❌ Admin session management
 src / hooks / keyholder / useKeyholderRewards.ts; // ❌ Reward/punishment system
 src / hooks / keyholder / useKeyholderSession.ts; // ❌ Session control from keyholder
-src / hooks / keyholder / useMultiWearer.ts; // ❌ Multiple submissive management
 ```
 
 #### 🔶 **High Priority - Enhanced Core Features**
@@ -200,12 +199,6 @@ export const useKeyholderRewards = (relationshipId: string) => {
 export const useKeyholderSession = (relationshipId: string) => {
   // Session control from keyholder perspective
   // Start, stop, pause, monitor sessions
-};
-
-// src/hooks/keyholder/useMultiWearer.ts
-export const useMultiWearer = (keyholderId: string) => {
-  // Manage multiple submissive relationships
-  // Switch between wearers, bulk operations
 };
 ```
 
@@ -490,7 +483,6 @@ The hook system is substantially implemented! Focus should be on the remaining 2
 - [ ] `useAdminSession` - Admin session management with time limits
 - [ ] `useKeyholderRewards` - Reward/punishment system
 - [ ] `useKeyholderSession` - Session control from keyholder perspective
-- [ ] `useMultiWearer` - Multiple submissive relationship management
 
 **Why Critical**: These enable the core keyholder functionality that differentiates v4.0
 
