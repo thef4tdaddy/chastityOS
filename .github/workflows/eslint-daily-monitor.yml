@@ -19,11 +19,10 @@ jobs:
   eslint-monitor:
     name: ESLint Daily Monitor
     runs-on: ubuntu-latest
-    # Only run on allowed branches
+    # Only run on allowed branches (main disabled until 4.0 release)
     if: |
       github.ref_name == 'nightly' ||
-      github.ref_name == 'develop' ||
-      (github.ref_name == 'main' && env.MONITOR_MAIN == 'true')
+      github.ref_name == 'develop'
 
     steps:
       - name: Checkout code
