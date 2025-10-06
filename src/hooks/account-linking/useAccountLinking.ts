@@ -45,7 +45,7 @@ export const useAccountLinking = () => {
   // Update local state when relationships change
   useEffect(() => {
     setState((prev) => ({ ...prev, adminRelationships: relationships }));
-  }, [relationships, setState]);
+  }, [relationships]);
 
   // Mutations
   const generateLinkCodeMutation = useGenerateLinkCode(user?.uid);
