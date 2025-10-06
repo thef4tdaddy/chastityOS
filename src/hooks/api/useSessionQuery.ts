@@ -116,21 +116,29 @@ export function useSessionMutations() {
       endTime?: Date;
       reason?: string;
     }) => {
-      // 1. Update local Dexie immediately
-      const updatedSession = await sessionDBService.endSession(
+      // 1. Get current session first
+      const currentSession = await sessionDBService.getCurrentSession(
         params.userId,
+      );
+      if (!currentSession) {
+        throw new Error("No active session to end");
+      }
+
+      // 2. End the session by sessionId
+      await sessionDBService.endSession(
+        currentSession.id,
         params.endTime || new Date(),
         params.reason,
       );
 
-      // 2. Trigger Firebase sync in background
+      // 3. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserSessions(params.userId).catch((error) => {
           logger.warn("Session end sync failed:", { error });
         });
       }
 
-      return updatedSession;
+      return currentSession;
     },
     onSuccess: (data, variables) => {
       // Clear current session since it's ended
