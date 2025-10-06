@@ -285,7 +285,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
     try {
       const session = await sessionDBService.getCurrentSession(userId);
       setCurrentSession(session || null);
-      logger.info("Loaded current session", {
+      logger.debug("Loaded current session", {
         userId,
         sessionId: session?.id,
         hasSession: !!session,
