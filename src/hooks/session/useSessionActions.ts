@@ -41,7 +41,7 @@ async function handleStartSession(
   actions.setError(null);
 
   try {
-    logger.debug("Starting session", { userId, config });
+    logger.debug("Starting session", { userId });
 
     await actions.startSessionCore({
       goalDuration: config?.goalDuration,
