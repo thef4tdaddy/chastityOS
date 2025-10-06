@@ -45,6 +45,7 @@ export const useAccountLinking = () => {
   // Update local state when relationships change
   useEffect(() => {
     setState((prev) => ({ ...prev, adminRelationships: relationships }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relationships]);
 
   // Mutations
