@@ -7,19 +7,19 @@ import { useState, useCallback, useMemo } from "react";
 import type { KeyholderRelationship } from "../../types/core";
 import { serviceLogger } from "../../utils/logging";
 import { useSessionHistoryData } from "./useSessionHistoryData";
-import { useSessionHistoryRetrieval } from "./useSessionHistoryRetrieval";
+import { useSessionHistoryRetrieval as _useSessionHistoryRetrieval } from "./useSessionHistoryRetrieval";
 import {
-  createEmptyTrendData,
+  createEmptyTrendData as _createEmptyTrendData,
   calculateOverallCompletionRate,
   calculateLongestStreak,
-  calculatePauseFrequency,
-  calculateImprovementTrend,
-  calculateConsistencyScore,
-  calculateSessionLengthTrend,
-  calculateGoalCompletionTrend,
-  calculateConsistencyTrend,
-  calculatePauseFrequencyTrend,
-  calculateOverallProgressTrend,
+  calculatePauseFrequency as _calculatePauseFrequency,
+  calculateImprovementTrend as _calculateImprovementTrend,
+  calculateConsistencyScore as _calculateConsistencyScore,
+  calculateSessionLengthTrend as _calculateSessionLengthTrend,
+  calculateGoalCompletionTrend as _calculateGoalCompletionTrend,
+  calculateConsistencyTrend as _calculateConsistencyTrend,
+  calculatePauseFrequencyTrend as _calculatePauseFrequencyTrend,
+  calculateOverallProgressTrend as _calculateOverallProgressTrend,
 } from "../../utils/sessionHistoryHelpers";
 import {
   getSessionsByDateRange as getSessionsByDateRangeUtil,
@@ -34,8 +34,8 @@ import type {
   HistoricalSession,
   HistoryPrivacySettings,
   KeyholderHistoryAccess,
-  HistoryInsights,
-  HistoryTrends,
+  HistoryInsights as _HistoryInsights,
+  HistoryTrends as _HistoryTrends,
   HistorySearchQuery,
   PersonalDataExport,
   KeyholderHistoryView,
@@ -121,71 +121,7 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
     [privacySettings.shareWithKeyholder],
   );
 
-  // ==================== INITIALIZATION ====================
-
-  useEffect(() => {
-    const initializeHistory = async () => {
-      if (!userId) return;
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Load relationship data if available
-        if (relationshipId) {
-          // Set keyholder access based on relationship permissions
-          setKeyholderAccess({
-            hasAccess: privacySettings.shareWithKeyholder,
-            accessLevel: privacySettings.shareWithKeyholder
-              ? "detailed"
-              : "summary",
-            canViewRatings: privacySettings.shareRatings,
-            canViewNotes: privacySettings.shareNotes,
-            canViewPauses: privacySettings.sharePauses,
-          });
-        }
-
-        // Load historical data
-        await Promise.all([
-          loadSessions(),
-          loadPrivacySettings(),
-          calculateInsights(),
-          calculateTrends(),
-        ]);
-      } catch (err) {
-        logger.error("Failed to initialize session history", { error: err });
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to initialize session history",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeHistory();
-    // Store actions and stable callbacks should not be in dependency arrays
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    userId,
-    relationshipId,
-    privacySettings.shareWithKeyholder,
-    privacySettings.shareRatings,
-    privacySettings.shareNotes,
-    privacySettings.sharePauses,
-  ]);
-
-  // ==================== DATA LOADING FUNCTIONS ====================
-
-  const loadPrivacySettings = useCallback(async () => {
-    try {
-      // Load user's privacy preferences from database
-      // For now, use defaults
-    } catch (error) {
-      logger.error("Failed to load privacy settings", { error });
-    }
-  }, []);
+  // Note: Initialization is handled by useSessionHistoryData hook
 
   // ==================== DATA RETRIEVAL ====================
 
@@ -231,13 +167,7 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
           }));
         }
 
-        // Reload sessions if retention period changed
-        if (
-          settings.retentionPeriod &&
-          settings.retentionPeriod !== privacySettings.retentionPeriod
-        ) {
-          await loadSessions();
-        }
+        // Note: Sessions are automatically reloaded by useSessionHistoryData hook
 
         logger.info("Privacy settings updated successfully");
       } catch (error) {
@@ -245,7 +175,7 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
         throw error;
       }
     },
-    [privacySettings, relationshipId, loadSessions],
+    [privacySettings, relationshipId],
   );
 
   const exportPersonalData =
