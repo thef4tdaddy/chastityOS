@@ -24,6 +24,11 @@ jobs:
       github.ref_name == 'nightly' ||
       github.ref_name == 'develop'
 
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
