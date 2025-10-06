@@ -2,14 +2,15 @@
  * Helper functions for useKeyholderSystem hook
  * Extracted to reduce function complexity
  */
+import type React from "react";
 import type { KeyholderRelationship } from "../../types/core";
 import type { InviteCode } from "../../services/database/KeyholderRelationshipDBService";
-import { serviceLogger } from "../../utils/logging";
+import { serviceLogger } from "../logging";
 import type {
   KeyholderStatus,
   KeyholderStats,
   KeyholderSystemState,
-} from "./useKeyholderSystem";
+} from "../../hooks/keyholder/useKeyholderSystem";
 
 const logger = serviceLogger("keyholderSystemHelpers");
 
