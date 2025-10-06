@@ -28,10 +28,12 @@ import {
   updatePlayerProfileWithExperience,
   calculateLevelResult,
   calculateProgressToNext,
-  calculatePercentile,
 } from "../../utils/gamification/gamificationHelpers";
 import { useGamificationMutations } from "./useGamificationMutations";
 import { useGamificationData } from "./useGamificationData";
+import { useLeaderboardSystem } from "./useLeaderboardSystem";
+import { useSocialGameFeatures } from "./useSocialGameFeatures";
+import { useSeasonalRewards } from "./useSeasonalRewards";
 
 /**
  * Enhanced Gamification Hook
@@ -108,6 +110,21 @@ export const useGameification = (userId: string) => {
     addExperienceInternal,
   );
 
+  // Leaderboard operations
+  const { getLeaderboardRank, joinLeaderboard, leaveLeaderboard, rank } =
+    useLeaderboardSystem(leaderboards, playerProfile, userId);
+
+  // Social features
+  const { compareWithFriends, sendChallenge } = useSocialGameFeatures(
+    socialFeatures,
+    playerProfile,
+    userId,
+  );
+
+  // Seasonal rewards
+  const { getSeasonalRewards, claimSeasonalReward, hasUnclaimedRewards } =
+    useSeasonalRewards(currentSeason, userId);
+
   // Check level up
   const checkLevelUp = useCallback(async () => {
     const nextLevelThreshold =
@@ -124,98 +141,7 @@ export const useGameification = (userId: string) => {
     return null;
   }, [playerProfile]);
 
-  // Get leaderboard rank
-  const getLeaderboardRank = useCallback(
-    async (leaderboardId: string) => {
-      const leaderboard = leaderboards.find((l) => l.id === leaderboardId);
-      if (!leaderboard) throw new Error("Leaderboard not found");
-      const userRank =
-        Math.floor(Math.random() * leaderboard.totalParticipants) + 1;
-      return {
-        category: leaderboard.category,
-        period: leaderboard.period,
-        rank: userRank,
-        totalParticipants: leaderboard.totalParticipants,
-        percentile: calculatePercentile(
-          userRank,
-          leaderboard.totalParticipants,
-        ),
-        value: playerProfile.stats.totalExperience,
-      };
-    },
-    [leaderboards, playerProfile],
-  );
-
-  // Compare with friends
-  const compareWithFriends = useCallback(async () => {
-    if (!socialFeatures?.friends) return [];
-    return socialFeatures.friends.map((friend) => ({
-      friendId: friend.userId,
-      friendName: friend.displayName,
-      categories: [
-        {
-          category: "Level",
-          playerValue: playerProfile.level,
-          friendValue: friend.level,
-          difference: playerProfile.level - friend.level,
-          status:
-            playerProfile.level > friend.level
-              ? "ahead"
-              : playerProfile.level < friend.level
-                ? "behind"
-                : "tied",
-        },
-        {
-          category: "Experience",
-          playerValue: playerProfile.experience,
-          friendValue: Math.floor(Math.random() * 10000),
-          difference: 0,
-          status: "tied",
-        },
-      ],
-      overallComparison: "ahead",
-    }));
-  }, [socialFeatures, playerProfile]);
-
-  const sendChallenge = useCallback(
-    async (friendId: string, challengeId: string) => {
-      logger.info("Challenge sent to friend", {
-        friendId,
-        challengeId,
-        userId,
-      });
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    },
-    [userId],
-  );
-
-  const getSeasonalRewards = useCallback(
-    async () => currentSeason?.rewards || [],
-    [currentSeason],
-  );
-  const claimSeasonalReward = useCallback(
-    async (rewardId: string) => {
-      logger.info("Seasonal reward claimed", { rewardId, userId });
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    },
-    [userId],
-  );
-
   // Computed values
-  const currentLevel = playerProfile.level;
-  const progressToNext = calculateProgressToNext(
-    playerProfile.level,
-    playerProfile.experience,
-    playerProfile.experienceToNext,
-  );
-  const activeChallengeCount = activeChallenges.length;
-  const completedChallengesThisWeek = playerProfile.stats.challengesCompleted;
-  const rank =
-    leaderboards.length > 0
-      ? leaderboards[0].entries.findIndex((e) => e.userId === userId) + 1 || 0
-      : 0;
-  const hasUnclaimedRewards =
-    currentSeason?.rewards.some((r) => !r.claimed) || false;
   const getChallengeProgress = (id: string) =>
     activeChallenges.find((c) => c.id === id)?.progress;
 
@@ -232,10 +158,8 @@ export const useGameification = (userId: string) => {
     addExperience: addExperienceMutation.mutate,
     checkLevelUp,
     getLeaderboardRank,
-    joinLeaderboard: async (id: string) =>
-      logger.info("Joined leaderboard", { leaderboardId: id, userId }),
-    leaveLeaderboard: async (id: string) =>
-      logger.info("Left leaderboard", { leaderboardId: id, userId }),
+    joinLeaderboard,
+    leaveLeaderboard,
     compareWithFriends,
     sendChallenge,
     getSeasonalRewards,
@@ -245,10 +169,14 @@ export const useGameification = (userId: string) => {
     isAddingExperience: addExperienceMutation.isPending,
     lastChallengeCompletion: completeChallengeMutation.data,
     lastLevelResult: addExperienceMutation.data,
-    currentLevel,
-    progressToNext,
-    activeChallengeCount,
-    completedChallengesThisWeek,
+    currentLevel: playerProfile.level,
+    progressToNext: calculateProgressToNext(
+      playerProfile.level,
+      playerProfile.experience,
+      playerProfile.experienceToNext,
+    ),
+    activeChallengeCount: activeChallenges.length,
+    completedChallengesThisWeek: playerProfile.stats.challengesCompleted,
     rank,
     hasUnclaimedRewards,
     totalExperience: playerProfile.stats.totalExperience,
