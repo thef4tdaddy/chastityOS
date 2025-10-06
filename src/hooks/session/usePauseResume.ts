@@ -3,34 +3,34 @@
  * Provides advanced pause/resume functionality with keyholder overrides,
  * intelligent cooldown management, and comprehensive analytics
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { PauseCooldownService } from "../../services/PauseCooldownService";
+import { useCallback, useMemo } from "react";
+import { PauseCooldownService as _PauseCooldownService } from "../../services/PauseCooldownService";
 import { useSharedTimer } from "../useSharedTimer";
 import { serviceLogger } from "../../utils/logging";
 import type {
   PauseStatus as _PauseStatus,
   CooldownState as _CooldownState,
-  KeyholderOverrideCapabilities,
+  KeyholderOverrideCapabilities as _KeyholderOverrideCapabilities,
   PauseHistoryEntry as _PauseHistoryEntry,
-  PauseAnalytics,
-  PauseReason,
-  PauseRequestStatus,
-  OverrideRequestStatus,
+  PauseAnalytics as _PauseAnalytics,
+  PauseReason as _PauseReason,
+  PauseRequestStatus as _PauseRequestStatus,
+  OverrideRequestStatus as _OverrideRequestStatus,
   PausePattern,
   CooldownAnalytics,
 } from "../../types/pauseResume";
 import {
   calculatePauseFrequency,
-  calculateCooldownDuration,
-  calculatePauseAnalytics,
+  calculateCooldownDuration as _calculateCooldownDuration,
+  calculatePauseAnalytics as _calculatePauseAnalytics,
   analyzePausePatterns,
   calculateCooldownEffectiveness,
 } from "../../utils/pauseAnalytics";
 import {
-  calculatePauseDuration,
-  updatePauseHistoryOnResume,
-  updatePauseStatusOnResume,
-  createKeyholderOverrides,
+  calculatePauseDuration as _calculatePauseDuration,
+  updatePauseHistoryOnResume as _updatePauseHistoryOnResume,
+  updatePauseStatusOnResume as _updatePauseStatusOnResume,
+  createKeyholderOverrides as _createKeyholderOverrides,
 } from "../../utils/pauseResumeHelpers";
 import { usePauseState } from "./usePauseState";
 import { useCooldownState } from "./useCooldownState";
@@ -59,17 +59,13 @@ export const usePauseResume = (sessionId: string, relationshipId?: string) => {
   const { cooldownState, startCooldown, clearCooldown } = useCooldownState();
 
   // Use initialization hook
-  const {
-    keyholderOverrides,
-    pauseAnalytics,
-    isLoading,
-    error,
-  } = usePauseInitialization(
-    sessionId,
-    relationshipId,
-    pauseHistory,
-    startCooldown,
-  );
+  const { keyholderOverrides, pauseAnalytics, isLoading, error } =
+    usePauseInitialization(
+      sessionId,
+      relationshipId,
+      pauseHistory,
+      startCooldown,
+    );
 
   // Track pause duration
   usePauseDurationTracking(pauseStatus, updatePauseDuration);

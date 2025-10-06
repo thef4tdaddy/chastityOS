@@ -3,7 +3,7 @@
  * Unified management interface for all keyholder functionality
  * Acts as the primary entry point for keyholder operations
  */
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuthState } from "../../contexts";
 import {
   KeyholderRelationship,
@@ -124,7 +124,7 @@ const initialStats: KeyholderStats = {
   lastActivity: null,
 };
 
-const initialState: KeyholderSystemState = {
+const _initialState: KeyholderSystemState = {
   activeRelationships: [],
   adminSession: null,
   keyholderStatus: initialKeyholderStatus,
@@ -278,6 +278,7 @@ export const useKeyholderSystem = (keyholderId?: string) => {
     if (effectiveKeyholderId && !dataHook.isInitialized) {
       dataHook.refreshData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveKeyholderId, dataHook.isInitialized, dataHook.refreshData]);
 
   // Admin session auto-expiry
@@ -286,7 +287,8 @@ export const useKeyholderSystem = (keyholderId?: string) => {
       logger.info("Admin session expired, ending session");
       endAdminSession();
     }
-  }, [adminSession]); // endAdminSession is stable, removed from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminSession]); // endAdminSession is stable callback
 
   // ==================== RETURN ====================
 

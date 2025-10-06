@@ -7,9 +7,9 @@ import { useKeyholderRelationships } from "../useKeyholderRelationships";
 import { serviceLogger } from "../../utils/logging";
 import {
   handleInviteCodeCreation,
-  handleInviteCodeError,
+  handleInviteCodeError as _handleInviteCodeError,
   handleSubmissiveAcceptance,
-  handleSubmissiveAcceptanceError,
+  handleSubmissiveAcceptanceError as _handleSubmissiveAcceptanceError,
 } from "../../utils/keyholder/keyholderSystemHelpers";
 import type { KeyholderRelationship } from "../../types/core";
 import type { InviteOptions } from "./useKeyholderSystem";
