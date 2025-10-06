@@ -3,7 +3,6 @@ import {
   useAdminSession,
   useKeyholderRewards,
   useKeyholderSession,
-  useMultiWearer,
 } from "../../hooks/keyholder";
 import { KeyholderReward, KeyholderPunishment } from "../../types";
 
@@ -45,12 +44,6 @@ export function TypedKeyholderDemo({
     addTask,
     saveDataToFirestore,
     requiredKeyholderDurationSeconds,
-  });
-
-  // Multi-wearer functionality with proper typing
-  const { session: multiWearerSession, wearers } = useMultiWearer({
-    keyholderUserId: userId,
-    isAuthReady,
   });
 
   // Example of properly typed reward
@@ -112,13 +105,6 @@ export function TypedKeyholderDemo({
           {keyholderSession && (
             <p>Keyholder: {keyholderSession.keyholderName}</p>
           )}
-        </div>
-
-        {/* Multi-Wearer Status */}
-        <div className="multi-wearer-status">
-          <h4 className="font-medium">Multi-Wearer Session</h4>
-          <p>Active: {multiWearerSession?.isActive ? "Yes" : "No"}</p>
-          <p>Wearers: {wearers.length}</p>
         </div>
 
         {/* Demo Actions */}

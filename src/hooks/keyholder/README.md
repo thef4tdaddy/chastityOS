@@ -1,6 +1,6 @@
 # Keyholder System Hooks
 
-This directory contains the 5 critical keyholder system hooks that provide the foundation for all keyholder functionality in ChastityOS 4.0.
+This directory contains the critical keyholder system hooks that provide the foundation for all keyholder functionality in ChastityOS 4.0.
 
 ## Hooks Overview
 
@@ -226,104 +226,6 @@ function SessionControl({ relationshipId }: { relationshipId: string }) {
 }
 ```
 
-### 5. `useMultiWearer`
-
-Manages multiple submissive relationships with bulk operations.
-
-```typescript
-import { useMultiWearer } from './hooks/keyholder';
-
-function MultiWearerDashboard() {
-  const {
-    // State
-    relationships,
-    filteredOverviews,
-    overviewStats,
-    activeRelationship,
-
-    // Computed
-    totalRelationships,
-    canPerformBulkOperations,
-
-    // Actions
-    switchToRelationship,
-    bulkStartSessions,
-    bulkSendRewards,
-    sendBroadcastMessage,
-    setFilter,
-  } = useMultiWearer();
-
-  const handleBulkReward = async () => {
-    const selectedIds = filteredOverviews
-      .filter(r => r.status === 'active')
-      .map(r => r.id);
-
-    if (selectedIds.length > 0) {
-      await bulkSendRewards(selectedIds, 'time_reduction_30', 'Weekly good behavior reward');
-    }
-  };
-
-  const handleBroadcast = async () => {
-    const activeIds = filteredOverviews
-      .filter(r => r.status === 'active')
-      .map(r => r.id);
-
-    await sendBroadcastMessage({
-      content: 'Weekly check-in: How are you doing?',
-      priority: 'normal',
-      requiresResponse: true,
-    }, activeIds);
-  };
-
-  return (
-    <div>
-      <h2>Multi-Wearer Dashboard</h2>
-      <div>
-        <p>Total Relationships: {totalRelationships}</p>
-        <p>Active Sessions: {overviewStats.activeSessions}</p>
-      </div>
-
-      <div>
-        <input
-          type="text"
-          placeholder="Search relationships..."
-          onChange={(e) => setFilter('searchTerm', e.target.value)}
-        />
-        <select onChange={(e) => setFilter('status', e.target.value)}>
-          <option value="all">All Status</option>
-          <option value="active">Active Only</option>
-          <option value="needs_attention">Needs Attention</option>
-        </select>
-      </div>
-
-      <div>
-        <h3>Relationships ({filteredOverviews.length})</h3>
-        {filteredOverviews.map(overview => (
-          <div key={overview.id} onClick={() => switchToRelationship(overview.id)}>
-            <h4>{overview.submissiveName}</h4>
-            <p>Status: {overview.status}</p>
-            <p>Active Session: {overview.hasActiveSession ? 'Yes' : 'No'}</p>
-            <p>Pending Tasks: {overview.pendingTasks}</p>
-          </div>
-        ))}
-      </div>
-
-      {canPerformBulkOperations && (
-        <div>
-          <h3>Bulk Operations</h3>
-          <button onClick={handleBulkReward}>
-            Send Reward to All Active
-          </button>
-          <button onClick={handleBroadcast}>
-            Send Broadcast Message
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
 ## Hook Integration Example
 
 Here's how to use multiple hooks together in a comprehensive keyholder interface:
@@ -333,13 +235,11 @@ import {
   useKeyholderSystem,
   useAdminSession,
   useKeyholderRewards,
-  useKeyholderSession,
-  useMultiWearer
+  useKeyholderSession
 } from './hooks/keyholder';
 
 function ComprehensiveKeyholderInterface() {
   const keyholderSystem = useKeyholderSystem();
-  const multiWearer = useMultiWearer();
 
   // Use admin session for the currently selected relationship
   const selectedRelationshipId = keyholderSystem.selectedRelationship?.id;
@@ -353,14 +253,6 @@ function ComprehensiveKeyholderInterface() {
   return (
     <div>
       <h1>Keyholder Control Panel</h1>
-
-      {/* Overview Stats */}
-      <div>
-        <h2>Overview</h2>
-        <p>Total Relationships: {multiWearer.totalRelationships}</p>
-        <p>Active Sessions: {multiWearer.activeSessions}</p>
-        <p>Requires Attention: {multiWearer.requiresAttention}</p>
-      </div>
 
       {/* Relationship Selection */}
       <div>
@@ -423,18 +315,6 @@ function ComprehensiveKeyholderInterface() {
           </button>
         </div>
       )}
-
-      {/* Bulk Operations */}
-      <div>
-        <h2>Bulk Operations</h2>
-        <button onClick={() => multiWearer.bulkSendRewards(
-          keyholderSystem.activeRelationships.map(r => r.id),
-          'time_reduction_30',
-          'Weekly reward'
-        )}>
-          Send Weekly Reward to All
-        </button>
-      </div>
     </div>
   );
 }
