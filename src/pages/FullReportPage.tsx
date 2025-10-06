@@ -9,6 +9,148 @@ import {
   SessionHistorySection,
 } from "../components/full_report";
 
+// Loading state component
+const LoadingState: React.FC = () => (
+  <div className="text-nightly-spring-green">
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="text-center py-8">
+        <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
+        <div className="text-nightly-celadon">Loading report...</div>
+      </div>
+    </div>
+  </div>
+);
+
+// Error state component
+const ErrorState: React.FC = () => (
+  <div className="text-nightly-spring-green">
+    <div className="p-4 max-w-6xl mx-auto">
+      <div className="text-center py-8">
+        <div className="text-red-400">Error loading report data</div>
+      </div>
+    </div>
+  </div>
+);
+
+// Combined report header component
+interface CombinedReportHeaderProps {
+  activeSubmissive?: { wearerName?: string };
+}
+
+const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
+  activeSubmissive,
+}) => {
+  if (!activeSubmissive) return null;
+
+  return (
+    <div className="glass-card mb-6 p-4">
+      <div className="flex items-center gap-2">
+        <FaUsers className="text-nightly-aquamarine text-xl" />
+        <h2 className="text-xl font-semibold text-nightly-honeydew">
+          Combined Report
+        </h2>
+      </div>
+      <p className="text-sm text-nightly-celadon mt-2">
+        Showing statistics for you and{" "}
+        {activeSubmissive.wearerName || "your submissive"}
+      </p>
+    </div>
+  );
+};
+
+// User status section component
+interface ReportSectionProps {
+  activeSubmissive?: { wearerName?: string };
+  userReport: ReturnType<typeof useReportData>;
+  submissiveReport: ReturnType<typeof useReportData>;
+}
+
+const UserStatusSection: React.FC<ReportSectionProps> = ({
+  activeSubmissive,
+  userReport,
+  submissiveReport,
+}) => (
+  <>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+        {activeSubmissive ? "Your Status" : "Current Status"}
+      </h3>
+      <CurrentStatusSection currentSession={userReport.currentSession} />
+    </div>
+
+    {activeSubmissive && submissiveReport.currentSession && (
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+          {activeSubmissive.wearerName || "Submissive"}'s Status
+        </h3>
+        <CurrentStatusSection
+          currentSession={submissiveReport.currentSession}
+        />
+      </div>
+    )}
+  </>
+);
+
+// Statistics report section component
+const StatisticsReportSection: React.FC<ReportSectionProps> = ({
+  activeSubmissive,
+  userReport,
+  submissiveReport,
+}) => (
+  <>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+        {activeSubmissive ? "Your Statistics" : "Statistics"}
+      </h3>
+      <StatisticsSection
+        sessions={userReport.sessions}
+        events={userReport.events}
+        tasks={userReport.tasks}
+        goals={userReport.goals}
+      />
+    </div>
+
+    {activeSubmissive && (
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+          {activeSubmissive.wearerName || "Submissive"}'s Statistics
+        </h3>
+        <StatisticsSection
+          sessions={submissiveReport.sessions}
+          events={submissiveReport.events}
+          tasks={submissiveReport.tasks}
+          goals={submissiveReport.goals}
+        />
+      </div>
+    )}
+  </>
+);
+
+// Session history report section component
+const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
+  activeSubmissive,
+  userReport,
+  submissiveReport,
+}) => (
+  <>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+        {activeSubmissive ? "Your Session History" : "Session History"}
+      </h3>
+      <SessionHistorySection sessions={userReport.sessions} />
+    </div>
+
+    {activeSubmissive && (
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+          {activeSubmissive.wearerName || "Submissive"}'s Session History
+        </h3>
+        <SessionHistorySection sessions={submissiveReport.sessions} />
+      </div>
+    )}
+  </>
+);
+
 const FullReportPage: React.FC = () => {
   const { user } = useAuthState();
   const { adminRelationships } = useAccountLinking();
@@ -26,115 +168,32 @@ const FullReportPage: React.FC = () => {
   const error = userReport.error || submissiveReport.error;
 
   if (isLoading) {
-    return (
-      <div className="text-nightly-spring-green">
-        <div className="p-4 max-w-6xl mx-auto">
-          <div className="text-center py-8">
-            <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-            <div className="text-nightly-celadon">Loading report...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="text-nightly-spring-green">
-        <div className="p-4 max-w-6xl mx-auto">
-          <div className="text-center py-8">
-            <div className="text-red-400">Error loading report data</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorState />;
   }
 
   return (
     <div className="text-nightly-spring-green">
-      {/* Content */}
       <div className="p-4 max-w-6xl mx-auto">
-        {/* Combined heading for keyholders */}
-        {activeSubmissive && (
-          <div className="glass-card mb-6 p-4">
-            <div className="flex items-center gap-2">
-              <FaUsers className="text-nightly-aquamarine text-xl" />
-              <h2 className="text-xl font-semibold text-nightly-honeydew">
-                Combined Report
-              </h2>
-            </div>
-            <p className="text-sm text-nightly-celadon mt-2">
-              Showing statistics for you and{" "}
-              {activeSubmissive.wearerName || "your submissive"}
-            </p>
-          </div>
-        )}
-
-        {/* Your current status */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
-            {activeSubmissive ? "Your Status" : "Current Status"}
-          </h3>
-          <CurrentStatusSection currentSession={userReport.currentSession} />
-        </div>
-
-        {/* Submissive's current status (if keyholder) */}
-        {activeSubmissive && submissiveReport.currentSession && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
-              {activeSubmissive.wearerName || "Submissive"}'s Status
-            </h3>
-            <CurrentStatusSection
-              currentSession={submissiveReport.currentSession}
-            />
-          </div>
-        )}
-
-        {/* Combined statistics */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
-            {activeSubmissive ? "Your Statistics" : "Statistics"}
-          </h3>
-          <StatisticsSection
-            sessions={userReport.sessions}
-            events={userReport.events}
-            tasks={userReport.tasks}
-            goals={userReport.goals}
-          />
-        </div>
-
-        {/* Submissive's statistics (if keyholder) */}
-        {activeSubmissive && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
-              {activeSubmissive.wearerName || "Submissive"}'s Statistics
-            </h3>
-            <StatisticsSection
-              sessions={submissiveReport.sessions}
-              events={submissiveReport.events}
-              tasks={submissiveReport.tasks}
-              goals={submissiveReport.goals}
-            />
-          </div>
-        )}
-
-        {/* Combined session history */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
-            {activeSubmissive ? "Your Session History" : "Session History"}
-          </h3>
-          <SessionHistorySection sessions={userReport.sessions} />
-        </div>
-
-        {/* Submissive's session history (if keyholder) */}
-        {activeSubmissive && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
-              {activeSubmissive.wearerName || "Submissive"}'s Session History
-            </h3>
-            <SessionHistorySection sessions={submissiveReport.sessions} />
-          </div>
-        )}
+        <CombinedReportHeader activeSubmissive={activeSubmissive} />
+        <UserStatusSection
+          activeSubmissive={activeSubmissive}
+          userReport={userReport}
+          submissiveReport={submissiveReport}
+        />
+        <StatisticsReportSection
+          activeSubmissive={activeSubmissive}
+          userReport={userReport}
+          submissiveReport={submissiveReport}
+        />
+        <SessionHistoryReportSection
+          activeSubmissive={activeSubmissive}
+          userReport={userReport}
+          submissiveReport={submissiveReport}
+        />
       </div>
     </div>
   );

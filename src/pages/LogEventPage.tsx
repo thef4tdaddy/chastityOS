@@ -4,6 +4,95 @@ import { useEventHistory } from "../hooks/api/useEvents";
 import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { LogEventForm, EventList } from "../components/log_event";
 import { FaSpinner, FaUsers } from "../utils/iconImport";
+import { combineAndSortEvents } from "../utils/events/eventHelpers";
+
+// User selector component for keyholders
+interface UserSelectorProps {
+  activeSubmissive?: { wearerId?: string; wearerName?: string };
+  selectedUserId: string;
+  currentUserId: string;
+  onSelectUser: (userId: string) => void;
+}
+
+const UserSelector: React.FC<UserSelectorProps> = ({
+  activeSubmissive,
+  selectedUserId,
+  currentUserId,
+  onSelectUser,
+}) => {
+  if (!activeSubmissive) return null;
+
+  return (
+    <div className="glass-card mb-6 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <FaUsers className="text-nightly-aquamarine" />
+        <label className="text-sm font-medium text-nightly-celadon">
+          Log event for:
+        </label>
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={() => onSelectUser(currentUserId)}
+          className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+            selectedUserId === currentUserId
+              ? "border-nightly-aquamarine bg-nightly-aquamarine/10 text-nightly-honeydew"
+              : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
+          }`}
+        >
+          Yourself
+        </button>
+        <button
+          onClick={() => onSelectUser(activeSubmissive.wearerId || "")}
+          className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+            selectedUserId === activeSubmissive.wearerId
+              ? "border-nightly-lavender-floral bg-nightly-lavender-floral/10 text-nightly-honeydew"
+              : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
+          }`}
+        >
+          {activeSubmissive.wearerName || "Submissive"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Event list section with loading and error states
+interface EventListSectionProps {
+  loading: boolean;
+  error: Error | null;
+  events: unknown[];
+  showOwner: boolean;
+  hasSubmissive: boolean;
+}
+
+const EventListSection: React.FC<EventListSectionProps> = ({
+  loading,
+  error,
+  events,
+  showOwner,
+  hasSubmissive,
+}) => (
+  <div className="glass-card">
+    <h2 className="text-xl font-semibold text-nightly-honeydew mb-6">
+      {hasSubmissive ? "Combined Events" : "Recent Events"}
+    </h2>
+
+    {loading ? (
+      <div className="text-center py-8">
+        <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
+        <div className="text-nightly-celadon">Loading events...</div>
+      </div>
+    ) : error ? (
+      <div className="text-center py-8">
+        <div className="text-red-400">
+          Error loading events. Please try again.
+        </div>
+      </div>
+    ) : (
+      <EventList events={events} showOwner={showOwner} />
+    )}
+  </div>
+);
 
 const LogEventPage: React.FC = () => {
   const { user } = useAuthState();
@@ -29,28 +118,16 @@ const LogEventPage: React.FC = () => {
   });
 
   // Combine and sort events by timestamp
-  const combinedEvents = React.useMemo(() => {
-    const allEvents = [
-      ...(userEvents.data || []).map((e) => ({
-        ...e,
-        ownerName: user?.displayName || "You",
-        ownerId: user?.uid,
-      })),
-      ...(submissiveEvents.data || []).map((e) => ({
-        ...e,
-        ownerName: activeSubmissive?.wearerName || "Submissive",
-        ownerId: activeSubmissive?.wearerId,
-      })),
-    ];
-
-    return allEvents.sort((a, b) => {
-      const timeA =
-        a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
-      const timeB =
-        b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
-      return timeB - timeA; // Most recent first
-    });
-  }, [userEvents.data, submissiveEvents.data, user, activeSubmissive]);
+  const combinedEvents = React.useMemo(
+    () =>
+      combineAndSortEvents(userEvents.data || [], submissiveEvents.data || [], {
+        userName: user?.displayName || "You",
+        userId: user?.uid,
+        submissiveName: activeSubmissive?.wearerName || "Submissive",
+        submissiveId: activeSubmissive?.wearerId,
+      }),
+    [userEvents.data, submissiveEvents.data, user, activeSubmissive],
+  );
 
   const loading = userEvents.isLoading || submissiveEvents.isLoading;
   const error = userEvents.error || submissiveEvents.error;
@@ -62,72 +139,26 @@ const LogEventPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-      {/* Content */}
       <div className="p-4 max-w-4xl mx-auto">
-        {/* User selector for keyholders */}
-        {activeSubmissive && (
-          <div className="glass-card mb-6 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <FaUsers className="text-nightly-aquamarine" />
-              <label className="text-sm font-medium text-nightly-celadon">
-                Log event for:
-              </label>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setSelectedUserId(user?.uid || "")}
-                className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
-                  selectedUserId === user?.uid
-                    ? "border-nightly-aquamarine bg-nightly-aquamarine/10 text-nightly-honeydew"
-                    : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
-                }`}
-              >
-                Yourself
-              </button>
-              <button
-                onClick={() =>
-                  setSelectedUserId(activeSubmissive.wearerId || "")
-                }
-                className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
-                  selectedUserId === activeSubmissive.wearerId
-                    ? "border-nightly-lavender-floral bg-nightly-lavender-floral/10 text-nightly-honeydew"
-                    : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
-                }`}
-              >
-                {activeSubmissive.wearerName || "Submissive"}
-              </button>
-            </div>
-          </div>
-        )}
+        <UserSelector
+          activeSubmissive={activeSubmissive}
+          selectedUserId={selectedUserId}
+          currentUserId={user?.uid || ""}
+          onSelectUser={setSelectedUserId}
+        />
 
         <LogEventForm
           onEventLogged={handleEventLogged}
           targetUserId={selectedUserId}
         />
 
-        <div className="glass-card">
-          <h2 className="text-xl font-semibold text-nightly-honeydew mb-6">
-            {activeSubmissive ? "Combined Events" : "Recent Events"}
-          </h2>
-
-          {loading ? (
-            <div className="text-center py-8">
-              <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-              <div className="text-nightly-celadon">Loading events...</div>
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <div className="text-red-400">
-                Error loading events. Please try again.
-              </div>
-            </div>
-          ) : (
-            <EventList
-              events={activeSubmissive ? combinedEvents : userEvents.data || []}
-              showOwner={!!activeSubmissive}
-            />
-          )}
-        </div>
+        <EventListSection
+          loading={loading}
+          error={error}
+          events={activeSubmissive ? combinedEvents : userEvents.data || []}
+          showOwner={!!activeSubmissive}
+          hasSubmissive={!!activeSubmissive}
+        />
       </div>
     </div>
   );
