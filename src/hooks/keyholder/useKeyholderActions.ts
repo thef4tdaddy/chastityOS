@@ -10,7 +10,7 @@ import {
   handleInviteCodeError,
   handleSubmissiveAcceptance,
   handleSubmissiveAcceptanceError,
-} from "./keyholderSystemHelpers";
+} from "../../utils/keyholder/keyholderSystemHelpers";
 import type { KeyholderRelationship } from "../../types/core";
 import type { InviteOptions } from "./useKeyholderSystem";
 

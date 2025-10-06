@@ -5,7 +5,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useKeyholderRelationships } from "../useKeyholderRelationships";
 import { serviceLogger } from "../../utils/logging";
-import { calculateKeyholderStatusAndStats } from "./keyholderSystemHelpers";
+import { calculateKeyholderStatusAndStats } from "../../utils/keyholder/keyholderSystemHelpers";
 import type { KeyholderRelationship } from "../../types/core";
 import type { KeyholderStatus, KeyholderStats } from "./useKeyholderSystem";
 
