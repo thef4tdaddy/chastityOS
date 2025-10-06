@@ -4,7 +4,18 @@ export {
   useSessionHistory,
   useSessionMutations,
 } from "./useSessionQuery";
-export { useTasksQuery, useTaskMutations } from "./useTaskQuery";
+export {
+  useTasksQuery,
+  usePendingTasksQuery,
+  useTaskMutations,
+  useCreateTask,
+  useUpdateTaskStatus,
+  useDeleteTask,
+  useSubmitTaskForReview,
+  useApproveTask,
+  useRejectTask,
+  useAssignTask,
+} from "./useTaskQuery";
 export { useSettingsQuery, useSettingsMutations } from "./useSettingsQueries";
 export {
   useEventHistory,
@@ -30,6 +41,13 @@ export {
   usePersonalGoalQuery,
   useKeyholderRequiredDurationQuery,
   usePersonalGoalMutations,
+  useCreatePersonalGoal,
+  useUpdatePersonalGoal,
+  useUpdateGoalProgress,
+  useCompletePersonalGoal,
+  useDeletePersonalGoal,
+  useCreateKeyholderDuration,
+  useUpdateKeyholderDuration,
 } from "./usePersonalGoalQueries";
 export { useReportData, useGoalsQuery } from "./useReportData";
 export {
