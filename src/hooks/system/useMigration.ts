@@ -12,7 +12,16 @@ import { MigrationStorageService } from "../../services/migrationStorage";
 import {
   createMigrationBackup,
   executeMigrationLogic,
+  setMigrationRunning,
+  updateMigrationProgress,
+  setMigrationCompleted,
+  setMigrationFailed,
+  setMigrationRolledBack,
+  restoreBackupData,
+  runMigrationBatch,
+  initializeMigrationState,
 } from "./migrationHelpers";
+import type { MigrationState } from "./migrationHelpers";
 
 // Migration status
 export enum MigrationStatus {
@@ -57,12 +66,7 @@ export interface MigrationResult {
   duration: number;
 }
 
-// Migration state
-export interface MigrationState {
-  migrations: Migration[];
-  lastRun: Date | null;
-  currentVersion: string;
-}
+
 
 // Sample migrations (in a real app, these would be defined elsewhere)
 const AVAILABLE_MIGRATIONS: Omit<
@@ -108,24 +112,7 @@ export const useMigration = () => {
       if (stored && stored.migrations && stored.currentVersion) {
         return stored;
       }
-
-      // Initialize migration state
-      const initialMigrations: Migration[] = AVAILABLE_MIGRATIONS.map(
-        (migration) => ({
-          ...migration,
-          status: MigrationStatus.PENDING,
-          progress: 0,
-          createdAt: new Date(),
-        }),
-      );
-
-      const initialState: MigrationState = {
-        migrations: initialMigrations,
-        lastRun: null,
-        currentVersion: "3.0.0",
-      };
-
-      return initialState;
+      return initializeMigrationState(AVAILABLE_MIGRATIONS);
     },
     staleTime: Infinity,
   });
@@ -151,21 +138,10 @@ export const useMigration = () => {
 
       logger.info("Starting migration", { migrationId: migration.id });
 
-      // Update migration status
-      const updatedMigrations = migrationState.migrations.map((m: Migration) =>
-        m.id === migration.id
-          ? {
-              ...m,
-              status: MigrationStatus.RUNNING,
-              startedAt: new Date(),
-              progress: 0,
-            }
-          : m,
-      );
-
-      const newState = { ...migrationState, migrations: updatedMigrations };
-      MigrationStorageService.setMigrationState(newState);
-      queryClient.setQueryData(["migration", "state"], newState);
+      // Update migration status to running
+      const runningState = setMigrationRunning(migrationState, migration.id);
+      MigrationStorageService.setMigrationState(runningState);
+      queryClient.setQueryData(["migration", "state"], runningState);
 
       try {
         // Create backup if rollback is available
@@ -176,57 +152,33 @@ export const useMigration = () => {
           );
         }
 
-        // Execute migration logic based on ID
+        // Execute migration logic with progress updates
         await executeMigrationLogic(migration.id, (progress: number) => {
-          // Update progress
-          const progressUpdatedMigrations = migrationState.migrations.map(
-            (m: Migration) => (m.id === migration.id ? { ...m, progress } : m),
+          const progressState = updateMigrationProgress(
+            migrationState,
+            migration.id,
+            progress,
           );
-
-          const progressState = {
-            ...migrationState,
-            migrations: progressUpdatedMigrations,
-          };
           MigrationStorageService.setMigrationState(progressState);
           queryClient.setQueryData(["migration", "state"], progressState);
         });
 
         // Mark as completed
-        const completedMigrations = migrationState.migrations.map(
-          (m: Migration) =>
-            m.id === migration.id
-              ? {
-                  ...m,
-                  status: MigrationStatus.COMPLETED,
-                  completedAt: new Date(),
-                  progress: 100,
-                }
-              : m,
+        const completedState = setMigrationCompleted(
+          migrationState,
+          migration.id,
         );
-
-        const completedState = {
-          ...migrationState,
-          migrations: completedMigrations,
-        };
         MigrationStorageService.setMigrationState(completedState);
         queryClient.setQueryData(["migration", "state"], completedState);
 
         logger.info("Migration completed", { migrationId: migration.id });
       } catch (error) {
         // Mark as failed
-        const failedMigrations = migrationState.migrations.map(
-          (m: Migration) =>
-            m.id === migration.id
-              ? {
-                  ...m,
-                  status: MigrationStatus.FAILED,
-                  error:
-                    error instanceof Error ? error.message : "Unknown error",
-                }
-              : m,
+        const failedState = setMigrationFailed(
+          migrationState,
+          migration.id,
+          error,
         );
-
-        const failedState = { ...migrationState, migrations: failedMigrations };
         MigrationStorageService.setMigrationState(failedState);
         queryClient.setQueryData(["migration", "state"], failedState);
 
@@ -242,13 +194,6 @@ export const useMigration = () => {
     mutationFn: async (migrationIds?: string[]) => {
       setIsRunning(true);
       const startTime = Date.now();
-      const result: MigrationResult = {
-        success: true,
-        migrationsRun: 0,
-        errors: [],
-        warnings: [],
-        duration: 0,
-      };
 
       try {
         const migrationsToRun = migrationIds
@@ -257,20 +202,18 @@ export const useMigration = () => {
             ) || []
           : pendingMigrations;
 
-        for (const migration of migrationsToRun) {
-          try {
-            await executeMigration(migration);
-            result.migrationsRun++;
-          } catch (error) {
-            result.success = false;
-            result.errors.push(
-              `${migration.name}: ${error instanceof Error ? error.message : "Unknown error"}`,
-            );
-          }
-        }
+        const { migrationsRun, errors } = await runMigrationBatch(
+          migrationsToRun,
+          executeMigration,
+        );
 
-        result.duration = Date.now() - startTime;
-        return result;
+        return {
+          success: errors.length === 0,
+          migrationsRun,
+          errors,
+          warnings: [],
+          duration: Date.now() - startTime,
+        };
       } finally {
         setIsRunning(false);
       }
@@ -303,22 +246,13 @@ export const useMigration = () => {
       if (!backup) throw new Error("Backup not found");
 
       // Restore data from backup
-      Object.entries(backup.data.localStorage).forEach(([key, value]) => {
-        MigrationStorageService.setLegacyItem(key, value);
-      });
+      restoreBackupData(backup.data.localStorage);
 
       // Update migration status
-      const rolledBackMigrations = migrationState.migrations.map(
-        (m: Migration) =>
-          m.id === migrationId
-            ? { ...m, status: MigrationStatus.ROLLED_BACK }
-            : m,
+      const rolledBackState = setMigrationRolledBack(
+        migrationState,
+        migrationId,
       );
-
-      const rolledBackState = {
-        ...migrationState,
-        migrations: rolledBackMigrations,
-      };
       MigrationStorageService.setMigrationState(rolledBackState);
       queryClient.setQueryData(["migration", "state"], rolledBackState);
 
