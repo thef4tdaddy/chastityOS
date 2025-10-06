@@ -1,92 +1,23 @@
-import React, { useState } from "react";
+import React from "react";
 import { RestoreSessionPrompt } from "../components/tracker/RestoreSessionPrompt";
 import { SessionLoader } from "../components/tracker/SessionLoader";
 import { SessionRecoveryModal } from "../components/tracker/SessionRecoveryModal";
 import { TrackerStats } from "../components/tracker/TrackerStats";
 import { ActionButtons } from "../components/tracker/ActionButtons";
 import { PauseResumeButtons } from "../components/tracker/PauseResumeButtons";
-// TODO: CooldownTimer temporarily disabled due to service import restrictions
-// import { CooldownTimer } from "../components/tracker/CooldownTimer";
 import { ReasonModals } from "../components/tracker/ReasonModals";
 import { TrackerHeader } from "../components/tracker/TrackerHeader";
-import { useSessionPersistence } from "../hooks/useSessionPersistence";
-import { useAuth } from "../hooks/api/useAuth";
-import { useTrackerHandlers } from "../hooks/useTrackerHandlers";
-import { useSessionActions } from "../hooks/session/useSessionActions";
-import { useLifetimeStats } from "../hooks/stats/useLifetimeStats";
-import {
-  useKeyholderRequiredDurationQuery,
-  usePersonalGoalQuery,
-} from "../hooks/api/usePersonalGoalQueries";
+import { useTrackerData } from "../hooks/tracker/useTrackerData";
+import { useTrackerSession } from "../hooks/tracker/useTrackerSession";
 import { logger } from "../utils/logging";
-import type { DBSession } from "../types/database";
-import type { SessionRestorationResult } from "../services/SessionPersistenceService";
+import {
+  buildTrackerStatsProps,
+  buildTrackerData,
+  buildTrackerHeaderProps,
+  buildMockTrackerData,
+  buildMockTrackerStatsProps,
+} from "../utils/tracker/trackerProps";
 import type { User } from "../types/auth";
-
-// Helper function to handle session restoration
-const createSessionRestorationHandler =
-  (
-    setCurrentSession: (session: DBSession | null) => void,
-    startHeartbeat: (sessionId: string) => void,
-    setCorruptedSession: (session: DBSession | null) => void,
-    setShowSessionRecovery: (show: boolean) => void,
-  ) =>
-  (result: SessionRestorationResult) => {
-    logger.info("Session restoration completed", {
-      wasRestored: result.wasRestored,
-      sessionId: result.session?.id,
-    });
-
-    if (result.session) {
-      setCurrentSession(result.session);
-      startHeartbeat(result.session.id);
-
-      // If session had validation issues but was recovered, show recovery modal
-      if (result.error && result.session) {
-        setCorruptedSession(result.session);
-        setShowSessionRecovery(true);
-      }
-    }
-  };
-
-// Helper function to handle session recovery
-const createSessionRecoveryHandler =
-  (
-    setCurrentSession: (session: DBSession | null) => void,
-    backupSession: (session: DBSession) => Promise<void>,
-    startHeartbeat: (sessionId: string) => void,
-    setShowSessionRecovery: (show: boolean) => void,
-    setCorruptedSession: (session: DBSession | null) => void,
-  ) =>
-  async (session: DBSession) => {
-    logger.info("Session recovery initiated", { sessionId: session.id });
-    try {
-      await backupSession(session);
-      setCurrentSession(session);
-      startHeartbeat(session.id);
-      setShowSessionRecovery(false);
-      setCorruptedSession(null);
-      logger.info("Session recovery completed", { sessionId: session.id });
-    } catch (error) {
-      logger.error("Session recovery failed", { error: error as Error });
-    }
-  };
-
-// Helper function to handle session discard
-const createSessionDiscardHandler =
-  (
-    setCurrentSession: (session: DBSession | null) => void,
-    setShowSessionRecovery: (show: boolean) => void,
-    setCorruptedSession: (session: DBSession | null) => void,
-    stopHeartbeat: () => void,
-  ) =>
-  () => {
-    setCurrentSession(null);
-    setShowSessionRecovery(false);
-    setCorruptedSession(null);
-    stopHeartbeat();
-    logger.info("Corrupted session discarded");
-  };
 
 // Session Persistence Error Component
 const SessionPersistenceError: React.FC<{ error: string }> = ({ error }) => (
@@ -96,6 +27,68 @@ const SessionPersistenceError: React.FC<{ error: string }> = ({ error }) => (
     </p>
   </div>
 );
+
+// Helper to check if session loader should show
+const shouldShowSessionLoader = (
+  authLoading: boolean,
+  isInitializing: boolean,
+  userId?: string,
+) => (authLoading || isInitializing) && !!userId;
+
+// Helper to check if session recovery should show
+const shouldShowSessionRecovery = (showRecovery: boolean, session: unknown) =>
+  showRecovery && !!session;
+
+// Helper to check if pause buttons should show
+const shouldShowPauseButtons = (useRealSessions: boolean, isActive: boolean) =>
+  useRealSessions && isActive;
+
+// Helper to get action button callbacks
+const getActionButtonCallbacks = (
+  useRealSessions: boolean,
+  startSession: () => Promise<void>,
+  endSession: (reason?: string) => Promise<void>,
+  handleEmergencyUnlock: () => Promise<void>,
+) => ({
+  onStartSession: useRealSessions ? startSession : undefined,
+  onEndSession: useRealSessions
+    ? () => endSession("User ended session")
+    : undefined,
+  onBegForRelease: useRealSessions
+    ? () => logger.info("Beg for release - TODO: implement")
+    : undefined,
+  onEmergencyUnlock: handleEmergencyUnlock,
+});
+
+// Helper to build all component props at once
+const buildAllTrackerProps = (
+  useRealSessions: boolean,
+  realData: unknown,
+  mockData: unknown,
+  currentSession: unknown,
+) => {
+  const real = realData as any;
+  const mock = mockData as any;
+  const trackerData = useRealSessions
+    ? buildTrackerData(real.trackerDataParams)
+    : buildMockTrackerData(mock);
+
+  const trackerStatsProps = useRealSessions
+    ? buildTrackerStatsProps(real.statsParams)
+    : buildMockTrackerStatsProps(mock, currentSession);
+
+  const trackerHeaderProps = useRealSessions
+    ? buildTrackerHeaderProps(real.goals || {}, real.isActive)
+    : {
+        remainingGoalTime: mock.remainingGoalTime,
+        keyholderName: mock.keyholderName,
+        savedSubmissivesName: mock.savedSubmissivesName,
+        requiredKeyholderDurationSeconds: mock.requiredKeyholderDurationSeconds,
+        isCageOn: mock.isCageOn,
+      };
+
+  return { trackerData, trackerStatsProps, trackerHeaderProps };
+};
 
 // Cooldown Display Component (currently unused but kept for future use)
 const _CooldownDisplay: React.FC<{
@@ -146,27 +139,6 @@ const DebugPanel: React.FC<{
       </pre>
     </div>
   );
-};
-
-// Custom hook for session state management
-const useSessionState = () => {
-  const [currentSession, setCurrentSession] = useState<DBSession | null>(null);
-  const [showSessionRecovery, setShowSessionRecovery] = useState(false);
-  const [isSessionInitialized, setIsSessionInitialized] = useState(false);
-  const [corruptedSession, setCorruptedSession] = useState<DBSession | null>(
-    null,
-  );
-
-  return {
-    currentSession,
-    setCurrentSession,
-    showSessionRecovery,
-    setShowSessionRecovery,
-    isSessionInitialized,
-    setIsSessionInitialized,
-    corruptedSession,
-    setCorruptedSession,
-  };
 };
 
 // Custom hook for mock data (DEMO VERSION - keep for #308)
@@ -234,247 +206,96 @@ const TrackerPage: React.FC = () => {
   // Feature flag: set to true to use real session hooks, false for demo/mock
   const USE_REAL_SESSIONS = true; // TODO: Move to env var or settings for #308
 
-  // Authentication state
-  const { user, isLoading: authLoading } = useAuth();
-
-  // Session persistence state
+  // Get tracker data using extracted hook
   const {
-    isInitializing,
-    error: persistenceError,
-    backupSession,
-    startHeartbeat,
-    stopHeartbeat,
-  } = useSessionPersistence({
-    userId: user?.uid,
-    autoInitialize: true,
-  });
-
-  // Session state management
-  const {
-    currentSession,
-    setCurrentSession,
-    showSessionRecovery,
-    setShowSessionRecovery,
-    isSessionInitialized,
-    setIsSessionInitialized,
-    corruptedSession,
-    setCorruptedSession,
-  } = useSessionState();
-
-  // Real session hooks (when USE_REAL_SESSIONS = true)
-  const {
-    startSession: startSessionCore,
-    endSession: endSessionCore,
-    pauseSession: pauseSessionCore,
-    resumeSession: resumeSessionCore,
-    isStarting,
-    isEnding,
-    canStart: _canStart,
-    canEnd: _canEnd,
-    canPause,
-    canResume: _canResume,
+    user,
+    authLoading,
     isActive,
     isPaused,
     sessionId,
-    session: realSession,
+    realSession,
     goals,
     duration,
-    error: _sessionError,
-    timeUntilNextPause: _timeUntilNextPause,
+    canPause,
     cooldownRemaining,
-  } = useSessionActions({
-    userId: user?.uid || "",
-    onSessionStarted: () => logger.info("Session started"),
-    onSessionEnded: () => logger.info("Session ended"),
-    onSessionPaused: () => logger.info("Session paused"),
-    onSessionResumed: () => logger.info("Session resumed"),
-  });
-
-  // Lifetime stats across all sessions
-  const lifetimeStats = useLifetimeStats(user?.uid);
-  const { refresh: refreshLifetimeStats } = lifetimeStats;
-
-  // Keyholder required duration goal
-  const { data: keyholderGoal } = useKeyholderRequiredDurationQuery(user?.uid);
-
-  // Personal goal (includes hardcore mode flag)
-  const { data: personalGoal } = usePersonalGoalQuery(user?.uid);
-
-  // Check if current goal is hardcore mode
-  const isHardcoreMode = personalGoal?.isHardcoreMode || false;
-
-  // Wrap session actions to refresh lifetime stats after each action
-  const startSession = async (
-    config?: import("../hooks/session/useSessionActions").SessionConfig,
-  ) => {
-    await startSessionCore(config);
-    await refreshLifetimeStats();
-  };
-
-  const endSession = async (reason?: string) => {
-    await endSessionCore(reason);
-    await refreshLifetimeStats();
-  };
-
-  const pauseSession = async (reason?: string) => {
-    await pauseSessionCore(reason);
-    await refreshLifetimeStats();
-  };
-
-  const resumeSession = async () => {
-    await resumeSessionCore();
-    await refreshLifetimeStats();
-  };
+    isStarting,
+    isEnding,
+    lifetimeStats,
+    keyholderGoal,
+    personalGoal,
+    isHardcoreMode,
+    startSession,
+    endSession,
+    pauseSession,
+    resumeSession,
+  } = useTrackerData(USE_REAL_SESSIONS);
 
   // Mock data (for demo version - keep for #308)
   const mockData = useMockData(user);
 
-  // Data selector: choose between real and mock data
-  const trackerData = USE_REAL_SESSIONS
-    ? {
-        isCageOn: isActive,
-        isPaused,
-        sessionId: sessionId || undefined,
-        userId: user?.uid,
-        keyholderUserId: undefined, // TODO: Get from relationship/session
-        isGoalActive:
-          goals?.active?.length > 0 || !!keyholderGoal || !!personalGoal,
-        isHardcoreGoal: isHardcoreMode, // Use the hardcore mode flag from personal goal
-        requiredKeyholderDurationSeconds: keyholderGoal?.targetValue || 0,
-        hasPendingReleaseRequest: false, // Handled by BegForReleaseButton
-        mainChastityDisplayTime: duration,
-        totalChastityTime: duration,
-      }
-    : {
-        isCageOn: mockData.isCageOn,
-        isPaused: mockData.isPaused,
-        sessionId: mockData.sessionId,
-        userId: mockData.userId,
-        isGoalActive: mockData.isGoalActive,
-        isHardcoreGoal: mockData.isHardcoreGoal,
-        requiredKeyholderDurationSeconds:
-          mockData.requiredKeyholderDurationSeconds,
-        hasPendingReleaseRequest: mockData.hasPendingReleaseRequest,
-        mainChastityDisplayTime: mockData.mainChastityDisplayTime,
-        totalChastityTime: mockData.totalChastityTime,
-      };
-
-  // Use tracker handlers hook for event handlers and effects
+  // Session management
   const {
+    isInitializing,
+    persistenceError,
+    currentSession,
+    showSessionRecovery,
+    corruptedSession,
     handleSessionInitialized,
     handleEmergencyUnlock,
-    handlePause: _handlePause,
-    handleResume: _handleResume,
-  } = useTrackerHandlers({
-    setCurrentSession,
-    setIsSessionInitialized,
-    startHeartbeat,
-    stopHeartbeat,
-    backupSession,
-    mockData: {
-      sessionId: mockData.sessionId,
-      userId: mockData.userId,
-      refreshPauseState: mockData.refreshPauseState,
-    },
-    currentSession,
-    isSessionInitialized,
-  });
+    handleSessionRestored,
+    handleRecoverSession,
+    handleDiscardSession,
+  } = useTrackerSession(user?.uid, mockData);
 
-  // Create handlers using helper functions
-  const handleSessionRestored = createSessionRestorationHandler(
-    setCurrentSession,
-    startHeartbeat,
-    setCorruptedSession,
-    setShowSessionRecovery,
-  );
-
-  const handleRecoverSession = createSessionRecoveryHandler(
-    setCurrentSession,
-    backupSession,
-    startHeartbeat,
-    setShowSessionRecovery,
-    setCorruptedSession,
-  );
-
-  const handleDiscardSession = createSessionDiscardHandler(
-    setCurrentSession,
-    setShowSessionRecovery,
-    setCorruptedSession,
-    stopHeartbeat,
-  );
-
-  // Helper to compute TrackerStats props based on real vs mock mode
-  const getTrackerStatsProps = () => {
-    if (USE_REAL_SESSIONS) {
-      // Real session mode - use live data with lifetime stats
-      return {
-        topBoxLabel: "Total Locked Time",
-        timeCageOff: 0, // Current session cage off time (handled by useSessionTimer)
-        isCageOn: isActive,
-        totalChastityTime: lifetimeStats.totalChastityTime,
-        totalTimeCageOff: lifetimeStats.totalCageOffTime,
-        isPaused,
-        currentSession: realSession,
-        personalGoal, // Pass personal goal for display
-        mainChastityDisplayTime: undefined,
-        topBoxTime: undefined,
-        livePauseDuration: undefined,
-        accumulatedPauseTimeThisSession: undefined,
-      };
-    }
-
-    // Mock mode for demo (#308)
-    const baseProps = {
-      topBoxLabel: mockData.topBoxLabel,
-      timeCageOff: mockData.timeCageOff,
-      isCageOn: mockData.isCageOn,
-      totalChastityTime: mockData.totalChastityTime,
-      totalTimeCageOff: mockData.totalTimeCageOff,
-      isPaused: mockData.isPaused,
-    };
-
-    if (mockData.useRealTimeTimer) {
-      return {
-        ...baseProps,
-        currentSession,
-        mainChastityDisplayTime: undefined,
-        topBoxTime: undefined,
-        livePauseDuration: undefined,
-        accumulatedPauseTimeThisSession: undefined,
-      };
-    }
-
-    return {
-      ...baseProps,
-      currentSession: undefined,
-      mainChastityDisplayTime: mockData.mainChastityDisplayTime,
-      topBoxTime: mockData.topBoxTime,
-      livePauseDuration: mockData.livePauseDuration,
-      accumulatedPauseTimeThisSession: mockData.accumulatedPauseTimeThisSession,
-    };
-  };
+  // Build all component props
+  const { trackerData, trackerStatsProps, trackerHeaderProps } =
+    buildAllTrackerProps(
+      USE_REAL_SESSIONS,
+      {
+        trackerDataParams: {
+          isActive,
+          isPaused,
+          sessionId,
+          userId: user?.uid,
+          goals: goals || { active: [], keyholderAssigned: [] },
+          keyholderGoal,
+          personalGoal,
+          isHardcoreMode,
+          duration,
+        },
+        statsParams: {
+          isActive,
+          isPaused,
+          realSession,
+          totalChastityTime: lifetimeStats.totalChastityTime,
+          totalCageOffTime: lifetimeStats.totalCageOffTime,
+          personalGoal,
+        },
+        goals,
+        isActive,
+      },
+      mockData,
+      currentSession,
+    );
 
   return (
     <div className="text-nightly-spring-green">
-      {/* Session Persistence Loading */}
-      {(authLoading || isInitializing) && user?.uid && (
+      {shouldShowSessionLoader(authLoading, isInitializing, user?.uid) && (
         <SessionLoader
-          userId={user.uid}
+          userId={user!.uid}
           onSessionRestored={handleSessionRestored}
           onInitialized={handleSessionInitialized}
         />
       )}
 
-      {/* Session Recovery Modal */}
-      {showSessionRecovery && corruptedSession && (
+      {shouldShowSessionRecovery(showSessionRecovery, corruptedSession) && (
         <SessionRecoveryModal
-          corruptedSession={corruptedSession}
+          corruptedSession={corruptedSession!}
           onRecover={handleRecoverSession}
           onDiscard={handleDiscardSession}
         />
       )}
 
-      {/* Session Persistence Error */}
       {persistenceError && <SessionPersistenceError error={persistenceError} />}
 
       {mockData.showRestoreSessionPrompt && (
@@ -482,75 +303,39 @@ const TrackerPage: React.FC = () => {
       )}
 
       <TrackerHeader
-        remainingGoalTime={
-          USE_REAL_SESSIONS && goals?.active && goals.active.length > 0
-            ? goals.active[0].targetValue - goals.active[0].currentValue
-            : 0
-        }
-        keyholderName={
-          USE_REAL_SESSIONS &&
-          goals?.keyholderAssigned &&
-          goals.keyholderAssigned.length > 0
-            ? "Keyholder"
-            : ""
-        }
-        savedSubmissivesName=""
-        requiredKeyholderDurationSeconds={
-          USE_REAL_SESSIONS &&
-          goals?.keyholderAssigned &&
-          goals.keyholderAssigned.length > 0
-            ? goals.keyholderAssigned[0].targetValue
-            : 0
-        }
-        isCageOn={USE_REAL_SESSIONS ? isActive : mockData.isCageOn}
+        {...trackerHeaderProps}
         denialCooldownActive={mockData.denialCooldownActive}
         pauseCooldownMessage={mockData.pauseCooldownMessage}
       />
 
-      <TrackerStats {...getTrackerStatsProps()} />
+      <TrackerStats {...trackerStatsProps} />
 
-      {/* Enhanced Pause Controls with 6-hour cooldown */}
-      {USE_REAL_SESSIONS && isActive && (
-        <>
-          <PauseResumeButtons
-            sessionId={sessionId || ""}
-            userId={user?.uid || ""}
-            isPaused={isPaused}
-            pauseState={{
-              canPause,
-              cooldownRemaining,
-              lastPauseTime: undefined,
-              nextPauseAvailable: undefined,
-            }}
-            onPause={() => pauseSession("bathroom")}
-            onResume={resumeSession}
-          />
-        </>
+      {shouldShowPauseButtons(USE_REAL_SESSIONS, isActive) && (
+        <PauseResumeButtons
+          sessionId={sessionId || ""}
+          userId={user?.uid || ""}
+          isPaused={isPaused}
+          pauseState={{
+            canPause,
+            cooldownRemaining,
+            lastPauseTime: undefined,
+            nextPauseAvailable: undefined,
+          }}
+          onPause={() => pauseSession("bathroom")}
+          onResume={resumeSession}
+        />
       )}
 
       <ActionButtons
-        isCageOn={trackerData.isCageOn}
-        isGoalActive={trackerData.isGoalActive}
-        isHardcoreGoal={trackerData.isHardcoreGoal}
-        requiredKeyholderDurationSeconds={
-          trackerData.requiredKeyholderDurationSeconds
-        }
-        hasPendingReleaseRequest={trackerData.hasPendingReleaseRequest}
-        sessionId={trackerData.sessionId}
-        userId={trackerData.userId}
-        keyholderUserId={trackerData.keyholderUserId}
-        onStartSession={USE_REAL_SESSIONS ? () => startSession() : undefined}
-        onEndSession={
-          USE_REAL_SESSIONS ? () => endSession("User ended session") : undefined
-        }
-        onBegForRelease={
-          USE_REAL_SESSIONS
-            ? () => logger.info("Beg for release - TODO: implement")
-            : undefined
-        }
-        isStarting={USE_REAL_SESSIONS ? isStarting : false}
-        isEnding={USE_REAL_SESSIONS ? isEnding : false}
-        onEmergencyUnlock={handleEmergencyUnlock}
+        {...trackerData}
+        {...getActionButtonCallbacks(
+          USE_REAL_SESSIONS,
+          startSession,
+          endSession,
+          handleEmergencyUnlock,
+        )}
+        isStarting={USE_REAL_SESSIONS && isStarting}
+        isEnding={USE_REAL_SESSIONS && isEnding}
       />
 
       <ReasonModals
