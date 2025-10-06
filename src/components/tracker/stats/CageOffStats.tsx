@@ -23,22 +23,25 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
     timeCageOff: displayData.timeCageOff,
   });
 
-  // Determine color based on state
-  let timeColor = "!text-lavender_web"; // default when active (not ticking)
+  // Determine color based on state - using inline styles for guaranteed override
+  let textColorStyle: React.CSSProperties = {};
   let borderClass = "border border-rose_quartz/30";
 
   if (isTickingOff) {
     if (isPaused) {
       // Yellow when paused
-      timeColor = "!text-yellow-500";
+      textColorStyle = { color: "#eab308" }; // yellow-500
       borderClass =
         "border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20";
     } else {
       // Red when off
-      timeColor = "!text-nightly-deep_rose";
+      textColorStyle = { color: "#b32066" }; // nightly-deep_rose
       borderClass =
         "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20";
     }
+  } else {
+    // Lavender when active (not ticking)
+    textColorStyle = { color: "#c19bf5" }; // lavender_web approximation
   }
 
   return (
@@ -48,7 +51,7 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
       <p className="text-sm md:text-lg font-medium mb-3 text-lavender_web">
         Current Time Off: {isTickingOff ? (isPaused ? "🟡" : "🔴") : "💜"}
       </p>
-      <p className={`text-2xl md:text-4xl font-bold ${timeColor}`}>
+      <p className="text-2xl md:text-4xl font-bold" style={textColorStyle}>
         {stats.cageOffTimeFormatted}
       </p>
     </div>
