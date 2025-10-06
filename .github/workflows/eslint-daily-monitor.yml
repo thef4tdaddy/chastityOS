@@ -149,67 +149,60 @@ jobs:
             const changeEmoji = change > 0 ? '📈' : change < 0 ? '📉' : '➡️';
             const statusEmoji = currentErrors === 0 ? '✅' : '❌';
 
-            const body = `## Master Tracking Issue - ALL ESLint Problems
+            const maxLinesSection = maxLines > 0 ? "- **max-lines-per-function** (" + maxLines + " warnings)\n  - Functions >150 lines that could benefit from extraction\n  - Non-critical, tracked in #158 (Refactoring Master)" : '';
+            const complexitySection = complexity > 0 ? "- **complexity** (" + complexity + " warnings)\n  - Functions with cyclomatic complexity >15\n  - Non-critical, refactoring opportunities" : '';
+            const totalReduction = ((1 - current/483) * 100).toFixed(1);
+            const changePrefix = change > 0 ? '+' : '';
+            const percentPrefix = percentChange > 0 ? '+' : '';
+            const statusText = percentChange > 20 ? '🚨 THRESHOLD EXCEEDED' : '✅ Within limits';
 
-**Current Status:** ${statusEmoji} ${current} problems (${currentErrors} errors, ${currentWarnings} warnings)
-
-## Progress
-- **Started:** 483 problems (199 errors, 284 warnings)
-- **After initial cleanup:** 276 problems (65 errors, 211 warnings)
-- **After PR #367:** 142 problems
-- **After architecture cleanup:** 106 problems (9 errors, 97 warnings)
-- **Previous check:** ${previous} problems
-- **Current (${context.ref_name}):** ${current} problems (${currentErrors} errors, ${currentWarnings} warnings)
-- **Change:** ${changeEmoji} ${change > 0 ? '+' : ''}${change} (${percentChange > 0 ? '+' : ''}${percentChange}%)
-- **Total Reduction:** ${((1 - current/483) * 100).toFixed(1)}% from start! 🎉
-
-## Breakdown by Type
-- **max-lines-per-function:** ${maxLines} ${maxLines > 0 ? '⚠️' : '✅'}
-- **complexity:** ${complexity} ${complexity > 0 ? '⚠️' : '✅'}
-- **other:** ${other} ${other > 0 ? '⚠️' : '✅'}
-
-## Remaining Issues
-
-### Refactoring Only (Code Quality, Non-Breaking)
-${maxLines > 0 ? `- **max-lines-per-function** (${maxLines} warnings)
-  - Functions >150 lines that could benefit from extraction
-  - Non-critical, tracked in #158 (Refactoring Master)` : ''}
-${complexity > 0 ? `- **complexity** (${complexity} warnings)
-  - Functions with cyclomatic complexity >15
-  - Non-critical, refactoring opportunities` : ''}
-
-### All Critical Issues Resolved ✅
-- ✅ All errors fixed (was 199 → now ${currentErrors})
-- ✅ no-unused-vars (was 39 → now 0)
-- ✅ no-undef (was 98 → now 0)
-- ✅ no-explicit-any (was 15+ → now 0)
-- ✅ react-hooks/exhaustive-deps (was 28 → now 0)
-- ✅ react-hooks/rules-of-hooks (was 56 → now 0)
-
-## Completed ✅
-- ~~#421~~ - Architecture violations (localStorage, validation placement)
-- ~~#382~~ - Critical errors (all types)
-- ~~#366~~ - Small violations (max-statements, complexity, max-params)
-- ~~#363~~ - react-hooks/rules-of-hooks
-- ~~#362~~ - no-undef
-- ~~#311~~ - Unused variables
-- ~~#312~~ - Exhaustive deps
-- ~~#213~~ - Zustand patterns
-- ~~#330~~ - Max-lines (excluded useSession.ts legitimately)
-
-## Daily Monitoring
-- **Branch:** ${context.ref_name}
-- **Last Check:** ${new Date().toISOString().split('T')[0]}
-- **Threshold:** 20% increase blocks commits
-- **Status:** ${percentChange > 20 ? '🚨 THRESHOLD EXCEEDED' : '✅ Within limits'}
-
-## Related Master Issues
-- #158 - Refactoring Master (complexity, long files/functions)
-- #166 - TypeScript Errors Master
-
----
-🤖 Last updated: ${new Date().toISOString()}
-📊 Auto-updated daily by [ESLint Monitor Workflow](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const body = "## Master Tracking Issue - ALL ESLint Problems\n\n" +
+              "**Current Status:** " + statusEmoji + " " + current + " problems (" + currentErrors + " errors, " + currentWarnings + " warnings)\n\n" +
+              "## Progress\n" +
+              "- **Started:** 483 problems (199 errors, 284 warnings)\n" +
+              "- **After initial cleanup:** 276 problems (65 errors, 211 warnings)\n" +
+              "- **After PR #367:** 142 problems\n" +
+              "- **After architecture cleanup:** 106 problems (9 errors, 97 warnings)\n" +
+              "- **Previous check:** " + previous + " problems\n" +
+              "- **Current (" + context.ref_name + "):** " + current + " problems (" + currentErrors + " errors, " + currentWarnings + " warnings)\n" +
+              "- **Change:** " + changeEmoji + " " + changePrefix + change + " (" + percentPrefix + percentChange + "%)\n" +
+              "- **Total Reduction:** " + totalReduction + "% from start! 🎉\n\n" +
+              "## Breakdown by Type\n" +
+              "- **max-lines-per-function:** " + maxLines + " " + (maxLines > 0 ? '⚠️' : '✅') + "\n" +
+              "- **complexity:** " + complexity + " " + (complexity > 0 ? '⚠️' : '✅') + "\n" +
+              "- **other:** " + other + " " + (other > 0 ? '⚠️' : '✅') + "\n\n" +
+              "## Remaining Issues\n\n" +
+              "### Refactoring Only (Code Quality, Non-Breaking)\n" +
+              maxLinesSection + "\n" +
+              complexitySection + "\n\n" +
+              "### All Critical Issues Resolved ✅\n" +
+              "- ✅ All errors fixed (was 199 → now " + currentErrors + ")\n" +
+              "- ✅ no-unused-vars (was 39 → now 0)\n" +
+              "- ✅ no-undef (was 98 → now 0)\n" +
+              "- ✅ no-explicit-any (was 15+ → now 0)\n" +
+              "- ✅ react-hooks/exhaustive-deps (was 28 → now 0)\n" +
+              "- ✅ react-hooks/rules-of-hooks (was 56 → now 0)\n\n" +
+              "## Completed ✅\n" +
+              "- ~~#421~~ - Architecture violations (localStorage, validation placement)\n" +
+              "- ~~#382~~ - Critical errors (all types)\n" +
+              "- ~~#366~~ - Small violations (max-statements, complexity, max-params)\n" +
+              "- ~~#363~~ - react-hooks/rules-of-hooks\n" +
+              "- ~~#362~~ - no-undef\n" +
+              "- ~~#311~~ - Unused variables\n" +
+              "- ~~#312~~ - Exhaustive deps\n" +
+              "- ~~#213~~ - Zustand patterns\n" +
+              "- ~~#330~~ - Max-lines (excluded useSession.ts legitimately)\n\n" +
+              "## Daily Monitoring\n" +
+              "- **Branch:** " + context.ref_name + "\n" +
+              "- **Last Check:** " + new Date().toISOString().split('T')[0] + "\n" +
+              "- **Threshold:** 20% increase blocks commits\n" +
+              "- **Status:** " + statusText + "\n\n" +
+              "## Related Master Issues\n" +
+              "- #158 - Refactoring Master (complexity, long files/functions)\n" +
+              "- #166 - TypeScript Errors Master\n\n" +
+              "---\n" +
+              "🤖 Last updated: " + new Date().toISOString() + "\n" +
+              "📊 Auto-updated daily by [ESLint Monitor Workflow](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ")";
 
             await github.rest.issues.update({
               owner: context.repo.owner,
@@ -242,23 +235,19 @@ ${complexity > 0 ? `- **complexity** (${complexity} warnings)
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `## 🚨 ESLint Quality Gate Failed
-
-**ESLint violations increased by ${percentChange}%**, exceeding the 20% threshold.
-
-### Details
-- **Previous:** ${previous} problems
-- **Current:** ${current} problems
-- **Increase:** ${percentChange}%
-
-### Action Required
-Please reduce ESLint violations before merging. Run:
-\`\`\`bash
-npm run lint
-npm run lint:fix  # Auto-fix what's possible
-\`\`\`
-
-See [issue #214](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/issues/214) for current status.`
+              body: "## 🚨 ESLint Quality Gate Failed\n\n" +
+                "**ESLint violations increased by " + percentChange + "%**, exceeding the 20% threshold.\n\n" +
+                "### Details\n" +
+                "- **Previous:** " + previous + " problems\n" +
+                "- **Current:** " + current + " problems\n" +
+                "- **Increase:** " + percentChange + "%\n\n" +
+                "### Action Required\n" +
+                "Please reduce ESLint violations before merging. Run:\n" +
+                "```bash\n" +
+                "npm run lint\n" +
+                "npm run lint:fix  # Auto-fix what's possible\n" +
+                "```\n\n" +
+                "See [issue #214](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/issues/214) for current status."
             });
 
       - name: Upload ESLint report
