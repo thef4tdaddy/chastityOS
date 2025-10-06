@@ -52,7 +52,6 @@ const logger = serviceLogger("useSessionHistory");
 // ==================== HOOK IMPLEMENTATION ====================
 
 // Complex session history management with privacy controls and analytics
-// eslint-disable-next-line max-statements
 export const useSessionHistory = (userId: string, relationshipId?: string) => {
   // ==================== STATE ====================
 
@@ -229,7 +228,7 @@ export const useSessionHistory = (userId: string, relationshipId?: string) => {
         throw error;
       }
     },
-    [sessions, calculateInsights, calculateTrends, userId],
+    [sessions, setSessions, calculateInsights, calculateTrends, userId],
   );
 
   // ==================== KEYHOLDER ACCESS ====================
