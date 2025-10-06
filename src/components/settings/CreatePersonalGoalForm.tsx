@@ -11,7 +11,10 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 import { useAuthState } from "../../contexts";
-import { EmergencyPinDBService } from "../../services/database/EmergencyPinDBService";
+import {
+  useSetEmergencyPin,
+  useHasEmergencyPin,
+} from "../../hooks/api/useEmergencyPin";
 import { checkGoogleSignIn } from "../../utils/auth/google-auth-check";
 
 interface CreatePersonalGoalFormProps {
@@ -28,6 +31,9 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
   isCreating,
 }) => {
   const { user } = useAuthState();
+  const setEmergencyPinMutation = useSetEmergencyPin();
+  const hasEmergencyPin = useHasEmergencyPin(user?.uid);
+
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [days, setDays] = useState(7);
@@ -36,27 +42,23 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
 
   // Hardcore mode state
   const [isHardcoreMode, setIsHardcoreMode] = useState(false);
-  const [hasEmergencyPin, setHasEmergencyPin] = useState(false);
-  const [emergencyPin, setEmergencyPin] = useState("");
+  const [emergencyPinInput, setEmergencyPinInput] = useState("");
   const [confirmEmergencyPin, setConfirmEmergencyPin] = useState("");
   const [lockCombination, setLockCombination] = useState("");
   const [saveLockCombination, setSaveLockCombination] = useState(false);
   const [isSignedInWithGoogle, setIsSignedInWithGoogle] = useState(false);
   const [pinError, setPinError] = useState("");
 
-  // Check if user has emergency PIN and Google sign-in status
+  // Check Google sign-in status
   useEffect(() => {
-    const checkStatus = async () => {
+    const checkGoogleStatus = async () => {
       if (!user?.uid) return;
-
-      const hasPinSet = await EmergencyPinDBService.hasEmergencyPin(user.uid);
-      setHasEmergencyPin(hasPinSet);
 
       const { isSignedInWithGoogle: hasGoogle } = await checkGoogleSignIn();
       setIsSignedInWithGoogle(hasGoogle);
     };
 
-    checkStatus();
+    checkGoogleStatus();
   }, [user?.uid, isOpen]);
 
   const handleSubmit = async () => {
@@ -69,11 +71,11 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
     if (isHardcoreMode) {
       // If user doesn't have emergency PIN, they must set one
       if (!hasEmergencyPin) {
-        if (!emergencyPin || emergencyPin.length < 4) {
+        if (!emergencyPinInput || emergencyPinInput.length < 4) {
           setPinError("Emergency PIN must be at least 4 characters");
           return;
         }
-        if (emergencyPin !== confirmEmergencyPin) {
+        if (emergencyPinInput !== confirmEmergencyPin) {
           setPinError("PINs do not match");
           return;
         }
@@ -81,7 +83,10 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
         // Save the emergency PIN
         if (user?.uid) {
           try {
-            await EmergencyPinDBService.setEmergencyPin(user.uid, emergencyPin);
+            await setEmergencyPinMutation.mutateAsync({
+              userId: user.uid,
+              pin: emergencyPinInput,
+            });
           } catch {
             setPinError("Failed to save emergency PIN");
             return;
@@ -106,7 +111,7 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
     setHours(0);
     setDescription("");
     setIsHardcoreMode(false);
-    setEmergencyPin("");
+    setEmergencyPinInput("");
     setConfirmEmergencyPin("");
     setLockCombination("");
     setSaveLockCombination(false);
@@ -259,9 +264,9 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
                   </p>
                   <input
                     type="password"
-                    value={emergencyPin}
+                    value={emergencyPinInput}
                     onChange={(e) => {
-                      setEmergencyPin(e.target.value);
+                      setEmergencyPinInput(e.target.value);
                       setPinError("");
                     }}
                     placeholder="Enter 4+ character PIN"

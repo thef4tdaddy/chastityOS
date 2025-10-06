@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { achievementDBService, achievementEngine } from "../services";
 import {
   DBAchievement,
@@ -13,6 +13,16 @@ import {
   AchievementCategory,
 } from "../types";
 import { logger } from "../utils/logging";
+import {
+  findAchievementById,
+  checkHasAchievement,
+  findProgressForAchievement,
+  filterAchievementsByCategory,
+  filterUserAchievementsByCategory,
+  mapAchievementsWithProgress,
+  getRecentAchievements,
+} from "../utils/achievements/achievementsHelpers";
+import { useAchievementMutations } from "./useAchievementMutations";
 
 export interface AchievementStats {
   totalEarned: number;
@@ -23,7 +33,11 @@ export interface AchievementStats {
 }
 
 export const useAchievements = (userId?: string) => {
-  const queryClient = useQueryClient();
+  const {
+    toggleVisibilityMutation,
+    markNotificationReadMutation,
+    performFullCheckMutation,
+  } = useAchievementMutations(userId);
 
   // ==================== QUERIES ====================
 
@@ -94,84 +108,13 @@ export const useAchievements = (userId?: string) => {
         achievementDBService.getUserAchievements(userId),
       ]);
 
-      // Get recent achievements (last 5)
-      const recentAchievements = achievements
-        .sort(
-          (a: DBUserAchievement, b: DBUserAchievement) =>
-            b.earnedAt.getTime() - a.earnedAt.getTime(),
-        )
-        .slice(0, 5);
-
       return {
         ...stats,
-        recentAchievements,
+        recentAchievements: getRecentAchievements(achievements, 5),
       };
     },
     enabled: Boolean(userId),
     staleTime: 2 * 60 * 1000, // 2 minutes
-  });
-
-  // ==================== MUTATIONS ====================
-
-  /**
-   * Toggle achievement visibility
-   */
-  const toggleVisibilityMutation = useMutation({
-    mutationFn: ({ achievementId }: { achievementId: string }) =>
-      achievementDBService.toggleAchievementVisibility(userId!, achievementId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["achievements", "visible", userId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["achievements", "user", userId],
-      });
-    },
-    onError: (error: Error) => {
-      logger.error(
-        "Failed to toggle achievement visibility",
-        error,
-        "useAchievements",
-      );
-    },
-  });
-
-  /**
-   * Mark notification as read
-   */
-  const markNotificationReadMutation = useMutation({
-    mutationFn: (notificationId: string) =>
-      achievementDBService.markNotificationRead(notificationId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["achievements", "notifications", userId],
-      });
-    },
-    onError: (error: Error) => {
-      logger.error(
-        "Failed to mark notification as read",
-        error,
-        "useAchievements",
-      );
-    },
-  });
-
-  /**
-   * Perform full achievement check
-   */
-  const performFullCheckMutation = useMutation({
-    mutationFn: () => achievementEngine.performFullCheck(userId!),
-    onSuccess: () => {
-      // Invalidate all achievement-related queries
-      queryClient.invalidateQueries({ queryKey: ["achievements"] });
-    },
-    onError: (error) => {
-      logger.error(
-        "Failed to perform full achievement check",
-        error,
-        "useAchievements",
-      );
-    },
   });
 
   // ==================== HELPER FUNCTIONS ====================
@@ -181,7 +124,7 @@ export const useAchievements = (userId?: string) => {
    */
   const getAchievementById = useCallback(
     (achievementId: string): DBAchievement | undefined => {
-      return allAchievements.find((a: DBAchievement) => a.id === achievementId);
+      return findAchievementById(allAchievements, achievementId);
     },
     [allAchievements],
   );
@@ -191,9 +134,7 @@ export const useAchievements = (userId?: string) => {
    */
   const hasAchievement = useCallback(
     (achievementId: string): boolean => {
-      return userAchievements.some(
-        (ua: DBUserAchievement) => ua.achievementId === achievementId,
-      );
+      return checkHasAchievement(userAchievements, achievementId);
     },
     [userAchievements],
   );
@@ -203,9 +144,7 @@ export const useAchievements = (userId?: string) => {
    */
   const getProgressForAchievement = useCallback(
     (achievementId: string): DBAchievementProgress | undefined => {
-      return achievementProgress.find(
-        (ap: DBAchievementProgress) => ap.achievementId === achievementId,
-      );
+      return findProgressForAchievement(achievementProgress, achievementId);
     },
     [achievementProgress],
   );
@@ -215,9 +154,7 @@ export const useAchievements = (userId?: string) => {
    */
   const getAchievementsByCategory = useCallback(
     (category: AchievementCategory): DBAchievement[] => {
-      return allAchievements.filter(
-        (a: DBAchievement) => a.category === category,
-      );
+      return filterAchievementsByCategory(allAchievements, category);
     },
     [allAchievements],
   );
@@ -227,12 +164,10 @@ export const useAchievements = (userId?: string) => {
    */
   const getUserAchievementsByCategory = useCallback(
     (category: AchievementCategory): DBUserAchievement[] => {
-      const categoryAchievementIds = allAchievements
-        .filter((a: DBAchievement) => a.category === category)
-        .map((a: DBAchievement) => a.id);
-
-      return userAchievements.filter((ua: DBUserAchievement) =>
-        categoryAchievementIds.includes(ua.achievementId),
+      return filterUserAchievementsByCategory(
+        allAchievements,
+        userAchievements,
+        category,
       );
     },
     [allAchievements, userAchievements],
@@ -242,32 +177,11 @@ export const useAchievements = (userId?: string) => {
    * Get achievements with progress information
    */
   const getAchievementsWithProgress = useCallback(() => {
-    return allAchievements.map((achievement: DBAchievement) => {
-      const userAchievement = userAchievements.find(
-        (ua: DBUserAchievement) => ua.achievementId === achievement.id,
-      );
-      const progress = achievementProgress.find(
-        (ap: DBAchievementProgress) => ap.achievementId === achievement.id,
-      );
-
-      return {
-        achievement,
-        userAchievement,
-        progress: progress
-          ? {
-              currentValue: progress.currentValue,
-              targetValue: progress.targetValue,
-              percentage: Math.min(
-                (progress.currentValue / progress.targetValue) * 100,
-                100,
-              ),
-              isCompleted: progress.isCompleted,
-            }
-          : null,
-        isEarned: Boolean(userAchievement),
-        isVisible: userAchievement?.isVisible ?? true,
-      };
-    });
+    return mapAchievementsWithProgress(
+      allAchievements,
+      userAchievements,
+      achievementProgress,
+    );
   }, [allAchievements, userAchievements, achievementProgress]);
 
   // ==================== ACTIONS ====================

@@ -5,6 +5,14 @@
  */
 
 import { useState, useCallback } from "react";
+import {
+  addConditionToRule,
+  removeConditionFromRule,
+  updateConditionInRule,
+  addActionToRule,
+  removeActionFromRule,
+  updateActionInRule,
+} from "../../utils/rules/ruleEditorHelpers";
 
 export interface Rule {
   id: string;
@@ -159,10 +167,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   const addCondition = useCallback(
     (condition: Condition) => {
       if (currentRule) {
-        setCurrentRule({
-          ...currentRule,
-          conditions: [...currentRule.conditions, condition],
-        });
+        setCurrentRule(addConditionToRule(currentRule, condition));
       }
     },
     [currentRule],
@@ -171,10 +176,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   const removeCondition = useCallback(
     (index: number) => {
       if (currentRule) {
-        setCurrentRule({
-          ...currentRule,
-          conditions: currentRule.conditions.filter((_, i) => i !== index),
-        });
+        setCurrentRule(removeConditionFromRule(currentRule, index));
       }
     },
     [currentRule],
@@ -183,12 +185,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   const updateCondition = useCallback(
     (index: number, condition: Condition) => {
       if (currentRule) {
-        setCurrentRule({
-          ...currentRule,
-          conditions: currentRule.conditions.map((c, i) =>
-            i === index ? condition : c,
-          ),
-        });
+        setCurrentRule(updateConditionInRule(currentRule, index, condition));
       }
     },
     [currentRule],
@@ -197,10 +194,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   const addAction = useCallback(
     (action: RuleAction) => {
       if (currentRule) {
-        setCurrentRule({
-          ...currentRule,
-          actions: [...currentRule.actions, action],
-        });
+        setCurrentRule(addActionToRule(currentRule, action));
       }
     },
     [currentRule],
@@ -209,10 +203,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   const removeAction = useCallback(
     (index: number) => {
       if (currentRule) {
-        setCurrentRule({
-          ...currentRule,
-          actions: currentRule.actions.filter((_, i) => i !== index),
-        });
+        setCurrentRule(removeActionFromRule(currentRule, index));
       }
     },
     [currentRule],
@@ -221,12 +212,7 @@ export function useRuleEditor(): UseRuleEditorReturn {
   const updateAction = useCallback(
     (index: number, action: RuleAction) => {
       if (currentRule) {
-        setCurrentRule({
-          ...currentRule,
-          actions: currentRule.actions.map((a, i) =>
-            i === index ? action : a,
-          ),
-        });
+        setCurrentRule(updateActionInRule(currentRule, index, action));
       }
     },
     [currentRule],

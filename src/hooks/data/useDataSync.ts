@@ -4,7 +4,6 @@
  * with proper privacy controls
  */
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { SyncResult } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
 import {
   calculateOverallSyncQuality,
@@ -14,26 +13,30 @@ import {
 import { useConflictResolution } from "./useConflictResolution";
 import { useSyncBackup } from "./useSyncBackup";
 import { useSyncMonitoring } from "./useSyncMonitoring";
+import {
+  useSyncPermissionsLoader,
+  useSyncHistoryLoader,
+  usePendingConflictsLoader,
+  useRelationshipSyncLoader,
+} from "./useDataSyncLoaders";
+import {
+  useManualSyncOperations,
+  useSyncPermissionsManagement,
+  useRealTimeSyncControls,
+} from "./useDataSyncOperations";
+import type {
+  SyncStatus,
+  SyncPermissions,
+  SyncMetrics,
+} from "./types/dataSync";
 
 const logger = serviceLogger("useDataSync");
 
-// ==================== INTERFACES ====================
-
-import type {
-  SyncStatus,
-  RelationshipSyncStatus,
-  DataConflict,
-  SyncPermissions,
-  SyncMetrics,
-  SyncScope,
-  DataEntityType,
-  RelationshipSyncResult,
-} from "./types/dataSync";
-import type * as _Types from "./types/dataSync";
+// Re-export types
 export type * from "./types/dataSync";
 
-// Complex sync orchestration hook requires many statements for proper state management
-// eslint-disable-next-line max-statements
+// Complex sync orchestration hook requires many statements and lines for proper state management
+// eslint-disable-next-line max-statements, max-lines-per-function
 export const useDataSync = (userId: string) => {
   // ==================== STATE ====================
 
@@ -45,11 +48,13 @@ export const useDataSync = (userId: string) => {
     error: null,
   });
 
-  const [relationshipSync, setRelationshipSync] = useState<
-    RelationshipSyncStatus[]
-  >([]);
-
-  const [conflicts, setConflicts] = useState<DataConflict[]>([]);
+  // Data loading hooks
+  const { loadSyncPermissions } = useSyncPermissionsLoader(userId);
+  const { loadSyncHistory } = useSyncHistoryLoader(userId);
+  const { loadPendingConflicts, conflicts, setConflicts } =
+    usePendingConflictsLoader(userId);
+  const { loadRelationshipSyncStatus, relationshipSync, setRelationshipSync } =
+    useRelationshipSyncLoader(userId);
 
   const [syncPermissions, setSyncPermissions] = useState<SyncPermissions>({
     allowDataSharing: true,
@@ -150,269 +155,6 @@ export const useDataSync = (userId: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, syncPermissions.allowRealTimeSync]);
 
-  // ==================== REAL-TIME SYNC ====================
-
-  useEffect(() => {
-    if (!realTimeSyncEnabled || !syncPermissions.allowRealTimeSync) return;
-
-    const syncInterval = getSyncInterval(syncPermissions.syncFrequency);
-    const interval = setInterval(() => {
-      performBackgroundSync();
-    }, syncInterval);
-
-    return () => clearInterval(interval);
-    // performBackgroundSync is stable (no deps)
-    // realTimeSyncEnabled and syncPermissions trigger re-setup of interval when changed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [realTimeSyncEnabled, syncPermissions]);
-
-  // ==================== DATA LOADING FUNCTIONS ====================
-
-  const loadSyncPermissions = useCallback(async () => {
-    try {
-      // Load user's sync preferences from database
-      logger.debug("Loading sync permissions", { userId });
-    } catch (error) {
-      logger.error("Failed to load sync permissions", { error });
-    }
-  }, [userId]);
-
-  const loadSyncHistory = useCallback(async () => {
-    try {
-      // Load sync metrics and history
-      logger.debug("Loading sync history", { userId });
-    } catch (error) {
-      logger.error("Failed to load sync history", { error });
-    }
-  }, [userId]);
-
-  const loadPendingConflicts = useCallback(async () => {
-    try {
-      // Load unresolved conflicts
-      setConflicts([]);
-      logger.debug("Loading pending conflicts", { userId });
-    } catch (error) {
-      logger.error("Failed to load pending conflicts", { error });
-    }
-  }, [userId]);
-
-  const loadRelationshipSyncStatus = useCallback(async () => {
-    try {
-      // Load sync status for all relationships
-      setRelationshipSync([]);
-      logger.debug("Loading relationship sync status", { userId });
-    } catch (error) {
-      logger.error("Failed to load relationship sync status", { error });
-    }
-  }, [userId]);
-
-  // ==================== MANUAL SYNC OPERATIONS ====================
-
-  const forceSyncAll = useCallback(async (): Promise<SyncResult> => {
-    try {
-      logger.debug("Starting force sync all", { userId });
-
-      setSyncStatus({
-        state: "syncing",
-        lastSync: null,
-        progress: 0,
-        message: "Starting synchronization...",
-        error: null,
-      });
-
-      // Simulate sync process
-      for (let i = 0; i <= 100; i += 20) {
-        setSyncStatus((prev) => ({
-          ...prev,
-          progress: i,
-          message: `Syncing... ${i}%`,
-        }));
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-
-      const result: SyncResult = {
-        success: true,
-        operations: {
-          uploaded: 15,
-          downloaded: 8,
-          conflicts: 2,
-        },
-        conflicts: [],
-        timestamp: new Date(),
-      };
-
-      setSyncStatus({
-        state: "completed",
-        lastSync: new Date(),
-        progress: 100,
-        message: "Sync completed successfully",
-        error: null,
-      });
-
-      // Update metrics
-      setSyncMetrics((prev) => ({
-        ...prev,
-        totalSyncs: prev.totalSyncs + 1,
-        successfulSyncs: prev.successfulSyncs + 1,
-        lastSuccessfulSync: new Date(),
-      }));
-
-      logger.info("Force sync completed successfully", { result });
-      return result;
-    } catch (error) {
-      logger.error("Force sync failed", { error });
-
-      setSyncStatus({
-        state: "error",
-        lastSync: null,
-        progress: 0,
-        message: "Sync failed",
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-
-      setSyncMetrics((prev) => ({
-        ...prev,
-        totalSyncs: prev.totalSyncs + 1,
-        failedSyncs: prev.failedSyncs + 1,
-      }));
-
-      throw error;
-    }
-  }, [userId]);
-
-  const syncRelationshipData = useCallback(
-    async (relationshipId: string): Promise<RelationshipSyncResult> => {
-      try {
-        logger.debug("Syncing relationship data", { relationshipId });
-
-        const startTime = Date.now();
-
-        // Find relationship sync status
-        const relationshipStatus = relationshipSync.find(
-          (rs) => rs.relationshipId === relationshipId,
-        );
-        if (!relationshipStatus) {
-          throw new Error("Relationship not found");
-        }
-
-        // Perform relationship-specific sync
-        const result: RelationshipSyncResult = {
-          relationshipId,
-          success: true,
-          syncedCollections: ["sessions", "goals", "tasks"],
-          conflictsFound: 1,
-          conflictsResolved: 0,
-          metrics: {
-            duration: Date.now() - startTime,
-            itemsSynced: 12,
-            bytesTransferred: 4096,
-          },
-        };
-
-        // Update relationship sync status
-        setRelationshipSync((prev) =>
-          prev.map((rs) =>
-            rs.relationshipId === relationshipId
-              ? { ...rs, lastSync: new Date() }
-              : rs,
-          ),
-        );
-
-        logger.info("Relationship sync completed", { relationshipId, result });
-        return result;
-      } catch (error) {
-        logger.error("Relationship sync failed", { error, relationshipId });
-
-        return {
-          relationshipId,
-          success: false,
-          syncedCollections: [],
-          conflictsFound: 0,
-          conflictsResolved: 0,
-          error: error instanceof Error ? error.message : "Unknown error",
-          metrics: {
-            duration: 0,
-            itemsSynced: 0,
-            bytesTransferred: 0,
-          },
-        };
-      }
-    },
-    [relationshipSync],
-  );
-
-  // ==================== PRIVACY AND PERMISSIONS ====================
-
-  const updateSyncPermissions = useCallback(
-    async (permissions: Partial<SyncPermissions>): Promise<void> => {
-      try {
-        logger.debug("Updating sync permissions", { permissions });
-
-        const updatedPermissions = { ...syncPermissions, ...permissions };
-        setSyncPermissions(updatedPermissions);
-
-        // Update real-time sync based on new permissions
-        if (
-          updatedPermissions.allowRealTimeSync !==
-          syncPermissions.allowRealTimeSync
-        ) {
-          if (updatedPermissions.allowRealTimeSync) {
-            await initializeRealTimeSync();
-          } else {
-            setRealTimeSyncEnabled(false);
-          }
-        }
-
-        logger.info("Sync permissions updated successfully");
-      } catch (error) {
-        logger.error("Failed to update sync permissions", { error });
-        throw error;
-      }
-    },
-    [syncPermissions, initializeRealTimeSync],
-  );
-
-  const configureSyncScope = useCallback(
-    async (scope: SyncScope): Promise<void> => {
-      try {
-        logger.debug("Configuring sync scope", { scope });
-        // Configure what data gets synced
-        logger.info("Sync scope configured successfully");
-      } catch (error) {
-        logger.error("Failed to configure sync scope", { error });
-        throw error;
-      }
-    },
-    [],
-  );
-
-  // ==================== REAL-TIME SYNC ====================
-
-  const enableRealtimeSync = useCallback(
-    (entityTypes: DataEntityType[]): void => {
-      try {
-        logger.debug("Enabling realtime sync", { entityTypes });
-        setRealTimeSyncEnabled(true);
-        // Set up WebSocket connections or other real-time mechanisms
-        logger.info("Realtime sync enabled successfully");
-      } catch (error) {
-        logger.error("Failed to enable realtime sync", { error });
-      }
-    },
-    [],
-  );
-
-  const disableRealtimeSync = useCallback((): void => {
-    try {
-      logger.debug("Disabling realtime sync");
-      setRealTimeSyncEnabled(false);
-      // Clean up real-time connections
-      logger.info("Realtime sync disabled successfully");
-    } catch (error) {
-      logger.error("Failed to disable realtime sync", { error });
-    }
-  }, []);
-
   // ==================== PRIVATE HELPER FUNCTIONS ====================
 
   const initializeRealTimeSync = useCallback(async (): Promise<void> => {
@@ -433,6 +175,48 @@ export const useDataSync = (userId: string) => {
       logger.error("Background sync failed", { error });
     }
   }, []);
+
+  // ==================== REAL-TIME SYNC ====================
+
+  useEffect(() => {
+    if (!realTimeSyncEnabled || !syncPermissions.allowRealTimeSync) return;
+
+    const syncInterval = getSyncInterval(syncPermissions.syncFrequency);
+    const interval = setInterval(() => {
+      performBackgroundSync();
+    }, syncInterval);
+
+    return () => clearInterval(interval);
+  }, [realTimeSyncEnabled, syncPermissions, performBackgroundSync]);
+
+  // ==================== SYNC OPERATIONS ====================
+
+  const { forceSyncAll, syncRelationshipData } = useManualSyncOperations(
+    userId,
+    {
+      syncStatus,
+      setSyncStatus,
+      setSyncMetrics,
+      relationshipSync,
+      setRelationshipSync,
+    },
+  );
+
+  // ==================== PRIVACY AND PERMISSIONS ====================
+
+  const { updateSyncPermissions, configureSyncScope } =
+    useSyncPermissionsManagement(
+      syncPermissions,
+      setSyncPermissions,
+      initializeRealTimeSync,
+      setRealTimeSyncEnabled,
+    );
+
+  // ==================== REAL-TIME SYNC CONTROLS ====================
+
+  const { enableRealtimeSync, disableRealtimeSync } = useRealTimeSyncControls(
+    setRealTimeSyncEnabled,
+  );
 
   // ==================== RETURN HOOK INTERFACE ====================
 
