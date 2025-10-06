@@ -60,15 +60,48 @@ const getActionButtonCallbacks = (
   onEmergencyUnlock: handleEmergencyUnlock,
 });
 
+interface RealTrackerData {
+  trackerDataParams: {
+    isActive: boolean;
+    isPaused: boolean;
+    sessionId?: string;
+    userId?: string;
+    goals: { active: unknown[]; keyholderAssigned: unknown[] };
+    keyholderGoal?: unknown;
+    personalGoal?: unknown;
+    isHardcoreMode?: boolean;
+    duration?: number;
+  };
+  statsParams: {
+    isActive: boolean;
+    isPaused: boolean;
+    realSession: unknown;
+    totalChastityTime: number;
+    totalCageOffTime: number;
+    personalGoal?: unknown;
+  };
+  goals?: { active?: unknown[]; keyholderAssigned?: unknown[] };
+  isActive: boolean;
+}
+
 // Helper to build all component props at once
 const buildAllTrackerProps = (
   useRealSessions: boolean,
-  realData: unknown,
+  realData: RealTrackerData | null,
   mockData: unknown,
   currentSession: unknown,
 ) => {
-  const real = realData as any;
-  const mock = mockData as any;
+  const real = realData;
+  const mock = mockData as {
+    isCageOn: boolean;
+    isPaused: boolean;
+    remainingGoalTime?: number;
+    keyholderName?: string;
+    savedSubmissivesName?: string;
+    requiredKeyholderDurationSeconds?: number;
+    totalChastityTime: number;
+    [key: string]: unknown;
+  };
   const trackerData = useRealSessions
     ? buildTrackerData(real.trackerDataParams)
     : buildMockTrackerData(mock);
