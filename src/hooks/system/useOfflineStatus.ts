@@ -212,14 +212,18 @@ export const useOfflineStatus = () => {
   }, [processSyncQueue]);
 
   // Monitor connection changes
-  useConnectionMonitoring(
-    handleOnline,
-    handleOffline,
-    addNetworkEvent,
+  useConnectionMonitoring({
+    handlers: {
+      onOnline: handleOnline,
+      onOffline: handleOffline,
+      addNetworkEvent,
+    },
     offlineStatus,
-    lastOnline,
-    setLastOnline,
-  );
+    lastOnline: {
+      value: lastOnline,
+      setValue: setLastOnline,
+    },
+  });
 
   return {
     // Status
