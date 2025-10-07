@@ -151,6 +151,7 @@ export function useSubmitTaskForReview() {
       taskId: string;
       userId: string;
       note?: string;
+      attachments?: string[];
     }) => {
       // 1. Update local Dexie immediately
       const updatedTask = await taskDBService.updateTaskStatus(
@@ -158,6 +159,7 @@ export function useSubmitTaskForReview() {
         "submitted",
         {
           submissiveNote: params.note,
+          attachments: params.attachments,
         },
       );
 

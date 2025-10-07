@@ -50,6 +50,15 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Log orgasms (self or partner), durations, notes, and other events
 - Personalize orgasm labels using the Submissive’s and Keyholder’s names
 
+
+### 📸 Task Evidence Upload (NEW)
+
+- Upload 1-5 photos as evidence when submitting tasks
+- Drag-and-drop support with instant preview
+- Automatic file validation (type, size)
+- Thumbnail grid with lightbox for full-size viewing
+- Cloudinary integration for fast, optimized delivery
+- See [Task Evidence Upload Documentation](docs/TASK_EVIDENCE_UPLOAD.md) for setup
 ### 🧾 Export Data
 
 - Export full tracker history (.csv)

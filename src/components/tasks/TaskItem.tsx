@@ -2,6 +2,8 @@ import React from "react";
 import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
+import { TaskEvidenceDisplay } from "./TaskEvidenceDisplay";
+import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 
@@ -153,47 +155,74 @@ const TaskConsequence: React.FC<TaskConsequenceProps> = ({ consequence }) => {
 
 // Task submission component
 interface TaskSubmissionProps {
+  taskId: string;
+  userId: string;
   note: string;
   isSubmitting: boolean;
   onNoteChange: (note: string) => void;
+  onAttachmentsChange: (attachments: string[]) => void;
   onSubmit: () => void;
 }
 
 const TaskSubmission: React.FC<TaskSubmissionProps> = ({
+  taskId,
+  userId,
   note,
   isSubmitting,
   onNoteChange,
+  onAttachmentsChange,
   onSubmit,
-}) => (
-  <div className="border-t border-white/10 pt-3">
-    <textarea
-      value={note}
-      onChange={(e) => onNoteChange(e.target.value)}
-      placeholder="Add submission notes (optional)..."
-      className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
-      rows={3}
-    />
-    <button
-      onClick={onSubmit}
-      disabled={isSubmitting}
-      className="mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
-    >
-      {isSubmitting ? "Submitting..." : "Submit for Review"}
-    </button>
-  </div>
-);
+}) => {
+  return (
+    <div className="border-t border-white/10 pt-3">
+      <textarea
+        value={note}
+        onChange={(e) => onNoteChange(e.target.value)}
+        placeholder="Add submission notes (optional)..."
+        className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none mb-3"
+        rows={3}
+      />
+
+      <div className="mb-3">
+        <div className="text-sm text-nightly-celadon mb-2">
+          Upload Evidence (optional):
+        </div>
+        <TaskEvidenceUpload
+          taskId={taskId}
+          userId={userId}
+          onUploadComplete={onAttachmentsChange}
+          maxFiles={5}
+        />
+      </div>
+
+      <button
+        onClick={onSubmit}
+        disabled={isSubmitting}
+        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
+      >
+        {isSubmitting ? "Submitting..." : "Submit for Review"}
+      </button>
+    </div>
+  );
+};
 
 // Task item component
 interface TaskItemProps {
   task: DBTask;
-  onSubmit: (taskId: string, note: string) => void;
+  onSubmit: (taskId: string, note: string, attachments?: string[]) => void;
+  userId?: string;
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({ task, onSubmit }) => {
+export const TaskItem: React.FC<TaskItemProps> = ({
+  task,
+  onSubmit,
+  userId = "",
+}) => {
   const {
     note,
     isSubmitting,
     setNote,
+    setAttachments,
     handleSubmit,
     statusConfig,
     priorityStyles,
@@ -243,11 +272,21 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onSubmit }) => {
         />
       )}
 
+      {/* Display evidence if submitted/approved/rejected */}
+      {task.attachments && task.attachments.length > 0 && (
+        <div className="mb-3">
+          <TaskEvidenceDisplay attachments={task.attachments} />
+        </div>
+      )}
+
       {task.status === "pending" && (
         <TaskSubmission
+          taskId={task.id}
+          userId={userId || task.userId}
           note={note}
           isSubmitting={isSubmitting}
           onNoteChange={setNote}
+          onAttachmentsChange={setAttachments}
           onSubmit={handleSubmit}
         />
       )}

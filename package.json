@@ -54,6 +54,7 @@
     "axios": "^1.12.2",
     "chart.js": "^4.5.0",
     "chartjs-adapter-date-fns": "^3.0.0",
+    "cloudinary-core": "^2.14.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.18",
     "dexie": "^4.2.0",

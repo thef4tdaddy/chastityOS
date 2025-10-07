@@ -122,6 +122,7 @@ export interface DBTask extends DBBase {
   completedAt?: Date;
   submissiveNote?: string;
   keyholderFeedback?: string;
+  attachments?: string[]; // Photo/file evidence URLs
   consequence?: {
     type: "reward" | "punishment";
     duration?: number; // Additional/reduced chastity time in seconds
