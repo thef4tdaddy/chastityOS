@@ -23,6 +23,12 @@ class PWAUpdateManager {
       return;
     }
 
+    // Check if addEventListener is available (may not be in test environment)
+    if (typeof navigator.serviceWorker.addEventListener !== "function") {
+      logger.warn("Service Worker addEventListener not available");
+      return;
+    }
+
     // Listen for messages from service worker
     navigator.serviceWorker.addEventListener("message", (event) => {
       if (event.data && event.data.type === "SW_UPDATE_AVAILABLE") {
