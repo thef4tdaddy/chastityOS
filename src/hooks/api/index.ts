@@ -32,6 +32,7 @@ export {
   useOfflineQueueOperations,
   useRetryableOperations,
 } from "./useOfflineQueue";
+export { useBackgroundSync } from "./useBackgroundSync";
 export {
   useRulesQuery,
   useActiveRulesQuery,
