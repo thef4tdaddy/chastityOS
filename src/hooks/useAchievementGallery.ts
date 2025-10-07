@@ -41,9 +41,8 @@ export const useAchievementGallery = (
     const totalEarned = achievementsWithProgress.filter(
       (a) => a.isEarned,
     ).length;
-    const totalVisible = achievementsWithProgress.filter(
-      (a) => !a.achievement.isHidden,
-    ).length;
+    // Show all achievements in the total count (including hidden ones)
+    const totalVisible = achievementsWithProgress.length;
     const totalPoints = achievementsWithProgress
       .filter((a) => a.isEarned)
       .reduce((sum, a) => sum + a.achievement.points, 0);
@@ -94,11 +93,8 @@ export const useAchievementGallery = (
         return false;
       }
 
-      // Hide hidden achievements if not earned
-      if (achievement.isHidden && !isEarned) {
-        return false;
-      }
-
+      // Show all achievements, including locked/hidden ones
+      // Hidden achievements will display with a lock icon when not earned
       return true;
     });
   }, [
