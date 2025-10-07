@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { firebaseListeners } from "./services/sync";
+import { useBackgroundSync } from "./hooks/api/useBackgroundSync";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -95,12 +96,19 @@ const router = createBrowserRouter([
 ]);
 
 function App(): React.ReactElement {
+  // Initialize background sync for offline queue
+  const { registerBackgroundSync } = useBackgroundSync();
+
   useEffect(() => {
     firebaseListeners.start();
+
+    // Register background sync on app start
+    registerBackgroundSync();
+
     return () => {
       firebaseListeners.stop();
     };
-  }, []);
+  }, [registerBackgroundSync]);
 
   return (
     <QueryClientProvider client={queryClient}>
