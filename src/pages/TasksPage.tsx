@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuthState } from "../contexts";
-import { useTasks, useUpdateTaskStatus } from "../hooks/api/useTasks";
-import type { TaskStatus } from "../types/database";
+import { useTasks } from "../hooks/api/useTasks";
+import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
 import { TaskItem } from "../components/tasks";
 
@@ -57,8 +57,13 @@ const TabNavigation: React.FC<{
 // Active Tasks Section Component
 const ActiveTasksSection: React.FC<{
   tasks: Task[];
-  handleSubmitTask: (taskId: string, note: string) => void;
-}> = ({ tasks, handleSubmitTask }) => {
+  userId: string;
+  handleSubmitTask: (
+    taskId: string,
+    note: string,
+    attachments?: string[],
+  ) => void;
+}> = ({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
       <div className="glass-card text-center py-12">
@@ -82,7 +87,7 @@ const ActiveTasksSection: React.FC<{
           key={task.id}
           className="glass-card glass-hover transform transition-all duration-300 hover:scale-[1.02]"
         >
-          <TaskItem task={task} onSubmit={handleSubmitTask} />
+          <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
         </div>
       ))}
     </div>
@@ -135,17 +140,21 @@ const TasksPage: React.FC = () => {
     error,
   } = useTasks(user?.uid || "");
 
-  const updateTaskStatus = useUpdateTaskStatus();
+  const submitTaskMutation = useSubmitTaskForReview();
 
-  const handleSubmitTask = async (taskId: string, _note: string) => {
+  const handleSubmitTask = async (
+    taskId: string,
+    note: string,
+    attachments?: string[],
+  ) => {
     if (!user) return;
 
     try {
-      await updateTaskStatus.mutateAsync({
+      await submitTaskMutation.mutateAsync({
         taskId,
         userId: user.uid,
-        status: "submitted" as TaskStatus,
-        // Note: submissiveNote would be handled in task updates
+        note,
+        attachments,
       });
     } catch {
       // Error is already logged in the hook
@@ -189,6 +198,7 @@ const TasksPage: React.FC = () => {
             {activeTab === "active" ? (
               <ActiveTasksSection
                 tasks={activeTasks}
+                userId={user?.uid || ""}
                 handleSubmitTask={handleSubmitTask}
               />
             ) : (

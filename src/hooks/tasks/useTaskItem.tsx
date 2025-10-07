@@ -23,9 +23,10 @@ interface TaskPriorityStyles {
 // Custom hook for task item logic
 export const useTaskItem = (
   task: DBTask,
-  onSubmit: (taskId: string, note: string) => void,
+  onSubmit: (taskId: string, note: string, attachments?: string[]) => void,
 ) => {
   const [note, setNote] = useState("");
+  const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Task status configuration logic
@@ -100,8 +101,9 @@ export const useTaskItem = (
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onSubmit(task.id, note);
+      await onSubmit(task.id, note, attachments);
       setNote("");
+      setAttachments([]);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,10 +119,12 @@ export const useTaskItem = (
   return {
     // State
     note,
+    attachments,
     isSubmitting,
 
     // Actions
     setNote,
+    setAttachments,
     handleSubmit,
 
     // Computed values
