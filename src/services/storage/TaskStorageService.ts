@@ -221,7 +221,7 @@ export class TaskStorageService {
     width: number = 300,
     height: number = 300,
   ): string {
-    if (!url.includes("cloudinary.com")) {
+    if (!this.isCloudinaryUrl(url)) {
       return url;
     }
 
@@ -234,12 +234,29 @@ export class TaskStorageService {
    * Get optimized URL for display
    */
   static getOptimizedUrl(url: string, maxWidth: number = 1200): string {
-    if (!url.includes("cloudinary.com")) {
+    if (!this.isCloudinaryUrl(url)) {
       return url;
     }
 
     // Apply auto format and quality optimization
     const transformations = `w_${maxWidth},c_limit,q_auto,f_auto`;
     return url.replace("/upload/", `/upload/${transformations}/`);
+  }
+  /**
+   * Check if a URL points to Cloudinary by hostname.
+   */
+  private static isCloudinaryUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      const hostname = parsed.hostname.toLowerCase();
+      // Accept exact match or subdomains like <anything>.cloudinary.com
+      return (
+        hostname === "res.cloudinary.com" ||
+        hostname.endsWith(".cloudinary.com")
+      );
+    } catch (e) {
+      // Malformed URL; treat as not Cloudinary
+      return false;
+    }
   }
 }
