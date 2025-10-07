@@ -69,7 +69,7 @@ const createCompressionPlugins = (isProduction) => {
 // Helper function to create PWA configuration
 const createPWAConfig = (mode) => {
   return VitePWA({
-    registerType: "autoUpdate",
+    registerType: "prompt",
     workbox: {
       globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
       runtimeCaching: [
@@ -104,8 +104,26 @@ const createPWAConfig = (mode) => {
           },
         },
       ],
+      // Enable background sync for offline queue processing
+      skipWaiting: false,
+      clientsClaim: true,
     },
-    manifest: false, // Temporarily disable custom manifest to fix build
+    manifest: {
+      name: "ChastityOS",
+      short_name: "ChastityOS",
+      description: "Modern chastity tracking and FLR management app",
+      start_url: "/",
+      display: "standalone",
+      background_color: "#282132",
+      theme_color: "#581c87",
+      orientation: "portrait-primary",
+      categories: ["productivity", "utilities"],
+      lang: "en-US",
+      shortcuts: createPWAShortcuts(),
+      icons: createPWAIcons(),
+      screenshots: createPWAScreenshots(),
+      prefer_related_applications: false,
+    },
     devOptions: {
       enabled: mode !== "development",
     },
