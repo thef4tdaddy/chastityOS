@@ -205,7 +205,26 @@ export function useApproveTask() {
         },
       );
 
-      // 2. Trigger Firebase sync in background
+      // 2. If recurring, create next instance
+      if (updatedTask?.isRecurring && updatedTask?.recurringConfig) {
+        try {
+          const { RecurringTaskService } = await import(
+            "@/services/tasks/RecurringTaskService"
+          );
+          const nextInstanceId =
+            await RecurringTaskService.createNextInstance(updatedTask);
+
+          logger.info("Created next recurring task instance", {
+            parentTaskId: params.taskId,
+            nextInstanceId,
+          });
+        } catch (error) {
+          logger.error("Failed to create recurring task instance", { error });
+          // Don't fail the approval if recurring creation fails
+        }
+      }
+
+      // 3. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(params.userId).catch((error) => {
           logger.warn("Task approval sync failed", { error });
