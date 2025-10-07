@@ -68,6 +68,26 @@ export function useKeyholderRequiredDurationQuery(userId: string | undefined) {
   });
 }
 
+/**
+ * Query for getting goal statistics
+ */
+export function useGoalStatisticsQuery(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["goals", "statistics", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+
+      const { GoalTrackerService } = await import(
+        "@/services/GoalTrackerService"
+      );
+      return GoalTrackerService.getGoalStatistics(userId);
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60, // 1 minute
+    gcTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
 // Re-export mutations from separate file
 export {
   useCreatePersonalGoal,

@@ -8,6 +8,7 @@ import type { DBSession } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 import { eventDBService } from "./EventDBService";
+import { GoalTrackerService } from "../GoalTrackerService";
 
 const logger = serviceLogger("SessionDBService");
 
@@ -213,6 +214,10 @@ class SessionDBService extends BaseDBService<DBSession> {
         },
         { sessionId: session.id },
       );
+
+      // Track goal progress for completed session
+      const completedSession = { ...session, endTime };
+      await GoalTrackerService.trackSessionCompletion(completedSession);
 
       // Broadcast session end event to persistence service
       if (typeof window !== "undefined" && window.BroadcastChannel) {

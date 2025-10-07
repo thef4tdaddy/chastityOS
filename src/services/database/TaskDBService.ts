@@ -139,7 +139,7 @@ class TaskDBService extends BaseDBService<DBTask> {
       submissiveNote?: string;
       keyholderFeedback?: string;
     } = {},
-  ): Promise<void> {
+  ): Promise<DBTask | undefined> {
     try {
       const task = await this.findById(taskId);
       if (!task) {
@@ -170,6 +170,7 @@ class TaskDBService extends BaseDBService<DBTask> {
         approved: "Task Approved",
         rejected: "Task Rejected",
         completed: "Task Completed",
+        cancelled: "Task Cancelled",
       };
 
       const eventDescriptions: Record<TaskStatus, string> = {
@@ -178,6 +179,7 @@ class TaskDBService extends BaseDBService<DBTask> {
         approved: `Task "${task.text}" approved by keyholder`,
         rejected: `Task "${task.text}" rejected by keyholder`,
         completed: `Task "${task.text}" completed`,
+        cancelled: `Task "${task.text}" cancelled`,
       };
 
       await eventDBService.logEvent(
@@ -197,6 +199,9 @@ class TaskDBService extends BaseDBService<DBTask> {
         },
         {},
       );
+
+      // Return the updated task
+      return await this.findById(taskId);
     } catch (error) {
       logger.error("Failed to update task status", {
         error: error as Error,

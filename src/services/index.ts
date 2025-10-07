@@ -12,5 +12,8 @@ export { achievementEngine } from "./AchievementEngine";
 // Session Persistence service
 export { sessionPersistenceService } from "./SessionPersistenceService";
 
+// Goal Tracker service
+export { GoalTrackerService } from "./GoalTrackerService";
+
 // Other services
 export * from "./firebase";
