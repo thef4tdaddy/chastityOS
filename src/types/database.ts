@@ -95,6 +95,16 @@ export interface DBEvent extends DBBase {
   isPrivate: boolean;
 }
 
+export interface RecurringConfig {
+  frequency: "daily" | "weekly" | "monthly" | "custom";
+  interval?: number; // For custom: every N days/weeks/months
+  daysOfWeek?: number[]; // For weekly: [0=Sun, 1=Mon, ..., 6=Sat]
+  dayOfMonth?: number; // For monthly: day of month (1-31)
+  nextDueDate?: Date; // Calculated next due date
+  parentTaskId?: string; // Link to original recurring task
+  instanceNumber?: number; // Which instance in the series
+}
+
 export interface DBTask extends DBBase {
   text: string;
   title?: string; // Optional title field for tasks
@@ -117,6 +127,9 @@ export interface DBTask extends DBBase {
     duration?: number; // Additional/reduced chastity time in seconds
     description?: string;
   };
+  isRecurring?: boolean;
+  recurringConfig?: RecurringConfig;
+  recurringSeriesId?: string; // Same ID for all instances in series
 }
 
 export interface DBGoal extends DBBase {

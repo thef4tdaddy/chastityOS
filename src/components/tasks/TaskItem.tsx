@@ -1,6 +1,7 @@
 import React from "react";
 import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
+import { RecurringTaskBadge } from "./RecurringTaskBadge";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 
@@ -216,6 +217,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onSubmit }) => {
       </div>
 
       <TaskContent text={task.text} description={task.description} />
+
+      {task.isRecurring && (
+        <div className="mb-3">
+          <RecurringTaskBadge task={task} />
+        </div>
+      )}
 
       <TaskMetadata
         createdAt={task.createdAt}
