@@ -10,14 +10,10 @@ import {
   FaBullseye,
   FaCog,
   FaDatabase,
-  FaDownload,
-  FaUpload,
-  FaTrash,
   FaSpinner,
   FaShieldAlt,
 } from "../utils/iconImport";
 import { ToggleSwitch } from "../components/settings/ToggleSwitch";
-import { ResetModal } from "../components/settings/ResetModal";
 import { SecuritySettings } from "../components/settings/SecuritySettings";
 import { DataControls } from "../components/settings/DataControls";
 import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
@@ -414,71 +410,9 @@ const SessionSection: React.FC<{ settings: DBSettings | null }> = ({
 const DataSection: React.FC<{ settings: DBSettings | null }> = ({
   settings: _settings,
 }) => {
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [resetStatus, setResetStatus] = useState<
-    "idle" | "pending" | "success" | "error"
-  >("idle");
-
   return (
     <div className="space-y-6">
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <FaDatabase className="text-nightly-spring-green" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">
-            Data Management
-          </h3>
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black p-4 rounded-lg font-medium transition-colors flex items-center gap-3">
-              <FaDownload />
-              Export Data
-            </button>
-
-            <button className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white p-4 rounded-lg font-medium transition-colors flex items-center gap-3">
-              <FaUpload />
-              Import Data
-            </button>
-          </div>
-
-          <div className="border-t border-white/10 pt-4">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-              <h4 className="text-red-400 font-medium mb-2">Danger Zone</h4>
-              <p className="text-nightly-celadon text-sm mb-4">
-                Reset all data will permanently delete all your sessions, tasks,
-                goals, and settings. This action cannot be undone.
-              </p>
-              <button
-                onClick={() => setShowResetModal(true)}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
-              >
-                <FaTrash />
-                Reset All Data
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Reset Modal */}
-      <ResetModal
-        show={showResetModal}
-        status={resetStatus}
-        onConfirm={() => {
-          setResetStatus("pending");
-          setTimeout(() => {
-            setResetStatus("success");
-            setTimeout(() => {
-              window.location.reload();
-            }, 2000);
-          }, 2000);
-        }}
-        onCancel={() => {
-          setShowResetModal(false);
-          setResetStatus("idle");
-        }}
-      />
+      <DataControls />
     </div>
   );
 };
