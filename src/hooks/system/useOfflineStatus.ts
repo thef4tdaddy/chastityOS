@@ -6,13 +6,13 @@
  */
 
 import { useState, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tantml:react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { logger } from "../../utils/logging";
 import {
   getNetworkInfo,
   getNetworkQuality,
   processSyncQueueItems,
-} from "./offlineStatusHelpers";
+} from "../../utils/system/offlineStatusHelpers";
 import { useConnectionMonitoring } from "./useConnectionMonitoring";
 
 // Network quality enum

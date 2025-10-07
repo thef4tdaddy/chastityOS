@@ -7,7 +7,7 @@ import type {
   SessionGoal,
   GoalProgress,
   GoalDifficulty,
-} from "./types/SessionGoals";
+} from "../../hooks/session/types/SessionGoals";
 
 /**
  * Calculate completion rate based on goal progress

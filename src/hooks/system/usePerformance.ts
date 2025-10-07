@@ -14,7 +14,7 @@ import {
   calculatePerformanceScore,
   measureRenderTime,
   measureApiTime,
-} from "./performanceHelpers";
+} from "../../utils/system/performanceHelpers";
 
 // Performance metric types
 export interface PerformanceMetrics {

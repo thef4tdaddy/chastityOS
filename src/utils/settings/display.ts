@@ -3,7 +3,7 @@
  */
 
 import { type Dispatch, type SetStateAction } from "react";
-import type { DisplaySettings } from "./useDisplaySettings";
+import type { DisplaySettings } from "../../hooks/features/useDisplaySettings";
 
 type AsyncHandler<T = void> = () => Promise<T>;
 

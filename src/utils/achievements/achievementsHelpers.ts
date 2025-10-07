@@ -7,7 +7,7 @@ import {
   DBUserAchievement,
   DBAchievementProgress,
   AchievementCategory,
-} from "../types";
+} from "../../types";
 
 /**
  * Find achievement by ID

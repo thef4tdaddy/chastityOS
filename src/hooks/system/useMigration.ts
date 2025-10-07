@@ -20,8 +20,8 @@ import {
   restoreBackupData,
   runMigrationBatch,
   initializeMigrationState,
-} from "./migrationHelpers";
-import type { MigrationState } from "./migrationHelpers";
+} from "../../utils/system/migrationHelpers";
+import type { MigrationState } from "../../utils/system/migrationHelpers";
 
 // Migration status
 export enum MigrationStatus {
@@ -65,8 +65,6 @@ export interface MigrationResult {
   warnings: string[];
   duration: number;
 }
-
-
 
 // Sample migrations (in a real app, these would be defined elsewhere)
 const AVAILABLE_MIGRATIONS: Omit<

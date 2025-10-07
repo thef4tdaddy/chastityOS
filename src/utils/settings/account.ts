@@ -3,7 +3,7 @@
  */
 
 import { type Dispatch, type SetStateAction } from "react";
-import type { AccountData } from "./useAccountSettings";
+import type { AccountData } from "../../hooks/features/useAccountSettings";
 
 type AsyncHandler<T = void> = () => Promise<T>;
 

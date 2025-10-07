@@ -16,7 +16,7 @@ import {
   getSystemMetrics,
   calculateOverallHealth,
   generateAlerts,
-} from "./healthCheckHelpers";
+} from "../../utils/system/healthCheckHelpers";
 
 // Health status enum
 export enum HealthStatus {

@@ -2,7 +2,7 @@
  * Task filtering utilities
  */
 import { Task, TaskStatus, TaskPriority } from "@/types/core";
-import { TaskFilter } from "./useTaskManagement";
+import { TaskFilter } from "../../hooks/tasks/useTaskManagement";
 
 /**
  * Apply status filter to tasks

@@ -4,10 +4,12 @@
  */
 import { logger } from "../../utils/logging";
 import { MigrationStorageService } from "../../services/migrationStorage";
-import type { Migration, MigrationStatus } from "./useMigration";
+import type { Migration } from "../../hooks/system/useMigration";
+import { MigrationStatus } from "../../hooks/system/useMigration";
 
 // Re-export for type usage
-export type { Migration, MigrationStatus };
+export type { Migration };
+export { MigrationStatus };
 
 /**
  * Create backup before migration
@@ -220,9 +222,7 @@ export function setMigrationRolledBack(
   return {
     ...migrationState,
     migrations: migrationState.migrations.map((m: Migration) =>
-      m.id === migrationId
-        ? { ...m, status: MigrationStatus.ROLLED_BACK }
-        : m,
+      m.id === migrationId ? { ...m, status: MigrationStatus.ROLLED_BACK } : m,
     ),
   };
 }

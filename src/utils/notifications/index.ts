@@ -1,8 +1,8 @@
 /**
  * Notification helper functions
  */
+import type { Notification } from "../../types/realtime";
 import {
-  Notification,
   NotificationChannelType,
   NotificationPriority,
   QuietHours,
