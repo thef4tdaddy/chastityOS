@@ -22,6 +22,7 @@ export function useCreateTask() {
       title: string;
       description?: string;
       deadline?: Date;
+      pointValue?: number;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
       const task = await taskDBService.createTask({
@@ -30,6 +31,7 @@ export function useCreateTask() {
         text: params.description || params.title,
         priority: "medium" as const,
         assignedBy: "submissive" as const,
+        pointValue: params.pointValue,
       });
 
       // 2. Trigger Firebase sync in background
@@ -334,6 +336,7 @@ export function useAssignTask() {
       description?: string;
       priority?: DBTask["priority"];
       dueDate?: Date;
+      pointValue?: number;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
       const task = await taskDBService.createTask({
@@ -344,6 +347,7 @@ export function useAssignTask() {
         priority: params.priority || "medium",
         assignedBy: "keyholder" as const,
         dueDate: params.dueDate,
+        pointValue: params.pointValue,
       });
 
       // 2. Trigger Firebase sync in background
