@@ -17,7 +17,7 @@ import {
   buildMockTrackerData,
   buildMockTrackerStatsProps,
 } from "../utils/tracker/trackerProps";
-import type { User } from "../types/auth";
+import type { User } from "../types/core";
 
 // Session Persistence Error Component
 const SessionPersistenceError: React.FC<{ error: string }> = ({ error }) => (

@@ -5,11 +5,10 @@ import type {
   GoalInsights,
   GoalPredictions,
   CompletionTrends,
-  GoalDifficulty,
-  GoalCategory,
   GoalStatus,
   EnhancedGoal,
 } from "../types/goals";
+import { GoalDifficulty, GoalCategory } from "../types/goals";
 
 export function getGoalInsights(): GoalInsights {
   return {

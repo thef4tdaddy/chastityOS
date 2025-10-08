@@ -4,9 +4,9 @@
 import React, { type MutableRefObject } from "react";
 import {
   ConnectionStatus,
+  ChannelType,
   type RealtimeSyncState,
   type SyncChannel,
-  type ChannelType,
   type RealtimeUpdate,
   type Subscription,
   type UpdateCallback,

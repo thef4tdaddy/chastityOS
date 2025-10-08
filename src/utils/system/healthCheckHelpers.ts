@@ -9,10 +9,10 @@ import type {
   ServiceStatus,
   SystemMetrics,
   HealthAlert,
-} from "./useHealthCheck";
+} from "../../hooks/system/useHealthCheck";
 
 // Re-export HealthStatus enum for convenience
-export { HealthStatus } from "./useHealthCheck";
+export { HealthStatus } from "../../hooks/system/useHealthCheck";
 
 /**
  * Check Firebase service health

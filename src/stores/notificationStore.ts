@@ -39,7 +39,9 @@ export interface NotificationState {
 
   // Actions
   addNotification: (
-    notification: Omit<Notification, "id" | "timestamp">,
+    notification: Omit<Notification, "id" | "timestamp" | "priority"> & {
+      priority?: Notification["priority"];
+    },
   ) => string;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
@@ -129,11 +131,11 @@ export const useNotificationStore = create<NotificationState>()(
         const newNotification: Notification = {
           id,
           timestamp: new Date(),
-          priority,
           duration,
           dismissible: true,
           requireInteraction,
           ...notification,
+          priority, // Applied after spread to use computed priority
         };
 
         set(

@@ -2,7 +2,11 @@
  * Helper functions for rule editor operations
  */
 
-import { Rule, Condition, RuleAction } from "./useRuleEditor";
+import {
+  Rule,
+  Condition,
+  RuleAction,
+} from "../../hooks/features/useRuleEditor";
 
 /**
  * Add a condition to a rule

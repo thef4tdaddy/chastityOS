@@ -3,7 +3,10 @@
  * Extracted to reduce function complexity
  */
 import { logger } from "../../utils/logging";
-import type { NetworkQuality, ConnectionType } from "./useOfflineStatus";
+import type {
+  NetworkQuality,
+  ConnectionType,
+} from "../../hooks/system/useOfflineStatus";
 
 /**
  * Get network information if available
