@@ -8,7 +8,6 @@ import {
   FaPalette,
   FaGlobe,
   FaBullseye,
-  FaCog,
   FaDatabase,
   FaSpinner,
   FaShieldAlt,
@@ -239,82 +238,6 @@ const GoalsSection: React.FC<{ settings: DBSettings | null }> = ({
     </div>
   );
 };
-
-// Session Settings Section
-const SessionSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings: _settings,
-}) => (
-  <div className="space-y-6">
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaCog className="text-nightly-lavender-floral" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Session Settings
-        </h3>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Allow Emergency Unlock
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Enable emergency unlock feature
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" defaultChecked />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Emergency Unlock Cooldown (hours)
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="168"
-            className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-            placeholder="24"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Require Keyholder Approval
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Sessions need keyholder approval to end
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-          </label>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Hardcore Mode
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Disable pause and emergency unlock
-            </div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-          </label>
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 // Data Management Section
 const DataSection: React.FC<{ settings: DBSettings | null }> = ({
