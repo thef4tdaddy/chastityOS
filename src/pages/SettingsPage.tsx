@@ -44,38 +44,13 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Display Name
+            Submissive's Name
           </label>
           <input
             type="text"
             className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-            placeholder="Enter display name"
+            placeholder="Enter submissive's name"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-            placeholder="Enter email address"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Two-Factor Authentication
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Add extra security to your account
-            </div>
-          </div>
-          <button className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded transition-colors">
-            Setup 2FA
-          </button>
         </div>
 
         <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
@@ -102,29 +77,6 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Theme
-          </label>
-          <select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="auto">Auto</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Language
-          </label>
-          <select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
             Timezone
           </label>
           <select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
@@ -132,6 +84,13 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
             <option value="America/Chicago">Central Time</option>
             <option value="America/Denver">Mountain Time</option>
             <option value="America/Los_Angeles">Pacific Time</option>
+            <option value="America/Phoenix">Arizona Time</option>
+            <option value="America/Anchorage">Alaska Time</option>
+            <option value="Pacific/Honolulu">Hawaii Time</option>
+            <option value="Europe/London">London (GMT)</option>
+            <option value="Europe/Paris">Paris (CET)</option>
+            <option value="Asia/Tokyo">Tokyo (JST)</option>
+            <option value="Australia/Sydney">Sydney (AEDT)</option>
           </select>
         </div>
 
@@ -244,13 +203,9 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
 
       <div className="space-y-4">
         <ToggleSwitch
-          label="Data Collection"
-          description="Allow collection of usage analytics"
-          checked={true}
-        />
-        <ToggleSwitch
-          label="Data Sharing"
-          description="Share anonymous usage data to improve the app"
+          label="Data Collection (Opt-Out)"
+          description="Allow collection of anonymous usage analytics to improve the app"
+          checked={false}
         />
         <ToggleSwitch
           label="Account Discoverable"
@@ -265,7 +220,6 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
     </div>
 
     <SecuritySettings />
-    <DataControls />
   </div>
 );
 
@@ -282,50 +236,6 @@ const GoalsSection: React.FC<{ settings: DBSettings | null }> = ({
 
       {/* Keyholder Duration Section */}
       <KeyholderDurationSection userId={user?.uid} />
-
-      {/* Legacy Goals UI (can be removed later) */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <FaBullseye className="text-nightly-aquamarine" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">
-            Additional Goal Settings
-          </h3>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
-              Default Session Goal (hours)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="168"
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-              placeholder="24"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Goal Reminders
-              </div>
-              <div className="text-xs text-nightly-celadon/70">
-                Get notified about goal progress
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-            </label>
-          </div>
-
-          <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
-            Create New Goal
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
@@ -448,7 +358,6 @@ const SettingsPage: React.FC = () => {
     { id: "profile" as SettingsTab, label: "Profile", icon: FaGlobe },
     { id: "privacy" as SettingsTab, label: "Privacy", icon: FaShieldAlt },
     { id: "goals" as SettingsTab, label: "Goals", icon: FaBullseye },
-    { id: "sessions" as SettingsTab, label: "Sessions", icon: FaCog },
     { id: "data" as SettingsTab, label: "Data", icon: FaDatabase },
   ];
 
@@ -464,8 +373,6 @@ const SettingsPage: React.FC = () => {
         return <PrivacySection settings={settings} />;
       case "goals":
         return <GoalsSection settings={settings} />;
-      case "sessions":
-        return <SessionSection settings={settings} />;
       case "data":
         return <DataSection settings={settings} />;
       default:

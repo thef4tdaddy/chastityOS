@@ -5,43 +5,9 @@ import {
   RewardsPunishmentsContent,
 } from "../components/rewards_punishments";
 import type { RewardPunishmentLog } from "../components/rewards_punishments";
-// Mock data for demonstration
-const mockRewardsAndPunishments: RewardPunishmentLog[] = [
-  {
-    id: "1",
-    type: "reward",
-    title: "Task Completed Early",
-    description: "Completed daily exercise routine ahead of schedule",
-    timeChangeSeconds: -7200, // 2 hours removed
-    source: "task_completion",
-    createdAt: new Date(Date.now() - 86400000), // 1 day ago
-    notes: "Excellent dedication to fitness goals",
-  },
-  {
-    id: "2",
-    type: "punishment",
-    title: "Late Task Submission",
-    description: "Failed to submit daily report on time",
-    timeChangeSeconds: 14400, // 4 hours added
-    source: "rule_violation",
-    createdAt: new Date(Date.now() - 172800000), // 2 days ago
-  },
-  {
-    id: "3",
-    type: "reward",
-    title: "Weekly Milestone",
-    description: "Successfully completed one week of consistent tracking",
-    timeChangeSeconds: -10800, // 3 hours removed
-    source: "milestone",
-    createdAt: new Date(Date.now() - 604800000), // 1 week ago
-    notes: "Keep up the great progress!",
-  },
-];
 
 const RewardsPunishmentsPage: React.FC = () => {
-  const [logs, setLogs] = useState<RewardPunishmentLog[]>(
-    mockRewardsAndPunishments,
-  );
+  const [logs, setLogs] = useState<RewardPunishmentLog[]>([]);
   const [filter, setFilter] = useState<"all" | "rewards" | "punishments">(
     "all",
   );

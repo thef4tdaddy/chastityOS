@@ -254,7 +254,7 @@ export class TaskStorageService {
         hostname === "res.cloudinary.com" ||
         hostname.endsWith(".cloudinary.com")
       );
-    } catch (e) {
+    } catch {
       // Malformed URL; treat as not Cloudinary
       return false;
     }

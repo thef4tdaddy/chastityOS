@@ -12,8 +12,10 @@ export interface UseToastReturn {
 }
 
 export const useToast = (): UseToastReturn => {
-  const { showSuccess, showError, showWarning, showInfo } =
-    useNotificationStore();
+  const showSuccess = useNotificationStore((state) => state.showSuccess);
+  const showError = useNotificationStore((state) => state.showError);
+  const showWarning = useNotificationStore((state) => state.showWarning);
+  const showInfo = useNotificationStore((state) => state.showInfo);
 
   return {
     showSuccess,
