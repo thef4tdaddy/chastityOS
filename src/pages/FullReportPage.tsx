@@ -8,6 +8,7 @@ import {
   StatisticsSection,
   SessionHistorySection,
 } from "../components/full_report";
+import { EventList } from "../components/log_event/EventList";
 
 // Loading state component
 const LoadingState: React.FC = () => (
@@ -22,11 +23,23 @@ const LoadingState: React.FC = () => (
 );
 
 // Error state component
-const ErrorState: React.FC = () => (
+const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
   <div className="text-nightly-spring-green">
     <div className="p-4 max-w-6xl mx-auto">
       <div className="text-center py-8">
-        <div className="text-red-400">Error loading report data</div>
+        {hasSession ? (
+          <div className="text-red-400">Error loading report data</div>
+        ) : (
+          <div className="glass-card p-6">
+            <h3 className="text-xl font-semibold text-nightly-honeydew mb-3">
+              No Session Data Available
+            </h3>
+            <p className="text-nightly-celadon">
+              Start your first chastity session to generate report data. Once
+              you begin tracking, your statistics and history will appear here.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   </div>
@@ -151,6 +164,31 @@ const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
   </>
 );
 
+// Event history report section component
+const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
+  activeSubmissive,
+  userReport,
+  submissiveReport,
+}) => (
+  <>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+        {activeSubmissive ? "Your Events" : "Event History"}
+      </h3>
+      <EventList events={userReport.events} />
+    </div>
+
+    {activeSubmissive && submissiveReport.events.length > 0 && (
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+          {activeSubmissive.wearerName || "Submissive"}'s Events
+        </h3>
+        <EventList events={submissiveReport.events} />
+      </div>
+    )}
+  </>
+);
+
 const FullReportPage: React.FC = () => {
   const { user } = useAuthState();
   const { adminRelationships } = useAccountLinking();
@@ -172,7 +210,9 @@ const FullReportPage: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorState />;
+    const hasSession =
+      !!userReport.currentSession || !!submissiveReport.currentSession;
+    return <ErrorState hasSession={hasSession} />;
   }
 
   return (
@@ -190,6 +230,11 @@ const FullReportPage: React.FC = () => {
           submissiveReport={submissiveReport}
         />
         <SessionHistoryReportSection
+          activeSubmissive={activeSubmissive}
+          userReport={userReport}
+          submissiveReport={submissiveReport}
+        />
+        <EventHistoryReportSection
           activeSubmissive={activeSubmissive}
           userReport={userReport}
           submissiveReport={submissiveReport}

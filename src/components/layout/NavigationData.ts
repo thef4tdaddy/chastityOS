@@ -19,8 +19,8 @@ export const navItems: NavItem[] = [
   { path: "/full-report", label: "Full Report" },
   { path: "/tasks", label: "Tasks" },
   { path: "/rewards-punishments", label: "Rewards" },
-  { path: "/settings", label: "Settings" },
   { path: "/achievements", label: "Achievements" },
+  { path: "/settings", label: "⚙️ Settings" },
 ];
 
 // Mobile bottom nav items (most important features)
