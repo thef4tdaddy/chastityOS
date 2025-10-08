@@ -11,12 +11,15 @@ import {
   FaDatabase,
   FaSpinner,
   FaShieldAlt,
+  FaCheckCircle,
 } from "../utils/iconImport";
 import { ToggleSwitch } from "../components/settings/ToggleSwitch";
 import { SecuritySettings } from "../components/settings/SecuritySettings";
 import { DataControls } from "../components/settings/DataControls";
 import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
 import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
+import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
+import { useIsAnonymous } from "../hooks/useIsAnonymous";
 
 type SettingsTab =
   | "account"
@@ -30,35 +33,150 @@ type SettingsTab =
 // Account Settings Section
 const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
   settings: _settings,
-}) => (
-  <div className="space-y-6">
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaUser className="text-nightly-aquamarine" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Account Information
-        </h3>
-      </div>
+}) => {
+  const { user } = useAuthState();
+  const isAnonymous = useIsAnonymous();
+  const [linkSuccess, setLinkSuccess] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Submissive's Name
-          </label>
-          <input
-            type="text"
-            className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-            placeholder="Enter submissive's name"
-          />
+  return (
+    <div className="space-y-6">
+      {/* Account Status */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <FaUser className="text-nightly-aquamarine" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Account Status
+          </h3>
         </div>
 
-        <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
-          Save Changes
-        </button>
+        <div className="space-y-4">
+          {/* Account Type */}
+          <div className="flex items-center justify-between py-3 border-b border-white/10">
+            <div>
+              <div className="text-sm font-medium text-nightly-celadon">
+                Account Type
+              </div>
+              <div className="text-xs text-nightly-celadon/70 mt-1">
+                {isAnonymous ? "Temporary (Anonymous)" : "Permanent (Google)"}
+              </div>
+            </div>
+            <div>
+              {isAnonymous ? (
+                <span className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-medium">
+                  Temporary
+                </span>
+              ) : (
+                <div className="flex items-center gap-2 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                  <FaCheckCircle className="text-xs" />
+                  <span>Verified</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Email */}
+          {user?.email && (
+            <div className="py-3 border-b border-white/10">
+              <div className="text-sm font-medium text-nightly-celadon mb-2">
+                Email
+              </div>
+              <div className="text-nightly-honeydew">{user.email}</div>
+            </div>
+          )}
+
+          {/* Google Sign-In Section */}
+          {isAnonymous ? (
+            <div className="pt-2">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
+                <h4 className="text-sm font-semibold text-blue-300 mb-2">
+                  Upgrade Your Account
+                </h4>
+                <p className="text-xs text-blue-200/80 mb-3">
+                  Link your account with Google to:
+                </p>
+                <ul className="text-xs text-blue-200/80 mb-4 ml-4 space-y-1">
+                  <li>✓ Backup your data to the cloud</li>
+                  <li>✓ Sync across multiple devices</li>
+                  <li>✓ Never lose your progress</li>
+                  <li>✓ Access keyholder features</li>
+                </ul>
+
+                {linkError && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3">
+                    <p className="text-xs text-red-400">{linkError}</p>
+                  </div>
+                )}
+
+                {linkSuccess && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-3">
+                    <p className="text-xs text-green-400">
+                      Account linked successfully! 🎉
+                    </p>
+                  </div>
+                )}
+
+                <GoogleSignInButton
+                  mode="link"
+                  onSuccess={() => {
+                    setLinkSuccess(true);
+                    setLinkError(null);
+                  }}
+                  onError={(error) => {
+                    setLinkError(error);
+                    setLinkSuccess(false);
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="pt-2">
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <FaCheckCircle className="text-green-400" />
+                  <h4 className="text-sm font-semibold text-green-300">
+                    Account Secured
+                  </h4>
+                </div>
+                <p className="text-xs text-green-200/80">
+                  Your account is linked with Google. Your data is backed up and
+                  synced across all your devices.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Profile Information */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <FaUser className="text-nightly-aquamarine" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Profile Information
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+              Submissive's Name
+            </label>
+            <input
+              type="text"
+              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
+              placeholder="Enter submissive's name"
+            />
+          </div>
+
+          <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
+            Save Changes
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Display Settings Section
 const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
