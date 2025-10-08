@@ -20,6 +20,19 @@ import { PersonalGoalSection } from "../components/settings/PersonalGoalSection"
 import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
 import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
 import { useIsAnonymous } from "../hooks/useIsAnonymous";
+import {
+  useUpdateAccountSettings,
+  useUpdateDisplaySettings,
+  useUpdateProfileSettings,
+  useUpdatePrivacySettings,
+} from "../hooks/api/useSettings";
+import {
+  validateAccountSettings,
+  validateDisplaySettings,
+  validateProfileSettings,
+} from "../utils/validation/settingsValidation";
+import { TimezoneUtil } from "../utils/timezone";
+import { toastBridge } from "../utils/toastBridge";
 
 type SettingsTab =
   | "account"
@@ -31,13 +44,55 @@ type SettingsTab =
   | "data";
 
 // Account Settings Section
+/* eslint-disable max-lines-per-function */
 const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings: _settings,
+  settings,
 }) => {
   const { user } = useAuthState();
   const isAnonymous = useIsAnonymous();
   const [linkSuccess, setLinkSuccess] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+
+  // Account settings state
+  const [submissiveName, setSubmissiveName] = useState(
+    settings?.submissiveName || "",
+  );
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Update local state when settings change
+  useEffect(() => {
+    if (settings?.submissiveName) {
+      setSubmissiveName(settings.submissiveName);
+    }
+  }, [settings?.submissiveName]);
+
+  // Mutation hook
+  const updateAccountMutation = useUpdateAccountSettings();
+
+  const handleSave = async () => {
+    if (!user?.uid) return;
+
+    // Validate input
+    const validation = validateAccountSettings({ submissiveName });
+    if (!validation.valid) {
+      setValidationError(validation.error || "Invalid input");
+      return;
+    }
+
+    setValidationError(null);
+
+    try {
+      await updateAccountMutation.mutateAsync({
+        userId: user.uid,
+        data: { submissiveName },
+      });
+
+      toastBridge.showSuccess?.("Account settings saved successfully");
+    } catch (error) {
+      logger.error("Failed to save account settings", error);
+      toastBridge.showError?.("Failed to save account settings");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -111,7 +166,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
                 {linkSuccess && (
                   <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-3">
                     <p className="text-xs text-green-400">
-                      Account linked successfully! 🎉
+                      Account linked successfully!
                     </p>
                   </div>
                 )}
@@ -164,13 +219,28 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
             </label>
             <input
               type="text"
+              value={submissiveName}
+              onChange={(e) => {
+                setSubmissiveName(e.target.value);
+                setValidationError(null);
+              }}
               className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
               placeholder="Enter submissive's name"
             />
+            {validationError && (
+              <p className="text-red-400 text-xs mt-1">{validationError}</p>
+            )}
           </div>
 
-          <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors">
-            Save Changes
+          <button
+            onClick={handleSave}
+            disabled={updateAccountMutation.isPending}
+            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {updateAccountMutation.isPending && (
+              <FaSpinner className="animate-spin" />
+            )}
+            {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -178,167 +248,414 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
   );
 };
 
+// Helper function to get initial timezone
+const getInitialTimezone = (settings: DBSettings | null): string => {
+  return (
+    settings?.display?.timezone ||
+    settings?.timezone ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+};
+
 // Display Settings Section
 const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
-  settings: _settings,
-}) => (
-  <div className="space-y-6">
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaPalette className="text-nightly-lavender-floral" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Display Settings
-        </h3>
-      </div>
+  settings,
+}) => {
+  const { user } = useAuthState();
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Timezone
-          </label>
-          <select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
-            <option value="America/New_York">Eastern Time</option>
-            <option value="America/Chicago">Central Time</option>
-            <option value="America/Denver">Mountain Time</option>
-            <option value="America/Los_Angeles">Pacific Time</option>
-            <option value="America/Phoenix">Arizona Time</option>
-            <option value="America/Anchorage">Alaska Time</option>
-            <option value="Pacific/Honolulu">Hawaii Time</option>
-            <option value="Europe/London">London (GMT)</option>
-            <option value="Europe/Paris">Paris (CET)</option>
-            <option value="Asia/Tokyo">Tokyo (JST)</option>
-            <option value="Australia/Sydney">Sydney (AEDT)</option>
-          </select>
+  // Display settings state
+  const [timezone, setTimezone] = useState(getInitialTimezone(settings));
+  const [notifications, setNotifications] = useState(
+    settings?.notifications?.enabled ?? true,
+  );
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Update local state when settings change
+  useEffect(() => {
+    const newTimezone = settings?.display?.timezone || settings?.timezone;
+    if (newTimezone) {
+      setTimezone(newTimezone);
+    }
+    if (settings?.notifications?.enabled !== undefined) {
+      setNotifications(settings.notifications.enabled);
+    }
+  }, [
+    settings?.display?.timezone,
+    settings?.timezone,
+    settings?.notifications?.enabled,
+  ]);
+
+  // Mutation hook
+  const updateDisplayMutation = useUpdateDisplaySettings();
+
+  // Get timezone options
+  const timezoneOptions = TimezoneUtil.getCommonTimezones();
+
+  const handleSave = async () => {
+    if (!user?.uid) return;
+
+    // Validate input
+    const validation = validateDisplaySettings({ timezone });
+    if (!validation.valid) {
+      setValidationError(validation.error || "Invalid input");
+      return;
+    }
+
+    setValidationError(null);
+
+    try {
+      await updateDisplayMutation.mutateAsync({
+        userId: user.uid,
+        data: { timezone, notifications },
+      });
+
+      toastBridge.showSuccess?.("Display settings saved successfully");
+    } catch (error) {
+      logger.error("Failed to save display settings", error);
+      toastBridge.showError?.("Failed to save display settings");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <FaPalette className="text-nightly-lavender-floral" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Display Settings
+          </h3>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="space-y-4">
           <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Notifications
-            </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Receive app notifications
-            </div>
+            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+              Timezone
+            </label>
+            <select
+              value={timezone}
+              onChange={(e) => {
+                setTimezone(e.target.value);
+                setValidationError(null);
+              }}
+              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
+            >
+              {timezoneOptions.map((tz) => (
+                <option key={tz.value} value={tz.value}>
+                  {tz.label}
+                </option>
+              ))}
+            </select>
+            {validationError && (
+              <p className="text-red-400 text-xs mt-1">{validationError}</p>
+            )}
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" defaultChecked />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-          </label>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-nightly-celadon">
+                Notifications
+              </div>
+              <div className="text-xs text-nightly-celadon/70">
+                Receive app notifications
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={notifications}
+                onChange={(e) => setNotifications(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
+            </label>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={updateDisplayMutation.isPending}
+            className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {updateDisplayMutation.isPending && (
+              <FaSpinner className="animate-spin" />
+            )}
+            {updateDisplayMutation.isPending ? "Saving..." : "Save Changes"}
+          </button>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Public Profile Section
 const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
-  settings: _settings,
-}) => (
-  <div className="space-y-6">
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaGlobe className="text-nightly-spring-green" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Public Profile
-        </h3>
-      </div>
+  settings,
+}) => {
+  const { user } = useAuthState();
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Public Profile
+  // Profile settings state
+  const [publicProfile, setPublicProfile] = useState(
+    settings?.privacy?.publicProfile ?? false,
+  );
+  const [shareStatistics, setShareStatistics] = useState(
+    settings?.shareStatistics ?? false,
+  );
+  const [bio, setBio] = useState(settings?.bio || "");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Update local state when settings change
+  useEffect(() => {
+    if (settings?.privacy?.publicProfile !== undefined) {
+      setPublicProfile(settings.privacy.publicProfile);
+    }
+    if (settings?.shareStatistics !== undefined) {
+      setShareStatistics(settings.shareStatistics);
+    }
+    if (settings?.bio !== undefined) {
+      setBio(settings.bio);
+    }
+  }, [
+    settings?.privacy?.publicProfile,
+    settings?.shareStatistics,
+    settings?.bio,
+  ]);
+
+  // Mutation hook
+  const updateProfileMutation = useUpdateProfileSettings();
+
+  const handleSave = async () => {
+    if (!user?.uid) return;
+
+    // Validate input
+    const validation = validateProfileSettings({ bio });
+    if (!validation.valid) {
+      setValidationError(validation.error || "Invalid input");
+      return;
+    }
+
+    setValidationError(null);
+
+    try {
+      await updateProfileMutation.mutateAsync({
+        userId: user.uid,
+        data: { publicProfile, shareStatistics, bio },
+      });
+
+      toastBridge.showSuccess?.("Profile settings saved successfully");
+    } catch (error) {
+      logger.error("Failed to save profile settings", error);
+      toastBridge.showError?.("Failed to save profile settings");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <FaGlobe className="text-nightly-spring-green" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Public Profile
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-nightly-celadon">
+                Public Profile
+              </div>
+              <div className="text-xs text-nightly-celadon/70">
+                Make your profile visible to others
+              </div>
             </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Make your profile visible to others
-            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={publicProfile}
+                onChange={(e) => setPublicProfile(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
+            </label>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-          </label>
-        </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-nightly-celadon">
-              Share Statistics
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-nightly-celadon">
+                Share Statistics
+              </div>
+              <div className="text-xs text-nightly-celadon/70">
+                Allow others to see your progress stats
+              </div>
             </div>
-            <div className="text-xs text-nightly-celadon/70">
-              Allow others to see your progress stats
-            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={shareStatistics}
+                onChange={(e) => setShareStatistics(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
+            </label>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" />
-            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-          </label>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Bio
-          </label>
-          <textarea
-            className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
-            rows={3}
-            placeholder="Tell others about yourself..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-nightly-celadon mb-2">
-            Profile URL
-          </label>
-          <div className="flex">
-            <span className="bg-white/5 border border-white/10 border-r-0 rounded-l px-3 py-3 text-nightly-celadon text-sm">
-              chastityos.com/profile/
-            </span>
-            <input
-              type="text"
-              className="flex-1 bg-white/5 border border-white/10 rounded-r p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
-              placeholder="your-username"
+          <div>
+            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+              Bio
+            </label>
+            <textarea
+              value={bio}
+              onChange={(e) => {
+                setBio(e.target.value);
+                setValidationError(null);
+              }}
+              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
+              rows={3}
+              placeholder="Tell others about yourself..."
             />
+            {validationError && (
+              <p className="text-red-400 text-xs mt-1">{validationError}</p>
+            )}
+            <p className="text-nightly-celadon/70 text-xs mt-1">
+              {bio.length}/500 characters
+            </p>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+              Profile URL
+            </label>
+            <div className="flex">
+              <span className="bg-white/5 border border-white/10 border-r-0 rounded-l px-3 py-3 text-nightly-celadon text-sm">
+                chastityos.com/profile/
+              </span>
+              <input
+                type="text"
+                className="flex-1 bg-white/5 border border-white/10 rounded-r p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
+                placeholder="your-username"
+                disabled
+              />
+            </div>
+            <p className="text-nightly-celadon/70 text-xs mt-1">
+              Profile URL customization coming soon
+            </p>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={updateProfileMutation.isPending}
+            className="bg-nightly-spring-green hover:bg-nightly-spring-green/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {updateProfileMutation.isPending && (
+              <FaSpinner className="animate-spin" />
+            )}
+            {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+          </button>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Privacy Settings Section
 const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
-  settings: _settings,
-}) => (
-  <div className="space-y-6">
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaShieldAlt className="text-nightly-lavender-floral" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
-          Privacy & Security
-        </h3>
+  settings,
+}) => {
+  const { user } = useAuthState();
+
+  // Privacy settings state
+  const [dataCollection, setDataCollection] = useState(
+    settings?.dataCollection ?? false,
+  );
+  const [accountDiscoverable, setAccountDiscoverable] = useState(
+    settings?.accountDiscoverable ?? true,
+  );
+  const [showActivityStatus, setShowActivityStatus] = useState(
+    settings?.showActivityStatus ?? false,
+  );
+
+  // Update local state when settings change
+  useEffect(() => {
+    if (settings?.dataCollection !== undefined) {
+      setDataCollection(settings.dataCollection);
+    }
+    if (settings?.accountDiscoverable !== undefined) {
+      setAccountDiscoverable(settings.accountDiscoverable);
+    }
+    if (settings?.showActivityStatus !== undefined) {
+      setShowActivityStatus(settings.showActivityStatus);
+    }
+  }, [
+    settings?.dataCollection,
+    settings?.accountDiscoverable,
+    settings?.showActivityStatus,
+  ]);
+
+  // Mutation hook
+  const updatePrivacyMutation = useUpdatePrivacySettings();
+
+  const handleSave = async () => {
+    if (!user?.uid) return;
+
+    try {
+      await updatePrivacyMutation.mutateAsync({
+        userId: user.uid,
+        data: { dataCollection, accountDiscoverable, showActivityStatus },
+      });
+
+      toastBridge.showSuccess?.("Privacy settings saved successfully");
+    } catch (error) {
+      logger.error("Failed to save privacy settings", error);
+      toastBridge.showError?.("Failed to save privacy settings");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <FaShieldAlt className="text-nightly-lavender-floral" />
+          <h3 className="text-lg font-semibold text-nightly-honeydew">
+            Privacy & Security
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <ToggleSwitch
+            label="Data Collection (Opt-Out)"
+            description="Allow collection of anonymous usage analytics to improve the app"
+            checked={dataCollection}
+            onChange={setDataCollection}
+          />
+          <ToggleSwitch
+            label="Account Discoverable"
+            description="Allow others to find your account by username"
+            checked={accountDiscoverable}
+            onChange={setAccountDiscoverable}
+          />
+          <ToggleSwitch
+            label="Show Activity Status"
+            description="Let others see when you're active"
+            checked={showActivityStatus}
+            onChange={setShowActivityStatus}
+          />
+
+          <button
+            onClick={handleSave}
+            disabled={updatePrivacyMutation.isPending}
+            className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {updatePrivacyMutation.isPending && (
+              <FaSpinner className="animate-spin" />
+            )}
+            {updatePrivacyMutation.isPending ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <ToggleSwitch
-          label="Data Collection (Opt-Out)"
-          description="Allow collection of anonymous usage analytics to improve the app"
-          checked={false}
-        />
-        <ToggleSwitch
-          label="Account Discoverable"
-          description="Allow others to find your account by username"
-          checked={true}
-        />
-        <ToggleSwitch
-          label="Show Activity Status"
-          description="Let others see when you're active"
-        />
-      </div>
+      <SecuritySettings />
     </div>
-
-    <SecuritySettings />
-  </div>
-);
+  );
+};
 
 // Goals Section
 const GoalsSection: React.FC<{ settings: DBSettings | null }> = ({
