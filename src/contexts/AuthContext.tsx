@@ -213,6 +213,74 @@ const createSecondaryAuthActions = (
   return { resetPassword, updatePassword, updateProfile, clearError };
 };
 
+// Helper for linking anonymous account with Google
+const performGoogleLinking = async (
+  state: AuthState,
+  setState: React.Dispatch<React.SetStateAction<AuthState>>,
+) => {
+  if (!state.user) {
+    return { success: false, error: "No authenticated user found" };
+  }
+
+  const auth = await getFirebaseAuth();
+  const firebaseUser = auth.currentUser;
+
+  if (!firebaseUser) {
+    return { success: false, error: "No Firebase user found" };
+  }
+
+  if (!firebaseUser.isAnonymous) {
+    return { success: false, error: "User is not anonymous" };
+  }
+
+  // Link anonymous account with Google
+  const linkResult =
+    await GoogleAuthService.linkAnonymousAccountWithGoogle(firebaseUser);
+
+  if (!linkResult.success) {
+    logger.warn("Account linking failed via context", {
+      error: linkResult.error,
+    });
+    return {
+      success: false,
+      error: linkResult.error || "Failed to link account",
+    };
+  }
+
+  // Sync data to Firebase
+  logger.debug("Account linked, starting data sync");
+  const syncResult = await AccountMigrationService.syncAfterLinking(
+    firebaseUser.uid,
+  );
+
+  if (!syncResult.success) {
+    logger.warn("Data sync incomplete after linking", {
+      error: syncResult.error,
+    });
+    // Don't fail the whole operation - linking succeeded
+  }
+
+  // Get updated user profile
+  const updatedUser = await AuthService.getCurrentUser();
+
+  if (updatedUser) {
+    setState({
+      user: updatedUser,
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+    });
+    logger.info("Account linked with Google successfully via context", {
+      uid: updatedUser.uid,
+    });
+  }
+
+  return {
+    success: true,
+    message: syncResult.message || "Account linked successfully",
+  };
+};
+
 // Internal helper hook for auth actions (renamed to avoid conflict with exported hook)
 const useAuthActionsInternal = (
   state: AuthState,
@@ -313,83 +381,20 @@ const useAuthActionsInternal = (
   };
 
   const linkWithGoogle = async () => {
-    if (!state.user) {
-      const error = "No authenticated user found";
-      setState((prev) => ({ ...prev, error }));
-      return { success: false, error };
-    }
-
-    const auth = await getFirebaseAuth();
-    const firebaseUser = auth.currentUser;
-
-    if (!firebaseUser) {
-      const error = "No Firebase user found";
-      setState((prev) => ({ ...prev, error }));
-      return { success: false, error };
-    }
-
-    if (!firebaseUser.isAnonymous) {
-      const error = "User is not anonymous";
-      setState((prev) => ({ ...prev, error }));
-      return { success: false, error };
-    }
-
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Link anonymous account with Google
-      const linkResult =
-        await GoogleAuthService.linkAnonymousAccountWithGoogle(firebaseUser);
+      const result = await performGoogleLinking(state, setState);
 
-      if (!linkResult.success) {
+      if (!result.success) {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          error: linkResult.error || "Failed to link account",
+          error: result.error || "Failed to link account",
         }));
-        logger.warn("Account linking failed via context", {
-          error: linkResult.error,
-        });
-        return {
-          success: false,
-          error: linkResult.error || "Failed to link account",
-        };
       }
 
-      // Sync data to Firebase
-      logger.debug("Account linked, starting data sync");
-      const syncResult = await AccountMigrationService.syncAfterLinking(
-        firebaseUser.uid,
-      );
-
-      if (!syncResult.success) {
-        logger.warn("Data sync incomplete after linking", {
-          error: syncResult.error,
-        });
-        // Don't fail the whole operation - linking succeeded
-      }
-
-      // Get updated user profile
-      const updatedUser = await AuthService.getCurrentUser();
-
-      if (updatedUser) {
-        setState({
-          user: updatedUser,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
-        logger.info("Account linked with Google successfully via context", {
-          uid: updatedUser.uid,
-        });
-      } else {
-        setState((prev) => ({ ...prev, isLoading: false }));
-      }
-
-      return {
-        success: true,
-        message: syncResult.message || "Account linked successfully",
-      };
+      return result;
     } catch (error) {
       logger.error("Failed to link account with Google", {
         error: error as Error,

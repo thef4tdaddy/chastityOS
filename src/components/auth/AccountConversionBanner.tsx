@@ -2,39 +2,22 @@
  * Account Conversion Banner Component
  * Prompts anonymous users to link their account with Google for data backup and sync
  */
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   FaGoogle,
   FaTimes,
   FaCheckCircle,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import { useAuthState } from "@/contexts/AuthContext";
-import { getFirebaseAuth } from "@/services/firebase";
+import { useIsAnonymous } from "@/hooks/useIsAnonymous";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
 export const AccountConversionBanner: React.FC = () => {
-  const { user } = useAuthState();
+  const isAnonymous = useIsAnonymous();
   const [dismissed, setDismissed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [linkSuccess, setLinkSuccess] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
-  const [isAnonymous, setIsAnonymous] = useState(false);
-
-  // Check if user is anonymous
-  useEffect(() => {
-    const checkAnonymous = async () => {
-      try {
-        const auth = await getFirebaseAuth();
-        const firebaseUser = auth.currentUser;
-        setIsAnonymous(firebaseUser?.isAnonymous ?? false);
-      } catch (error) {
-        setIsAnonymous(false);
-      }
-    };
-
-    checkAnonymous();
-  }, [user]);
 
   // Don't show if:
   // - User is not anonymous
