@@ -8,6 +8,7 @@ import { useViewport } from "../../hooks/mobile";
 import { Header } from "./Header";
 import { MobileMenu } from "./MobileMenu";
 import { AchievementNotifications } from "./AchievementNotifications";
+import { AccountConversionBanner } from "../auth";
 import { navItems, mobileNavItemsConfig } from "./NavigationData";
 
 interface AppLayoutProps {
@@ -93,6 +94,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       <main className="flex-1 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Account conversion banner for anonymous users */}
+          <AccountConversionBanner />
+
           {children}
         </div>
       </main>

@@ -12,6 +12,8 @@ import React, {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AuthService } from "@/services/auth/auth-service";
+import { GoogleAuthService } from "@/services/auth/GoogleAuthService";
+import { AccountMigrationService } from "@/services/auth/AccountMigrationService";
 import { getFirebaseAuth } from "@/services/firebase";
 import { User, LoginForm, RegisterForm, ApiResponse } from "@/types";
 import { serviceLogger } from "@/utils/logging";
@@ -33,6 +35,8 @@ export interface AuthActions {
   resetPassword: (email: string) => Promise<ApiResponse<void>>;
   updatePassword: (newPassword: string) => Promise<ApiResponse<void>>;
   updateProfile: (updates: Partial<User>) => Promise<ApiResponse<User>>;
+  signInWithGoogle: () => Promise<ApiResponse<User>>;
+  linkWithGoogle: () => Promise<ApiResponse<void>>;
   clearError: () => void;
 }
 
@@ -283,12 +287,133 @@ const useAuthActionsInternal = (
     return result;
   };
 
+  const signInWithGoogle = async () => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    const result = await GoogleAuthService.signInWithGoogle();
+
+    if (result.success && result.data) {
+      setState({
+        user: result.data,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+      });
+      logger.info("User signed in with Google via context", {
+        uid: result.data.uid,
+      });
+    } else {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: result.error || "Google sign in failed",
+      }));
+      logger.warn("Google sign in failed via context", { error: result.error });
+    }
+    return result;
+  };
+
+  const linkWithGoogle = async () => {
+    if (!state.user) {
+      const error = "No authenticated user found";
+      setState((prev) => ({ ...prev, error }));
+      return { success: false, error };
+    }
+
+    const auth = await getFirebaseAuth();
+    const firebaseUser = auth.currentUser;
+
+    if (!firebaseUser) {
+      const error = "No Firebase user found";
+      setState((prev) => ({ ...prev, error }));
+      return { success: false, error };
+    }
+
+    if (!firebaseUser.isAnonymous) {
+      const error = "User is not anonymous";
+      setState((prev) => ({ ...prev, error }));
+      return { success: false, error };
+    }
+
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      // Link anonymous account with Google
+      const linkResult =
+        await GoogleAuthService.linkAnonymousAccountWithGoogle(firebaseUser);
+
+      if (!linkResult.success) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: linkResult.error || "Failed to link account",
+        }));
+        logger.warn("Account linking failed via context", {
+          error: linkResult.error,
+        });
+        return {
+          success: false,
+          error: linkResult.error || "Failed to link account",
+        };
+      }
+
+      // Sync data to Firebase
+      logger.debug("Account linked, starting data sync");
+      const syncResult = await AccountMigrationService.syncAfterLinking(
+        firebaseUser.uid,
+      );
+
+      if (!syncResult.success) {
+        logger.warn("Data sync incomplete after linking", {
+          error: syncResult.error,
+        });
+        // Don't fail the whole operation - linking succeeded
+      }
+
+      // Get updated user profile
+      const updatedUser = await AuthService.getCurrentUser();
+
+      if (updatedUser) {
+        setState({
+          user: updatedUser,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        logger.info("Account linked with Google successfully via context", {
+          uid: updatedUser.uid,
+        });
+      } else {
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+
+      return {
+        success: true,
+        message: syncResult.message || "Account linked successfully",
+      };
+    } catch (error) {
+      logger.error("Failed to link account with Google", {
+        error: error as Error,
+      });
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Failed to link account. Please try again.",
+      }));
+      return {
+        success: false,
+        error: "Failed to link account. Please try again.",
+      };
+    }
+  };
+
   const secondaryActions = createSecondaryAuthActions(state, setState);
 
   return {
     signIn,
     register,
     signOut,
+    signInWithGoogle,
+    linkWithGoogle,
     ...secondaryActions,
   };
 };
