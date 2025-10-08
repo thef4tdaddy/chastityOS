@@ -4,7 +4,10 @@
  */
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getNetworkInfo, getNetworkQuality } from "./offlineStatusHelpers";
+import {
+  getNetworkInfo,
+  getNetworkQuality,
+} from "../../utils/system/offlineStatusHelpers";
 import type { OfflineStatus, NetworkEvent } from "./useOfflineStatus";
 
 /**

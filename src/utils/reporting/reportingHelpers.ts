@@ -8,7 +8,7 @@ import {
   ExportFormat,
   ReportSchedule,
   DataFilter,
-} from "./useReporting";
+} from "../../hooks/features/useReporting";
 
 /**
  * Generate mock report data

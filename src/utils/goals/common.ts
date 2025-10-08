@@ -7,7 +7,7 @@ import {
   GoalCategory,
   GoalDifficulty,
   GoalType,
-} from "../../../types/goals";
+} from "../../types/goals";
 
 // Storage keys
 export const STORAGE_KEYS = {

@@ -6,7 +6,7 @@ import { logger } from "../../utils/logging";
 import type {
   PerformanceMetrics,
   PerformanceRecommendation,
-} from "./usePerformance";
+} from "../../hooks/system/usePerformance";
 
 // Performance thresholds
 export const PERFORMANCE_THRESHOLDS = {

@@ -5,7 +5,7 @@ import type {
   PersonalGoal,
   CreateGoalInput,
   UpdateGoalInput,
-} from "./usePersonalGoals";
+} from "../../hooks/features/usePersonalGoals";
 
 type SetGoalsFunction = (
   value: PersonalGoal[] | ((prev: PersonalGoal[]) => PersonalGoal[]),

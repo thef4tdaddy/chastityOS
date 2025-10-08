@@ -2,7 +2,7 @@
  * Task sorting utilities
  */
 import { Task, TaskStatus, TaskPriority } from "@/types/core";
-import { TaskSortBy, SortDirection } from "./useTaskManagement";
+import { TaskSortBy, SortDirection } from "../../hooks/tasks/useTaskManagement";
 
 /**
  * Get comparison value for sorting by created date

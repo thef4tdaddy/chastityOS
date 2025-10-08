@@ -12,7 +12,7 @@ import {
   LeaderboardCategory,
   BadgeCategory as _BadgeCategory,
   ExperienceSource,
-} from "../../types/gamification";
+} from "../types/gamification";
 
 // Experience values by source
 export const EXPERIENCE_VALUES = {

@@ -1,20 +1,16 @@
 import { Timestamp, FieldValue } from "firebase/firestore";
+import type { Task, KeyholderPermissions } from "./core";
 
 // Re-export types from core module
 export type {
   User,
-  UserRole,
   UserProfile,
   UserVerification,
   UserSettings,
   ChastitySession,
-  SessionStatus,
   Task,
-  TaskStatus,
-  TaskPriority,
   TaskConsequence,
   PersonalGoal,
-  SpecialChallengeType,
   KeyholderRelationship,
   KeyholderPermissions,
   KeyholderRule,
@@ -137,13 +133,14 @@ export interface UserData {
   [key: string]: unknown;
 }
 
-// Task-related types
+// Task-related types (legacy - use Task from core.ts for new code)
 export interface RewardPunishment {
   type: "time" | "note" | "none";
   value: number | string;
 }
 
-export interface Task {
+// Legacy task interface - prefer using Task from core.ts
+export interface LegacyTask {
   id: string;
   text: string;
   status: "pending" | "submitted" | "approved" | "rejected";
@@ -197,20 +194,13 @@ export interface PauseEvent {
 }
 
 // Keyholder-related types
+// KeyholderSession uses KeyholderPermissions from core.ts
 export interface KeyholderSession {
   keyholderName?: string;
   isActive: boolean;
   startTime?: Date;
   endTime?: Date;
   permissions: KeyholderPermissions;
-}
-
-export interface KeyholderPermissions {
-  canApproveTasks: boolean;
-  canAddPunishments: boolean;
-  canAddRewards: boolean;
-  canModifyDuration: boolean;
-  canLockControls: boolean;
 }
 
 export interface KeyholderReward {

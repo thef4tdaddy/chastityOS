@@ -52,7 +52,6 @@ export {
   useNotificationActions,
   useErrorHandler,
   useSuccessHandler,
-  type Notification,
 } from "./notificationStore";
 export type { NotificationState, Notification } from "./notificationStore";
 
