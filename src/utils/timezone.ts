@@ -6,6 +6,7 @@
 import { format } from "date-fns";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 import type { DBSettings } from "@/types/database";
+import { logger } from "./logging";
 
 export class TimezoneUtil {
   /**
@@ -24,7 +25,7 @@ export class TimezoneUtil {
       const zonedDate = toZonedTime(date, userTimezone);
       return format(zonedDate, formatString);
     } catch (error) {
-      console.error("Failed to format date in timezone", {
+      logger.error("Failed to format date in timezone", {
         error,
         timezone: userTimezone,
       });
@@ -59,7 +60,7 @@ export class TimezoneUtil {
     try {
       return toZonedTime(date, userTimezone);
     } catch (error) {
-      console.error("Failed to convert to user timezone", {
+      logger.error("Failed to convert to user timezone", {
         error,
         timezone: userTimezone,
       });
@@ -77,7 +78,7 @@ export class TimezoneUtil {
     try {
       return fromZonedTime(date, userTimezone);
     } catch (error) {
-      console.error("Failed to convert from user timezone", {
+      logger.error("Failed to convert from user timezone", {
         error,
         timezone: userTimezone,
       });

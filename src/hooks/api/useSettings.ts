@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsDBService } from "../../services/database/SettingsDBService";
 import { UserSettings } from "../../types/database";

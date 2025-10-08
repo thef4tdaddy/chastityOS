@@ -44,6 +44,7 @@ type SettingsTab =
   | "data";
 
 // Account Settings Section
+/* eslint-disable max-lines-per-function */
 const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
   settings,
 }) => {
@@ -247,6 +248,15 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
   );
 };
 
+// Helper function to get initial timezone
+const getInitialTimezone = (settings: DBSettings | null): string => {
+  return (
+    settings?.display?.timezone ||
+    settings?.timezone ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+};
+
 // Display Settings Section
 const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
   settings,
@@ -254,11 +264,7 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
   const { user } = useAuthState();
 
   // Display settings state
-  const [timezone, setTimezone] = useState(
-    settings?.display?.timezone ||
-      settings?.timezone ||
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
-  );
+  const [timezone, setTimezone] = useState(getInitialTimezone(settings));
   const [notifications, setNotifications] = useState(
     settings?.notifications?.enabled ?? true,
   );
@@ -266,8 +272,9 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
 
   // Update local state when settings change
   useEffect(() => {
-    if (settings?.display?.timezone || settings?.timezone) {
-      setTimezone(settings.display?.timezone || settings.timezone || "");
+    const newTimezone = settings?.display?.timezone || settings?.timezone;
+    if (newTimezone) {
+      setTimezone(newTimezone);
     }
     if (settings?.notifications?.enabled !== undefined) {
       setNotifications(settings.notifications.enabled);
