@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsDBService } from "../../services/database/SettingsDBService";
 import { UserSettings } from "../../types/database";
@@ -494,6 +495,158 @@ export function useResetAllData() {
       queryClient.invalidateQueries({ queryKey: settingsKeys.user(userId) });
 
       logger.info("All user data cache cleared after reset");
+    },
+  });
+}
+
+/**
+ * Update account settings (submissive name, display name, etc.)
+ */
+export function useUpdateAccountSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: {
+        submissiveName?: string;
+        displayName?: string;
+      };
+    }) => {
+      logger.info("Updating account settings", {
+        userId,
+        fields: Object.keys(data),
+      });
+      await settingsDBService.updateAccountSettings(userId, data);
+      return { success: true };
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.user(userId) });
+      logger.info("Account settings updated successfully", { userId });
+    },
+    onError: (error, { userId }) => {
+      logger.error("Failed to update account settings", {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
+    },
+  });
+}
+
+/**
+ * Update display settings (timezone, notifications, language)
+ */
+export function useUpdateDisplaySettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: {
+        timezone?: string;
+        notifications?: boolean;
+        language?: string;
+      };
+    }) => {
+      logger.info("Updating display settings", {
+        userId,
+        fields: Object.keys(data),
+      });
+      await settingsDBService.updateDisplaySettings(userId, data);
+      return { success: true };
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.user(userId) });
+      logger.info("Display settings updated successfully", { userId });
+    },
+    onError: (error, { userId }) => {
+      logger.error("Failed to update display settings", {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
+    },
+  });
+}
+
+/**
+ * Update profile settings (public profile, bio, etc.)
+ */
+export function useUpdateProfileSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: {
+        publicProfile?: boolean;
+        shareStatistics?: boolean;
+        bio?: string;
+        profileImageUrl?: string;
+      };
+    }) => {
+      logger.info("Updating profile settings", {
+        userId,
+        fields: Object.keys(data),
+      });
+      await settingsDBService.updateProfileSettings(userId, data);
+      return { success: true };
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.user(userId) });
+      logger.info("Profile settings updated successfully", { userId });
+    },
+    onError: (error, { userId }) => {
+      logger.error("Failed to update profile settings", {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
+    },
+  });
+}
+
+/**
+ * Update privacy settings (data collection, discoverability, etc.)
+ */
+export function useUpdatePrivacySettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      data,
+    }: {
+      userId: string;
+      data: {
+        dataCollection?: boolean;
+        accountDiscoverable?: boolean;
+        showActivityStatus?: boolean;
+      };
+    }) => {
+      logger.info("Updating privacy settings", {
+        userId,
+        fields: Object.keys(data),
+      });
+      await settingsDBService.updatePrivacySettings(userId, data);
+      return { success: true };
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.user(userId) });
+      logger.info("Privacy settings updated successfully", { userId });
+    },
+    onError: (error, { userId }) => {
+      logger.error("Failed to update privacy settings", {
+        error: error instanceof Error ? error.message : String(error),
+        userId,
+      });
     },
   });
 }
