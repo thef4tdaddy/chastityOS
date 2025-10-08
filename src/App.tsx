@@ -27,7 +27,7 @@ import KeyholderDemo from "./pages/KeyholderDemo";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import RelationshipsPage from "./pages/RelationshipsPage";
 import AchievementPage from "./pages/AchievementPage";
-import ToastDemo from "./pages/showcase/ToastDemo";
+import ToastDemo from "./demo/pages/ToastDemo";
 import Root from "./Root";
 
 const router = createBrowserRouter([
