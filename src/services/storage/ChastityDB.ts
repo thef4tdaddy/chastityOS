@@ -22,6 +22,8 @@ import {
   DBLeaderboardEntry,
   // Release request type
   DBReleaseRequest,
+  // User stats type
+  DBUserStats,
 } from "@/types/database";
 import { KeyholderRule } from "@/types/core";
 import { serviceLogger } from "@/utils/logging";
@@ -51,6 +53,21 @@ export class ChastityDB extends Dexie {
 
   // Release requests table
   releaseRequests!: Table<DBReleaseRequest>;
+
+  // User stats table
+  userStats!: Table<{
+    id: string;
+    userId: string;
+    totalPoints: number;
+    tasksCompleted: number;
+    tasksApproved: number;
+    tasksRejected: number;
+    currentStreak: number;
+    longestStreak: number;
+    lastTaskCompletedAt?: Date;
+    syncStatus: SyncStatus;
+    lastModified: Date;
+  }>;
 
   // Emergency PINs table
   emergencyPins!: Table<{
@@ -169,6 +186,13 @@ export class ChastityDB extends Dexie {
       // Lock combinations encrypted with emergency PIN (for hardcore mode)
       lockCombinations:
         "&id, userId, sessionId, [userId+sessionId], syncStatus, lastModified",
+    });
+
+    // Version 8: Add user stats table
+    this.version(8).stores({
+      // User stats for tracking points and task completion
+      userStats:
+        "&id, userId, totalPoints, tasksCompleted, syncStatus, lastModified",
     });
 
     // Add hooks for automatic timestamp and sync status updates
@@ -417,6 +441,25 @@ export class ChastityDB extends Dexie {
       },
     );
 
+    // User stats table hooks
+    this.userStats.hook("creating", (_primKey, obj, _trans) => {
+      obj.lastModified = new Date();
+      if (!obj.syncStatus) {
+        obj.syncStatus = "pending" as SyncStatus;
+      }
+      logger.debug("Creating user stats", { userId: obj.userId });
+    });
+
+    this.userStats.hook(
+      "updating",
+      (modifications: Partial<DBUserStats>, _primKey, _obj, _trans) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending" as SyncStatus;
+        }
+      },
+    );
+
     // Global error handler
     this.on("ready", () => {
       logger.info("ChastityOS database ready", {
@@ -466,6 +509,8 @@ export class ChastityDB extends Dexie {
         "rules",
         // Release requests collection
         "releaseRequests",
+        // User stats collection
+        "userStats",
       ];
 
       for (const collection of collections) {
@@ -506,6 +551,8 @@ export class ChastityDB extends Dexie {
       rules: await this.rules.count(),
       // Release requests stats
       releaseRequests: await this.releaseRequests.count(),
+      // User stats
+      userStats: await this.userStats.count(),
       pendingSync: {
         sessions: await this.sessions
           .where("syncStatus")
@@ -546,6 +593,11 @@ export class ChastityDB extends Dexie {
           .where("syncStatus")
           .equals("pending")
           .count(),
+        // User stats sync status
+        userStats: await this.userStats
+          .where("syncStatus")
+          .equals("pending")
+          .count(),
       },
     };
 
@@ -575,6 +627,7 @@ export class ChastityDB extends Dexie {
           this.leaderboardEntries,
           this.rules,
           this.releaseRequests,
+          this.userStats,
         ],
         async () => {
           await this.users.where("uid").equals(userId).delete();
@@ -606,6 +659,8 @@ export class ChastityDB extends Dexie {
             .where("submissiveUserId")
             .equals(userId)
             .delete();
+          // Clear user stats
+          await this.userStats.where("userId").equals(userId).delete();
         },
       );
 
