@@ -204,9 +204,10 @@ export interface DBSettings extends DBBase {
   };
 
   // Flat properties for compatibility with useSettings.ts
-  // User Profile
+  // User Profile / Account
   displayName?: string;
   email?: string;
+  submissiveName?: string; // Submissive's display name
   timezone?: string;
   language?: string;
 
@@ -219,6 +220,13 @@ export interface DBSettings extends DBBase {
   profileVisibility?: string;
   showStats?: boolean;
   showAchievements?: boolean;
+  accountDiscoverable?: boolean; // Can other users find this account
+  showActivityStatus?: boolean; // Show online/active status
+
+  // Profile settings
+  bio?: string; // User bio/description
+  profileImageUrl?: string; // User profile image URL
+  shareStatistics?: boolean; // Share statistics publicly
 
   // Goal Settings
   defaultGoalDuration?: number;
