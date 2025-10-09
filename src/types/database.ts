@@ -131,6 +131,10 @@ export interface DBTask extends DBBase {
   isRecurring?: boolean;
   recurringConfig?: RecurringConfig;
   recurringSeriesId?: string; // Same ID for all instances in series
+  // Points system fields
+  pointValue?: number; // Points awarded for completion
+  pointsAwarded?: boolean; // Flag to prevent duplicate awards
+  pointsAwardedAt?: Date; // When points were awarded
 }
 
 export interface DBGoal extends DBBase {
@@ -339,6 +343,17 @@ export interface TaskWithStatus extends DBTask {
 export interface GoalWithProgress extends DBGoal {
   progressPercentage: number; // calculated field
   isOverdue: boolean; // calculated field
+}
+
+// User Stats type for tracking points and task completion
+export interface DBUserStats extends DBBase {
+  totalPoints: number;
+  tasksCompleted: number;
+  tasksApproved: number;
+  tasksRejected: number;
+  currentStreak: number; // Days of consecutive task completion
+  longestStreak: number; // Longest streak achieved
+  lastTaskCompletedAt?: Date;
 }
 
 // Query filter types

@@ -27,6 +27,7 @@ class TaskDBService extends BaseDBService<DBTask> {
       priority?: DBTask["priority"];
       assignedBy?: DBTask["assignedBy"];
       dueDate?: Date;
+      pointValue?: number;
     } = {},
   ): Promise<string> {
     try {
@@ -41,6 +42,7 @@ class TaskDBService extends BaseDBService<DBTask> {
         assignedBy: options.assignedBy || "keyholder",
         createdAt: new Date(),
         dueDate: options.dueDate,
+        pointValue: options.pointValue,
       };
 
       await this.create(task);
