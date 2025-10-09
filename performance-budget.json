@@ -1,0 +1,58 @@
+{
+  "budgets": [
+    {
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 100
+        },
+        {
+          "resourceType": "stylesheet",
+          "budget": 30
+        },
+        {
+          "resourceType": "image",
+          "budget": 50
+        },
+        {
+          "resourceType": "font",
+          "budget": 50
+        },
+        {
+          "resourceType": "total",
+          "budget": 250
+        }
+      ],
+      "resourceCounts": [
+        {
+          "resourceType": "script",
+          "budget": 10
+        },
+        {
+          "resourceType": "stylesheet",
+          "budget": 5
+        },
+        {
+          "resourceType": "third-party",
+          "budget": 10
+        }
+      ]
+    }
+  ],
+  "performanceThresholds": {
+    "fcp": 1500,
+    "lcp": 2500,
+    "fid": 100,
+    "cls": 0.1,
+    "ttfb": 600,
+    "tti": 3500,
+    "speedIndex": 3000
+  },
+  "lighthouseScores": {
+    "performance": 90,
+    "accessibility": 95,
+    "bestPractices": 95,
+    "seo": 95
+  },
+  "description": "Performance budget for ChastityOS - Phase 1 baseline configuration"
+}
