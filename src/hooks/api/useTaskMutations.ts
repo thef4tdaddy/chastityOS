@@ -23,6 +23,7 @@ export function useCreateTask() {
       title: string;
       description?: string;
       deadline?: Date;
+      pointValue?: number;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
       const task = await taskDBService.createTask({
@@ -31,6 +32,7 @@ export function useCreateTask() {
         text: params.description || params.title,
         priority: "medium" as const,
         assignedBy: "submissive" as const,
+        pointValue: params.pointValue,
       });
 
       // 2. Trigger Firebase sync in background
@@ -216,16 +218,44 @@ export function useApproveTask() {
       feedback?: string;
       points?: number;
     }) => {
-      // 1. Update local Dexie immediately
+      // 1. Get task to check point value before updating
+      const task = await taskDBService.getById(params.taskId);
+
+      // 2. Update local Dexie immediately
       const updatedTask = await taskDBService.updateTaskStatus(
         params.taskId,
         "approved",
         {
           keyholderFeedback: params.feedback,
+          pointsAwarded: true,
+          pointsAwardedAt: new Date(),
         },
       );
 
-      // 2. If recurring, create next instance
+      // 3. Award points if task has point value and points haven't been awarded yet
+      if (task && task.pointValue && !task.pointsAwarded) {
+        try {
+          const { PointsService } = await import(
+            "@/services/points/PointsService"
+          );
+          await PointsService.awardTaskPoints({
+            userId: params.userId,
+            taskId: params.taskId,
+            points: task.pointValue,
+            taskTitle: task.text || task.title || "Task",
+          });
+
+          logger.info("Points awarded for task approval", {
+            taskId: params.taskId,
+            points: task.pointValue,
+          });
+        } catch (error) {
+          logger.error("Failed to award points", { error });
+          // Don't fail the approval if points award fails
+        }
+      }
+
+      // 4. If recurring, create next instance
       if (updatedTask?.isRecurring && updatedTask?.recurringConfig) {
         try {
           const { RecurringTaskService } = await import(
@@ -244,7 +274,7 @@ export function useApproveTask() {
         }
       }
 
-      // 3. Trigger Firebase sync in background
+      // 5. Trigger Firebase sync in background
       if (navigator.onLine) {
         firebaseSync.syncUserTasks(params.userId).catch((error) => {
           logger.warn("Task approval sync failed", { error });
@@ -350,6 +380,7 @@ export function useAssignTask() {
       priority?: DBTask["priority"];
       dueDate?: Date;
       keyholderName?: string;
+      pointValue?: number;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
       const task = await taskDBService.createTask({
@@ -360,6 +391,7 @@ export function useAssignTask() {
         priority: params.priority || "medium",
         assignedBy: "keyholder" as const,
         dueDate: params.dueDate,
+        pointValue: params.pointValue,
       });
 
       // 2. Trigger Firebase sync in background

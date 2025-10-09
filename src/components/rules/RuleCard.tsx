@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 import { FaEdit, FaLock, FaUnlock } from "../../utils/iconImport";
 
 // Mock rules interface
@@ -49,12 +49,24 @@ interface RuleCardProps {
   onToggle?: (ruleId: string) => void;
 }
 
-export const RuleCard: React.FC<RuleCardProps> = ({
+const RuleCardComponent: React.FC<RuleCardProps> = ({
   rule,
   isEditable,
   onEdit,
   onToggle,
 }) => {
+  // Memoize formatted content to avoid recalculation
+  const formattedContent = useMemo(
+    () => formatMarkdownToReact(rule.content),
+    [rule.content],
+  );
+
+  // Memoize formatted date to avoid recalculation
+  const formattedDate = useMemo(
+    () => rule.lastModified.toLocaleDateString(),
+    [rule.lastModified],
+  );
+
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
       {/* Header */}
@@ -83,7 +95,7 @@ export const RuleCard: React.FC<RuleCardProps> = ({
           <div className="flex items-center gap-4 text-xs text-nightly-celadon">
             <span>Created by: {rule.createdBy}</span>
             <span>•</span>
-            <span>Modified: {rule.lastModified.toLocaleDateString()}</span>
+            <span>Modified: {formattedDate}</span>
           </div>
         </div>
 
@@ -112,9 +124,10 @@ export const RuleCard: React.FC<RuleCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="prose prose-sm max-w-none">
-        {formatMarkdownToReact(rule.content)}
-      </div>
+      <div className="prose prose-sm max-w-none">{formattedContent}</div>
     </div>
   );
 };
+
+// Memoize RuleCard to prevent unnecessary re-renders
+export const RuleCard = memo(RuleCardComponent);

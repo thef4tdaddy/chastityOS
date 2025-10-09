@@ -2,7 +2,7 @@
  * Personal Goal Card Component
  * Displays and manages personal chastity duration goals
  */
-import React, { useState } from "react";
+import React, { useState, memo, useMemo, useCallback } from "react";
 import { FaTrash, FaEdit, FaCheck, FaTimes, FaTrophy } from "react-icons/fa";
 import type { DBGoal } from "@/types/database";
 
@@ -34,7 +34,7 @@ const calculateProgress = (current: number, target: number): number => {
   return Math.min(Math.round((current / target) * 100), 100);
 };
 
-const PersonalGoalEditForm: React.FC<{
+const PersonalGoalEditFormComponent: React.FC<{
   goal: DBGoal;
   onSave: (title: string, duration: number, description?: string) => void;
   onCancel: () => void;
@@ -144,13 +144,26 @@ const PersonalGoalEditForm: React.FC<{
   );
 };
 
-const PersonalGoalDisplay: React.FC<{
+// Memoize edit form
+const PersonalGoalEditForm = memo(PersonalGoalEditFormComponent);
+
+const PersonalGoalDisplayComponent: React.FC<{
   goal: DBGoal;
   isCompleted: boolean;
   progress: number;
   onEdit: () => void;
   onDelete: () => void;
 }> = ({ goal, isCompleted, progress, onEdit, onDelete }) => {
+  // Memoize formatted durations
+  const formattedCurrent = useMemo(
+    () => formatDuration(goal.currentValue),
+    [goal.currentValue],
+  );
+  const formattedTarget = useMemo(
+    () => formatDuration(goal.targetValue),
+    [goal.targetValue],
+  );
+
   return (
     <div
       className={`glass-card p-6 ${isCompleted ? "border-2 border-nightly-aquamarine" : ""}`}
@@ -194,8 +207,7 @@ const PersonalGoalDisplay: React.FC<{
         <div className="flex justify-between text-sm">
           <span className="text-nightly-celadon">Progress</span>
           <span className="text-nightly-honeydew font-semibold">
-            {formatDuration(goal.currentValue)} /{" "}
-            {formatDuration(goal.targetValue)}
+            {formattedCurrent} / {formattedTarget}
           </span>
         </div>
 
@@ -225,31 +237,44 @@ const PersonalGoalDisplay: React.FC<{
   );
 };
 
-export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
+// Memoize display component
+const PersonalGoalDisplay = memo(PersonalGoalDisplayComponent);
+
+const PersonalGoalCardComponent: React.FC<PersonalGoalCardProps> = ({
   goal,
   onUpdate,
   onDelete,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const progress = calculateProgress(goal.currentValue, goal.targetValue);
+  // Memoize progress calculation
+  const progress = useMemo(
+    () => calculateProgress(goal.currentValue, goal.targetValue),
+    [goal.currentValue, goal.targetValue],
+  );
   const isCompleted = goal.isCompleted;
 
-  const handleSave = (
-    title: string,
-    duration: number,
-    description?: string,
-  ) => {
-    onUpdate(goal.id, title, duration, description);
-    setIsEditing(false);
-  };
+  const handleSave = useCallback(
+    (title: string, duration: number, description?: string) => {
+      onUpdate(goal.id, title, duration, description);
+      setIsEditing(false);
+    },
+    [goal.id, onUpdate],
+  );
+
+  const handleEdit = useCallback(() => setIsEditing(true), []);
+  const handleCancel = useCallback(() => setIsEditing(false), []);
+  const handleDelete = useCallback(
+    () => onDelete(goal.id),
+    [goal.id, onDelete],
+  );
 
   if (isEditing) {
     return (
       <PersonalGoalEditForm
         goal={goal}
         onSave={handleSave}
-        onCancel={() => setIsEditing(false)}
+        onCancel={handleCancel}
       />
     );
   }
@@ -259,8 +284,11 @@ export const PersonalGoalCard: React.FC<PersonalGoalCardProps> = ({
       goal={goal}
       isCompleted={isCompleted}
       progress={progress}
-      onEdit={() => setIsEditing(true)}
-      onDelete={() => onDelete(goal.id)}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
     />
   );
 };
+
+// Memoize main component
+export const PersonalGoalCard = memo(PersonalGoalCardComponent);

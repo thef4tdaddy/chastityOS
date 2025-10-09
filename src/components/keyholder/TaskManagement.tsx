@@ -20,6 +20,8 @@ const AddTaskForm: React.FC<{
   setShowAddTask: (show: boolean) => void;
   newTaskText: string;
   setNewTaskText: (text: string) => void;
+  pointValue: number;
+  setPointValue: (value: number) => void;
   handleAddTask: () => void;
   isCreating: boolean;
 }> = ({
@@ -27,6 +29,8 @@ const AddTaskForm: React.FC<{
   setShowAddTask,
   newTaskText,
   setNewTaskText,
+  pointValue,
+  setPointValue,
   handleAddTask,
   isCreating,
 }) => {
@@ -45,6 +49,25 @@ const AddTaskForm: React.FC<{
           className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
           rows={3}
         />
+        <div>
+          <label className="block text-sm text-nightly-celadon mb-1">
+            Point Value (optional)
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={pointValue}
+            onChange={(e) =>
+              setPointValue(Math.max(0, Math.min(100, Number(e.target.value))))
+            }
+            placeholder="10"
+            className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50"
+          />
+          <p className="text-xs text-nightly-celadon/70 mt-1">
+            Points awarded when task is approved (0-100)
+          </p>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={handleAddTask}
@@ -209,7 +232,7 @@ const useTaskActions = (params: {
     }
   };
 
-  const handleAddTask = async (newTaskText: string) => {
+  const handleAddTask = async (newTaskText: string, pointValue: number) => {
     if (!newTaskText.trim()) return;
 
     try {
@@ -217,6 +240,7 @@ const useTaskActions = (params: {
         userId,
         title: newTaskText.trim(),
         description: "",
+        pointValue: pointValue > 0 ? pointValue : undefined,
       });
 
       setNewTaskText("");
@@ -262,6 +286,7 @@ const TaskList: React.FC<{
 
 export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   const [newTaskText, setNewTaskText] = useState("");
+  const [pointValue, setPointValue] = useState(10);
   const [showAddTask, setShowAddTask] = useState(false);
 
   // Use TanStack Query hooks instead of direct service calls
@@ -311,7 +336,9 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
         setShowAddTask={setShowAddTask}
         newTaskText={newTaskText}
         setNewTaskText={setNewTaskText}
-        handleAddTask={() => handleAddTask(newTaskText)}
+        pointValue={pointValue}
+        setPointValue={setPointValue}
+        handleAddTask={() => handleAddTask(newTaskText, pointValue)}
         isCreating={createTask.isPending}
       />
 

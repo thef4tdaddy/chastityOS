@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { preloadRoute } from "@/utils/routing/routePreloader";
 
 interface MobileMenuProps {
   navItems: Array<{ path: string; label: string }>;
@@ -24,6 +25,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             key={item.path}
             to={item.path}
             onClick={onClose}
+            onTouchStart={() => preloadRoute(item.path)}
+            onMouseEnter={() => preloadRoute(item.path)}
             className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
               location.pathname === item.path
                 ? "text-white bg-tekhelet/20 border-l-4 border-tekhelet"
