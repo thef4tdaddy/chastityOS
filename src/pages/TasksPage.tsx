@@ -4,6 +4,7 @@ import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
 import { TaskItem } from "../components/tasks";
+import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 
 // UI State Components
@@ -180,6 +181,13 @@ const TasksPage: React.FC = () => {
         </h1>
         <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
       </div>
+
+      {/* Task Stats Card */}
+      {user && (
+        <div className="max-w-4xl mx-auto mb-8">
+          <TaskStatsCard userId={user.uid} />
+        </div>
+      )}
 
       <TabNavigation
         activeTab={activeTab}
