@@ -7,6 +7,7 @@ import { taskDBService } from "@/services/database";
 import { firebaseSync } from "@/services/sync";
 import type { DBTask, TaskStatus } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
+import { TaskNotificationService } from "@/services/notifications/TaskNotificationService";
 
 const logger = serviceLogger("useTaskMutations");
 
@@ -152,6 +153,8 @@ export function useSubmitTaskForReview() {
       userId: string;
       note?: string;
       attachments?: string[];
+      keyholderUserId?: string;
+      submissiveName?: string;
     }) => {
       // 1. Update local Dexie immediately
       const updatedTask = await taskDBService.updateTaskStatus(
@@ -172,13 +175,27 @@ export function useSubmitTaskForReview() {
 
       return updatedTask;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["tasks", "user", variables.userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
+
+      // Send notification to keyholder (if we have the keyholder ID)
+      if (data && variables.keyholderUserId) {
+        TaskNotificationService.notifyTaskSubmitted({
+          taskId: data.id,
+          taskTitle: data.text || data.title || "Task",
+          userId: variables.userId,
+          keyholderUserId: variables.keyholderUserId,
+          submissiveName: variables.submissiveName,
+          hasEvidence: (data.attachments?.length || 0) > 0,
+        }).catch((error) => {
+          logger.warn("Failed to send task submitted notification", { error });
+        });
+      }
     },
     onError: (error) => {
       logger.error("Failed to submit task for review", { error });
@@ -197,6 +214,7 @@ export function useApproveTask() {
       taskId: string;
       userId: string;
       feedback?: string;
+      points?: number;
     }) => {
       // 1. Update local Dexie immediately
       const updatedTask = await taskDBService.updateTaskStatus(
@@ -235,13 +253,26 @@ export function useApproveTask() {
 
       return updatedTask;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["tasks", "user", variables.userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
+
+      // Send notification to submissive
+      if (data) {
+        TaskNotificationService.notifyTaskApproved({
+          taskId: data.id,
+          taskTitle: data.text || data.title || "Task",
+          userId: variables.userId,
+          points: variables.points,
+          reviewNotes: variables.feedback,
+        }).catch((error) => {
+          logger.warn("Failed to send task approved notification", { error });
+        });
+      }
     },
     onError: (error) => {
       logger.error("Failed to approve task", { error });
@@ -279,13 +310,25 @@ export function useRejectTask() {
 
       return updatedTask;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["tasks", "user", variables.userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
       });
+
+      // Send notification to submissive
+      if (data) {
+        TaskNotificationService.notifyTaskRejected({
+          taskId: data.id,
+          taskTitle: data.text || data.title || "Task",
+          userId: variables.userId,
+          reason: variables.feedback,
+        }).catch((error) => {
+          logger.warn("Failed to send task rejected notification", { error });
+        });
+      }
     },
     onError: (error) => {
       logger.error("Failed to reject task", { error });
@@ -306,6 +349,7 @@ export function useAssignTask() {
       description?: string;
       priority?: DBTask["priority"];
       dueDate?: Date;
+      keyholderName?: string;
     }) => {
       // 1. Write to local Dexie immediately for optimistic update
       const task = await taskDBService.createTask({
@@ -327,12 +371,23 @@ export function useAssignTask() {
 
       return task;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ["tasks", "user", variables.userId],
       });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "pending", variables.userId],
+      });
+
+      // Send notification to submissive
+      TaskNotificationService.notifyTaskAssigned({
+        taskId: data,
+        taskTitle: variables.title,
+        userId: variables.userId,
+        keyholderName: variables.keyholderName,
+        dueDate: variables.dueDate,
+      }).catch((error) => {
+        logger.warn("Failed to send task assigned notification", { error });
       });
     },
     onError: (error) => {
