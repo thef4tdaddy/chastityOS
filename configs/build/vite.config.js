@@ -271,7 +271,7 @@ const _createPWAManifest = () => {
 };
 
 // Helper function to create build configuration
-const createBuildConfig = (isProduction, mode) => {
+const createBuildConfig = (isProduction, _mode) => {
   // Demo exclusion for PWA builds (Issue #308)
   // Keep demo in development and website, exclude from production PWA
   const shouldExcludeDemo = isProduction;
@@ -281,9 +281,7 @@ const createBuildConfig = (isProduction, mode) => {
     minify: isProduction ? "terser" : "esbuild",
     rollupOptions: {
       ...(shouldExcludeDemo && {
-        external: [
-          /^\/src\/demo\//,
-        ],
+        external: [/^\/src\/demo\//],
       }),
       output: {
         manualChunks(id) {
