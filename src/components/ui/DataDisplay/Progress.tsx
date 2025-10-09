@@ -66,6 +66,112 @@ const variantClasses = {
 };
 
 /**
+ * Progress Label Component
+ */
+const ProgressLabel: React.FC<{
+  text: string;
+  position: "top" | "bottom";
+}> = ({ text, position }) => (
+  <div
+    className={`flex justify-between items-center ${position === "top" ? "mb-2" : "mt-2"}`}
+  >
+    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      {text}
+    </span>
+  </div>
+);
+
+/**
+ * Progress Bar Component
+ */
+const ProgressBar: React.FC<{
+  percentage: number;
+  size: "sm" | "md" | "lg";
+  variant: keyof typeof variantClasses;
+  indeterminate: boolean;
+  showInsideLabel: boolean;
+  labelText: string;
+  value: number;
+  max: number;
+  label?: string;
+}> = ({
+  percentage,
+  size,
+  variant,
+  indeterminate,
+  showInsideLabel,
+  labelText,
+  value,
+  max,
+  label,
+}) => (
+  <div
+    className={`
+      w-full
+      ${sizeClasses[size]}
+      bg-gray-200
+      dark:bg-gray-700
+      rounded-full
+      overflow-hidden
+      relative
+    `
+      .trim()
+      .replace(/\s+/g, " ")}
+    role="progressbar"
+    aria-valuenow={indeterminate ? undefined : value}
+    aria-valuemin={0}
+    aria-valuemax={max}
+    aria-label={label}
+  >
+    <div
+      className={`
+        h-full
+        ${variantClasses[variant]}
+        rounded-full
+        transition-all
+        duration-300
+        ease-in-out
+        ${indeterminate ? "animate-pulse" : ""}
+      `
+        .trim()
+        .replace(/\s+/g, " ")}
+      style={{
+        width: indeterminate ? "100%" : `${percentage}%`,
+      }}
+    >
+      {showInsideLabel && (
+        <div className="flex items-center justify-center h-full">
+          <span className="text-xs font-medium text-white px-2">
+            {labelText}
+          </span>
+        </div>
+      )}
+    </div>
+
+    {indeterminate && (
+      <div
+        className={`
+          absolute
+          inset-0
+          ${variantClasses[variant]}
+          animate-shimmer
+          bg-gradient-to-r
+          from-transparent
+          via-white/30
+          to-transparent
+        `
+          .trim()
+          .replace(/\s+/g, " ")}
+        style={{
+          backgroundSize: "200% 100%",
+          animation: "shimmer 2s infinite",
+        }}
+      />
+    )}
+  </div>
+);
+
+/**
  * Progress Component
  *
  * Display progress indicators for tasks and operations.
@@ -100,93 +206,26 @@ export const Progress: React.FC<ProgressProps> = ({
   // Label text
   const labelText = label || `${Math.round(percentage)}%`;
 
+  const showTopLabel = showLabel && labelPosition === "top";
+  const showBottomLabel = showLabel && labelPosition === "bottom";
+  const showInsideLabel =
+    showLabel && labelPosition === "inside" && percentage > 20;
+
   return (
     <div className={`w-full ${className}`}>
-      {/* Top Label */}
-      {showLabel && labelPosition === "top" && (
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {labelText}
-          </span>
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      <div
-        className={`
-          w-full
-          ${sizeClasses[size]}
-          bg-gray-200
-          dark:bg-gray-700
-          rounded-full
-          overflow-hidden
-          relative
-        `
-          .trim()
-          .replace(/\s+/g, " ")}
-        role="progressbar"
-        aria-valuenow={indeterminate ? undefined : value}
-        aria-valuemin={0}
-        aria-valuemax={max}
-        aria-label={label}
-      >
-        <div
-          className={`
-            h-full
-            ${variantClasses[variant]}
-            rounded-full
-            transition-all
-            duration-300
-            ease-in-out
-            ${indeterminate ? "animate-pulse" : ""}
-          `
-            .trim()
-            .replace(/\s+/g, " ")}
-          style={{
-            width: indeterminate ? "100%" : `${percentage}%`,
-          }}
-        >
-          {/* Inside Label */}
-          {showLabel && labelPosition === "inside" && percentage > 20 && (
-            <div className="flex items-center justify-center h-full">
-              <span className="text-xs font-medium text-white px-2">
-                {labelText}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Indeterminate animation */}
-        {indeterminate && (
-          <div
-            className={`
-              absolute
-              inset-0
-              ${variantClasses[variant]}
-              animate-shimmer
-              bg-gradient-to-r
-              from-transparent
-              via-white/30
-              to-transparent
-            `
-              .trim()
-              .replace(/\s+/g, " ")}
-            style={{
-              backgroundSize: "200% 100%",
-              animation: "shimmer 2s infinite",
-            }}
-          />
-        )}
-      </div>
-
-      {/* Bottom Label */}
-      {showLabel && labelPosition === "bottom" && (
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {labelText}
-          </span>
-        </div>
-      )}
+      {showTopLabel && <ProgressLabel text={labelText} position="top" />}
+      <ProgressBar
+        percentage={percentage}
+        size={size}
+        variant={variant}
+        indeterminate={indeterminate}
+        showInsideLabel={showInsideLabel}
+        labelText={labelText}
+        value={value}
+        max={max}
+        label={label}
+      />
+      {showBottomLabel && <ProgressLabel text={labelText} position="bottom" />}
     </div>
   );
 };

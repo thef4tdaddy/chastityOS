@@ -98,17 +98,23 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       .trim()
       .replace(/\s+/g, " ");
 
-    const Component = isClickable ? "button" : "div";
+    if (isClickable) {
+      return (
+        <button
+          ref={ref as React.Ref<HTMLButtonElement>}
+          className={cardClasses}
+          onClick={onClick}
+          {...props}
+        >
+          {children}
+        </button>
+      );
+    }
 
     return (
-      <Component
-        ref={ref as any}
-        className={cardClasses}
-        onClick={onClick}
-        {...props}
-      >
+      <div ref={ref} className={cardClasses} {...props}>
         {children}
-      </Component>
+      </div>
     );
   },
 );
