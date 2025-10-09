@@ -13,6 +13,9 @@ import {
   SyncProvider,
 } from "./contexts";
 
+// Error Boundaries
+import { RouteErrorBoundary } from "./components/errors";
+
 // Pages
 import Dashboard from "./pages/Dashboard";
 import ChastityTracking from "./pages/ChastityTracking";
@@ -37,59 +40,115 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Dashboard />,
+        element: (
+          <RouteErrorBoundary routeName="dashboard">
+            <Dashboard />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/chastity-tracking",
-        element: <ChastityTracking />,
+        element: (
+          <RouteErrorBoundary routeName="chastity-tracking">
+            <ChastityTracking />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/tasks",
-        element: <TasksPage />,
+        element: (
+          <RouteErrorBoundary routeName="tasks">
+            <TasksPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/log-event",
-        element: <LogEventPage />,
+        element: (
+          <RouteErrorBoundary routeName="log-event">
+            <LogEventPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/rewards-punishments",
-        element: <RewardsPunishmentsPage />,
+        element: (
+          <RouteErrorBoundary routeName="rewards-punishments">
+            <RewardsPunishmentsPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/rules",
-        element: <RulesPage />,
+        element: (
+          <RouteErrorBoundary routeName="rules">
+            <RulesPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/full-report",
-        element: <FullReportPage />,
+        element: (
+          <RouteErrorBoundary routeName="full-report">
+            <FullReportPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/settings",
-        element: <SettingsPage />,
+        element: (
+          <RouteErrorBoundary routeName="settings">
+            <SettingsPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/keyholder",
-        element: <KeyholderPage />,
+        element: (
+          <RouteErrorBoundary routeName="keyholder">
+            <KeyholderPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/keyholder-demo",
-        element: <KeyholderDemo />,
+        element: (
+          <RouteErrorBoundary routeName="keyholder-demo">
+            <KeyholderDemo />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/achievements",
-        element: <AchievementPage />,
+        element: (
+          <RouteErrorBoundary routeName="achievements">
+            <AchievementPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/public-profile/:userId",
-        element: <PublicProfilePage />,
+        element: (
+          <RouteErrorBoundary routeName="public-profile">
+            <PublicProfilePage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/relationships",
-        element: <RelationshipsPage />,
+        element: (
+          <RouteErrorBoundary routeName="relationships">
+            <RelationshipsPage />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: "/toast-demo",
-        element: <ToastDemo />,
+        element: (
+          <RouteErrorBoundary routeName="toast-demo">
+            <ToastDemo />
+          </RouteErrorBoundary>
+        ),
       },
     ],
   },

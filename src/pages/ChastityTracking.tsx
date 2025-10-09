@@ -18,6 +18,10 @@ import {
   buildMockTrackerStatsProps,
 } from "../utils/tracker/trackerProps";
 import type { User } from "../types/core";
+import {
+  FeatureErrorBoundary,
+  TrackerErrorFallback,
+} from "../components/errors";
 
 // Session Persistence Error Component
 const SessionPersistenceError: React.FC<{ error: string }> = ({ error }) => (
@@ -341,35 +345,40 @@ const TrackerPage: React.FC = () => {
         pauseCooldownMessage={mockData.pauseCooldownMessage}
       />
 
-      <TrackerStats {...trackerStatsProps} />
+      <FeatureErrorBoundary
+        feature="chastity-tracker"
+        fallback={<TrackerErrorFallback />}
+      >
+        <TrackerStats {...trackerStatsProps} />
 
-      {shouldShowPauseButtons(USE_REAL_SESSIONS, isActive) && (
-        <PauseResumeButtons
-          sessionId={sessionId || ""}
-          userId={user?.uid || ""}
-          isPaused={isPaused}
-          pauseState={{
-            canPause,
-            cooldownRemaining,
-            lastPauseTime: undefined,
-            nextPauseAvailable: undefined,
-          }}
-          onPause={() => pauseSession("bathroom")}
-          onResume={resumeSession}
-        />
-      )}
-
-      <ActionButtons
-        {...trackerData}
-        {...getActionButtonCallbacks(
-          USE_REAL_SESSIONS,
-          startSession,
-          endSession,
-          handleEmergencyUnlock,
+        {shouldShowPauseButtons(USE_REAL_SESSIONS, isActive) && (
+          <PauseResumeButtons
+            sessionId={sessionId || ""}
+            userId={user?.uid || ""}
+            isPaused={isPaused}
+            pauseState={{
+              canPause,
+              cooldownRemaining,
+              lastPauseTime: undefined,
+              nextPauseAvailable: undefined,
+            }}
+            onPause={() => pauseSession("bathroom")}
+            onResume={resumeSession}
+          />
         )}
-        isStarting={USE_REAL_SESSIONS && isStarting}
-        isEnding={USE_REAL_SESSIONS && isEnding}
-      />
+
+        <ActionButtons
+          {...trackerData}
+          {...getActionButtonCallbacks(
+            USE_REAL_SESSIONS,
+            startSession,
+            endSession,
+            handleEmergencyUnlock,
+          )}
+          isStarting={USE_REAL_SESSIONS && isStarting}
+          isEnding={USE_REAL_SESSIONS && isEnding}
+        />
+      </FeatureErrorBoundary>
 
       <ReasonModals
         showReasonModal={mockData.showReasonModal}
