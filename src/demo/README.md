@@ -63,6 +63,7 @@ Demo files have **relaxed ESLint rules** compared to production code:
 ### Creating Demo Components
 
 Demo components should:
+
 1. Use mock data from demo hooks
 2. Import from `../hooks/` or production services as needed
 3. Be self-contained with all necessary mock data
@@ -76,17 +77,14 @@ import { useMyFeatureDemo } from "../hooks/useMyFeatureDemo";
 export const MyFeatureDemo: React.FC = () => {
   const { mockData, actions } = useMyFeatureDemo();
 
-  return (
-    <div>
-      {/* Demo UI */}
-    </div>
-  );
+  return <div>{/* Demo UI */}</div>;
 };
 ```
 
 ### Creating Demo Hooks
 
 Demo hooks should:
+
 1. Provide mock data scenarios
 2. Simulate real hook behavior
 3. Be located in `src/demo/hooks/`
@@ -99,7 +97,9 @@ export const useMyFeatureDemo = (scenario: DemoScenario) => {
   return {
     data,
     actions: {
-      simulate: () => { /* mock action */ },
+      simulate: () => {
+        /* mock action */
+      },
     },
   };
 };
@@ -108,6 +108,7 @@ export const useMyFeatureDemo = (scenario: DemoScenario) => {
 ### Accessing Demo Pages
 
 Demo pages are accessible via routes:
+
 - `/toast-demo` - Toast notification demonstrations
 - `/keyholder-demo` - Keyholder account linking demo
 - (Add more as needed)
@@ -115,12 +116,14 @@ Demo pages are accessible via routes:
 ## ⚠️ Important Notes
 
 ### DO NOT:
+
 - ❌ Import demo code into production components
 - ❌ Mix production business logic with demo code
 - ❌ Store real user data in demo hooks
 - ❌ Use demo code for anything other than demonstrations
 
 ### DO:
+
 - ✅ Keep demo code self-contained in `/src/demo/`
 - ✅ Use mock data for all demonstrations
 - ✅ Follow the naming convention: `*Demo.tsx` or `*Demo.ts`
@@ -148,6 +151,7 @@ if (shouldExcludeDemo && id.includes("/src/demo/")) {
 ## 📊 Issue Tracking
 
 This architecture was implemented as part of:
+
 - **Epic #308**: Demo App Separation - Clean Architecture & PWA Build
   - Phase 1: Demo Data Extraction ✅
   - Phase 2: Demo Page Separation ✅
