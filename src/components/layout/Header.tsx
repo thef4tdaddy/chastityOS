@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
+import { preloadRoute } from "@/utils/routing/routePreloader";
 
 interface HeaderProps {
   navItems: Array<{ path: string; label: string }>;
@@ -43,6 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   key={item.path}
                   to={item.path}
+                  onMouseEnter={() => preloadRoute(item.path)}
+                  onFocus={() => preloadRoute(item.path)}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border-2 ${
                     location.pathname === item.path
                       ? "text-white bg-tekhelet border-dark_purple shadow-lg"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import type { DBTask, TaskStatus } from "../../types/database";
 import {
   FaCheckCircle,
@@ -97,8 +97,8 @@ export const useTaskItem = (
     }
   };
 
-  // Submit handler logic
-  const handleSubmit = async () => {
+  // Submit handler logic - memoized with useCallback
+  const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
     try {
       await onSubmit(task.id, note, attachments);
@@ -107,14 +107,21 @@ export const useTaskItem = (
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [task.id, note, attachments, onSubmit]);
 
-  // Derived values
-  const statusConfig = getStatusConfig(task.status);
-  const priorityStyles = task.priority
-    ? getPriorityStyles(task.priority)
-    : null;
-  const isOverdue = task.dueDate && new Date() > task.dueDate;
+  // Derived values - memoized with useMemo to prevent recalculation
+  const statusConfig = useMemo(
+    () => getStatusConfig(task.status),
+    [task.status],
+  );
+  const priorityStyles = useMemo(
+    () => (task.priority ? getPriorityStyles(task.priority) : null),
+    [task.priority],
+  );
+  const isOverdue = useMemo(
+    () => Boolean(task.dueDate && new Date() > task.dueDate),
+    [task.dueDate],
+  );
 
   return {
     // State
@@ -130,7 +137,7 @@ export const useTaskItem = (
     // Computed values
     statusConfig,
     priorityStyles,
-    isOverdue: Boolean(isOverdue),
+    isOverdue,
 
     // Helper functions (exposed for flexibility)
     getStatusConfig,

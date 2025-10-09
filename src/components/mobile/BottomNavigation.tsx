@@ -6,6 +6,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useViewport } from "../../hooks/mobile/useViewport";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
+import { preloadRoute } from "@/utils/routing/routePreloader";
 
 interface NavItem {
   path: string;
@@ -49,6 +50,8 @@ const NavigationItem: React.FC<{
     key={item.path}
     to={item.path}
     onClick={onNavClick}
+    onTouchStart={() => preloadRoute(item.path)}
+    onMouseEnter={() => preloadRoute(item.path)}
     className={getNavItemStyles(isActive)}
   >
     {/* Icon */}

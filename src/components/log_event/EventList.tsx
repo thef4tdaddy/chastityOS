@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 import type { DBEvent, EventType } from "../../types/database";
 import {
   FaCalendar,
@@ -55,9 +55,16 @@ interface EventItemProps {
   showOwner?: boolean;
 }
 
-const EventItem: React.FC<EventItemProps> = ({ event, showOwner }) => {
-  const eventTypeInfo = getEventTypeInfo(event.type);
+const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
+  const eventTypeInfo = useMemo(
+    () => getEventTypeInfo(event.type),
+    [event.type],
+  );
   const Icon = eventTypeInfo.icon;
+  const formattedDate = useMemo(
+    () => formatDate(event.timestamp),
+    [event.timestamp],
+  );
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
@@ -76,9 +83,7 @@ const EventItem: React.FC<EventItemProps> = ({ event, showOwner }) => {
                 </span>
               )}
             </div>
-            <div className="text-xs text-nightly-celadon">
-              {formatDate(event.timestamp)}
-            </div>
+            <div className="text-xs text-nightly-celadon">{formattedDate}</div>
           </div>
         </div>
         {event.isPrivate && (
@@ -118,13 +123,16 @@ const EventItem: React.FC<EventItemProps> = ({ event, showOwner }) => {
   );
 };
 
+// Memoize EventItem to prevent unnecessary re-renders
+const EventItem = memo(EventItemComponent);
+
 // Event List Component
 interface EventListProps {
   events: (DBEvent & { ownerName?: string; ownerId?: string })[];
   showOwner?: boolean;
 }
 
-export const EventList: React.FC<EventListProps> = ({
+const EventListComponent: React.FC<EventListProps> = ({
   events,
   showOwner = false,
 }) => {
@@ -150,3 +158,6 @@ export const EventList: React.FC<EventListProps> = ({
     </div>
   );
 };
+
+// Memoize EventList to prevent unnecessary re-renders
+export const EventList = memo(EventListComponent);
