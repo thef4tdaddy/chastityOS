@@ -1,0 +1,236 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [main, nightly]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  lighthouse-ci:
+    name: Lighthouse CI Performance Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build:nightly
+        env:
+          VITE_BUILD_ENVIRONMENT: nightly
+
+      - name: Start preview server
+        run: |
+          npm run preview &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          # Wait for server to be ready
+          timeout 30 sh -c 'until nc -z localhost 4173; do sleep 1; done' || echo "Server may not be ready"
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        run: |
+          npm run test:lighthouse || true
+          echo "lighthouse_completed=true" >> $GITHUB_OUTPUT
+
+      - name: Parse Lighthouse results
+        id: lighthouse_results
+        if: steps.lighthouse.outputs.lighthouse_completed == 'true'
+        run: |
+          if [ -d ".lighthouseci" ] && [ -n "$(find .lighthouseci -name "*.json" 2>/dev/null)" ]; then
+            REPORT_FILE=$(find .lighthouseci -name "*.json" | head -1)
+            
+            # Extract scores
+            PERF_SCORE=$(jq -r '.categories.performance.score // 0' "$REPORT_FILE")
+            A11Y_SCORE=$(jq -r '.categories.accessibility.score // 0' "$REPORT_FILE")
+            BP_SCORE=$(jq -r '.categories."best-practices".score // 0' "$REPORT_FILE")
+            SEO_SCORE=$(jq -r '.categories.seo.score // 0' "$REPORT_FILE")
+            
+            # Extract metrics
+            FCP=$(jq -r '.audits."first-contentful-paint".numericValue // 0' "$REPORT_FILE")
+            LCP=$(jq -r '.audits."largest-contentful-paint".numericValue // 0' "$REPORT_FILE")
+            CLS=$(jq -r '.audits."cumulative-layout-shift".numericValue // 0' "$REPORT_FILE")
+            TTI=$(jq -r '.audits.interactive.numericValue // 0' "$REPORT_FILE")
+            SI=$(jq -r '.audits."speed-index".numericValue // 0' "$REPORT_FILE")
+            TBT=$(jq -r '.audits."total-blocking-time".numericValue // 0' "$REPORT_FILE")
+            
+            # Convert to human-readable format
+            FCP_MS=$(echo "$FCP" | awk '{printf "%.0f", $1}')
+            LCP_MS=$(echo "$LCP" | awk '{printf "%.0f", $1}')
+            CLS_VAL=$(echo "$CLS" | awk '{printf "%.3f", $1}')
+            TTI_MS=$(echo "$TTI" | awk '{printf "%.0f", $1}')
+            SI_MS=$(echo "$SI" | awk '{printf "%.0f", $1}')
+            TBT_MS=$(echo "$TBT" | awk '{printf "%.0f", $1}')
+            
+            # Convert scores to percentages
+            PERF_PCT=$(echo "$PERF_SCORE * 100" | bc -l | awk '{printf "%.0f", $1}')
+            A11Y_PCT=$(echo "$A11Y_SCORE * 100" | bc -l | awk '{printf "%.0f", $1}')
+            BP_PCT=$(echo "$BP_SCORE * 100" | bc -l | awk '{printf "%.0f", $1}')
+            SEO_PCT=$(echo "$SEO_SCORE * 100" | bc -l | awk '{printf "%.0f", $1}')
+            
+            # Store outputs
+            echo "performance_score=$PERF_PCT" >> $GITHUB_OUTPUT
+            echo "accessibility_score=$A11Y_PCT" >> $GITHUB_OUTPUT
+            echo "best_practices_score=$BP_PCT" >> $GITHUB_OUTPUT
+            echo "seo_score=$SEO_PCT" >> $GITHUB_OUTPUT
+            echo "fcp=$FCP_MS" >> $GITHUB_OUTPUT
+            echo "lcp=$LCP_MS" >> $GITHUB_OUTPUT
+            echo "cls=$CLS_VAL" >> $GITHUB_OUTPUT
+            echo "tti=$TTI_MS" >> $GITHUB_OUTPUT
+            echo "si=$SI_MS" >> $GITHUB_OUTPUT
+            echo "tbt=$TBT_MS" >> $GITHUB_OUTPUT
+            
+            echo "✅ Lighthouse results parsed successfully"
+          else
+            echo "❌ No Lighthouse results found"
+            exit 1
+          fi
+
+      - name: Check performance regression
+        id: regression_check
+        if: steps.lighthouse_results.outputs.performance_score
+        run: |
+          PERF_SCORE=${{ steps.lighthouse_results.outputs.performance_score }}
+          THRESHOLD=80  # Minimum acceptable performance score
+          
+          if [ "$PERF_SCORE" -lt "$THRESHOLD" ]; then
+            echo "regression_detected=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Performance regression detected: ${PERF_SCORE}% < ${THRESHOLD}%"
+          else
+            echo "regression_detected=false" >> $GITHUB_OUTPUT
+            echo "✅ Performance check passed: ${PERF_SCORE}% >= ${THRESHOLD}%"
+          fi
+
+      - name: Comment PR with Lighthouse results
+        if: github.event_name == 'pull_request' && steps.lighthouse_results.outputs.performance_score
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const perfScore = ${{ steps.lighthouse_results.outputs.performance_score }};
+            const a11yScore = ${{ steps.lighthouse_results.outputs.accessibility_score }};
+            const bpScore = ${{ steps.lighthouse_results.outputs.best_practices_score }};
+            const seoScore = ${{ steps.lighthouse_results.outputs.seo_score }};
+            const fcp = ${{ steps.lighthouse_results.outputs.fcp }};
+            const lcp = ${{ steps.lighthouse_results.outputs.lcp }};
+            const cls = ${{ steps.lighthouse_results.outputs.cls }};
+            const tti = ${{ steps.lighthouse_results.outputs.tti }};
+            const si = ${{ steps.lighthouse_results.outputs.si }};
+            const tbt = ${{ steps.lighthouse_results.outputs.tbt }};
+            const isRegression = '${{ steps.regression_check.outputs.regression_detected }}' === 'true';
+            
+            const getEmoji = (score) => {
+              if (score >= 90) return '🟢';
+              if (score >= 50) return '🟡';
+              return '🔴';
+            };
+            
+            const getMetricRating = (name, value) => {
+              const thresholds = {
+                fcp: [1500, 2500],
+                lcp: [2500, 4000],
+                cls: [0.1, 0.25],
+                tti: [3500, 7500],
+                si: [3000, 5800],
+                tbt: [300, 600],
+              };
+              
+              const [good, poor] = thresholds[name] || [0, Infinity];
+              
+              if (value <= good) return '🟢';
+              if (value <= poor) return '🟡';
+              return '🔴';
+            };
+            
+            const regressionBadge = isRegression ? '⚠️ **Performance Regression Detected**' : '✅ **Performance Check Passed**';
+            
+            const comment = `## ${regressionBadge}
+            
+            ### Lighthouse Performance Report
+            
+            | Category | Score |
+            |----------|-------|
+            | ${getEmoji(perfScore)} Performance | ${perfScore}% |
+            | ${getEmoji(a11yScore)} Accessibility | ${a11yScore}% |
+            | ${getEmoji(bpScore)} Best Practices | ${bpScore}% |
+            | ${getEmoji(seoScore)} SEO | ${seoScore}% |
+            
+            ### Core Web Vitals
+            
+            | Metric | Value | Target | Status |
+            |--------|-------|--------|--------|
+            | First Contentful Paint (FCP) | ${fcp}ms | < 1,500ms | ${getMetricRating('fcp', fcp)} |
+            | Largest Contentful Paint (LCP) | ${lcp}ms | < 2,500ms | ${getMetricRating('lcp', lcp)} |
+            | Cumulative Layout Shift (CLS) | ${cls} | < 0.1 | ${getMetricRating('cls', cls)} |
+            | Time to Interactive (TTI) | ${tti}ms | < 3,500ms | ${getMetricRating('tti', tti)} |
+            | Speed Index (SI) | ${si}ms | < 3,000ms | ${getMetricRating('si', si)} |
+            | Total Blocking Time (TBT) | ${tbt}ms | < 300ms | ${getMetricRating('tbt', tbt)} |
+            
+            ${isRegression ? '\n⚠️ **Action Required**: Performance score is below the threshold of 80%. Please review and optimize before merging.\n' : ''}
+            
+            <sub>🤖 Generated by Lighthouse CI • [View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})</sub>
+            `;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Lighthouse Performance Report')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Fail if performance regression
+        if: steps.regression_check.outputs.regression_detected == 'true'
+        run: |
+          echo "❌ Performance regression detected. Performance score: ${{ steps.lighthouse_results.outputs.performance_score }}%"
+          echo "This is below the minimum threshold of 80%."
+          echo "Please optimize performance before merging this PR."
+          exit 1
+
+      - name: Upload Lighthouse artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 30
+
+      - name: Cleanup server
+        if: always()
+        run: |
+          if [ ! -z "$SERVER_PID" ]; then
+            kill $SERVER_PID || echo "Server already stopped"
+          fi
