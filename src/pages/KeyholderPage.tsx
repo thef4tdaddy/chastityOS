@@ -15,6 +15,10 @@ import {
 import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
 import { logger } from "../utils/logging";
 import { FaLock, FaCog, FaEye, FaSpinner } from "../utils/iconImport";
+import {
+  FeatureErrorBoundary,
+  KeyholderErrorFallback,
+} from "../components/errors";
 
 // Loading Component
 const LoadingDisplay: React.FC = () => (
@@ -159,14 +163,22 @@ const KeyholderPage: React.FC = () => {
             <AccountLinkingPreview />
 
             {/* Keyholder Dashboard - Always visible for keyholders */}
-            <KeyholderDashboard keyholderUserId={user?.uid} />
+            <FeatureErrorBoundary
+              feature="keyholder-dashboard"
+              fallback={<KeyholderErrorFallback />}
+            >
+              <KeyholderDashboard keyholderUserId={user?.uid} />
+            </FeatureErrorBoundary>
 
             {/* Current Password System */}
             <KeyholderPasswordUnlock />
 
             {/* Keyholder Controls - Only when unlocked */}
             {isKeyholderModeUnlocked && (
-              <>
+              <FeatureErrorBoundary
+                feature="keyholder-controls"
+                fallback={<KeyholderErrorFallback />}
+              >
                 <SessionControls session={submissiveSession} />
                 <TaskManagement
                   userId={selectedRelationship?.wearerId || user?.uid || ""}
@@ -175,7 +187,7 @@ const KeyholderPage: React.FC = () => {
                   onLockControls={lockKeyholderControls}
                   submissiveUserId={selectedRelationship?.wearerId}
                 />
-              </>
+              </FeatureErrorBoundary>
             )}
           </div>
         )}

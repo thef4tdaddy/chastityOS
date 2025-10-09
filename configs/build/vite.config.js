@@ -281,9 +281,7 @@ const createBuildConfig = (isProduction, _mode) => {
     minify: isProduction ? "terser" : "esbuild",
     rollupOptions: {
       ...(shouldExcludeDemo && {
-        external: [
-          /^\/src\/demo\//,
-        ],
+        external: [/^\/src\/demo\//],
       }),
       output: {
         manualChunks(id) {

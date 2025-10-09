@@ -1,0 +1,259 @@
+name: Bundle Size Monitor
+
+on:
+  pull_request:
+    branches: [main, nightly]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  bundle-size:
+    name: Monitor Bundle Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build PR bundle
+        run: npm run build:nightly
+
+      - name: Analyze PR bundle
+        id: pr_bundle
+        run: |
+          echo "Analyzing PR bundle..."
+          
+          # Get bundle sizes
+          TOTAL_SIZE=$(du -sb dist/ | cut -f1)
+          TOTAL_SIZE_KB=$(echo "scale=2; $TOTAL_SIZE / 1024" | bc)
+          
+          # Get gzipped sizes
+          GZIP_SIZE=$(find dist/assets -type f -name "*.js" -o -name "*.css" | xargs gzip -c | wc -c)
+          GZIP_SIZE_KB=$(echo "scale=2; $GZIP_SIZE / 1024" | bc)
+          
+          # Find largest files
+          LARGEST_JS=$(find dist/assets -name "*.js" -type f -exec du -b {} + | sort -rn | head -1 | awk '{print $1}')
+          LARGEST_JS_KB=$(echo "scale=2; $LARGEST_JS / 1024" | bc)
+          LARGEST_JS_FILE=$(find dist/assets -name "*.js" -type f -exec du -b {} + | sort -rn | head -1 | awk '{print $2}' | xargs basename)
+          
+          # Count chunks
+          JS_CHUNKS=$(find dist/assets -name "*.js" | wc -l)
+          CSS_CHUNKS=$(find dist/assets -name "*.css" | wc -l)
+          
+          echo "total_size=$TOTAL_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "gzip_size=$GZIP_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "largest_js_kb=$LARGEST_JS_KB" >> $GITHUB_OUTPUT
+          echo "largest_js_file=$LARGEST_JS_FILE" >> $GITHUB_OUTPUT
+          echo "js_chunks=$JS_CHUNKS" >> $GITHUB_OUTPUT
+          echo "css_chunks=$CSS_CHUNKS" >> $GITHUB_OUTPUT
+          
+          echo "✅ PR Bundle analyzed"
+          echo "Total: ${TOTAL_SIZE_KB}KB"
+          echo "Gzipped: ${GZIP_SIZE_KB}KB"
+
+      - name: Save PR bundle stats
+        run: |
+          cat > pr-bundle-stats.json << EOF
+          {
+            "total_size": "${{ steps.pr_bundle.outputs.total_size }}",
+            "gzip_size": "${{ steps.pr_bundle.outputs.gzip_size }}",
+            "largest_js_kb": "${{ steps.pr_bundle.outputs.largest_js_kb }}",
+            "largest_js_file": "${{ steps.pr_bundle.outputs.largest_js_file }}",
+            "js_chunks": "${{ steps.pr_bundle.outputs.js_chunks }}",
+            "css_chunks": "${{ steps.pr_bundle.outputs.css_chunks }}"
+          }
+          EOF
+
+      - name: Checkout base branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git checkout origin/${{ github.base_ref }}
+
+      - name: Install base dependencies
+        if: github.event_name == 'pull_request'
+        run: npm ci
+
+      - name: Build base bundle
+        if: github.event_name == 'pull_request'
+        run: npm run build:nightly
+
+      - name: Analyze base bundle
+        if: github.event_name == 'pull_request'
+        id: base_bundle
+        run: |
+          echo "Analyzing base bundle..."
+          
+          TOTAL_SIZE=$(du -sb dist/ | cut -f1)
+          TOTAL_SIZE_KB=$(echo "scale=2; $TOTAL_SIZE / 1024" | bc)
+          
+          GZIP_SIZE=$(find dist/assets -type f -name "*.js" -o -name "*.css" | xargs gzip -c | wc -c)
+          GZIP_SIZE_KB=$(echo "scale=2; $GZIP_SIZE / 1024" | bc)
+          
+          LARGEST_JS=$(find dist/assets -name "*.js" -type f -exec du -b {} + | sort -rn | head -1 | awk '{print $1}')
+          LARGEST_JS_KB=$(echo "scale=2; $LARGEST_JS / 1024" | bc)
+          
+          JS_CHUNKS=$(find dist/assets -name "*.js" | wc -l)
+          CSS_CHUNKS=$(find dist/assets -name "*.css" | wc -l)
+          
+          echo "total_size=$TOTAL_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "gzip_size=$GZIP_SIZE_KB" >> $GITHUB_OUTPUT
+          echo "largest_js_kb=$LARGEST_JS_KB" >> $GITHUB_OUTPUT
+          echo "js_chunks=$JS_CHUNKS" >> $GITHUB_OUTPUT
+          echo "css_chunks=$CSS_CHUNKS" >> $GITHUB_OUTPUT
+          
+          echo "✅ Base Bundle analyzed"
+          echo "Total: ${TOTAL_SIZE_KB}KB"
+          echo "Gzipped: ${GZIP_SIZE_KB}KB"
+
+      - name: Compare bundle sizes
+        if: github.event_name == 'pull_request'
+        id: compare
+        run: |
+          PR_TOTAL=${{ steps.pr_bundle.outputs.total_size }}
+          BASE_TOTAL=${{ steps.base_bundle.outputs.total_size }}
+          PR_GZIP=${{ steps.pr_bundle.outputs.gzip_size }}
+          BASE_GZIP=${{ steps.base_bundle.outputs.gzip_size }}
+          
+          # Calculate differences
+          TOTAL_DIFF=$(echo "scale=2; $PR_TOTAL - $BASE_TOTAL" | bc)
+          GZIP_DIFF=$(echo "scale=2; $PR_GZIP - $BASE_GZIP" | bc)
+          
+          # Calculate percentage changes
+          TOTAL_PCT=$(echo "scale=2; ($TOTAL_DIFF / $BASE_TOTAL) * 100" | bc)
+          GZIP_PCT=$(echo "scale=2; ($GZIP_DIFF / $BASE_GZIP) * 100" | bc)
+          
+          echo "total_diff=$TOTAL_DIFF" >> $GITHUB_OUTPUT
+          echo "gzip_diff=$GZIP_DIFF" >> $GITHUB_OUTPUT
+          echo "total_pct=$TOTAL_PCT" >> $GITHUB_OUTPUT
+          echo "gzip_pct=$GZIP_PCT" >> $GITHUB_OUTPUT
+          
+          # Check if exceeds budget
+          BUDGET_EXCEEDED=false
+          if (( $(echo "$PR_GZIP > 250" | bc -l) )); then
+            BUDGET_EXCEEDED=true
+          fi
+          
+          echo "budget_exceeded=$BUDGET_EXCEEDED" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with bundle analysis
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prTotal = parseFloat('${{ steps.pr_bundle.outputs.total_size }}');
+            const baseTotal = parseFloat('${{ steps.base_bundle.outputs.total_size }}');
+            const prGzip = parseFloat('${{ steps.pr_bundle.outputs.gzip_size }}');
+            const baseGzip = parseFloat('${{ steps.base_bundle.outputs.gzip_size }}');
+            const totalDiff = parseFloat('${{ steps.compare.outputs.total_diff }}');
+            const gzipDiff = parseFloat('${{ steps.compare.outputs.gzip_diff }}');
+            const totalPct = parseFloat('${{ steps.compare.outputs.total_pct }}');
+            const gzipPct = parseFloat('${{ steps.compare.outputs.gzip_pct }}');
+            const largestJs = '${{ steps.pr_bundle.outputs.largest_js_file }}';
+            const largestJsKb = parseFloat('${{ steps.pr_bundle.outputs.largest_js_kb }}');
+            const jsChunks = '${{ steps.pr_bundle.outputs.js_chunks }}';
+            const cssChunks = '${{ steps.pr_bundle.outputs.css_chunks }}';
+            const budgetExceeded = '${{ steps.compare.outputs.budget_exceeded }}' === 'true';
+            
+            const formatDiff = (diff, pct) => {
+              const sign = diff >= 0 ? '+' : '';
+              const emoji = diff > 0 ? '📈' : diff < 0 ? '📉' : '➡️';
+              return `${emoji} ${sign}${diff.toFixed(2)}KB (${sign}${pct.toFixed(2)}%)`;
+            };
+            
+            const getBudgetStatus = () => {
+              if (budgetExceeded) {
+                return '🔴 **Bundle size exceeds budget!** (250KB gzipped)';
+              }
+              if (prGzip > 200) {
+                return '🟡 **Approaching budget limit** (250KB gzipped)';
+              }
+              return '🟢 **Bundle size within budget**';
+            };
+            
+            const comment = `## 📦 Bundle Size Report
+            
+            ${getBudgetStatus()}
+            
+            ### Bundle Sizes
+            
+            | Metric | Base | PR | Change |
+            |--------|------|-----|---------|
+            | **Total Size** | ${baseTotal.toFixed(2)}KB | ${prTotal.toFixed(2)}KB | ${formatDiff(totalDiff, totalPct)} |
+            | **Gzipped Size** | ${baseGzip.toFixed(2)}KB | ${prGzip.toFixed(2)}KB | ${formatDiff(gzipDiff, gzipPct)} |
+            
+            ### Bundle Details
+            
+            - **JS Chunks**: ${jsChunks}
+            - **CSS Chunks**: ${cssChunks}
+            - **Largest JS**: ${largestJs} (${largestJsKb.toFixed(2)}KB)
+            
+            ### Performance Budgets
+            
+            | Resource | Budget | Current | Status |
+            |----------|--------|---------|--------|
+            | Main bundle (gzipped) | < 100KB | ${Math.min(largestJsKb, prGzip).toFixed(2)}KB | ${largestJsKb < 100 ? '✅' : '❌'} |
+            | Total initial load (gzipped) | < 250KB | ${prGzip.toFixed(2)}KB | ${prGzip < 250 ? '✅' : '❌'} |
+            
+            ${budgetExceeded ? '\n⚠️ **Action Required**: Bundle size exceeds the configured budget. Consider code splitting or removing unused dependencies.\n' : ''}
+            
+            <sub>🤖 Generated by Bundle Size Monitor • [View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})</sub>
+            `;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Bundle Size Report')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Fail if budget exceeded
+        if: steps.compare.outputs.budget_exceeded == 'true'
+        run: |
+          echo "❌ Bundle size exceeds the configured budget!"
+          echo "Current gzipped size: ${{ steps.pr_bundle.outputs.gzip_size }}KB"
+          echo "Budget: 250KB"
+          echo "Please optimize the bundle size before merging."
+          exit 1
+
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bundle-analysis
+          path: |
+            pr-bundle-stats.json
+            dist/bundle-report.html
+          retention-days: 30
