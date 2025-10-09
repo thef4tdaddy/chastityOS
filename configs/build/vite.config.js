@@ -271,7 +271,7 @@ const _createPWAManifest = () => {
 };
 
 // Helper function to create build configuration
-const createBuildConfig = (isProduction, mode) => {
+const createBuildConfig = (isProduction, _mode) => {
   // Demo exclusion for PWA builds (Issue #308)
   // Keep demo in development and website, exclude from production PWA
   const shouldExcludeDemo = isProduction;
@@ -287,12 +287,31 @@ const createBuildConfig = (isProduction, mode) => {
       }),
       output: {
         manualChunks(id) {
-          if (id.includes("node_modules")) {
-            return "vendor";
-          }
           // Exclude demo code from PWA bundle in production (Issue #308)
           if (shouldExcludeDemo && id.includes("/src/demo/")) {
             return undefined; // Don't create a chunk for demo files
+          }
+          
+          // Split vendor bundles for better caching and parallel loading
+          if (id.includes("node_modules")) {
+            // React core libraries
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
+              return "react-vendor";
+            }
+            // Firebase libraries
+            if (id.includes("firebase")) {
+              return "firebase-vendor";
+            }
+            // UI libraries (animations, queries)
+            if (id.includes("framer-motion") || id.includes("@tanstack/react-query")) {
+              return "ui-vendor";
+            }
+            // Chart libraries
+            if (id.includes("chart.js") || id.includes("chartjs-adapter")) {
+              return "chart-vendor";
+            }
+            // All other vendor dependencies
+            return "vendor";
           }
         },
       },
