@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, memo, useMemo, useCallback } from "react";
 import {
   FaPrayingHands,
   FaCheck,
@@ -25,7 +25,7 @@ interface ResponseModalProps {
 }
 
 // Extracted modal component for approve/deny release request responses
-const ResponseModal: React.FC<ResponseModalProps> = ({
+const ResponseModalComponent: React.FC<ResponseModalProps> = ({
   isOpen,
   responseType,
   responseMessage,
@@ -145,7 +145,10 @@ const ResponseModal: React.FC<ResponseModalProps> = ({
   );
 };
 
-export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
+// Memoize ResponseModal to prevent unnecessary re-renders
+const ResponseModal = memo(ResponseModalComponent);
+
+const ReleaseRequestCardComponent: React.FC<ReleaseRequestCardProps> = ({
   request,
 }) => {
   const [showResponseModal, setShowResponseModal] = useState(false);
@@ -159,12 +162,12 @@ export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
 
   const isProcessing = approveRequest.isPending || denyRequest.isPending;
 
-  const handleOpenResponse = (type: "approve" | "deny") => {
+  const handleOpenResponse = useCallback((type: "approve" | "deny") => {
     setResponseType(type);
     setShowResponseModal(true);
-  };
+  }, []);
 
-  const handleSubmitResponse = async () => {
+  const handleSubmitResponse = useCallback(async () => {
     try {
       if (responseType === "approve") {
         await approveRequest.mutateAsync({
@@ -189,11 +192,20 @@ export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
           : `Failed to ${responseType} request`,
       );
     }
-  };
+  }, [
+    responseType,
+    request.id,
+    responseMessage,
+    approveRequest,
+    denyRequest,
+    showSuccess,
+    showError,
+  ]);
 
-  const formatTimeAgo = (date: Date) => {
+  // Memoize formatTimeAgo result
+  const timeAgo = useMemo(() => {
     const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
+    const diffMs = now.getTime() - new Date(request.requestedAt).getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
     if (diffMins < 1) return "Just now";
@@ -204,7 +216,13 @@ export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
 
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays}d ago`;
-  };
+  }, [request.requestedAt]);
+
+  // Memoize session ID slice
+  const sessionIdShort = useMemo(
+    () => request.sessionId.slice(-8),
+    [request.sessionId],
+  );
 
   return (
     <>
@@ -218,7 +236,7 @@ export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
               </h4>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <FaClock className="text-xs" />
-                <span>{formatTimeAgo(request.requestedAt)}</span>
+                <span>{timeAgo}</span>
               </div>
             </div>
           </div>
@@ -251,7 +269,7 @@ export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
         )}
 
         <div className="mt-3 text-xs text-gray-500">
-          Session: {request.sessionId.slice(-8)}
+          Session: {sessionIdShort}
         </div>
       </div>
 
@@ -267,3 +285,6 @@ export const ReleaseRequestCard: React.FC<ReleaseRequestCardProps> = ({
     </>
   );
 };
+
+// Memoize ReleaseRequestCard to prevent unnecessary re-renders
+export const ReleaseRequestCard = memo(ReleaseRequestCardComponent);
