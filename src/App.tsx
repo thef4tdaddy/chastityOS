@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { lazy, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { firebaseListeners } from "./services/sync";
 import { useBackgroundSync } from "./hooks/api/useBackgroundSync";
@@ -16,22 +16,25 @@ import {
 // Error Boundaries
 import { RouteErrorBoundary } from "./components/errors";
 
-// Pages
-import Dashboard from "./pages/Dashboard";
-import ChastityTracking from "./pages/ChastityTracking";
-import TasksPage from "./pages/TasksPage";
-import LogEventPage from "./pages/LogEventPage";
-import RewardsPunishmentsPage from "./pages/RewardsPunishmentsPage";
-import RulesPage from "./pages/RulesPage";
-import FullReportPage from "./pages/FullReportPage";
-import SettingsPage from "./pages/SettingsPage";
-import KeyholderPage from "./pages/KeyholderPage";
-import KeyholderDemo from "./pages/KeyholderDemo";
-import PublicProfilePage from "./pages/PublicProfilePage";
-import RelationshipsPage from "./pages/RelationshipsPage";
-import AchievementPage from "./pages/AchievementPage";
-import ToastDemo from "./demo/pages/ToastDemo";
 import Root from "./Root";
+
+// Lazy load all pages for better code splitting
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ChastityTracking = lazy(() => import("./pages/ChastityTracking"));
+const TasksPage = lazy(() => import("./pages/TasksPage"));
+const LogEventPage = lazy(() => import("./pages/LogEventPage"));
+const RewardsPunishmentsPage = lazy(
+  () => import("./pages/RewardsPunishmentsPage"),
+);
+const RulesPage = lazy(() => import("./pages/RulesPage"));
+const FullReportPage = lazy(() => import("./pages/FullReportPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const KeyholderPage = lazy(() => import("./pages/KeyholderPage"));
+const KeyholderDemo = lazy(() => import("./pages/KeyholderDemo"));
+const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
+const RelationshipsPage = lazy(() => import("./pages/RelationshipsPage"));
+const AchievementPage = lazy(() => import("./pages/AchievementPage"));
+const ToastDemo = lazy(() => import("./demo/pages/ToastDemo"));
 
 const router = createBrowserRouter([
   {
