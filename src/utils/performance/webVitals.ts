@@ -43,6 +43,7 @@ const sendToAnalytics = (metric: PerformanceMetric): void => {
 
   // Log to console in development
   if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
     console.log("[Web Vitals]", {
       metric: metric.name,
       value: metric.value,
@@ -104,9 +105,11 @@ export const initWebVitals = (): void => {
     onTTFB(handleMetric);
 
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
       console.log("[Web Vitals] Performance monitoring initialized");
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(
       "[Web Vitals] Failed to initialize performance monitoring:",
       error,
@@ -147,6 +150,7 @@ export const getCurrentMetrics = async (): Promise<Record<string, number>> => {
       });
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[Web Vitals] Failed to get current metrics:", error);
   }
 
@@ -171,6 +175,7 @@ export const reportPerformanceMark = (
       );
 
       if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
         console.log(
           `[Performance] ${markName}: ${measure.duration.toFixed(2)}ms`,
         );
@@ -187,6 +192,7 @@ export const reportPerformanceMark = (
       }
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[Performance] Failed to report performance mark:", error);
   }
 };
