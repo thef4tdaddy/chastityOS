@@ -271,15 +271,28 @@ const _createPWAManifest = () => {
 };
 
 // Helper function to create build configuration
-const createBuildConfig = (isProduction) => {
+const createBuildConfig = (isProduction, mode) => {
+  // Demo exclusion for PWA builds (Issue #308)
+  // Keep demo in development and website, exclude from production PWA
+  const shouldExcludeDemo = isProduction;
+
   return {
     sourcemap: true,
     minify: isProduction ? "terser" : "esbuild",
     rollupOptions: {
+      ...(shouldExcludeDemo && {
+        external: [
+          /^\/src\/demo\//,
+        ],
+      }),
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
             return "vendor";
+          }
+          // Exclude demo code from PWA bundle in production (Issue #308)
+          if (shouldExcludeDemo && id.includes("/src/demo/")) {
+            return undefined; // Don't create a chunk for demo files
           }
         },
       },
@@ -349,7 +362,7 @@ export default defineConfig(({ mode }) => {
         "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
       },
     },
-    build: createBuildConfig(isProduction),
+    build: createBuildConfig(isProduction, mode),
     test: {
       globals: true,
       environment: "jsdom",
