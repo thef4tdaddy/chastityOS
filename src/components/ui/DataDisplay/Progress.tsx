@@ -82,6 +82,40 @@ const ProgressLabel: React.FC<{
 );
 
 /**
+ * Hook to calculate progress values
+ */
+const useProgressCalculations = (
+  value: number,
+  max: number,
+  indeterminate: boolean,
+  labelConfig: {
+    showLabel: boolean;
+    labelPosition: "inside" | "top" | "bottom";
+    label?: string;
+  },
+) => {
+  const { showLabel, labelPosition, label } = labelConfig;
+
+  const percentage = indeterminate
+    ? 0
+    : Math.min(100, Math.max(0, (value / max) * 100));
+
+  const labelText = label || `${Math.round(percentage)}%`;
+  const showTopLabel = showLabel && labelPosition === "top";
+  const showBottomLabel = showLabel && labelPosition === "bottom";
+  const showInsideLabel =
+    showLabel && labelPosition === "inside" && percentage > 20;
+
+  return {
+    percentage,
+    labelText,
+    showTopLabel,
+    showBottomLabel,
+    showInsideLabel,
+  };
+};
+
+/**
  * Progress Bar Component
  */
 const ProgressBar: React.FC<{
@@ -198,18 +232,17 @@ export const Progress: React.FC<ProgressProps> = ({
   indeterminate = false,
   className = "",
 }) => {
-  // Calculate percentage
-  const percentage = indeterminate
-    ? 0
-    : Math.min(100, Math.max(0, (value / max) * 100));
-
-  // Label text
-  const labelText = label || `${Math.round(percentage)}%`;
-
-  const showTopLabel = showLabel && labelPosition === "top";
-  const showBottomLabel = showLabel && labelPosition === "bottom";
-  const showInsideLabel =
-    showLabel && labelPosition === "inside" && percentage > 20;
+  const {
+    percentage,
+    labelText,
+    showTopLabel,
+    showBottomLabel,
+    showInsideLabel,
+  } = useProgressCalculations(value, max, indeterminate, {
+    showLabel,
+    labelPosition,
+    label,
+  });
 
   return (
     <div className={`w-full ${className}`}>
