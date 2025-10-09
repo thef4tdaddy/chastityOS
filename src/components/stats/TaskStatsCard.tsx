@@ -43,7 +43,7 @@ export const TaskStatsCard: React.FC<TaskStatsCardProps> = ({ userId }) => {
   return (
     <div className="p-4 bg-gray-900/50 border-2 border-primary rounded-2xl shadow-lg shadow-primary/20">
       <h3 className="text-xl font-bold text-primary mb-4">📊 Task Stats</h3>
-      
+
       <div className="space-y-3">
         {/* Total Points */}
         <div className="flex justify-between items-center p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -93,7 +93,9 @@ export const TaskStatsCard: React.FC<TaskStatsCardProps> = ({ userId }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-gray-500 text-xs">Approved</p>
-            <p className="text-green-400 font-semibold">{stats.tasksApproved}</p>
+            <p className="text-green-400 font-semibold">
+              {stats.tasksApproved}
+            </p>
           </div>
           <div>
             <p className="text-gray-500 text-xs">Rejected</p>

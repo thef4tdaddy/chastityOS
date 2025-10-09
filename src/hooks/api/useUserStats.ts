@@ -3,7 +3,10 @@
  * Provides access to user statistics including points and task completion
  */
 import { useQuery } from "@tanstack/react-query";
-import { userStatsService, type UserStats } from "@/services/database/UserStatsService";
+import {
+  userStatsService,
+  type UserStats,
+} from "@/services/database/UserStatsService";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useUserStats");

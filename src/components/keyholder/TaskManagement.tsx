@@ -58,7 +58,9 @@ const AddTaskForm: React.FC<{
             min="0"
             max="100"
             value={pointValue}
-            onChange={(e) => setPointValue(Math.max(0, Math.min(100, Number(e.target.value))))}
+            onChange={(e) =>
+              setPointValue(Math.max(0, Math.min(100, Number(e.target.value))))
+            }
             placeholder="10"
             className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50"
           />

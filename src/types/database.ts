@@ -177,7 +177,17 @@ export interface DBSettings extends DBBase {
         taskDeadlines: boolean;
         keyholderMessages: boolean;
         goalProgress: boolean;
-        achievements: boolean; // New: Achievement notifications
+        achievements: boolean; // Achievement notifications
+        // Task notification settings
+        tasks?: {
+          assigned: boolean;
+          submitted: boolean;
+          approved: boolean;
+          rejected: boolean;
+          deadlineApproaching: boolean;
+          overdue: boolean;
+        };
+        pushEnabled?: boolean; // Future: Enable push notifications
       }
     | boolean; // Allow both nested object and simple boolean for backwards compatibility
   privacy: {
