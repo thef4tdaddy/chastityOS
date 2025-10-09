@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 interface FeatureCardProps {
   title: string;
@@ -7,7 +7,7 @@ interface FeatureCardProps {
   className?: string;
 }
 
-export const FeatureCard: React.FC<FeatureCardProps> = ({
+const FeatureCardComponent: React.FC<FeatureCardProps> = ({
   title,
   description,
   accentColor,
@@ -41,3 +41,6 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
     </div>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const FeatureCard = memo(FeatureCardComponent);

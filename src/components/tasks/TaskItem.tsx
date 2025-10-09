@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
@@ -21,7 +21,7 @@ interface TaskStatusBadgeProps {
   } | null;
 }
 
-const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = ({
+const TaskStatusBadgeComponent: React.FC<TaskStatusBadgeProps> = ({
   statusConfig,
   priority,
   priorityStyles,
@@ -41,13 +41,16 @@ const TaskStatusBadge: React.FC<TaskStatusBadgeProps> = ({
   </div>
 );
 
+// Memoize TaskStatusBadge
+const TaskStatusBadge = memo(TaskStatusBadgeComponent);
+
 // Task countdown component
 interface TaskCountdownProps {
   dueDate: Date;
   isOverdue: boolean;
 }
 
-const TaskCountdown: React.FC<TaskCountdownProps> = ({
+const TaskCountdownComponent: React.FC<TaskCountdownProps> = ({
   dueDate,
   isOverdue,
 }) => (
@@ -58,13 +61,19 @@ const TaskCountdown: React.FC<TaskCountdownProps> = ({
   </div>
 );
 
+// Memoize TaskCountdown
+const TaskCountdown = memo(TaskCountdownComponent);
+
 // Task content component
 interface TaskContentProps {
   text: string;
   description?: string;
 }
 
-const TaskContent: React.FC<TaskContentProps> = ({ text, description }) => (
+const TaskContentComponent: React.FC<TaskContentProps> = ({
+  text,
+  description,
+}) => (
   <div className="mb-3">
     <h3 className="text-lg font-semibold text-nightly-honeydew mb-2">{text}</h3>
     {description && (
@@ -73,6 +82,9 @@ const TaskContent: React.FC<TaskContentProps> = ({ text, description }) => (
   </div>
 );
 
+// Memoize TaskContent
+const TaskContent = memo(TaskContentComponent);
+
 // Task metadata component
 interface TaskMetadataProps {
   createdAt: Date;
@@ -80,7 +92,7 @@ interface TaskMetadataProps {
   approvedAt?: Date;
 }
 
-const TaskMetadata: React.FC<TaskMetadataProps> = ({
+const TaskMetadataComponent: React.FC<TaskMetadataProps> = ({
   createdAt,
   submittedAt,
   approvedAt,
@@ -92,12 +104,15 @@ const TaskMetadata: React.FC<TaskMetadataProps> = ({
   </div>
 );
 
+// Memoize TaskMetadata
+const TaskMetadata = memo(TaskMetadataComponent);
+
 // Task feedback component
 interface TaskFeedbackProps {
   feedback: string;
 }
 
-const TaskFeedback: React.FC<TaskFeedbackProps> = ({ feedback }) => (
+const TaskFeedbackComponent: React.FC<TaskFeedbackProps> = ({ feedback }) => (
   <div className="bg-nightly-lavender-floral/10 border border-nightly-lavender-floral/20 rounded p-2 mb-3">
     <div className="text-xs text-nightly-lavender-floral mb-1">
       Keyholder Feedback:
@@ -105,6 +120,9 @@ const TaskFeedback: React.FC<TaskFeedbackProps> = ({ feedback }) => (
     <div className="text-sm text-nightly-honeydew">{feedback}</div>
   </div>
 );
+
+// Memoize TaskFeedback
+const TaskFeedback = memo(TaskFeedbackComponent);
 
 // Task consequence component
 interface TaskConsequenceProps {
@@ -115,7 +133,9 @@ interface TaskConsequenceProps {
   };
 }
 
-const TaskConsequence: React.FC<TaskConsequenceProps> = ({ consequence }) => {
+const TaskConsequenceComponent: React.FC<TaskConsequenceProps> = ({
+  consequence,
+}) => {
   const isReward = consequence.type === "reward";
 
   return (
@@ -152,6 +172,9 @@ const TaskConsequence: React.FC<TaskConsequenceProps> = ({ consequence }) => {
     </div>
   );
 };
+
+// Memoize TaskConsequence
+const TaskConsequence = memo(TaskConsequenceComponent);
 
 // Task submission component
 interface TaskSubmissionProps {
@@ -213,7 +236,7 @@ interface TaskItemProps {
   userId?: string;
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({
+const TaskItemComponent: React.FC<TaskItemProps> = ({
   task,
   onSubmit,
   userId = "",
@@ -293,3 +316,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     </div>
   );
 };
+
+// Memoize TaskItem to prevent unnecessary re-renders
+export const TaskItem = memo(TaskItemComponent);
