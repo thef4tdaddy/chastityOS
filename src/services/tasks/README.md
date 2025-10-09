@@ -23,6 +23,7 @@ The recurring task system automatically creates new task instances when recurrin
 ### Date Calculation Logic
 
 The service includes robust date calculation methods that handle:
+
 - Month boundaries (e.g., Jan 31 → Feb 1)
 - Leap years
 - Week wraparounds (e.g., Sunday when current day is Monday)
@@ -31,6 +32,7 @@ The service includes robust date calculation methods that handle:
 ### Automatic Instance Creation
 
 When a recurring task is approved via `useApproveTask` hook:
+
 1. The service calculates the next due date
 2. Creates a new task instance with incremented instance number
 3. Links the new instance to the parent task and series
@@ -100,9 +102,8 @@ console.log("Next task due:", nextDueDate);
 const parentTask = await taskDBService.findById(taskId);
 
 if (parentTask.isRecurring && parentTask.recurringConfig) {
-  const nextInstanceId = await RecurringTaskService.createNextInstance(
-    parentTask,
-  );
+  const nextInstanceId =
+    await RecurringTaskService.createNextInstance(parentTask);
   console.log("Created next instance:", nextInstanceId);
 }
 ```
@@ -129,7 +130,7 @@ Display recurring indicator on task items:
 ```tsx
 import { RecurringTaskBadge } from "@/components/tasks";
 
-<RecurringTaskBadge task={task} showInstanceNumber={true} />
+<RecurringTaskBadge task={task} showInstanceNumber={true} />;
 ```
 
 ### RecurringTaskForm
@@ -142,7 +143,7 @@ import { RecurringTaskForm } from "@/components/keyholder/RecurringTaskForm";
 <RecurringTaskForm
   onSave={(config) => setRecurringConfig(config)}
   initialConfig={existingConfig}
-/>
+/>;
 ```
 
 ### TaskCreationWithRecurring
@@ -157,7 +158,7 @@ import { TaskCreationWithRecurring } from "@/components/keyholder/TaskCreationWi
     // Handle task creation with recurring config
     console.log(taskData.isRecurring, taskData.recurringConfig);
   }}
-/>
+/>;
 ```
 
 ## Integration Points
@@ -179,12 +180,14 @@ if (updatedTask?.isRecurring && updatedTask?.recurringConfig) {
 ### Database Types
 
 Recurring task types are defined in:
+
 - `src/types/core.ts` - Firestore Task type with RecurringConfig
 - `src/types/database.ts` - Local DBTask type with RecurringConfig
 
 ## Testing
 
 The service includes comprehensive unit tests covering:
+
 - ✅ Daily recurrence calculations
 - ✅ Weekly recurrence with multiple days
 - ✅ Monthly recurrence across month boundaries
@@ -193,6 +196,7 @@ The service includes comprehensive unit tests covering:
 - ✅ Default value handling
 
 Run tests:
+
 ```bash
 npm test -- src/services/tasks/__tests__/RecurringTaskService.test.ts
 ```
@@ -200,6 +204,7 @@ npm test -- src/services/tasks/__tests__/RecurringTaskService.test.ts
 ## Future Enhancements
 
 Potential improvements for future versions:
+
 - [ ] End date for recurring series
 - [ ] Skip/reschedule individual instances
 - [ ] Recurring task templates

@@ -82,6 +82,7 @@ const createPWAConfig = (mode) => {
               maxEntries: 10,
               maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
             },
+            networkTimeoutSeconds: 3,
           },
         },
         {
@@ -90,6 +91,10 @@ const createPWAConfig = (mode) => {
           handler: "StaleWhileRevalidate",
           options: {
             cacheName: "static-resources",
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+            },
           },
         },
         {
@@ -100,6 +105,31 @@ const createPWAConfig = (mode) => {
             expiration: {
               maxEntries: 60,
               maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+            },
+          },
+        },
+        {
+          urlPattern: ({ url }) =>
+            url.hostname === "firestore.googleapis.com" ||
+            url.hostname === "identitytoolkit.googleapis.com",
+          handler: "NetworkFirst",
+          options: {
+            cacheName: "firebase-api",
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 5, // 5 minutes
+            },
+            networkTimeoutSeconds: 5,
+          },
+        },
+        {
+          urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+          handler: "StaleWhileRevalidate",
+          options: {
+            cacheName: "api-cache",
+            expiration: {
+              maxEntries: 50,
+              maxAgeSeconds: 60 * 10, // 10 minutes
             },
           },
         },
@@ -271,14 +301,44 @@ const _createPWAManifest = () => {
 };
 
 // Helper function to create build configuration
-const createBuildConfig = (isProduction) => {
+const createBuildConfig = (isProduction, _mode) => {
+  // Demo exclusion for PWA builds (Issue #308)
+  // Keep demo in development and website, exclude from production PWA
+  const shouldExcludeDemo = isProduction;
+
   return {
     sourcemap: true,
     minify: isProduction ? "terser" : "esbuild",
     rollupOptions: {
+      ...(shouldExcludeDemo && {
+        external: [/^\/src\/demo\//],
+      }),
       output: {
         manualChunks(id) {
+          // Exclude demo code from PWA bundle in production (Issue #308)
+          if (shouldExcludeDemo && id.includes("/src/demo/")) {
+            return undefined; // Don't create a chunk for demo files
+          }
+          
+          // Split vendor bundles for better caching and parallel loading
           if (id.includes("node_modules")) {
+            // React core libraries
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
+              return "react-vendor";
+            }
+            // Firebase libraries
+            if (id.includes("firebase")) {
+              return "firebase-vendor";
+            }
+            // UI libraries (animations, queries)
+            if (id.includes("framer-motion") || id.includes("@tanstack/react-query")) {
+              return "ui-vendor";
+            }
+            // Chart libraries
+            if (id.includes("chart.js") || id.includes("chartjs-adapter")) {
+              return "chart-vendor";
+            }
+            // All other vendor dependencies
             return "vendor";
           }
         },
@@ -349,7 +409,7 @@ export default defineConfig(({ mode }) => {
         "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
       },
     },
-    build: createBuildConfig(isProduction),
+    build: createBuildConfig(isProduction, mode),
     test: {
       globals: true,
       environment: "jsdom",

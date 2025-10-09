@@ -5,6 +5,7 @@ import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
 import { TaskItem } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
+import { FeatureErrorBoundary } from "../components/errors";
 
 // UI State Components
 const LoadingState: React.FC = () => (
@@ -202,7 +203,7 @@ const TasksPage: React.FC = () => {
         ) : error ? (
           <ErrorState />
         ) : (
-          <>
+          <FeatureErrorBoundary feature="tasks-management">
             {activeTab === "active" ? (
               <ActiveTasksSection
                 tasks={activeTasks}
@@ -212,7 +213,7 @@ const TasksPage: React.FC = () => {
             ) : (
               <ArchivedTasksSection tasks={archivedTasks} />
             )}
-          </>
+          </FeatureErrorBoundary>
         )}
       </div>
     </div>
