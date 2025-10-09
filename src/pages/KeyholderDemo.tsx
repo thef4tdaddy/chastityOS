@@ -3,7 +3,7 @@
  * Shows the UI components without requiring authentication
  */
 import React, { useState } from "react";
-import { AccountLinkingDemo } from "../components/keyholder/AccountLinkingDemo";
+import { AccountLinkingDemo } from "../demo/components/AccountLinkingDemo";
 
 type Scenario =
   | "submissive-with-keyholder"
