@@ -91,6 +91,7 @@ export default [
   {
     // Demo, marketing, and debug files - excluded from production rules
     files: [
+      'src/demo/**/*.{js,jsx,ts,tsx}', // All demo app files (Issue #308)
       'src/components/demo/**/*.{js,jsx,ts,tsx}',
       'src/components/**/Demo*.{js,jsx,ts,tsx}',
       'src/components/**/*Demo.{js,jsx,ts,tsx}',
