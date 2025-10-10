@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { FaShieldAlt, FaLock, FaUnlock, FaEdit, FaTrash } from "react-icons/fa";
+import { Card } from "@/components/ui";
 
 interface EmergencyPinDisplayProps {
   hasPin: boolean;
@@ -23,7 +24,7 @@ export const EmergencyPinDisplay: React.FC<EmergencyPinDisplayProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="glass-card p-6 border-2 border-red-500/30">
+    <Card variant="glass" padding="lg" className="border-2 border-red-500/30">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
@@ -103,6 +104,6 @@ export const EmergencyPinDisplay: React.FC<EmergencyPinDisplayProps> = ({
           <FaLock /> Set Emergency PIN Now
         </button>
       )}
-    </div>
+    </Card>
   );
 };

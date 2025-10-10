@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { usePauseResumeControls } from "../../hooks/tracker/usePauseResumeControls";
 import { Input } from "@/components/ui";
 
@@ -31,14 +32,15 @@ const PauseButton: React.FC<PauseButtonProps> = ({
   cooldownDisplay,
 }) => (
   <div className="flex flex-col items-center mb-8">
-    <button
-      type="button"
+    <Button
+      variant="primary"
       onClick={onPauseClick}
       disabled={!canPause || isLoading}
-      className={`glass-button font-bold py-3 px-6 shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 ${pauseButtonStyling}`}
+      loading={isLoading}
+      className={`glass-button py-3 px-6 shadow-lg transform hover:scale-105 ${pauseButtonStyling}`}
     >
       ⏸️ {pauseButtonText}
-    </button>
+    </Button>
     {!canPause && cooldownDisplay && (
       <p className="text-sm text-nightly-deep_rose/80 mt-2">
         Next pause in: {cooldownDisplay}
@@ -58,14 +60,15 @@ const ResumeButton: React.FC<ResumeButtonProps> = ({
   onResumeClick,
 }) => (
   <div className="flex justify-center mb-8">
-    <button
-      type="button"
+    <Button
+      variant="primary"
       onClick={onResumeClick}
       disabled={isLoading}
-      className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 text-white font-bold py-3 px-6 shadow-lg hover:shadow-green-500/20 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+      loading={isLoading}
+      className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 py-3 px-6 shadow-lg hover:shadow-green-500/20 transform hover:scale-105"
     >
       ▶️ {isLoading ? "Resuming..." : "Resume Session"}
-    </button>
+    </Button>
   </div>
 );
 
@@ -135,24 +138,25 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
     )}
 
     <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
-      <button
-        type="button"
+      <Button
+        variant="primary"
         onClick={onConfirm}
         disabled={
           isLoading || (selectedReason === "Other" && !customReason.trim())
         }
-        className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 text-white font-bold py-2 px-4 transition-all duration-300 disabled:opacity-50"
+        loading={isLoading}
+        className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 py-2 px-4"
       >
         {isLoading ? "Pausing..." : "Confirm Pause"}
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="secondary"
         onClick={onCancel}
         disabled={isLoading}
-        className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 text-white font-bold py-2 px-4 transition-all duration-300 disabled:opacity-50"
+        className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 py-2 px-4"
       >
         Cancel
-      </button>
+      </Button>
     </div>
   </div>
 );

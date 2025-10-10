@@ -6,6 +6,7 @@ import {
 import { PersonalGoalCard } from "./PersonalGoalCard";
 import { CreatePersonalGoalForm } from "./CreatePersonalGoalForm";
 import { useToast } from "@/contexts";
+import { Card } from "@/components/ui";
 
 interface PersonalGoalSectionProps {
   userId?: string | null;
@@ -67,16 +68,16 @@ export const PersonalGoalSection: React.FC<PersonalGoalSectionProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="glass-card p-6">
+        <Card variant="glass" padding="lg">
           <p className="text-nightly-celadon">Loading personal goal...</p>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="glass-card p-6">
+      <Card variant="glass" padding="lg">
         <h2 className="text-2xl font-bold text-nightly-honeydew mb-2">
           Personal Goal
         </h2>
@@ -84,7 +85,7 @@ export const PersonalGoalSection: React.FC<PersonalGoalSectionProps> = ({
           Set a personal chastity duration goal and track your progress. Your
           goal progress updates automatically based on your session time.
         </p>
-      </div>
+      </Card>
 
       {personalGoal ? (
         <PersonalGoalCard

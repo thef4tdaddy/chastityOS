@@ -219,7 +219,7 @@ export function useApproveTask() {
       points?: number;
     }) => {
       // 1. Get task to check point value before updating
-      const task = await taskDBService.getById(params.taskId);
+      const task = await taskDBService.findById(params.taskId);
 
       // 2. Update local Dexie immediately
       const updatedTask = await taskDBService.updateTaskStatus(

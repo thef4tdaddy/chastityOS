@@ -5,10 +5,11 @@ import {
   FaDatabase,
   FaUsers,
 } from "../../../utils/iconImport";
+import { Card } from "@/components/ui";
 
 // Introduction Section Component
 const IntroductionSection: React.FC = () => (
-  <section className="glass-card glass-hover">
+  <Card variant="glass" className="glass-hover">
     <div className="flex items-center gap-3 mb-4">
       <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-400/30">
         <FaShieldAlt className="text-purple-300" />
@@ -26,7 +27,7 @@ const IntroductionSection: React.FC = () => (
       We understand the sensitive nature of the data you entrust to us and have
       implemented strict security measures to protect your privacy at all times.
     </p>
-  </section>
+  </Card>
 );
 
 // Data Collection Section Component

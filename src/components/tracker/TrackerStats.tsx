@@ -3,6 +3,7 @@ import type { DBSession, DBGoal } from "../../types/database";
 import { useTrackerStats } from "../../hooks/tracker/useTrackerStats";
 import { CageOnStats, CageOffStats } from "./stats";
 import { FaBullseye, FaLock } from "react-icons/fa";
+import { Card } from "@/components/ui";
 
 interface TrackerStatsProps {
   // New props for real-time timer
@@ -40,8 +41,9 @@ const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
         : `${minutes}m`;
 
   return (
-    <div
-      className={`glass-card ${isHardcoreMode ? "border-2 border-red-500/50" : ""}`}
+    <Card
+      variant="glass"
+      className={isHardcoreMode ? "border-2 border-red-500/50" : ""}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -84,7 +86,7 @@ const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
           {remaining > 0 ? `${remainingFormatted} remaining` : "Goal Complete!"}
         </span>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -104,22 +106,22 @@ const TotalStats: React.FC<{
   stats: ReturnType<typeof useTrackerStats>["stats"];
 }> = ({ stats }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div className="glass-card glass-hover">
+    <Card variant="glass" className="glass-hover">
       <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Total Time In Chastity:
       </p>
       <p className="text-2xl md:text-4xl font-bold text-white">
         {stats.totalChastityTimeFormatted}
       </p>
-    </div>
-    <div className="glass-card glass-hover">
+    </Card>
+    <Card variant="glass" className="glass-hover">
       <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Total Time Cage Off:
       </p>
       <p className="text-2xl md:text-4xl font-bold text-white">
         {stats.totalCageOffTimeFormatted}
       </p>
-    </div>
+    </Card>
   </div>
 );
 
