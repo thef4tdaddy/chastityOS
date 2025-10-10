@@ -17,7 +17,7 @@ import {
   DBUserAchievement,
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
-import { Input } from "@/components/ui";
+import { Input, Checkbox } from "@/components/ui";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -139,15 +139,11 @@ export const Filters: React.FC<FiltersProps> = ({
         )}
       </select>
 
-      <label className="flex items-center space-x-2 text-nightly-celadon">
-        <input
-          type="checkbox"
-          checked={showOnlyEarned}
-          onChange={(e) => onEarnedFilterChange(e.target.checked)}
-          className="rounded border-white/20 bg-white/10 text-nightly-aquamarine focus:ring-nightly-aquamarine"
-        />
-        <span>Earned Only</span>
-      </label>
+      <Checkbox
+        checked={showOnlyEarned}
+        onChange={onEarnedFilterChange}
+        label="Earned Only"
+      />
     </div>
   </div>
 );

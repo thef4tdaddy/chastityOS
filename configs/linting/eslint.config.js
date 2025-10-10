@@ -8,6 +8,8 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import zustandSafePatterns from './eslint-rules/zustand-safe-patterns.js';
 import noLegacyToast from './eslint-rules/no-legacy-toast.js';
 import noArchitectureViolations from './eslint-rules/no-architecture-violations.js';
+import noDirectIconImports from './eslint-rules/no-direct-icon-imports.js';
+import enforceUILibrary from './eslint-rules/enforce-ui-library.js';
 
 // Modular config files
 import { baseRules } from './config-modules/base-rules.js';
@@ -82,6 +84,12 @@ export default [
       'no-architecture-violations': {
         rules: { 'no-architecture-violations': noArchitectureViolations },
       },
+      'no-direct-icon-imports': {
+        rules: { 'no-direct-icon-imports': noDirectIconImports },
+      },
+      'enforce-ui-library': {
+        rules: { 'enforce-ui-library': enforceUILibrary },
+      },
     },
     rules: {
       ...baseRules,
@@ -117,6 +125,12 @@ export default [
           allowStorageInServices: true,
         },
       ],
+
+      // 🎨 Icon Import Enforcement - Centralized icon imports (Issue #516)
+      'no-direct-icon-imports/no-direct-icon-imports': 'error',
+
+      // 🎨 UI Library Enforcement - Use UI library components (Issue #491)
+      'enforce-ui-library/enforce-ui-library': 'warn', // warn during migration
     },
   },
   {

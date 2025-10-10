@@ -31,7 +31,7 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input, Textarea, Tooltip } from "@/components/ui";
+import { Input, Textarea, LoadingState, Tooltip } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -805,10 +805,7 @@ const SettingsPage: React.FC = () => {
         {/* Content */}
         <main className="flex-1 p-4 lg:p-6">
           {loading ? (
-            <div className="text-center py-8">
-              <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-              <div className="text-nightly-celadon">Loading settings...</div>
-            </div>
+            <LoadingState message="Loading settings..." size="lg" />
           ) : (
             <div className="max-w-4xl">{renderTabContent()}</div>
           )}

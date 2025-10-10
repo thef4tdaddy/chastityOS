@@ -3,9 +3,9 @@ import { useAuthState } from "../contexts";
 import { useEventHistory } from "../hooks/api/useEvents";
 import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { LogEventForm, EventList } from "../components/log_event";
-import { FaSpinner, FaUsers } from "../utils/iconImport";
+import { FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
-import { Card, Tooltip } from "@/components/ui";
+import { Card, LoadingState, Tooltip } from "@/components/ui";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -85,10 +85,7 @@ const EventListSection: React.FC<EventListSectionProps> = ({
     </h2>
 
     {loading ? (
-      <div className="text-center py-8">
-        <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-        <div className="text-nightly-celadon">Loading events...</div>
-      </div>
+      <LoadingState message="Loading events..." size="lg" />
     ) : error ? (
       <div className="text-center py-8">
         <div className="text-red-400">
