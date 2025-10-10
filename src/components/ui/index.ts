@@ -55,3 +55,7 @@ export type {
 // Data Display Components
 export { Badge, Avatar, Progress } from "./DataDisplay";
 export type { BadgeProps, AvatarProps, ProgressProps } from "./DataDisplay";
+
+// Modal Component
+export { Modal } from "./Modal";
+export type { ModalProps } from "./Modal";

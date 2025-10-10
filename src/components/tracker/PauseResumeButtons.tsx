@@ -1,7 +1,6 @@
 import React from "react";
-import { Button } from "@/components/ui";
+import { Button, Modal, Input } from "@/components/ui";
 import { usePauseResumeControls } from "../../hooks/tracker/usePauseResumeControls";
-import { Input } from "@/components/ui";
 
 // Temporary types until proper hook pattern is implemented
 type EnhancedPauseReason = "Bathroom Break" | "Emergency" | "Medical" | "Other";
@@ -100,11 +99,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
   onConfirm,
   onCancel,
 }) => (
-  <div className="glass-morphism p-6 md:p-8 text-center w-full max-w-md text-gray-50 border border-yellow-700/30">
-    <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-300">
-      Reason for Pausing Session
-    </h3>
-
+  <div>
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-300 mb-2">
         Select reason:
@@ -162,12 +157,19 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
 );
 
 const PauseModal: React.FC<PauseModalProps> = (props) => {
-  if (!props.show) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <Modal
+      isOpen={props.show}
+      onClose={props.onCancel}
+      title="Reason for Pausing Session"
+      size="sm"
+      showCloseButton={false}
+      closeOnBackdropClick={false}
+      closeOnEscape={!props.isLoading}
+      className="glass-morphism border border-yellow-700/30"
+    >
       <PauseModalContent {...props} />
-    </div>
+    </Modal>
   );
 };
 
