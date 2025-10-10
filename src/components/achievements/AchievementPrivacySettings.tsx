@@ -17,7 +17,7 @@ import {
 import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
-import { RadioGroup, RadioOption } from "@/components/ui";
+import { ToggleGroup } from "@/components/ui";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -55,7 +55,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   </div>
 );
 
-// Removed RadioOption component - now using RadioGroup from UI library
+// Note: RadioOption component removed - using ToggleGroup instead
 
 // Sub-component for privacy notice
 const PrivacyNotice: React.FC = () => (
@@ -192,38 +192,42 @@ interface DisplayNameSectionProps {
   ) => void;
 }
 
-const displayNameOptions: RadioOption[] = [
-  {
-    value: "anonymous",
-    label: "Anonymous",
-    description: 'Show as "ChastityUser_XXXX"',
-  },
-  {
-    value: "username",
-    label: "Username",
-    description: "Use your username if available",
-  },
-  {
-    value: "real",
-    label: "Real Name",
-    description: "Use your real name (not recommended)",
-  },
-];
-
 const DisplayNameSection: React.FC<DisplayNameSectionProps> = ({
   settings,
   onSettingChange,
 }) => (
   <div className="space-y-4">
     <SectionHeader title="Display Name" />
-    <RadioGroup
-      name="displayName"
-      value={settings.displayName}
-      onChange={(value) => onSettingChange("displayName", value as string)}
-      options={displayNameOptions}
-      size="md"
-      className="[&_label]:bg-white/5 [&_label]:p-3 [&_label]:rounded-lg"
-    />
+    <div className="space-y-2">
+      <div className="text-xs text-nightly-celadon mb-2">
+        Choose how your name appears in leaderboards and public profiles
+      </div>
+      <ToggleGroup
+        value={settings.displayName}
+        onValueChange={(value) =>
+          onSettingChange("displayName", value as string)
+        }
+        options={[
+          { value: "anonymous", label: "Anonymous" },
+          { value: "username", label: "Username" },
+          { value: "real", label: "Real Name" },
+        ]}
+        type="single"
+        fullWidth
+        aria-label="Select display name preference"
+      />
+      <div className="text-xs text-nightly-celadon mt-2 space-y-1">
+        <div>
+          • <strong>Anonymous:</strong> Show as "ChastityUser_XXXX"
+        </div>
+        <div>
+          • <strong>Username:</strong> Use your username if available
+        </div>
+        <div>
+          • <strong>Real Name:</strong> Use your real name (not recommended)
+        </div>
+      </div>
+    </div>
   </div>
 );
 
