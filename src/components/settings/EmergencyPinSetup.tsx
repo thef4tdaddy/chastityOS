@@ -70,28 +70,24 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   const handleRemovePin = async () => {
     if (!user?.uid) return;
 
-    showWarning(
+    const confirmed = window.confirm(
       "Are you sure you want to remove your emergency PIN? This is a safety feature for hardcore mode.",
-      {
-        action: {
-          label: "Remove PIN",
-          onClick: async () => {
-            try {
-              setIsSaving(true);
-              await removeEmergencyPin.mutateAsync(user.uid);
-
-              setSuccess("Emergency PIN removed");
-
-              setTimeout(() => setSuccess(""), 3000);
-            } catch {
-              setError("Failed to remove PIN. Please try again.");
-            } finally {
-              setIsSaving(false);
-            }
-          },
-        },
-      },
     );
+
+    if (!confirmed) return;
+
+    try {
+      setIsSaving(true);
+      await removeEmergencyPin.mutateAsync(user.uid);
+
+      setSuccess("Emergency PIN removed");
+
+      setTimeout(() => setSuccess(""), 3000);
+    } catch {
+      setError("Failed to remove PIN. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
