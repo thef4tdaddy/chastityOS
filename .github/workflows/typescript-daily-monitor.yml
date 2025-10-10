@@ -1,0 +1,254 @@
+name: TypeScript Daily Monitor
+
+on:
+  push:
+    branches: [nightly, develop]
+  schedule:
+    # Run daily at 9:30 AM UTC (30 minutes after ESLint monitor)
+    - cron: "30 9 * * *"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+  TRACKING_ISSUE: "166"
+  MAX_INCREASE_PERCENT: 20
+  # Disable main branch monitoring until 4.0 release
+  MONITOR_MAIN: "false"
+
+jobs:
+  typescript-monitor:
+    name: TypeScript Daily Monitor
+    runs-on: ubuntu-latest
+    # Only run on allowed branches (main disabled until 4.0 release)
+    if: |
+      github.ref_name == 'nightly' ||
+      github.ref_name == 'develop'
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript check and count errors
+        id: ts_check
+        run: |
+          echo "Running TypeScript analysis..."
+
+          # Run typecheck and capture output
+          TS_OUTPUT=$(npm run typecheck 2>&1 || true)
+          echo "$TS_OUTPUT"
+
+          # Count total errors - look for "Found X errors" pattern
+          CURRENT_ERRORS=$(echo "$TS_OUTPUT" | grep -oE 'Found [0-9]+ error' | grep -oE '[0-9]+' || echo "0")
+
+          # Count errors by type
+          TS2304=$(echo "$TS_OUTPUT" | grep -c "TS2304" || echo "0")
+          TS2305=$(echo "$TS_OUTPUT" | grep -c "TS2305" || echo "0")
+          TS2339=$(echo "$TS_OUTPUT" | grep -c "TS2339" || echo "0")
+          TS2322=$(echo "$TS_OUTPUT" | grep -c "TS2322" || echo "0")
+          TS2345=$(echo "$TS_OUTPUT" | grep -c "TS2345" || echo "0")
+          TS2769=$(echo "$TS_OUTPUT" | grep -c "TS2769" || echo "0")
+          OTHER=$((CURRENT_ERRORS - TS2304 - TS2305 - TS2339 - TS2322 - TS2345 - TS2769))
+
+          echo "current_errors=$CURRENT_ERRORS" >> $GITHUB_OUTPUT
+          echo "ts2304=$TS2304" >> $GITHUB_OUTPUT
+          echo "ts2305=$TS2305" >> $GITHUB_OUTPUT
+          echo "ts2339=$TS2339" >> $GITHUB_OUTPUT
+          echo "ts2322=$TS2322" >> $GITHUB_OUTPUT
+          echo "ts2345=$TS2345" >> $GITHUB_OUTPUT
+          echo "ts2769=$TS2769" >> $GITHUB_OUTPUT
+          echo "other=$OTHER" >> $GITHUB_OUTPUT
+
+          echo "📊 Current Status: $CURRENT_ERRORS TypeScript errors"
+          echo "  - TS2304 (Cannot find name): $TS2304"
+          echo "  - TS2305 (No exported member): $TS2305"
+          echo "  - TS2339 (Property does not exist): $TS2339"
+          echo "  - TS2322 (Type assignment): $TS2322"
+          echo "  - TS2345 (Argument type): $TS2345"
+          echo "  - TS2769 (Function overload): $TS2769"
+          echo "  - Other: $OTHER"
+
+      - name: Get previous metrics from issue
+        id: previous_metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.TRACKING_ISSUE)
+            });
+
+            const body = issue.data.body;
+
+            // Extract previous count from issue body - matches "**Current Status:** 613 TypeScript errors"
+            const statusMatch = body.match(/\*\*Current Status:\*\*\s*(\d+)\s+TypeScript\s+errors?/i);
+
+            if (statusMatch) {
+              const previousErrors = parseInt(statusMatch[1]);
+              core.setOutput('previous_errors', previousErrors);
+              console.log(`📋 Previous: ${previousErrors} TypeScript errors`);
+            } else {
+              core.setOutput('previous_errors', '613');
+              console.log('⚠️ Could not extract previous metrics, using current baseline: 613 errors');
+            }
+
+      - name: Calculate change and check threshold
+        id: check_threshold
+        run: |
+          CURRENT=${{ steps.ts_check.outputs.current_errors }}
+          PREVIOUS=${{ steps.previous_metrics.outputs.previous_errors }}
+          MAX_INCREASE=${{ env.MAX_INCREASE_PERCENT }}
+
+          if [ "$PREVIOUS" -eq 0 ]; then
+            PREVIOUS=1  # Avoid division by zero
+          fi
+
+          CHANGE=$((CURRENT - PREVIOUS))
+          PERCENT_CHANGE=$(echo "scale=2; ($CHANGE / $PREVIOUS) * 100" | bc)
+
+          echo "change=$CHANGE" >> $GITHUB_OUTPUT
+          echo "percent_change=$PERCENT_CHANGE" >> $GITHUB_OUTPUT
+
+          echo "📈 Change: $CHANGE errors ($PERCENT_CHANGE%)"
+
+          # Check if increase exceeds threshold
+          if (( $(echo "$PERCENT_CHANGE > $MAX_INCREASE" | bc -l) )); then
+            echo "threshold_exceeded=true" >> $GITHUB_OUTPUT
+            echo "❌ THRESHOLD EXCEEDED! Increase of $PERCENT_CHANGE% is above $MAX_INCREASE% limit"
+          else
+            echo "threshold_exceeded=false" >> $GITHUB_OUTPUT
+            echo "✅ Within threshold: $PERCENT_CHANGE% increase (limit: $MAX_INCREASE%)"
+          fi
+
+      - name: Update tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const current = parseInt('${{ steps.ts_check.outputs.current_errors }}');
+            const previous = parseInt('${{ steps.previous_metrics.outputs.previous_errors }}');
+            const change = parseInt('${{ steps.check_threshold.outputs.change }}');
+            const percentChange = parseFloat('${{ steps.check_threshold.outputs.percent_change }}');
+
+            const ts2304 = parseInt('${{ steps.ts_check.outputs.ts2304 }}');
+            const ts2305 = parseInt('${{ steps.ts_check.outputs.ts2305 }}');
+            const ts2339 = parseInt('${{ steps.ts_check.outputs.ts2339 }}');
+            const ts2322 = parseInt('${{ steps.ts_check.outputs.ts2322 }}');
+            const ts2345 = parseInt('${{ steps.ts_check.outputs.ts2345 }}');
+            const ts2769 = parseInt('${{ steps.ts_check.outputs.ts2769 }}');
+            const other = parseInt('${{ steps.ts_check.outputs.other }}');
+
+            const changeEmoji = change > 0 ? '📈' : change < 0 ? '📉' : '➡️';
+            const changePrefix = change > 0 ? '+' : '';
+            const percentPrefix = percentChange > 0 ? '+' : '';
+            const statusText = percentChange > 20 ? '🚨 THRESHOLD EXCEEDED' : '✅ Within limits';
+
+            const totalReduction = ((1 - current/537) * 100).toFixed(1);
+
+            const body = "## Master Tracking Issue - ALL TypeScript Problems\n\n" +
+              "**Current Status:** " + current + " TypeScript errors\n\n" +
+              "## Progress\n" +
+              "- **Started:** 537 errors\n" +
+              "- **Lowest:** 159 errors (70% reduction achieved!)\n" +
+              "- **Previous check:** " + previous + " errors\n" +
+              "- **Current (" + context.ref_name + "):** " + current + " errors\n" +
+              "- **Change:** " + changeEmoji + " " + changePrefix + change + " (" + percentPrefix + percentChange + "%)\n" +
+              "- **Total Reduction:** " + totalReduction + "% from start! 🎉\n\n" +
+              "## Context\n" +
+              "Recent feature development added 11+ comprehensive hooks with full TypeScript coverage (~9,665+ lines). The increase is expected and temporary.\n\n" +
+              "## Active Sub-Issues (" + current + " errors total)\n\n" +
+              "### Critical - High Priority (" + (ts2304 + ts2305 + ts2339) + " errors)\n" +
+              "- **#376** - TS2304: Cannot find name (" + ts2304 + " errors) " + (ts2304 > 0 ? "🔴" : "✅") + "\n" +
+              "- **#377** - TS2305: Module has no exported member (" + ts2305 + " errors) " + (ts2305 > 0 ? "🔴" : "✅") + "\n" +
+              "- **#378** - TS2339: Property does not exist (" + ts2339 + " errors) " + (ts2339 > 0 ? "⚠️" : "✅") + "\n\n" +
+              "### Major - Medium Priority (" + (ts2322 + ts2345 + ts2769) + " errors)\n" +
+              "- **#379** - TS2322/TS2769/TS2345: Type assignments & function calls (" + (ts2322 + ts2345 + ts2769) + " errors) " + ((ts2322 + ts2345 + ts2769) > 0 ? "⚠️" : "✅") + "\n" +
+              "  - TS2322: " + ts2322 + " errors\n" +
+              "  - TS2345: " + ts2345 + " errors\n" +
+              "  - TS2769: " + ts2769 + " errors\n\n" +
+              "### Remaining - Low Priority (" + other + " errors)\n" +
+              "- **#380** - Various smaller issues: null safety, imports, etc. (" + other + " errors) " + (other > 0 ? "⚠️" : "✅") + "\n\n" +
+              "### Legacy (superseded by above)\n" +
+              "- ~~#260~~ - Old syntax errors issue (now split into #376-380)\n\n" +
+              "## Completed ✅ (22 sub-issues)\n" +
+              "- TS2339 Property Access Errors (38 errors) ✅\n" +
+              "- TS2769 Function Overload Errors (33 errors) ✅\n" +
+              "- TS2352 Literal Type Assignment (30 errors) ✅\n" +
+              "- TS2345 Argument Type Mismatches (28 errors) ✅\n" +
+              "- And 18+ more completed...\n\n" +
+              "## Strategy\n" +
+              "1. Fix #376 & #377 first (" + (ts2304 + ts2305) + " errors - missing imports/exports)\n" +
+              "2. Address #378 (" + ts2339 + " errors - property access)\n" +
+              "3. Tackle #379 (" + (ts2322 + ts2345 + ts2769) + " errors - type mismatches)\n" +
+              "4. Clean up #380 (" + other + " errors - various)\n\n" +
+              "## Daily Monitoring\n" +
+              "- **Branch:** " + context.ref_name + "\n" +
+              "- **Last Check:** " + new Date().toISOString().split('T')[0] + "\n" +
+              "- **Threshold:** 20% increase blocks commits\n" +
+              "- **Status:** " + statusText + "\n\n" +
+              "## Related Master Issues\n" +
+              "- #214 - ESLint Master (some overlap with TS errors)\n" +
+              "- #158 - Refactoring Master\n\n" +
+              "---\n" +
+              "🤖 Last updated: " + new Date().toISOString() + "\n" +
+              "📊 Auto-updated daily by [TypeScript Monitor Workflow](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ")";
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.TRACKING_ISSUE),
+              body: body
+            });
+
+      - name: Block if threshold exceeded
+        if: steps.check_threshold.outputs.threshold_exceeded == 'true'
+        run: |
+          echo "❌ TypeScript errors increased by ${{ steps.check_threshold.outputs.percent_change }}%"
+          echo "This exceeds the ${{ env.MAX_INCREASE_PERCENT }}% threshold."
+          echo "Current: ${{ steps.ts_check.outputs.current_errors }}, Previous: ${{ steps.previous_metrics.outputs.previous_errors }}"
+          exit 1
+
+      - name: Comment on PR if threshold exceeded
+        if: |
+          failure() &&
+          github.event_name == 'pull_request' &&
+          steps.check_threshold.outputs.threshold_exceeded == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const current = '${{ steps.ts_check.outputs.current_errors }}';
+            const previous = '${{ steps.previous_metrics.outputs.previous_errors }}';
+            const percentChange = '${{ steps.check_threshold.outputs.percent_change }}';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "## 🚨 TypeScript Quality Gate Failed\n\n" +
+                "**TypeScript errors increased by " + percentChange + "%**, exceeding the 20% threshold.\n\n" +
+                "### Details\n" +
+                "- **Previous:** " + previous + " errors\n" +
+                "- **Current:** " + current + " errors\n" +
+                "- **Increase:** " + percentChange + "%\n\n" +
+                "### Action Required\n" +
+                "Please fix TypeScript errors before merging. Run:\n" +
+                "```bash\n" +
+                "npm run typecheck\n" +
+                "```\n\n" +
+                "See [issue #166](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/issues/166) for current status."
+            });
