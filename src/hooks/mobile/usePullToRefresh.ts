@@ -3,7 +3,7 @@
  * Provides pull-to-refresh functionality for mobile devices
  */
 import { useCallback, useRef, useState, useEffect } from "react";
-import type { React } from "react";
+import type React from "react";
 import { useHapticFeedback } from "./useHapticFeedback";
 import { logger } from "../../utils/logging";
 
