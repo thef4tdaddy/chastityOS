@@ -3,7 +3,7 @@
  * Provides swipe, tap, and other touch interactions for mobile devices
  */
 import { useCallback, useRef, useState } from "react";
-import type { React } from "react";
+import type React from "react";
 
 interface TouchPoint {
   x: number;

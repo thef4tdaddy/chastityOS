@@ -5,13 +5,13 @@
 import React, { useState } from "react";
 import { BottomSheet } from "../components/mobile";
 import { useViewport, useHapticFeedback } from "../hooks/mobile";
-import { ShowcaseHeader } from "./showcase/ShowcaseHeader";
-import { HapticFeedbackDemo } from "./showcase/HapticFeedbackDemo";
-import { ButtonVariantsDemo } from "./showcase/ButtonVariantsDemo";
-import { InputExamplesDemo } from "./showcase/InputExamplesDemo";
-import { TouchTargetsDemo } from "./showcase/TouchTargetsDemo";
-import { SwipeableCardDemo } from "./showcase/SwipeableCardDemo";
-import { PullToRefreshDemo } from "./showcase/PullToRefreshDemo";
+import { ShowcaseHeader } from "../demo/pages/ShowcaseHeader";
+import { HapticFeedbackDemo } from "../demo/pages/HapticFeedbackDemo";
+import { ButtonVariantsDemo } from "../demo/pages/ButtonVariantsDemo";
+import { InputExamplesDemo } from "../demo/pages/InputExamplesDemo";
+import { TouchTargetsDemo } from "../demo/pages/TouchTargetsDemo";
+import { SwipeableCardDemo } from "../demo/pages/SwipeableCardDemo";
+import { PullToRefreshDemo } from "../demo/pages/PullToRefreshDemo";
 
 const MobileShowcase: React.FC = () => {
   const { isMobile, isLandscape, safeAreaInsets } = useViewport();

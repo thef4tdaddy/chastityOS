@@ -15,50 +15,77 @@ import {
 } from "../../types";
 
 // Mock the hook
-vi.mock("../../hooks/useAchievementGallery", () => ({
-  useAchievementGallery: vi.fn((achievementsWithProgress) => ({
-    selectedCategory: "all",
-    selectedDifficulty: "all",
-    showOnlyEarned: false,
-    searchTerm: "",
-    setSelectedCategory: vi.fn(),
-    setSelectedDifficulty: vi.fn(),
-    setShowOnlyEarned: vi.fn(),
-    setSearchTerm: vi.fn(),
-    stats: {
-      totalEarned: achievementsWithProgress.filter((a) => a.isEarned).length,
-      totalVisible: achievementsWithProgress.length,
-      totalPoints: achievementsWithProgress
-        .filter((a) => a.isEarned)
-        .reduce((sum, a) => sum + a.achievement.points, 0),
-      completionPercentage:
-        (achievementsWithProgress.filter((a) => a.isEarned).length /
-          achievementsWithProgress.length) *
-        100,
-    },
-    filteredAchievements: achievementsWithProgress,
-    groupedAchievements: achievementsWithProgress.reduce(
-      (groups, item) => {
-        const categoryName =
-          {
-            [AchievementCategory.SESSION_MILESTONES]: "Session Milestones",
-            [AchievementCategory.CONSISTENCY_BADGES]: "Consistency Badges",
-            [AchievementCategory.STREAK_ACHIEVEMENTS]: "Streak Achievements",
-            [AchievementCategory.GOAL_BASED]: "Goal Based",
-            [AchievementCategory.TASK_COMPLETION]: "Task Completion",
-            [AchievementCategory.SPECIAL_ACHIEVEMENTS]: "Special Achievements",
-          }[item.achievement.category] || "Other";
+interface AchievementWithProgress {
+  achievement: DBAchievement;
+  userAchievement?: DBUserAchievement;
+  progress: {
+    currentValue: number;
+    targetValue: number;
+    percentage: number;
+    isCompleted: boolean;
+  } | null;
+  isEarned: boolean;
+  isVisible: boolean;
+}
 
-        if (!groups[categoryName]) {
-          groups[categoryName] = [];
-        }
-        groups[categoryName].push(item);
-        return groups;
+vi.mock("../../hooks/useAchievementGallery", () => ({
+  useAchievementGallery: vi.fn(
+    (achievementsWithProgress: AchievementWithProgress[]) => ({
+      selectedCategory: "all",
+      selectedDifficulty: "all",
+      showOnlyEarned: false,
+      searchTerm: "",
+      setSelectedCategory: vi.fn(),
+      setSelectedDifficulty: vi.fn(),
+      setShowOnlyEarned: vi.fn(),
+      setSearchTerm: vi.fn(),
+      stats: {
+        totalEarned: achievementsWithProgress.filter(
+          (a: AchievementWithProgress) => a.isEarned,
+        ).length,
+        totalVisible: achievementsWithProgress.length,
+        totalPoints: achievementsWithProgress
+          .filter((a: AchievementWithProgress) => a.isEarned)
+          .reduce(
+            (sum: number, a: AchievementWithProgress) =>
+              sum + a.achievement.points,
+            0,
+          ),
+        completionPercentage:
+          (achievementsWithProgress.filter(
+            (a: AchievementWithProgress) => a.isEarned,
+          ).length /
+            achievementsWithProgress.length) *
+          100,
       },
-      {} as Record<string, typeof achievementsWithProgress>,
-    ),
-  })),
-  getCategoryName: vi.fn((category) => {
+      filteredAchievements: achievementsWithProgress,
+      groupedAchievements: achievementsWithProgress.reduce(
+        (
+          groups: Record<string, AchievementWithProgress[]>,
+          item: AchievementWithProgress,
+        ) => {
+          const categoryName =
+            {
+              [AchievementCategory.SESSION_MILESTONES]: "Session Milestones",
+              [AchievementCategory.CONSISTENCY_BADGES]: "Consistency Badges",
+              [AchievementCategory.STREAK_ACHIEVEMENTS]: "Streak Achievements",
+              [AchievementCategory.GOAL_BASED]: "Goal Based",
+              [AchievementCategory.TASK_COMPLETION]: "Task Completion",
+              [AchievementCategory.SPECIAL_ACHIEVEMENTS]:
+                "Special Achievements",
+            }[item.achievement.category] || "Other";
+
+          if (!groups[categoryName]) {
+            groups[categoryName] = [];
+          }
+          groups[categoryName].push(item);
+          return groups;
+        },
+        {} as Record<string, AchievementWithProgress[]>,
+      ),
+    }),
+  ),
+  getCategoryName: vi.fn((category: AchievementCategory) => {
     const names: Record<AchievementCategory, string> = {
       [AchievementCategory.SESSION_MILESTONES]: "Session Milestones",
       [AchievementCategory.CONSISTENCY_BADGES]: "Consistency Badges",
@@ -69,7 +96,7 @@ vi.mock("../../hooks/useAchievementGallery", () => ({
     };
     return names[category] || category;
   }),
-  getDifficultyColor: vi.fn((difficulty) => {
+  getDifficultyColor: vi.fn((difficulty: AchievementDifficulty) => {
     const colors: Record<AchievementDifficulty, string> = {
       [AchievementDifficulty.COMMON]: "border-gray-400 bg-gray-800/30",
       [AchievementDifficulty.UNCOMMON]: "border-green-400 bg-green-900/30",
