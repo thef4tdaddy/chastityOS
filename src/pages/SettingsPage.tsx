@@ -40,6 +40,8 @@ import {
   TabsContent,
   Select,
   SelectOption,
+  Button,
+  Switch,
 } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
@@ -249,7 +251,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
             )}
           </div>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updateAccountMutation.isPending}
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -258,7 +260,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -392,18 +394,13 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
                 </span>
               </Tooltip>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={notifications}
-                onChange={(e) => setNotifications(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-            </label>
+            <Switch
+              checked={notifications}
+              onCheckedChange={setNotifications}
+            />
           </div>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updateDisplayMutation.isPending}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -412,7 +409,7 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateDisplayMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -500,15 +497,10 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
                 Make your profile visible to others
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={publicProfile}
-                onChange={(e) => setPublicProfile(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-            </label>
+            <Switch
+              checked={publicProfile}
+              onCheckedChange={setPublicProfile}
+            />
           </div>
 
           <div className="flex items-center justify-between">
@@ -527,15 +519,10 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
                 </span>
               </Tooltip>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={shareStatistics}
-                onChange={(e) => setShareStatistics(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-            </label>
+            <Switch
+              checked={shareStatistics}
+              onCheckedChange={setShareStatistics}
+            />
           </div>
 
           <div>
@@ -580,7 +567,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
             </p>
           </div>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updateProfileMutation.isPending}
             className="bg-nightly-spring-green hover:bg-nightly-spring-green/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -589,7 +576,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -679,7 +666,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
             onChange={setShowActivityStatus}
           />
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updatePrivacyMutation.isPending}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -688,7 +675,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updatePrivacyMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
 

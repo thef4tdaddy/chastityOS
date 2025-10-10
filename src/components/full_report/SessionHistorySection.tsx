@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { DBSession } from "../../types/database";
 import { FaHistory, FaCalendar } from "../../utils/iconImport";
-import { Card } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 
 // Helper function to format duration
 const formatDuration = (seconds: number) => {
@@ -143,12 +143,12 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
           </h2>
         </div>
         {sessions.length > 10 && (
-          <button
+          <Button
             onClick={() => setShowAll(!showAll)}
             className="text-nightly-aquamarine hover:text-nightly-spring-green transition-colors"
           >
             {showAll ? "Show Less" : `Show All (${sessions.length})`}
-          </button>
+          </Button>
         )}
       </div>
 

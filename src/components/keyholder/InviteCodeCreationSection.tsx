@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 
 interface InviteCodeCreationSectionProps {
   shouldShow: boolean;
@@ -22,12 +23,12 @@ export const InviteCodeCreationSection: React.FC<
     <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-purple-300">Create Invite Code</h3>
-        <button
+        <Button
           onClick={() => setShowCreateInvite(!showCreateInvite)}
           className="text-purple-400 hover:text-purple-300 text-sm"
         >
           {showCreateInvite ? "Cancel" : "Create Code"}
-        </button>
+        </Button>
       </div>
 
       {showCreateInvite && (
@@ -35,13 +36,13 @@ export const InviteCodeCreationSection: React.FC<
           <p className="text-sm text-gray-400">
             Generate an invite code for a keyholder to link to your account.
           </p>
-          <button
+          <Button
             onClick={handleCreateInvite}
             disabled={isCreatingInvite}
             className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white py-2 px-4 rounded transition-colors"
           >
             {isCreatingInvite ? "Creating..." : "Generate Invite Code"}
-          </button>
+          </Button>
         </div>
       )}
     </div>
