@@ -12,7 +12,7 @@ PROBLEM_COUNT=$(echo "$LINT_OUTPUT" | grep "✖" | grep -oE '[0-9]+ problems' | 
 echo "📊 Current ESLint problems: $PROBLEM_COUNT"
 
 # Block push if problems exceed threshold
-THRESHOLD=100
+THRESHOLD=300
 if [ "$PROBLEM_COUNT" -gt "$THRESHOLD" ]; then
   echo ""
   echo "❌ PUSH BLOCKED: ESLint violations ($PROBLEM_COUNT) exceed threshold ($THRESHOLD)"

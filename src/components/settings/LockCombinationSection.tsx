@@ -4,7 +4,7 @@
  */
 import React from "react";
 import { FaExclamationTriangle } from "react-icons/fa";
-import { Input } from "@/components/ui";
+import { Input, Checkbox } from "@/components/ui";
 
 interface LockCombinationSectionProps {
   saveLockCombination: boolean;
@@ -26,14 +26,10 @@ export const LockCombinationSection: React.FC<LockCombinationSectionProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-sm text-nightly-celadon">
-          Save Lock Combination (Optional)
-        </label>
-        <input
-          type="checkbox"
+        <Checkbox
           checked={saveLockCombination}
-          onChange={(e) => setSaveLockCombination(e.target.checked)}
-          className="rounded"
+          onChange={setSaveLockCombination}
+          label="Save Lock Combination (Optional)"
           disabled={isCreating}
         />
       </div>

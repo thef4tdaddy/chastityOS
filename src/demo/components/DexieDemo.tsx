@@ -8,7 +8,7 @@ import { useOfflineDemo } from "../hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
 import type { User } from "@/types";
-import { Input } from "@/components/ui";
+import { Input, Checkbox } from "@/components/ui";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {
@@ -166,8 +166,7 @@ const TaskList: React.FC<TaskListProps> = ({
           className="flex items-center justify-between p-3 bg-gray-700 rounded border border-gray-600"
         >
           <div className="flex items-center space-x-3">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={task.status === "completed"}
               onChange={() =>
                 onUpdateTask(task.id, {
@@ -175,7 +174,7 @@ const TaskList: React.FC<TaskListProps> = ({
                 })
               }
               disabled={loading}
-              className="w-4 h-4 text-blue-600 bg-gray-600 border-gray-500 rounded focus:ring-blue-500"
+              size="sm"
             />
             <span
               className={`flex-1 ${

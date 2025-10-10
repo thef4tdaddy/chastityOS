@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ChastityRule } from "./RuleCard";
 import { FaEdit, FaSave, FaTimes } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Checkbox } from "@/components/ui";
 
 // Rule Editor Component
 interface RuleEditorProps {
@@ -102,15 +102,11 @@ const SettingsFields: React.FC<SettingsFieldsProps> = ({
     </div>
 
     <div className="flex items-center">
-      <label className="flex items-center">
-        <input
-          type="checkbox"
-          checked={isActive}
-          onChange={(e) => onIsActiveChange(e.target.checked)}
-          className="mr-2"
-        />
-        <span className="text-nightly-celadon">Rule is active</span>
-      </label>
+      <Checkbox
+        checked={isActive}
+        onChange={onIsActiveChange}
+        label="Rule is active"
+      />
     </div>
   </div>
 );

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "react-icons/fa";
 import { useSessionLoader } from "../../hooks/session/useSessionLoader";
+import { LoadingState } from "@/components/ui";
 
 // Define local interface to avoid restricted import
 interface SessionRestorationResult {
@@ -69,28 +70,19 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-4">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-purple-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-200 mb-2">
-            Loading Session...
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Restoring your chastity session
-          </p>
-          {progress > 0 && (
-            <>
-              <div className="w-64 bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">{progress}%</p>
-            </>
-          )}
-        </div>
-      </div>
+      <LoadingState message="Loading Session..." fullScreen>
+        {progress > 0 && (
+          <>
+            <div className="w-64 bg-gray-700 rounded-full h-2 mt-4 mx-auto">
+              <div
+                className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">{progress}%</p>
+          </>
+        )}
+      </LoadingState>
     );
   }
 
