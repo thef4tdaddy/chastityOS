@@ -31,7 +31,13 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input, Textarea, Tabs, TabsContent } from "@/components/ui";
+import {
+  Input,
+  Textarea,
+  LoadingState,
+  Tabs,
+  TabsContent,
+} from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -732,10 +738,7 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="text-nightly-spring-green">
       {loading ? (
-        <div className="text-center py-8">
-          <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-          <div className="text-nightly-celadon">Loading settings...</div>
-        </div>
+        <LoadingState message="Loading settings..." size="lg" />
       ) : (
         <Tabs
           value={activeTab}
