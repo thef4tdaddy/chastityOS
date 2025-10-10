@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { RewardPunishmentLog } from "./LogItem";
 import { FaPlus } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import {
+  Input,
+  Textarea,
+  ToggleGroup,
+  ToggleGroupOption,
+} from "@/components/ui";
 
 // Form data type
 type FormData = {
@@ -16,35 +21,28 @@ type FormData = {
 const TypeSelection: React.FC<{
   type: "reward" | "punishment";
   onChange: (type: "reward" | "punishment") => void;
-}> = ({ type, onChange }) => (
-  <div>
-    <label className="block text-sm font-medium text-nightly-celadon mb-2">
-      Type
-    </label>
-    <div className="flex gap-4">
-      <label className="flex items-center">
-        <input
-          type="radio"
-          value="reward"
-          checked={type === "reward"}
-          onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
-          className="mr-2"
-        />
-        <span className="text-green-400">Reward</span>
+}> = ({ type, onChange }) => {
+  const options: ToggleGroupOption[] = [
+    { value: "reward", label: "Reward" },
+    { value: "punishment", label: "Punishment" },
+  ];
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+        Type
       </label>
-      <label className="flex items-center">
-        <input
-          type="radio"
-          value="punishment"
-          checked={type === "punishment"}
-          onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
-          className="mr-2"
-        />
-        <span className="text-red-400">Punishment</span>
-      </label>
+      <ToggleGroup
+        type="single"
+        value={type}
+        onValueChange={(value) => onChange(value as "reward" | "punishment")}
+        options={options}
+        size="md"
+        aria-label="Select reward or punishment type"
+      />
     </div>
-  </div>
-);
+  );
+};
 
 // Title Input Component
 const TitleInput: React.FC<{
