@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuthState } from "@/contexts/AuthContext";
 import { relationshipService } from "@/services/database/relationships/RelationshipService";
 import { RelationshipRequest } from "@/types/relationships";
+import { UserRole } from "@/types/core";
 import { BaseHookState, BaseHookActions } from "./types";
 import {
   withErrorHandling,
@@ -53,11 +54,7 @@ export function useRelationshipInvites(): RelationshipInvitesState &
   }, [userId]);
 
   const sendRelationshipRequest = useCallback(
-    async (
-      targetUserId: string,
-      role: "submissive" | "keyholder",
-      message?: string,
-    ) => {
+    async (targetUserId: string, role: UserRole, message?: string) => {
       if (!userId) throw new Error("User not authenticated");
 
       return withErrorHandling(
