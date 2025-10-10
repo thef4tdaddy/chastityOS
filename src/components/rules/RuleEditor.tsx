@@ -7,6 +7,7 @@ import {
   Select,
   SelectOption,
   Checkbox,
+  Button,
 } from "@/components/ui";
 
 // Rule Editor Component
@@ -167,21 +168,21 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({
 
         {/* Actions */}
         <div className="flex gap-3 pt-4">
-          <button
+          <Button
             type="submit"
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaSave />
             {rule ? "Update Rule" : "Create Rule"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onCancel}
             className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaTimes />
             Cancel
-          </button>
+          </Button>
         </div>
       </form>
     </div>

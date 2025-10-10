@@ -133,7 +133,7 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
     <div className="space-y-6 mb-8">
       {/* Top stat card with timestamp info */}
       {stats.topBoxLabel && stats.topBoxTimestamp && (
-        <div className="glass-card-primary text-center glass-float">
+        <div className="primary-stat-card text-center glass-float">
           <p className="text-blue-200 text-sm md:text-lg font-medium mb-2">
             {stats.topBoxLabel}:
           </p>
