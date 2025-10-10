@@ -146,7 +146,7 @@ const RecentAchievements: React.FC<{
                     +{achievement.points} points
                   </span>
                   <span className="text-xs text-nightly-celadon">
-                    {formatDate(userAchievement.earnedAt.toDate())}
+                    {formatDate(userAchievement.earnedAt)}
                   </span>
                 </div>
               </div>
@@ -208,7 +208,7 @@ export const AchievementDashboard: React.FC = () => {
   const recentAchievements = userAchievements
     .sort(
       (a: DBUserAchievement, b: DBUserAchievement) =>
-        b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
+        b.earnedAt.getTime() - a.earnedAt.getTime(),
     )
     .slice(0, 3);
 
