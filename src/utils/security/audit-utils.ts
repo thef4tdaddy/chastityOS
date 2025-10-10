@@ -201,7 +201,9 @@ export function applySorting(
           high: 2,
           critical: 3,
         };
-        comparison = severityOrder[a.severity] - severityOrder[b.severity];
+        const aSeverity = severityOrder[a.severity] ?? 0;
+        const bSeverity = severityOrder[b.severity] ?? 0;
+        comparison = aSeverity - bSeverity;
         break;
       }
       case "category":

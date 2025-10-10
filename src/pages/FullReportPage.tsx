@@ -9,6 +9,7 @@ import {
   SessionHistorySection,
 } from "../components/full_report";
 import { EventList } from "../components/log_event/EventList";
+import { Card } from "@/components/ui";
 
 // Loading state component
 const LoadingState: React.FC = () => (
@@ -30,7 +31,7 @@ const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
         {hasSession ? (
           <div className="text-red-400">Error loading report data</div>
         ) : (
-          <div className="glass-card p-6">
+          <Card variant="glass" padding="lg">
             <h3 className="text-xl font-semibold text-nightly-honeydew mb-3">
               No Session Data Available
             </h3>
@@ -38,7 +39,7 @@ const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
               Start your first chastity session to generate report data. Once
               you begin tracking, your statistics and history will appear here.
             </p>
-          </div>
+          </Card>
         )}
       </div>
     </div>
@@ -56,7 +57,7 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <div className="glass-card mb-6 p-4">
+    <Card variant="glass" padding="sm" className="mb-6">
       <div className="flex items-center gap-2">
         <FaUsers className="text-nightly-aquamarine text-xl" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">
@@ -67,7 +68,7 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
         Showing statistics for you and{" "}
         {activeSubmissive.wearerName || "your submissive"}
       </p>
-    </div>
+    </Card>
   );
 };
 

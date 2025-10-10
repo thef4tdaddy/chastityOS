@@ -2,6 +2,7 @@ import React from "react";
 import { formatElapsedTime } from "../../../utils";
 import type { DBSession } from "../../../types/database";
 import type { useTrackerStats } from "../../../hooks/tracker/useTrackerStats";
+import { Card } from "@/components/ui";
 
 interface PauseStatsProps {
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
@@ -20,8 +21,10 @@ export const PauseStats: React.FC<PauseStatsProps> = ({
     : (accumulatedPauseTimeThisSession ?? 0) > 0;
 
   return (
-    <div
-      className={`glass-card bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md rounded-lg p-4 transition-all duration-500 h-full flex flex-col ${
+    <Card
+      variant="glass"
+      padding="sm"
+      className={`bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md transition-all duration-500 h-full flex flex-col ${
         displayData.isPaused || hasAccumulatedPause
           ? "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20"
           : "border border-rose_quartz/30"
@@ -56,6 +59,6 @@ export const PauseStats: React.FC<PauseStatsProps> = ({
           No Pauses
         </p>
       )}
-    </div>
+    </Card>
   );
 };

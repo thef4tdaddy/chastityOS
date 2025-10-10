@@ -6,17 +6,18 @@ import type { Task } from "../types";
 import { TaskItem } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
+import { Card } from "@/components/ui";
 
 // UI State Components
 const LoadingState: React.FC = () => (
-  <div className="glass-card text-center py-12">
+  <Card variant="glass" className="text-center py-12">
     <div className="glass-float">
       <div className="inline-flex items-center space-x-2">
         <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
         <span className="text-blue-200 text-lg">Loading tasks...</span>
       </div>
     </div>
-  </div>
+  </Card>
 );
 
 const ErrorState: React.FC = () => (
@@ -68,7 +69,7 @@ const ActiveTasksSection: React.FC<{
 }> = ({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
-      <div className="glass-card text-center py-12">
+      <Card variant="glass" className="text-center py-12">
         <div className="glass-float">
           <div className="text-6xl mb-4">📝</div>
           <h3 className="text-xl font-semibold text-gray-200 mb-2">
@@ -78,19 +79,20 @@ const ActiveTasksSection: React.FC<{
             You're all caught up! New tasks will appear here when assigned.
           </p>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
       {tasks.map((task) => (
-        <div
+        <Card
           key={task.id}
-          className="glass-card glass-hover transform transition-all duration-300 hover:scale-[1.02]"
+          variant="glass"
+          className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
         >
           <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
-        </div>
+        </Card>
       ))}
     </div>
   );
@@ -100,7 +102,7 @@ const ActiveTasksSection: React.FC<{
 const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
-      <div className="glass-card text-center py-12">
+      <Card variant="glass" className="text-center py-12">
         <div className="glass-float">
           <div className="text-6xl mb-4">📚</div>
           <h3 className="text-xl font-semibold text-gray-200 mb-2">
@@ -110,22 +112,23 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
             Completed and reviewed tasks will appear here.
           </p>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
       {tasks.map((task) => (
-        <div
+        <Card
           key={task.id}
-          className="glass-card opacity-75 hover:opacity-100 transition-opacity duration-300"
+          variant="glass"
+          className="opacity-75 hover:opacity-100 transition-opacity duration-300"
         >
           <TaskItem
             task={task}
             onSubmit={() => {}} // Archived tasks can't be submitted
           />
-        </div>
+        </Card>
       ))}
     </div>
   );

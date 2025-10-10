@@ -1,5 +1,6 @@
 import React from "react";
 import type { useTrackerStats } from "../../../hooks/tracker/useTrackerStats";
+import { Card } from "@/components/ui";
 
 interface CageOnStatsProps {
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
@@ -11,8 +12,10 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
   stats,
 }) => {
   return (
-    <div
-      className={`glass-card bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md rounded-lg p-4 transition-all duration-500 h-full flex flex-col ${
+    <Card
+      variant="glass"
+      padding="sm"
+      className={`bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md transition-all duration-500 h-full flex flex-col ${
         displayData.isActive
           ? displayData.isPaused
             ? "border-2 border-nightly-deep_rose/50 shadow-lg shadow-nightly-deep_rose/20"
@@ -34,6 +37,6 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
       >
         {stats.currentSessionFormatted}
       </p>
-    </div>
+    </Card>
   );
 };

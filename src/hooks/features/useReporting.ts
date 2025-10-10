@@ -302,7 +302,9 @@ export const useReporting = (userId?: string, _relationshipId?: string) => {
     totalReports: recentReports.length,
     hasScheduledReports: false, // Would check actual scheduled reports
     lastReportDate:
-      recentReports.length > 0 ? recentReports[0].generatedAt : null,
+      recentReports.length > 0 && recentReports[0]
+        ? recentReports[0].generatedAt
+        : null,
     hasCustomReports: customReports.length > 0,
 
     // Errors
