@@ -5,6 +5,7 @@
 import React from "react";
 import { FaArrowLeft, FaLock, FaSpinner } from "react-icons/fa";
 import type { ModalStage } from "./types";
+import { Input } from "@/components/ui";
 
 interface PinValidationStageProps {
   userId: string;
@@ -59,7 +60,7 @@ export const PinValidationStage: React.FC<PinValidationStageProps> = ({
       <label className="block text-sm font-medium text-gray-300 mb-2">
         Emergency PIN
       </label>
-      <input
+      <Input
         type="password"
         value={pin}
         onChange={(e) => setPin(e.target.value)}

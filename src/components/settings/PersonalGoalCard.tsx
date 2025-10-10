@@ -5,7 +5,7 @@
 import React, { useState, memo, useMemo, useCallback } from "react";
 import { FaTrash, FaEdit, FaCheck, FaTimes, FaTrophy } from "react-icons/fa";
 import type { DBGoal } from "@/types/database";
-import { Card } from "@/components/ui";
+import { Input, Textarea, Card } from "@/components/ui";
 
 interface PersonalGoalCardProps {
   goal: DBGoal;
@@ -69,7 +69,7 @@ const PersonalGoalEditFormComponent: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Goal Title
           </label>
-          <input
+          <Input
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
@@ -84,7 +84,7 @@ const PersonalGoalEditFormComponent: React.FC<{
           </label>
           <div className="flex gap-4">
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 value={editDays}
@@ -97,7 +97,7 @@ const PersonalGoalEditFormComponent: React.FC<{
               </span>
             </div>
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="23"
@@ -117,7 +117,7 @@ const PersonalGoalEditFormComponent: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Description (optional)
           </label>
-          <textarea
+          <Textarea
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
             className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine resize-none"

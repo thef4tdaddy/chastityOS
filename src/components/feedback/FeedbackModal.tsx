@@ -15,6 +15,7 @@ import type {
 } from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
 import { logger } from "../../utils/logging";
+import { Input, Textarea } from "@/components/ui";
 
 // Form field components
 interface FormFieldProps {
@@ -47,7 +48,7 @@ const TextInput: React.FC<TextInputProps> = ({
   disabled,
   required,
 }) => (
-  <input
+  <Input
     type="text"
     value={value}
     onChange={(e) => onChange(e.target.value)}
@@ -75,7 +76,7 @@ const TextArea: React.FC<TextAreaProps> = ({
   disabled,
   required,
 }) => (
-  <textarea
+  <Textarea
     value={value}
     onChange={(e) => onChange(e.target.value)}
     className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -372,7 +373,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
 
     {/* Contact Email */}
     <FormField label="Contact Email (Optional)">
-      <input
+      <Input
         type="email"
         value={formData.contactEmail}
         onChange={(e) => updateField("contactEmail", e.target.value)}

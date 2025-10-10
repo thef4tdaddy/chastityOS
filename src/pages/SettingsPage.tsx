@@ -31,6 +31,7 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
+import { Input, Textarea } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -217,7 +218,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
             <label className="block text-sm font-medium text-nightly-celadon mb-2">
               Submissive's Name
             </label>
-            <input
+            <Input
               type="text"
               value={submissiveName}
               onChange={(e) => {
@@ -511,7 +512,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
             <label className="block text-sm font-medium text-nightly-celadon mb-2">
               Bio
             </label>
-            <textarea
+            <Textarea
               value={bio}
               onChange={(e) => {
                 setBio(e.target.value);
@@ -537,7 +538,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
               <span className="bg-white/5 border border-white/10 border-r-0 rounded-l px-3 py-3 text-nightly-celadon text-sm">
                 chastityos.com/profile/
               </span>
-              <input
+              <Input
                 type="text"
                 className="flex-1 bg-white/5 border border-white/10 rounded-r p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
                 placeholder="your-username"

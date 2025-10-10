@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { FaExclamationTriangle } from "react-icons/fa";
+import { Input } from "@/components/ui";
 
 interface LockCombinationSectionProps {
   saveLockCombination: boolean;
@@ -56,7 +57,7 @@ export const LockCombinationSection: React.FC<LockCombinationSectionProps> = ({
 
           {isSignedInWithGoogle && (
             <div className="space-y-2">
-              <input
+              <Input
                 type="text"
                 value={lockCombination}
                 onChange={(e) => setLockCombination(e.target.value)}

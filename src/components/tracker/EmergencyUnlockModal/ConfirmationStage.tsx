@@ -6,6 +6,7 @@ import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import type { EmergencyUnlockReason } from "../../../types/events";
 import type { ModalStage } from "./types";
+import { Input } from "@/components/ui";
 
 interface FinalWarningBoxProps {
   sessionId: string;
@@ -49,7 +50,7 @@ const ConfirmationInput: React.FC<ConfirmationInputProps> = ({
     <label className="block text-sm font-medium text-gray-300 mb-2">
       Type "{requiredText}" to confirm:
     </label>
-    <input
+    <Input
       ref={confirmInputRef}
       type="text"
       value={confirmText}

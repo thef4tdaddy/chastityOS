@@ -10,7 +10,7 @@ import {
 import { FaLock, FaEdit, FaCheck, FaTimes, FaTrash } from "react-icons/fa";
 import type { DBGoal } from "@/types/database";
 import { useToast } from "@/contexts";
-import { Card } from "@/components/ui";
+import { Input, Textarea, Card } from "@/components/ui";
 
 interface KeyholderDurationSectionProps {
   userId?: string | null;
@@ -51,7 +51,11 @@ const KeyholderDurationEditForm: React.FC<{
   };
 
   return (
-    <Card variant="glass" padding="lg" className="border-2 border-nightly-lavender-floral">
+    <Card
+      variant="glass"
+      padding="lg"
+      className="border-2 border-nightly-lavender-floral"
+    >
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         Edit Required Duration
       </h3>
@@ -61,7 +65,7 @@ const KeyholderDurationEditForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Requirement Title
           </label>
-          <input
+          <Input
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
@@ -76,7 +80,7 @@ const KeyholderDurationEditForm: React.FC<{
           </label>
           <div className="flex gap-4">
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 value={editDays}
@@ -89,7 +93,7 @@ const KeyholderDurationEditForm: React.FC<{
               </span>
             </div>
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="23"
@@ -109,7 +113,7 @@ const KeyholderDurationEditForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Description (optional)
           </label>
-          <textarea
+          <Textarea
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
             className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-lavender-floral resize-none"
@@ -143,7 +147,11 @@ const KeyholderDurationDisplay: React.FC<{
   onDelete: () => void;
 }> = ({ goal, onEdit, onDelete }) => {
   return (
-    <Card variant="glass" padding="lg" className="border-2 border-nightly-lavender-floral">
+    <Card
+      variant="glass"
+      padding="lg"
+      className="border-2 border-nightly-lavender-floral"
+    >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -266,7 +274,11 @@ const CreateKeyholderDurationForm: React.FC<{
   }
 
   return (
-    <Card variant="glass" padding="lg" className="border-2 border-nightly-lavender-floral">
+    <Card
+      variant="glass"
+      padding="lg"
+      className="border-2 border-nightly-lavender-floral"
+    >
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         Set Required Duration
       </h3>
@@ -276,7 +288,7 @@ const CreateKeyholderDurationForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Requirement Title
           </label>
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -292,7 +304,7 @@ const CreateKeyholderDurationForm: React.FC<{
           </label>
           <div className="flex gap-4">
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 value={days}
@@ -305,7 +317,7 @@ const CreateKeyholderDurationForm: React.FC<{
               </span>
             </div>
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="23"
@@ -325,7 +337,7 @@ const CreateKeyholderDurationForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Description (optional)
           </label>
-          <textarea
+          <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-lavender-floral resize-none"

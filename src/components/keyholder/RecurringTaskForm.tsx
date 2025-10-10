@@ -4,6 +4,7 @@
  */
 import React, { useState } from "react";
 import type { RecurringConfig } from "@/types/database";
+import { Input } from "@/components/ui";
 
 interface RecurringTaskFormProps {
   onSave: (config: RecurringConfig) => void;
@@ -83,7 +84,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Repeat every (days)
           </label>
-          <input
+          <Input
             type="number"
             min="1"
             max="365"
@@ -128,7 +129,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Day of Month
           </label>
-          <input
+          <Input
             type="number"
             min="1"
             max="31"
@@ -145,7 +146,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Repeat every (days)
           </label>
-          <input
+          <Input
             type="number"
             min="1"
             max="365"

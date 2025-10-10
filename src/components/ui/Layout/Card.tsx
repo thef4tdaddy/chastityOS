@@ -52,7 +52,10 @@ const paddingClasses = {
   lg: "p-8",
 };
 
-const getPaddingClass = (padding: CardProps["padding"], variant: CardProps["variant"]) => {
+const getPaddingClass = (
+  padding: CardProps["padding"],
+  variant: CardProps["variant"],
+) => {
   // glass-card already has padding: 1.5rem built in, so use empty string as default
   if (variant === "glass" && padding === "md") {
     return "";

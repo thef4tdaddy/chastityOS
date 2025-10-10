@@ -8,6 +8,7 @@ import type { EmergencyUnlockReason } from "../../../types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "../../../types/events";
 import type { ModalStage } from "./types";
 import { getReasonDescription } from "./types";
+import { Textarea } from "@/components/ui";
 
 interface ReasonSelectionListProps {
   reason: EmergencyUnlockReason | "";
@@ -90,7 +91,7 @@ export const ReasonStage: React.FC<ReasonStageProps> = ({
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Please specify the emergency reason:
         </label>
-        <textarea
+        <Textarea
           value={customReason}
           onChange={(e) => setCustomReason(e.target.value)}
           placeholder="Describe your emergency situation..."

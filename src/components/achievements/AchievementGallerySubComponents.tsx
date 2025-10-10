@@ -17,6 +17,7 @@ import {
   DBUserAchievement,
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
+import { Input } from "@/components/ui";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -95,7 +96,7 @@ export const Filters: React.FC<FiltersProps> = ({
     <div className="flex flex-wrap gap-4 items-center">
       <div className="relative flex-1 min-w-[200px]">
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-        <input
+        <Input
           type="text"
           placeholder="Search achievements..."
           value={searchTerm}

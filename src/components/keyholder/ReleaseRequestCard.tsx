@@ -9,6 +9,7 @@ import {
 import type { DBReleaseRequest } from "../../types/database";
 import { useReleaseRequestMutations } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
+import { Textarea } from "@/components/ui";
 
 interface ReleaseRequestCardProps {
   request: DBReleaseRequest;
@@ -83,7 +84,7 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Message to Submissive (optional):
             </label>
-            <textarea
+            <Textarea
               value={responseMessage}
               onChange={(e) => onMessageChange(e.target.value)}
               placeholder={
