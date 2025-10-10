@@ -4,7 +4,7 @@
  */
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaLock, FaUsers, FaClipboardList } from "react-icons/fa";
+import { FaHome, FaLock, FaUsers, FaClipboardList } from "../utils/iconImport";
 
 const Navigation: React.FC = () => {
   const location = useLocation();

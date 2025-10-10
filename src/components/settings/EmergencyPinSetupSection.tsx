@@ -3,7 +3,7 @@
  * Displays emergency PIN setup fields when user doesn't have a PIN
  */
 import React from "react";
-import { FaShieldAlt } from "react-icons/fa";
+import { FaShieldAlt } from "../../utils/iconImport";
 import { Input } from "@/components/ui";
 
 interface EmergencyPinSetupSectionProps {

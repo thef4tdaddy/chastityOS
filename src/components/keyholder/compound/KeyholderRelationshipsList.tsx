@@ -4,7 +4,7 @@
 
 import React from "react";
 import { useKeyholderContext } from "./KeyholderContext";
-import { FaUsers } from "react-icons/fa";
+import { FaUsers } from "../../../utils/iconImport";
 import { Select, SelectOption } from "@/components/ui";
 
 export const KeyholderRelationshipsList: React.FC = () => {

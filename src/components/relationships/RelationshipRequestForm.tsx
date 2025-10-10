@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner } from "../../utils/iconImport";
 import { Input, Textarea, Select, SelectOption } from "@/components/ui";
 
 interface RelationshipRequestFormProps {

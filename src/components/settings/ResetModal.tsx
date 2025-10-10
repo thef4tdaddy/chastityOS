@@ -4,6 +4,7 @@ import {
   FaExclamationTriangle,
   FaSpinner,
 } from "../../utils/iconImport";
+import { Modal } from "@/components/ui";
 
 interface ResetModalProps {
   show: boolean;
@@ -18,14 +19,36 @@ export const ResetModal: React.FC<ResetModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  if (!show) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 border-2 border-red-500 rounded-lg max-w-md w-full p-6">
-        <h3 className="text-xl font-bold text-red-400 mb-4">
-          Confirm Data Reset
-        </h3>
+    <Modal
+      isOpen={show}
+      onClose={onCancel}
+      title="Confirm Data Reset"
+      size="sm"
+      showCloseButton={false}
+      closeOnBackdropClick={false}
+      closeOnEscape={status !== "pending"}
+      className="border-2 border-red-500"
+      footer={
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={status === "pending"}
+            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={status === "pending"}
+            className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {status === "pending" ? "Resetting..." : "Reset All Data"}
+          </button>
+        </div>
+      }
+    >
+      <div>
         <p className="text-nightly-celadon mb-6">
           Are you sure you want to reset all data? This will permanently delete:
         </p>
@@ -60,24 +83,7 @@ export const ResetModal: React.FC<ResetModalProps> = ({
             </p>
           </div>
         )}
-
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            disabled={status === "pending"}
-            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={status === "pending"}
-            className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {status === "pending" ? "Resetting..." : "Reset All Data"}
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };

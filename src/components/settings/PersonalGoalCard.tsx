@@ -3,7 +3,13 @@
  * Displays and manages personal chastity duration goals
  */
 import React, { useState, memo, useMemo, useCallback } from "react";
-import { FaTrash, FaEdit, FaCheck, FaTimes, FaTrophy } from "react-icons/fa";
+import {
+  FaTrash,
+  FaEdit,
+  FaCheck,
+  FaTimes,
+  FaTrophy,
+} from "../../utils/iconImport";
 import type { DBGoal } from "@/types/database";
 import { Input, Textarea, Card } from "@/components/ui";
 
