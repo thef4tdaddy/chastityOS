@@ -156,7 +156,7 @@ const TooltipContent: React.FC<{
         bg-gray-900 dark:bg-gray-800 rounded-lg shadow-lg
         pointer-events-none
         transition-opacity duration-200
-        ${isVisible ? "opacity-100" : "opacity-0"}
+        opacity-100
       `}
       style={{
         top: `${position.top}px`,
