@@ -11,6 +11,7 @@ import {
   AdminPermissions,
   LinkCode,
 } from "@/types/account-linking";
+import { Input } from "@/components/ui";
 
 interface MessageDisplayProps {
   message: string;
@@ -273,7 +274,7 @@ export const AcceptInviteSection: React.FC<AcceptInviteSectionProps> = ({
         <p className="text-sm text-gray-400">
           Enter an invite code from a submissive to become their keyholder.
         </p>
-        <input
+        <Input
           type="text"
           value={inviteCodeInput}
           onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
@@ -281,7 +282,7 @@ export const AcceptInviteSection: React.FC<AcceptInviteSectionProps> = ({
           maxLength={6}
           className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 font-mono text-center tracking-wider"
         />
-        <input
+        <Input
           type="text"
           value={keyholderNameInput}
           onChange={(e) => setKeyholderNameInput(e.target.value)}

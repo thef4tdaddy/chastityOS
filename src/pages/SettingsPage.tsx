@@ -31,7 +31,7 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input } from "@/components/ui";
+import { Input, Textarea } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -503,7 +503,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
             <label className="block text-sm font-medium text-nightly-celadon mb-2">
               Bio
             </label>
-            <textarea
+            <Textarea
               value={bio}
               onChange={(e) => {
                 setBio(e.target.value);

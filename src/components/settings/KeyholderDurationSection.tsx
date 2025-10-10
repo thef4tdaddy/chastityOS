@@ -274,7 +274,7 @@ const CreateKeyholderDurationForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Requirement Title
           </label>
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -290,7 +290,7 @@ const CreateKeyholderDurationForm: React.FC<{
           </label>
           <div className="flex gap-4">
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 value={days}
@@ -303,7 +303,7 @@ const CreateKeyholderDurationForm: React.FC<{
               </span>
             </div>
             <div className="flex-1">
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="23"
@@ -323,7 +323,7 @@ const CreateKeyholderDurationForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-2">
             Description (optional)
           </label>
-          <textarea
+          <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-lavender-floral resize-none"
