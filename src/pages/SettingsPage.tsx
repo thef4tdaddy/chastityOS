@@ -38,6 +38,8 @@ import {
   Tooltip,
   Tabs,
   TabsContent,
+  Select,
+  SelectOption,
 } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
@@ -362,23 +364,16 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
                 </span>
               </Tooltip>
             </div>
-            <select
+            <Select
               value={timezone}
-              onChange={(e) => {
-                setTimezone(e.target.value);
+              onChange={(value) => {
+                setTimezone(value as string);
                 setValidationError(null);
               }}
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
-            >
-              {timezoneOptions.map((tz) => (
-                <option key={tz.value} value={tz.value}>
-                  {tz.label}
-                </option>
-              ))}
-            </select>
-            {validationError && (
-              <p className="text-red-400 text-xs mt-1">{validationError}</p>
-            )}
+              options={timezoneOptions as SelectOption[]}
+              error={validationError || undefined}
+              searchable
+            />
           </div>
 
           <div className="flex items-center justify-between">

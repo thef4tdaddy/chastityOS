@@ -8,6 +8,7 @@ import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
 import { useLeaderboardActions } from "../../hooks/achievements/useLeaderboardActions";
+import { Select, SelectOption } from "@/components/ui";
 
 export interface LeaderboardViewProps {
   category?: LeaderboardCategory;
@@ -162,6 +163,24 @@ interface LeaderboardFiltersProps {
   onPeriodChange: (period: LeaderboardPeriod) => void;
 }
 
+const categoryOptions: SelectOption[] = [
+  { value: LeaderboardCategory.TOTAL_POINTS, label: "Total Points" },
+  {
+    value: LeaderboardCategory.ACHIEVEMENTS_EARNED,
+    label: "Achievements Earned",
+  },
+  { value: LeaderboardCategory.LONGEST_STREAK, label: "Longest Streak" },
+  { value: LeaderboardCategory.SESSION_COUNT, label: "Session Count" },
+  { value: LeaderboardCategory.TOTAL_TIME, label: "Total Time" },
+];
+
+const periodOptions: SelectOption[] = [
+  { value: LeaderboardPeriod.ALL_TIME, label: "All Time" },
+  { value: LeaderboardPeriod.THIS_YEAR, label: "This Year" },
+  { value: LeaderboardPeriod.THIS_MONTH, label: "This Month" },
+  { value: LeaderboardPeriod.THIS_WEEK, label: "This Week" },
+];
+
 const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
   selectedCategory,
   selectedPeriod,
@@ -171,44 +190,25 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
     <div className="flex flex-wrap gap-4 items-center">
       <div>
-        <label className="block text-sm text-nightly-celadon mb-1">
-          Category
-        </label>
-        <select
+        <Select
+          label="Category"
           value={selectedCategory}
-          onChange={(e) =>
-            onCategoryChange(e.target.value as LeaderboardCategory)
-          }
-          className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
-        >
-          <option value={LeaderboardCategory.TOTAL_POINTS}>Total Points</option>
-          <option value={LeaderboardCategory.ACHIEVEMENTS_EARNED}>
-            Achievements Earned
-          </option>
-          <option value={LeaderboardCategory.LONGEST_STREAK}>
-            Longest Streak
-          </option>
-          <option value={LeaderboardCategory.SESSION_COUNT}>
-            Session Count
-          </option>
-          <option value={LeaderboardCategory.TOTAL_TIME}>Total Time</option>
-        </select>
+          onChange={(value) => onCategoryChange(value as LeaderboardCategory)}
+          options={categoryOptions}
+          size="sm"
+          fullWidth={false}
+        />
       </div>
 
       <div>
-        <label className="block text-sm text-nightly-celadon mb-1">
-          Period
-        </label>
-        <select
+        <Select
+          label="Period"
           value={selectedPeriod}
-          onChange={(e) => onPeriodChange(e.target.value as LeaderboardPeriod)}
-          className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
-        >
-          <option value={LeaderboardPeriod.ALL_TIME}>All Time</option>
-          <option value={LeaderboardPeriod.THIS_YEAR}>This Year</option>
-          <option value={LeaderboardPeriod.THIS_MONTH}>This Month</option>
-          <option value={LeaderboardPeriod.THIS_WEEK}>This Week</option>
-        </select>
+          onChange={(value) => onPeriodChange(value as LeaderboardPeriod)}
+          options={periodOptions}
+          size="sm"
+          fullWidth={false}
+        />
       </div>
     </div>
   </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaSpinner } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Select, SelectOption } from "@/components/ui";
 
 interface RelationshipRequestFormProps {
   isVisible: boolean;
@@ -44,23 +44,20 @@ interface RoleFieldProps {
   onChange: (value: "submissive" | "keyholder") => void;
 }
 
+const roleOptions: SelectOption[] = [
+  { value: "submissive", label: "Submissive" },
+  { value: "keyholder", label: "Keyholder" },
+];
+
 const RoleField: React.FC<RoleFieldProps> = ({ value, onChange }) => (
   <div>
-    <label
-      htmlFor="role"
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
-      Your Role in this Relationship
-    </label>
-    <select
+    <Select
+      label="Your Role in this Relationship"
       id="role"
       value={value}
-      onChange={(e) => onChange(e.target.value as "submissive" | "keyholder")}
-      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-    >
-      <option value="submissive">Submissive</option>
-      <option value="keyholder">Keyholder</option>
-    </select>
+      onChange={(val) => onChange(val as "submissive" | "keyholder")}
+      options={roleOptions}
+    />
   </div>
 );
 
