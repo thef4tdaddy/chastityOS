@@ -3,7 +3,7 @@
  * Form for creating a new personal chastity duration goal
  */
 import React, { useState, useEffect } from "react";
-import { FaPlus, FaTimes } from "react-icons/fa";
+import { FaPlus, FaTimes } from "../../utils/iconImport";
 import { useAuthState } from "../../contexts";
 import {
   useSetEmergencyPin,

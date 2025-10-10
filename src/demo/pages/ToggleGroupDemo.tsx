@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import { ToggleGroup } from "@/components/ui";
-import { FaSun, FaMoon, FaCloud } from "react-icons/fa";
+import { FaSun, FaMoon, FaCloud } from "../../utils/iconImport";
 
 export const ToggleGroupDemo: React.FC = () => {
   // Single select example

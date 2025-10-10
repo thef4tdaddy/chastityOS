@@ -1,5 +1,5 @@
 import React from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes } from "../../utils/iconImport";
 
 interface ErrorDisplayProps {
   error: string | null;

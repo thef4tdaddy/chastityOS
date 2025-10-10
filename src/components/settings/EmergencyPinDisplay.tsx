@@ -3,7 +3,13 @@
  * Shows emergency PIN status and controls
  */
 import React from "react";
-import { FaShieldAlt, FaLock, FaUnlock, FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaShieldAlt,
+  FaLock,
+  FaUnlock,
+  FaEdit,
+  FaTrash,
+} from "../../utils/iconImport";
 import { Card } from "@/components/ui";
 
 interface EmergencyPinDisplayProps {

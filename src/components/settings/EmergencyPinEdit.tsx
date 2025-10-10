@@ -3,7 +3,12 @@
  * Form for creating or updating emergency PIN
  */
 import React from "react";
-import { FaShieldAlt, FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
+import {
+  FaShieldAlt,
+  FaCheck,
+  FaTimes,
+  FaSpinner,
+} from "../../utils/iconImport";
 import { Input, Card } from "@/components/ui";
 
 interface EmergencyPinEditProps {

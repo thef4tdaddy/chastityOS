@@ -3,7 +3,11 @@
  * Handles emergency PIN and lock combination settings for hardcore mode
  */
 import React from "react";
-import { FaLock, FaShieldAlt, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaLock,
+  FaShieldAlt,
+  FaExclamationTriangle,
+} from "../../utils/iconImport";
 import { EmergencyPinSetupSection } from "./EmergencyPinSetupSection";
 import { LockCombinationSection } from "./LockCombinationSection";
 

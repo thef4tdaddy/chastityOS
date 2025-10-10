@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUsers, FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
+import { FaUsers, FaCheck, FaTimes, FaSpinner } from "../../utils/iconImport";
 import type { RelationshipRequest } from "@/types/relationships";
 
 interface PendingRequestsListProps {
