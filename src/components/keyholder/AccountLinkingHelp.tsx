@@ -1,5 +1,5 @@
 import React from "react";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "../../utils/iconImport";
 
 export const AccountLinkingHelp: React.FC = () => {
   return (

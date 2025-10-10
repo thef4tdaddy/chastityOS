@@ -4,7 +4,12 @@
  */
 
 import React from "react";
-import { FaKey, FaCopy, FaTrash, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaKey,
+  FaCopy,
+  FaTrash,
+  FaExclamationTriangle,
+} from "../../utils/iconImport";
 import { formatDistanceToNow } from "date-fns";
 import {
   AdminRelationship,

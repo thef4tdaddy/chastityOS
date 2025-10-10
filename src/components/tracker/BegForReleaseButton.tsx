@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { FaPrayingHands, FaSpinner, FaTimes } from "react-icons/fa";
+import { FaPrayingHands, FaSpinner, FaTimes } from "../../utils/iconImport";
 import {
   useReleaseRequestMutations,
   usePendingRequestForSession,
 } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
-import { Textarea } from "@/components/ui";
+import { Modal, Textarea } from "@/components/ui";
 
 // Request Modal Component
 interface RequestModalProps {
@@ -25,81 +25,70 @@ const RequestModal: React.FC<RequestModalProps> = ({
   setReason,
   isSubmitting,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 max-w-md w-full rounded-xl border-2 border-purple-500 shadow-2xl">
-        <div className="relative p-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Request Early Release"
+      icon={<FaPrayingHands className="text-4xl text-purple-400" />}
+      size="sm"
+      closeOnEscape={!isSubmitting}
+      className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-purple-500"
+      footer={
+        <div className="flex flex-col space-y-3">
+          <button
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition"
+          >
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <FaSpinner className="animate-spin" />
+                Sending Request...
+              </span>
+            ) : (
+              "Send Request"
+            )}
+          </button>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors disabled:cursor-not-allowed"
+            className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
           >
-            <FaTimes size={20} />
+            Cancel
           </button>
+        </div>
+      }
+    >
+      <div>
+        <div className="bg-purple-900/30 border border-purple-600 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-purple-300 mb-2">
+            ℹ️ About Release Requests
+          </h4>
+          <p className="text-sm text-purple-200">
+            This sends a request to your keyholder asking for permission to end
+            your session early. Your keyholder can approve or deny the request.
+          </p>
+        </div>
 
-          <div className="text-center mb-6">
-            <FaPrayingHands className="text-6xl text-purple-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-purple-300">
-              Request Early Release
-            </h3>
-          </div>
-
-          <div className="bg-purple-900/30 border border-purple-600 rounded-lg p-4 mb-6">
-            <h4 className="font-semibold text-purple-300 mb-2">
-              ℹ️ About Release Requests
-            </h4>
-            <p className="text-sm text-purple-200">
-              This sends a request to your keyholder asking for permission to
-              end your session early. Your keyholder can approve or deny the
-              request.
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Reason for Request (optional):
-            </label>
-            <Textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Explain why you're requesting early release..."
-              rows={4}
-              maxLength={500}
-              className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
-            />
-            <div className="text-xs text-gray-400 mt-1">
-              {reason.length}/500 characters
-            </div>
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            <button
-              onClick={onSubmit}
-              disabled={isSubmitting}
-              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <FaSpinner className="animate-spin" />
-                  Sending Request...
-                </span>
-              ) : (
-                "Send Request"
-              )}
-            </button>
-            <button
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
-            >
-              Cancel
-            </button>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Reason for Request (optional):
+          </label>
+          <Textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Explain why you're requesting early release..."
+            rows={4}
+            maxLength={500}
+            className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
+          />
+          <div className="text-xs text-gray-400 mt-1">
+            {reason.length}/500 characters
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

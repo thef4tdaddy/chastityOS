@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaClock } from "react-icons/fa";
+import { FaClock } from "../../utils/iconImport";
 // TODO: Replace with proper hook pattern instead of direct service import
 // import { PauseCooldownService } from "../../services/PauseCooldownService";
 

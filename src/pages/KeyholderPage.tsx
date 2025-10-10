@@ -19,6 +19,7 @@ import {
   FeatureErrorBoundary,
   KeyholderErrorFallback,
 } from "../components/errors";
+import { Tooltip } from "@/components/ui";
 
 // Loading Component
 const LoadingDisplay: React.FC = () => (
@@ -71,13 +72,15 @@ const KeyholderSettings: React.FC<{
         </button>
       </div>
 
-      <button
-        onClick={onLockControls}
-        className="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
-      >
-        <FaLock />
-        Lock Controls
-      </button>
+      <Tooltip content="Lock keyholder controls. You'll need to re-enter your password to access them again.">
+        <button
+          onClick={onLockControls}
+          className="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+        >
+          <FaLock />
+          Lock Controls
+        </button>
+      </Tooltip>
     </div>
   </div>
 );

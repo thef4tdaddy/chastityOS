@@ -81,3 +81,7 @@ export type {
   TabsTriggerProps,
   TabsContentProps,
 } from "./Tabs";
+
+// Modal Component
+export { Modal } from "./Modal";
+export type { ModalProps } from "./Modal";

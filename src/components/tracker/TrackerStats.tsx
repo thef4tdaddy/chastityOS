@@ -2,7 +2,7 @@ import React from "react";
 import type { DBSession, DBGoal } from "../../types/database";
 import { useTrackerStats } from "../../hooks/tracker/useTrackerStats";
 import { CageOnStats, CageOffStats } from "./stats";
-import { FaBullseye, FaLock } from "react-icons/fa";
+import { FaBullseye, FaLock } from "../../utils/iconImport";
 import { Card } from "@/components/ui";
 
 interface TrackerStatsProps {
