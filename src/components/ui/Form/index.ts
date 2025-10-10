@@ -12,3 +12,6 @@ export type { FormFieldProps } from "./FormField";
 
 export { Switch } from "./Switch";
 export type { SwitchProps } from "./Switch";
+
+export { Checkbox } from "./Checkbox";
+export type { CheckboxProps } from "./Checkbox";

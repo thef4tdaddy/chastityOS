@@ -25,12 +25,13 @@ export { Button, IconButton } from "./Button";
 export type { ButtonProps, IconButtonProps } from "./Button";
 
 // Form Components
-export { Input, Textarea, FormField, Switch } from "./Form";
+export { Input, Textarea, FormField, Switch, Checkbox } from "./Form";
 export type {
   InputProps,
   TextareaProps,
   FormFieldProps,
   SwitchProps,
+  CheckboxProps,
 } from "./Form";
 
 // Feedback Components
