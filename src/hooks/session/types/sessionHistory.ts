@@ -115,6 +115,9 @@ export interface TrendData {
   confidence: number;
   timeframe: "week" | "month" | "quarter" | "year";
   dataPoints: TrendPoint[];
+  labels?: string[];
+  values?: number[];
+  trend?: "improving" | "stable" | "declining";
 }
 
 export interface TrendPoint {
