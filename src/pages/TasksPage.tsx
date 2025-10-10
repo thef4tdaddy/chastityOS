@@ -8,8 +8,8 @@ import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip } from "@/components/ui";
 
-// UI State Components
-const LoadingState: React.FC = () => (
+// UI State Components - Memoized for performance
+const LoadingState = React.memo(() => (
   <Card variant="glass" className="text-center py-12">
     <div className="glass-float">
       <div className="inline-flex items-center space-x-2">
@@ -18,21 +18,23 @@ const LoadingState: React.FC = () => (
       </div>
     </div>
   </Card>
-);
+));
+LoadingState.displayName = "LoadingState";
 
-const ErrorState: React.FC = () => (
+const ErrorState = React.memo(() => (
   <div className="text-center py-8">
     <div className="text-red-400">Error loading tasks. Please try again.</div>
   </div>
-);
+));
+ErrorState.displayName = "ErrorState";
 
-// Tab Navigation Component
-const TabNavigation: React.FC<{
+// Tab Navigation Component - Memoized to prevent unnecessary re-renders
+const TabNavigation = React.memo<{
   activeTab: "active" | "archived";
   setActiveTab: (tab: "active" | "archived") => void;
   activeCount: number;
   archivedCount: number;
-}> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
+}>(({ activeTab, setActiveTab, activeCount, archivedCount }) => (
   <div className="flex justify-center space-x-4 mb-8">
     <Tooltip content="View tasks that are currently pending or awaiting approval">
       <button
@@ -59,10 +61,11 @@ const TabNavigation: React.FC<{
       </button>
     </Tooltip>
   </div>
-);
+));
+TabNavigation.displayName = "TabNavigation";
 
-// Active Tasks Section Component
-const ActiveTasksSection: React.FC<{
+// Active Tasks Section Component - Memoized to optimize re-renders
+const ActiveTasksSection = React.memo<{
   tasks: Task[];
   userId: string;
   handleSubmitTask: (
@@ -70,7 +73,7 @@ const ActiveTasksSection: React.FC<{
     note: string,
     attachments?: string[],
   ) => void;
-}> = ({ tasks, userId, handleSubmitTask }) => {
+}>(({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
       <Card variant="glass" className="text-center py-12">
@@ -100,10 +103,11 @@ const ActiveTasksSection: React.FC<{
       ))}
     </div>
   );
-};
+});
+ActiveTasksSection.displayName = "ActiveTasksSection";
 
-// Archived Tasks Section Component
-const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
+// Archived Tasks Section Component - Memoized to optimize re-renders
+const ArchivedTasksSection = React.memo<{ tasks: Task[] }>(({ tasks }) => {
   if (tasks.length === 0) {
     return (
       <Card variant="glass" className="text-center py-12">
@@ -136,7 +140,8 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
       ))}
     </div>
   );
-};
+});
+ArchivedTasksSection.displayName = "ArchivedTasksSection";
 
 const TasksPage: React.FC = () => {
   const { user } = useAuthState();

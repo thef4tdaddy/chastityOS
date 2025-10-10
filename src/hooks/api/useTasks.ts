@@ -118,6 +118,7 @@ function sortTasks(tasks: Task[]): Task[] {
 /**
  * Get tasks for a user with optional filtering
  * Fixes: TasksPage.tsx:20 (taskDBService.findByUserId)
+ * Optimized with better cache configuration
  */
 export function useTasks(userId: string, filters?: TaskFilters) {
   return useQuery({
@@ -148,6 +149,8 @@ export function useTasks(userId: string, filters?: TaskFilters) {
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - active data
     gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
+    refetchOnWindowFocus: true, // Refresh when user returns to tab
+    refetchInterval: 5 * 60 * 1000, // Background refetch every 5 minutes
     enabled: !!userId,
   });
 }

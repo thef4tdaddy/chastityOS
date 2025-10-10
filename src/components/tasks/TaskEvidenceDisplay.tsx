@@ -84,6 +84,7 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
               <img
                 src={getThumbnailUrl(url, 200, 200)}
                 alt={`Evidence ${index + 1}`}
+                loading="lazy"
                 onError={() => handleImageError(index)}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform"
               />
@@ -156,6 +157,7 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
               <img
                 src={getOptimizedUrl(attachments[currentIndex] || "", 1600)}
                 alt={`Evidence ${currentIndex + 1}`}
+                loading="eager"
                 onError={() => handleImageError(currentIndex)}
                 className="w-full h-full object-contain"
               />

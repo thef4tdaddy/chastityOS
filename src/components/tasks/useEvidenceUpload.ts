@@ -5,6 +5,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useToast } from "@/contexts";
+import { compressImage } from "@/utils/image";
 
 export interface UploadedFile {
   id: string;
@@ -84,9 +85,18 @@ export function useEvidenceUpload(
       ),
     );
 
-    for (const uploadFile of filesToUpload) {
+    // Parallel uploads with compression
+    const uploadPromises = filesToUpload.map(async (uploadFile) => {
       try {
-        const result = await uploadEvidence(taskId, userId, uploadFile.file);
+        // Compress image before upload
+        const compressedFile = await compressImage(uploadFile.file, {
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.85,
+        });
+
+        const result = await uploadEvidence(taskId, userId, compressedFile);
+
         setFiles((prev) =>
           prev.map((f) =>
             f.id === uploadFile.id
@@ -94,6 +104,8 @@ export function useEvidenceUpload(
               : f,
           ),
         );
+
+        return { id: uploadFile.id, url: result.url };
       } catch (error) {
         setFiles((prev) =>
           prev.map((f) =>
@@ -107,8 +119,12 @@ export function useEvidenceUpload(
               : f,
           ),
         );
+        return { id: uploadFile.id, error: true };
       }
-    }
+    });
+
+    // Wait for all uploads to complete
+    await Promise.allSettled(uploadPromises);
 
     const uploadedUrls = files
       .map((f) => f.url)
