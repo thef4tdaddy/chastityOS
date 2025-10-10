@@ -55,3 +55,13 @@ export type {
 // Data Display Components
 export { Badge, Avatar, Progress } from "./DataDisplay";
 export type { BadgeProps, AvatarProps, ProgressProps } from "./DataDisplay";
+
+// Navigation Components
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
+export type {
+  TabsProps,
+  Tab,
+  TabsListProps,
+  TabsTriggerProps,
+  TabsContentProps,
+} from "./Tabs";

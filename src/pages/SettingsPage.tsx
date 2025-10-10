@@ -31,7 +31,7 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Tabs, TabsContent } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -721,71 +721,66 @@ const SettingsPage: React.FC = () => {
   }, [user]);
 
   const tabs = [
-    { id: "account" as SettingsTab, label: "Account", icon: FaUser },
-    { id: "display" as SettingsTab, label: "Display", icon: FaPalette },
-    { id: "profile" as SettingsTab, label: "Profile", icon: FaGlobe },
-    { id: "privacy" as SettingsTab, label: "Privacy", icon: FaShieldAlt },
-    { id: "goals" as SettingsTab, label: "Goals", icon: FaBullseye },
-    { id: "data" as SettingsTab, label: "Data", icon: FaDatabase },
+    { value: "account", label: "Account", icon: <FaUser /> },
+    { value: "display", label: "Display", icon: <FaPalette /> },
+    { value: "profile", label: "Profile", icon: <FaGlobe /> },
+    { value: "privacy", label: "Privacy", icon: <FaShieldAlt /> },
+    { value: "goals", label: "Goals", icon: <FaBullseye /> },
+    { value: "data", label: "Data", icon: <FaDatabase /> },
   ];
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "account":
-        return <AccountSection settings={settings} />;
-      case "display":
-        return <DisplaySection settings={settings} />;
-      case "profile":
-        return <ProfileSection settings={settings} />;
-      case "privacy":
-        return <PrivacySection settings={settings} />;
-      case "goals":
-        return <GoalsSection settings={settings} />;
-      case "data":
-        return <DataSection settings={settings} />;
-      default:
-        return <AccountSection settings={settings} />;
-    }
-  };
 
   return (
     <div className="text-nightly-spring-green">
-      <div className="flex flex-col lg:flex-row">
-        {/* Tab Navigation */}
-        <nav className="lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-white/10">
-          <div className="space-y-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-nightly-aquamarine text-black"
-                      : "text-nightly-celadon hover:bg-white/10 hover:text-nightly-honeydew"
-                  }`}
-                >
-                  <Icon />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Content */}
-        <main className="flex-1 p-4 lg:p-6">
-          {loading ? (
-            <div className="text-center py-8">
-              <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-              <div className="text-nightly-celadon">Loading settings...</div>
+      {loading ? (
+        <div className="text-center py-8">
+          <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
+          <div className="text-nightly-celadon">Loading settings...</div>
+        </div>
+      ) : (
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          tabs={tabs}
+          orientation="vertical"
+          className="lg:w-64 p-4"
+        >
+          <TabsContent value="account">
+            <div className="max-w-4xl">
+              <AccountSection settings={settings} />
             </div>
-          ) : (
-            <div className="max-w-4xl">{renderTabContent()}</div>
-          )}
-        </main>
-      </div>
+          </TabsContent>
+
+          <TabsContent value="display">
+            <div className="max-w-4xl">
+              <DisplaySection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <div className="max-w-4xl">
+              <ProfileSection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="privacy">
+            <div className="max-w-4xl">
+              <PrivacySection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="goals">
+            <div className="max-w-4xl">
+              <GoalsSection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="data">
+            <div className="max-w-4xl">
+              <DataSection settings={settings} />
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 };
