@@ -3,6 +3,7 @@
  * Shows submitted photo evidence with thumbnail grid and lightbox
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import {
   FaTimes,
@@ -70,7 +71,7 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
       {/* Thumbnail Grid */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
         {attachments.map((url, index) => (
-          <button
+          <Button
             key={index}
             type="button"
             onClick={() => handleImageClick(index)}
@@ -90,7 +91,7 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
               />
             )}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -105,17 +106,17 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
           aria-modal="true"
         >
           {/* Close Button */}
-          <button
+          <Button
             onClick={() => setLightboxOpen(false)}
             className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-10"
             aria-label="Close lightbox"
           >
             <FaTimes className="text-2xl" />
-          </button>
+          </Button>
 
           {/* Previous Button */}
           {attachments.length > 1 && (
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 handlePrevious();
@@ -124,12 +125,12 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
               aria-label="Previous image"
             >
               <FaChevronLeft className="text-2xl" />
-            </button>
+            </Button>
           )}
 
           {/* Next Button */}
           {attachments.length > 1 && (
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 handleNext();
@@ -138,7 +139,7 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
               aria-label="Next image"
             >
               <FaChevronRight className="text-2xl" />
-            </button>
+            </Button>
           )}
 
           {/* Image */}

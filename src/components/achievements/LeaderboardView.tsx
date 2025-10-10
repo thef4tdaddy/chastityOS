@@ -8,7 +8,7 @@ import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
 import { useLeaderboardActions } from "../../hooks/achievements/useLeaderboardActions";
-import { Select, SelectOption } from "@/components/ui";
+import { Select, SelectOption, Button } from "@/components/ui";
 
 export interface LeaderboardViewProps {
   category?: LeaderboardCategory;
@@ -114,18 +114,18 @@ const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
     </div>
 
     <div className="flex gap-4 justify-center">
-      <button
+      <Button
         onClick={onOptIn}
         className="px-6 py-3 bg-nightly-aquamarine text-black font-semibold rounded-lg hover:bg-nightly-aquamarine/80 transition-colors"
       >
         Join Leaderboards
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={onSkip}
         className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
       >
         Maybe Later
-      </button>
+      </Button>
     </div>
   </div>
 );
@@ -337,21 +337,21 @@ const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
     </div>
     <div className="flex items-center space-x-2 text-sm">
       {isOptedIn ? (
-        <button
+        <Button
           onClick={onOptOut}
           className="flex items-center space-x-1 text-red-400 hover:text-red-300"
         >
           <FaEyeSlash />
           <span>Opt Out</span>
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           onClick={onOptIn}
           className="flex items-center space-x-1 text-green-400 hover:text-green-300"
         >
           <FaEye />
           <span>Join</span>
-        </button>
+        </Button>
       )}
     </div>
   </div>
