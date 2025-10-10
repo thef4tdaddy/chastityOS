@@ -11,6 +11,7 @@ import {
   FaTint,
   FaSpinner,
 } from "../../utils/iconImport";
+import { Input, Textarea } from "@/components/ui";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [
@@ -102,7 +103,7 @@ const BasicFormFields: React.FC<{
       <label className="block text-sm font-medium text-nightly-celadon mb-2">
         Date & Time
       </label>
-      <input
+      <Input
         type="datetime-local"
         value={timestamp}
         onChange={(e) => onTimestampChange(e.target.value)}
@@ -113,7 +114,7 @@ const BasicFormFields: React.FC<{
       <label className="block text-sm font-medium text-nightly-celadon mb-2">
         Notes
       </label>
-      <textarea
+      <Textarea
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         placeholder="Describe the event..."
@@ -136,7 +137,7 @@ const AdvancedFormFields: React.FC<{
       <label className="block text-sm font-medium text-nightly-celadon mb-2">
         Mood
       </label>
-      <input
+      <Input
         type="text"
         value={mood}
         onChange={(e) => onMoodChange(e.target.value)}
@@ -173,7 +174,7 @@ const TagsAndPrivacy: React.FC<{
       <label className="block text-sm font-medium text-nightly-celadon mb-2">
         Tags (comma separated)
       </label>
-      <input
+      <Input
         type="text"
         value={tags}
         onChange={(e) => onTagsChange(e.target.value)}

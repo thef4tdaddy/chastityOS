@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RewardPunishmentLog } from "./LogItem";
 import { FaPlus } from "../../utils/iconImport";
+import { Input, Textarea } from "@/components/ui";
 
 // Form data type
 type FormData = {
@@ -54,7 +55,7 @@ const TitleInput: React.FC<{
     <label className="block text-sm font-medium text-nightly-celadon mb-2">
       Title
     </label>
-    <input
+    <Input
       type="text"
       value={title}
       onChange={(e) => onChange(e.target.value)}
@@ -74,7 +75,7 @@ const DescriptionInput: React.FC<{
     <label className="block text-sm font-medium text-nightly-celadon mb-2">
       Description
     </label>
-    <textarea
+    <Textarea
       value={description}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Detailed description of the reason"
@@ -95,7 +96,7 @@ const TimeImpactInput: React.FC<{
     <label className="block text-sm font-medium text-nightly-celadon mb-2">
       Time Impact (hours)
     </label>
-    <input
+    <Input
       type="number"
       min="0"
       max="168"
@@ -119,7 +120,7 @@ const NotesInput: React.FC<{
     <label className="block text-sm font-medium text-nightly-celadon mb-2">
       Notes (optional)
     </label>
-    <textarea
+    <Textarea
       value={notes}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Additional notes or comments"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChastityRule } from "./RuleCard";
 import { FaEdit, FaSave, FaTimes } from "../../utils/iconImport";
+import { Input, Textarea } from "@/components/ui";
 
 // Rule Editor Component
 interface RuleEditorProps {
@@ -22,7 +23,7 @@ const TitleField: React.FC<TitleFieldProps> = ({ value, onChange }) => (
     <label className="block text-sm font-medium text-nightly-celadon mb-2">
       Rule Title
     </label>
-    <input
+    <Input
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -46,7 +47,7 @@ const ContentField: React.FC<ContentFieldProps> = ({ value, onChange }) => (
         (Supports basic markdown: **bold**, bullet points with -)
       </span>
     </label>
-    <textarea
+    <Textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={`Describe the rule in detail, including:

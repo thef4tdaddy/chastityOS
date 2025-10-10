@@ -3,6 +3,7 @@
  * Basic form fields for creating a personal goal
  */
 import React from "react";
+import { Input, Textarea } from "@/components/ui";
 
 interface GoalFormFieldsProps {
   title: string;
@@ -33,7 +34,7 @@ export const GoalFormFields: React.FC<GoalFormFieldsProps> = ({
         <label className="block text-sm text-nightly-celadon mb-2">
           Goal Title
         </label>
-        <input
+        <Input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -49,7 +50,7 @@ export const GoalFormFields: React.FC<GoalFormFieldsProps> = ({
         </label>
         <div className="flex gap-4">
           <div className="flex-1">
-            <input
+            <Input
               type="number"
               min="0"
               value={days}
@@ -63,7 +64,7 @@ export const GoalFormFields: React.FC<GoalFormFieldsProps> = ({
             </span>
           </div>
           <div className="flex-1">
-            <input
+            <Input
               type="number"
               min="0"
               max="23"
@@ -87,7 +88,7 @@ export const GoalFormFields: React.FC<GoalFormFieldsProps> = ({
         <label className="block text-sm text-nightly-celadon mb-2">
           Description (optional)
         </label>
-        <textarea
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-nightly-aquamarine resize-none"

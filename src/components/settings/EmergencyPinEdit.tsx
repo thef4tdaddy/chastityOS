@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { FaShieldAlt, FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
+import { Input } from "@/components/ui";
 
 interface EmergencyPinEditProps {
   hasPin: boolean;
@@ -53,7 +54,7 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
           <label className="block text-sm text-nightly-celadon mb-2">
             Emergency PIN
           </label>
-          <input
+          <Input
             type="password"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
@@ -68,7 +69,7 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
           <label className="block text-sm text-nightly-celadon mb-2">
             Confirm PIN
           </label>
-          <input
+          <Input
             type="password"
             value={confirmPin}
             onChange={(e) => setConfirmPin(e.target.value)}

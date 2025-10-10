@@ -1,6 +1,7 @@
 import React from "react";
 import { useKeyholderStore } from "../../stores/keyholderStore";
 import { FaLock, FaUnlock, FaKey, FaSpinner } from "../../utils/iconImport";
+import { Input } from "@/components/ui";
 
 // Password Form Component
 const PasswordForm: React.FC<{
@@ -23,7 +24,7 @@ const PasswordForm: React.FC<{
       <label className="block text-sm font-medium text-nightly-celadon mb-2">
         Keyholder Password
       </label>
-      <input
+      <Input
         type="password"
         value={passwordAttempt}
         onChange={(e) => onPasswordChange(e.target.value)}
