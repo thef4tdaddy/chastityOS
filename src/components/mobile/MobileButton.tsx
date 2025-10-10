@@ -3,6 +3,7 @@
  * Touch-optimized button with haptic feedback
  */
 import React, { forwardRef } from "react";
+import { Button } from "@/components/ui";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface MobileButtonProps
@@ -183,7 +184,7 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
     };
 
     return (
-      <button
+      <Button
         ref={ref}
         className={buttonClasses}
         onClick={handleClick}
@@ -201,7 +202,7 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
         </ButtonContent>
 
         <RippleEffect />
-      </button>
+      </Button>
     );
   },
 );

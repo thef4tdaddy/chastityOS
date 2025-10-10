@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 import { logger } from "@/utils/logging";
 
 interface Props {
@@ -96,12 +97,12 @@ export class AsyncErrorBoundary extends React.Component<Props, ErrorState> {
           <p className="text-blue-600 mb-3">
             {this.state.error?.message || "Failed to load content"}
           </p>
-          <button
+          <Button
             onClick={this.handleReset}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       );
     }

@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 
 interface LinkingMessageDisplayProps {
   message: string;
@@ -25,12 +26,12 @@ export const LinkingMessageDisplay: React.FC<LinkingMessageDisplayProps> = ({
     >
       <div className="flex justify-between items-start">
         <p className="text-sm">{message}</p>
-        <button
+        <Button
           onClick={onClearMessage}
           className="text-current opacity-70 hover:opacity-100 ml-2"
         >
           ×
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ import {
   FaTrophy,
 } from "../../utils/iconImport";
 import type { DBGoal } from "@/types/database";
-import { Input, Textarea, Card } from "@/components/ui";
+import { Input, Textarea, Card, Button } from "@/components/ui";
 
 interface PersonalGoalCardProps {
   goal: DBGoal;
@@ -133,18 +133,18 @@ const PersonalGoalEditFormComponent: React.FC<{
         </div>
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={handleSave}
             className="flex-1 bg-nightly-aquamarine/20 border border-nightly-aquamarine hover:bg-nightly-aquamarine/30 text-nightly-aquamarine font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <FaCheck /> Save
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onCancel}
             className="flex-1 bg-white/5 border border-white/20 hover:bg-white/10 text-nightly-celadon font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <FaTimes /> Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </Card>
@@ -194,20 +194,20 @@ const PersonalGoalDisplayComponent: React.FC<{
 
         {!isCompleted && (
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={onEdit}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors text-nightly-aquamarine"
               title="Edit goal"
             >
               <FaEdit />
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onDelete}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors text-red-400"
               title="Delete goal"
             >
               <FaTrash />
-            </button>
+            </Button>
           </div>
         )}
       </div>
