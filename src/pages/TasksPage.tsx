@@ -3,22 +3,10 @@ import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
-import { TaskItem } from "../components/tasks";
+import { TaskItem, TaskSkeleton } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip } from "@/components/ui";
-
-// UI State Components
-const LoadingState: React.FC = () => (
-  <Card variant="glass" className="text-center py-12">
-    <div className="glass-float">
-      <div className="inline-flex items-center space-x-2">
-        <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-blue-200 text-lg">Loading tasks...</span>
-      </div>
-    </div>
-  </Card>
-);
 
 const ErrorState: React.FC = () => (
   <div className="text-center py-8">
@@ -206,7 +194,7 @@ const TasksPage: React.FC = () => {
       {/* Content with Glass Container */}
       <div className="max-w-4xl mx-auto">
         {loading ? (
-          <LoadingState />
+          <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
         ) : error ? (
           <ErrorState />
         ) : (
