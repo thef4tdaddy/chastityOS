@@ -5,8 +5,8 @@ This document tracks all select/dropdown instances found in the codebase and the
 ## Summary
 
 - **Total Instances Found**: 16
-- **Migrated**: 0
-- **Remaining**: 16
+- **Migrated**: 13
+- **Remaining**: 3 (SecuritySettings, SettingsPage partial, original-app)
 
 ## Select Instances
 
@@ -24,8 +24,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     // ... className
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Timezone selection dropdown
+- **Migration Status**: ✅ Migrated
+- **Notes**: Timezone selection dropdown - now using searchable Select component
 
 ---
 
@@ -41,8 +41,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     disabled={disabled}
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Feedback category selection
+- **Migration Status**: ✅ Migrated
+- **Notes**: Priority selection for bug reports
 
 ---
 
@@ -59,8 +59,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="bg-white/10 border border-white/10 rounded p-2 text-nightly-honeydew"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Rules filter dropdown with icon
+- **Migration Status**: ✅ Migrated
+- **Notes**: Rules filter dropdown with icon - now using Select with size="sm"
 
 ---
 
@@ -77,8 +77,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Rule creator selection
+- **Migration Status**: ✅ Migrated
+- **Notes**: Rule creator selection - now using Select with label
 
 ---
 
@@ -95,7 +95,7 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
   >
   ```
-- **Migration Status**: ⏳ Pending
+- **Migration Status**: ✅ Migrated
 - **Notes**: Recurring task frequency selection
 
 ---
@@ -111,7 +111,7 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
   >
   ```
-- **Migration Status**: ⏳ Pending
+- **Migration Status**: ✅ Migrated
 - **Notes**: Wearer relationship selection
 
 ---
@@ -127,8 +127,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full max-w-md"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Wearer selection for dashboard
+- **Migration Status**: ✅ Migrated
+- **Notes**: Wearer selection for dashboard - now using Select with fullWidth=false
 
 ---
 
@@ -141,8 +141,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     // ... implementation
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Rewards/Punishments filter
+- **Migration Status**: ✅ Migrated
+- **Notes**: Rewards/Punishments filter - now using Select with size="sm"
 
 ---
 
@@ -159,8 +159,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     <option value="240">4 hours</option>
   </select>
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Auto-logout timeout selection
+- **Migration Status**: ⏳ Pending (No value/onChange - placeholder implementation)
+- **Notes**: Auto-logout timeout selection - needs functional implementation first
 
 ---
 
@@ -176,7 +176,7 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
   >
   ```
-- **Migration Status**: ⏳ Pending
+- **Migration Status**: ✅ Migrated
 - **Notes**: Relationship role selection
 
 ---
@@ -192,8 +192,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Pause reason selection
+- **Migration Status**: ✅ Migrated
+- **Notes**: Pause reason selection - now using Select with label
 
 ---
 
@@ -210,8 +210,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Leaderboard category filter
+- **Migration Status**: ✅ Migrated
+- **Notes**: Leaderboard category filter - now using Select with size="sm"
 
 ---
 
@@ -226,8 +226,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Leaderboard period filter
+- **Migration Status**: ✅ Migrated
+- **Notes**: Leaderboard period filter - now using Select with size="sm"
 
 ---
 
@@ -244,8 +244,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Achievement category filter
+- **Migration Status**: ✅ Migrated
+- **Notes**: Achievement category filter - now using Select with size="sm"
 
 ---
 
@@ -262,8 +262,8 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
   >
   ```
-- **Migration Status**: ⏳ Pending
-- **Notes**: Achievement difficulty filter
+- **Migration Status**: ✅ Migrated
+- **Notes**: Achievement difficulty filter - now using Select with size="sm"
 
 ---
 

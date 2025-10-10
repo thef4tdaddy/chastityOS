@@ -31,7 +31,7 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Select, SelectOption } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -338,26 +338,17 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
-              Timezone
-            </label>
-            <select
+            <Select
+              label="Timezone"
               value={timezone}
-              onChange={(e) => {
-                setTimezone(e.target.value);
+              onChange={(value) => {
+                setTimezone(value as string);
                 setValidationError(null);
               }}
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
-            >
-              {timezoneOptions.map((tz) => (
-                <option key={tz.value} value={tz.value}>
-                  {tz.label}
-                </option>
-              ))}
-            </select>
-            {validationError && (
-              <p className="text-red-400 text-xs mt-1">{validationError}</p>
-            )}
+              options={timezoneOptions as SelectOption[]}
+              error={validationError || undefined}
+              searchable
+            />
           </div>
 
           <div className="flex items-center justify-between">

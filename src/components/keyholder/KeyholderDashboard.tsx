@@ -15,6 +15,7 @@ import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking
 import { usePendingReleaseRequests } from "../../hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "./ReleaseRequestCard";
 import { AdminRelationship } from "../../types/account-linking";
+import { Select, SelectOption } from "@/components/ui";
 
 // Loading Component
 const AdminLoadingDisplay: React.FC = () => (
@@ -36,22 +37,22 @@ const WearerSelection: React.FC<{
 }> = ({ keyholderRelationships, selectedWearerId, onSetSelectedWearer }) => {
   if (keyholderRelationships.length <= 1) return null;
 
+  const wearerOptions: SelectOption[] = keyholderRelationships.map(
+    (relationship) => ({
+      value: relationship.wearerId,
+      label: `Wearer: ${relationship.wearerId}`,
+    }),
+  );
+
   return (
     <div className="mb-6">
-      <label className="block text-sm font-medium text-nightly-honeydew mb-2">
-        Select Wearer to Manage:
-      </label>
-      <select
+      <Select
+        label="Select Wearer to Manage:"
         value={selectedWearerId || ""}
-        onChange={(e) => onSetSelectedWearer(e.target.value || null)}
-        className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full max-w-md"
-      >
-        {keyholderRelationships.map((relationship) => (
-          <option key={relationship.id} value={relationship.wearerId}>
-            Wearer: {relationship.wearerId}
-          </option>
-        ))}
-      </select>
+        onChange={(value) => onSetSelectedWearer((value as string) || null)}
+        options={wearerOptions}
+        fullWidth={false}
+      />
     </div>
   );
 };
