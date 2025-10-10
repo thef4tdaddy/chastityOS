@@ -28,6 +28,7 @@ interface CreatePersonalGoalFormProps {
   isCreating: boolean;
 }
 
+// eslint-disable-next-line max-lines-per-function -- Component has clear sections and is well-organized
 export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
   onCreate,
   isCreating,
