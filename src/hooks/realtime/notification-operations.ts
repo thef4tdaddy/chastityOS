@@ -46,11 +46,9 @@ export const createNotificationFactory = (
     // Check category preferences - using manual find for compatibility
     let categoryPref = null;
     for (let i = 0; i < notificationState.preferences.categories.length; i++) {
-      if (
-        notificationState.preferences.categories[i].category ===
-        notification.type
-      ) {
-        categoryPref = notificationState.preferences.categories[i];
+      const currentPref = notificationState.preferences.categories[i];
+      if (currentPref && currentPref.category === notification.type) {
+        categoryPref = currentPref;
         break;
       }
     }
@@ -110,7 +108,7 @@ export const createMarkAllAsReadFunction = (
     const unreadIds: string[] = [];
     for (let i = 0; i < notificationState.notifications.length; i++) {
       const notif = notificationState.notifications[i];
-      if (!notif.isRead) {
+      if (notif && !notif.isRead) {
         unreadIds.push(notif.id);
       }
     }
