@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import type { RecurringConfig } from "@/types/database";
 import { FaSync } from "react-icons/fa";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Checkbox } from "@/components/ui";
 
 interface TaskCreationWithRecurringProps {
   onCreateTask: (taskData: {
@@ -82,12 +82,10 @@ export const TaskCreationWithRecurring: React.FC<
 
       {/* Recurring Checkbox */}
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="isRecurring"
           checked={isRecurring}
-          onChange={(e) => setIsRecurring(e.target.checked)}
-          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+          onChange={setIsRecurring}
         />
         <label
           htmlFor="isRecurring"
