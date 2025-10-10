@@ -3,7 +3,7 @@
  * Allows users to set/update/remove emergency unlock PIN for hardcore mode
  */
 import React, { useState } from "react";
-import { useAuthState } from "../../contexts";
+import { useAuthState, useToast } from "../../contexts";
 import {
   useEmergencyPinStatus,
   useSetEmergencyPin,
@@ -23,6 +23,7 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   isHardcoreMode = false,
 }) => {
   const { user } = useAuthState();
+  const { showSuccess, showError } = useToast();
 
   // Use TanStack Query hooks
   const { data: pinStatus, isLoading } = useEmergencyPinStatus(user?.uid);
@@ -35,8 +36,6 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSavePin = async () => {
@@ -44,23 +43,20 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
 
     const validation = validateEmergencyPin(pin, confirmPin);
     if (!validation.isValid) {
-      setError(validation.error || "Validation failed");
+      showError(validation.error || "Validation failed");
       return;
     }
 
     try {
       setIsSaving(true);
-      setError("");
       await setEmergencyPin.mutateAsync({ userId: user.uid, pin });
 
-      setSuccess("Emergency PIN saved successfully");
+      showSuccess("Emergency PIN saved successfully");
       setIsEditing(false);
       setPin("");
       setConfirmPin("");
-
-      setTimeout(() => setSuccess(""), 3000);
     } catch {
-      setError("Failed to save PIN. Please try again.");
+      showError("Failed to save PIN. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -79,11 +75,9 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
       setIsSaving(true);
       await removeEmergencyPin.mutateAsync(user.uid);
 
-      setSuccess("Emergency PIN removed");
-
-      setTimeout(() => setSuccess(""), 3000);
+      showSuccess("Emergency PIN removed");
     } catch {
-      setError("Failed to remove PIN. Please try again.");
+      showError("Failed to remove PIN. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -93,7 +87,6 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
     setIsEditing(false);
     setPin("");
     setConfirmPin("");
-    setError("");
   };
 
   if (isLoading) {
@@ -115,7 +108,6 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
         setPin={setPin}
         confirmPin={confirmPin}
         setConfirmPin={setConfirmPin}
-        error={error}
         isSaving={isSaving}
         onSave={handleSavePin}
         onCancel={handleCancel}
@@ -128,7 +120,6 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
       hasPin={hasPin}
       createdAt={createdAt}
       isHardcoreMode={isHardcoreMode}
-      success={success}
       onEdit={() => setIsEditing(true)}
       onRemove={handleRemovePin}
     />

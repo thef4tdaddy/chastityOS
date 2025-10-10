@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import type { ConflictInfo } from "@/types/database";
-import { RadioGroup, RadioOption, Modal } from "@/components/ui";
+import { RadioGroup, RadioOption, Modal, Button } from "@/components/ui";
 
 interface ConflictResolutionProps {
   conflicts: ConflictInfo[];
@@ -140,19 +140,19 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionProps> = ({
           </div>
 
           <div className="flex space-x-3">
-            <button
+            <Button
               onClick={onCancel}
               className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleResolve}
               disabled={resolvedCount !== totalCount}
               className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
               Resolve Conflicts
-            </button>
+            </Button>
           </div>
         </div>
       }

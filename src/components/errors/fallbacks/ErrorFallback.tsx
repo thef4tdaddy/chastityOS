@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 
 interface ErrorFallbackProps {
   error: Error | null;
@@ -39,12 +40,12 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           {error?.message || "An unexpected error occurred"}
         </p>
         {resetError && (
-          <button
+          <Button
             onClick={resetError}
             className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-md transition-colors"
           >
             Try Again
-          </button>
+          </Button>
         )}
       </div>
     </div>

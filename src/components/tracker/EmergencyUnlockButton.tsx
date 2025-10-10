@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { FaExclamationTriangle } from "../../utils/iconImport";
 import { EmergencyUnlockModal } from "./EmergencyUnlockModal";
 import { useEmergencyUnlock } from "../../hooks/api/useEmergency";
@@ -61,7 +62,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
 
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setShowModal(true)}
         disabled={emergencyUnlock.isPending}
@@ -70,7 +71,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
       >
         <FaExclamationTriangle className="mr-2" />
         🚨 Emergency Unlock
-      </button>
+      </Button>
 
       <EmergencyUnlockModal
         isOpen={showModal}

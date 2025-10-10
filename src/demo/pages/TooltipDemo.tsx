@@ -4,7 +4,7 @@
  */
 import React from "react";
 import { Tooltip, Button, IconButton, Card } from "@/components/ui";
-import { FaInfo, FaQuestion, FaCog } from "react-icons/fa";
+import { FaInfo, FaQuestion, FaCog } from "../../utils/iconImport";
 
 export const TooltipDemo: React.FC = () => {
   return (
