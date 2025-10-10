@@ -4,6 +4,7 @@
  */
 import React, { useState } from "react";
 import type { ConflictInfo } from "@/types/database";
+import { RadioGroup, RadioOption } from "@/components/ui";
 
 interface ConflictResolutionProps {
   conflicts: ConflictInfo[];
@@ -30,57 +31,7 @@ const getDeviceLabel = (isLocal: boolean): string => {
   return isLocal ? "This Device" : "Other Device";
 };
 
-// Version Option Component
-interface VersionOptionProps {
-  conflictId: string;
-  isLocal: boolean;
-  data: unknown;
-  timestamp: Date;
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-const VersionOption: React.FC<VersionOptionProps> = ({
-  conflictId,
-  isLocal,
-  data,
-  timestamp,
-  isSelected,
-  onSelect,
-}) => (
-  <label className="cursor-pointer">
-    <input
-      type="radio"
-      name={conflictId}
-      value={isLocal ? "local" : "remote"}
-      checked={isSelected}
-      onChange={onSelect}
-      className="sr-only"
-    />
-    <div
-      className={`border-2 rounded-lg p-4 transition-colors ${
-        isSelected
-          ? "border-purple-500 bg-purple-500/10"
-          : "border-gray-600 hover:border-purple-400"
-      }`}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-medium text-purple-300">
-          {getDeviceLabel(isLocal)}
-        </span>
-        <span className="text-sm text-gray-400">
-          {formatTimestamp(timestamp)}
-        </span>
-      </div>
-
-      <div className="bg-gray-900 rounded p-3 text-sm">
-        <pre className="whitespace-pre-wrap text-gray-300 overflow-x-auto">
-          {formatValue(data)}
-        </pre>
-      </div>
-    </div>
-  </label>
-);
+// Removed VersionOption component - now using RadioGroup from UI library
 
 // Conflict Item Component
 interface ConflictItemProps {
@@ -103,6 +54,19 @@ const ConflictItem: React.FC<ConflictItemProps> = ({
   const localTimestamp = new Date(conflict.localData.lastModified as string);
   const remoteTimestamp = new Date(conflict.remoteData.lastModified as string);
 
+  const versionOptions: RadioOption[] = [
+    {
+      value: "local",
+      label: `${getDeviceLabel(true)} - ${formatTimestamp(localTimestamp)}`,
+      description: formatValue(conflict.localData),
+    },
+    {
+      value: "remote",
+      label: `${getDeviceLabel(false)} - ${formatTimestamp(remoteTimestamp)}`,
+      description: formatValue(conflict.remoteData),
+    },
+  ];
+
   return (
     <div className="border border-gray-700 rounded-lg p-4">
       <h3 className="text-lg font-medium text-purple-200 mb-3">
@@ -111,24 +75,17 @@ const ConflictItem: React.FC<ConflictItemProps> = ({
         Conflict
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <VersionOption
-          conflictId={conflictId}
-          isLocal={true}
-          data={conflict.localData}
-          timestamp={localTimestamp}
-          isSelected={resolution === "local"}
-          onSelect={() => onResolutionChange(conflictId, "local")}
-        />
-        <VersionOption
-          conflictId={conflictId}
-          isLocal={false}
-          data={conflict.remoteData}
-          timestamp={remoteTimestamp}
-          isSelected={resolution === "remote"}
-          onSelect={() => onResolutionChange(conflictId, "remote")}
-        />
-      </div>
+      <RadioGroup
+        name={conflictId}
+        value={resolution || ""}
+        onChange={(value) =>
+          onResolutionChange(conflictId, value as "local" | "remote")
+        }
+        options={versionOptions}
+        orientation="horizontal"
+        size="md"
+        className="[&_label]:border-2 [&_label]:rounded-lg [&_label]:p-4"
+      />
     </div>
   );
 };

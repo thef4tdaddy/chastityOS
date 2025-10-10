@@ -78,6 +78,30 @@ const sizeClasses = {
  * />
  * ```
  */
+// Helper function to get radio circle classes
+const getRadioCircleClasses = (
+  radio: string,
+  checked: boolean,
+  disabled?: boolean,
+): string => {
+  const baseClasses = `${radio} border-2 rounded-full transition-all duration-200 ease-in-out flex items-center justify-center`;
+
+  const stateClasses = checked
+    ? "border-purple-500 bg-purple-500/10 backdrop-blur-sm"
+    : "border-gray-300 dark:border-gray-600 bg-white/5 backdrop-blur-sm";
+
+  const focusClasses = !disabled
+    ? "peer-focus:ring-2 peer-focus:ring-purple-500/30 peer-focus:ring-offset-2 peer-focus:ring-offset-white dark:peer-focus:ring-offset-gray-900"
+    : "";
+
+  const hoverClasses =
+    !disabled && !checked
+      ? "hover:border-purple-400 hover:bg-purple-500/5"
+      : "";
+
+  return `${baseClasses} ${stateClasses} ${focusClasses} ${hoverClasses}`;
+};
+
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(
   (
     {
@@ -98,15 +122,14 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
 
     const { radio, dot, text, description: descSize } = sizeClasses[size];
 
+    const labelClasses = `flex items-start ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${className}`;
+    const radioCircleClasses = getRadioCircleClasses(radio, checked, disabled);
+    const labelTextClasses = `${text} font-medium text-gray-900 dark:text-gray-100 ${checked ? "text-purple-600 dark:text-purple-400" : ""}`;
+    const descriptionClasses = `${descSize} text-gray-500 dark:text-gray-400 mt-0.5`;
+    const dotClasses = `${dot} rounded-full bg-purple-500 animate-scale-in`;
+
     return (
-      <label
-        htmlFor={radioId}
-        className={`
-          flex items-start
-          ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
-          ${className}
-        `}
-      >
+      <label htmlFor={radioId} className={labelClasses}>
         <div className="relative flex items-center justify-center flex-shrink-0 mt-0.5">
           <input
             ref={ref}
@@ -119,61 +142,18 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
             {...props}
           />
           {/* Custom radio circle */}
-          <div
-            className={`
-              ${radio}
-              border-2
-              rounded-full
-              transition-all duration-200 ease-in-out
-              ${
-                checked
-                  ? "border-purple-500 bg-purple-500/10 backdrop-blur-sm"
-                  : "border-gray-300 dark:border-gray-600 bg-white/5 backdrop-blur-sm"
-              }
-              ${!disabled && "peer-focus:ring-2 peer-focus:ring-purple-500/30 peer-focus:ring-offset-2 peer-focus:ring-offset-white dark:peer-focus:ring-offset-gray-900"}
-              ${!disabled && !checked && "hover:border-purple-400 hover:bg-purple-500/5"}
-              flex items-center justify-center
-            `}
-          >
+          <div className={radioCircleClasses}>
             {/* Filled dot when selected */}
-            {checked && (
-              <div
-                className={`
-                  ${dot}
-                  rounded-full
-                  bg-purple-500
-                  animate-scale-in
-                `}
-              />
-            )}
+            {checked && <div className={dotClasses} />}
           </div>
         </div>
 
         {/* Label and description */}
         {(label || description) && (
           <div className="ml-3 flex-1">
-            {label && (
-              <div
-                className={`
-                  ${text}
-                  font-medium
-                  text-gray-900 dark:text-gray-100
-                  ${checked ? "text-purple-600 dark:text-purple-400" : ""}
-                `}
-              >
-                {label}
-              </div>
-            )}
+            {label && <div className={labelTextClasses}>{label}</div>}
             {description && (
-              <div
-                className={`
-                  ${descSize}
-                  text-gray-500 dark:text-gray-400
-                  mt-0.5
-                `}
-              >
-                {description}
-              </div>
+              <div className={descriptionClasses}>{description}</div>
             )}
           </div>
         )}

@@ -170,8 +170,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
           currentIndex <= 0 ? enabledOptions.length - 1 : currentIndex - 1;
       }
 
-      if (nextIndex !== currentIndex) {
-        onChange(enabledOptions[nextIndex].value);
+      const nextOption = enabledOptions[nextIndex];
+      if (nextIndex !== currentIndex && nextOption) {
+        onChange(nextOption.value);
       }
     },
     [options, value, onChange],

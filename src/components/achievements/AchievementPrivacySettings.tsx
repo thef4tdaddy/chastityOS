@@ -17,6 +17,7 @@ import {
 import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
+import { RadioGroup, RadioOption } from "@/components/ui";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -54,39 +55,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   </div>
 );
 
-// Sub-component for radio button options
-interface RadioOptionProps {
-  name: string;
-  value: string;
-  checked: boolean;
-  onChange: (value: string) => void;
-  title: string;
-  description: string;
-}
-
-const RadioOption: React.FC<RadioOptionProps> = ({
-  name,
-  value,
-  checked,
-  onChange,
-  title,
-  description,
-}) => (
-  <label className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg cursor-pointer">
-    <input
-      type="radio"
-      name={name}
-      value={value}
-      checked={checked}
-      onChange={(e) => onChange(e.target.value)}
-      className="text-nightly-aquamarine focus:ring-nightly-aquamarine"
-    />
-    <div>
-      <div className="font-medium text-nightly-honeydew">{title}</div>
-      <div className="text-sm text-nightly-celadon">{description}</div>
-    </div>
-  </label>
-);
+// Removed RadioOption component - now using RadioGroup from UI library
 
 // Sub-component for privacy notice
 const PrivacyNotice: React.FC = () => (
@@ -223,38 +192,38 @@ interface DisplayNameSectionProps {
   ) => void;
 }
 
+const displayNameOptions: RadioOption[] = [
+  {
+    value: "anonymous",
+    label: "Anonymous",
+    description: 'Show as "ChastityUser_XXXX"',
+  },
+  {
+    value: "username",
+    label: "Username",
+    description: "Use your username if available",
+  },
+  {
+    value: "real",
+    label: "Real Name",
+    description: "Use your real name (not recommended)",
+  },
+];
+
 const DisplayNameSection: React.FC<DisplayNameSectionProps> = ({
   settings,
   onSettingChange,
 }) => (
   <div className="space-y-4">
     <SectionHeader title="Display Name" />
-    <div className="space-y-3">
-      <RadioOption
-        name="displayName"
-        value="anonymous"
-        checked={settings.displayName === "anonymous"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Anonymous"
-        description='Show as "ChastityUser_XXXX"'
-      />
-      <RadioOption
-        name="displayName"
-        value="username"
-        checked={settings.displayName === "username"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Username"
-        description="Use your username if available"
-      />
-      <RadioOption
-        name="displayName"
-        value="real"
-        checked={settings.displayName === "real"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Real Name"
-        description="Use your real name (not recommended)"
-      />
-    </div>
+    <RadioGroup
+      name="displayName"
+      value={settings.displayName}
+      onChange={(value) => onSettingChange("displayName", value as string)}
+      options={displayNameOptions}
+      size="md"
+      className="[&_label]:bg-white/5 [&_label]:p-3 [&_label]:rounded-lg"
+    />
   </div>
 );
 
