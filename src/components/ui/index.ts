@@ -86,6 +86,16 @@ export type { TooltipProps } from "./Tooltip";
 export { ToggleGroup } from "./ToggleGroup";
 export type { ToggleGroupProps, ToggleGroupOption } from "./ToggleGroup";
 
+// Navigation Components
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./Tabs";
+export type {
+  TabsProps,
+  Tab,
+  TabsListProps,
+  TabsTriggerProps,
+  TabsContentProps,
+} from "./Tabs";
+
 // Modal Component
 export { Modal } from "./Modal";
 export type { ModalProps } from "./Modal";
