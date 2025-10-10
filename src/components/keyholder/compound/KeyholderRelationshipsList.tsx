@@ -5,6 +5,7 @@
 import React from "react";
 import { useKeyholderContext } from "./KeyholderContext";
 import { FaUsers } from "../../../utils/iconImport";
+import { Select, SelectOption } from "@/components/ui";
 
 export const KeyholderRelationshipsList: React.FC = () => {
   const { keyholderRelationships, selectedWearerId, setSelectedWearer } =
@@ -12,6 +13,13 @@ export const KeyholderRelationshipsList: React.FC = () => {
 
   // Don't show selector if only one relationship
   if (keyholderRelationships.length <= 1) return null;
+
+  const wearerOptions: SelectOption[] = keyholderRelationships.map(
+    (relationship) => ({
+      value: relationship.wearerId,
+      label: `Wearer: ${relationship.wearerId}`,
+    }),
+  );
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -22,17 +30,11 @@ export const KeyholderRelationshipsList: React.FC = () => {
         </h3>
       </div>
 
-      <select
+      <Select
         value={selectedWearerId || ""}
-        onChange={(e) => setSelectedWearer(e.target.value || null)}
-        className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
-      >
-        {keyholderRelationships.map((relationship) => (
-          <option key={relationship.id} value={relationship.wearerId}>
-            Wearer: {relationship.wearerId}
-          </option>
-        ))}
-      </select>
+        onChange={(value) => setSelectedWearer((value as string) || null)}
+        options={wearerOptions}
+      />
     </div>
   );
 };

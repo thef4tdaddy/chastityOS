@@ -33,6 +33,7 @@ export {
   Checkbox,
   Radio,
   RadioGroup,
+  Select,
 } from "./Form";
 export type {
   InputProps,
@@ -43,6 +44,8 @@ export type {
   RadioProps,
   RadioGroupProps,
   RadioOption,
+  SelectProps,
+  SelectOption,
 } from "./Form";
 
 // Feedback Components
