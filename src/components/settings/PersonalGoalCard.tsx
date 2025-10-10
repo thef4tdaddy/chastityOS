@@ -5,6 +5,7 @@
 import React, { useState, memo, useMemo, useCallback } from "react";
 import { FaTrash, FaEdit, FaCheck, FaTimes, FaTrophy } from "react-icons/fa";
 import type { DBGoal } from "@/types/database";
+import { Card } from "@/components/ui";
 
 interface PersonalGoalCardProps {
   goal: DBGoal;
@@ -58,7 +59,7 @@ const PersonalGoalEditFormComponent: React.FC<{
   };
 
   return (
-    <div className="glass-card p-6">
+    <Card variant="glass" padding="lg">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         Edit Personal Goal
       </h3>
@@ -140,7 +141,7 @@ const PersonalGoalEditFormComponent: React.FC<{
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -165,8 +166,10 @@ const PersonalGoalDisplayComponent: React.FC<{
   );
 
   return (
-    <div
-      className={`glass-card p-6 ${isCompleted ? "border-2 border-nightly-aquamarine" : ""}`}
+    <Card
+      variant="glass"
+      padding="lg"
+      className={isCompleted ? "border-2 border-nightly-aquamarine" : ""}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
@@ -233,7 +236,7 @@ const PersonalGoalDisplayComponent: React.FC<{
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

@@ -14,6 +14,7 @@ import { FaSpinner } from "react-icons/fa";
 import { EmergencyPinEdit } from "./EmergencyPinEdit";
 import { EmergencyPinDisplay } from "./EmergencyPinDisplay";
 import { validateEmergencyPin } from "../../utils/goals/formValidation";
+import { Card } from "@/components/ui";
 
 interface EmergencyPinSetupProps {
   isHardcoreMode?: boolean;
@@ -103,12 +104,12 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
 
   if (isLoading) {
     return (
-      <div className="glass-card p-6">
+      <Card variant="glass" padding="lg">
         <div className="flex items-center gap-2 text-nightly-celadon">
           <FaSpinner className="animate-spin" />
           <span>Loading emergency PIN settings...</span>
         </div>
-      </div>
+      </Card>
     );
   }
 

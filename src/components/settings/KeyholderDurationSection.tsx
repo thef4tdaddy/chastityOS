@@ -10,6 +10,7 @@ import {
 import { FaLock, FaEdit, FaCheck, FaTimes, FaTrash } from "react-icons/fa";
 import type { DBGoal } from "@/types/database";
 import { useToast } from "@/contexts";
+import { Card } from "@/components/ui";
 
 interface KeyholderDurationSectionProps {
   userId?: string | null;
@@ -50,7 +51,7 @@ const KeyholderDurationEditForm: React.FC<{
   };
 
   return (
-    <div className="glass-card p-6 border-2 border-nightly-lavender-floral">
+    <Card variant="glass" padding="lg" className="border-2 border-nightly-lavender-floral">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         Edit Required Duration
       </h3>
@@ -132,7 +133,7 @@ const KeyholderDurationEditForm: React.FC<{
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -142,7 +143,7 @@ const KeyholderDurationDisplay: React.FC<{
   onDelete: () => void;
 }> = ({ goal, onEdit, onDelete }) => {
   return (
-    <div className="glass-card p-6 border-2 border-nightly-lavender-floral">
+    <Card variant="glass" padding="lg" className="border-2 border-nightly-lavender-floral">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -184,7 +185,7 @@ const KeyholderDurationDisplay: React.FC<{
           {formatDuration(goal.targetValue)}
         </p>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -253,17 +254,19 @@ const CreateKeyholderDurationForm: React.FC<{
 
   if (!isOpen) {
     return (
-      <button
+      <Card
+        variant="glass"
+        padding="lg"
         onClick={() => setIsOpen(true)}
-        className="w-full glass-card p-6 hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-nightly-lavender-floral font-semibold border-2 border-nightly-lavender-floral/30"
+        className="hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-nightly-lavender-floral font-semibold border-2 border-nightly-lavender-floral/30 cursor-pointer"
       >
         <FaLock /> Set Required Duration
-      </button>
+      </Card>
     );
   }
 
   return (
-    <div className="glass-card p-6 border-2 border-nightly-lavender-floral">
+    <Card variant="glass" padding="lg" className="border-2 border-nightly-lavender-floral">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         Set Required Duration
       </h3>
@@ -355,7 +358,7 @@ const CreateKeyholderDurationForm: React.FC<{
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -418,16 +421,16 @@ export const KeyholderDurationSection: React.FC<
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="glass-card p-6">
+        <Card variant="glass" padding="lg">
           <p className="text-nightly-celadon">Loading keyholder settings...</p>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="glass-card p-6">
+      <Card variant="glass" padding="lg">
         <h2 className="text-2xl font-bold text-nightly-honeydew mb-2">
           Keyholder Required Duration
         </h2>
@@ -435,7 +438,7 @@ export const KeyholderDurationSection: React.FC<
           Set a minimum duration that must be completed before unlock is
           allowed. This requirement is enforced by the keyholder.
         </p>
-      </div>
+      </Card>
 
       {khDuration ? (
         <KeyholderDurationCard
