@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect } from "react";
+import { Button } from "@/components/ui";
 import { useToast } from "../../contexts";
 import { FaTrophy, FaTimes } from "../../utils/iconImport";
 import { DBAchievement, DBAchievementNotification } from "../../types";
@@ -36,12 +37,12 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
         </span>
       </div>
     </div>
-    <button
+    <Button
       onClick={onClose}
       className="text-gray-400 hover:text-white transition-colors"
     >
       <FaTimes />
-    </button>
+    </Button>
   </div>
 );
 

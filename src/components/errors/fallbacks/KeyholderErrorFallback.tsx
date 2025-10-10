@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 
 interface KeyholderErrorFallbackProps {
   error?: Error | null;
@@ -43,12 +44,12 @@ export const KeyholderErrorFallback: React.FC<KeyholderErrorFallbackProps> = ({
             <p className="text-sm text-purple-600 mb-3">{error.message}</p>
           )}
           {resetError && (
-            <button
+            <Button
               onClick={resetError}
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Retry
-            </button>
+            </Button>
           )}
         </div>
       </div>

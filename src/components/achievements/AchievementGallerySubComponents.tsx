@@ -17,7 +17,7 @@ import {
   DBUserAchievement,
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
-import { Input, Select, SelectOption, Checkbox } from "@/components/ui";
+import { Input, Select, SelectOption, Checkbox, Button } from "@/components/ui";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -246,12 +246,12 @@ const VisibilityToggle: React.FC<VisibilityToggleProps> = ({
   }
 
   return (
-    <button
+    <Button
       onClick={() => onToggleVisibility(achievement.id)}
       className="absolute top-2 right-2 p-1 rounded text-gray-400 hover:text-white transition-colors"
     >
       {isVisible ? <FaEye /> : <FaEyeSlash />}
-    </button>
+    </Button>
   );
 };
 
