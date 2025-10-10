@@ -1,5 +1,6 @@
 import React from "react";
 import { FaLock } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 import { EmergencyUnlockButton } from "./EmergencyUnlockButton";
 import { BegForReleaseButton } from "./BegForReleaseButton";
 
@@ -43,14 +44,15 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       {/* Main Action Buttons with Glass Morphism */}
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
         {!isCageOn ? (
-          <button
-            type="button"
+          <Button
+            variant="primary"
             onClick={onStartSession}
             disabled={isStarting}
-            className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={isStarting}
+            className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105"
           >
             {isStarting ? "Starting..." : "ON"}
-          </button>
+          </Button>
         ) : isGoalActive && isHardcoreGoal ? (
           sessionId && userId ? (
             <EmergencyUnlockButton
@@ -61,14 +63,14 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
               className="glass-button bg-gradient-to-r from-orange-600/80 to-red-600/80 hover:from-orange-500/90 hover:to-red-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-orange-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400/50"
             />
           ) : (
-            <button
-              type="button"
-              className="glass-button bg-gray-600/60 text-white font-bold py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
+            <Button
+              variant="secondary"
               disabled
+              className="glass-button bg-gray-600/60 py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
+              leftIcon={<FaLock className="text-lg" />}
             >
-              <FaLock className="text-lg" />
-              <span>Locked by Goal</span>
-            </button>
+              Locked by Goal
+            </Button>
           )
         ) : requiredKeyholderDurationSeconds > 0 ? (
           sessionId && userId && keyholderUserId ? (
@@ -79,24 +81,25 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
               className="glass-button bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500/90 hover:to-pink-500/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
             />
           ) : (
-            <button
-              type="button"
-              className="glass-button bg-gray-600/60 text-white font-bold py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
+            <Button
+              variant="secondary"
               disabled
+              className="glass-button bg-gray-600/60 py-4 px-8 text-lg cursor-not-allowed flex items-center justify-center space-x-2 opacity-60"
+              leftIcon={<FaLock className="text-lg" />}
             >
-              <FaLock className="text-lg" />
-              <span>Keyholder Required</span>
-            </button>
+              Keyholder Required
+            </Button>
           )
         ) : (
-          <button
-            type="button"
+          <Button
+            variant="danger"
             onClick={onEndSession}
             disabled={isEnding}
-            className="glass-button bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 text-white font-bold py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={isEnding}
+            className="glass-button bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-500/90 hover:to-red-600/90 py-4 px-8 text-lg shadow-xl hover:shadow-red-500/25 transform hover:scale-105"
           >
             {isEnding ? "Ending..." : "OFF"}
-          </button>
+          </Button>
         )}
       </div>
     </div>
