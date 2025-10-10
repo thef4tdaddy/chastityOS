@@ -64,6 +64,10 @@ export type {
 export { Badge, Avatar, Progress } from "./DataDisplay";
 export type { BadgeProps, AvatarProps, ProgressProps } from "./DataDisplay";
 
+// Tooltip Component
+export { Tooltip } from "./Tooltip";
+export type { TooltipProps } from "./Tooltip";
+
 // Toggle Components
 export { ToggleGroup } from "./ToggleGroup";
 export type { ToggleGroupProps, ToggleGroupOption } from "./ToggleGroup";
