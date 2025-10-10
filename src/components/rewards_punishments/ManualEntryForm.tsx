@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { RewardPunishmentLog } from "./LogItem";
 import { FaPlus } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Radio } from "@/components/ui";
 
 // Form data type
 type FormData = {
@@ -22,26 +22,20 @@ const TypeSelection: React.FC<{
       Type
     </label>
     <div className="flex gap-4">
-      <label className="flex items-center">
-        <input
-          type="radio"
-          value="reward"
-          checked={type === "reward"}
-          onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
-          className="mr-2"
-        />
-        <span className="text-green-400">Reward</span>
-      </label>
-      <label className="flex items-center">
-        <input
-          type="radio"
-          value="punishment"
-          checked={type === "punishment"}
-          onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
-          className="mr-2"
-        />
-        <span className="text-red-400">Punishment</span>
-      </label>
+      <Radio
+        name="entry-type"
+        value="reward"
+        checked={type === "reward"}
+        onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
+        label={<span className="text-green-400">Reward</span>}
+      />
+      <Radio
+        name="entry-type"
+        value="punishment"
+        checked={type === "punishment"}
+        onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
+        label={<span className="text-red-400">Punishment</span>}
+      />
     </div>
   </div>
 );

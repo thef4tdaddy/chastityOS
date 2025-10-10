@@ -8,7 +8,7 @@ import type { EmergencyUnlockReason } from "../../../types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "../../../types/events";
 import type { ModalStage } from "./types";
 import { getReasonDescription } from "./types";
-import { Textarea } from "@/components/ui";
+import { Textarea, RadioGroup } from "@/components/ui";
 
 interface ReasonSelectionListProps {
   reason: EmergencyUnlockReason | "";
@@ -19,32 +19,17 @@ const ReasonSelectionList: React.FC<ReasonSelectionListProps> = ({
   reason,
   setReason,
 }) => (
-  <div className="space-y-3 mb-6">
-    {EMERGENCY_UNLOCK_REASONS.map((emergencyReason) => (
-      <label
-        key={emergencyReason}
-        className={`flex items-start p-3 rounded-lg border cursor-pointer transition ${
-          reason === emergencyReason
-            ? "border-red-500 bg-red-900/30"
-            : "border-gray-600 bg-gray-800/50 hover:bg-gray-700/50"
-        }`}
-      >
-        <input
-          type="radio"
-          name="emergency-reason"
-          value={emergencyReason}
-          checked={reason === emergencyReason}
-          onChange={(e) => setReason(e.target.value as EmergencyUnlockReason)}
-          className="mt-1 mr-3 text-red-600"
-        />
-        <div>
-          <div className="font-medium text-white">{emergencyReason}</div>
-          <div className="text-xs text-gray-400 mt-1">
-            {getReasonDescription(emergencyReason)}
-          </div>
-        </div>
-      </label>
-    ))}
+  <div className="mb-6">
+    <RadioGroup
+      name="emergency-reason"
+      value={reason}
+      onChange={(value) => setReason(value as EmergencyUnlockReason)}
+      options={EMERGENCY_UNLOCK_REASONS.map((emergencyReason) => ({
+        value: emergencyReason,
+        label: emergencyReason,
+        description: getReasonDescription(emergencyReason),
+      }))}
+    />
   </div>
 );
 
