@@ -18,6 +18,7 @@ export interface UserProfile {
   bio?: string;
   location?: string;
   age?: number;
+  photoURL?: string;
   isPublicProfileEnabled: boolean;
   profileToken?: string;
 }
