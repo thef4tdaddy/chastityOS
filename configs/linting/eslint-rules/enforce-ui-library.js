@@ -5,11 +5,14 @@
  *
  * Forbidden patterns:
  * - <button> elements (should use <Button>)
+ * - <select> elements (should use <Select>)
+ * - <input type="checkbox"> (should use <Checkbox>)
+ * - <input type="radio"> (should use <Radio> or <RadioGroup>)
  * - className="glass-card" (should use <Card>)
  * - className="glass-input" (should use <Input> or <Textarea>)
  * - className="glass-button-*" (should use <Button variant="..">)
  *
- * Related: Issue #491
+ * Related: Issues #491, #498, #499, #500
  */
 
 export default {
@@ -25,6 +28,12 @@ export default {
     messages: {
       useButtonComponent:
         'Use <Button> from @/components/ui instead of <button> element. Import: import { Button } from "@/components/ui"',
+      useSelectComponent:
+        'Use <Select> from @/components/ui instead of <select> element. Import: import { Select } from "@/components/ui"',
+      useCheckboxComponent:
+        'Use <Checkbox> from @/components/ui instead of <input type="checkbox">. Import: import { Checkbox } from "@/components/ui"',
+      useRadioComponent:
+        'Use <Radio> or <RadioGroup> from @/components/ui instead of <input type="radio">. Import: import { Radio, RadioGroup } from "@/components/ui"',
       useCardComponent:
         'Use <Card> from @/components/ui instead of className="glass-card". Import: import { Card } from "@/components/ui"',
       useInputComponent:
@@ -66,6 +75,53 @@ export default {
               return fixes;
             },
           });
+        }
+
+        // Forbid plain <select> elements
+        if (elementName === 'select') {
+          context.report({
+            node,
+            messageId: 'useSelectComponent',
+            fix(fixer) {
+              // Auto-fix: Replace <select> with <Select>
+              const openingTag = node.openingElement;
+              const closingTag = node.closingElement;
+
+              const fixes = [fixer.replaceText(openingTag.name, 'Select')];
+
+              if (closingTag) {
+                fixes.push(fixer.replaceText(closingTag.name, 'Select'));
+              }
+
+              return fixes;
+            },
+          });
+        }
+
+        // Forbid <input type="checkbox"> and <input type="radio">
+        if (elementName === 'input') {
+          const typeAttr = node.openingElement.attributes.find(
+            (attr) =>
+              attr.type === 'JSXAttribute' &&
+              attr.name.name === 'type' &&
+              attr.value?.type === 'Literal',
+          );
+
+          if (typeAttr) {
+            const inputType = typeAttr.value.value;
+
+            if (inputType === 'checkbox') {
+              context.report({
+                node,
+                messageId: 'useCheckboxComponent',
+              });
+            } else if (inputType === 'radio') {
+              context.report({
+                node,
+                messageId: 'useRadioComponent',
+              });
+            }
+          }
         }
       },
 
