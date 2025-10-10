@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import type { RecurringConfig } from "@/types/database";
-import { Input } from "@/components/ui";
+import { Input, Select, SelectOption } from "@/components/ui";
 
 interface RecurringTaskFormProps {
   onSave: (config: RecurringConfig) => void;
@@ -53,6 +53,13 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
     { label: "Sat", value: 6 },
   ];
 
+  const frequencyOptions: SelectOption[] = [
+    { value: "daily", label: "Daily" },
+    { value: "weekly", label: "Weekly" },
+    { value: "monthly", label: "Monthly" },
+    { value: "custom", label: "Custom Interval" },
+  ];
+
   return (
     <div className="space-y-4 p-4 bg-gray-800 rounded-lg">
       <h3 className="text-lg font-semibold text-white">
@@ -61,21 +68,14 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
 
       {/* Frequency Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Frequency
-        </label>
-        <select
+        <Select
+          label="Frequency"
           value={frequency}
-          onChange={(e) =>
-            setFrequency(e.target.value as RecurringConfig["frequency"])
+          onChange={(value) =>
+            setFrequency(value as RecurringConfig["frequency"])
           }
-          className="w-full px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-          <option value="custom">Custom Interval</option>
-        </select>
+          options={frequencyOptions}
+        />
       </div>
 
       {/* Daily Interval */}

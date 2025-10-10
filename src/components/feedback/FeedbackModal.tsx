@@ -15,7 +15,7 @@ import type {
 } from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
 import { logger } from "../../utils/logging";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Select, SelectOption } from "@/components/ui";
 
 // Form field components
 interface FormFieldProps {
@@ -94,21 +94,23 @@ interface PrioritySelectorProps {
   disabled?: boolean;
 }
 
+const priorityOptions: SelectOption[] = [
+  { value: "low", label: "Low - Minor inconvenience" },
+  { value: "medium", label: "Medium - Affects functionality" },
+  { value: "high", label: "High - Prevents core features" },
+];
+
 const PrioritySelector: React.FC<PrioritySelectorProps> = ({
   value,
   onChange,
   disabled,
 }) => (
-  <select
+  <Select
     value={value}
-    onChange={(e) => onChange(e.target.value)}
-    className="w-full bg-white/5 border border-white/10 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    onChange={(val) => onChange(val as string)}
+    options={priorityOptions}
     disabled={disabled}
-  >
-    <option value="low">Low - Minor inconvenience</option>
-    <option value="medium">Medium - Affects functionality</option>
-    <option value="high">High - Prevents core features</option>
-  </select>
+  />
 );
 
 // Bug-specific fields component
