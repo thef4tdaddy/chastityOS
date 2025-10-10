@@ -31,7 +31,7 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input, Textarea, LoadingState } from "@/components/ui";
+import { Input, Textarea, LoadingState, Tooltip } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -215,9 +215,16 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
-              Submissive's Name
-            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="block text-sm font-medium text-nightly-celadon">
+                Submissive's Name
+              </label>
+              <Tooltip content="This name will be displayed throughout the app and shared with your keyholder">
+                <span className="text-nightly-aquamarine/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
+            </div>
             <Input
               type="text"
               value={submissiveName}
@@ -338,9 +345,16 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
-              Timezone
-            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="block text-sm font-medium text-nightly-celadon">
+                Timezone
+              </label>
+              <Tooltip content="Set your timezone for accurate time tracking and reports">
+                <span className="text-nightly-lavender-floral/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
+            </div>
             <select
               value={timezone}
               onChange={(e) => {
@@ -361,13 +375,20 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
           </div>
 
           <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Notifications
+            <div className="flex items-center gap-2">
+              <div>
+                <div className="text-sm font-medium text-nightly-celadon">
+                  Notifications
+                </div>
+                <div className="text-xs text-nightly-celadon/70">
+                  Receive app notifications
+                </div>
               </div>
-              <div className="text-xs text-nightly-celadon/70">
-                Receive app notifications
-              </div>
+              <Tooltip content="Enable browser notifications for task updates and reminders">
+                <span className="text-nightly-lavender-floral/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -489,13 +510,20 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
           </div>
 
           <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Share Statistics
+            <div className="flex items-center gap-2">
+              <div>
+                <div className="text-sm font-medium text-nightly-celadon">
+                  Share Statistics
+                </div>
+                <div className="text-xs text-nightly-celadon/70">
+                  Allow others to see your progress stats
+                </div>
               </div>
-              <div className="text-xs text-nightly-celadon/70">
-                Allow others to see your progress stats
-              </div>
+              <Tooltip content="When enabled, your chastity stats will be visible on your public profile">
+                <span className="text-nightly-spring-green/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
