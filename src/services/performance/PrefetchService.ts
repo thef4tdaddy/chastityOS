@@ -145,7 +145,7 @@ class PrefetchService {
    * Setup hover prefetching
    */
   setupHoverPrefetch(element: HTMLElement, route: string): void {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
 
     const handleMouseEnter = () => {
       // Debounce to avoid excessive prefetching

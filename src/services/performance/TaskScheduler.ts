@@ -174,8 +174,17 @@ class TaskScheduler {
    */
   async yieldToMain(): Promise<void> {
     return new Promise((resolve) => {
-      if ("scheduler" in window && "yield" in (window as any).scheduler) {
-        (window as any).scheduler.yield().then(resolve);
+      if (
+        "scheduler" in window &&
+        "yield" in
+          (window as Window & { scheduler?: { yield: () => Promise<void> } })
+            .scheduler
+      ) {
+        (
+          window as Window & { scheduler: { yield: () => Promise<void> } }
+        ).scheduler
+          .yield()
+          .then(resolve);
       } else if ("requestIdleCallback" in window) {
         requestIdleCallback(() => resolve());
       } else {

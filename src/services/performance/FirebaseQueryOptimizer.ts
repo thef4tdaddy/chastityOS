@@ -182,13 +182,13 @@ class FirebaseQueryOptimizer {
   optimizeRealtimeListener(
     listenerName: string,
     onData: (data: unknown) => void,
-    onError: (error: Error) => void,
+    _onError: (error: Error) => void,
   ): {
     update: (data: unknown) => void;
     cleanup: () => void;
   } {
     let isActive = true;
-    let updateTimer: NodeJS.Timeout | null = null;
+    let updateTimer: ReturnType<typeof setTimeout> | null = null;
     let pendingData: unknown = null;
 
     // Debounce updates to reduce re-renders

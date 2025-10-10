@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
 /**
  * Task Notification Service - Usage Examples
- * 
+ *
  * This file contains examples of how to use the TaskNotificationService
  * in different scenarios throughout the application.
  */
@@ -77,12 +78,18 @@ export async function exampleRejectTask() {
 export async function exampleDeadlineCheck() {
   // In a background scheduler or interval check
   const tasks = [
-    { id: "task-1", title: "Morning routine", userId: "user-1", dueDate: new Date() },
+    {
+      id: "task-1",
+      title: "Morning routine",
+      userId: "user-1",
+      dueDate: new Date(),
+    },
   ];
 
   for (const task of tasks) {
     const now = new Date();
-    const hoursUntilDue = (task.dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const hoursUntilDue =
+      (task.dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
     if (hoursUntilDue > 0 && hoursUntilDue <= 24) {
       await TaskNotificationService.notifyDeadlineApproaching({
@@ -126,7 +133,7 @@ export async function exampleOverdueCheck() {
  */
 export function ExampleComponent() {
   // This is how it's used in the actual useTaskMutations hook
-  
+
   // In useAssignTask mutation's onSuccess callback:
   // TaskNotificationService.notifyTaskAssigned({
   //   taskId: data,

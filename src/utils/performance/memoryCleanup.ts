@@ -105,14 +105,15 @@ export function useTimerCleanup() {
   }, []);
 
   useEffect(() => {
+    // Capture the ref value in the effect
+    const timers = timersRef.current;
     return () => {
-      // Use the current state directly in cleanup
-      const currentTimers = timersRef.current;
-      currentTimers.forEach((timer) => {
+      // Use the captured value in cleanup
+      timers.forEach((timer) => {
         clearTimeout(timer);
         clearInterval(timer);
       });
-      currentTimers.clear();
+      timers.clear();
     };
   }, []);
 

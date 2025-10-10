@@ -93,7 +93,10 @@ function setupProgressiveLoading() {
       loadingPriorityService.loadOnIdle(LoadingPriority.LOW);
       setupRoutePrefetching();
     })
-    .catch((error) => console.error("Loading failed:", error));
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error("Loading failed:", error);
+    });
 }
 
 /**
