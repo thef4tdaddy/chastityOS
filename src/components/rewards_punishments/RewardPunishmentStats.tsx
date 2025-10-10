@@ -1,6 +1,7 @@
 import React from "react";
 import { RewardPunishmentLog } from "./LogItem";
 import { FaTrophy } from "../../utils/iconImport";
+import { Card } from "@/components/ui";
 
 // Statistics Component
 interface RewardPunishmentStatsProps {
@@ -33,7 +34,7 @@ export const RewardPunishmentStats: React.FC<RewardPunishmentStatsProps> = ({
   };
 
   return (
-    <div className="glass-card mb-6">
+    <Card variant="glass" className="mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaTrophy className="text-nightly-aquamarine" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">Summary</h2>
@@ -68,6 +69,6 @@ export const RewardPunishmentStats: React.FC<RewardPunishmentStatsProps> = ({
           <div className="text-sm text-nightly-celadon">Time Added</div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

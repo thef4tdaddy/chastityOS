@@ -2,6 +2,7 @@ import React from "react";
 import { FaTimes, FaShieldAlt } from "../../utils/iconImport";
 import { Button } from "@/components/ui";
 import { PrivacyPolicyContent } from "./privacy/PrivacyPolicyContent";
+import { Card } from "@/components/ui";
 
 interface PrivacyPolicyModalProps {
   isOpen: boolean;
@@ -40,11 +41,11 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
         {/* Enhanced Content with Glass Styling */}
         <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
           {/* Last Updated */}
-          <div className="glass-card bg-blue-500/10 border-blue-400/20 p-3 text-center">
+          <Card variant="glass" padding="sm" className="bg-blue-500/10 border-blue-400/20 text-center">
             <span className="text-sm text-blue-200">
               Last updated: {new Date().toLocaleDateString()}
             </span>
-          </div>
+          </Card>
 
           <PrivacyPolicyContent />
         </div>
