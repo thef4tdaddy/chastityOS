@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { RewardPunishmentLog } from "./LogItem";
 import { FaPlus } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, ToggleGroup } from "@/components/ui";
 
 // Form data type
 type FormData = {
@@ -21,28 +21,17 @@ const TypeSelection: React.FC<{
     <label className="block text-sm font-medium text-nightly-celadon mb-2">
       Type
     </label>
-    <div className="flex gap-4">
-      <label className="flex items-center">
-        <input
-          type="radio"
-          value="reward"
-          checked={type === "reward"}
-          onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
-          className="mr-2"
-        />
-        <span className="text-green-400">Reward</span>
-      </label>
-      <label className="flex items-center">
-        <input
-          type="radio"
-          value="punishment"
-          checked={type === "punishment"}
-          onChange={(e) => onChange(e.target.value as "reward" | "punishment")}
-          className="mr-2"
-        />
-        <span className="text-red-400">Punishment</span>
-      </label>
-    </div>
+    <ToggleGroup
+      value={type}
+      onValueChange={(value) => onChange(value as "reward" | "punishment")}
+      options={[
+        { value: "reward", label: "Reward" },
+        { value: "punishment", label: "Punishment" },
+      ]}
+      type="single"
+      fullWidth
+      aria-label="Select reward or punishment type"
+    />
   </div>
 );
 
