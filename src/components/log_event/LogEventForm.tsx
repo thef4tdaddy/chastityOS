@@ -11,7 +11,7 @@ import {
   FaTint,
   FaSpinner,
 } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import { Button, Input, Switch, Textarea } from "@/components/ui";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [
@@ -58,7 +58,7 @@ const EventTypeSelector: React.FC<{
       {EVENT_TYPES.map((eventType) => {
         const Icon = eventType.icon;
         return (
-          <button
+          <Button
             key={eventType.value}
             type="button"
             onClick={() => onTypeChange(eventType.value)}
@@ -84,7 +84,7 @@ const EventTypeSelector: React.FC<{
             >
               {eventType.label}
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -183,23 +183,12 @@ const TagsAndPrivacy: React.FC<{
       />
     </div>
     <div className="flex items-center justify-between">
-      <div>
-        <div className="text-sm font-medium text-nightly-celadon">
-          Private Event
-        </div>
-        <div className="text-xs text-nightly-celadon/70">
-          Keep this event private
-        </div>
-      </div>
-      <label className="relative inline-flex items-center cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isPrivate}
-          onChange={(e) => onPrivacyChange(e.target.checked)}
-          className="sr-only peer"
-        />
-        <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-lavender-floral"></div>
-      </label>
+      <Switch
+        label="Private Event"
+        description="Keep this event private"
+        checked={isPrivate}
+        onCheckedChange={onPrivacyChange}
+      />
     </div>
   </>
 );
@@ -208,7 +197,7 @@ const TagsAndPrivacy: React.FC<{
 const SubmitButton: React.FC<{
   isPending: boolean;
 }> = ({ isPending }) => (
-  <button
+  <Button
     type="submit"
     disabled={isPending}
     className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2"
@@ -224,7 +213,7 @@ const SubmitButton: React.FC<{
         Log Event
       </>
     )}
-  </button>
+  </Button>
 );
 
 // Custom hook for form data management

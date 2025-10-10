@@ -12,6 +12,7 @@ import {
   SessionControls,
   TaskManagement,
 } from "../components/keyholder";
+import { Button } from "@/components/ui";
 import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
 import { logger } from "../utils/logging";
 import { FaLock, FaCog, FaEye, FaSpinner } from "../utils/iconImport";
@@ -46,7 +47,7 @@ const KeyholderSettings: React.FC<{
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
+        <Button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
           <div className="flex items-center gap-3 mb-2">
             <FaEye className="text-nightly-aquamarine" />
             <span className="font-medium text-nightly-honeydew">
@@ -56,9 +57,9 @@ const KeyholderSettings: React.FC<{
           <p className="text-sm text-nightly-celadon">
             See complete session history and statistics
           </p>
-        </button>
+        </Button>
 
-        <button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
+        <Button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
           <div className="flex items-center gap-3 mb-2">
             <FaCog className="text-nightly-lavender-floral" />
             <span className="font-medium text-nightly-honeydew">
@@ -68,16 +69,16 @@ const KeyholderSettings: React.FC<{
           <p className="text-sm text-nightly-celadon">
             Set requirements and restrictions
           </p>
-        </button>
+        </Button>
       </div>
 
-      <button
+      <Button
         onClick={onLockControls}
         className="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
       >
         <FaLock />
         Lock Controls
-      </button>
+      </Button>
     </div>
   </div>
 );

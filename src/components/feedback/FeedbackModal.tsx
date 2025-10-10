@@ -15,7 +15,7 @@ import type {
 } from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
 import { logger } from "../../utils/logging";
-import { Input, Textarea } from "@/components/ui";
+import { Button, Input, Switch, Textarea } from "@/components/ui";
 
 // Form field components
 interface FormFieldProps {
@@ -99,7 +99,7 @@ const PrioritySelector: React.FC<PrioritySelectorProps> = ({
   onChange,
   disabled,
 }) => (
-  <select
+  <Select
     value={value}
     onChange={(e) => onChange(e.target.value)}
     className="w-full bg-white/5 border border-white/10 rounded p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -108,7 +108,7 @@ const PrioritySelector: React.FC<PrioritySelectorProps> = ({
     <option value="low">Low - Minor inconvenience</option>
     <option value="medium">Medium - Affects functionality</option>
     <option value="high">High - Prevents core features</option>
-  </select>
+  </Select>
 );
 
 // Bug-specific fields component
@@ -274,45 +274,32 @@ const FormActions: React.FC<FormActionsProps> = ({
 }) => (
   <>
     {/* System Info Toggle */}
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="text-sm font-medium text-gray-300">
-          Include System Information
-        </div>
-        <div className="text-xs text-gray-500">
-          Helps us debug technical issues
-        </div>
-      </div>
-      <label className="relative inline-flex items-center cursor-pointer">
-        <input
-          type="checkbox"
-          checked={formData.includeSystemInfo}
-          onChange={(e) => updateField("includeSystemInfo", e.target.checked)}
-          className="sr-only peer"
-          disabled={isSubmitting}
-        />
-        <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-      </label>
-    </div>
+    <Switch
+      label="Include System Information"
+      description="Helps us debug technical issues"
+      checked={formData.includeSystemInfo}
+      onCheckedChange={(checked) => updateField("includeSystemInfo", checked)}
+      disabled={isSubmitting}
+    />
 
     {/* Submit Buttons */}
     <div className="flex gap-3 pt-4">
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
         className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-3 rounded font-medium transition-colors flex items-center gap-2"
       >
         <FaPaperPlane />
         {getSubmitButtonText(type, isSubmitting)}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={onClose}
         disabled={isSubmitting}
         className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-gray-300 px-6 py-3 rounded font-medium transition-colors"
       >
         Cancel
-      </button>
+      </Button>
     </div>
   </>
 );
@@ -426,13 +413,13 @@ const ModalHeader: React.FC<ModalHeaderProps> = ({
       {getModalIcon(type)}
       <h2 className="text-xl font-bold text-white">{getModalTitle(type)}</h2>
     </div>
-    <button
+    <Button
       onClick={onClose}
       className="p-2 hover:bg-white/10 rounded-lg transition-colors"
       disabled={isSubmitting}
     >
       <FaTimes className="text-gray-400" />
-    </button>
+    </Button>
   </div>
 );
 

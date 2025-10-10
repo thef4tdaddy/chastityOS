@@ -5,6 +5,7 @@
 import React from "react";
 import { useKeyholderContext } from "./KeyholderContext";
 import { FaUsers } from "react-icons/fa";
+import { Button } from "@/components/ui";
 
 export const KeyholderRelationshipsList: React.FC = () => {
   const { keyholderRelationships, selectedWearerId, setSelectedWearer } =
@@ -22,7 +23,7 @@ export const KeyholderRelationshipsList: React.FC = () => {
         </h3>
       </div>
 
-      <select
+      <Select
         value={selectedWearerId || ""}
         onChange={(e) => setSelectedWearer(e.target.value || null)}
         className="bg-black/20 text-nightly-honeydew px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
@@ -32,7 +33,7 @@ export const KeyholderRelationshipsList: React.FC = () => {
             Wearer: {relationship.wearerId}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 };

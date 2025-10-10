@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaKey } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui";
 
 interface ActiveKeyholderDisplayProps {
   activeKeyholder: {
@@ -25,12 +26,12 @@ export const ActiveKeyholderDisplay: React.FC<ActiveKeyholderDisplayProps> = ({
           <FaKey className="mr-2" />
           Your Keyholder
         </h3>
-        <button
+        <Button
           onClick={() => setShowPermissions(!showPermissions)}
           className="text-purple-400 hover:text-purple-300 text-sm"
         >
           {showPermissions ? "Hide" : "View"} Permissions
-        </button>
+        </Button>
       </div>
 
       <div className="text-sm text-gray-300 mb-3">
@@ -69,12 +70,12 @@ export const ActiveKeyholderDisplay: React.FC<ActiveKeyholderDisplayProps> = ({
       )}
 
       <div className="mt-3 flex gap-2">
-        <button
+        <Button
           onClick={() => onEndRelationship(activeKeyholder.id)}
           className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 transition-colors"
         >
           End Relationship
-        </button>
+        </Button>
       </div>
     </div>
   );

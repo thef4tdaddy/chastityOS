@@ -8,6 +8,7 @@ import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
 import { useLeaderboardActions } from "../../hooks/achievements/useLeaderboardActions";
+import { Button } from "@/components/ui";
 
 export interface LeaderboardViewProps {
   category?: LeaderboardCategory;
@@ -113,18 +114,18 @@ const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
     </div>
 
     <div className="flex gap-4 justify-center">
-      <button
+      <Button
         onClick={onOptIn}
         className="px-6 py-3 bg-nightly-aquamarine text-black font-semibold rounded-lg hover:bg-nightly-aquamarine/80 transition-colors"
       >
         Join Leaderboards
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={onSkip}
         className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
       >
         Maybe Later
-      </button>
+      </Button>
     </div>
   </div>
 );
@@ -174,7 +175,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
         <label className="block text-sm text-nightly-celadon mb-1">
           Category
         </label>
-        <select
+        <Select
           value={selectedCategory}
           onChange={(e) =>
             onCategoryChange(e.target.value as LeaderboardCategory)
@@ -192,14 +193,14 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
             Session Count
           </option>
           <option value={LeaderboardCategory.TOTAL_TIME}>Total Time</option>
-        </select>
+        </Select>
       </div>
 
       <div>
         <label className="block text-sm text-nightly-celadon mb-1">
           Period
         </label>
-        <select
+        <Select
           value={selectedPeriod}
           onChange={(e) => onPeriodChange(e.target.value as LeaderboardPeriod)}
           className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
@@ -208,7 +209,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
           <option value={LeaderboardPeriod.THIS_YEAR}>This Year</option>
           <option value={LeaderboardPeriod.THIS_MONTH}>This Month</option>
           <option value={LeaderboardPeriod.THIS_WEEK}>This Week</option>
-        </select>
+        </Select>
       </div>
     </div>
   </div>
@@ -337,21 +338,21 @@ const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
     </div>
     <div className="flex items-center space-x-2 text-sm">
       {isOptedIn ? (
-        <button
+        <Button
           onClick={onOptOut}
           className="flex items-center space-x-1 text-red-400 hover:text-red-300"
         >
           <FaEyeSlash />
           <span>Opt Out</span>
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           onClick={onOptIn}
           className="flex items-center space-x-1 text-green-400 hover:text-green-300"
         >
           <FaEye />
           <span>Join</span>
-        </button>
+        </Button>
       )}
     </div>
   </div>

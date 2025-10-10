@@ -1,5 +1,6 @@
 import React from "react";
 import { FaTimes } from "react-icons/fa";
+import { Button } from "@/components/ui";
 
 interface ErrorDisplayProps {
   error: string | null;
@@ -16,9 +17,9 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between">
         <p className="text-red-800">{error}</p>
-        <button onClick={onClear} className="text-red-600 hover:text-red-800">
+        <Button onClick={onClear} className="text-red-600 hover:text-red-800">
           <FaTimes />
-        </button>
+        </Button>
       </div>
     </div>
   );

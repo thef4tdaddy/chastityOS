@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { useIsAnonymous } from "@/hooks/useIsAnonymous";
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { Button } from "@/components/ui";
 
 export const AccountConversionBanner: React.FC = () => {
   const isAnonymous = useIsAnonymous();
@@ -90,12 +91,12 @@ export const AccountConversionBanner: React.FC = () => {
                 )}
 
                 {!showDetails && (
-                  <button
+                  <Button
                     onClick={() => setShowDetails(true)}
                     className="text-sm text-blue-600 hover:text-blue-800 underline mb-2"
                   >
                     Learn more
-                  </button>
+                  </Button>
                 )}
 
                 {linkError && (
@@ -123,13 +124,13 @@ export const AccountConversionBanner: React.FC = () => {
         </div>
 
         {/* Close button */}
-        <button
+        <Button
           onClick={handleDismiss}
           className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors p-1"
           aria-label="Dismiss"
         >
           <FaTimes />
-        </button>
+        </Button>
       </div>
     </div>
   );

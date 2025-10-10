@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FeatureCard } from "./FeatureCard";
+import { Button } from "@/components/ui";
 
 interface DashboardMainProps {
   sessionDuration: string;
@@ -51,9 +52,9 @@ export const DashboardMain: React.FC<DashboardMainProps> = ({
 
       <div className="text-center mt-8">
         <Link to="/keyholder">
-          <button className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+          <Button className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg font-bold transition-colors">
             View Keyholder Dashboard
-          </button>
+          </Button>
         </Link>
       </div>
     </main>

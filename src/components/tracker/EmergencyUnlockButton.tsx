@@ -4,6 +4,7 @@ import { EmergencyUnlockModal } from "./EmergencyUnlockModal";
 import { useEmergencyUnlock } from "../../hooks/api/useEmergency";
 import type { EmergencyUnlockReason } from "../../types/events";
 import { logger } from "../../utils/logging";
+import { Button } from "@/components/ui";
 
 interface EmergencyUnlockButtonProps {
   sessionId: string;
@@ -61,7 +62,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
 
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setShowModal(true)}
         disabled={emergencyUnlock.isPending}
@@ -70,7 +71,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
       >
         <FaExclamationTriangle className="mr-2" />
         🚨 Emergency Unlock
-      </button>
+      </Button>
 
       <EmergencyUnlockModal
         isOpen={showModal}

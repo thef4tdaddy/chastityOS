@@ -31,7 +31,14 @@ import {
   validateDisplaySettings,
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
-import { Input, Textarea, LoadingState } from "@/components/ui";
+import {
+  Button,
+  Input,
+  LoadingState,
+  Select,
+  Switch,
+  Textarea,
+} from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
 
@@ -233,7 +240,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
             )}
           </div>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updateAccountMutation.isPending}
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -242,7 +249,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -341,7 +348,7 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
             <label className="block text-sm font-medium text-nightly-celadon mb-2">
               Timezone
             </label>
-            <select
+            <Select
               value={timezone}
               onChange={(e) => {
                 setTimezone(e.target.value);
@@ -354,33 +361,20 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
                   {tz.label}
                 </option>
               ))}
-            </select>
+            </Select>
             {validationError && (
               <p className="text-red-400 text-xs mt-1">{validationError}</p>
             )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Notifications
-              </div>
-              <div className="text-xs text-nightly-celadon/70">
-                Receive app notifications
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={notifications}
-                onChange={(e) => setNotifications(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-            </label>
-          </div>
+          <Switch
+            label="Notifications"
+            description="Receive app notifications"
+            checked={notifications}
+            onCheckedChange={setNotifications}
+          />
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updateDisplayMutation.isPending}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -389,7 +383,7 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateDisplayMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -468,45 +462,19 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Public Profile
-              </div>
-              <div className="text-xs text-nightly-celadon/70">
-                Make your profile visible to others
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={publicProfile}
-                onChange={(e) => setPublicProfile(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-            </label>
-          </div>
+          <Switch
+            label="Public Profile"
+            description="Make your profile visible to others"
+            checked={publicProfile}
+            onCheckedChange={setPublicProfile}
+          />
 
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Share Statistics
-              </div>
-              <div className="text-xs text-nightly-celadon/70">
-                Allow others to see your progress stats
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={shareStatistics}
-                onChange={(e) => setShareStatistics(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-            </label>
-          </div>
+          <Switch
+            label="Share Statistics"
+            description="Allow others to see your progress stats"
+            checked={shareStatistics}
+            onCheckedChange={setShareStatistics}
+          />
 
           <div>
             <label className="block text-sm font-medium text-nightly-celadon mb-2">
@@ -550,7 +518,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
             </p>
           </div>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updateProfileMutation.isPending}
             className="bg-nightly-spring-green hover:bg-nightly-spring-green/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -559,7 +527,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -649,7 +617,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
             onChange={setShowActivityStatus}
           />
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={updatePrivacyMutation.isPending}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -658,7 +626,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updatePrivacyMutation.isPending ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -757,7 +725,7 @@ const SettingsPage: React.FC = () => {
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
-                <button
+                <Button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
@@ -768,7 +736,7 @@ const SettingsPage: React.FC = () => {
                 >
                   <Icon />
                   {tab.label}
-                </button>
+                </Button>
               );
             })}
           </div>

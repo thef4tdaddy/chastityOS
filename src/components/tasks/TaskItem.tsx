@@ -6,7 +6,7 @@ import { TaskEvidenceDisplay } from "./TaskEvidenceDisplay";
 import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
-import { Textarea } from "@/components/ui";
+import { Button, Textarea } from "@/components/ui";
 
 // Task status badge component
 interface TaskStatusBadgeProps {
@@ -219,13 +219,13 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <button
+      <Button
         onClick={onSubmit}
         disabled={isSubmitting}
         className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
       >
         {isSubmitting ? "Submitting..." : "Submit for Review"}
-      </button>
+      </Button>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { FaEdit, FaLock, FaUnlock } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 
 // Mock rules interface
 export interface ChastityRule {
@@ -101,7 +102,7 @@ const RuleCardComponent: React.FC<RuleCardProps> = ({
 
         {isEditable && (
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={() => onToggle?.(rule.id)}
               className={`p-2 rounded transition-colors ${
                 rule.isActive
@@ -111,14 +112,14 @@ const RuleCardComponent: React.FC<RuleCardProps> = ({
               title={rule.isActive ? "Deactivate rule" : "Activate rule"}
             >
               {rule.isActive ? <FaLock /> : <FaUnlock />}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => onEdit?.(rule.id)}
               className="p-2 bg-nightly-aquamarine/20 hover:bg-nightly-aquamarine/30 text-nightly-aquamarine rounded transition-colors"
               title="Edit rule"
             >
               <FaEdit />
-            </button>
+            </Button>
           </div>
         )}
       </div>

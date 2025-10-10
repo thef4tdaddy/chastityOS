@@ -4,6 +4,7 @@ import {
   useKeyholderRewards,
   useKeyholderSession,
 } from "../../hooks/keyholder";
+import { Button } from "@/components/ui";
 import { KeyholderReward, KeyholderPunishment } from "../../types";
 
 import { TaskData } from "../../types";
@@ -109,19 +110,19 @@ export function TypedKeyholderDemo({
 
         {/* Demo Actions */}
         <div className="demo-actions space-x-2">
-          <button
+          <Button
             onClick={handleAddTypedReward}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
             Add Typed Reward
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleAddTypedPunishment}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
             Add Typed Punishment
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { LogEventForm, EventList } from "../components/log_event";
 import { FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
-import { Card, LoadingState } from "@/components/ui";
+import { Button, Card, LoadingState } from "@/components/ui";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -32,7 +32,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
         </label>
       </div>
       <div className="flex gap-3">
-        <button
+        <Button
           onClick={() => onSelectUser(currentUserId)}
           className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
             selectedUserId === currentUserId
@@ -41,8 +41,8 @@ const UserSelector: React.FC<UserSelectorProps> = ({
           }`}
         >
           Yourself
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => onSelectUser(activeSubmissive.wearerId || "")}
           className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
             selectedUserId === activeSubmissive.wearerId
@@ -51,7 +51,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
           }`}
         >
           {activeSubmissive.wearerName || "Submissive"}
-        </button>
+        </Button>
       </div>
     </Card>
   );

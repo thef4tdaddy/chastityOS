@@ -4,6 +4,7 @@
  */
 import React, { forwardRef } from "react";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
+import { Button } from "@/components/ui";
 
 interface MobileButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -183,7 +184,7 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
     };
 
     return (
-      <button
+      <Button
         ref={ref}
         className={buttonClasses}
         onClick={handleClick}
@@ -201,7 +202,7 @@ export const MobileButton = forwardRef<HTMLButtonElement, MobileButtonProps>(
         </ButtonContent>
 
         <RippleEffect />
-      </button>
+      </Button>
     );
   },
 );

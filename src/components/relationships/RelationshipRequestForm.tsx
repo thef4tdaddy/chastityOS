@@ -52,7 +52,7 @@ const RoleField: React.FC<RoleFieldProps> = ({ value, onChange }) => (
     >
       Your Role in this Relationship
     </label>
-    <select
+    <Select
       id="role"
       value={value}
       onChange={(e) => onChange(e.target.value as "submissive" | "keyholder")}
@@ -60,7 +60,7 @@ const RoleField: React.FC<RoleFieldProps> = ({ value, onChange }) => (
     >
       <option value="submissive">Submissive</option>
       <option value="keyholder">Keyholder</option>
-    </select>
+    </Select>
   </div>
 );
 
@@ -124,7 +124,7 @@ export const RelationshipRequestForm: React.FC<
         />
 
         <div className="flex gap-3">
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center"
@@ -137,14 +137,14 @@ export const RelationshipRequestForm: React.FC<
             ) : (
               "Send Request"
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onCancel}
             className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </form>
     </div>

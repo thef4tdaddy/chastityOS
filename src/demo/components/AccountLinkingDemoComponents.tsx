@@ -38,12 +38,12 @@ export const MessageDisplay: React.FC<MessageDisplayProps> = ({
     >
       <div className="flex justify-between items-start">
         <p className="text-sm">{message}</p>
-        <button
+        <Button
           onClick={clearMessage}
           className="text-current opacity-70 hover:opacity-100 ml-2"
         >
           ×
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -69,7 +69,7 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
           <FaKey className="mr-2" />
           Your Keyholder
         </h3>
-        <button
+        <Button
           onClick={() =>
             setShowPermissions(
               showPermissions === activeKeyholder.id
@@ -80,7 +80,7 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
           className="text-purple-400 hover:text-purple-300 text-sm"
         >
           {showPermissions === activeKeyholder.id ? "Hide" : "View"} Permissions
-        </button>
+        </Button>
       </div>
 
       <KeyholderInfo activeKeyholder={activeKeyholder} />
@@ -90,9 +90,9 @@ export const ActiveKeyholder: React.FC<ActiveKeyholderProps> = ({
       )}
 
       <div className="mt-3 flex gap-2">
-        <button className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 transition-colors">
+        <Button className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 transition-colors">
           End Relationship
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -153,24 +153,24 @@ export const CreateInviteSection: React.FC<CreateInviteSectionProps> = ({
     <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-purple-300">Create Invite Code</h3>
-        <button
+        <Button
           onClick={() => setShowCreateInvite(!showCreateInvite)}
           className="text-purple-400 hover:text-purple-300 text-sm"
         >
           {showCreateInvite ? "Cancel" : "Create Code"}
-        </button>
+        </Button>
       </div>
       {showCreateInvite && (
         <div className="space-y-3">
           <p className="text-sm text-gray-400">
             Generate an invite code for a keyholder to link to your account.
           </p>
-          <button
+          <Button
             onClick={handleCreateInvite}
             className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors"
           >
             Generate Invite Code
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -223,19 +223,19 @@ const InviteCodeCard: React.FC<{
       </div>
     </div>
     <div className="flex gap-2">
-      <button
+      <Button
         onClick={() => copyToClipboard(invite.id)}
         className="text-purple-400 hover:text-purple-300 p-1"
         title="Copy code"
       >
         <FaCopy />
-      </button>
-      <button
+      </Button>
+      <Button
         className="text-red-400 hover:text-red-300 p-1"
         title="Revoke code"
       >
         <FaTrash />
-      </button>
+      </Button>
     </div>
   </div>
 );
@@ -262,12 +262,12 @@ export const AcceptInviteSection: React.FC<AcceptInviteSectionProps> = ({
   <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
     <div className="flex items-center justify-between mb-3">
       <h3 className="font-semibold text-purple-300">Accept Invite Code</h3>
-      <button
+      <Button
         onClick={() => setShowAcceptInvite(!showAcceptInvite)}
         className="text-purple-400 hover:text-purple-300 text-sm"
       >
         {showAcceptInvite ? "Cancel" : "Enter Code"}
-      </button>
+      </Button>
     </div>
     {showAcceptInvite && (
       <div className="space-y-3">
@@ -289,13 +289,13 @@ export const AcceptInviteSection: React.FC<AcceptInviteSectionProps> = ({
           placeholder="Your name (optional)"
           className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400"
         />
-        <button
+        <Button
           onClick={handleAcceptInvite}
           disabled={inviteCodeInput.length !== 6}
           className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white py-2 px-4 rounded transition-colors"
         >
           Accept Invite Code
-        </button>
+        </Button>
       </div>
     )}
   </div>
@@ -334,9 +334,9 @@ const SubmissiveCard: React.FC<{ relationship: AdminRelationship }> = ({
           ago
         </div>
       </div>
-      <button className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30">
+      <Button className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30">
         End
-      </button>
+      </Button>
     </div>
     <div className="text-xs text-gray-400">
       Permissions:{" "}

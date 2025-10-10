@@ -7,6 +7,7 @@ import {
   FaCheckCircle,
   FaSpinner,
 } from "@/utils/iconImport";
+import { Button } from "@/components/ui";
 import {
   useSpecialChallenges,
   type SpecialChallengeStatus,
@@ -44,13 +45,13 @@ const ChallengeNotAvailable: React.FC<{ month: string }> = ({ month }) => (
 const ChallengeJoinButton: React.FC<{
   onJoin: () => void;
 }> = ({ onJoin }) => (
-  <button
+  <Button
     onClick={onJoin}
     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
   >
     <FaTrophy className="mr-2" />
     Join Challenge
-  </button>
+  </Button>
 );
 
 const ChallengeActiveState: React.FC<{ progress: number }> = ({ progress }) => (

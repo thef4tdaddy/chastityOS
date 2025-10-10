@@ -6,6 +6,7 @@ import React, { useCallback } from "react";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
 import { FaUpload, FaTimes, FaImage, FaSpinner } from "react-icons/fa";
+import { Button } from "@/components/ui";
 
 interface TaskEvidenceUploadProps {
   taskId: string;
@@ -50,13 +51,13 @@ const UploadZone: React.FC<{
     <p className="text-sm text-gray-500 mb-4">
       JPG, PNG, HEIC, WebP (max {maxFiles} files, 5MB each)
     </p>
-    <button
+    <Button
       type="button"
       onClick={onBrowseClick}
       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
     >
       Choose Files
-    </button>
+    </Button>
   </div>
 );
 
@@ -81,14 +82,14 @@ const FilePreviewItem: React.FC<{
       )}
     </div>
     {!file.uploading && (
-      <button
+      <Button
         type="button"
         onClick={onRemove}
         className="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
         aria-label="Remove file"
       >
         <FaTimes />
-      </button>
+      </Button>
     )}
   </div>
 );
@@ -215,7 +216,7 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
       )}
 
       {hasFiles && !allUploaded && (
-        <button
+        <Button
           type="button"
           onClick={uploadAllFiles}
           disabled={hasErrors}
@@ -226,7 +227,7 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
           }`}
         >
           Upload {files.filter((f) => !f.url && !f.error).length} Photo(s)
-        </button>
+        </Button>
       )}
 
       {hasFiles && (

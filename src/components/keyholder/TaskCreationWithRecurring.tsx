@@ -105,13 +105,13 @@ export const TaskCreationWithRecurring: React.FC<
       )}
 
       {/* Submit Button */}
-      <button
+      <Button
         onClick={handleSubmit}
         disabled={!taskText.trim() || (isRecurring && !recurringConfig)}
         className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
       >
         Create Task
-      </button>
+      </Button>
     </div>
   );
 };

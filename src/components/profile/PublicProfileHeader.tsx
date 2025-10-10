@@ -11,6 +11,7 @@ import {
   FaUserPlus,
   FaShare,
 } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 import type { PublicProfile } from "../../hooks/profile/usePublicProfile";
 
 interface PublicProfileHeaderProps {
@@ -54,17 +55,17 @@ const PublicProfileHeader: React.FC<PublicProfileHeaderProps> = ({
           <div className="flex gap-3">
             {!isOwnProfile && (
               <>
-                <button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2">
+                <Button className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2">
                   <FaUserPlus />
                   Follow
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={onShare}
                   className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
                 >
                   <FaShare />
                   Share
-                </button>
+                </Button>
               </>
             )}
             {isOwnProfile && (

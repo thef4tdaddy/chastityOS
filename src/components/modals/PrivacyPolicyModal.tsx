@@ -19,7 +19,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
     <div className="glass-modal fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="glass-modal-content max-w-4xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up">
         {/* Enhanced Header with Glass Effect */}
-        <div className="glass-card-primary border-b border-white/20 p-6">
+        <Card variant="glass" className="border-b border-white/20" padding="md">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-400/30">
@@ -29,14 +29,14 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
                 Privacy Policy
               </h2>
             </div>
-            <button
+            <Button
               onClick={onClose}
               className="glass-button p-3 hover:bg-red-500/20 text-gray-300 hover:text-white transition-all duration-300"
             >
               <FaTimes />
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         {/* Enhanced Content with Glass Styling */}
         <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">

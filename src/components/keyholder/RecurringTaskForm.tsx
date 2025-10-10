@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import type { RecurringConfig } from "@/types/database";
-import { Input } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 
 interface RecurringTaskFormProps {
   onSave: (config: RecurringConfig) => void;
@@ -64,7 +64,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Frequency
         </label>
-        <select
+        <Select
           value={frequency}
           onChange={(e) =>
             setFrequency(e.target.value as RecurringConfig["frequency"])
@@ -75,7 +75,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
           <option value="custom">Custom Interval</option>
-        </select>
+        </Select>
       </div>
 
       {/* Daily Interval */}
@@ -103,7 +103,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
           </label>
           <div className="flex flex-wrap gap-2">
             {weekDays.map((day) => (
-              <button
+              <Button
                 key={day.value}
                 type="button"
                 onClick={() => toggleDayOfWeek(day.value)}
@@ -114,7 +114,7 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
                 }`}
               >
                 {day.label}
-              </button>
+              </Button>
             ))}
           </div>
           {daysOfWeek.length === 0 && (
@@ -159,13 +159,13 @@ export const RecurringTaskForm: React.FC<RecurringTaskFormProps> = ({
       )}
 
       {/* Save Button */}
-      <button
+      <Button
         onClick={handleSave}
         disabled={frequency === "weekly" && daysOfWeek.length === 0}
         className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
       >
         Save Recurring Settings
-      </button>
+      </Button>
     </div>
   );
 };

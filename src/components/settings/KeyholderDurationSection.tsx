@@ -123,18 +123,18 @@ const KeyholderDurationEditForm: React.FC<{
         </div>
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={handleSave}
             className="flex-1 bg-nightly-lavender-floral/20 border border-nightly-lavender-floral hover:bg-nightly-lavender-floral/30 text-nightly-lavender-floral font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <FaCheck /> Save
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onCancel}
             className="flex-1 bg-white/5 border border-white/20 hover:bg-white/10 text-nightly-celadon font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <FaTimes /> Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </Card>
@@ -168,20 +168,20 @@ const KeyholderDurationDisplay: React.FC<{
         </div>
 
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={onEdit}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors text-nightly-lavender-floral"
             title="Edit duration"
           >
             <FaEdit />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onDelete}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors text-red-400"
             title="Remove requirement"
           >
             <FaTrash />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -348,7 +348,7 @@ const CreateKeyholderDurationForm: React.FC<{
         </div>
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={handleSubmit}
             disabled={isCreating || (days === 0 && hours === 0)}
             className="flex-1 bg-nightly-lavender-floral/20 border border-nightly-lavender-floral hover:bg-nightly-lavender-floral/30 text-nightly-lavender-floral font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -360,14 +360,14 @@ const CreateKeyholderDurationForm: React.FC<{
                 <FaLock /> Set Duration
               </>
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setIsOpen(false)}
             disabled={isCreating}
             className="flex-1 bg-white/5 border border-white/20 hover:bg-white/10 text-nightly-celadon font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <FaTimes /> Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </Card>

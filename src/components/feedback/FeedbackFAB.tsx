@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { FaPlus, FaBug, FaLightbulb, FaComment } from "../../utils/iconImport";
 import FeedbackModal from "./FeedbackModal";
+import { Button } from "@/components/ui";
+
 // TODO: Replace with proper hook - components shouldn't import services directly
 // import { FeedbackService } from "../../services/feedbackService";
 import type { FeedbackType, FeedbackData } from "../../types/feedback";
@@ -15,29 +17,29 @@ interface FeedbackOptionsProps {
 
 const FeedbackOptions: React.FC<FeedbackOptionsProps> = ({ onSelect }) => (
   <div className="space-y-3">
-    <button
+    <Button
       onClick={() => onSelect("bug")}
       className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
     >
       <FaBug />
       <span className="text-sm font-medium">Report Bug</span>
-    </button>
+    </Button>
 
-    <button
+    <Button
       onClick={() => onSelect("feature")}
       className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
     >
       <FaLightbulb />
       <span className="text-sm font-medium">Suggest Feature</span>
-    </button>
+    </Button>
 
-    <button
+    <Button
       onClick={() => onSelect("general")}
       className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full shadow-lg transition-all transform translate-y-0 opacity-100"
     >
       <FaComment />
       <span className="text-sm font-medium">General Feedback</span>
-    </button>
+    </Button>
   </div>
 );
 
@@ -78,7 +80,7 @@ const FeedbackFAB: React.FC = () => {
           {isExpanded && <FeedbackOptions onSelect={openFeedback} />}
 
           {/* Main Button */}
-          <button
+          <Button
             onClick={() => setIsExpanded(!isExpanded)}
             className={`w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all ${
               isExpanded ? "rotate-45" : "rotate-0"
@@ -86,7 +88,7 @@ const FeedbackFAB: React.FC = () => {
             aria-label="Open feedback options"
           >
             <FaPlus className="text-xl" />
-          </button>
+          </Button>
         </div>
       </div>
 

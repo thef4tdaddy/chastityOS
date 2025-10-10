@@ -4,6 +4,7 @@ import { DisplaySettingsSection } from "../components/settings/DisplaySettingsSe
 import { SessionEditSection } from "../components/settings/SessionEditSection";
 import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
 import { PublicProfileSection } from "../components/settings/PublicProfileSection";
+import { Button } from "@/components/ui";
 
 const SettingsMainPage: React.FC = () => {
   return (
@@ -19,9 +20,9 @@ const SettingsMainPage: React.FC = () => {
           <h2 className="card-title">Data & Backup</h2>
           <p>Export, import, or reset all your application data.</p>
           <div className="card-actions justify-end">
-            <button className="btn btn-primary bg-nightly-lavender-floral">
+            <Button className="btn btn-primary bg-nightly-lavender-floral">
               Manage Data
-            </button>
+            </Button>
           </div>
         </div>
       </div>

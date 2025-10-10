@@ -5,6 +5,7 @@ import {
   FaUpload,
   FaSpinner,
 } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 import { useDataManagement } from "../../hooks/useDataManagement";
 import { useAuthState } from "../../contexts";
 
@@ -47,7 +48,7 @@ export const DataControls: React.FC = () => {
               Download all your data in JSON format
             </div>
           </div>
-          <button
+          <Button
             onClick={handleExport}
             disabled={isExporting || !user}
             className="bg-nightly-spring-green/20 hover:bg-nightly-spring-green/30 text-nightly-spring-green px-4 py-2 rounded font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -58,7 +59,7 @@ export const DataControls: React.FC = () => {
               <FaDownload />
             )}
             {isExporting ? "Exporting..." : "Export"}
-          </button>
+          </Button>
         </div>
 
         {/* Data Import */}
@@ -71,7 +72,7 @@ export const DataControls: React.FC = () => {
               Restore data from a JSON backup file
             </div>
           </div>
-          <button
+          <Button
             onClick={onImportClick}
             disabled={isImporting || !user}
             className="bg-nightly-aquamarine/20 hover:bg-nightly-aquamarine/30 text-nightly-aquamarine px-4 py-2 rounded font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -82,7 +83,7 @@ export const DataControls: React.FC = () => {
               <FaUpload />
             )}
             {isImporting ? "Importing..." : "Import"}
-          </button>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -102,9 +103,9 @@ export const DataControls: React.FC = () => {
               Permanently delete your account and all data
             </div>
           </div>
-          <button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors">
+          <Button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors">
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { FaFilter, FaPlus } from "../../utils/iconImport";
 import type { ChastityRule } from "./RuleCard";
+import { Button } from "@/components/ui";
 
 interface RulesPageControlsProps {
   filter: "all" | "active" | "inactive";
@@ -19,7 +20,7 @@ export const RulesPageControls: React.FC<RulesPageControlsProps> = ({
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-4">
         <FaFilter className="text-nightly-celadon" />
-        <select
+        <Select
           value={filter}
           onChange={(e) =>
             onFilterChange(e.target.value as "all" | "active" | "inactive")
@@ -33,16 +34,16 @@ export const RulesPageControls: React.FC<RulesPageControlsProps> = ({
           <option value="inactive">
             Inactive ({rules.filter((r) => !r.isActive).length})
           </option>
-        </select>
+        </Select>
       </div>
 
-      <button
+      <Button
         onClick={onCreateNew}
         className="flex items-center gap-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-4 py-2 rounded-lg transition-colors"
       >
         <FaPlus />
         New Rule
-      </button>
+      </Button>
     </div>
   );
 };

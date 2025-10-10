@@ -6,6 +6,7 @@ import React from "react";
 import { FaLock, FaShieldAlt, FaExclamationTriangle } from "react-icons/fa";
 import { EmergencyPinSetupSection } from "./EmergencyPinSetupSection";
 import { LockCombinationSection } from "./LockCombinationSection";
+import { Switch } from "@/components/ui";
 
 interface HardcoreModeSectionProps {
   isHardcoreMode: boolean;
@@ -44,28 +45,16 @@ export const HardcoreModeSection: React.FC<HardcoreModeSectionProps> = ({
 }) => {
   return (
     <div className="border-t border-white/10 pt-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <FaLock className="text-red-400" />
-          <label className="text-sm font-medium text-nightly-celadon">
-            Hardcore Mode
-          </label>
-        </div>
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isHardcoreMode}
-            onChange={(e) => setIsHardcoreMode(e.target.checked)}
-            className="sr-only peer"
-            disabled={isCreating}
-          />
-          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-        </label>
+      <div className="flex items-center gap-2 mb-3">
+        <FaLock className="text-red-400" />
+        <Switch
+          label="Hardcore Mode"
+          description="Hardcore mode prevents early unlock and requires emergency PIN for safety."
+          checked={isHardcoreMode}
+          onCheckedChange={setIsHardcoreMode}
+          disabled={isCreating}
+        />
       </div>
-      <p className="text-xs text-nightly-celadon/70 mb-3">
-        Hardcore mode prevents early unlock and requires emergency PIN for
-        safety.
-      </p>
 
       {isHardcoreMode && (
         <div className="space-y-4 bg-red-500/5 border border-red-500/20 rounded-lg p-4">

@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { useViewport } from "../../hooks/mobile/useViewport";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 import { useTouchGestures } from "../../hooks/mobile/useTouchGestures";
+import { Button } from "@/components/ui";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ const BottomSheetHeader: React.FC<{
         {title}
       </h2>
       {!preventClose && (
-        <button
+        <Button
           onClick={onClose}
           className="touch-target p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           aria-label="Close"
@@ -50,7 +51,7 @@ const BottomSheetHeader: React.FC<{
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-        </button>
+        </Button>
       )}
     </div>
   );

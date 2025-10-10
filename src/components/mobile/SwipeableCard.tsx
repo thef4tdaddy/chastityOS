@@ -5,6 +5,7 @@
 import React, { useState, useRef } from "react";
 import { useTouchGestures } from "../../hooks/mobile/useTouchGestures";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
+import { Button } from "@/components/ui";
 
 interface SwipeAction {
   id: string;
@@ -40,7 +41,7 @@ const ActionButton: React.FC<{
   totalActions: number;
   onActionClick: (action: SwipeAction) => void;
 }> = ({ action, index, side, totalActions, onActionClick }) => (
-  <button
+  <Button
     key={action.id}
     onClick={() => onActionClick(action)}
     className={`
@@ -59,7 +60,7 @@ const ActionButton: React.FC<{
   >
     {action.icon && <div className="mb-1">{action.icon}</div>}
     <span className="leading-tight">{action.label}</span>
-  </button>
+  </Button>
 );
 
 // Actions Container Component

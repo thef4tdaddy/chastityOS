@@ -1,6 +1,7 @@
 import React from "react";
 import { FaLock } from "../../utils/iconImport";
 import { ToggleSwitch } from "./ToggleSwitch";
+import { Button } from "@/components/ui";
 
 export const SecuritySettings: React.FC = () => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
@@ -17,14 +18,14 @@ export const SecuritySettings: React.FC = () => (
         <label className="block text-sm font-medium text-nightly-celadon mb-2">
           Auto-logout After Inactivity
         </label>
-        <select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
+        <Select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
           <option value="never">Never</option>
           <option value="15">15 minutes</option>
           <option value="30">30 minutes</option>
           <option value="60">1 hour</option>
           <option value="240">4 hours</option>
           <option value="1440">24 hours</option>
-        </select>
+        </Select>
       </div>
 
       <ToggleSwitch
@@ -59,14 +60,14 @@ export const SecuritySettings: React.FC = () => (
                 Last used: 2 hours ago
               </div>
             </div>
-            <button className="text-red-400 hover:text-red-300 text-xs">
+            <Button className="text-red-400 hover:text-red-300 text-xs">
               Remove
-            </button>
+            </Button>
           </div>
         </div>
-        <button className="mt-2 text-nightly-aquamarine hover:text-nightly-spring-green text-sm">
+        <Button className="mt-2 text-nightly-aquamarine hover:text-nightly-spring-green text-sm">
           Log out all other devices
-        </button>
+        </Button>
       </div>
     </div>
   </div>

@@ -17,7 +17,7 @@ import {
   DBUserAchievement,
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
-import { Input, Checkbox } from "@/components/ui";
+import { Button, Checkbox, Input } from "@/components/ui";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -105,7 +105,7 @@ export const Filters: React.FC<FiltersProps> = ({
         />
       </div>
 
-      <select
+      <Select
         value={selectedCategory}
         onChange={(e) =>
           onCategoryChange(e.target.value as AchievementCategory | "all")
@@ -120,9 +120,9 @@ export const Filters: React.FC<FiltersProps> = ({
             </option>
           ),
         )}
-      </select>
+      </Select>
 
-      <select
+      <Select
         value={selectedDifficulty}
         onChange={(e) =>
           onDifficultyChange(e.target.value as AchievementDifficulty | "all")
@@ -137,7 +137,7 @@ export const Filters: React.FC<FiltersProps> = ({
             </option>
           ),
         )}
-      </select>
+      </Select>
 
       <Checkbox
         checked={showOnlyEarned}
@@ -238,12 +238,12 @@ const VisibilityToggle: React.FC<VisibilityToggleProps> = ({
   }
 
   return (
-    <button
+    <Button
       onClick={() => onToggleVisibility(achievement.id)}
       className="absolute top-2 right-2 p-1 rounded text-gray-400 hover:text-white transition-colors"
     >
       {isVisible ? <FaEye /> : <FaEyeSlash />}
-    </button>
+    </Button>
   );
 };
 

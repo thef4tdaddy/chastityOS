@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
 import { preloadRoute } from "@/utils/routing/routePreloader";
+import { Button } from "@/components/ui";
 
 interface HeaderProps {
   navItems: Array<{ path: string; label: string }>;
@@ -58,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Mobile menu button */}
-          <button
+          <Button
             onClick={toggleMobileMenu}
             className="md:hidden p-2 rounded-md text-dark_purple hover:text-white hover:bg-tekhelet/20 focus:outline-none focus:ring-2 focus:ring-tekhelet"
             aria-label="Open menu"
@@ -85,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({
                 />
               )}
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </header>

@@ -4,6 +4,7 @@ import {
   FaExclamationTriangle,
   FaSpinner,
 } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 
 interface ResetModalProps {
   show: boolean;
@@ -62,20 +63,20 @@ export const ResetModal: React.FC<ResetModalProps> = ({
         )}
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={onCancel}
             disabled={status === "pending"}
             className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onConfirm}
             disabled={status === "pending"}
             className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {status === "pending" ? "Resetting..." : "Reset All Data"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

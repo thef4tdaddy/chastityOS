@@ -5,6 +5,7 @@
 import React from "react";
 import { useToast } from "../../contexts";
 import { safeToastFunctions } from "../../utils/toastBridge";
+import { Button } from "@/components/ui";
 
 const ToastDemo: React.FC = () => {
   const {
@@ -85,37 +86,37 @@ const ToastDemo: React.FC = () => {
             Basic Toast Types
           </h2>
           <div className="space-y-3">
-            <button
+            <Button
               onClick={testBasicToasts}
               className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
               Show All Basic Types
-            </button>
+            </Button>
             <div className="grid grid-cols-2 gap-2">
-              <button
+              <Button
                 onClick={() => showSuccess("Success!")}
                 className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
               >
                 Success
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => showError("Error!")}
                 className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
               >
                 Error
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => showWarning("Warning!")}
                 className="px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm"
               >
                 Warning
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => showInfo("Info!")}
                 className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
               >
                 Info
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -126,37 +127,37 @@ const ToastDemo: React.FC = () => {
             Priority Levels
           </h2>
           <div className="space-y-3">
-            <button
+            <Button
               onClick={testPriorityToasts}
               className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
             >
               Show All Priorities
-            </button>
+            </Button>
             <div className="grid grid-cols-2 gap-2">
-              <button
+              <Button
                 onClick={() => showLow("Low priority")}
                 className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm"
               >
                 Low
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => showMedium("Medium priority")}
                 className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
               >
                 Medium
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => showHigh("High priority")}
                 className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded text-sm"
               >
                 High
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => showUrgent("Urgent priority!")}
                 className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm animate-pulse"
               >
                 Urgent
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -167,12 +168,12 @@ const ToastDemo: React.FC = () => {
             Advanced Features
           </h2>
           <div className="space-y-3">
-            <button
+            <Button
               onClick={testAdvancedToasts}
               className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
             >
               Show Advanced Examples
-            </button>
+            </Button>
             <p className="text-sm text-gray-400">
               Includes: Custom titles, action buttons, positioning, and
               persistent toasts
@@ -186,12 +187,12 @@ const ToastDemo: React.FC = () => {
             Bridge Functions
           </h2>
           <div className="space-y-3">
-            <button
+            <Button
               onClick={testBridgeFunctions}
               className="w-full px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
             >
               Test Non-React Bridge
-            </button>
+            </Button>
             <p className="text-sm text-gray-400">
               Tests toasts from non-React services (like NotificationService)
             </p>
@@ -203,12 +204,12 @@ const ToastDemo: React.FC = () => {
       <div className="bg-gray-800 p-6 rounded-lg">
         <h2 className="text-xl font-semibold text-white mb-4">Controls</h2>
         <div className="flex gap-4">
-          <button
+          <Button
             onClick={clearAllToasts}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
           >
             Clear All Toasts
-          </button>
+          </Button>
         </div>
       </div>
 

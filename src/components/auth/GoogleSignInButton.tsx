@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { FaGoogle, FaSpinner } from "react-icons/fa";
 import { useAuthActions } from "@/contexts/AuthContext";
 import { logger } from "@/utils/logging";
+import { Button } from "@/components/ui";
 
 interface GoogleSignInButtonProps {
   mode?: "signin" | "link";
@@ -52,7 +53,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
     mode === "signin" ? "Sign in with Google" : "Link with Google";
 
   return (
-    <button
+    <Button
       onClick={handleGoogleAuth}
       disabled={isLoading}
       className={`
@@ -78,6 +79,6 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
             : "Linking..."
           : buttonText}
       </span>
-    </button>
+    </Button>
   );
 };

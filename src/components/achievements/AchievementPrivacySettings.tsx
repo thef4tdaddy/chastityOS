@@ -17,7 +17,7 @@ import {
 import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
-import { ToggleGroup } from "@/components/ui";
+import { ToggleGroup, Switch } from "@/components/ui";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -36,22 +36,17 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   description,
 }) => (
   <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-3 flex-1">
       {icon}
-      <div>
-        <div className="font-medium text-nightly-honeydew">{title}</div>
-        <div className="text-sm text-nightly-celadon">{description}</div>
+      <div className="flex-1">
+        <Switch
+          label={title}
+          description={description}
+          checked={checked}
+          onCheckedChange={onChange}
+        />
       </div>
     </div>
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="sr-only peer"
-      />
-      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-    </label>
   </div>
 );
 
@@ -252,12 +247,12 @@ export const AchievementPrivacySettings: React.FC<
           </h2>
         </div>
         {onClose && (
-          <button
+          <Button
             onClick={onClose}
             className="text-gray-400 hover:text-white p-2"
           >
             ×
-          </button>
+          </Button>
         )}
       </div>
 
@@ -285,14 +280,14 @@ export const AchievementPrivacySettings: React.FC<
         {/* Save Button */}
         <div className="flex justify-end space-x-3 pt-4">
           {onClose && (
-            <button
+            <Button
               onClick={onClose}
               className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
             >
               Cancel
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             onClick={handleSave}
             disabled={!hasChanges || isLoading}
             className={`flex items-center space-x-2 px-6 py-2 rounded-lg font-semibold transition-colors ${
@@ -303,7 +298,7 @@ export const AchievementPrivacySettings: React.FC<
           >
             <FaSave />
             <span>{isLoading ? "Saving..." : "Save Settings"}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

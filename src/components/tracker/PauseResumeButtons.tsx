@@ -109,7 +109,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
       <label className="block text-sm font-medium text-gray-300 mb-2">
         Select reason:
       </label>
-      <select
+      <Select
         value={selectedReason}
         onChange={(e) => onReasonChange(e.target.value as EnhancedPauseReason)}
         className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
@@ -119,7 +119,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
             {reason}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
 
     {selectedReason === "Other" && (

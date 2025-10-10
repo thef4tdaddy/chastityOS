@@ -2,6 +2,7 @@ import React from "react";
 import { FaFilter } from "../../utils/iconImport";
 import { ManualEntryForm } from "./ManualEntryForm";
 import type { RewardPunishmentLog } from "./index";
+import { Select } from "@/components/ui";
 
 interface RewardsPunishmentsControlsProps {
   filter: "all" | "rewards" | "punishments";
@@ -17,7 +18,7 @@ export const RewardsPunishmentsControls: React.FC<
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-4">
         <FaFilter className="text-nightly-celadon" />
-        <select
+        <Select
           value={filter}
           onChange={(e) =>
             onFilterChange(e.target.value as "all" | "rewards" | "punishments")
@@ -31,7 +32,7 @@ export const RewardsPunishmentsControls: React.FC<
           <option value="punishments">
             Punishments ({logs.filter((l) => l.type === "punishment").length})
           </option>
-        </select>
+        </Select>
       </div>
 
       <ManualEntryForm onSubmit={onManualEntry} />

@@ -98,13 +98,13 @@ export const ConfirmationStage: React.FC<ConfirmationStageProps> = ({
 }) => (
   <div>
     <div className="flex items-center mb-6">
-      <button
+      <Button
         onClick={() => setStage("reason")}
         className="mr-3 p-1 text-gray-400 hover:text-white transition"
         aria-label="Go back"
       >
         <FaArrowLeft />
-      </button>
+      </Button>
       <h3 className="text-xl font-bold text-red-300">Final Confirmation</h3>
     </div>
 
@@ -118,7 +118,7 @@ export const ConfirmationStage: React.FC<ConfirmationStageProps> = ({
     />
 
     <div className="flex flex-col space-y-3">
-      <button
+      <Button
         onClick={handleEmergencyUnlock}
         disabled={!canConfirm || isSubmitting}
         className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition"
@@ -128,14 +128,14 @@ export const ConfirmationStage: React.FC<ConfirmationStageProps> = ({
           : requirePin
             ? "Continue to PIN Verification →"
             : "🚨 EMERGENCY UNLOCK 🚨"}
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => setStage("reason")}
         disabled={isSubmitting}
         className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
       >
         Back to Reason Selection
-      </button>
+      </Button>
     </div>
   </div>
 );

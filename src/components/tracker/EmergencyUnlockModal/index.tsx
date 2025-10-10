@@ -15,6 +15,7 @@ import { ConfirmationStage } from "./ConfirmationStage";
 import { PinValidationStage } from "./PinValidationStage";
 import { LockCombinationDisplay } from "./LockCombinationDisplay";
 import { usePinValidation } from "./usePinValidation";
+import { Button } from "@/components/ui";
 
 export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
   isOpen,
@@ -89,14 +90,14 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
     <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-gradient-to-br from-gray-900 to-gray-800 max-w-md w-full rounded-xl border-2 border-red-500 shadow-2xl">
         <div className="relative p-6">
-          <button
+          <Button
             onClick={onClose}
             disabled={isSubmitting || isValidatingPin}
             className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors disabled:cursor-not-allowed"
             aria-label="Close modal"
           >
             <FaTimes size={20} />
-          </button>
+          </Button>
 
           {showPinStage ? (
             <PinValidationStage

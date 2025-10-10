@@ -8,6 +8,7 @@ import {
   Notification,
   NotificationPriority,
 } from "../../stores/notificationStore";
+import { Button } from "@/components/ui";
 
 interface NotificationToastProps {
   notification: Notification;
@@ -133,7 +134,7 @@ const NotificationActionButton: React.FC<{
   dismissible?: boolean;
 }> = ({ action, styles, onDismiss, notificationId, dismissible }) => (
   <div className="mt-3">
-    <button
+    <Button
       onClick={() => {
         action.onClick();
         if (dismissible) {
@@ -146,7 +147,7 @@ const NotificationActionButton: React.FC<{
       `}
     >
       {action.label}
-    </button>
+    </Button>
   </div>
 );
 
@@ -230,7 +231,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
       </div>
 
       {notification.dismissible && (
-        <button
+        <Button
           onClick={() => onDismiss(notification.id)}
           className="ml-2 flex-shrink-0 text-white/60 hover:text-white/90 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
           aria-label="Dismiss notification"
@@ -242,7 +243,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
               clipRule="evenodd"
             />
           </svg>
-        </button>
+        </Button>
       )}
     </motion.div>
   );

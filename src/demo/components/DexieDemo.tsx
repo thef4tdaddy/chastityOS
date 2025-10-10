@@ -8,7 +8,7 @@ import { useOfflineDemo } from "../hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
 import type { User } from "@/types";
-import { Input, Checkbox } from "@/components/ui";
+import { Button, Checkbox, Input } from "@/components/ui";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {
@@ -47,18 +47,18 @@ const StatusIndicators: React.FC<StatusIndicatorsProps> = ({
     </div>
 
     <div className="flex items-center space-x-2">
-      <button
+      <Button
         onClick={onManualSync}
         className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
       >
         🔄 Sync Now
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={isOnline ? onSimulateOffline : onSimulateOnline}
         className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded transition-colors"
       >
         {isOnline ? "📱 Go Offline" : "🌐 Go Online"}
-      </button>
+      </Button>
     </div>
   </div>
 );
@@ -91,13 +91,13 @@ const TaskInput: React.FC<TaskInputProps> = ({
         }
       }}
     />
-    <button
+    <Button
       onClick={onAddTask}
       disabled={loading || !newTaskText.trim()}
       className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded transition-colors"
     >
       {loading ? "Adding..." : "Add Task"}
-    </button>
+    </Button>
   </div>
 );
 
@@ -114,12 +114,12 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onClearError }) => {
     <div className="mb-4 p-3 bg-red-900 text-red-300 rounded border border-red-700">
       <div className="flex items-center justify-between">
         <span>❌ {error}</span>
-        <button
+        <Button
           onClick={onClearError}
           className="text-red-300 hover:text-white"
         >
           ✕
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -186,13 +186,13 @@ const TaskList: React.FC<TaskListProps> = ({
               {task.text}
             </span>
           </div>
-          <button
+          <Button
             onClick={() => onDeleteTask(task.id)}
             disabled={loading}
             className="text-red-400 hover:text-red-300 disabled:opacity-50"
           >
             🗑️
-          </button>
+          </Button>
         </div>
       ))
     )}
