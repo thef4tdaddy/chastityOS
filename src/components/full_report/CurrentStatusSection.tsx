@@ -8,6 +8,7 @@ import {
   FaStop,
   FaTrophy,
 } from "../../utils/iconImport";
+import { Card } from "@/components/ui";
 
 // Session Status Helper Component
 const SessionStatusDisplay: React.FC<{
@@ -128,7 +129,7 @@ export const CurrentStatusSection: React.FC<{
   const timerData = useSessionTimer(currentSession);
 
   return (
-    <div className="glass-card mb-6">
+    <Card variant="glass" className="mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaClock className="text-nightly-aquamarine" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">
@@ -146,7 +147,7 @@ export const CurrentStatusSection: React.FC<{
           timerData={timerData}
         />
       </div>
-    </div>
+    </Card>
   );
 };
 

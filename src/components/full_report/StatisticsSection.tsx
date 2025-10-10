@@ -9,6 +9,7 @@ import {
   FaChartBar,
   FaHistory,
 } from "../../utils/iconImport";
+import { Card } from "@/components/ui";
 
 // Helper function to calculate statistics
 const useStatistics = (
@@ -129,7 +130,7 @@ export const StatisticsSection: React.FC<{
   ];
 
   return (
-    <div className="glass-card mb-6">
+    <Card variant="glass" className="mb-6">
       <div className="flex items-center gap-3 mb-6">
         <FaChartBar className="text-nightly-lavender-floral" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">
@@ -147,7 +148,7 @@ export const StatisticsSection: React.FC<{
           />
         ))}
       </div>
-    </div>
+    </Card>
   );
 };
 
