@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaUsers, FaCheck, FaTimes, FaSpinner } from "../../utils/iconImport";
 import type { RelationshipRequest } from "@/types/relationships";
 
@@ -44,7 +45,7 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                 )}
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
                   onClick={() => onAccept(request.id)}
                   disabled={isLoading}
                   className="bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50"
@@ -55,8 +56,8 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                   ) : (
                     <FaCheck />
                   )}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => onReject(request.id)}
                   disabled={isLoading}
                   className="bg-red-600 text-white p-2 rounded hover:bg-red-700 disabled:opacity-50"
@@ -67,7 +68,7 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                   ) : (
                     <FaTimes />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

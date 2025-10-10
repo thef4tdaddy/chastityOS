@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 
 interface TrackerErrorFallbackProps {
   error?: Error | null;
@@ -43,12 +44,12 @@ export const TrackerErrorFallback: React.FC<TrackerErrorFallbackProps> = ({
             <p className="text-sm text-yellow-600 mb-3">{error.message}</p>
           )}
           {resetError && (
-            <button
+            <Button
               onClick={resetError}
               className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Retry
-            </button>
+            </Button>
           )}
         </div>
       </div>
