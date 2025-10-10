@@ -1498,6 +1498,25 @@ td {
   }
 }
 
+/* Animation for radio button selection */
+@keyframes scale-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
 /* Progress bar for achievement toasts */
 .achievement-toast .Toastify__progress-bar {
   background: linear-gradient(90deg, #fde047, #fcd34d) !important;
