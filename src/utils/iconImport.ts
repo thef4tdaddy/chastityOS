@@ -51,6 +51,7 @@ export {
   FaPause,
   FaPlay,
   FaPlus,
+  FaPrayingHands,
   FaQrcode,
   FaSave,
   FaShare,
