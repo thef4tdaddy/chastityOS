@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaCopy, FaTrash } from "../../utils/iconImport";
 import { formatDistanceToNow } from "date-fns";
 

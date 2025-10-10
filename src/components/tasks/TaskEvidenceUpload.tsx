@@ -3,6 +3,7 @@
  * Allows submissives to upload photo evidence when submitting tasks
  */
 import React, { useCallback } from "react";
+import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
 import { FaUpload, FaTimes, FaImage, FaSpinner } from "../../utils/iconImport";

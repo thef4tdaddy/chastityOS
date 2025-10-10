@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaChartBar, FaList, FaUsers, FaCog } from "../../utils/iconImport";
 
 type ViewMode = "dashboard" | "gallery" | "leaderboards" | "privacy";

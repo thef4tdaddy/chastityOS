@@ -3,6 +3,7 @@
  * Main interface for managing keyholder relationships
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { useRelationships } from "@/hooks/useRelationships";
 import { Relationship } from "@/types/relationships";
 import { KeyholderRelationship, KeyholderPermissions } from "@/types/core";

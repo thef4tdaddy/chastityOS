@@ -8,7 +8,7 @@ import { useOfflineDemo } from "../hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
 import type { User } from "@/types";
-import { Input, Checkbox } from "@/components/ui";
+import { Input, Checkbox, Button } from "@/components/ui";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {

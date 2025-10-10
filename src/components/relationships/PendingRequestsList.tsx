@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaUsers, FaCheck, FaTimes, FaSpinner } from "../../utils/iconImport";
 import type { RelationshipRequest } from "@/types/relationships";
 

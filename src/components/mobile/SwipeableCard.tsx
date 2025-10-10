@@ -3,6 +3,7 @@
  * Card that responds to swipe gestures for actions
  */
 import React, { useState, useRef } from "react";
+import { Button } from "@/components/ui";
 import { useTouchGestures } from "../../hooks/mobile/useTouchGestures";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 

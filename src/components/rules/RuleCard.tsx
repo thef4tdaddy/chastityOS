@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from "react";
+import { Button } from "@/components/ui";
 import { FaEdit, FaLock, FaUnlock } from "../../utils/iconImport";
 
 // Mock rules interface

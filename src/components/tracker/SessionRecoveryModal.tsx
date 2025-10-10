@@ -5,7 +5,7 @@ import {
   FaCalendarAlt,
 } from "../../utils/iconImport";
 import type { DBSession } from "../../types/database";
-import { Modal } from "@/components/ui";
+import { Modal, Button } from "@/components/ui";
 
 interface SessionRecoveryModalProps {
   corruptedSession: DBSession;

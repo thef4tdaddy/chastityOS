@@ -3,6 +3,7 @@
  * Mobile-optimized modal that slides up from the bottom
  */
 import React, { useEffect } from "react";
+import { Button } from "@/components/ui";
 import { createPortal } from "react-dom";
 import { useViewport } from "../../hooks/mobile/useViewport";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";

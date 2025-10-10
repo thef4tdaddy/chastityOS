@@ -6,7 +6,7 @@ import type { Task } from "../types";
 import { TaskItem, TaskSkeleton } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
-import { Card, Tooltip } from "@/components/ui";
+import { Card, Tooltip, Button } from "@/components/ui";
 
 const ErrorState: React.FC = () => (
   <div className="text-center py-8">
@@ -27,7 +27,7 @@ const TabNavigation: React.FC<{
         onClick={() => setActiveTab("active")}
         className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
           activeTab === "active"
-            ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+            ? "primary-stat-card text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
         }`}
       >
@@ -39,7 +39,7 @@ const TabNavigation: React.FC<{
         onClick={() => setActiveTab("archived")}
         className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
           activeTab === "archived"
-            ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+            ? "primary-stat-card text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
         }`}
       >

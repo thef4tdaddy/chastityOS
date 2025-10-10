@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 
 interface CriticalErrorFallbackProps {
   error: Error | null;

@@ -19,7 +19,7 @@ import {
   FeatureErrorBoundary,
   KeyholderErrorFallback,
 } from "../components/errors";
-import { Tooltip } from "@/components/ui";
+import { Tooltip, Button } from "@/components/ui";
 
 // Loading Component
 const LoadingDisplay: React.FC = () => (

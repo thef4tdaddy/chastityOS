@@ -3,6 +3,7 @@
  * Shows the UI components without requiring authentication
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { AccountLinkingDemo } from "../demo/components/AccountLinkingDemo";
 
 type Scenario =

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Input } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
 
 interface AcceptInviteCodeSectionProps {
   inviteCodeInput: string;

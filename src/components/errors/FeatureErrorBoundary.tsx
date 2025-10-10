@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 import { logger } from "@/utils/logging";
 
 interface Props {

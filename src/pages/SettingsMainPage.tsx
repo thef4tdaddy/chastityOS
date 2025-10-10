@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { AccountSection } from "../components/settings/AccountSection";
 import { DisplaySettingsSection } from "../components/settings/DisplaySettingsSection";
 import { SessionEditSection } from "../components/settings/SessionEditSection";

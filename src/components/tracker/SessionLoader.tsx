@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { FaExclamationTriangle } from "../../utils/iconImport";
 import { useSessionLoader } from "../../hooks/session/useSessionLoader";
-import { LoadingState } from "@/components/ui";
+import { LoadingState, Button } from "@/components/ui";
 
 // Define local interface to avoid restricted import
 interface SessionRestorationResult {

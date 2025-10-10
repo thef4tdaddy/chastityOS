@@ -10,7 +10,7 @@ import {
   FaTimes,
   FaCheck,
 } from "../../utils/iconImport";
-import { Input } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
 
 // Interface for relationship data
 export interface Relationship {

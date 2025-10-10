@@ -5,7 +5,7 @@ import {
   usePendingRequestForSession,
 } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
-import { Modal, Textarea } from "@/components/ui";
+import { Modal, Textarea, Button } from "@/components/ui";
 
 // Request Modal Component
 interface RequestModalProps {

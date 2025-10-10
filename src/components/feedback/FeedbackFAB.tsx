@@ -1,6 +1,7 @@
 // src/components/feedback/FeedbackFAB.tsx
 
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { FaPlus, FaBug, FaLightbulb, FaComment } from "../../utils/iconImport";
 import FeedbackModal from "./FeedbackModal";
 // TODO: Replace with proper hook - components shouldn't import services directly

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { FaExclamationTriangle } from "../../utils/iconImport";
 import { EmergencyUnlockModal } from "./EmergencyUnlockModal";
 import { useEmergencyUnlock } from "../../hooks/api/useEmergency";

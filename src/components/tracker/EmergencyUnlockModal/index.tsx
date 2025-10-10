@@ -4,6 +4,7 @@
  * Split into multiple stage components for maintainability
  */
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaTimes } from "../../../utils/iconImport";
 import type { EmergencyUnlockReason } from "../../../types/events";
 import { useEmergencyUnlockModal } from "../../../hooks/tracker/useEmergencyUnlockModal";

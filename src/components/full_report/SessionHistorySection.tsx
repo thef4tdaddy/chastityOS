@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { DBSession } from "../../types/database";
 import { FaHistory, FaCalendar } from "../../utils/iconImport";
-import { Card } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 
 // Helper function to format duration
 const formatDuration = (seconds: number) => {

@@ -3,6 +3,7 @@
  * Shows retrieved lock combination to user
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { serviceLogger } from "../../../utils/logging";
 
 const logger = serviceLogger("LockCombinationDisplay");

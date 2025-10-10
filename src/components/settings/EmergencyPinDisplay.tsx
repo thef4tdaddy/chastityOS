@@ -10,13 +10,12 @@ import {
   FaEdit,
   FaTrash,
 } from "../../utils/iconImport";
-import { Card } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 
 interface EmergencyPinDisplayProps {
   hasPin: boolean;
   createdAt?: Date;
   isHardcoreMode: boolean;
-  success: string;
   onEdit: () => void;
   onRemove: () => void;
 }
@@ -25,7 +24,6 @@ export const EmergencyPinDisplay: React.FC<EmergencyPinDisplayProps> = ({
   hasPin,
   createdAt,
   isHardcoreMode,
-  success,
   onEdit,
   onRemove,
 }) => {
@@ -65,12 +63,6 @@ export const EmergencyPinDisplay: React.FC<EmergencyPinDisplayProps> = ({
           )}
         </div>
       </div>
-
-      {success && (
-        <div className="bg-green-500/20 border border-green-500 rounded-lg p-3 mb-4">
-          <p className="text-green-400 text-sm">{success}</p>
-        </div>
-      )}
 
       <div className="bg-red-500/10 rounded-lg p-4">
         {hasPin ? (

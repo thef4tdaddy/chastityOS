@@ -3,6 +3,7 @@
  * Replaces legacy react-toastify usage with unified, accessible notifications
  */
 import React, { useEffect, useRef } from "react";
+import { Button } from "@/components/ui";
 import { motion } from "framer-motion";
 import {
   Notification,

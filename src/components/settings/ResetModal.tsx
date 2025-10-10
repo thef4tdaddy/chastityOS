@@ -4,7 +4,7 @@ import {
   FaExclamationTriangle,
   FaSpinner,
 } from "../../utils/iconImport";
-import { Modal } from "@/components/ui";
+import { Modal, Button } from "@/components/ui";
 
 interface ResetModalProps {
   show: boolean;

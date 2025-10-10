@@ -3,6 +3,7 @@
  * Reusable button for Google OAuth authentication
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { FaGoogle, FaSpinner } from "../../utils/iconImport";
 import { useAuthActions } from "@/contexts/AuthContext";
 import { logger } from "@/utils/logging";

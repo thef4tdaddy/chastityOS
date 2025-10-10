@@ -3,6 +3,7 @@
  * Shows a custom prompt to install the app as a PWA
  */
 import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui";
 import { pwaInstallManager } from "@/services/pwa";
 import { FaTimes, FaDownload } from "@/utils/iconImport";
 

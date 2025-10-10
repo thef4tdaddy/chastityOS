@@ -17,7 +17,7 @@ import {
 import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
-import { ToggleGroup } from "@/components/ui";
+import { ToggleGroup, Button, Switch } from "@/components/ui";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -43,15 +43,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         <div className="text-sm text-nightly-celadon">{description}</div>
       </div>
     </div>
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="sr-only peer"
-      />
-      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-    </label>
+    <Switch checked={checked} onCheckedChange={onChange} />
   </div>
 );
 

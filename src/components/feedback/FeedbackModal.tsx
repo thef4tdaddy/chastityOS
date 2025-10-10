@@ -15,7 +15,14 @@ import type {
 } from "../../types/feedback";
 import { collectSystemInfo } from "../../utils/systemInfo";
 import { logger } from "../../utils/logging";
-import { Input, Textarea, Select, SelectOption } from "@/components/ui";
+import {
+  Input,
+  Textarea,
+  Select,
+  SelectOption,
+  Button,
+  Switch,
+} from "@/components/ui";
 
 // Form field components
 interface FormFieldProps {
@@ -285,16 +292,11 @@ const FormActions: React.FC<FormActionsProps> = ({
           Helps us debug technical issues
         </div>
       </div>
-      <label className="relative inline-flex items-center cursor-pointer">
-        <input
-          type="checkbox"
-          checked={formData.includeSystemInfo}
-          onChange={(e) => updateField("includeSystemInfo", e.target.checked)}
-          className="sr-only peer"
-          disabled={isSubmitting}
-        />
-        <div className="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-      </label>
+      <Switch
+        checked={formData.includeSystemInfo}
+        onCheckedChange={(checked) => updateField("includeSystemInfo", checked)}
+        disabled={isSubmitting}
+      />
     </div>
 
     {/* Submit Buttons */}

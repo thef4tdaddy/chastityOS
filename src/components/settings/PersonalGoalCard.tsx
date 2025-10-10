@@ -11,7 +11,7 @@ import {
   FaTrophy,
 } from "../../utils/iconImport";
 import type { DBGoal } from "@/types/database";
-import { Input, Textarea, Card } from "@/components/ui";
+import { Input, Textarea, Card, Button } from "@/components/ui";
 
 interface PersonalGoalCardProps {
   goal: DBGoal;

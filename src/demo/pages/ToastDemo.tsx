@@ -3,6 +3,7 @@
  * Demonstrates priority levels, animations, accessibility, and bridge functionality
  */
 import React from "react";
+import { Button } from "@/components/ui";
 import { useToast } from "../../contexts";
 import { safeToastFunctions } from "../../utils/toastBridge";
 

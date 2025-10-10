@@ -3,6 +3,7 @@
  * Shows a notification when a PWA update is available
  */
 import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { FaSync, FaTimes } from "@/utils/iconImport";
 

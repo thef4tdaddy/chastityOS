@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaEye, FaCog, FaTrash } from "../../utils/iconImport";
 import { RelationshipStatus, type Relationship } from "@/types/relationships";
 

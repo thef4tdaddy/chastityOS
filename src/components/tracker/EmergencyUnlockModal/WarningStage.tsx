@@ -3,6 +3,7 @@
  * Shows initial warning about emergency unlock
  */
 import React from "react";
+import { Button } from "@/components/ui";
 import { FaExclamationTriangle, FaArrowRight } from "../../../utils/iconImport";
 import type { ModalStage } from "./types";
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaSpinner } from "../../utils/iconImport";
-import { Input, Textarea, Select, SelectOption } from "@/components/ui";
+import { Input, Textarea, Select, SelectOption, Button } from "@/components/ui";
 
 interface RelationshipRequestFormProps {
   isVisible: boolean;

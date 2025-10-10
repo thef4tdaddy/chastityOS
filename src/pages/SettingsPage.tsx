@@ -40,6 +40,8 @@ import {
   TabsContent,
   Select,
   SelectOption,
+  Button,
+  Switch,
 } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
@@ -392,15 +394,10 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
                 </span>
               </Tooltip>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={notifications}
-                onChange={(e) => setNotifications(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
-            </label>
+            <Switch
+              checked={notifications}
+              onCheckedChange={setNotifications}
+            />
           </div>
 
           <Button
@@ -500,15 +497,10 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
                 Make your profile visible to others
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={publicProfile}
-                onChange={(e) => setPublicProfile(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-            </label>
+            <Switch
+              checked={publicProfile}
+              onCheckedChange={setPublicProfile}
+            />
           </div>
 
           <div className="flex items-center justify-between">
@@ -527,15 +519,10 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
                 </span>
               </Tooltip>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={shareStatistics}
-                onChange={(e) => setShareStatistics(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
-            </label>
+            <Switch
+              checked={shareStatistics}
+              onCheckedChange={setShareStatistics}
+            />
           </div>
 
           <div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal } from "@/components/ui";
+import { Modal, Button } from "@/components/ui";
 
 interface RestoreSessionPromptProps {
   onConfirm: () => void;

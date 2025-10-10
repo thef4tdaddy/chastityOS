@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { RewardPunishmentLog } from "./LogItem";
 import { FaPlus } from "../../utils/iconImport";
-import { Input, Textarea, ToggleGroup } from "@/components/ui";
+import { Input, Textarea, ToggleGroup, Button } from "@/components/ui";
 
 // Form data type
 type FormData = {

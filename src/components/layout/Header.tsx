@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui";
 import { Link, useLocation } from "react-router-dom";
 import { SyncStatusIndicator } from "@/components/common";
 import { preloadRoute } from "@/utils/routing/routePreloader";

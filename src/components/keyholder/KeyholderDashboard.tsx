@@ -15,7 +15,7 @@ import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking
 import { usePendingReleaseRequests } from "../../hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "./ReleaseRequestCard";
 import { AdminRelationship } from "../../types/account-linking";
-import { Select, SelectOption } from "@/components/ui";
+import { Select, SelectOption, Button } from "@/components/ui";
 
 // Loading Component
 const AdminLoadingDisplay: React.FC = () => (

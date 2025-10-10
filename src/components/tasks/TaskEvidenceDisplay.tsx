@@ -3,6 +3,7 @@
  * Shows submitted photo evidence with thumbnail grid and lightbox
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import {
   FaTimes,

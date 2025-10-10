@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import type { RecurringConfig } from "@/types/database";
-import { Input, Select, SelectOption } from "@/components/ui";
+import { Input, Select, SelectOption, Button } from "@/components/ui";
 
 interface RecurringTaskFormProps {
   onSave: (config: RecurringConfig) => void;

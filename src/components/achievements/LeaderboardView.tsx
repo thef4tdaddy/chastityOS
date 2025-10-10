@@ -8,7 +8,7 @@ import { FaTrophy, FaUsers, FaEye, FaEyeSlash } from "../../utils/iconImport";
 import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
 import { useLeaderboardActions } from "../../hooks/achievements/useLeaderboardActions";
-import { Select, SelectOption } from "@/components/ui";
+import { Select, SelectOption, Button } from "@/components/ui";
 
 export interface LeaderboardViewProps {
   category?: LeaderboardCategory;

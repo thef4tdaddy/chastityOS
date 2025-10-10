@@ -9,7 +9,7 @@ import {
 import type { DBReleaseRequest } from "../../types/database";
 import { useReleaseRequestMutations } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
-import { Modal, Textarea } from "@/components/ui";
+import { Modal, Textarea, Button } from "@/components/ui";
 
 interface ReleaseRequestCardProps {
   request: DBReleaseRequest;

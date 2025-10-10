@@ -9,7 +9,7 @@ import {
   FaTimes,
   FaSpinner,
 } from "../../utils/iconImport";
-import { Input, Card } from "@/components/ui";
+import { Input, Card, Button } from "@/components/ui";
 
 interface EmergencyPinEditProps {
   hasPin: boolean;
@@ -17,7 +17,6 @@ interface EmergencyPinEditProps {
   setPin: (value: string) => void;
   confirmPin: string;
   setConfirmPin: (value: string) => void;
-  error: string;
   isSaving: boolean;
   onSave: () => void;
   onCancel: () => void;
@@ -29,7 +28,6 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
   setPin,
   confirmPin,
   setConfirmPin,
-  error,
   isSaving,
   onSave,
   onCancel,
@@ -47,12 +45,6 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
         This PIN allows you to emergency unlock during hardcore mode sessions.
         Keep it secure and memorable.
       </p>
-
-      {error && (
-        <div className="bg-red-500/20 border border-red-500 rounded-lg p-3 mb-4">
-          <p className="text-red-400 text-sm">{error}</p>
-        </div>
-      )}
 
       <div className="space-y-4">
         <div>

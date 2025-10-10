@@ -3,6 +3,7 @@
  * Touch-optimized button with haptic feedback
  */
 import React, { forwardRef } from "react";
+import { Button } from "@/components/ui";
 import { useHapticFeedback } from "../../hooks/mobile/useHapticFeedback";
 
 interface MobileButtonProps

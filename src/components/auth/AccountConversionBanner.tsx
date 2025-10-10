@@ -3,6 +3,7 @@
  * Prompts anonymous users to link their account with Google for data backup and sync
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import {
   FaGoogle,
   FaTimes,

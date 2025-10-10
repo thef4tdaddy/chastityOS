@@ -3,6 +3,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui";
 import { useKeyholderContext } from "./KeyholderContext";
 import { FaLock, FaCog, FaEye } from "../../../utils/iconImport";
 import { KeyholderDurationSection } from "../../settings/KeyholderDurationSection";

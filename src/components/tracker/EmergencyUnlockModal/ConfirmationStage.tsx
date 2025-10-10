@@ -6,7 +6,7 @@ import React from "react";
 import { FaArrowLeft } from "../../../utils/iconImport";
 import type { EmergencyUnlockReason } from "../../../types/events";
 import type { ModalStage } from "./types";
-import { Input } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
 
 interface FinalWarningBoxProps {
   sessionId: string;

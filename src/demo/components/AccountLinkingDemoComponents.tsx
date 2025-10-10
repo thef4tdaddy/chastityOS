@@ -16,7 +16,7 @@ import {
   AdminPermissions,
   LinkCode,
 } from "@/types/account-linking";
-import { Input } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
 
 interface MessageDisplayProps {
   message: string;

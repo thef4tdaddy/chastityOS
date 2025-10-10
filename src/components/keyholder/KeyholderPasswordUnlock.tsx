@@ -1,7 +1,7 @@
 import React from "react";
 import { useKeyholderStore } from "../../stores/keyholderStore";
 import { FaLock, FaUnlock, FaKey, FaSpinner } from "../../utils/iconImport";
-import { Input } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
 
 // Password Form Component
 const PasswordForm: React.FC<{

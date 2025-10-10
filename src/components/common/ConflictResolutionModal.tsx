@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import type { ConflictInfo } from "@/types/database";
-import { RadioGroup, RadioOption, Modal } from "@/components/ui";
+import { RadioGroup, RadioOption, Modal, Button } from "@/components/ui";
 
 interface ConflictResolutionProps {
   conflicts: ConflictInfo[];

@@ -5,7 +5,7 @@ import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { LogEventForm, EventList } from "../components/log_event";
 import { FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
-import { Card, LoadingState, Tooltip } from "@/components/ui";
+import { Card, LoadingState, Tooltip, Button } from "@/components/ui";
 
 // User selector component for keyholders
 interface UserSelectorProps {

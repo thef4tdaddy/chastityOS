@@ -17,7 +17,7 @@ import {
 } from "../../utils/goals/formValidation";
 import { HardcoreModeSection } from "./HardcoreModeSection";
 import { GoalFormFields } from "./GoalFormFields";
-import { Card } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 
 interface CreatePersonalGoalFormProps {
   onCreate: (

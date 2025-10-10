@@ -17,7 +17,7 @@ import {
   DBUserAchievement,
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
-import { Input, Select, SelectOption, Checkbox } from "@/components/ui";
+import { Input, Select, SelectOption, Checkbox, Button } from "@/components/ui";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;

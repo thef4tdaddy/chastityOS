@@ -8,7 +8,7 @@ import type { EmergencyUnlockReason } from "../../../types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "../../../types/events";
 import type { ModalStage } from "./types";
 import { getReasonDescription } from "./types";
-import { Textarea, RadioGroup, RadioOption } from "@/components/ui";
+import { Textarea, RadioGroup, RadioOption, Button } from "@/components/ui";
 
 interface ReasonSelectionListProps {
   reason: EmergencyUnlockReason | "";

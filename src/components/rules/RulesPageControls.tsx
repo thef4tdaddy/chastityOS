@@ -1,7 +1,7 @@
 import React from "react";
 import { FaFilter, FaPlus } from "../../utils/iconImport";
 import type { ChastityRule } from "./RuleCard";
-import { Select, SelectOption } from "@/components/ui";
+import { Select, SelectOption, Button } from "@/components/ui";
 
 interface RulesPageControlsProps {
   filter: "all" | "active" | "inactive";
