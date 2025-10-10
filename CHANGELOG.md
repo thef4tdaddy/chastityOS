@@ -2,359 +2,309 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [3.14.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v4.0.0-nightly.0...v3.14.0-nightly.1) (2025-07-05)
-
-### 🧹 Chores
-
-- reset version to 3.14.0-nightly.0 after accidental bump ([1a1617c](https://github.com/thef4tdaddy/chastityOS/commit/1a1617c181b5d0de77fe937406c4ad055720f4ca))
-
-## [4.0.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.9...v4.0.0-nightly.0) (2025-07-05)
-
-### ⚠ BREAKING CHANGES
-
-- - Vite upgraded from 6 to 7
-
-* Rollup upgraded from 3 to 4
-* marked upgraded from 9 to 16
-* Service Worker disabled in development mode
-* Sentry env vars standardized
-
-### 🧹 Chores
-
-- upgrade Vite to 7, Rollup to 4, marked to 16, and clean env config ([8e554bf](https://github.com/thef4tdaddy/chastityOS/commit/8e554bf53b5aec925ab0d375868b55af122b6549))
-
-### 🐛 Bug Fixes
-
-- normalize single line breaks to double line breaks when saving rules ([35e1c76](https://github.com/thef4tdaddy/chastityOS/commit/35e1c76cd32a5094a229fbc7a27b6498ea95285e))
-
-## [3.13.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.8...v3.13.0-nightly.9) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- pass userId to getEventsCollectionRef for correct event reference ([7326ee2](https://github.com/thef4tdaddy/chastityOS/commit/7326ee2d45eb0646646691099414e50008712057))
-
-## [3.13.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.7...v3.13.0-nightly.8) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- prevent unnecessary data application when restore prompt is already shown ([94489d0](https://github.com/thef4tdaddy/chastityOS/commit/94489d0b4cdf48eb23143f9fd14edd364a9b5b66))
-
-## [3.13.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.6...v3.13.0-nightly.7) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- improve session restoration logic by refining condition for showing restore prompt ([d92bf11](https://github.com/thef4tdaddy/chastityOS/commit/d92bf11e605afaa210836eb5705a3ada3bb4a3af))
-
-## [3.13.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.5...v3.13.0-nightly.6) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- remove unnecessary condition in session restoration logic ([09388fd](https://github.com/thef4tdaddy/chastityOS/commit/09388fd3e57c8fc8a1037c962724e3d0bc161d2a))
-
-## [3.13.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.4...v3.13.0-nightly.5) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- adjust footer and header styles for improved layout and responsiveness ([8dae4c6](https://github.com/thef4tdaddy/chastityOS/commit/8dae4c6254643001d750ab375782d3b43db8ccf3))
-
-### ✨ Features
-
-- add react-toastify for enhanced notification support ([6b04ac8](https://github.com/thef4tdaddy/chastityOS/commit/6b04ac838e110d3dbec455f7ae67a35f0c593b56))
-
-## [3.13.0-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.3...v3.13.0-nightly.4) (2025-07-04)
-
-### 🧹 Chores
-
-- update configuration for environment variable handling ([43f5b3b](https://github.com/thef4tdaddy/chastityOS/commit/43f5b3b7f02a984c3af26c6c64d5f79abca67c74))
-
-## [3.13.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.2...v3.13.0-nightly.3) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- optimization of the sizing of logos ([9727a73](https://github.com/thef4tdaddy/chastityOS/commit/9727a7327636ca06d76c49a1f4db10fe5467fe82))
-
-### ✨ Features
-
-- enhance performance with font preloading and add visualizer and compression plugins ([b167055](https://github.com/thef4tdaddy/chastityOS/commit/b167055c4ed87d9f322fe6445a7cac956077e240))
-
-## [3.13.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.1...v3.13.0-nightly.2) (2025-07-04)
-
-### 🐛 Bug Fixes
-
-- update screenshot image size for mobile display ([7cdeba6](https://github.com/thef4tdaddy/chastityOS/commit/7cdeba633ae63748474997a4cd1988728e919372))
-
-## [3.13.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.13.0-nightly.0...v3.13.0-nightly.1) (2025-07-04)
-
-### ✨ Features
-
-- add PWA manifest and caching strategies to improve app performance ([58e3c5e](https://github.com/thef4tdaddy/chastityOS/commit/58e3c5e3eab5657036c4dd5ed693e058f8178e2e))
-
-## [3.13.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.1...v3.13.0-nightly.0) (2025-07-04)
-
-### ✨ Features
-
-- implement session restoration prompt and update App component logic ([d4e3743](https://github.com/thef4tdaddy/chastityOS/commit/d4e37436aad2b275f525c725c404508e355f90d9))
-
-### 🐛 Bug Fixes
-
-- handle date sorting for logs ([165d4a5](https://github.com/thef4tdaddy/chastityOS/commit/165d4a5c0245179a6c6ee160bd34779a8a89538f))
-- trying to get PWA full install ([1f63898](https://github.com/thef4tdaddy/chastityOS/commit/1f63898317fef7db861400ed701d14d4822d950c))
-- update hash function import to use sha256 for improved security ([7aaca15](https://github.com/thef4tdaddy/chastityOS/commit/7aaca153534d285f0492c1d2ce270c7489455286))
-
-### [3.12.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.1-nightly.0...v3.12.1-nightly.1) (2025-07-03)
-
-### 🐛 Bug Fixes
-
-- issue with edited time thanks adlguy on discord ([05597b7](https://github.com/thef4tdaddy/chastityOS/commit/05597b7666c23d0d0fa0f823d525568272a03fcf))
-
-### [3.12.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.12.0...v3.12.1-nightly.0) (2025-07-02)
-
-### 🐛 Bug Fixes
-
-- changing sizing on arousal chart ([4aaecb2](https://github.com/thef4tdaddy/chastityOS/commit/4aaecb2c9d6eeeebf288802d1fb3a44ef92764fa))
-
-## [3.12.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0...v3.12.0) (2025-07-02)
-
-## [3.11.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.8...v3.11.0) (2025-07-02)
-
-### ✨ Features
-
-- enhance PublicProfilePage with Firebase integration and improved UI layout ([fe368d3](https://github.com/thef4tdaddy/chastityOS/commit/fe368d3d0bef5cce14d0b96593f2660b63abb640))
-
-## [3.11.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.7...v3.11.0-nightly.8) (2025-07-02)
-
-### 🐛 Bug Fixes
-
-- events not coming up in log, custom password not persisting ([18a4e8c](https://github.com/thef4tdaddy/chastityOS/commit/18a4e8c92503ccb93174da9b3ad04203a45c1fbe))
-
-### ✨ Features
-
-- how to doc fully filled out ([25994b3](https://github.com/thef4tdaddy/chastityOS/commit/25994b3f6c1adc5f0be444c76e3fe268a3a2c6de))
-
-## [3.11.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.6...v3.11.0-nightly.7) (2025-07-02)
-
-### 🐛 Bug Fixes
-
-- add recurrenceId to task data and include unseen status in pending tasks filter ([b1b0eee](https://github.com/thef4tdaddy/chastityOS/commit/b1b0eee57c0f3c8117fb6fe53ba0f189a7d1b35d))
-- prevent duplicate log events from rapid clicks ([80f824f](https://github.com/thef4tdaddy/chastityOS/commit/80f824f3f2d7a1b94c1715a26b37a8d85632d57f))
-- **session:** save timestamp correctly when editing start ([15e4467](https://github.com/thef4tdaddy/chastityOS/commit/15e4467a5473f81b54b125e36b2e2405449227c0))
-
-## [3.11.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.5...v3.11.0-nightly.6) (2025-07-02)
-
-### ✨ Features
-
-- update HOW_TO_URL to use dynamic branch based on environment variable ([475f7c7](https://github.com/thef4tdaddy/chastityOS/commit/475f7c7afb57fb9e41e935c181c77a0a89bdf4ca))
-
-## [3.11.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.4...v3.11.0-nightly.5) (2025-07-01)
-
-### ✨ Features
-
-- refactor App component to use lazy loading and improve navigation structure ([0498b52](https://github.com/thef4tdaddy/chastityOS/commit/0498b52d07d1910c5c0add5e15c95c9f7f8efb41))
-
-## [3.11.0-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.3...v3.11.0-nightly.4) (2025-07-01)
-
-### ✨ Features
-
-- add "How to Use" button to WelcomeModal ([b0dfa74](https://github.com/thef4tdaddy/chastityOS/commit/b0dfa74638a9cba024dfa3d4c148d8b54919752b))
-
-## [3.11.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.2...v3.11.0-nightly.3) (2025-07-01)
-
-### 🐛 Bug Fixes
-
-- add react-router-dom to dependencies ([9badf0d](https://github.com/thef4tdaddy/chastityOS/commit/9badf0dea60bacd62296d696d7706d9cb7c44ae1))
-
-## [3.11.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.1...v3.11.0-nightly.2) (2025-07-01)
-
-### 🔧 Refactoring
-
-- clean up recurring tasks comments ([7f78769](https://github.com/thef4tdaddy/chastityOS/commit/7f7876999187babf40d35133f06e51a7575e19ac))
-
-### ✨ Features
-
-- add arousal level tracking ([37b255a](https://github.com/thef4tdaddy/chastityOS/commit/37b255a51f560affa8601529ebc2b4f7728fc418))
-- add how-to modal ([5772e52](https://github.com/thef4tdaddy/chastityOS/commit/5772e52fa36d10082bb25b4be5d915b8aeb26793))
-- add rules management ([282cbc5](https://github.com/thef4tdaddy/chastityOS/commit/282cbc5974e4d15e1a9c7916607dc8ed799d5d09))
-- clarify shared account notice ([6ba2ccd](https://github.com/thef4tdaddy/chastityOS/commit/6ba2ccd4cf5ad28a9de099fdcbff37f04aa1ea44))
-
-### 🐛 Bug Fixes
-
-- add date-fns dependency required by chartjs-adapter-date-fns ([ba7067e](https://github.com/thef4tdaddy/chastityOS/commit/ba7067e4ac6954b04a7222dc68093c6c99f68717))
-- **events:** store start time edits in sexualEventsLog ([d6fc03b](https://github.com/thef4tdaddy/chastityOS/commit/d6fc03b8f7ce2ba60a2b77f938a12c8c397df48b))
-- **session:** persist cage off timer across reloads ([bba176b](https://github.com/thef4tdaddy/chastityOS/commit/bba176b803c60f0b06419bc954e7e0feb4d8a04f))
-- update script permissions for cleanup-stable-patches.sh ([0bee618](https://github.com/thef4tdaddy/chastityOS/commit/0bee618ee38be37ae35e802d758288044f173bb4))
-
-### 🧹 Chores
-
-- downgrade Rollup to v3 to fix Vercel build issue ([76897dc](https://github.com/thef4tdaddy/chastityOS/commit/76897dcde13b2a4f4e2e7435e43c522df34e2763))
-- force clean install on Vercel ([6ea6989](https://github.com/thef4tdaddy/chastityOS/commit/6ea69897559e22c8851048cdc6a2674559048406))
-- log app version ([993f3cc](https://github.com/thef4tdaddy/chastityOS/commit/993f3cc7ff66e20a1d329fe6dbd53ee6cb9c97d7))
-- regenerate lockfile to resolve merge conflict ([bcf9faa](https://github.com/thef4tdaddy/chastityOS/commit/bcf9faa273991b1c4969fb0718a346e733453315))
-- update changelog for version bump ([92465e3](https://github.com/thef4tdaddy/chastityOS/commit/92465e31cb56eb3976d7bfb4d7c5a43233c70937))
-
 ### [3.10.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.2...v3.10.3) (2025-06-27)
 
+
 ### 🐛 Bug Fixes
 
-- fixed random package.json error preventing build ([a830a72](https://github.com/thef4tdaddy/chastityOS/commit/a830a72cc00e0d06fd6360943b2adcc9bc6e5b40))
+* fixed random package.json error preventing build ([a830a72](https://github.com/thef4tdaddy/chastityOS/commit/a830a72cc00e0d06fd6360943b2adcc9bc6e5b40))
+
 
 ### 🧹 Chores
 
-- **release:** 3.10.2 ([a72e17a](https://github.com/thef4tdaddy/chastityOS/commit/a72e17ab41e6399a83878a70aef07615fddb6a22))
-- **release:** 3.10.3 ([233697f](https://github.com/thef4tdaddy/chastityOS/commit/233697f0edc1daf76210ae89e87b51d4c8c4ac59))
+* **release:** 3.10.2 ([a72e17a](https://github.com/thef4tdaddy/chastityOS/commit/a72e17ab41e6399a83878a70aef07615fddb6a22))
 
 ### [3.10.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.10.2) (2025-06-27)
 
+
 ### 🐛 Bug Fixes
 
-- Merge nightly branch into main for release ([8c3de09](https://github.com/thef4tdaddy/chastityOS/commit/8c3de0919554652a2e680814bcb39882f4d87ca6))
-
-### 🧹 Chores
-
-- **release:** 3.10.2 ([de0e76c](https://github.com/thef4tdaddy/chastityOS/commit/de0e76c9228d71401c909a8bce0e71a83346b71f))
+* Merge nightly branch into main for release ([8c3de09](https://github.com/thef4tdaddy/chastityOS/commit/8c3de0919554652a2e680814bcb39882f4d87ca6))
 
 ### [3.10.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.0...v3.10.1) (2025-06-27)
 
+
 ### 🧹 Chores
 
-- **release:** 3.10.1 ([0c6a77c](https://github.com/thef4tdaddy/chastityOS/commit/0c6a77c49e38c9eac6a8c5abf78628c53d53f1d0))
+* **release:** 3.10.1 ([0c6a77c](https://github.com/thef4tdaddy/chastityOS/commit/0c6a77c49e38c9eac6a8c5abf78628c53d53f1d0))
 
 ### [3.10.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.0) (2025-06-27)
 
+
 ### 🐛 Bug Fixes
 
-- tasks wasnt posting into taskpage ([3775890](https://github.com/thef4tdaddy/chastityOS/commit/3775890ef0d5bb6ff5ecd599e8f5bf3c513993d7))
+* tasks wasnt posting into taskpage ([3775890](https://github.com/thef4tdaddy/chastityOS/commit/3775890ef0d5bb6ff5ecd599e8f5bf3c513993d7))
+
 
 ### 🧹 Chores
 
-- **release:** 3.10.1-nightly.0 ([72a4455](https://github.com/thef4tdaddy/chastityOS/commit/72a4455892e2693bf05726e98b7d0b6634c80299))
+* **release:** 3.10.1-nightly.0 ([72a4455](https://github.com/thef4tdaddy/chastityOS/commit/72a4455892e2693bf05726e98b7d0b6634c80299))
 
-## [3.12.0-nightly.0] - 2025-07-01
+### [3.10.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.0...v3.10.1) (2025-06-27)
+=======
+### [3.10.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.1) (2025-06-27)
 
-- merging (337d305)
-
-- Merge branch 'codex/add-how-to-page-with-dynamic-content' into nightly (9428553)
-
-- chore: downgrade Rollup to v3 to fix Vercel build issue (76897dc)
-
-- chore: force clean install on Vercel (6ea6989)
-
-- Merge pull request #50 from thef4tdaddy/codex/add-rules-page-under-main-nav (7804780)
-
-Add rules management feature
-
-- Merge branch 'nightly' into codex/add-rules-page-under-main-nav (170ff36)
-
-- chore: regenerate lockfile to resolve merge conflict (bcf9faa)
-
-- Merge pull request #49 from thef4tdaddy/codex/add-submissive-arousal-level-tracking-with-graph (0a38e4a)
-
-Implement arousal level tracking
-
-- fix: add date-fns dependency required by chartjs-adapter-date-fns (ba7067e)
-
-- Merge branch 'nightly' into codex/add-submissive-arousal-level-tracking-with-graph (6b6e0de)
-
-- Merge pull request #47 from thef4tdaddy/codex/add-recurring-task-functionality-to-keyholder-page (617f16d)
-
-Add recurring tasks overview and cancellation
-
-- Merge branch 'nightly' into codex/add-recurring-task-functionality-to-keyholder-page (42296a7)
-
-- Merge pull request #64 from thef4tdaddy/codex/fix-chastity-timer-reset-for-anonymous-users (7ccd58f)
-
-Fix cage off timer persistence
-
-- Merge branch 'nightly' into codex/fix-chastity-timer-reset-for-anonymous-users (1474137)
-
-- fix(session): persist cage off timer across reloads (bba176b)
-
-- Merge pull request #63 from thef4tdaddy/codex/add-start-time-validation-and-reset-behavior (8ca6f22)
-
-Ensure start time edits log correctly
-
-- fix(events): store start time edits in sexualEventsLog (d6fc03b)
-
-- Merge pull request #56 from thef4tdaddy/jaarmm-codex/add-categories-for-pause-and-removal-reasons (4e51f10)
-
-Add customizable pause/removal reasons
-
-- Merge branch 'nightly' into jaarmm-codex/add-categories-for-pause-and-removal-reasons (48a69da)
-
-- Merge pull request #45 from thef4tdaddy/fe2p5j-codex/display-task-rewards-and-punishment-on-task-page (0c48308)
-
-Display rewards and punishments on tasks
-
-- Merge branch 'nightly' into fe2p5j-codex/display-task-rewards-and-punishment-on-task-page (5107e48)
-
-- Merge pull request #46 from thef4tdaddy/codex/add-version-to-console-log (62cf6d9)
-
-Add console version log
-
-- Merge pull request #60 from thef4tdaddy/zdyf40-codex/add-categories-for-pause-and-removal-reasons (16e98cf)
-
-Add pause reason totals
-
-- Merge remote-tracking branch 'origin/70dcgy-codex/modify-keyholder-duration-behavior' into nightly (a2d29eb)
-
-- Merge pull request #62 from thef4tdaddy/lsrrms-codex/add-dropdown-for-recent-tasks (9f92bfb)
-
-- Fix task suggestion dropdown for keyholder form (e071c54)
-
-- Add denial cooldown notice (7eed98e)
-
-- Merge pull request #59 from thef4tdaddy/ob4u05-codex/add-categories-for-pause-and-removal-reasons (cd24c7f)
-
-- Group pause totals by category (97fd65a)
-
-- Group pause totals by category (da2646d)
-
-- Merge pull request #57 from thef4tdaddy/qrdhc3-codex/display-task-rewards-and-punishment-on-task-page (05135f9)
-
-- Fix task page layout on mobile (1c1c250)
-
-- Refine pause/removal reason inputs (76f5e16)
-
-- Merge pull request #43 from thef4tdaddy/codex/make-discord-username-required-in-feedback-form (9e3c655)
-
-- Merge pull request #52 from thef4tdaddy/codex/implement-first-time-user-modal (d7222ac)
-
-- feat: clarify shared account notice (6ba2ccd)
-
-### [3.10.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.2...v3.10.3) (2025-06-27)
 
 ### 🐛 Bug Fixes
 
-- fixed random package.json error preventing build ([a830a72](https://github.com/thef4tdaddy/chastityOS/commit/a830a72cc00e0d06fd6360943b2adcc9bc6e5b40))
+* personal goal was not working, but then also made it so personal goal cannot be added while keyholder duration is active ([5545b36](https://github.com/thef4tdaddy/chastityOS/commit/5545b364d2a604402b421aafd43ae919a4c3d8cd))
+* task not showing, production script error ([332e2b7](https://github.com/thef4tdaddy/chastityOS/commit/332e2b764c050acd4575a16c3dadfcf99c55f47e))
 
----
 
-### [3.10.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.10.2) (2025-06-27)
+### 🧹 Chores
+
+* **release:** 3.10.1-nightly.0 ([7e38700](https://github.com/thef4tdaddy/chastityOS/commit/7e3870085acec57cf4a0f637d9ebd53bd31e664c))
+
+### [3.10.1-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.0) (2025-06-27)
+
 
 ### 🐛 Bug Fixes
 
-- Merge nightly branch into main for release ([8c3de09](https://github.com/thef4tdaddy/chastityOS/commit/8c3de0919554652a2e680814bcb39882f4d87ca6))
+* personal goal was not working, but then also made it so personal goal cannot be added while keyholder duration is active ([5545b36](https://github.com/thef4tdaddy/chastityOS/commit/5545b364d2a604402b421aafd43ae919a4c3d8cd))
+* task not showing, production script error ([332e2b7](https://github.com/thef4tdaddy/chastityOS/commit/332e2b764c050acd4575a16c3dadfcf99c55f47e))
+>>>>>>> origin/nightly
 
----
+## [3.10.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0-nightly.1...v3.10.0) (2025-06-26)
 
-## [3.11.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.11.0-nightly.0...v3.11.0-nightly.1) (2025-06-30)
-
-### 🔧 Refactoring
-
-- clean up manifest.json by removing unused icons and updating screenshot references ([ebf1691](https://github.com/thef4tdaddy/chastityOS/commit/ebf169136cc96ce530eb97931dbcd9481efccd06))
-
----
-
-## [3.11.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.1-nightly.1...v3.11.0-nightly.0) (2025-06-30)
 
 ### ✨ Features
 
-- update PWA configuration and add manifest file ([d46bab0](https://github.com/thef4tdaddy/chastityOS/commit/d46bab0df7d7b103be306d2cb54cd654d7b268fa))
+* Merge nightly branch into main for release ([a489ba9](https://github.com/thef4tdaddy/chastityOS/commit/a489ba9eed08545c1fd332cc04911d9e5268e06d))
 
----
+## [3.10.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0-nightly.0...v3.10.0-nightly.1) (2025-06-26)
 
-### [3.10.1-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.10.0...v3.10.1-nightly.1) (2025-06-27)
+
+### 🧹 Chores
+
+* add deadline validation and error modal to task form ([b563e5d](https://github.com/thef4tdaddy/chastityOS/commit/b563e5d3ed35637c1bd64586fa109ac56e9e0149))
+* task feature fully enabled ([7034a56](https://github.com/thef4tdaddy/chastityOS/commit/7034a569208a8cc4379a4fd0e09e80f8c32dfda0))
+
 
 ### 🐛 Bug Fixes
 
-- personal goal was not working, but then also made it so personal goal cannot be added while keyholder duration is active ([5545b36](https://github.com/thef4tdaddy/chastityOS/commit/5545b364d2a604402b421aafd43ae919a4c3d8cd))
-- task not showing, production script error ([332e2b7](https://github.com/thef4tdaddy/chastityOS/commit/332e2b764c050acd4575a16c3dadfcf99c55f47e))
+* i messed up the files ([11dfffc](https://github.com/thef4tdaddy/chastityOS/commit/11dfffc69ae7d14b3edd5eae9dd5ea06b60a5e74))
+
+## [3.10.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.1...v3.10.0-nightly.0) (2025-06-25)
+
+
+### 🐛 Bug Fixes
+
+* (style) changing wording on required chastity timer by kh ([374ab9a](https://github.com/thef4tdaddy/chastityOS/commit/374ab9ac84b4fa05c6d84a5ab72f041732eb3e86))
+* (style) rewards/punishment page coloring ([866725e](https://github.com/thef4tdaddy/chastityOS/commit/866725eb6f1ea76ce70979772bdd67b0d0c80b1b))
+
+
+### ✨ Features
+
+* adding task list to the main nav ([cb65806](https://github.com/thef4tdaddy/chastityOS/commit/cb658067341e8fb7b6912cf799a932b91307e16c))
+* implement keyholder dashboard with task management and approval features (wip) ([60ccfac](https://github.com/thef4tdaddy/chastityOS/commit/60ccfacf324df8ba059562e2164cfb38b48de1f6))
+
+### [3.9.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0...v3.9.1) (2025-06-22)
+
+
+### 🐛 Bug Fixes
+
+* kinky/vanilla mode back to working ([abaf32e](https://github.com/thef4tdaddy/chastityOS/commit/abaf32ed0d70a24ebbd2d9faaf9f2f1215134b62))
+
+## [3.9.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.10...v3.9.0) (2025-06-21)
+
+
+### ✨ Features
+
+* merge branch 'nightly' into main ([d742c79](https://github.com/thef4tdaddy/chastityOS/commit/d742c797e375f147dd3ada252d005153d578bf80))
+
+### [3.7.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.4...v3.7.5) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* fixes footer attempt 2 ([c8afe6e](https://github.com/thef4tdaddy/chastityOS/commit/c8afe6ebd70e18ec17dc3f3bfd4f4a5f18350a86))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.5 ([38e5bf2](https://github.com/thef4tdaddy/chastityOS/commit/38e5bf2218960fc0df060bdf3f276a698516b20f))
+
+### [3.7.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.3...v3.7.4) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* footernav edit and sentry repair ([9576fb4](https://github.com/thef4tdaddy/chastityOS/commit/9576fb46beac4a87d8b00aeccd899393294c3082))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.4 ([e58631b](https://github.com/thef4tdaddy/chastityOS/commit/e58631b8781363cd8304a3124939dd3f097b889c))
+
+### [3.7.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.2...v3.7.3) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* pwa files ([4b0b5ad](https://github.com/thef4tdaddy/chastityOS/commit/4b0b5aded20d4ff23b98736364a6710db008ae0d))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.3 ([7290d9f](https://github.com/thef4tdaddy/chastityOS/commit/7290d9f0b9afa4b7be78983115aab1f0e4ffcc95))
+
+### [3.7.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.1...v3.7.2) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* footernav fix, and vite fix number 2 ([b5242ad](https://github.com/thef4tdaddy/chastityOS/commit/b5242ad9641c48114c77b6bffcbe5bac23d8f2ef))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.2 ([9b6b15e](https://github.com/thef4tdaddy/chastityOS/commit/9b6b15e9d4f11d6af1f3e0d2c77de2b31bd57fc0))
+
+### [3.7.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.3...v3.7.1) (2025-06-16)
+
+
+### 🐛 Bug Fixes
+
+* discord release github action ([8961aff](https://github.com/thef4tdaddy/chastityOS/commit/8961aff3e2e812611533f9891d04112b91308d3f))
+* vite.config.js fix ([1b8baa8](https://github.com/thef4tdaddy/chastityOS/commit/1b8baa806e3ac1df15b7ff7d815922a0dac84426))
+
+
+### 🧹 Chores
+
+* **release:** 3.7.1 ([a929a19](https://github.com/thef4tdaddy/chastityOS/commit/a929a192e73186d538476ca6350efe9f4f892a84))
+
+## [3.9.0-nightly.10](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.9...v3.9.0-nightly.10) (2025-06-21)
+
+## [3.9.0-nightly.9](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.8...v3.9.0-nightly.9) (2025-06-21)
+
+
+### 🐛 Bug Fixes
+
+* editing KH section to be more intuitive, also fixing ci for announcements in discord ([a29cf29](https://github.com/thef4tdaddy/chastityOS/commit/a29cf2923c3a31d6be22c529a224358884d021ca))
+* kh password persistence and permanent password ([b68e436](https://github.com/thef4tdaddy/chastityOS/commit/b68e4366e4b0a326ae5e420541f605ed722a3f58))
+* kh rewards/punishments pushing to rewards page ([89f58da](https://github.com/thef4tdaddy/chastityOS/commit/89f58daba2ecb0572d5562b82a70600944879a74))
+
+## [3.9.0-nightly.8](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.7...v3.9.0-nightly.8) (2025-06-21)
+
+
+### 🐛 Bug Fixes
+
+* kh punishments and rewards now displayed ([50eb1b3](https://github.com/thef4tdaddy/chastityOS/commit/50eb1b37d1cb89c14b7fe5e7d62ad2563ab875dd))
+
+## [3.9.0-nightly.7](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.6...v3.9.0-nightly.7) (2025-06-21)
+
+
+### 🐛 Bug Fixes
+
+* keyholder utilties ([1917700](https://github.com/thef4tdaddy/chastityOS/commit/19177009c404b29362514e0a83c35368bae65e89))
+* **keyholder:** overhaul functionality and resolve state persistence issues ([ef8a18b](https://github.com/thef4tdaddy/chastityOS/commit/ef8a18b88bd318dd43e47e6162f19259f3846494))
+* trying to fix husky ([9d4fb2d](https://github.com/thef4tdaddy/chastityOS/commit/9d4fb2dde6be76e394eed91653f89a6bcc0d1a74))
+
+## [3.9.0-nightly.6](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.5...v3.9.0-nightly.6) (2025-06-19)
+
+
+### 🔧 Refactoring
+
+* tracker page refactored ([c26a1ea](https://github.com/thef4tdaddy/chastityOS/commit/c26a1ea33039361832054cbbd62a8d7e7ecf4fb0))
+
+
+### 🐛 Bug Fixes
+
+* hardcore mode fully operational ([670cf52](https://github.com/thef4tdaddy/chastityOS/commit/670cf5287f34cd80a4b0eb73c0d37be0cdccec1b))
+* hardcore regular differentiation of personal goal ([185e1ba](https://github.com/thef4tdaddy/chastityOS/commit/185e1ba8c327ca87dec766a9d175331509c9eeb6))
+
+
+### 📚 Documentation
+
+* adding an eula to the bottom ([d4bdf3f](https://github.com/thef4tdaddy/chastityOS/commit/d4bdf3fc9ca4b2b1d07d3ba07de24b42f0b655ae))
+
+## [3.9.0-nightly.5](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.1...v3.9.0-nightly.5) (2025-06-19)
+
+
+### 🧹 Chores
+
+* chmod of a script ([dd6e5cc](https://github.com/thef4tdaddy/chastityOS/commit/dd6e5cc59430345bd7d4ce80dee42664e662d6c0))
+* fixing nightly script ([c4a677b](https://github.com/thef4tdaddy/chastityOS/commit/c4a677b7ffdc9738fd88996443a9e1e963bdb992))
+* **release:** 3.9.0-nightly.2 ([ae15e8a](https://github.com/thef4tdaddy/chastityOS/commit/ae15e8ae7580322b467a84f83306f11f57f672c2))
+* **release:** 3.9.0-nightly.3 ([cebc58b](https://github.com/thef4tdaddy/chastityOS/commit/cebc58bc6eb5fa448337d1cac4c46541f5bd376a))
+* **release:** 3.9.0-nightly.4 ([edfd84b](https://github.com/thef4tdaddy/chastityOS/commit/edfd84b655c73ad3e4b3319ff8fa0a38faae52f6))
+
+
+### 🐛 Bug Fixes
+
+* react-icons installed ([c0519c5](https://github.com/thef4tdaddy/chastityOS/commit/c0519c5fd06fe9def5f934c0e0416be716e9a079))
+* reset all prompt ([1cb0ee2](https://github.com/thef4tdaddy/chastityOS/commit/1cb0ee228023035760a274a43447528fcb15689d))
+* reset all prompt confirmations ([3e3a9ac](https://github.com/thef4tdaddy/chastityOS/commit/3e3a9ac12f6b0a39488c0e4b94128819ad59bd86))
+* sentry fixes ([a7d0e4f](https://github.com/thef4tdaddy/chastityOS/commit/a7d0e4f7ce9d4505fe4a282a51728a7fcfa6edd1))
+* work in progress: settings page and personal goal ([25f7ac2](https://github.com/thef4tdaddy/chastityOS/commit/25f7ac2a62e460d8377961fe8aab2994f0797d92))
+
+## [3.9.0-nightly.4](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.3...v3.9.0-nightly.4) (2025-06-17)
+
+
+### 🧹 Chores
+
+* fixing nightly script ([c4a677b](https://github.com/thef4tdaddy/chastityOS/commit/c4a677b7ffdc9738fd88996443a9e1e963bdb992))
+
+## [3.9.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.2...v3.9.0-nightly.3) (2025-06-17)
+
+
+### 🧹 Chores
+
+* chmod of a script ([dd6e5cc](https://github.com/thef4tdaddy/chastityOS/commit/dd6e5cc59430345bd7d4ce80dee42664e662d6c0))
+
+## [3.9.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.1...v3.9.0-nightly.2) (2025-06-17)
+
+## [3.9.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.9.0-nightly.0...v3.9.0-nightly.1) (2025-06-17)
+
+## [3.9.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.2-nightly.0...v3.9.0-nightly.0) (2025-06-17)
+
+
+### ✨ Features
+
+* cleaning up css, adding self locking, scaffolding out tasks but not implemented ([456b5d3](https://github.com/thef4tdaddy/chastityOS/commit/456b5d3c211b43837fba7fe574f3ccb3bc0ca855))
+
+
+### 📚 Documentation
+
+* scripts being put to git ([66f5e63](https://github.com/thef4tdaddy/chastityOS/commit/66f5e6364ee25bba40687041b2cdc8ad523497bd))
+
+### [3.8.2-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.3...v3.8.2-nightly.0) (2025-06-16)
+
+## [3.8.0-nightly.3](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.2...v3.8.0-nightly.3) (2025-06-15)
+
+
+### 🐛 Bug Fixes
+
+* build issue when seperating variants ([fd3f858](https://github.com/thef4tdaddy/chastityOS/commit/fd3f858e576a910efd90ab0ac0f3c5760328baa7))
+* discord release github action ([499acf1](https://github.com/thef4tdaddy/chastityOS/commit/499acf1f7b95a3012e7c1a45aba28d2b39e39871))
+
+## [3.8.0-nightly.2](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.1...v3.8.0-nightly.2) (2025-06-14)
+
+
+### 🐛 Bug Fixes
+
+* tailwind config fix attempt 2 ([4919dfe](https://github.com/thef4tdaddy/chastityOS/commit/4919dfe3cc2c70d0f4ad0357b2584ef7146f3734))
+
+## [3.8.0-nightly.1](https://github.com/thef4tdaddy/chastityOS/compare/v3.8.0-nightly.0...v3.8.0-nightly.1) (2025-06-14)
+
+
+### 🐛 Bug Fixes
+
+* deleting tailwing config found ([e288f57](https://github.com/thef4tdaddy/chastityOS/commit/e288f579dac5198204d6a4db2cb5e566c755a740))
+
+## [3.8.0-nightly.0](https://github.com/thef4tdaddy/chastityOS/compare/v3.7.0...v3.8.0-nightly.0) (2025-06-14)
+
+
+### ✨ Features
+
+* color seperation of nightly / prod and specific colorings of boxes (in progress) ([8548104](https://github.com/thef4tdaddy/chastityOS/commit/8548104577bf609d1984016f4e9d06352e0c060b))
+
+## 3.7.0 – Finalized Split Between Nightly and Production
+
+- Separated environments with distinct Firebase configs, themes, and build logic
+- Header, feedback, and release tags now context-aware (nightly vs production)
+- Settings split into:
+  - **Profile & Preferences**
+  - **Data Management**
+- Added error logging and environment display to console
+- General bug fixes and build stabilization

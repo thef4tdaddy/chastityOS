@@ -8,7 +8,7 @@ on:
       - main
     # 2. For pushes of nightly tags
     tags:
-      - "v*-nightly.*"
+      - 'v*-nightly.*'
   # 3. For when a stable release is published
   release:
     types: [published]

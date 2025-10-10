@@ -14,11 +14,6 @@ node_modules
 dist
 dist-ssr
 
-# Build artifacts and temporary files
-.trigger
-.last-nightly-version
-.eslintcache
-
 # Environment variable files
 .env
 .env.*
@@ -33,12 +28,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
-.eslintcache

@@ -1,14 +1,16 @@
+
+
 feature:
-  - "**/feat:*"
+  - '**/feat:*'
 
 bug:
-  - "**/fix:*"
+  - '**/fix:*'
 
 chore:
-  - "**/chore:*"
+  - '**/chore:*'
 
 docs:
-  - "**/docs:*"
+  - '**/docs:*'
 
 refactor:
-  - "**/refactor:*"
+  - '**/refactor:*'
