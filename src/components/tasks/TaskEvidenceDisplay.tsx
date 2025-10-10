@@ -9,7 +9,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaImage,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 
 interface TaskEvidenceDisplayProps {
   attachments: string[];

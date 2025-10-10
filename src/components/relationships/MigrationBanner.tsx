@@ -1,5 +1,5 @@
 import React from "react";
-import { FaExclamationTriangle, FaSpinner } from "react-icons/fa";
+import { FaExclamationTriangle, FaSpinner } from "../../utils/iconImport";
 
 interface MigrationBannerProps {
   needsMigration: boolean;

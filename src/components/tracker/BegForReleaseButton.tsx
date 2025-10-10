@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaPrayingHands, FaSpinner, FaTimes } from "react-icons/fa";
+import { FaPrayingHands, FaSpinner, FaTimes } from "../../utils/iconImport";
 import {
   useReleaseRequestMutations,
   usePendingRequestForSession,

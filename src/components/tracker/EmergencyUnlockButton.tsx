@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "../../utils/iconImport";
 import { EmergencyUnlockModal } from "./EmergencyUnlockModal";
 import { useEmergencyUnlock } from "../../hooks/api/useEmergency";
 import type { EmergencyUnlockReason } from "../../types/events";

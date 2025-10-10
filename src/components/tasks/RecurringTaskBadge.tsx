@@ -4,7 +4,7 @@
  */
 import React from "react";
 import type { DBTask } from "@/types/database";
-import { FaSync } from "react-icons/fa";
+import { FaSync } from "../../utils/iconImport";
 
 interface RecurringTaskBadgeProps {
   task: DBTask;

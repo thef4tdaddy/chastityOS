@@ -8,7 +8,7 @@ import {
   FaTimes,
   FaCheckCircle,
   FaExclamationTriangle,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 import { useIsAnonymous } from "@/hooks/useIsAnonymous";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 

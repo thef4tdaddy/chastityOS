@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUser, FaUserShield } from "react-icons/fa";
+import { FaUser, FaUserShield } from "../../utils/iconImport";
 
 interface RelationshipSummaryProps {
   relationshipSummary: {
