@@ -6,7 +6,7 @@ import type { Task } from "../types";
 import { TaskItem } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
-import { Card } from "@/components/ui";
+import { Card, Tooltip } from "@/components/ui";
 
 // UI State Components
 const LoadingState: React.FC = () => (
@@ -34,26 +34,30 @@ const TabNavigation: React.FC<{
   archivedCount: number;
 }> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
   <div className="flex justify-center space-x-4 mb-8">
-    <button
-      onClick={() => setActiveTab("active")}
-      className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
-        activeTab === "active"
-          ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
-          : "text-gray-300 hover:text-white glass-hover"
-      }`}
-    >
-      Active Tasks ({activeCount})
-    </button>
-    <button
-      onClick={() => setActiveTab("archived")}
-      className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
-        activeTab === "archived"
-          ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
-          : "text-gray-300 hover:text-white glass-hover"
-      }`}
-    >
-      Archived ({archivedCount})
-    </button>
+    <Tooltip content="View tasks that are currently pending or awaiting approval">
+      <button
+        onClick={() => setActiveTab("active")}
+        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+          activeTab === "active"
+            ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+            : "text-gray-300 hover:text-white glass-hover"
+        }`}
+      >
+        Active Tasks ({activeCount})
+      </button>
+    </Tooltip>
+    <Tooltip content="View completed, approved, or rejected tasks">
+      <button
+        onClick={() => setActiveTab("archived")}
+        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+          activeTab === "archived"
+            ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+            : "text-gray-300 hover:text-white glass-hover"
+        }`}
+      >
+        Archived ({archivedCount})
+      </button>
+    </Tooltip>
   </div>
 );
 
