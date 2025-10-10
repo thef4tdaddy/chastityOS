@@ -55,3 +55,7 @@ export type {
 // Data Display Components
 export { Badge, Avatar, Progress } from "./DataDisplay";
 export type { BadgeProps, AvatarProps, ProgressProps } from "./DataDisplay";
+
+// Tooltip Component
+export { Tooltip } from "./Tooltip";
+export type { TooltipProps } from "./Tooltip";

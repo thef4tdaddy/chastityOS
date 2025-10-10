@@ -9,7 +9,7 @@ import {
   SessionHistorySection,
 } from "../components/full_report";
 import { EventList } from "../components/log_event/EventList";
-import { Card } from "@/components/ui";
+import { Card, Tooltip } from "@/components/ui";
 
 // Loading state component
 const LoadingState: React.FC = () => (
@@ -63,6 +63,11 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
         <h2 className="text-xl font-semibold text-nightly-honeydew">
           Combined Report
         </h2>
+        <Tooltip content="This report includes data for both you and your submissive">
+          <span className="text-nightly-aquamarine/60 cursor-help text-xs ml-1">
+            ⓘ
+          </span>
+        </Tooltip>
       </div>
       <p className="text-sm text-nightly-celadon mt-2">
         Showing statistics for you and{" "}
