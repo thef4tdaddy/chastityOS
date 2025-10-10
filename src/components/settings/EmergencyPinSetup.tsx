@@ -9,7 +9,6 @@ import {
   useSetEmergencyPin,
   useRemoveEmergencyPin,
 } from "../../hooks/api/useEmergencyPin";
-import { useToast } from "../../hooks/state/useToast";
 import { FaSpinner } from "react-icons/fa";
 import { EmergencyPinEdit } from "./EmergencyPinEdit";
 import { EmergencyPinDisplay } from "./EmergencyPinDisplay";
@@ -24,7 +23,6 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   isHardcoreMode = false,
 }) => {
   const { user } = useAuthState();
-  const { showWarning } = useToast();
 
   // Use TanStack Query hooks
   const { data: pinStatus, isLoading } = useEmergencyPinStatus(user?.uid);
@@ -71,6 +69,7 @@ export const EmergencyPinSetup: React.FC<EmergencyPinSetupProps> = ({
   const handleRemovePin = async () => {
     if (!user?.uid) return;
 
+    // eslint-disable-next-line no-legacy-toast/no-legacy-toast -- Using native confirm for critical action
     const confirmed = window.confirm(
       "Are you sure you want to remove your emergency PIN? This is a safety feature for hardcore mode.",
     );
