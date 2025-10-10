@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
@@ -7,17 +8,38 @@ import { TaskItem } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip } from "@/components/ui";
+import {
+  emptyStateVariants,
+  pulseVariants,
+  staggerContainerVariants,
+} from "../utils/animations";
 
 // UI State Components
 const LoadingState: React.FC = () => (
-  <Card variant="glass" className="text-center py-12">
-    <div className="glass-float">
-      <div className="inline-flex items-center space-x-2">
-        <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-        <span className="text-blue-200 text-lg">Loading tasks...</span>
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+  >
+    <Card variant="glass" className="text-center py-12">
+      <div className="glass-float">
+        <div className="inline-flex items-center space-x-2">
+          <motion.div
+            className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.span
+            className="text-blue-200 text-lg"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            Loading tasks...
+          </motion.span>
+        </div>
       </div>
-    </div>
-  </Card>
+    </Card>
+  </motion.div>
 );
 
 const ErrorState: React.FC = () => (
@@ -35,28 +57,34 @@ const TabNavigation: React.FC<{
 }> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
   <div className="flex justify-center space-x-4 mb-8">
     <Tooltip content="View tasks that are currently pending or awaiting approval">
-      <button
+      <motion.button
         onClick={() => setActiveTab("active")}
         className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
           activeTab === "active"
             ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
         }`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        animate={activeTab === "active" ? { scale: 1.05 } : { scale: 1 }}
       >
         Active Tasks ({activeCount})
-      </button>
+      </motion.button>
     </Tooltip>
     <Tooltip content="View completed, approved, or rejected tasks">
-      <button
+      <motion.button
         onClick={() => setActiveTab("archived")}
         className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
           activeTab === "archived"
             ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
         }`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        animate={activeTab === "archived" ? { scale: 1.05 } : { scale: 1 }}
       >
         Archived ({archivedCount})
-      </button>
+      </motion.button>
     </Tooltip>
   </div>
 );
@@ -73,32 +101,51 @@ const ActiveTasksSection: React.FC<{
 }> = ({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-12">
-        <div className="glass-float">
-          <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">
-            No Active Tasks
-          </h3>
-          <p className="text-gray-400">
-            You're all caught up! New tasks will appear here when assigned.
-          </p>
-        </div>
-      </Card>
+      <motion.div
+        variants={emptyStateVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <Card variant="glass" className="text-center py-12">
+          <div className="glass-float">
+            <motion.div
+              className="text-6xl mb-4"
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              📝
+            </motion.div>
+            <h3 className="text-xl font-semibold text-gray-200 mb-2">
+              No Active Tasks
+            </h3>
+            <p className="text-gray-400">
+              You're all caught up! New tasks will appear here when assigned.
+            </p>
+          </div>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {tasks.map((task) => (
-        <Card
-          key={task.id}
-          variant="glass"
-          className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
-        >
-          <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
-        </Card>
-      ))}
-    </div>
+    <motion.div
+      className="space-y-6"
+      variants={staggerContainerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <AnimatePresence mode="popLayout">
+        {tasks.map((task) => (
+          <Card
+            key={task.id}
+            variant="glass"
+            className="glass-hover transform transition-all duration-300"
+          >
+            <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
+          </Card>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
@@ -106,35 +153,54 @@ const ActiveTasksSection: React.FC<{
 const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-12">
-        <div className="glass-float">
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">
-            No Archived Tasks
-          </h3>
-          <p className="text-gray-400">
-            Completed and reviewed tasks will appear here.
-          </p>
-        </div>
-      </Card>
+      <motion.div
+        variants={emptyStateVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <Card variant="glass" className="text-center py-12">
+          <div className="glass-float">
+            <motion.div
+              className="text-6xl mb-4"
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              📚
+            </motion.div>
+            <h3 className="text-xl font-semibold text-gray-200 mb-2">
+              No Archived Tasks
+            </h3>
+            <p className="text-gray-400">
+              Completed and reviewed tasks will appear here.
+            </p>
+          </div>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {tasks.map((task) => (
-        <Card
-          key={task.id}
-          variant="glass"
-          className="opacity-75 hover:opacity-100 transition-opacity duration-300"
-        >
-          <TaskItem
-            task={task}
-            onSubmit={() => {}} // Archived tasks can't be submitted
-          />
-        </Card>
-      ))}
-    </div>
+    <motion.div
+      className="space-y-6"
+      variants={staggerContainerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <AnimatePresence mode="popLayout">
+        {tasks.map((task) => (
+          <Card
+            key={task.id}
+            variant="glass"
+            className="opacity-75 hover:opacity-100 transition-opacity duration-300"
+          >
+            <TaskItem
+              task={task}
+              onSubmit={() => {}} // Archived tasks can't be submitted
+            />
+          </Card>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

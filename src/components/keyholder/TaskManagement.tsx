@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { DBTask } from "../../types/database";
 import { useTasksQuery, useTaskMutations } from "../../hooks/api";
 import { useNotificationActions } from "../../stores";
@@ -9,6 +10,11 @@ import {
   FaTimesCircle,
 } from "../../utils/iconImport";
 import { Input, Textarea } from "@/components/ui";
+import {
+  buttonVariants,
+  taskCardVariants,
+  staggerContainerVariants,
+} from "../../utils/animations";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
@@ -70,19 +76,36 @@ const AddTaskForm: React.FC<{
           </p>
         </div>
         <div className="flex gap-2">
-          <button
+          <motion.button
             onClick={handleAddTask}
             disabled={!newTaskText.trim() || isCreating}
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 py-2 rounded font-medium transition-colors"
+            variants={buttonVariants}
+            whileHover={!isCreating && newTaskText.trim() ? "hover" : undefined}
+            whileTap={!isCreating && newTaskText.trim() ? "tap" : undefined}
           >
-            {isCreating ? "Creating..." : "Create Task"}
-          </button>
-          <button
+            {isCreating ? (
+              <span className="flex items-center gap-2">
+                <motion.span
+                  className="inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+                Creating...
+              </span>
+            ) : (
+              "Create Task"
+            )}
+          </motion.button>
+          <motion.button
             onClick={() => setShowAddTask(false)}
             className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             Cancel
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>
@@ -108,7 +131,15 @@ const TaskItem: React.FC<{
   ) => void;
   isUpdating: boolean;
 }> = ({ task, handleTaskAction, isUpdating }) => (
-  <div key={task.id} className="bg-white/5 rounded-lg p-4">
+  <motion.div
+    key={task.id}
+    className="bg-white/5 rounded-lg p-4"
+    variants={taskCardVariants}
+    initial="hidden"
+    animate="visible"
+    exit="exit"
+    whileHover={task.status === "submitted" ? "hover" : undefined}
+  >
     <div className="mb-3">
       <h4 className="font-medium text-nightly-honeydew mb-1">
         {task.title || task.text}
@@ -146,25 +177,46 @@ const TaskItem: React.FC<{
 
     {task.status === "submitted" && (
       <div className="flex gap-2">
-        <button
+        <motion.button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
           className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          variants={buttonVariants}
+          whileHover={!isUpdating ? "hover" : undefined}
+          whileTap={!isUpdating ? "tap" : undefined}
         >
-          <FaCheckCircle />
+          <motion.div
+            initial={{ scale: 1 }}
+            animate={isUpdating ? { rotate: 360 } : {}}
+            transition={{
+              duration: 1,
+              repeat: isUpdating ? Infinity : 0,
+              ease: "linear",
+            }}
+          >
+            <FaCheckCircle />
+          </motion.div>
           {isUpdating ? "Processing..." : "Approve"}
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={() => handleTaskAction(task.id, "reject")}
           disabled={isUpdating}
           className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          variants={buttonVariants}
+          whileHover={!isUpdating ? "hover" : undefined}
+          whileTap={!isUpdating ? "tap" : undefined}
         >
-          <FaTimesCircle />
+          <motion.div
+            animate={isUpdating ? { x: [-2, 2, -2, 0] } : {}}
+            transition={{ duration: 0.5, repeat: isUpdating ? Infinity : 0 }}
+          >
+            <FaTimesCircle />
+          </motion.div>
           {isUpdating ? "Processing..." : "Reject"}
-        </button>
+        </motion.button>
       </div>
     )}
-  </div>
+  </motion.div>
 );
 
 // Error Display Component
@@ -269,20 +321,34 @@ const TaskList: React.FC<{
   ) => void;
   isUpdating: boolean;
 }> = ({ isLoading, pendingTasks, handleTaskAction, isUpdating }) => (
-  <div className="space-y-3">
-    {!isLoading && pendingTasks.length === 0 ? (
-      <p className="text-nightly-celadon">No pending tasks</p>
-    ) : (
-      pendingTasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          handleTaskAction={handleTaskAction}
-          isUpdating={isUpdating}
-        />
-      ))
-    )}
-  </div>
+  <motion.div
+    className="space-y-3"
+    variants={staggerContainerVariants}
+    initial="hidden"
+    animate="visible"
+  >
+    <AnimatePresence mode="popLayout">
+      {!isLoading && pendingTasks.length === 0 ? (
+        <motion.p
+          className="text-nightly-celadon"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          No pending tasks
+        </motion.p>
+      ) : (
+        pendingTasks.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            handleTaskAction={handleTaskAction}
+            isUpdating={isUpdating}
+          />
+        ))
+      )}
+    </AnimatePresence>
+  </motion.div>
 );
 
 export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
@@ -323,13 +389,21 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
             Task Management
           </h3>
         </div>
-        <button
+        <motion.button
           onClick={() => setShowAddTask(!showAddTask)}
           className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
         >
-          <FaPlus />
+          <motion.div
+            animate={{ rotate: showAddTask ? 45 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <FaPlus />
+          </motion.div>
           Add Task
-        </button>
+        </motion.button>
       </div>
 
       <AddTaskForm
