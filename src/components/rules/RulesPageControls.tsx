@@ -1,7 +1,7 @@
 import React from "react";
 import { FaFilter, FaPlus } from "../../utils/iconImport";
 import type { ChastityRule } from "./RuleCard";
-import { Button } from "@/components/ui";
+import { Select, SelectOption } from "@/components/ui";
 
 interface RulesPageControlsProps {
   filter: "all" | "active" | "inactive";
@@ -16,34 +16,40 @@ export const RulesPageControls: React.FC<RulesPageControlsProps> = ({
   rules,
   onCreateNew,
 }) => {
+  const filterOptions: SelectOption[] = [
+    { value: "all", label: `All Rules (${rules.length})` },
+    {
+      value: "active",
+      label: `Active (${rules.filter((r) => r.isActive).length})`,
+    },
+    {
+      value: "inactive",
+      label: `Inactive (${rules.filter((r) => !r.isActive).length})`,
+    },
+  ];
+
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-4">
         <FaFilter className="text-nightly-celadon" />
         <Select
           value={filter}
-          onChange={(e) =>
-            onFilterChange(e.target.value as "all" | "active" | "inactive")
+          onChange={(value) =>
+            onFilterChange(value as "all" | "active" | "inactive")
           }
-          className="bg-white/10 border border-white/10 rounded p-2 text-nightly-honeydew"
-        >
-          <option value="all">All Rules ({rules.length})</option>
-          <option value="active">
-            Active ({rules.filter((r) => r.isActive).length})
-          </option>
-          <option value="inactive">
-            Inactive ({rules.filter((r) => !r.isActive).length})
-          </option>
-        </Select>
+          options={filterOptions}
+          size="sm"
+          fullWidth={false}
+        />
       </div>
 
-      <Button
+      <button
         onClick={onCreateNew}
         className="flex items-center gap-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-4 py-2 rounded-lg transition-colors"
       >
         <FaPlus />
         New Rule
-      </Button>
+      </button>
     </div>
   );
 };

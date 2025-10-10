@@ -32,12 +32,14 @@ import {
   validateProfileSettings,
 } from "../utils/validation/settingsValidation";
 import {
-  Button,
   Input,
-  LoadingState,
-  Select,
-  Switch,
   Textarea,
+  LoadingState,
+  Tooltip,
+  Tabs,
+  TabsContent,
+  Select,
+  SelectOption,
 } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
@@ -222,9 +224,16 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
-              Submissive's Name
-            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="block text-sm font-medium text-nightly-celadon">
+                Submissive's Name
+              </label>
+              <Tooltip content="This name will be displayed throughout the app and shared with your keyholder">
+                <span className="text-nightly-aquamarine/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
+            </div>
             <Input
               type="text"
               value={submissiveName}
@@ -240,7 +249,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
             )}
           </div>
 
-          <Button
+          <button
             onClick={handleSave}
             disabled={updateAccountMutation.isPending}
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -249,7 +258,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateAccountMutation.isPending ? "Saving..." : "Save Changes"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -345,36 +354,56 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
-              Timezone
-            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="block text-sm font-medium text-nightly-celadon">
+                Timezone
+              </label>
+              <Tooltip content="Set your timezone for accurate time tracking and reports">
+                <span className="text-nightly-lavender-floral/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
+            </div>
             <Select
               value={timezone}
-              onChange={(e) => {
-                setTimezone(e.target.value);
+              onChange={(value) => {
+                setTimezone(value as string);
                 setValidationError(null);
               }}
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
-            >
-              {timezoneOptions.map((tz) => (
-                <option key={tz.value} value={tz.value}>
-                  {tz.label}
-                </option>
-              ))}
-            </Select>
-            {validationError && (
-              <p className="text-red-400 text-xs mt-1">{validationError}</p>
-            )}
+              options={timezoneOptions as SelectOption[]}
+              error={validationError || undefined}
+              searchable
+            />
           </div>
 
-          <Switch
-            label="Notifications"
-            description="Receive app notifications"
-            checked={notifications}
-            onCheckedChange={setNotifications}
-          />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div>
+                <div className="text-sm font-medium text-nightly-celadon">
+                  Notifications
+                </div>
+                <div className="text-xs text-nightly-celadon/70">
+                  Receive app notifications
+                </div>
+              </div>
+              <Tooltip content="Enable browser notifications for task updates and reminders">
+                <span className="text-nightly-lavender-floral/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={notifications}
+                onChange={(e) => setNotifications(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-aquamarine"></div>
+            </label>
+          </div>
 
-          <Button
+          <button
             onClick={handleSave}
             disabled={updateDisplayMutation.isPending}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -383,7 +412,7 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateDisplayMutation.isPending ? "Saving..." : "Save Changes"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -462,19 +491,52 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
         </div>
 
         <div className="space-y-4">
-          <Switch
-            label="Public Profile"
-            description="Make your profile visible to others"
-            checked={publicProfile}
-            onCheckedChange={setPublicProfile}
-          />
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-nightly-celadon">
+                Public Profile
+              </div>
+              <div className="text-xs text-nightly-celadon/70">
+                Make your profile visible to others
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={publicProfile}
+                onChange={(e) => setPublicProfile(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
+            </label>
+          </div>
 
-          <Switch
-            label="Share Statistics"
-            description="Allow others to see your progress stats"
-            checked={shareStatistics}
-            onCheckedChange={setShareStatistics}
-          />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div>
+                <div className="text-sm font-medium text-nightly-celadon">
+                  Share Statistics
+                </div>
+                <div className="text-xs text-nightly-celadon/70">
+                  Allow others to see your progress stats
+                </div>
+              </div>
+              <Tooltip content="When enabled, your chastity stats will be visible on your public profile">
+                <span className="text-nightly-spring-green/60 cursor-help text-xs">
+                  ⓘ
+                </span>
+              </Tooltip>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={shareStatistics}
+                onChange={(e) => setShareStatistics(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-nightly-spring-green"></div>
+            </label>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-nightly-celadon mb-2">
@@ -518,7 +580,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
             </p>
           </div>
 
-          <Button
+          <button
             onClick={handleSave}
             disabled={updateProfileMutation.isPending}
             className="bg-nightly-spring-green hover:bg-nightly-spring-green/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -527,7 +589,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -617,7 +679,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
             onChange={setShowActivityStatus}
           />
 
-          <Button
+          <button
             onClick={handleSave}
             disabled={updatePrivacyMutation.isPending}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-6 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -626,7 +688,7 @@ const PrivacySection: React.FC<{ settings: DBSettings | null }> = ({
               <FaSpinner className="animate-spin" />
             )}
             {updatePrivacyMutation.isPending ? "Saving..." : "Save Changes"}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -689,68 +751,63 @@ const SettingsPage: React.FC = () => {
   }, [user]);
 
   const tabs = [
-    { id: "account" as SettingsTab, label: "Account", icon: FaUser },
-    { id: "display" as SettingsTab, label: "Display", icon: FaPalette },
-    { id: "profile" as SettingsTab, label: "Profile", icon: FaGlobe },
-    { id: "privacy" as SettingsTab, label: "Privacy", icon: FaShieldAlt },
-    { id: "goals" as SettingsTab, label: "Goals", icon: FaBullseye },
-    { id: "data" as SettingsTab, label: "Data", icon: FaDatabase },
+    { value: "account", label: "Account", icon: <FaUser /> },
+    { value: "display", label: "Display", icon: <FaPalette /> },
+    { value: "profile", label: "Profile", icon: <FaGlobe /> },
+    { value: "privacy", label: "Privacy", icon: <FaShieldAlt /> },
+    { value: "goals", label: "Goals", icon: <FaBullseye /> },
+    { value: "data", label: "Data", icon: <FaDatabase /> },
   ];
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "account":
-        return <AccountSection settings={settings} />;
-      case "display":
-        return <DisplaySection settings={settings} />;
-      case "profile":
-        return <ProfileSection settings={settings} />;
-      case "privacy":
-        return <PrivacySection settings={settings} />;
-      case "goals":
-        return <GoalsSection settings={settings} />;
-      case "data":
-        return <DataSection settings={settings} />;
-      default:
-        return <AccountSection settings={settings} />;
-    }
-  };
 
   return (
     <div className="text-nightly-spring-green">
-      <div className="flex flex-col lg:flex-row">
-        {/* Tab Navigation */}
-        <nav className="lg:w-64 p-4 border-b lg:border-b-0 lg:border-r border-white/10">
-          <div className="space-y-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <Button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-nightly-aquamarine text-black"
-                      : "text-nightly-celadon hover:bg-white/10 hover:text-nightly-honeydew"
-                  }`}
-                >
-                  <Icon />
-                  {tab.label}
-                </Button>
-              );
-            })}
-          </div>
-        </nav>
+      {loading ? (
+        <LoadingState message="Loading settings..." size="lg" />
+      ) : (
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          tabs={tabs}
+          orientation="vertical"
+          className="lg:w-64 p-4"
+        >
+          <TabsContent value="account">
+            <div className="max-w-4xl">
+              <AccountSection settings={settings} />
+            </div>
+          </TabsContent>
 
-        {/* Content */}
-        <main className="flex-1 p-4 lg:p-6">
-          {loading ? (
-            <LoadingState message="Loading settings..." size="lg" />
-          ) : (
-            <div className="max-w-4xl">{renderTabContent()}</div>
-          )}
-        </main>
-      </div>
+          <TabsContent value="display">
+            <div className="max-w-4xl">
+              <DisplaySection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <div className="max-w-4xl">
+              <ProfileSection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="privacy">
+            <div className="max-w-4xl">
+              <PrivacySection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="goals">
+            <div className="max-w-4xl">
+              <GoalsSection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="data">
+            <div className="max-w-4xl">
+              <DataSection settings={settings} />
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 };

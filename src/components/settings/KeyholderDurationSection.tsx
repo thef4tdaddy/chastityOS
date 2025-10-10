@@ -7,7 +7,13 @@ import {
   useKeyholderRequiredDurationQuery,
   usePersonalGoalMutations,
 } from "@/hooks/api/usePersonalGoalQueries";
-import { FaLock, FaEdit, FaCheck, FaTimes, FaTrash } from "react-icons/fa";
+import {
+  FaLock,
+  FaEdit,
+  FaCheck,
+  FaTimes,
+  FaTrash,
+} from "../../utils/iconImport";
 import type { DBGoal } from "@/types/database";
 import { useToast } from "@/contexts";
 import { Input, Textarea, Card } from "@/components/ui";

@@ -17,7 +17,7 @@ import {
   DBUserAchievement,
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
-import { Button, Checkbox, Input } from "@/components/ui";
+import { Input, Select, SelectOption, Checkbox } from "@/components/ui";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -91,62 +91,70 @@ export const Filters: React.FC<FiltersProps> = ({
   onDifficultyChange,
   onEarnedFilterChange,
   getCategoryName,
-}) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-    <div className="flex flex-wrap gap-4 items-center">
-      <div className="relative flex-1 min-w-[200px]">
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-        <Input
-          type="text"
-          placeholder="Search achievements..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
+}) => {
+  const categoryOptions: SelectOption[] = [
+    { value: "all", label: "All Categories" },
+    ...(Object.values(AchievementCategory) as AchievementCategory[]).map(
+      (category) => ({
+        value: category,
+        label: getCategoryName(category),
+      }),
+    ),
+  ];
+
+  const difficultyOptions: SelectOption[] = [
+    { value: "all", label: "All Difficulties" },
+    ...(Object.values(AchievementDifficulty) as AchievementDifficulty[]).map(
+      (difficulty) => ({
+        value: difficulty,
+        label: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
+      }),
+    ),
+  ];
+
+  return (
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="relative flex-1 min-w-[200px]">
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search achievements..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
+          />
+        </div>
+
+        <Select
+          value={selectedCategory}
+          onChange={(value) =>
+            onCategoryChange(value as AchievementCategory | "all")
+          }
+          options={categoryOptions}
+          size="sm"
+          fullWidth={false}
+        />
+
+        <Select
+          value={selectedDifficulty}
+          onChange={(value) =>
+            onDifficultyChange(value as AchievementDifficulty | "all")
+          }
+          options={difficultyOptions}
+          size="sm"
+          fullWidth={false}
+        />
+
+        <Checkbox
+          checked={showOnlyEarned}
+          onChange={onEarnedFilterChange}
+          label="Earned Only"
         />
       </div>
-
-      <Select
-        value={selectedCategory}
-        onChange={(e) =>
-          onCategoryChange(e.target.value as AchievementCategory | "all")
-        }
-        className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
-      >
-        <option value="all">All Categories</option>
-        {(Object.values(AchievementCategory) as AchievementCategory[]).map(
-          (category) => (
-            <option key={category} value={category}>
-              {getCategoryName(category)}
-            </option>
-          ),
-        )}
-      </Select>
-
-      <Select
-        value={selectedDifficulty}
-        onChange={(e) =>
-          onDifficultyChange(e.target.value as AchievementDifficulty | "all")
-        }
-        className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
-      >
-        <option value="all">All Difficulties</option>
-        {(Object.values(AchievementDifficulty) as AchievementDifficulty[]).map(
-          (difficulty) => (
-            <option key={difficulty} value={difficulty}>
-              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-            </option>
-          ),
-        )}
-      </Select>
-
-      <Checkbox
-        checked={showOnlyEarned}
-        onChange={onEarnedFilterChange}
-        label="Earned Only"
-      />
     </div>
-  </div>
-);
+  );
+};
 
 interface EmptyStateProps {
   message?: string;
@@ -238,12 +246,12 @@ const VisibilityToggle: React.FC<VisibilityToggleProps> = ({
   }
 
   return (
-    <Button
+    <button
       onClick={() => onToggleVisibility(achievement.id)}
       className="absolute top-2 right-2 p-1 rounded text-gray-400 hover:text-white transition-colors"
     >
       {isVisible ? <FaEye /> : <FaEyeSlash />}
-    </Button>
+    </button>
   );
 };
 

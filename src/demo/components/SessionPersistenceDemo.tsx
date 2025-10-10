@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaPlay, FaStop, FaPause, FaSync, FaTrash } from "react-icons/fa";
-import { Button } from "@/components/ui";
+import {
+  FaPlay,
+  FaStop,
+  FaPause,
+  FaSync,
+  FaTrash,
+} from "../../utils/iconImport";
 
 interface DemoSession {
   id: string;
@@ -163,60 +168,60 @@ export const SessionPersistenceDemo: React.FC = () => {
           </h3>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <Button
+            <button
               onClick={startDemoSession}
               disabled={!!demoSession}
               className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaPlay className="mr-2" />
               Start Session
-            </Button>
+            </button>
 
-            <Button
+            <button
               onClick={stopDemoSession}
               disabled={!demoSession}
               className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaStop className="mr-2" />
               Stop Session
-            </Button>
+            </button>
 
-            <Button
+            <button
               onClick={pauseHeartbeat}
               disabled={!isHeartbeatActive}
               className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaPause className="mr-2" />
               Pause Heartbeat
-            </Button>
+            </button>
 
-            <Button
+            <button
               onClick={resumeHeartbeat}
               disabled={isHeartbeatActive || !demoSession}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaSync className="mr-2" />
               Resume Heartbeat
-            </Button>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <Button
+            <button
               onClick={restoreFromBackup}
               disabled={!backupState || !!demoSession}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaSync className="mr-2" />
               Restore Backup
-            </Button>
+            </button>
 
-            <Button
+            <button
               onClick={clearAll}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaTrash className="mr-2" />
               Clear All
-            </Button>
+            </button>
           </div>
         </div>
 

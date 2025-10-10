@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { FaSpinner } from "react-icons/fa";
-import { Input, Textarea } from "@/components/ui";
+import { FaSpinner } from "../../utils/iconImport";
+import { Input, Textarea, Select, SelectOption } from "@/components/ui";
 
 interface RelationshipRequestFormProps {
   isVisible: boolean;
@@ -44,23 +44,20 @@ interface RoleFieldProps {
   onChange: (value: "submissive" | "keyholder") => void;
 }
 
+const roleOptions: SelectOption[] = [
+  { value: "submissive", label: "Submissive" },
+  { value: "keyholder", label: "Keyholder" },
+];
+
 const RoleField: React.FC<RoleFieldProps> = ({ value, onChange }) => (
   <div>
-    <label
-      htmlFor="role"
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
-      Your Role in this Relationship
-    </label>
     <Select
+      label="Your Role in this Relationship"
       id="role"
       value={value}
-      onChange={(e) => onChange(e.target.value as "submissive" | "keyholder")}
-      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-    >
-      <option value="submissive">Submissive</option>
-      <option value="keyholder">Keyholder</option>
-    </Select>
+      onChange={(val) => onChange(val as "submissive" | "keyholder")}
+      options={roleOptions}
+    />
   </div>
 );
 
@@ -124,7 +121,7 @@ export const RelationshipRequestForm: React.FC<
         />
 
         <div className="flex gap-3">
-          <Button
+          <button
             type="submit"
             disabled={isLoading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center"
@@ -137,14 +134,14 @@ export const RelationshipRequestForm: React.FC<
             ) : (
               "Send Request"
             )}
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
             onClick={onCancel}
             className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Cancel
-          </Button>
+          </button>
         </div>
       </form>
     </div>

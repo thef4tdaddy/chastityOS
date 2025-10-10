@@ -1,7 +1,11 @@
 import React from "react";
-import { FaExclamationTriangle, FaClock, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaExclamationTriangle,
+  FaClock,
+  FaCalendarAlt,
+} from "../../utils/iconImport";
 import type { DBSession } from "../../types/database";
-import { Button } from "@/components/ui";
+import { Modal } from "@/components/ui";
 
 interface SessionRecoveryModalProps {
   corruptedSession: DBSession;
@@ -78,25 +82,62 @@ export const SessionRecoveryModal: React.FC<SessionRecoveryModalProps> = ({
   const estimatedDuration = calculateEstimatedDuration(corruptedSession);
 
   return (
-    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full border border-yellow-500">
-        <div className="text-center mb-6">
-          <FaExclamationTriangle className="text-yellow-400 text-4xl mx-auto mb-3" />
-          <h3 className="text-xl font-bold text-yellow-300 mb-2">
-            Session Recovery Required
-          </h3>
-          <p className="text-sm text-gray-300">
-            We detected an interrupted session that may have corrupted data.
-            Would you like to attempt recovery?
+    <Modal
+      isOpen={true}
+      onClose={onDiscard}
+      title="Session Recovery Required"
+      icon={<FaExclamationTriangle className="text-yellow-400 text-2xl" />}
+      size="sm"
+      showCloseButton={false}
+      closeOnBackdropClick={false}
+      closeOnEscape={!isRecovering}
+      className="border border-yellow-500"
+      footer={
+        <div>
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <button
+              onClick={() => onRecover(corruptedSession)}
+              disabled={isRecovering}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center"
+            >
+              {isRecovering ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Recovering...
+                </>
+              ) : (
+                "Recover Session"
+              )}
+            </button>
+
+            <button
+              onClick={onDiscard}
+              disabled={isRecovering}
+              className="flex-1 bg-gray-600 hover:bg-gray-500 disabled:bg-gray-700 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition"
+            >
+              Discard Session
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center">
+            If recovery fails, you can always start a new session. Your session
+            history will be preserved.
           </p>
         </div>
+      }
+    >
+      <div>
+        <p className="text-sm text-gray-300 mb-6">
+          We detected an interrupted session that may have corrupted data. Would
+          you like to attempt recovery?
+        </p>
 
         <SessionInfoDisplay
           session={corruptedSession}
           estimatedDuration={estimatedDuration}
         />
 
-        <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-3 mb-6">
+        <div className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-3">
           <p className="text-xs text-yellow-200">
             <strong>Recovery Process:</strong> We'll attempt to fix any data
             inconsistencies while preserving your session progress. Your session
@@ -104,37 +145,7 @@ export const SessionRecoveryModal: React.FC<SessionRecoveryModalProps> = ({
             necessary.
           </p>
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            onClick={() => onRecover(corruptedSession)}
-            disabled={isRecovering}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center"
-          >
-            {isRecovering ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Recovering...
-              </>
-            ) : (
-              "Recover Session"
-            )}
-          </Button>
-
-          <Button
-            onClick={onDiscard}
-            disabled={isRecovering}
-            className="flex-1 bg-gray-600 hover:bg-gray-500 disabled:bg-gray-700 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition"
-          >
-            Discard Session
-          </Button>
-        </div>
-
-        <p className="text-xs text-gray-500 text-center mt-4">
-          If recovery fails, you can always start a new session. Your session
-          history will be preserved.
-        </p>
       </div>
-    </div>
+    </Modal>
   );
 };

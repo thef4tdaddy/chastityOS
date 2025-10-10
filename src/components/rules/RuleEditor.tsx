@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { ChastityRule } from "./RuleCard";
 import { FaEdit, FaSave, FaTimes } from "../../utils/iconImport";
-import { Button, Checkbox, Input, Textarea } from "@/components/ui";
+import {
+  Input,
+  Textarea,
+  Select,
+  SelectOption,
+  Checkbox,
+} from "@/components/ui";
 
 // Rule Editor Component
 interface RuleEditorProps {
@@ -78,6 +84,11 @@ interface SettingsFieldsProps {
   onIsActiveChange: (value: boolean) => void;
 }
 
+const createdByOptions: SelectOption[] = [
+  { value: "submissive", label: "Submissive" },
+  { value: "keyholder", label: "Keyholder" },
+];
+
 const SettingsFields: React.FC<SettingsFieldsProps> = ({
   createdBy,
   isActive,
@@ -86,19 +97,14 @@ const SettingsFields: React.FC<SettingsFieldsProps> = ({
 }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
-        Created By
-      </label>
       <Select
+        label="Created By"
         value={createdBy}
-        onChange={(e) =>
-          onCreatedByChange(e.target.value as "submissive" | "keyholder")
+        onChange={(value) =>
+          onCreatedByChange(value as "submissive" | "keyholder")
         }
-        className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
-      >
-        <option value="submissive">Submissive</option>
-        <option value="keyholder">Keyholder</option>
-      </Select>
+        options={createdByOptions}
+      />
     </div>
 
     <div className="flex items-center">
@@ -161,21 +167,21 @@ export const RuleEditor: React.FC<RuleEditorProps> = ({
 
         {/* Actions */}
         <div className="flex gap-3 pt-4">
-          <Button
+          <button
             type="submit"
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaSave />
             {rule ? "Update Rule" : "Create Rule"}
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
             onClick={onCancel}
             className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaTimes />
             Cancel
-          </Button>
+          </button>
         </div>
       </form>
     </div>

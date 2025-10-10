@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "../../utils/iconImport";
 import { useSessionLoader } from "../../hooks/session/useSessionLoader";
 import { LoadingState } from "@/components/ui";
 

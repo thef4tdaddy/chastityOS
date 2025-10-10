@@ -5,11 +5,11 @@ import {
   FaTimes,
   FaClock,
   FaSpinner,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 import type { DBReleaseRequest } from "../../types/database";
 import { useReleaseRequestMutations } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
-import { Textarea } from "@/components/ui";
+import { Modal, Textarea } from "@/components/ui";
 
 interface ReleaseRequestCardProps {
   request: DBReleaseRequest;
@@ -35,114 +35,102 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
   onSubmit,
   onMessageChange,
 }) => {
-  if (!isOpen) return null;
+  const isApprove = responseType === "approve";
 
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 max-w-md w-full rounded-xl border-2 border-purple-500 shadow-2xl">
-        <div className="relative p-6">
-          <Button
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isApprove ? "Approve Release Request" : "Deny Release Request"}
+      icon={
+        isApprove ? (
+          <FaCheck className="text-4xl text-green-400" />
+        ) : (
+          <FaTimes className="text-4xl text-red-400" />
+        )
+      }
+      size="sm"
+      closeOnEscape={!isProcessing}
+      className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-purple-500"
+      footer={
+        <div className="flex flex-col space-y-3">
+          <button
+            onClick={onSubmit}
+            disabled={isProcessing}
+            className={`w-full font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 ${
+              isApprove
+                ? "bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
+                : "bg-red-600 hover:bg-red-700 disabled:bg-gray-600"
+            } disabled:cursor-not-allowed text-white`}
+          >
+            {isProcessing ? (
+              <>
+                <FaSpinner className="animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                {isApprove ? (
+                  <>
+                    <FaCheck />
+                    Approve Request
+                  </>
+                ) : (
+                  <>
+                    <FaTimes />
+                    Deny Request
+                  </>
+                )}
+              </>
+            )}
+          </button>
+          <button
             onClick={onClose}
             disabled={isProcessing}
-            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors disabled:cursor-not-allowed"
+            className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
           >
-            <FaTimes size={20} />
-          </Button>
+            Cancel
+          </button>
+        </div>
+      }
+    >
+      <div>
+        <div
+          className={`border rounded-lg p-4 mb-6 ${
+            isApprove
+              ? "bg-green-900/30 border-green-600"
+              : "bg-red-900/30 border-red-600"
+          }`}
+        >
+          <p className="text-sm text-gray-200">
+            {isApprove
+              ? "The submissive will be able to end their session immediately."
+              : "The submissive will not be able to end their session early."}
+          </p>
+        </div>
 
-          <div className="text-center mb-6">
-            {responseType === "approve" ? (
-              <FaCheck className="text-6xl text-green-400 mx-auto mb-4" />
-            ) : (
-              <FaTimes className="text-6xl text-red-400 mx-auto mb-4" />
-            )}
-            <h3
-              className={`text-xl font-bold ${
-                responseType === "approve" ? "text-green-300" : "text-red-300"
-              }`}
-            >
-              {responseType === "approve"
-                ? "Approve Release Request"
-                : "Deny Release Request"}
-            </h3>
-          </div>
-
-          <div
-            className={`border rounded-lg p-4 mb-6 ${
-              responseType === "approve"
-                ? "bg-green-900/30 border-green-600"
-                : "bg-red-900/30 border-red-600"
-            }`}
-          >
-            <p className="text-sm text-gray-200">
-              {responseType === "approve"
-                ? "The submissive will be able to end their session immediately."
-                : "The submissive will not be able to end their session early."}
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Message to Submissive (optional):
-            </label>
-            <Textarea
-              value={responseMessage}
-              onChange={(e) => onMessageChange(e.target.value)}
-              placeholder={
-                responseType === "approve"
-                  ? "You may end your session. Good job!"
-                  : "Not yet. Keep going!"
-              }
-              rows={3}
-              maxLength={500}
-              className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
-            />
-            <div className="text-xs text-gray-400 mt-1">
-              {responseMessage.length}/500 characters
-            </div>
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            <Button
-              onClick={onSubmit}
-              disabled={isProcessing}
-              className={`w-full font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 ${
-                responseType === "approve"
-                  ? "bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
-                  : "bg-red-600 hover:bg-red-700 disabled:bg-gray-600"
-              } disabled:cursor-not-allowed text-white`}
-            >
-              {isProcessing ? (
-                <>
-                  <FaSpinner className="animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  {responseType === "approve" ? (
-                    <>
-                      <FaCheck />
-                      Approve Request
-                    </>
-                  ) : (
-                    <>
-                      <FaTimes />
-                      Deny Request
-                    </>
-                  )}
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={onClose}
-              disabled={isProcessing}
-              className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
-            >
-              Cancel
-            </Button>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Message to Submissive (optional):
+          </label>
+          <Textarea
+            value={responseMessage}
+            onChange={(e) => onMessageChange(e.target.value)}
+            placeholder={
+              isApprove
+                ? "You may end your session. Good job!"
+                : "Not yet. Keep going!"
+            }
+            rows={3}
+            maxLength={500}
+            className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
+          />
+          <div className="text-xs text-gray-400 mt-1">
+            {responseMessage.length}/500 characters
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
@@ -243,22 +231,22 @@ const ReleaseRequestCardComponent: React.FC<ReleaseRequestCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
+            <button
               onClick={() => handleOpenResponse("approve")}
               disabled={isProcessing}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded transition-colors"
               title="Approve request"
             >
               <FaCheck />
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => handleOpenResponse("deny")}
               disabled={isProcessing}
               className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded transition-colors"
               title="Deny request"
             >
               <FaTimes />
-            </Button>
+            </button>
           </div>
         </div>
 

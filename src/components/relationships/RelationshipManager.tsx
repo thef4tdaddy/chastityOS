@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { useRelationships } from "@/hooks/useRelationships";
 import { Relationship } from "@/types/relationships";
 import { KeyholderRelationship, KeyholderPermissions } from "@/types/core";
-import { FaUserPlus } from "react-icons/fa";
+import { FaUserPlus } from "../../utils/iconImport";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
 import { RelationshipRequestForm } from "./RelationshipRequestForm";

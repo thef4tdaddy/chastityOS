@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import type { RecurringConfig } from "@/types/database";
-import { FaSync } from "react-icons/fa";
+import { FaSync } from "../../utils/iconImport";
 import { Input, Textarea, Checkbox } from "@/components/ui";
 
 interface TaskCreationWithRecurringProps {

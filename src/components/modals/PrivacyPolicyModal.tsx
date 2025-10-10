@@ -1,8 +1,7 @@
 import React from "react";
-import { FaTimes, FaShieldAlt } from "../../utils/iconImport";
-import { Button } from "@/components/ui";
+import { FaShieldAlt } from "../../utils/iconImport";
+import { Button, Card, Modal } from "@/components/ui";
 import { PrivacyPolicyContent } from "./privacy/PrivacyPolicyContent";
-import { Card } from "@/components/ui";
 
 interface PrivacyPolicyModalProps {
   isOpen: boolean;
@@ -13,59 +12,42 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="glass-modal fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="glass-modal-content max-w-4xl w-full max-h-[90vh] overflow-hidden animate-fade-in-up">
-        {/* Enhanced Header with Glass Effect */}
-        <Card variant="glass" className="border-b border-white/20" padding="md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-400/30">
-                <FaShieldAlt className="text-blue-300 text-xl" />
-              </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                Privacy Policy
-              </h2>
-            </div>
-            <Button
-              onClick={onClose}
-              className="glass-button p-3 hover:bg-red-500/20 text-gray-300 hover:text-white transition-all duration-300"
-            >
-              <FaTimes />
-            </Button>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Privacy Policy"
+      icon={
+        <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-400/30">
+          <FaShieldAlt className="text-blue-300 text-xl" />
+        </div>
+      }
+      size="lg"
+      footer={
+        <Button
+          variant="primary"
+          onClick={onClose}
+          className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-3"
+        >
+          I Understand
+        </Button>
+      }
+    >
+      <div className="space-y-6">
+        {/* Last Updated */}
+        <Card
+          variant="glass"
+          padding="sm"
+          className="bg-blue-500/10 border-blue-400/20 text-center"
+        >
+          <span className="text-sm text-blue-200">
+            Last updated: {new Date().toLocaleDateString()}
+          </span>
         </Card>
 
-        {/* Enhanced Content with Glass Styling */}
-        <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
-          {/* Last Updated */}
-          <Card
-            variant="glass"
-            padding="sm"
-            className="bg-blue-500/10 border-blue-400/20 text-center"
-          >
-            <span className="text-sm text-blue-200">
-              Last updated: {new Date().toLocaleDateString()}
-            </span>
-          </Card>
-
-          <PrivacyPolicyContent />
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-white/10 bg-white/5">
-          <Button
-            variant="primary"
-            onClick={onClose}
-            className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-3"
-          >
-            I Understand
-          </Button>
-        </div>
+        <PrivacyPolicyContent />
       </div>
-    </div>
+    </Modal>
   );
 };
 

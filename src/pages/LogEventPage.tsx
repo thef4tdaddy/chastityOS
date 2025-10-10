@@ -5,7 +5,7 @@ import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { LogEventForm, EventList } from "../components/log_event";
 import { FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
-import { Button, Card, LoadingState } from "@/components/ui";
+import { Card, LoadingState, Tooltip } from "@/components/ui";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -32,26 +32,32 @@ const UserSelector: React.FC<UserSelectorProps> = ({
         </label>
       </div>
       <div className="flex gap-3">
-        <Button
-          onClick={() => onSelectUser(currentUserId)}
-          className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
-            selectedUserId === currentUserId
-              ? "border-nightly-aquamarine bg-nightly-aquamarine/10 text-nightly-honeydew"
-              : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
-          }`}
+        <Tooltip content="Log a sexual event for yourself">
+          <button
+            onClick={() => onSelectUser(currentUserId)}
+            className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+              selectedUserId === currentUserId
+                ? "border-nightly-aquamarine bg-nightly-aquamarine/10 text-nightly-honeydew"
+                : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
+            }`}
+          >
+            Yourself
+          </button>
+        </Tooltip>
+        <Tooltip
+          content={`Log a sexual event for ${activeSubmissive.wearerName || "your submissive"}`}
         >
-          Yourself
-        </Button>
-        <Button
-          onClick={() => onSelectUser(activeSubmissive.wearerId || "")}
-          className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
-            selectedUserId === activeSubmissive.wearerId
-              ? "border-nightly-lavender-floral bg-nightly-lavender-floral/10 text-nightly-honeydew"
-              : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
-          }`}
-        >
-          {activeSubmissive.wearerName || "Submissive"}
-        </Button>
+          <button
+            onClick={() => onSelectUser(activeSubmissive.wearerId || "")}
+            className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+              selectedUserId === activeSubmissive.wearerId
+                ? "border-nightly-lavender-floral bg-nightly-lavender-floral/10 text-nightly-honeydew"
+                : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
+            }`}
+          >
+            {activeSubmissive.wearerName || "Submissive"}
+          </button>
+        </Tooltip>
       </div>
     </Card>
   );

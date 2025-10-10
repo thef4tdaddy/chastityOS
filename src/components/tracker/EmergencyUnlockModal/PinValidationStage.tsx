@@ -3,7 +3,7 @@
  * Used in hardcore mode to validate emergency PIN
  */
 import React from "react";
-import { FaArrowLeft, FaLock, FaSpinner } from "react-icons/fa";
+import { FaArrowLeft, FaLock, FaSpinner } from "../../../utils/iconImport";
 import type { ModalStage } from "./types";
 import { Input } from "@/components/ui";
 

@@ -1,6 +1,5 @@
 import React from "react";
-import { FaExclamationTriangle, FaSpinner } from "react-icons/fa";
-import { Button } from "@/components/ui";
+import { FaExclamationTriangle, FaSpinner } from "../../utils/iconImport";
 
 interface MigrationBannerProps {
   needsMigration: boolean;
@@ -29,7 +28,7 @@ export const MigrationBanner: React.FC<MigrationBannerProps> = ({
             relationship system? This will set up a self-managed relationship
             where you can manage your own data or invite keyholders later.
           </p>
-          <Button
+          <button
             onClick={onMigrate}
             disabled={isLoading}
             className="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700 disabled:opacity-50 inline-flex items-center"
@@ -42,7 +41,7 @@ export const MigrationBanner: React.FC<MigrationBannerProps> = ({
             ) : (
               "Migrate My Data"
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

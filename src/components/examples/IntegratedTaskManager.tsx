@@ -10,7 +10,7 @@
 import React from "react";
 import { useTasksQuery, useTaskMutations } from "../../hooks/api";
 import { useNotificationActions, useFormManager } from "../../stores";
-import { FaTasks } from "react-icons/fa";
+import { FaTasks } from "../../utils/iconImport";
 
 interface IntegratedTaskManagerProps {
   userId: string;

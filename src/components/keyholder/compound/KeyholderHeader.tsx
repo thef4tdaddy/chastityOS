@@ -4,7 +4,7 @@
 
 import React from "react";
 import { useKeyholderContext } from "./KeyholderContext";
-import { FaUserShield } from "react-icons/fa";
+import { FaUserShield } from "../../../utils/iconImport";
 import { usePendingReleaseRequests } from "../../../hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "../ReleaseRequestCard";
 

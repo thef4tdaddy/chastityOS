@@ -2,7 +2,7 @@ import React from "react";
 import { FaFilter } from "../../utils/iconImport";
 import { ManualEntryForm } from "./ManualEntryForm";
 import type { RewardPunishmentLog } from "./index";
-import { Select } from "@/components/ui";
+import { Select, SelectOption } from "@/components/ui";
 
 interface RewardsPunishmentsControlsProps {
   filter: "all" | "rewards" | "punishments";
@@ -14,25 +14,31 @@ interface RewardsPunishmentsControlsProps {
 export const RewardsPunishmentsControls: React.FC<
   RewardsPunishmentsControlsProps
 > = ({ filter, onFilterChange, logs, onManualEntry }) => {
+  const filterOptions: SelectOption[] = [
+    { value: "all", label: `All (${logs.length})` },
+    {
+      value: "rewards",
+      label: `Rewards (${logs.filter((l) => l.type === "reward").length})`,
+    },
+    {
+      value: "punishments",
+      label: `Punishments (${logs.filter((l) => l.type === "punishment").length})`,
+    },
+  ];
+
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-4">
         <FaFilter className="text-nightly-celadon" />
         <Select
           value={filter}
-          onChange={(e) =>
-            onFilterChange(e.target.value as "all" | "rewards" | "punishments")
+          onChange={(value) =>
+            onFilterChange(value as "all" | "rewards" | "punishments")
           }
-          className="bg-white/10 border border-white/10 rounded p-2 text-nightly-honeydew"
-        >
-          <option value="all">All ({logs.length})</option>
-          <option value="rewards">
-            Rewards ({logs.filter((l) => l.type === "reward").length})
-          </option>
-          <option value="punishments">
-            Punishments ({logs.filter((l) => l.type === "punishment").length})
-          </option>
-        </Select>
+          options={filterOptions}
+          size="sm"
+          fullWidth={false}
+        />
       </div>
 
       <ManualEntryForm onSubmit={onManualEntry} />

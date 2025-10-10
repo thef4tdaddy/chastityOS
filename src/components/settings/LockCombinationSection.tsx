@@ -3,7 +3,7 @@
  * Handles lock combination input with Google sign-in requirement
  */
 import React from "react";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "../../utils/iconImport";
 import { Input, Checkbox } from "@/components/ui";
 
 interface LockCombinationSectionProps {

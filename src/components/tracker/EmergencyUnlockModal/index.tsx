@@ -4,7 +4,7 @@
  * Split into multiple stage components for maintainability
  */
 import React from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes } from "../../../utils/iconImport";
 import type { EmergencyUnlockReason } from "../../../types/events";
 import { useEmergencyUnlockModal } from "../../../hooks/tracker/useEmergencyUnlockModal";
 import { useAuthState } from "../../../contexts";
