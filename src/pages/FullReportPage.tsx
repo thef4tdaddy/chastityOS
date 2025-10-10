@@ -2,26 +2,14 @@ import React from "react";
 import { useAuthState } from "../contexts";
 import { useReportData } from "../hooks/api/useReportData";
 import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
-import { FaSpinner, FaUsers } from "../utils/iconImport";
+import { FaUsers } from "../utils/iconImport";
 import {
   CurrentStatusSection,
   StatisticsSection,
   SessionHistorySection,
 } from "../components/full_report";
 import { EventList } from "../components/log_event/EventList";
-import { Card } from "@/components/ui";
-
-// Loading state component
-const LoadingState: React.FC = () => (
-  <div className="text-nightly-spring-green">
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="text-center py-8">
-        <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine mb-4 mx-auto" />
-        <div className="text-nightly-celadon">Loading report...</div>
-      </div>
-    </div>
-  </div>
-);
+import { Card, LoadingState } from "@/components/ui";
 
 // Error state component
 const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
@@ -207,7 +195,13 @@ const FullReportPage: React.FC = () => {
   const error = userReport.error || submissiveReport.error;
 
   if (isLoading) {
-    return <LoadingState />;
+    return (
+      <div className="text-nightly-spring-green">
+        <div className="p-4 max-w-6xl mx-auto">
+          <LoadingState message="Loading report..." size="lg" />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
