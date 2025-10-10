@@ -53,7 +53,7 @@ const getPriorityStyles = (priority: NotificationPriority) => {
   }
 };
 
-// Type-based icons
+// Type-based icons with animations
 const NotificationIcon: React.FC<{
   type: string;
   priority: NotificationPriority;
@@ -61,47 +61,83 @@ const NotificationIcon: React.FC<{
   const styles = getPriorityStyles(priority);
   const iconClass = `w-5 h-5 ${styles.icon}`;
 
+  const SuccessIcon = () => (
+    <motion.svg
+      className={iconClass}
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      initial={{ scale: 0, rotate: -180 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+        clipRule="evenodd"
+      />
+    </motion.svg>
+  );
+
+  const ErrorIcon = () => (
+    <motion.svg
+      className={iconClass}
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      initial={{ scale: 0 }}
+      animate={{ scale: 1, x: [-2, 2, -2, 0] }}
+      transition={{ duration: 0.5 }}
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+        clipRule="evenodd"
+      />
+    </motion.svg>
+  );
+
+  const WarningIcon = () => (
+    <motion.svg
+      className={iconClass}
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      initial={{ scale: 0, rotate: 180 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 200, damping: 15 }}
+    >
+      <path
+        fillRule="evenodd"
+        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+        clipRule="evenodd"
+      />
+    </motion.svg>
+  );
+
+  const InfoIcon = () => (
+    <motion.svg
+      className={iconClass}
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <path
+        fillRule="evenodd"
+        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+        clipRule="evenodd"
+      />
+    </motion.svg>
+  );
+
   switch (type) {
     case "success":
-      return (
-        <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clipRule="evenodd"
-          />
-        </svg>
-      );
+      return <SuccessIcon />;
     case "error":
-      return (
-        <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clipRule="evenodd"
-          />
-        </svg>
-      );
+      return <ErrorIcon />;
     case "warning":
-      return (
-        <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-            clipRule="evenodd"
-          />
-        </svg>
-      );
+      return <WarningIcon />;
     default:
-      return (
-        <svg className={iconClass} fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clipRule="evenodd"
-          />
-        </svg>
-      );
+      return <InfoIcon />;
   }
 };
 
@@ -163,6 +199,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
 }) => {
   const toastRef = useRef<HTMLDivElement>(null);
   const styles = getPriorityStyles(notification.priority);
+  const [progress, setProgress] = React.useState(100);
 
   // Handle keyboard navigation for accessibility
   useEffect(() => {
@@ -170,6 +207,25 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
       toastRef.current.focus();
     }
   }, [notification.priority]);
+
+  // Progress bar for auto-dismiss
+  useEffect(() => {
+    const duration = notification.duration;
+    if (duration && duration > 0) {
+      const startTime = Date.now();
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
+        setProgress(remaining);
+
+        if (remaining === 0) {
+          clearInterval(interval);
+        }
+      }, 50);
+
+      return () => clearInterval(interval);
+    }
+  }, [notification.duration]);
 
   // Handle keyboard events
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -230,10 +286,12 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
       </div>
 
       {notification.dismissible && (
-        <button
+        <motion.button
           onClick={() => onDismiss(notification.id)}
           className="ml-2 flex-shrink-0 text-white/60 hover:text-white/90 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
           aria-label="Dismiss notification"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path
@@ -242,7 +300,19 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
               clipRule="evenodd"
             />
           </svg>
-        </button>
+        </motion.button>
+      )}
+
+      {/* Progress bar for auto-dismiss */}
+      {notification.duration && notification.duration > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 rounded-b-lg overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-blue-400 to-purple-400"
+            initial={{ width: "100%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.05, ease: "linear" }}
+          />
+        </div>
       )}
     </motion.div>
   );

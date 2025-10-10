@@ -3,9 +3,15 @@
  * Allows submissives to upload photo evidence when submitting tasks
  */
 import React, { useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
 import { FaUpload, FaTimes, FaImage, FaSpinner } from "../../utils/iconImport";
+import {
+  uploadZoneVariants,
+  imagePreviewVariants,
+  buttonVariants,
+} from "../../utils/animations";
 
 interface TaskEvidenceUploadProps {
   taskId: string;
@@ -32,32 +38,40 @@ const UploadZone: React.FC<{
   onDrop,
   onBrowseClick,
 }) => (
-  <div
-    className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-      isDragging
-        ? "border-blue-400 bg-blue-900/20"
-        : "border-gray-600 hover:border-gray-500"
-    }`}
+  <motion.div
+    className="border-2 border-dashed rounded-lg p-6 text-center"
     onDragEnter={onDragEnter}
     onDragOver={onDragOver}
     onDragLeave={onDragLeave}
     onDrop={onDrop}
+    variants={uploadZoneVariants}
+    initial="idle"
+    animate={isDragging ? "dragOver" : "idle"}
+    whileHover="hover"
   >
-    <FaUpload className="mx-auto text-4xl text-gray-400 mb-2" />
+    <motion.div
+      animate={isDragging ? { scale: [1, 1.1, 1] } : {}}
+      transition={{ duration: 0.3 }}
+    >
+      <FaUpload className="mx-auto text-4xl text-gray-400 mb-2" />
+    </motion.div>
     <p className="text-gray-300 mb-2">
       Drag and drop photos here, or click to browse
     </p>
     <p className="text-sm text-gray-500 mb-4">
       JPG, PNG, HEIC, WebP (max {maxFiles} files, 5MB each)
     </p>
-    <button
+    <motion.button
       type="button"
       onClick={onBrowseClick}
       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+      variants={buttonVariants}
+      whileHover="hover"
+      whileTap="tap"
     >
       Choose Files
-    </button>
-  </div>
+    </motion.button>
+  </motion.div>
 );
 
 // File preview item sub-component
@@ -65,7 +79,14 @@ const FilePreviewItem: React.FC<{
   file: UploadedFile;
   onRemove: () => void;
 }> = ({ file, onRemove }) => (
-  <div className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+  <motion.div
+    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border border-gray-700"
+    variants={imagePreviewVariants}
+    initial="hidden"
+    animate="visible"
+    exit="hidden"
+    layout
+  >
     <img
       src={file.preview}
       alt="Preview"
@@ -73,24 +94,45 @@ const FilePreviewItem: React.FC<{
     />
     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
       {file.uploading && (
-        <FaSpinner className="text-white text-2xl animate-spin" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <FaSpinner className="text-white text-2xl" />
+        </motion.div>
       )}
-      {file.url && <FaImage className="text-green-400 text-2xl" />}
+      {file.url && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
+          <FaImage className="text-green-400 text-2xl" />
+        </motion.div>
+      )}
       {file.error && (
-        <div className="text-red-400 text-xs p-2 text-center">{file.error}</div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, x: [-5, 5, -5, 0] }}
+          className="text-red-400 text-xs p-2 text-center"
+        >
+          {file.error}
+        </motion.div>
       )}
     </div>
     {!file.uploading && (
-      <button
+      <motion.button
         type="button"
         onClick={onRemove}
         className="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
         aria-label="Remove file"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
       >
         <FaTimes />
-      </button>
+      </motion.button>
     )}
-  </div>
+  </motion.div>
 );
 
 export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
@@ -204,18 +246,20 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
 
       {hasFiles && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {files.map((file) => (
-            <FilePreviewItem
-              key={file.id}
-              file={file}
-              onRemove={() => removeFile(file.id)}
-            />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {files.map((file) => (
+              <FilePreviewItem
+                key={file.id}
+                file={file}
+                onRemove={() => removeFile(file.id)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       )}
 
       {hasFiles && !allUploaded && (
-        <button
+        <motion.button
           type="button"
           onClick={uploadAllFiles}
           disabled={hasErrors}
@@ -224,9 +268,12 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
               ? "bg-gray-700 text-gray-500 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700 text-white"
           }`}
+          variants={buttonVariants}
+          whileHover={!hasErrors ? "hover" : undefined}
+          whileTap={!hasErrors ? "tap" : undefined}
         >
           Upload {files.filter((f) => !f.url && !f.error).length} Photo(s)
-        </button>
+        </motion.button>
       )}
 
       {hasFiles && (

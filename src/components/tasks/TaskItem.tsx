@@ -1,4 +1,5 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
+import { motion } from "framer-motion";
 import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
@@ -7,6 +8,12 @@ import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 import { Textarea } from "@/components/ui";
+import {
+  taskCardVariants,
+  buttonVariants,
+  statusBadgeVariants,
+  celebrationVariants,
+} from "../../utils/animations";
 
 // Task status badge component
 interface TaskStatusBadgeProps {
@@ -27,7 +34,12 @@ const TaskStatusBadgeComponent: React.FC<TaskStatusBadgeProps> = ({
   priority,
   priorityStyles,
 }) => (
-  <div className="flex items-center gap-2">
+  <motion.div
+    className="flex items-center gap-2"
+    initial="initial"
+    animate="animate"
+    variants={statusBadgeVariants}
+  >
     {statusConfig.icon}
     <span className="text-sm font-medium text-nightly-spring-green">
       {statusConfig.text}
@@ -39,7 +51,7 @@ const TaskStatusBadgeComponent: React.FC<TaskStatusBadgeProps> = ({
         {priority.toUpperCase()}
       </span>
     )}
-  </div>
+  </motion.div>
 );
 
 // Memoize TaskStatusBadge
@@ -219,13 +231,27 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <button
+      <motion.button
         onClick={onSubmit}
         disabled={isSubmitting}
         className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
+        variants={buttonVariants}
+        whileHover={!isSubmitting ? "hover" : undefined}
+        whileTap={!isSubmitting ? "tap" : undefined}
       >
-        {isSubmitting ? "Submitting..." : "Submit for Review"}
-      </button>
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <motion.span
+              className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            Submitting...
+          </span>
+        ) : (
+          "Submit for Review"
+        )}
+      </motion.button>
     </div>
   );
 };
@@ -253,9 +279,26 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
     isOverdue,
   } = useTaskItem(task, onSubmit);
 
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  // Show celebration effect when task is approved
+  React.useEffect(() => {
+    if (task.status === "approved" && task.consequence?.type === "reward") {
+      setShowCelebration(true);
+      const timer = setTimeout(() => setShowCelebration(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [task.status, task.consequence]);
+
   return (
-    <div
-      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-4 mb-4`}
+    <motion.div
+      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-4 mb-4 relative`}
+      variants={taskCardVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      whileHover={task.status === "pending" ? "hover" : undefined}
+      layout
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
@@ -314,7 +357,19 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
           onSubmit={handleSubmit}
         />
       )}
-    </div>
+
+      {/* Celebration overlay for approved tasks */}
+      {showCelebration && task.consequence?.type === "reward" && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center bg-green-500/10 rounded-lg pointer-events-none"
+          variants={celebrationVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <div className="text-6xl">🎉</div>
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 
