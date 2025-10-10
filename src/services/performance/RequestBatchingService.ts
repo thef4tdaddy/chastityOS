@@ -23,7 +23,7 @@ interface PendingRequest {
 
 class RequestBatchingService {
   private batchQueue: BatchRequest[] = [];
-  private batchTimeout: NodeJS.Timeout | null = null;
+  private batchTimeout: ReturnType<typeof setTimeout> | null = null;
   private batchDelay = 50; // ms - delay before processing batch
   private maxBatchSize = 10; // Maximum requests per batch
   private pendingRequests: Map<string, PendingRequest> = new Map();
