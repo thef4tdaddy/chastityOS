@@ -43,12 +43,12 @@ export const RelationshipCard: React.FC<RelationshipCardProps> = ({
         Established: {relationship.establishedAt.toDate().toLocaleDateString()}
       </div>
     </div>
-    <button
+    <Button
       onClick={() => onDisconnect(relationship.id)}
       className="text-red-400 hover:text-red-300 px-3 py-1 rounded text-sm"
     >
       Disconnect
-    </button>
+    </Button>
   </div>
 );
 
@@ -121,30 +121,30 @@ export const LinkCodeDisplay: React.FC<LinkCodeDisplayProps> = ({
         <code className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-3 py-2 rounded font-mono text-lg flex-1">
           {linkCode.code}
         </code>
-        <button
+        <Button
           onClick={onCopy}
           className="text-nightly-aquamarine hover:text-nightly-spring-green p-2"
           title="Copy to clipboard"
         >
           {copySuccess ? <FaCheck /> : <FaClipboard />}
-        </button>
+        </Button>
       </div>
 
       <div className="flex gap-2">
-        <button
+        <Button
           onClick={onToggleQR}
           className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-3 py-1 rounded text-sm flex items-center gap-2"
         >
           <FaQrcode />
           QR Code
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onClear}
           className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded text-sm flex items-center gap-2"
         >
           <FaTimes />
           Clear
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -196,7 +196,7 @@ export const SubmissivePanel: React.FC<SubmissivePanelProps> = ({
     </ul>
 
     {!currentLinkCode ? (
-      <button
+      <Button
         onClick={onGenerateCode}
         disabled={isGeneratingCode}
         className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -212,7 +212,7 @@ export const SubmissivePanel: React.FC<SubmissivePanelProps> = ({
             Generate Link Code
           </>
         )}
-      </button>
+      </Button>
     ) : (
       <LinkCodeDisplay
         linkCode={currentLinkCode}
@@ -260,20 +260,20 @@ export const LinkCodeInputForm: React.FC<LinkCodeInputFormProps> = ({
         className="flex-1 bg-black/20 text-nightly-honeydew px-3 py-2 rounded placeholder-nightly-celadon"
         maxLength={20}
       />
-      <button
+      <Button
         onClick={onSubmit}
         disabled={isUsingCode || !linkCodeInput.trim()}
         className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50"
       >
         {isUsingCode ? <FaSpinner className="animate-spin" /> : "Link"}
-      </button>
+      </Button>
     </div>
-    <button
+    <Button
       onClick={onCancel}
       className="text-nightly-celadon hover:text-nightly-honeydew text-sm"
     >
       Cancel
-    </button>
+    </Button>
 
     {codeUsageError && (
       <div className="bg-red-500/20 text-red-400 p-3 rounded flex items-center gap-2">
@@ -319,13 +319,13 @@ export const KeyholderPanel: React.FC<KeyholderPanelProps> = ({
     </ul>
 
     {!showLinkForm ? (
-      <button
+      <Button
         onClick={onShowLinkForm}
         className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
       >
         <FaLink />
         Enter Link Code
-      </button>
+      </Button>
     ) : (
       <LinkCodeInputForm
         linkCodeInput={linkCodeInput}

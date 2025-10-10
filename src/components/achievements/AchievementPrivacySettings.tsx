@@ -252,12 +252,12 @@ export const AchievementPrivacySettings: React.FC<
           </h2>
         </div>
         {onClose && (
-          <button
+          <Button
             onClick={onClose}
             className="text-gray-400 hover:text-white p-2"
           >
             ×
-          </button>
+          </Button>
         )}
       </div>
 
@@ -285,14 +285,14 @@ export const AchievementPrivacySettings: React.FC<
         {/* Save Button */}
         <div className="flex justify-end space-x-3 pt-4">
           {onClose && (
-            <button
+            <Button
               onClick={onClose}
               className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
             >
               Cancel
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             onClick={handleSave}
             disabled={!hasChanges || isLoading}
             className={`flex items-center space-x-2 px-6 py-2 rounded-lg font-semibold transition-colors ${
@@ -303,7 +303,7 @@ export const AchievementPrivacySettings: React.FC<
           >
             <FaSave />
             <span>{isLoading ? "Saving..." : "Save Settings"}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

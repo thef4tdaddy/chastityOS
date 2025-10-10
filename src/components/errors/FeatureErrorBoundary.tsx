@@ -96,12 +96,12 @@ export class FeatureErrorBoundary extends React.Component<Props, ErrorState> {
           <p className="text-yellow-600 mb-3">
             {this.state.error?.message || "An unexpected error occurred"}
           </p>
-          <button
+          <Button
             onClick={this.handleReset}
             className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm transition-colors"
           >
             Retry
-          </button>
+          </Button>
         </div>
       );
     }

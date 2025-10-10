@@ -43,7 +43,7 @@ const CardActions: React.FC<CardActionsProps> = ({
   onEndRelationship,
 }) => (
   <div className="flex gap-2">
-    <button
+    <Button
       onClick={onSetActive}
       className={`p-2 rounded ${
         isActive
@@ -53,22 +53,22 @@ const CardActions: React.FC<CardActionsProps> = ({
       title="Set as active"
     >
       <FaEye />
-    </button>
+    </Button>
 
-    <button
+    <Button
       className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
       title="Relationship settings"
     >
       <FaCog />
-    </button>
+    </Button>
 
-    <button
+    <Button
       onClick={onEndRelationship}
       className="p-2 rounded bg-red-100 text-red-600 hover:bg-red-200"
       title="End relationship"
     >
       <FaTrash />
-    </button>
+    </Button>
   </div>
 );
 

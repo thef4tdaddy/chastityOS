@@ -38,8 +38,8 @@ const AddTaskForm: React.FC<{
   if (!showAddTask) return null;
 
   return (
-    <div className="mb-6 bg-white/5 rounded-lg p-4">
-      <h4 className="font-medium text-nightly-honeydew mb-3">
+    <div className="mb-4 sm:mb-6 bg-white/5 rounded-lg p-3 sm:p-4">
+      <h4 className="font-medium text-nightly-honeydew mb-3 text-sm sm:text-base">
         Create New Task
       </h4>
       <div className="space-y-3">
@@ -47,11 +47,11 @@ const AddTaskForm: React.FC<{
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
           placeholder="Task description..."
-          className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
+          className="w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none text-base"
           rows={3}
         />
         <div>
-          <label className="block text-sm text-nightly-celadon mb-1">
+          <label className="block text-xs sm:text-sm text-nightly-celadon mb-1">
             Point Value (optional)
           </label>
           <Input
@@ -63,26 +63,26 @@ const AddTaskForm: React.FC<{
               setPointValue(Math.max(0, Math.min(100, Number(e.target.value))))
             }
             placeholder="10"
-            className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50"
+            className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50 text-base"
           />
           <p className="text-xs text-nightly-celadon/70 mt-1">
             Points awarded when task is approved (0-100)
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button
             onClick={handleAddTask}
             disabled={!newTaskText.trim() || isCreating}
-            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 py-2 rounded font-medium transition-colors"
+            className="touch-target bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 py-2 rounded font-medium transition-colors"
           >
             {isCreating ? "Creating..." : "Create Task"}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowAddTask(false)}
-            className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
+            className="touch-target bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -108,12 +108,12 @@ const TaskItem: React.FC<{
   ) => void;
   isUpdating: boolean;
 }> = ({ task, handleTaskAction, isUpdating }) => (
-  <div key={task.id} className="bg-white/5 rounded-lg p-4">
+  <div key={task.id} className="bg-white/5 rounded-lg p-3 sm:p-4">
     <div className="mb-3">
-      <h4 className="font-medium text-nightly-honeydew mb-1">
+      <h4 className="font-medium text-nightly-honeydew mb-1 text-sm sm:text-base">
         {task.title || task.text}
       </h4>
-      <div className="flex items-center gap-2 text-sm text-nightly-celadon">
+      <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-nightly-celadon">
         <span>Status: {task.status}</span>
         {task.priority && (
           <>
@@ -129,7 +129,9 @@ const TaskItem: React.FC<{
         )}
       </div>
       {task.description && (
-        <p className="text-sm text-nightly-celadon mt-1">{task.description}</p>
+        <p className="text-xs sm:text-sm text-nightly-celadon mt-1">
+          {task.description}
+        </p>
       )}
     </div>
 
@@ -138,30 +140,30 @@ const TaskItem: React.FC<{
         <div className="text-xs text-nightly-celadon mb-1">
           Submissive Note:
         </div>
-        <div className="text-sm text-nightly-honeydew">
+        <div className="text-xs sm:text-sm text-nightly-honeydew">
           {task.submissiveNote}
         </div>
       </div>
     )}
 
     {task.status === "submitted" && (
-      <div className="flex gap-2">
-        <button
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
-          className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          className="touch-target bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-2 rounded text-sm flex items-center justify-center gap-1"
         >
           <FaCheckCircle />
           {isUpdating ? "Processing..." : "Approve"}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleTaskAction(task.id, "reject")}
           disabled={isUpdating}
-          className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          className="touch-target bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-3 py-2 rounded text-sm flex items-center justify-center gap-1"
         >
           <FaTimesCircle />
           {isUpdating ? "Processing..." : "Reject"}
-        </button>
+        </Button>
       </div>
     )}
   </div>
@@ -315,21 +317,21 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <FaTasks className="text-nightly-lavender-floral" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <FaTasks className="text-nightly-lavender-floral text-lg sm:text-xl" />
+          <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew">
             Task Management
           </h3>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddTask(!showAddTask)}
-          className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="touch-target bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-2 rounded text-sm flex items-center justify-center gap-2"
         >
           <FaPlus />
           Add Task
-        </button>
+        </Button>
       </div>
 
       <AddTaskForm

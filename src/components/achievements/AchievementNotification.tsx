@@ -36,12 +36,12 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
         </span>
       </div>
     </div>
-    <button
+    <Button
       onClick={onClose}
       className="text-gray-400 hover:text-white transition-colors"
     >
       <FaTimes />
-    </button>
+    </Button>
   </div>
 );
 

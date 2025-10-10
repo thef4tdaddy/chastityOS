@@ -299,22 +299,22 @@ const FormActions: React.FC<FormActionsProps> = ({
 
     {/* Submit Buttons */}
     <div className="flex gap-3 pt-4">
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
         className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white px-6 py-3 rounded font-medium transition-colors flex items-center gap-2"
       >
         <FaPaperPlane />
         {getSubmitButtonText(type, isSubmitting)}
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={onClose}
         disabled={isSubmitting}
         className="bg-white/10 hover:bg-white/20 disabled:bg-white/5 text-gray-300 px-6 py-3 rounded font-medium transition-colors"
       >
         Cancel
-      </button>
+      </Button>
     </div>
   </>
 );
@@ -428,13 +428,13 @@ const ModalHeader: React.FC<ModalHeaderProps> = ({
       {getModalIcon(type)}
       <h2 className="text-xl font-bold text-white">{getModalTitle(type)}</h2>
     </div>
-    <button
+    <Button
       onClick={onClose}
       className="p-2 hover:bg-white/10 rounded-lg transition-colors"
       disabled={isSubmitting}
     >
       <FaTimes className="text-gray-400" />
-    </button>
+    </Button>
   </div>
 );
 

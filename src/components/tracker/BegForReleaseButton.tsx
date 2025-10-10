@@ -36,7 +36,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
       className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-purple-500"
       footer={
         <div className="flex flex-col space-y-3">
-          <button
+          <Button
             onClick={onSubmit}
             disabled={isSubmitting}
             className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition"
@@ -49,14 +49,14 @@ const RequestModal: React.FC<RequestModalProps> = ({
             ) : (
               "Send Request"
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
             disabled={isSubmitting}
             className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       }
     >
@@ -148,20 +148,20 @@ export const BegForReleaseButton: React.FC<BegForReleaseButtonProps> = ({
 
   if (isCheckingRequest) {
     return (
-      <button
+      <Button
         disabled
         className={`bg-purple-500/50 text-white px-4 py-2 rounded font-medium flex items-center gap-2 ${className}`}
       >
         <FaSpinner className="animate-spin" />
         Checking...
-      </button>
+      </Button>
     );
   }
 
   // Show cancel button if request is pending
   if (hasPendingRequest) {
     return (
-      <button
+      <Button
         onClick={handleCancelRequest}
         disabled={isSubmitting}
         className={`bg-gray-500 hover:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2 ${className}`}
@@ -177,20 +177,20 @@ export const BegForReleaseButton: React.FC<BegForReleaseButtonProps> = ({
             Cancel Request
           </>
         )}
-      </button>
+      </Button>
     );
   }
 
   return (
     <>
-      <button
+      <Button
         onClick={() => setShowModal(true)}
         disabled={disabled || isSubmitting}
         className={`bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2 ${className}`}
       >
         <FaPrayingHands />
         Beg for Release
-      </button>
+      </Button>
 
       <RequestModal
         isOpen={showModal}

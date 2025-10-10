@@ -100,12 +100,12 @@ export class RouteErrorBoundary extends React.Component<Props, ErrorState> {
             <p className="text-red-600 mb-4">
               {this.state.error?.message || "An unexpected error occurred"}
             </p>
-            <button
+            <Button
               onClick={this.handleReset}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
             >
               Try Again
-            </button>
+            </Button>
           </div>
         </div>
       );

@@ -42,12 +42,12 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
           We're sorry, but something unexpected happened. Please reload the page
           to continue.
         </p>
-        <button
+        <Button
           onClick={() => window.location.reload()}
           className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-md transition-colors w-full"
         >
           Reload Page
-        </button>
+        </Button>
         {isDevelopment && error && (
           <div className="mt-6 text-left">
             <details className="bg-gray-700 rounded p-3">

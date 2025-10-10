@@ -33,7 +33,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
       </div>
       <div className="flex gap-3">
         <Tooltip content="Log a sexual event for yourself">
-          <button
+          <Button
             onClick={() => onSelectUser(currentUserId)}
             className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
               selectedUserId === currentUserId
@@ -42,12 +42,12 @@ const UserSelector: React.FC<UserSelectorProps> = ({
             }`}
           >
             Yourself
-          </button>
+          </Button>
         </Tooltip>
         <Tooltip
           content={`Log a sexual event for ${activeSubmissive.wearerName || "your submissive"}`}
         >
-          <button
+          <Button
             onClick={() => onSelectUser(activeSubmissive.wearerId || "")}
             className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
               selectedUserId === activeSubmissive.wearerId
@@ -56,7 +56,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
             }`}
           >
             {activeSubmissive.wearerName || "Submissive"}
-          </button>
+          </Button>
         </Tooltip>
       </div>
     </Card>

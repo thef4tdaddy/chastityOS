@@ -33,30 +33,30 @@ const TabNavigation: React.FC<{
   activeCount: number;
   archivedCount: number;
 }> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
-  <div className="flex justify-center space-x-4 mb-8">
+  <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-6 sm:mb-8 px-4 sm:px-0">
     <Tooltip content="View tasks that are currently pending or awaiting approval">
-      <button
+      <Button
         onClick={() => setActiveTab("active")}
-        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+        className={`touch-target glass-nav px-4 sm:px-6 py-3 font-medium transition-all duration-300 text-sm sm:text-base ${
           activeTab === "active"
-            ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+            ? "glass-card-primary text-blue-200 shadow-liquid transform sm:scale-105"
             : "text-gray-300 hover:text-white glass-hover"
         }`}
       >
         Active Tasks ({activeCount})
-      </button>
+      </Button>
     </Tooltip>
     <Tooltip content="View completed, approved, or rejected tasks">
-      <button
+      <Button
         onClick={() => setActiveTab("archived")}
-        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+        className={`touch-target glass-nav px-4 sm:px-6 py-3 font-medium transition-all duration-300 text-sm sm:text-base ${
           activeTab === "archived"
-            ? "glass-card-primary text-blue-200 shadow-liquid transform scale-105"
+            ? "glass-card-primary text-blue-200 shadow-liquid transform sm:scale-105"
             : "text-gray-300 hover:text-white glass-hover"
         }`}
       >
         Archived ({archivedCount})
-      </button>
+      </Button>
     </Tooltip>
   </div>
 );
@@ -180,18 +180,18 @@ const TasksPage: React.FC = () => {
   );
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 container-mobile">
       {/* Enhanced Header with Glass Effect */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
           Task Management
         </h1>
-        <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
+        <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
       </div>
 
       {/* Task Stats Card */}
       {user && (
-        <div className="max-w-4xl mx-auto mb-8">
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
           <TaskStatsCard userId={user.uid} />
         </div>
       )}

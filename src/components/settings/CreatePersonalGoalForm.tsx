@@ -148,12 +148,12 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
         <h3 className="text-lg font-semibold text-nightly-honeydew">
           Create Personal Goal
         </h3>
-        <button
+        <Button
           onClick={handleCancel}
           className="p-2 hover:bg-white/10 rounded-lg transition-colors text-nightly-celadon"
         >
           <FaTimes />
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-4">
@@ -187,7 +187,7 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
           isCreating={isCreating}
         />
 
-        <button
+        <Button
           onClick={handleSubmit}
           disabled={isCreating || !title.trim() || (days === 0 && hours === 0)}
           className="w-full bg-nightly-aquamarine/20 border border-nightly-aquamarine hover:bg-nightly-aquamarine/30 text-nightly-aquamarine font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -199,7 +199,7 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
               <FaPlus /> Create Goal
             </>
           )}
-        </button>
+        </Button>
       </div>
     </Card>
   );

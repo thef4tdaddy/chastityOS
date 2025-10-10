@@ -14,7 +14,7 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
 }) => {
   return (
     <div className="flex items-center bg-white/10 rounded-lg p-1">
-      <button
+      <Button
         onClick={() => onViewModeChange("dashboard")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
           viewMode === "dashboard"
@@ -24,8 +24,8 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
       >
         <FaChartBar />
         <span>Dashboard</span>
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => onViewModeChange("gallery")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
           viewMode === "gallery"
@@ -35,8 +35,8 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
       >
         <FaList />
         <span>Gallery</span>
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => onViewModeChange("leaderboards")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
           viewMode === "leaderboards"
@@ -46,8 +46,8 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
       >
         <FaUsers />
         <span>Leaderboards</span>
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => onViewModeChange("privacy")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
           viewMode === "privacy"
@@ -57,7 +57,7 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
       >
         <FaCog />
         <span>Privacy</span>
-      </button>
+      </Button>
     </div>
   );
 };

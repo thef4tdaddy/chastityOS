@@ -203,7 +203,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         value={note}
         onChange={(e) => onNoteChange(e.target.value)}
         placeholder="Add submission notes (optional)..."
-        className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none mb-3"
+        className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none mb-3 text-base md:text-sm"
         rows={3}
       />
 
@@ -219,13 +219,13 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <button
+      <Button
         onClick={onSubmit}
         disabled={isSubmitting}
-        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
+        className="touch-target w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-3 rounded transition-colors font-medium"
       >
         {isSubmitting ? "Submitting..." : "Submit for Review"}
-      </button>
+      </Button>
     </div>
   );
 };
@@ -255,10 +255,10 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
 
   return (
     <div
-      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-4 mb-4`}
+      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-3 sm:p-4 mb-4`}
     >
       {/* Header */}
-      <div className="flex justify-between items-start mb-3">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
         <TaskStatusBadge
           statusConfig={statusConfig}
           priority={task.priority}

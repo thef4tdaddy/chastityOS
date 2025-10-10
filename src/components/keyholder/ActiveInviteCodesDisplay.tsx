@@ -39,20 +39,20 @@ export const ActiveInviteCodesDisplay: React.FC<
               </div>
             </div>
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={() => onCopyCode(invite.code)}
                 className="text-purple-400 hover:text-purple-300 p-1"
                 title="Copy code"
               >
                 <FaCopy />
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => onRevokeCode(invite.id)}
                 className="text-red-400 hover:text-red-300 p-1"
                 title="Revoke code"
               >
                 <FaTrash />
-              </button>
+              </Button>
             </div>
           </div>
         ))}

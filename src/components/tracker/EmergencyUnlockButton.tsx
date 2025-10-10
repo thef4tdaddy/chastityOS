@@ -61,7 +61,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
 
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setShowModal(true)}
         disabled={emergencyUnlock.isPending}
@@ -70,7 +70,7 @@ export const EmergencyUnlockButton: React.FC<EmergencyUnlockButtonProps> = ({
       >
         <FaExclamationTriangle className="mr-2" />
         🚨 Emergency Unlock
-      </button>
+      </Button>
 
       <EmergencyUnlockModal
         isOpen={showModal}

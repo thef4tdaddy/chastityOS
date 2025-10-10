@@ -49,12 +49,12 @@ export const LockCombinationDisplay: React.FC<LockCombinationDisplayProps> = ({
               {combination}
             </p>
           </div>
-          <button
+          <Button
             onClick={handleCopy}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center justify-center gap-2"
           >
             {copied ? <>✓ Copied!</> : <>📋 Copy to Clipboard</>}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -65,12 +65,12 @@ export const LockCombinationDisplay: React.FC<LockCombinationDisplayProps> = ({
         </p>
       </div>
 
-      <button
+      <Button
         onClick={onContinue}
         className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
       >
         Complete Unlock & End Session
-      </button>
+      </Button>
     </div>
   );
 };

@@ -143,12 +143,12 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
           </h2>
         </div>
         {sessions.length > 10 && (
-          <button
+          <Button
             onClick={() => setShowAll(!showAll)}
             className="text-nightly-aquamarine hover:text-nightly-spring-green transition-colors"
           >
             {showAll ? "Show Less" : `Show All (${sessions.length})`}
-          </button>
+          </Button>
         )}
       </div>
 
