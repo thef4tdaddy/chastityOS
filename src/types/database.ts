@@ -74,6 +74,12 @@ export interface DBEvent extends DBBase {
   type: EventType;
   timestamp: Date;
   details: {
+    // Generic event properties
+    action?: string;
+    title?: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+    // Session/activity properties
     duration?: number;
     participants?: ("submissive" | "keyholder" | "other")[];
     notes?: string;

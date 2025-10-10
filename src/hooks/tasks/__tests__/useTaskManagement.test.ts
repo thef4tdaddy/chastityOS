@@ -247,7 +247,7 @@ describe("useTaskManagement", () => {
       });
 
       expect(result.current.filteredTasks).toHaveLength(1);
-      expect(result.current.filteredTasks[0].title).toBe("Clean the house");
+      expect(result.current.filteredTasks[0]!.title).toBe("Clean the house");
     });
 
     it("should clear filters", async () => {
@@ -294,8 +294,8 @@ describe("useTaskManagement", () => {
         result.current.setSortBy("createdAt", "asc");
       });
 
-      expect(result.current.filteredTasks[0].title).toBe("First Task");
-      expect(result.current.filteredTasks[1].title).toBe("Second Task");
+      expect(result.current.filteredTasks[0]!.title).toBe("First Task");
+      expect(result.current.filteredTasks[1]!.title).toBe("Second Task");
     });
 
     it("should sort tasks by priority", async () => {
@@ -324,8 +324,8 @@ describe("useTaskManagement", () => {
         result.current.setSortBy("priority", "desc");
       });
 
-      expect(result.current.filteredTasks[0].title).toBe("Urgent");
-      expect(result.current.filteredTasks[2].title).toBe("Low");
+      expect(result.current.filteredTasks[0]!.title).toBe("Urgent");
+      expect(result.current.filteredTasks[2]!.title).toBe("Low");
     });
   });
 
