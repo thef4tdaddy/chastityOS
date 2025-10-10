@@ -15,6 +15,7 @@ import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking
 import { usePendingReleaseRequests } from "../../hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "./ReleaseRequestCard";
 import { AdminRelationship } from "../../types/account-linking";
+import { ToggleGroup, ToggleGroupOption } from "../ui";
 
 // Loading Component
 const AdminLoadingDisplay: React.FC = () => (
@@ -140,34 +141,28 @@ const NavigationTabs: React.FC<{
     tab: "overview" | "sessions" | "tasks" | "settings",
   ) => void;
 }> = ({ selectedTab, onSetSelectedTab }) => {
-  const tabs = [
-    { id: "overview", label: "Overview", icon: FaEye },
-    { id: "sessions", label: "Sessions", icon: FaLock },
-    { id: "tasks", label: "Tasks", icon: FaTasks },
-    { id: "settings", label: "Settings", icon: FaCog },
+  const tabs: ToggleGroupOption[] = [
+    { value: "overview", label: "Overview", icon: <FaEye /> },
+    { value: "sessions", label: "Sessions", icon: <FaLock /> },
+    { value: "tasks", label: "Tasks", icon: <FaTasks /> },
+    { value: "settings", label: "Settings", icon: <FaCog /> },
   ];
 
   return (
-    <div className="flex space-x-1 bg-black/20 rounded-lg p-1 mb-6">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() =>
-            onSetSelectedTab(
-              tab.id as "overview" | "sessions" | "tasks" | "settings",
-            )
-          }
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            selectedTab === tab.id
-              ? "bg-nightly-lavender-floral text-white"
-              : "text-nightly-celadon hover:text-nightly-honeydew hover:bg-white/5"
-          }`}
-        >
-          <tab.icon />
-          {tab.label}
-        </button>
-      ))}
-    </div>
+    <ToggleGroup
+      type="single"
+      value={selectedTab}
+      onValueChange={(value) =>
+        onSetSelectedTab(
+          value as "overview" | "sessions" | "tasks" | "settings",
+        )
+      }
+      options={tabs}
+      fullWidth={true}
+      size="md"
+      aria-label="Admin navigation tabs"
+      className="mb-6"
+    />
   );
 };
 

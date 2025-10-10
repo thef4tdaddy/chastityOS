@@ -17,6 +17,7 @@ import {
 import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
+import { ToggleGroup, ToggleGroupOption } from "@/components/ui";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -226,37 +227,41 @@ interface DisplayNameSectionProps {
 const DisplayNameSection: React.FC<DisplayNameSectionProps> = ({
   settings,
   onSettingChange,
-}) => (
-  <div className="space-y-4">
-    <SectionHeader title="Display Name" />
-    <div className="space-y-3">
-      <RadioOption
-        name="displayName"
-        value="anonymous"
-        checked={settings.displayName === "anonymous"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Anonymous"
-        description='Show as "ChastityUser_XXXX"'
+}) => {
+  const options: ToggleGroupOption[] = [
+    { value: "anonymous", label: "Anonymous" },
+    { value: "username", label: "Username" },
+    { value: "real", label: "Real Name" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <SectionHeader title="Display Name" />
+      <ToggleGroup
+        type="single"
+        value={settings.displayName}
+        onValueChange={(value) =>
+          onSettingChange("displayName", value as string)
+        }
+        options={options}
+        size="md"
+        fullWidth={false}
+        aria-label="Select display name preference"
       />
-      <RadioOption
-        name="displayName"
-        value="username"
-        checked={settings.displayName === "username"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Username"
-        description="Use your username if available"
-      />
-      <RadioOption
-        name="displayName"
-        value="real"
-        checked={settings.displayName === "real"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Real Name"
-        description="Use your real name (not recommended)"
-      />
+      <div className="text-sm text-nightly-celadon space-y-2">
+        <p>
+          <strong>Anonymous:</strong> Show as "ChastityUser_XXXX"
+        </p>
+        <p>
+          <strong>Username:</strong> Use your username if available
+        </p>
+        <p>
+          <strong>Real Name:</strong> Use your real name (not recommended)
+        </p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export interface AchievementPrivacySettingsProps {
   onClose?: () => void;
