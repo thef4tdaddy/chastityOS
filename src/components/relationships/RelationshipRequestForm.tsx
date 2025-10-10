@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner } from "../../utils/iconImport";
 import { Input, Textarea } from "@/components/ui";
 
 interface RelationshipRequestFormProps {

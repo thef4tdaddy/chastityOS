@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaPlay, FaStop, FaPause, FaSync, FaTrash } from "react-icons/fa";
+import {
+  FaPlay,
+  FaStop,
+  FaPause,
+  FaSync,
+  FaTrash,
+} from "../../utils/iconImport";
 
 interface DemoSession {
   id: string;

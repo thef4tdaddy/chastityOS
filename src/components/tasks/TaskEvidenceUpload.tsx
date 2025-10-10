@@ -5,7 +5,7 @@
 import React, { useCallback } from "react";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
-import { FaUpload, FaTimes, FaImage, FaSpinner } from "react-icons/fa";
+import { FaUpload, FaTimes, FaImage, FaSpinner } from "../../utils/iconImport";
 
 interface TaskEvidenceUploadProps {
   taskId: string;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaKey } from "react-icons/fa";
+import { FaKey } from "../../utils/iconImport";
 import { formatDistanceToNow } from "date-fns";
 
 interface ActiveKeyholderDisplayProps {

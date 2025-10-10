@@ -9,7 +9,7 @@ import {
   useSetEmergencyPin,
   useRemoveEmergencyPin,
 } from "../../hooks/api/useEmergencyPin";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner } from "../../utils/iconImport";
 import { EmergencyPinEdit } from "./EmergencyPinEdit";
 import { EmergencyPinDisplay } from "./EmergencyPinDisplay";
 import { validateEmergencyPin } from "../../utils/goals/formValidation";
