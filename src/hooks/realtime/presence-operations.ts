@@ -167,9 +167,12 @@ export const createQueryFunctions = (presenceState: PresenceState) => {
   const getMultipleUserPresence = (userIds: string[]): UserPresence[] => {
     const result: UserPresence[] = [];
     for (let i = 0; i < userIds.length; i++) {
-      const presence = presenceState.userPresences[userIds[i]];
-      if (presence) {
-        result.push(presence);
+      const userId = userIds[i];
+      if (userId) {
+        const presence = presenceState.userPresences[userId];
+        if (presence) {
+          result.push(presence);
+        }
       }
     }
     return result;
@@ -191,16 +194,19 @@ export const createQueryFunctions = (presenceState: PresenceState) => {
   const getOnlineCount = (userIds: string[]): number => {
     let count = 0;
     for (let i = 0; i < userIds.length; i++) {
-      const presence = presenceState.userPresences[userIds[i]];
-      if (
-        presence &&
-        [
-          PresenceStatus.ONLINE,
-          PresenceStatus.BUSY,
-          PresenceStatus.IN_SESSION,
-        ].indexOf(presence.status) !== -1
-      ) {
-        count++;
+      const userId = userIds[i];
+      if (userId) {
+        const presence = presenceState.userPresences[userId];
+        if (
+          presence &&
+          [
+            PresenceStatus.ONLINE,
+            PresenceStatus.BUSY,
+            PresenceStatus.IN_SESSION,
+          ].indexOf(presence.status) !== -1
+        ) {
+          count++;
+        }
       }
     }
     return count;
@@ -232,18 +238,20 @@ export const calculatePresenceComputedValues = (
 
   for (let i = 0; i < userPresenceValues.length; i++) {
     const p = userPresenceValues[i];
-    if (
-      [
-        PresenceStatus.ONLINE,
-        PresenceStatus.BUSY,
-        PresenceStatus.IN_SESSION,
-      ].indexOf(p.status) !== -1
-    ) {
-      onlineUsers++;
-    }
+    if (p) {
+      if (
+        [
+          PresenceStatus.ONLINE,
+          PresenceStatus.BUSY,
+          PresenceStatus.IN_SESSION,
+        ].indexOf(p.status) !== -1
+      ) {
+        onlineUsers++;
+      }
 
-    if (p.status === PresenceStatus.IN_SESSION || p.isInChastitySession) {
-      inSessionUsers++;
+      if (p.status === PresenceStatus.IN_SESSION || p.isInChastitySession) {
+        inSessionUsers++;
+      }
     }
   }
 

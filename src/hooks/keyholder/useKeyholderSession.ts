@@ -33,11 +33,13 @@ interface UseKeyholderSessionReturn {
 }
 
 const defaultPermissions: KeyholderPermissions = {
+  canLockSessions: false,
+  canUnlockSessions: false,
+  canCreateTasks: false,
   canApproveTasks: false,
-  canAddPunishments: false,
-  canAddRewards: false,
-  canModifyDuration: false,
-  canLockControls: false,
+  canViewFullHistory: false,
+  canEditGoals: false,
+  canSetRules: false,
 };
 
 export function useKeyholderSession({
