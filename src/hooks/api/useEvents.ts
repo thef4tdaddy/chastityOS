@@ -222,7 +222,7 @@ export function useCreateEvent() {
 
       // Prepare event data for database
       const { notes, duration, ...restParams } = params;
-      const eventData = {
+      const eventData: Omit<DBEvent, "id" | "lastModified" | "syncStatus"> = {
         ...restParams,
         isPrivate: restParams.isPrivate ?? false,
         details: {
@@ -232,7 +232,7 @@ export function useCreateEvent() {
       };
 
       // 1. Write to local Dexie immediately
-      const event = await eventDBService.createEvent(eventData);
+      const eventId = await eventDBService.createEvent(eventData);
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -242,11 +242,17 @@ export function useCreateEvent() {
       }
 
       logger.info("Event created successfully", {
-        eventId: event.id,
+        eventId,
         userId: params.userId,
       });
 
-      return event;
+      // Return the created event with the generated ID
+      return {
+        id: eventId,
+        ...eventData,
+        lastModified: new Date(),
+        syncStatus: "pending" as const,
+      };
     },
     onSuccess: (data, variables) => {
       // Invalidate list queries to trigger refetch
