@@ -5,6 +5,7 @@ import {
   usePendingRequestForSession,
 } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
+import { Textarea } from "@/components/ui";
 
 // Request Modal Component
 interface RequestModalProps {
@@ -60,7 +61,7 @@ const RequestModal: React.FC<RequestModalProps> = ({
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Reason for Request (optional):
             </label>
-            <textarea
+            <Textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Explain why you're requesting early release..."

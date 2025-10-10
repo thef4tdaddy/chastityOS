@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Input } from "@/components/ui";
 
 interface AcceptInviteCodeSectionProps {
   inviteCodeInput: string;
@@ -51,7 +52,7 @@ export const AcceptInviteCodeSection: React.FC<
           <p className="text-sm text-gray-400">
             Enter an invite code from a submissive to become their keyholder.
           </p>
-          <input
+          <Input
             type="text"
             value={inviteCodeInput}
             onChange={(e) => onSetInviteCodeInput(e.target.value)}
@@ -60,7 +61,7 @@ export const AcceptInviteCodeSection: React.FC<
             className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 font-mono text-center tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
             maxLength={6}
           />
-          <input
+          <Input
             type="text"
             value={keyholderNameInput}
             onChange={(e) => onSetKeyholderNameInput(e.target.value)}

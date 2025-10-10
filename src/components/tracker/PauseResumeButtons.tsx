@@ -1,5 +1,6 @@
 import React from "react";
 import { usePauseResumeControls } from "../../hooks/tracker/usePauseResumeControls";
+import { Input } from "@/components/ui";
 
 // Temporary types until proper hook pattern is implemented
 type EnhancedPauseReason = "Bathroom Break" | "Emergency" | "Medical" | "Other";
@@ -123,7 +124,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Custom reason:
         </label>
-        <input
+        <Input
           type="text"
           value={customReason}
           onChange={(e) => onCustomReasonChange(e.target.value)}

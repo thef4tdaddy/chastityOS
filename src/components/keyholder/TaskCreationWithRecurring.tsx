@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import { RecurringTaskForm } from "./RecurringTaskForm";
 import type { RecurringConfig } from "@/types/database";
 import { FaSync } from "react-icons/fa";
+import { Input, Textarea } from "@/components/ui";
 
 interface TaskCreationWithRecurringProps {
   onCreateTask: (taskData: {
@@ -56,7 +57,7 @@ export const TaskCreationWithRecurring: React.FC<
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Task Title
         </label>
-        <input
+        <Input
           type="text"
           value={taskText}
           onChange={(e) => setTaskText(e.target.value)}
@@ -70,7 +71,7 @@ export const TaskCreationWithRecurring: React.FC<
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Description (optional)
         </label>
-        <textarea
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Enter task description..."

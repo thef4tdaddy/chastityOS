@@ -10,6 +10,7 @@ import {
   FaTimes,
   FaCheck,
 } from "../../utils/iconImport";
+import { Input } from "@/components/ui";
 
 // Interface for relationship data
 export interface Relationship {
@@ -251,7 +252,7 @@ export const LinkCodeInputForm: React.FC<LinkCodeInputFormProps> = ({
 }) => (
   <div className="space-y-3">
     <div className="flex gap-2">
-      <input
+      <Input
         type="text"
         value={linkCodeInput}
         onChange={(e) => onInputChange(e.target.value.toUpperCase())}
