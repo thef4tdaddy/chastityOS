@@ -18,8 +18,14 @@ export const RulesPageControls: React.FC<RulesPageControlsProps> = ({
 }) => {
   const filterOptions: SelectOption[] = [
     { value: "all", label: `All Rules (${rules.length})` },
-    { value: "active", label: `Active (${rules.filter((r) => r.isActive).length})` },
-    { value: "inactive", label: `Inactive (${rules.filter((r) => !r.isActive).length})` },
+    {
+      value: "active",
+      label: `Active (${rules.filter((r) => r.isActive).length})`,
+    },
+    {
+      value: "inactive",
+      label: `Inactive (${rules.filter((r) => !r.isActive).length})`,
+    },
   ];
 
   return (
@@ -28,7 +34,9 @@ export const RulesPageControls: React.FC<RulesPageControlsProps> = ({
         <FaFilter className="text-nightly-celadon" />
         <Select
           value={filter}
-          onChange={(value) => onFilterChange(value as "all" | "active" | "inactive")}
+          onChange={(value) =>
+            onFilterChange(value as "all" | "active" | "inactive")
+          }
           options={filterOptions}
           size="sm"
           fullWidth={false}
