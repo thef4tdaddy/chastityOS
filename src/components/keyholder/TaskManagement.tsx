@@ -8,6 +8,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
 } from "../../utils/iconImport";
+import { Input, Textarea } from "@/components/ui";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
@@ -42,7 +43,7 @@ const AddTaskForm: React.FC<{
         Create New Task
       </h4>
       <div className="space-y-3">
-        <textarea
+        <Textarea
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
           placeholder="Task description..."
@@ -53,7 +54,7 @@ const AddTaskForm: React.FC<{
           <label className="block text-sm text-nightly-celadon mb-1">
             Point Value (optional)
           </label>
-          <input
+          <Input
             type="number"
             min="0"
             max="100"

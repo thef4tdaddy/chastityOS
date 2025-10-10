@@ -8,6 +8,7 @@ import { useOfflineDemo } from "../hooks/useOfflineDemo";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DBTask } from "@/types/database";
 import type { User } from "@/types";
+import { Input } from "@/components/ui";
 
 // Status Indicators Component
 interface StatusIndicatorsProps {
@@ -77,7 +78,7 @@ const TaskInput: React.FC<TaskInputProps> = ({
   loading,
 }) => (
   <div className="flex space-x-2 mb-4">
-    <input
+    <Input
       type="text"
       value={newTaskText}
       onChange={(e) => onTextChange(e.target.value)}

@@ -6,6 +6,7 @@ import { TaskEvidenceDisplay } from "./TaskEvidenceDisplay";
 import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
+import { Textarea } from "@/components/ui";
 
 // Task status badge component
 interface TaskStatusBadgeProps {
@@ -198,7 +199,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
 }) => {
   return (
     <div className="border-t border-white/10 pt-3">
-      <textarea
+      <Textarea
         value={note}
         onChange={(e) => onNoteChange(e.target.value)}
         placeholder="Add submission notes (optional)..."

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
+import { Input, Textarea } from "@/components/ui";
 
 interface RelationshipRequestFormProps {
   isVisible: boolean;
@@ -26,7 +27,7 @@ const EmailField: React.FC<EmailFieldProps> = ({ value, onChange }) => (
     >
       Email Address
     </label>
-    <input
+    <Input
       type="email"
       id="email"
       value={value}
@@ -76,7 +77,7 @@ const MessageField: React.FC<MessageFieldProps> = ({ value, onChange }) => (
     >
       Message (Optional)
     </label>
-    <textarea
+    <Textarea
       id="message"
       value={value}
       onChange={(e) => onChange(e.target.value)}

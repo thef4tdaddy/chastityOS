@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { FaShieldAlt } from "react-icons/fa";
+import { Input } from "@/components/ui";
 
 interface EmergencyPinSetupSectionProps {
   emergencyPinInput: string;
@@ -34,7 +35,7 @@ export const EmergencyPinSetupSection: React.FC<
         Required for hardcore mode safety. This PIN allows emergency unlock if
         truly needed.
       </p>
-      <input
+      <Input
         type="password"
         value={emergencyPinInput}
         onChange={(e) => {
@@ -45,7 +46,7 @@ export const EmergencyPinSetupSection: React.FC<
         className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-nightly-honeydew focus:outline-none focus:border-red-500 font-mono"
         disabled={isCreating}
       />
-      <input
+      <Input
         type="password"
         value={confirmEmergencyPin}
         onChange={(e) => {
