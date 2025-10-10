@@ -17,6 +17,7 @@ import {
 import { LeaderboardPrivacySettings } from "../../hooks/useLeaderboards";
 import { useAuthState } from "../../contexts";
 import { usePrivacySettings } from "../../hooks/achievements/usePrivacySettings";
+import { ToggleGroup } from "@/components/ui";
 
 // Sub-component for toggle switches
 interface ToggleSwitchProps {
@@ -54,39 +55,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   </div>
 );
 
-// Sub-component for radio button options
-interface RadioOptionProps {
-  name: string;
-  value: string;
-  checked: boolean;
-  onChange: (value: string) => void;
-  title: string;
-  description: string;
-}
-
-const RadioOption: React.FC<RadioOptionProps> = ({
-  name,
-  value,
-  checked,
-  onChange,
-  title,
-  description,
-}) => (
-  <label className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg cursor-pointer">
-    <input
-      type="radio"
-      name={name}
-      value={value}
-      checked={checked}
-      onChange={(e) => onChange(e.target.value)}
-      className="text-nightly-aquamarine focus:ring-nightly-aquamarine"
-    />
-    <div>
-      <div className="font-medium text-nightly-honeydew">{title}</div>
-      <div className="text-sm text-nightly-celadon">{description}</div>
-    </div>
-  </label>
-);
+// Note: RadioOption component removed - using ToggleGroup instead
 
 // Sub-component for privacy notice
 const PrivacyNotice: React.FC = () => (
@@ -229,31 +198,35 @@ const DisplayNameSection: React.FC<DisplayNameSectionProps> = ({
 }) => (
   <div className="space-y-4">
     <SectionHeader title="Display Name" />
-    <div className="space-y-3">
-      <RadioOption
-        name="displayName"
-        value="anonymous"
-        checked={settings.displayName === "anonymous"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Anonymous"
-        description='Show as "ChastityUser_XXXX"'
+    <div className="space-y-2">
+      <div className="text-xs text-nightly-celadon mb-2">
+        Choose how your name appears in leaderboards and public profiles
+      </div>
+      <ToggleGroup
+        value={settings.displayName}
+        onValueChange={(value) =>
+          onSettingChange("displayName", value as string)
+        }
+        options={[
+          { value: "anonymous", label: "Anonymous" },
+          { value: "username", label: "Username" },
+          { value: "real", label: "Real Name" },
+        ]}
+        type="single"
+        fullWidth
+        aria-label="Select display name preference"
       />
-      <RadioOption
-        name="displayName"
-        value="username"
-        checked={settings.displayName === "username"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Username"
-        description="Use your username if available"
-      />
-      <RadioOption
-        name="displayName"
-        value="real"
-        checked={settings.displayName === "real"}
-        onChange={(value) => onSettingChange("displayName", value)}
-        title="Real Name"
-        description="Use your real name (not recommended)"
-      />
+      <div className="text-xs text-nightly-celadon mt-2 space-y-1">
+        <div>
+          • <strong>Anonymous:</strong> Show as "ChastityUser_XXXX"
+        </div>
+        <div>
+          • <strong>Username:</strong> Use your username if available
+        </div>
+        <div>
+          • <strong>Real Name:</strong> Use your real name (not recommended)
+        </div>
+      </div>
     </div>
   </div>
 );

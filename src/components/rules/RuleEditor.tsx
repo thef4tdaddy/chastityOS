@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { ChastityRule } from "./RuleCard";
 import { FaEdit, FaSave, FaTimes } from "../../utils/iconImport";
-import { Input, Textarea, Select, SelectOption } from "@/components/ui";
+import {
+  Input,
+  Textarea,
+  Select,
+  SelectOption,
+  Checkbox,
+} from "@/components/ui";
 
 // Rule Editor Component
 interface RuleEditorProps {
@@ -94,21 +100,19 @@ const SettingsFields: React.FC<SettingsFieldsProps> = ({
       <Select
         label="Created By"
         value={createdBy}
-        onChange={(value) => onCreatedByChange(value as "submissive" | "keyholder")}
+        onChange={(value) =>
+          onCreatedByChange(value as "submissive" | "keyholder")
+        }
         options={createdByOptions}
       />
     </div>
 
     <div className="flex items-center">
-      <label className="flex items-center">
-        <input
-          type="checkbox"
-          checked={isActive}
-          onChange={(e) => onIsActiveChange(e.target.checked)}
-          className="mr-2"
-        />
-        <span className="text-nightly-celadon">Rule is active</span>
-      </label>
+      <Checkbox
+        checked={isActive}
+        onChange={onIsActiveChange}
+        label="Rule is active"
+      />
     </div>
   </div>
 );

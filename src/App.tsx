@@ -35,6 +35,7 @@ const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 const RelationshipsPage = lazy(() => import("./pages/RelationshipsPage"));
 const AchievementPage = lazy(() => import("./pages/AchievementPage"));
 const ToastDemo = lazy(() => import("./demo/pages/ToastDemo"));
+const ToggleGroupDemo = lazy(() => import("./demo/pages/ToggleGroupDemo"));
 
 const router = createBrowserRouter([
   {
@@ -150,6 +151,14 @@ const router = createBrowserRouter([
         element: (
           <RouteErrorBoundary routeName="toast-demo">
             <ToastDemo />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        path: "/toggle-group-demo",
+        element: (
+          <RouteErrorBoundary routeName="toggle-group-demo">
+            <ToggleGroupDemo />
           </RouteErrorBoundary>
         ),
       },
