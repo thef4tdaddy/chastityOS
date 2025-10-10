@@ -27,3 +27,28 @@ if [ "$PROBLEM_COUNT" -gt "$THRESHOLD" ]; then
 fi
 
 echo "✅ ESLint quality gate passed ($PROBLEM_COUNT/$THRESHOLD problems)"
+
+echo ""
+echo "🔍 Running TypeScript quality gate check..."
+
+# Run TypeScript check and count errors
+TS_OUTPUT=$(npm run typecheck 2>&1 || true)
+TS_ERROR_COUNT=$(echo "$TS_OUTPUT" | grep -c "error TS" || echo "0")
+
+echo "📊 Current TypeScript errors: $TS_ERROR_COUNT"
+
+# Block push if errors exceed threshold
+TS_THRESHOLD=250
+if [ "$TS_ERROR_COUNT" -gt "$TS_THRESHOLD" ]; then
+  echo ""
+  echo "❌ PUSH BLOCKED: TypeScript errors ($TS_ERROR_COUNT) exceed threshold ($TS_THRESHOLD)"
+  echo ""
+  echo "Please fix TypeScript errors before pushing:"
+  echo "  npm run typecheck     # See all errors"
+  echo ""
+  echo "Current errors exceed the quality gate of $TS_THRESHOLD errors."
+  echo "See issue #166 for tracking: https://github.com/thef4tdaddy/chastityOS/issues/166"
+  exit 1
+fi
+
+echo "✅ TypeScript quality gate passed ($TS_ERROR_COUNT/$TS_THRESHOLD errors)"

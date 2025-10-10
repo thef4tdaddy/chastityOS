@@ -265,9 +265,12 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
 
   // Display settings state
   const [timezone, setTimezone] = useState(getInitialTimezone(settings));
-  const [notifications, setNotifications] = useState(
-    settings?.notifications?.enabled ?? true,
-  );
+  const [notifications, setNotifications] = useState(() => {
+    if (typeof settings?.notifications === "object" && settings.notifications) {
+      return settings.notifications.enabled ?? true;
+    }
+    return settings?.notifications ?? true;
+  });
   const [validationError, setValidationError] = useState<string | null>(null);
 
   // Update local state when settings change
@@ -276,13 +279,19 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
     if (newTimezone) {
       setTimezone(newTimezone);
     }
-    if (settings?.notifications?.enabled !== undefined) {
-      setNotifications(settings.notifications.enabled);
+    if (settings?.notifications) {
+      if (typeof settings.notifications === "object") {
+        if (settings.notifications.enabled !== undefined) {
+          setNotifications(settings.notifications.enabled);
+        }
+      } else {
+        setNotifications(settings.notifications);
+      }
     }
   }, [
     settings?.display?.timezone,
     settings?.timezone,
-    settings?.notifications?.enabled,
+    settings?.notifications,
   ]);
 
   // Mutation hook

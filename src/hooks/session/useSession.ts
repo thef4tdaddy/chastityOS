@@ -444,7 +444,9 @@ export const useSession = (userId: string, relationshipId?: string) => {
         });
 
         // Reload the session
-        const updatedSession = await sessionDBService.get(currentSession.id);
+        const updatedSession = await sessionDBService.findById(
+          currentSession.id,
+        );
         setCurrentSession(updatedSession || null);
 
         logger.info("Session modified successfully", {
