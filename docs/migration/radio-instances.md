@@ -5,8 +5,8 @@ This document tracks all radio button implementations in the codebase and their 
 ## Overview
 
 - **Total Instances Found**: 4
-- **Migrated**: 0
-- **Remaining**: 4
+- **Migrated**: 4 ✅
+- **Remaining**: 0
 
 ## Radio Button Instances
 
@@ -15,7 +15,7 @@ This document tracks all radio button implementations in the codebase and their 
 **File**: `/src/components/rewards_punishments/ManualEntryForm.tsx`  
 **Lines**: 26-44  
 **Type**: Radio Group  
-**Migration Status**: ❌ Not Migrated
+**Migration Status**: ✅ Migrated
 
 **Current Implementation**:
 ```tsx
@@ -74,7 +74,7 @@ const typeOptions: RadioOption[] = [
 **File**: `/src/components/common/ConflictResolutionModal.tsx`  
 **Lines**: 52-59  
 **Type**: Radio Group (per conflict)  
-**Migration Status**: ❌ Not Migrated
+**Migration Status**: ✅ Migrated
 
 **Current Implementation**:
 ```tsx
@@ -130,7 +130,7 @@ const versionOptions: RadioOption[] = [
 **File**: `/src/components/tracker/EmergencyUnlockModal/ReasonStage.tsx`  
 **Lines**: 32-39  
 **Type**: Radio Group  
-**Migration Status**: ❌ Not Migrated
+**Migration Status**: ✅ Migrated
 
 **Current Implementation**:
 ```tsx
@@ -178,7 +178,7 @@ const reasonOptions: RadioOption[] = EMERGENCY_UNLOCK_REASONS.map(reason => ({
 **File**: `/src/components/achievements/AchievementPrivacySettings.tsx`  
 **Lines**: 76-82  
 **Type**: Radio Group  
-**Migration Status**: ❌ Not Migrated
+**Migration Status**: ✅ Migrated
 
 **Current Implementation**:
 ```tsx
@@ -242,20 +242,20 @@ const displayNameOptions: RadioOption[] = [
 - [x] Add CSS animations
 - [x] Export from ui/index.ts
 
-### Phase 2: Simple Migrations
-- [ ] Migrate ManualEntryForm.tsx (simplest case)
-- [ ] Migrate AchievementPrivacySettings.tsx
+### Phase 2: Simple Migrations ✅
+- [x] Migrate ManualEntryForm.tsx
+- [x] Migrate AchievementPrivacySettings.tsx
 
-### Phase 3: Complex Migrations
-- [ ] Migrate ReasonStage.tsx (custom card styling)
-- [ ] Migrate ConflictResolutionModal.tsx (most complex)
+### Phase 3: Complex Migrations ✅
+- [x] Migrate ReasonStage.tsx
+- [x] Migrate ConflictResolutionModal.tsx
 
-### Phase 4: Testing & Validation
-- [ ] Test keyboard navigation
-- [ ] Test focus states
-- [ ] Test disabled states
-- [ ] Test responsive behavior
-- [ ] Verify accessibility
+### Phase 4: Testing & Validation (Manual Testing Required)
+- [ ] Test keyboard navigation in browser
+- [ ] Test focus states in browser
+- [ ] Test disabled states (if applicable)
+- [ ] Test responsive behavior on mobile
+- [ ] Verify accessibility with screen reader
 
 ## Testing Checklist
 
@@ -273,9 +273,51 @@ For each migrated component:
 - [ ] Animations are smooth
 - [ ] Styling matches theme
 
+## Migration Implementation Details
+
+### ManualEntryForm.tsx
+**Changes Made:**
+- Replaced TypeSelection component's manual radio buttons with RadioGroup
+- Created typeOptions array with 2 options (reward/punishment)
+- Horizontal orientation maintained
+- Custom styling applied via className prop
+
+**Code Reduction:** ~22 lines of radio button code replaced with ~5 lines using RadioGroup
+
+### AchievementPrivacySettings.tsx
+**Changes Made:**
+- Removed custom RadioOption component entirely
+- Created displayNameOptions array with 3 options
+- Used RadioGroup's built-in support for label and description
+- Applied custom styling for bg-white/5 rounded-lg via className
+
+**Code Reduction:** ~28 lines of custom radio component replaced with RadioGroup
+
+### ReasonStage.tsx
+**Changes Made:**
+- Replaced ReasonSelectionList's manual radio buttons with RadioGroup
+- Mapped EMERGENCY_UNLOCK_REASONS to RadioOption array
+- Removed manual border and hover styling
+- Let RadioGroup handle focus and selection states
+
+**Code Reduction:** ~30 lines of custom radio implementation replaced with RadioGroup
+
+### ConflictResolutionModal.tsx
+**Changes Made:**
+- Removed custom VersionOption component
+- Created inline versionOptions array per conflict
+- Combined device label and timestamp in label prop
+- Used horizontal orientation for side-by-side comparison
+- Applied custom border styling via className
+
+**Code Reduction:** ~35 lines of custom radio component replaced with RadioGroup
+
 ## Notes
 
 - All radio implementations are in TypeScript (.tsx) files
 - No JSX files contain radio buttons
 - Most implementations already have custom styling that should be preserved
 - Focus on maintaining existing UX while standardizing the component
+- Total code reduction: ~115 lines of duplicated radio button logic eliminated
+- All migrations maintain TypeScript strict mode compliance
+- All migrations pass ESLint and build successfully
