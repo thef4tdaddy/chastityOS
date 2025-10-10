@@ -120,7 +120,7 @@ describe("useAchievementGallery", () => {
 
       // Should only show earned achievement
       expect(result.current.filteredAchievements).toHaveLength(1);
-      expect(result.current.filteredAchievements[0].isEarned).toBe(true);
+      expect(result.current.filteredAchievements[0]!.isEarned).toBe(true);
     });
 
     it("should filter by category", () => {
@@ -156,7 +156,7 @@ describe("useAchievementGallery", () => {
 
       // Should only show session milestone achievement
       expect(result.current.filteredAchievements).toHaveLength(1);
-      expect(result.current.filteredAchievements[0].achievement.category).toBe(
+      expect(result.current.filteredAchievements[0]!.achievement.category).toBe(
         AchievementCategory.SESSION_MILESTONES,
       );
     });
@@ -195,7 +195,7 @@ describe("useAchievementGallery", () => {
       // Should only show rare achievement
       expect(result.current.filteredAchievements).toHaveLength(1);
       expect(
-        result.current.filteredAchievements[0].achievement.difficulty,
+        result.current.filteredAchievements[0]!.achievement.difficulty,
       ).toBe(AchievementDifficulty.RARE);
     });
 
@@ -220,7 +220,7 @@ describe("useAchievementGallery", () => {
 
       // Should only show achievement with "session" in name
       expect(result.current.filteredAchievements).toHaveLength(1);
-      expect(result.current.filteredAchievements[0].achievement.name).toBe(
+      expect(result.current.filteredAchievements[0]!.achievement.name).toBe(
         "First Session",
       );
     });

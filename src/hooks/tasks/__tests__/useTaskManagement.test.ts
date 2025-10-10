@@ -48,8 +48,8 @@ describe("useTaskManagement", () => {
       });
 
       expect(newTask).toBeDefined();
-      expect(newTask.title).toBe("New Task");
-      expect(newTask.status).toBe(TaskStatus.PENDING);
+      expect(newTask!.title).toBe("New Task");
+      expect(newTask!.status).toBe(TaskStatus.PENDING);
       expect(result.current.tasks).toHaveLength(1);
     });
 
@@ -200,7 +200,7 @@ describe("useTaskManagement", () => {
       });
 
       expect(result.current.filteredTasks).toHaveLength(1);
-      expect(result.current.filteredTasks[0].status).toBe(TaskStatus.PENDING);
+      expect(result.current.filteredTasks[0]!.status).toBe(TaskStatus.PENDING);
     });
 
     it("should filter tasks by priority", async () => {
@@ -226,7 +226,7 @@ describe("useTaskManagement", () => {
       });
 
       expect(result.current.filteredTasks).toHaveLength(1);
-      expect(result.current.filteredTasks[0].priority).toBe(TaskPriority.HIGH);
+      expect(result.current.filteredTasks[0]!.priority).toBe(TaskPriority.HIGH);
     });
 
     it("should filter tasks by search text", async () => {

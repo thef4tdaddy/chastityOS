@@ -75,7 +75,6 @@ export const AchievementNotification: React.FC<
           `🏆 Achievement Unlocked: ${achievement.name} - ${achievement.description}`,
           {
             title: "Achievement Unlocked!",
-            priority: "medium",
             duration: 8000,
             action: {
               label: "Mark Read",
