@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui";
 import { usePauseResumeControls } from "../../hooks/tracker/usePauseResumeControls";
-import { Input } from "@/components/ui";
+import { Input, Select, SelectOption } from "@/components/ui";
 
 // Temporary types until proper hook pattern is implemented
 type EnhancedPauseReason = "Bathroom Break" | "Emergency" | "Medical" | "Other";
@@ -91,6 +91,11 @@ const PAUSE_REASONS: EnhancedPauseReason[] = [
   "Other",
 ];
 
+const pauseReasonOptions: SelectOption[] = PAUSE_REASONS.map((reason) => ({
+  value: reason,
+  label: reason,
+}));
+
 const PauseModalContent: React.FC<PauseModalProps> = ({
   selectedReason,
   customReason,
@@ -106,20 +111,12 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
     </h3>
 
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-300 mb-2">
-        Select reason:
-      </label>
-      <select
+      <Select
+        label="Select reason:"
         value={selectedReason}
-        onChange={(e) => onReasonChange(e.target.value as EnhancedPauseReason)}
-        className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-      >
-        {PAUSE_REASONS.map((reason) => (
-          <option key={reason} value={reason}>
-            {reason}
-          </option>
-        ))}
-      </select>
+        onChange={(value) => onReasonChange(value as EnhancedPauseReason)}
+        options={pauseReasonOptions}
+      />
     </div>
 
     {selectedReason === "Other" && (
