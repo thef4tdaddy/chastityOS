@@ -3,6 +3,7 @@
  * Shows the UI components without requiring authentication
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { AccountLinkingDemo } from "../demo/components/AccountLinkingDemo";
 
 type Scenario =
@@ -27,7 +28,7 @@ const KeyholderDemo: React.FC = () => {
 
           {/* Scenario Selector */}
           <div className="flex gap-2 mb-6">
-            <button
+            <Button
               onClick={() => setScenario("submissive-no-keyholder")}
               className={`px-3 py-2 rounded text-sm ${
                 scenario === "submissive-no-keyholder"
@@ -36,8 +37,8 @@ const KeyholderDemo: React.FC = () => {
               }`}
             >
               Submissive (No Keyholder)
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setScenario("submissive-with-keyholder")}
               className={`px-3 py-2 rounded text-sm ${
                 scenario === "submissive-with-keyholder"
@@ -46,8 +47,8 @@ const KeyholderDemo: React.FC = () => {
               }`}
             >
               Submissive (With Keyholder)
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setScenario("keyholder-mode")}
               className={`px-3 py-2 rounded text-sm ${
                 scenario === "keyholder-mode"
@@ -56,7 +57,7 @@ const KeyholderDemo: React.FC = () => {
               }`}
             >
               Keyholder Mode
-            </button>
+            </Button>
           </div>
         </div>
 
