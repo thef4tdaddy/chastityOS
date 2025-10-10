@@ -58,7 +58,7 @@ const EventTypeSelector: React.FC<{
       {EVENT_TYPES.map((eventType) => {
         const Icon = eventType.icon;
         return (
-          <button
+          <Button
             key={eventType.value}
             type="button"
             onClick={() => onTypeChange(eventType.value)}
@@ -84,7 +84,7 @@ const EventTypeSelector: React.FC<{
             >
               {eventType.label}
             </div>
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -208,7 +208,7 @@ const TagsAndPrivacy: React.FC<{
 const SubmitButton: React.FC<{
   isPending: boolean;
 }> = ({ isPending }) => (
-  <button
+  <Button
     type="submit"
     disabled={isPending}
     className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2"
@@ -224,7 +224,7 @@ const SubmitButton: React.FC<{
         Log Event
       </>
     )}
-  </button>
+  </Button>
 );
 
 // Custom hook for form data management

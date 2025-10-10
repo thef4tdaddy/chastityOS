@@ -116,13 +116,13 @@ const AdminSessionStatus: React.FC<{
       </div>
       <div>
         {!isAdminSessionActive ? (
-          <button
+          <Button
             onClick={onStartAdminSession}
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
             <FaShieldAlt />
             Start Admin Session
-          </button>
+          </Button>
         ) : (
           <div className="flex items-center gap-2 text-green-400">
             <FaShieldAlt />
@@ -151,7 +151,7 @@ const NavigationTabs: React.FC<{
   return (
     <div className="flex space-x-1 bg-black/20 rounded-lg p-1 mb-6">
       {tabs.map((tab) => (
-        <button
+        <Button
           key={tab.id}
           onClick={() =>
             onSetSelectedTab(
@@ -166,7 +166,7 @@ const NavigationTabs: React.FC<{
         >
           <tab.icon />
           {tab.label}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -363,18 +363,18 @@ const AdminSessions: React.FC<{
             chastity sessions.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded font-medium transition-colors">
               View Current Session
-            </button>
-            <button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded font-medium transition-colors">
+            </Button>
+            <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded font-medium transition-colors">
               Start New Session
-            </button>
-            <button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded font-medium transition-colors">
+            </Button>
+            <Button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded font-medium transition-colors">
               Pause Session
-            </button>
-            <button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors">
+            </Button>
+            <Button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors">
               End Session
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -402,18 +402,18 @@ const AdminTasks: React.FC<{
             Manage tasks for {relationship.wearerId}.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded font-medium transition-colors">
               View All Tasks
-            </button>
-            <button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded font-medium transition-colors">
+            </Button>
+            <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded font-medium transition-colors">
               Create New Task
-            </button>
-            <button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded font-medium transition-colors">
+            </Button>
+            <Button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded font-medium transition-colors">
               Review Submissions
-            </button>
-            <button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-4 py-2 rounded font-medium transition-colors">
+            </Button>
+            <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-4 py-2 rounded font-medium transition-colors">
               Set Rewards/Punishments
-            </button>
+            </Button>
           </div>
         </div>
       ) : (

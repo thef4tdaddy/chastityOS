@@ -39,19 +39,19 @@ export const WarningStage: React.FC<WarningStageProps> = ({
     </p>
 
     <div className="flex flex-col space-y-3">
-      <button
+      <Button
         onClick={() => setStage("reason")}
         className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center"
       >
         I Understand - Continue
         <FaArrowRight className="ml-2" />
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={onClose}
         className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition"
       >
         Cancel
-      </button>
+      </Button>
     </div>
   </div>
 );

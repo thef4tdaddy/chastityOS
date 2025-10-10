@@ -35,12 +35,12 @@ export const SubmissiveRelationshipsDisplay: React.FC<
                   ago
                 </div>
               </div>
-              <button
+              <Button
                 onClick={() => onEndRelationship(relationship.id)}
                 className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30"
               >
                 End
-              </button>
+              </Button>
             </div>
             <div className="text-xs text-gray-400">
               Permissions:{" "}

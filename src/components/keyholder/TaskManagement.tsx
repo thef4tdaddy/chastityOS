@@ -70,7 +70,7 @@ const AddTaskForm: React.FC<{
           </p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={handleAddTask}
             disabled={!newTaskText.trim() || isCreating}
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 disabled:cursor-not-allowed text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
@@ -79,13 +79,13 @@ const AddTaskForm: React.FC<{
               <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
             )}
             {isCreating ? "Creating..." : "Create Task"}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowAddTask(false)}
             className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -149,7 +149,7 @@ const TaskItem: React.FC<{
 
     {task.status === "submitted" && (
       <div className="flex gap-2">
-        <button
+        <Button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
           className="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition-all"
@@ -160,8 +160,8 @@ const TaskItem: React.FC<{
             <FaCheckCircle />
           )}
           {isUpdating ? "Processing..." : "Approve"}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleTaskAction(task.id, "reject")}
           disabled={isUpdating}
           className="bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition-all"
@@ -172,7 +172,7 @@ const TaskItem: React.FC<{
             <FaTimesCircle />
           )}
           {isUpdating ? "Processing..." : "Reject"}
-        </button>
+        </Button>
       </div>
     )}
   </div>
@@ -337,13 +337,13 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
             Task Management
           </h3>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddTask(!showAddTask)}
           className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
         >
           <FaPlus />
           Add Task
-        </button>
+        </Button>
       </div>
 
       <AddTaskForm

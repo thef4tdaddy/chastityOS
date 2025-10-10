@@ -97,9 +97,9 @@ const Dashboard: React.FC = () => {
         {!isKeyholder && (
           <div className="text-center mt-8">
             <Link to="/keyholder">
-              <button className="bg-tekhelet hover:bg-tekhelet-600 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+              <Button className="bg-tekhelet hover:bg-tekhelet-600 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
                 View Keyholder Dashboard
-              </button>
+              </Button>
             </Link>
           </div>
         )}

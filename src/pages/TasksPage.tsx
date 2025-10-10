@@ -23,7 +23,7 @@ const TabNavigation: React.FC<{
 }> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
   <div className="flex justify-center space-x-4 mb-8">
     <Tooltip content="View tasks that are currently pending or awaiting approval">
-      <button
+      <Button
         onClick={() => setActiveTab("active")}
         className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
           activeTab === "active"
@@ -32,10 +32,10 @@ const TabNavigation: React.FC<{
         }`}
       >
         Active Tasks ({activeCount})
-      </button>
+      </Button>
     </Tooltip>
     <Tooltip content="View completed, approved, or rejected tasks">
-      <button
+      <Button
         onClick={() => setActiveTab("archived")}
         className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
           activeTab === "archived"
@@ -44,7 +44,7 @@ const TabNavigation: React.FC<{
         }`}
       >
         Archived ({archivedCount})
-      </button>
+      </Button>
     </Tooltip>
   </div>
 );

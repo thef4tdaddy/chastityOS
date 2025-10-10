@@ -58,13 +58,13 @@ export const ReasonStage: React.FC<ReasonStageProps> = ({
 }) => (
   <div>
     <div className="flex items-center mb-6">
-      <button
+      <Button
         onClick={() => setStage("warning")}
         className="mr-3 p-1 text-gray-400 hover:text-white transition"
         aria-label="Go back"
       >
         <FaArrowLeft />
-      </button>
+      </Button>
       <h3 className="text-xl font-bold text-red-300">
         Select Emergency Reason
       </h3>
@@ -97,20 +97,20 @@ export const ReasonStage: React.FC<ReasonStageProps> = ({
     )}
 
     <div className="flex flex-col space-y-3">
-      <button
+      <Button
         onClick={() => setStage("confirm")}
         disabled={!canProceedFromReason}
         className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center"
       >
         Continue to Confirmation
         <FaArrowRight className="ml-2" />
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => setStage("warning")}
         className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition"
       >
         Back
-      </button>
+      </Button>
     </div>
   </div>
 );

@@ -29,14 +29,14 @@ export const PinValidationStage: React.FC<PinValidationStageProps> = ({
 }) => (
   <div>
     <div className="flex items-center mb-6">
-      <button
+      <Button
         onClick={() => setStage("confirm")}
         disabled={isValidating}
         className="mr-3 p-1 text-gray-400 hover:text-white transition disabled:opacity-50"
         aria-label="Go back"
       >
         <FaArrowLeft />
-      </button>
+      </Button>
       <h3 className="text-xl font-bold text-red-300">
         <FaLock className="inline mr-2" />
         PIN Verification Required
@@ -81,7 +81,7 @@ export const PinValidationStage: React.FC<PinValidationStageProps> = ({
     </div>
 
     <div className="flex flex-col space-y-3">
-      <button
+      <Button
         onClick={handlePinSubmit}
         disabled={!pin || isValidating || attemptCount >= 5}
         className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center"
@@ -94,14 +94,14 @@ export const PinValidationStage: React.FC<PinValidationStageProps> = ({
         ) : (
           "🚨 VERIFY & UNLOCK 🚨"
         )}
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => setStage("confirm")}
         disabled={isValidating}
         className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
       >
         Back
-      </button>
+      </Button>
     </div>
 
     <p className="text-xs text-gray-400 mt-4 text-center">

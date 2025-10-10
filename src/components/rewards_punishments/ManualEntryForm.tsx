@@ -124,19 +124,19 @@ const FormActions: React.FC<{
   onCancel: () => void;
 }> = ({ onCancel }) => (
   <div className="flex gap-3">
-    <button
+    <Button
       type="submit"
       className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors"
     >
       Add Entry
-    </button>
-    <button
+    </Button>
+    <Button
       type="button"
       onClick={onCancel}
       className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-6 py-2 rounded font-medium transition-colors"
     >
       Cancel
-    </button>
+    </Button>
   </div>
 );
 
@@ -204,13 +204,13 @@ export const ManualEntryForm: React.FC<ManualEntryFormProps> = ({
 
   if (!isOpen) {
     return (
-      <button
+      <Button
         onClick={() => setIsOpen(true)}
         className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
       >
         <FaPlus />
         Add Manual Entry
-      </button>
+      </Button>
     );
   }
 

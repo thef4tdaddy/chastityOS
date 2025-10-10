@@ -219,7 +219,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <button
+      <Button
         onClick={onSubmit}
         disabled={isSubmitting}
         className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded transition-colors flex items-center justify-center gap-2"
@@ -228,7 +228,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
         )}
         {isSubmitting ? "Submitting..." : "Submit for Review"}
-      </button>
+      </Button>
     </div>
   );
 };

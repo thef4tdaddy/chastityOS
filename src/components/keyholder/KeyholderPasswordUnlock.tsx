@@ -37,17 +37,17 @@ const PasswordForm: React.FC<{
     {keyholderMessage && (
       <div className="bg-yellow-500/10 border border-yellow-500/20 rounded p-3">
         <p className="text-yellow-300 text-sm">{keyholderMessage}</p>
-        <button
+        <Button
           type="button"
           onClick={onClearMessage}
           className="text-yellow-400 hover:text-yellow-300 text-sm mt-1"
         >
           Dismiss
-        </button>
+        </Button>
       </div>
     )}
 
-    <button
+    <Button
       type="submit"
       disabled={isCheckingPassword || !passwordAttempt.trim()}
       className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
@@ -63,7 +63,7 @@ const PasswordForm: React.FC<{
           Unlock
         </>
       )}
-    </button>
+    </Button>
   </form>
 );
 
@@ -135,13 +135,13 @@ export const KeyholderPasswordUnlock: React.FC = () => {
       </p>
 
       {!isPasswordDialogOpen ? (
-        <button
+        <Button
           onClick={openPasswordDialog}
           className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
         >
           <FaKey />
           Unlock Keyholder Controls
-        </button>
+        </Button>
       ) : (
         <PasswordForm
           passwordAttempt={passwordAttempt}

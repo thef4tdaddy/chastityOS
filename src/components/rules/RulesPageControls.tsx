@@ -43,13 +43,13 @@ export const RulesPageControls: React.FC<RulesPageControlsProps> = ({
         />
       </div>
 
-      <button
+      <Button
         onClick={onCreateNew}
         className="flex items-center gap-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-black px-4 py-2 rounded-lg transition-colors"
       >
         <FaPlus />
         New Rule
-      </button>
+      </Button>
     </div>
   );
 };

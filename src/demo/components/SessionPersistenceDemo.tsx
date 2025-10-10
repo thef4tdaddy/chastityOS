@@ -168,60 +168,60 @@ export const SessionPersistenceDemo: React.FC = () => {
           </h3>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <button
+            <Button
               onClick={startDemoSession}
               disabled={!!demoSession}
               className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaPlay className="mr-2" />
               Start Session
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={stopDemoSession}
               disabled={!demoSession}
               className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaStop className="mr-2" />
               Stop Session
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={pauseHeartbeat}
               disabled={!isHeartbeatActive}
               className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaPause className="mr-2" />
               Pause Heartbeat
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={resumeHeartbeat}
               disabled={isHeartbeatActive || !demoSession}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaSync className="mr-2" />
               Resume Heartbeat
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <button
+            <Button
               onClick={restoreFromBackup}
               disabled={!backupState || !!demoSession}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaSync className="mr-2" />
               Restore Backup
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={clearAll}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded flex items-center justify-center"
             >
               <FaTrash className="mr-2" />
               Clear All
-            </button>
+            </Button>
           </div>
         </div>
 

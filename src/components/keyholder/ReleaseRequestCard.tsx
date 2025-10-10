@@ -54,7 +54,7 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
       className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-purple-500"
       footer={
         <div className="flex flex-col space-y-3">
-          <button
+          <Button
             onClick={onSubmit}
             disabled={isProcessing}
             className={`w-full font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 ${
@@ -83,14 +83,14 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
                 )}
               </>
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
             disabled={isProcessing}
             className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       }
     >
@@ -231,22 +231,22 @@ const ReleaseRequestCardComponent: React.FC<ReleaseRequestCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={() => handleOpenResponse("approve")}
               disabled={isProcessing}
               className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded transition-colors"
               title="Approve request"
             >
               <FaCheck />
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => handleOpenResponse("deny")}
               disabled={isProcessing}
               className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded transition-colors"
               title="Deny request"
             >
               <FaTimes />
-            </button>
+            </Button>
           </div>
         </div>
 

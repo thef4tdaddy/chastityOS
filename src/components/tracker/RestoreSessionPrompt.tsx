@@ -22,20 +22,20 @@ export const RestoreSessionPrompt: React.FC<RestoreSessionPromptProps> = ({
       className="border border-blue-500"
       footer={
         <div className="flex flex-col sm:flex-row justify-around space-y-3 sm:space-y-0 sm:space-x-4">
-          <button
+          <Button
             type="button"
             onClick={onConfirm}
             className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
           >
             Resume Previous Session
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onDiscard}
             className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition"
           >
             Start New Session
-          </button>
+          </Button>
         </div>
       }
     >
