@@ -141,6 +141,8 @@ class TaskDBService extends BaseDBService<DBTask> {
       submissiveNote?: string;
       keyholderFeedback?: string;
       attachments?: string[];
+      pointsAwarded?: boolean;
+      pointsAwardedAt?: Date;
     } = {},
   ): Promise<DBTask | undefined> {
     try {
@@ -160,6 +162,12 @@ class TaskDBService extends BaseDBService<DBTask> {
       if (status === "approved" || status === "rejected") {
         updateData.approvedAt = new Date();
         updateData.keyholderFeedback = options.keyholderFeedback;
+        if (options.pointsAwarded !== undefined) {
+          updateData.pointsAwarded = options.pointsAwarded;
+        }
+        if (options.pointsAwardedAt) {
+          updateData.pointsAwardedAt = options.pointsAwardedAt;
+        }
       }
       if (status === "completed") {
         updateData.completedAt = new Date();

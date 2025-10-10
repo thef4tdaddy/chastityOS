@@ -48,8 +48,8 @@ describe("useTaskManagement", () => {
       });
 
       expect(newTask).toBeDefined();
-      expect(newTask.title).toBe("New Task");
-      expect(newTask.status).toBe(TaskStatus.PENDING);
+      expect(newTask!.title).toBe("New Task");
+      expect(newTask!.status).toBe(TaskStatus.PENDING);
       expect(result.current.tasks).toHaveLength(1);
     });
 
@@ -200,7 +200,7 @@ describe("useTaskManagement", () => {
       });
 
       expect(result.current.filteredTasks).toHaveLength(1);
-      expect(result.current.filteredTasks[0].status).toBe(TaskStatus.PENDING);
+      expect(result.current.filteredTasks[0]!.status).toBe(TaskStatus.PENDING);
     });
 
     it("should filter tasks by priority", async () => {
@@ -226,7 +226,7 @@ describe("useTaskManagement", () => {
       });
 
       expect(result.current.filteredTasks).toHaveLength(1);
-      expect(result.current.filteredTasks[0].priority).toBe(TaskPriority.HIGH);
+      expect(result.current.filteredTasks[0]!.priority).toBe(TaskPriority.HIGH);
     });
 
     it("should filter tasks by search text", async () => {
@@ -247,7 +247,7 @@ describe("useTaskManagement", () => {
       });
 
       expect(result.current.filteredTasks).toHaveLength(1);
-      expect(result.current.filteredTasks[0].title).toBe("Clean the house");
+      expect(result.current.filteredTasks[0]!.title).toBe("Clean the house");
     });
 
     it("should clear filters", async () => {
@@ -294,8 +294,8 @@ describe("useTaskManagement", () => {
         result.current.setSortBy("createdAt", "asc");
       });
 
-      expect(result.current.filteredTasks[0].title).toBe("First Task");
-      expect(result.current.filteredTasks[1].title).toBe("Second Task");
+      expect(result.current.filteredTasks[0]!.title).toBe("First Task");
+      expect(result.current.filteredTasks[1]!.title).toBe("Second Task");
     });
 
     it("should sort tasks by priority", async () => {
@@ -324,8 +324,8 @@ describe("useTaskManagement", () => {
         result.current.setSortBy("priority", "desc");
       });
 
-      expect(result.current.filteredTasks[0].title).toBe("Urgent");
-      expect(result.current.filteredTasks[2].title).toBe("Low");
+      expect(result.current.filteredTasks[0]!.title).toBe("Urgent");
+      expect(result.current.filteredTasks[2]!.title).toBe("Low");
     });
   });
 
