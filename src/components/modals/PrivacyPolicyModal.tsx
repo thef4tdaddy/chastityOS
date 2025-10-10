@@ -1,5 +1,6 @@
 import React from "react";
 import { FaTimes, FaShieldAlt } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 import { PrivacyPolicyContent } from "./privacy/PrivacyPolicyContent";
 import { Card } from "@/components/ui";
 
@@ -51,12 +52,13 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
 
         {/* Footer */}
         <div className="p-6 border-t border-white/10 bg-white/5">
-          <button
+          <Button
+            variant="primary"
             onClick={onClose}
-            className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-3 rounded-lg font-medium transition-colors"
+            className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-3"
           >
             I Understand
-          </button>
+          </Button>
         </div>
       </div>
     </div>
