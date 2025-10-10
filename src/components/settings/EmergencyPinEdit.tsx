@@ -4,6 +4,7 @@
  */
 import React from "react";
 import { FaShieldAlt, FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
+import { Card } from "@/components/ui";
 
 interface EmergencyPinEditProps {
   hasPin: boolean;
@@ -29,7 +30,7 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
   onCancel,
 }) => {
   return (
-    <div className="glass-card p-6 border-2 border-red-500/30">
+    <Card variant="glass" padding="lg" className="border-2 border-red-500/30">
       <div className="flex items-center gap-2 mb-4">
         <FaShieldAlt className="text-red-400 text-xl" />
         <h3 className="text-xl font-bold text-nightly-honeydew">
@@ -104,6 +105,6 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

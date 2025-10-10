@@ -8,6 +8,7 @@ import {
 } from "../components/rules";
 import { useRulesPage } from "../hooks/useRulesPage";
 import { useAuthState } from "../contexts";
+import { Card } from "@/components/ui";
 
 const RulesPage: React.FC = () => {
   const { user } = useAuthState();
@@ -33,9 +34,9 @@ const RulesPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="text-nightly-spring-green p-4 max-w-4xl mx-auto">
-        <div className="glass-card p-6 text-center">
+        <Card variant="glass" padding="lg" className="text-center">
           <p>Loading rules...</p>
-        </div>
+        </Card>
       </div>
     );
   }

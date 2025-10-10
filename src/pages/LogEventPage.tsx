@@ -5,6 +5,7 @@ import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
 import { LogEventForm, EventList } from "../components/log_event";
 import { FaSpinner, FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
+import { Card } from "@/components/ui";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -23,7 +24,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <div className="glass-card mb-6 p-4">
+    <Card variant="glass" padding="sm" className="mb-6">
       <div className="flex items-center gap-2 mb-3">
         <FaUsers className="text-nightly-aquamarine" />
         <label className="text-sm font-medium text-nightly-celadon">
@@ -52,7 +53,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
           {activeSubmissive.wearerName || "Submissive"}
         </button>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -72,7 +73,7 @@ const EventListSection: React.FC<EventListSectionProps> = ({
   showOwner,
   hasSubmissive,
 }) => (
-  <div className="glass-card">
+  <Card variant="glass">
     <h2 className="text-xl font-semibold text-nightly-honeydew mb-6">
       {hasSubmissive ? "Combined Events" : "Recent Events"}
     </h2>
@@ -91,7 +92,7 @@ const EventListSection: React.FC<EventListSectionProps> = ({
     ) : (
       <EventList events={events} showOwner={showOwner} />
     )}
-  </div>
+  </Card>
 );
 
 const LogEventPage: React.FC = () => {

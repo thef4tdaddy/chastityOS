@@ -17,6 +17,7 @@ import {
 } from "../../utils/goals/formValidation";
 import { HardcoreModeSection } from "./HardcoreModeSection";
 import { GoalFormFields } from "./GoalFormFields";
+import { Card } from "@/components/ui";
 
 interface CreatePersonalGoalFormProps {
   onCreate: (
@@ -129,17 +130,19 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
 
   if (!isOpen) {
     return (
-      <button
+      <Card
+        variant="glass"
+        padding="lg"
         onClick={() => setIsOpen(true)}
-        className="w-full glass-card p-6 hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-nightly-aquamarine font-semibold"
+        className="hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-nightly-aquamarine font-semibold cursor-pointer"
       >
         <FaPlus /> Create Personal Goal
-      </button>
+      </Card>
     );
   }
 
   return (
-    <div className="glass-card p-6">
+    <Card variant="glass" padding="lg">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-nightly-honeydew">
           Create Personal Goal
@@ -197,6 +200,6 @@ export const CreatePersonalGoalForm: React.FC<CreatePersonalGoalFormProps> = ({
           )}
         </button>
       </div>
-    </div>
+    </Card>
   );
 };

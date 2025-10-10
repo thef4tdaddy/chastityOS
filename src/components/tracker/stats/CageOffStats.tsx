@@ -1,6 +1,7 @@
 import React from "react";
 import type { useTrackerStats } from "../../../hooks/tracker/useTrackerStats";
 import { logger } from "@/utils/logging";
+import { Card } from "@/components/ui";
 
 interface CageOffStatsProps {
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
@@ -45,8 +46,10 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
   }
 
   return (
-    <div
-      className={`glass-card bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md rounded-lg p-4 transition-all duration-500 h-full flex flex-col ${borderClass}`}
+    <Card
+      variant="glass"
+      padding="sm"
+      className={`bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md transition-all duration-500 h-full flex flex-col ${borderClass}`}
     >
       <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Current Time Off: {isTickingOff ? (isPaused ? "🟡" : "🔴") : "💜"}
@@ -54,6 +57,6 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
       <p className="text-2xl md:text-4xl font-bold" style={textColorStyle}>
         {stats.cageOffTimeFormatted}
       </p>
-    </div>
+    </Card>
   );
 };

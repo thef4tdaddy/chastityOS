@@ -13,7 +13,7 @@ export interface CardProps {
    * Card variant
    * @default 'default'
    */
-  variant?: "default" | "bordered" | "elevated";
+  variant?: "default" | "bordered" | "elevated" | "glass";
   /**
    * Card padding
    * @default 'md'
@@ -41,14 +41,23 @@ const variantClasses = {
     "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700",
   elevated:
     "bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-200",
+  glass: "glass-card",
 };
 
-// Padding classes
+// Padding classes - glass variant already has padding built in
 const paddingClasses = {
   none: "",
   sm: "p-4",
   md: "p-6",
   lg: "p-8",
+};
+
+const getPaddingClass = (padding: CardProps["padding"], variant: CardProps["variant"]) => {
+  // glass-card already has padding: 1.5rem built in, so use empty string as default
+  if (variant === "glass" && padding === "md") {
+    return "";
+  }
+  return paddingClasses[padding || "md"];
 };
 
 /**
@@ -90,8 +99,8 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
     const cardClasses = `
       ${variantClasses[variant]}
-      ${paddingClasses[padding]}
-      rounded-lg
+      ${getPaddingClass(padding, variant)}
+      ${variant !== "glass" ? "rounded-lg" : ""}
       ${isClickable || hoverable ? "cursor-pointer transition-all duration-200 hover:shadow-md" : ""}
       ${className}
     `

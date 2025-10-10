@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { Card } from "@/components/ui";
 
 interface FeatureCardProps {
   title: string;
@@ -17,7 +18,7 @@ const FeatureCardComponent: React.FC<FeatureCardProps> = ({
     accentColor === "orange" ? "bg-tangerine" : "bg-tekhelet";
 
   return (
-    <div className={`glass-card glass-hover relative ${className}`}>
+    <Card variant="glass" className={`glass-hover relative ${className}`}>
       {/* Accent bar at the top */}
       <div
         className={`${accentBarClass} h-3 -mx-6 -mt-6 mb-4 rounded-t-lg`}
@@ -38,7 +39,7 @@ const FeatureCardComponent: React.FC<FeatureCardProps> = ({
           {description}
         </p>
       </div>
-    </div>
+    </Card>
   );
 };
 

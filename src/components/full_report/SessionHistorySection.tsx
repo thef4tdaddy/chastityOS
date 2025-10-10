@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { DBSession } from "../../types/database";
 import { FaHistory, FaCalendar } from "../../utils/iconImport";
+import { Card } from "@/components/ui";
 
 // Helper function to format duration
 const formatDuration = (seconds: number) => {
@@ -133,7 +134,7 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
     : sortedSessions.slice(0, 10);
 
   return (
-    <div className="glass-card mb-6">
+    <Card variant="glass" className="mb-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FaHistory className="text-nightly-spring-green" />
@@ -160,7 +161,7 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 
