@@ -3,7 +3,7 @@
  * A standardized checkbox component with label, description, and various states
  */
 import React, { forwardRef, useId } from "react";
-import { FaCheck, FaMinus } from "react-icons/fa";
+import { FaCheck, FaMinus } from "../../../utils/iconImport";
 
 export interface CheckboxProps
   extends Omit<

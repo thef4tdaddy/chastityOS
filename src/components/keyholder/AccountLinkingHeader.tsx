@@ -1,5 +1,5 @@
 import React from "react";
-import { FaLink } from "react-icons/fa";
+import { FaLink } from "../../utils/iconImport";
 
 export const AccountLinkingHeader: React.FC = () => {
   return (

@@ -3,7 +3,7 @@
  * Final confirmation before emergency unlock
  */
 import React from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft } from "../../../utils/iconImport";
 import type { EmergencyUnlockReason } from "../../../types/events";
 import type { ModalStage } from "./types";
 import { Input } from "@/components/ui";

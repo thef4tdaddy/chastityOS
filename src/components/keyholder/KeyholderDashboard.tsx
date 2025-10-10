@@ -10,7 +10,7 @@ import {
   FaShieldAlt,
   FaSpinner,
   FaPrayingHands,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 import { useAccountLinking } from "../../hooks/account-linking/useAccountLinking";
 import { usePendingReleaseRequests } from "../../hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "./ReleaseRequestCard";

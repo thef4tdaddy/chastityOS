@@ -4,7 +4,7 @@
 
 import React from "react";
 import { useKeyholderContext } from "./KeyholderContext";
-import { FaLock, FaCog, FaEye } from "react-icons/fa";
+import { FaLock, FaCog, FaEye } from "../../../utils/iconImport";
 import { KeyholderDurationSection } from "../../settings/KeyholderDurationSection";
 
 export const KeyholderSettings: React.FC = () => {

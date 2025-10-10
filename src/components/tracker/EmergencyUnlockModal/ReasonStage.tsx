@@ -3,7 +3,7 @@
  * Allows user to select the emergency reason
  */
 import React from "react";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight } from "../../../utils/iconImport";
 import type { EmergencyUnlockReason } from "../../../types/events";
 import { EMERGENCY_UNLOCK_REASONS } from "../../../types/events";
 import type { ModalStage } from "./types";
