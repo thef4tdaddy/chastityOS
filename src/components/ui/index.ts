@@ -34,9 +34,16 @@ export type {
 } from "./Form";
 
 // Feedback Components
-export { Spinner, Alert, EmptyState, ErrorState } from "./Feedback";
+export {
+  Spinner,
+  LoadingState,
+  Alert,
+  EmptyState,
+  ErrorState,
+} from "./Feedback";
 export type {
   SpinnerProps,
+  LoadingStateProps,
   AlertProps,
   EmptyStateProps,
   ErrorStateProps,
