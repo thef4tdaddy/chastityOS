@@ -6,7 +6,7 @@ import { TaskEvidenceDisplay } from "./TaskEvidenceDisplay";
 import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
-import { Textarea } from "@/components/ui";
+import { Textarea, Button } from "@/components/ui";
 
 // Task status badge component
 interface TaskStatusBadgeProps {
@@ -219,13 +219,15 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <button
+      <Button
         onClick={onSubmit}
         disabled={isSubmitting}
-        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
+        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80"
+        variant="default"
+        size="default"
       >
         {isSubmitting ? "Submitting..." : "Submit for Review"}
-      </button>
+      </Button>
     </div>
   );
 };
@@ -245,9 +247,11 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
   const {
     note,
     isSubmitting,
+    submitError,
     setNote,
     setAttachments,
     handleSubmit,
+    clearError,
     statusConfig,
     priorityStyles,
     isOverdue,
@@ -304,15 +308,47 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
       )}
 
       {task.status === "pending" && (
-        <TaskSubmission
-          taskId={task.id}
-          userId={userId || task.userId}
-          note={note}
-          isSubmitting={isSubmitting}
-          onNoteChange={setNote}
-          onAttachmentsChange={setAttachments}
-          onSubmit={handleSubmit}
-        />
+        <>
+          {submitError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded p-3 mb-3">
+              <div className="flex items-start gap-2">
+                <svg
+                  className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm text-red-300">{submitError}</p>
+                  <Button
+                    onClick={clearError}
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-red-400 hover:text-red-300 mt-1 underline p-0 h-auto"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <TaskSubmission
+            taskId={task.id}
+            userId={userId || task.userId}
+            note={note}
+            isSubmitting={isSubmitting}
+            onNoteChange={setNote}
+            onAttachmentsChange={setAttachments}
+            onSubmit={handleSubmit}
+          />
+        </>
       )}
     </div>
   );

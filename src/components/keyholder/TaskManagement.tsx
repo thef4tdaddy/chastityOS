@@ -8,7 +8,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
 } from "../../utils/iconImport";
-import { Input, Textarea } from "@/components/ui";
+import { Input, Textarea, Button } from "@/components/ui";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
@@ -70,19 +70,21 @@ const AddTaskForm: React.FC<{
           </p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={handleAddTask}
             disabled={!newTaskText.trim() || isCreating}
-            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 py-2 rounded font-medium transition-colors"
+            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black"
+            variant="default"
           >
             {isCreating ? "Creating..." : "Create Task"}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowAddTask(false)}
-            className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
+            className="bg-white/10 hover:bg-white/20 text-nightly-celadon"
+            variant="ghost"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -146,31 +148,67 @@ const TaskItem: React.FC<{
 
     {task.status === "submitted" && (
       <div className="flex gap-2">
-        <button
+        <Button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
-          className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          className="bg-green-500 hover:bg-green-600"
+          variant="default"
+          size="sm"
         >
-          <FaCheckCircle />
+          <FaCheckCircle className="mr-1" />
           {isUpdating ? "Processing..." : "Approve"}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleTaskAction(task.id, "reject")}
           disabled={isUpdating}
-          className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          className="bg-red-500 hover:bg-red-600"
+          variant="default"
+          size="sm"
         >
-          <FaTimesCircle />
+          <FaTimesCircle className="mr-1" />
           {isUpdating ? "Processing..." : "Reject"}
-        </button>
+        </Button>
       </div>
     )}
   </div>
 );
 
-// Error Display Component
-const ErrorDisplay: React.FC = () => (
-  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-    Failed to load tasks. Please refresh the page.
+// Error Display Component with retry
+const ErrorDisplay: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
+  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+    <div className="flex items-start gap-3">
+      <svg
+        className="w-6 h-6 text-red-400 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <div className="flex-1">
+        <h4 className="font-semibold text-red-300 mb-1">
+          Failed to load tasks
+        </h4>
+        <p className="text-sm text-red-400 mb-3">
+          There was a problem loading the task list. Please try again.
+        </p>
+        {onRetry && (
+          <Button
+            onClick={onRetry}
+            className="bg-red-500 hover:bg-red-600"
+            variant="default"
+            size="sm"
+          >
+            Retry
+          </Button>
+        )}
+      </div>
+    </div>
   </div>
 );
 
@@ -291,7 +329,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   const [showAddTask, setShowAddTask] = useState(false);
 
   // Use TanStack Query hooks instead of direct service calls
-  const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
+  const { data: tasks = [], isLoading, error, refetch } = useTasksQuery(userId);
   const { approveTask, rejectTask, createTask } = useTaskMutations();
   const { showSuccess, showError } = useNotificationActions();
 
@@ -311,7 +349,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   });
 
   if (error) {
-    return <ErrorDisplay />;
+    return <ErrorDisplay onRetry={() => refetch()} />;
   }
 
   return (
@@ -323,13 +361,15 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
             Task Management
           </h3>
         </div>
-        <button
+        <Button
           onClick={() => setShowAddTask(!showAddTask)}
-          className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80"
+          variant="default"
+          size="sm"
         >
-          <FaPlus />
+          <FaPlus className="mr-1" />
           Add Task
-        </button>
+        </Button>
       </div>
 
       <AddTaskForm

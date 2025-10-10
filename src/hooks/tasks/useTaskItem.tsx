@@ -28,6 +28,7 @@ export const useTaskItem = (
   const [note, setNote] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Task status configuration logic
   const getStatusConfig = (status: TaskStatus): TaskStatusConfig => {
@@ -100,14 +101,25 @@ export const useTaskItem = (
   // Submit handler logic - memoized with useCallback
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await onSubmit(task.id, note, attachments);
       setNote("");
       setAttachments([]);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to submit task";
+      setSubmitError(errorMessage);
+      throw error; // Re-throw to let error boundary catch it if needed
     } finally {
       setIsSubmitting(false);
     }
   }, [task.id, note, attachments, onSubmit]);
+
+  // Clear error when user makes changes
+  const clearError = useCallback(() => {
+    setSubmitError(null);
+  }, []);
 
   // Derived values - memoized with useMemo to prevent recalculation
   const statusConfig = useMemo(
@@ -128,11 +140,13 @@ export const useTaskItem = (
     note,
     attachments,
     isSubmitting,
+    submitError,
 
     // Actions
     setNote,
     setAttachments,
     handleSubmit,
+    clearError,
 
     // Computed values
     statusConfig,

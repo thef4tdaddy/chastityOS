@@ -3,9 +3,8 @@ import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
-import { TaskItem } from "../components/tasks";
+import { TaskItem, TaskErrorBoundary } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
-import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip } from "@/components/ui";
 
 // UI State Components
@@ -180,50 +179,54 @@ const TasksPage: React.FC = () => {
   );
 
   return (
-    <div className="p-6">
-      {/* Enhanced Header with Glass Effect */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
-          Task Management
-        </h1>
-        <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
-      </div>
-
-      {/* Task Stats Card */}
-      {user && (
-        <div className="max-w-4xl mx-auto mb-8">
-          <TaskStatsCard userId={user.uid} />
+    <TaskErrorBoundary context="loading">
+      <div className="p-6">
+        {/* Enhanced Header with Glass Effect */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+            Task Management
+          </h1>
+          <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
         </div>
-      )}
 
-      <TabNavigation
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        activeCount={activeTasks.length}
-        archivedCount={archivedTasks.length}
-      />
-
-      {/* Content with Glass Container */}
-      <div className="max-w-4xl mx-auto">
-        {loading ? (
-          <LoadingState />
-        ) : error ? (
-          <ErrorState />
-        ) : (
-          <FeatureErrorBoundary feature="tasks-management">
-            {activeTab === "active" ? (
-              <ActiveTasksSection
-                tasks={activeTasks}
-                userId={user?.uid || ""}
-                handleSubmitTask={handleSubmitTask}
-              />
-            ) : (
-              <ArchivedTasksSection tasks={archivedTasks} />
-            )}
-          </FeatureErrorBoundary>
+        {/* Task Stats Card */}
+        {user && (
+          <div className="max-w-4xl mx-auto mb-8">
+            <TaskErrorBoundary context="loading">
+              <TaskStatsCard userId={user.uid} />
+            </TaskErrorBoundary>
+          </div>
         )}
+
+        <TabNavigation
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          activeCount={activeTasks.length}
+          archivedCount={archivedTasks.length}
+        />
+
+        {/* Content with Glass Container */}
+        <div className="max-w-4xl mx-auto">
+          {loading ? (
+            <LoadingState />
+          ) : error ? (
+            <ErrorState />
+          ) : (
+            <TaskErrorBoundary context="operation">
+              {activeTab === "active" ? (
+                <ActiveTasksSection
+                  tasks={activeTasks}
+                  userId={user?.uid || ""}
+                  handleSubmitTask={handleSubmitTask}
+                />
+              ) : (
+                <ArchivedTasksSection tasks={archivedTasks} />
+              )}
+            </TaskErrorBoundary>
+          )}
+        </div>
       </div>
-    </div>
+    </TaskErrorBoundary>
   );
 };
 
