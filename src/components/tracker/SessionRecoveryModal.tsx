@@ -1,5 +1,9 @@
 import React from "react";
-import { FaExclamationTriangle, FaClock, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaExclamationTriangle,
+  FaClock,
+  FaCalendarAlt,
+} from "../../utils/iconImport";
 import type { DBSession } from "../../types/database";
 import { Modal } from "@/components/ui";
 

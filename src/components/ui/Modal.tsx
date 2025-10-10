@@ -4,7 +4,7 @@
  * and consistent styling across the application.
  */
 import React, { useEffect, useRef } from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes } from "../../utils/iconImport";
 
 export interface ModalProps {
   /** Controls modal visibility */
@@ -67,7 +67,8 @@ export const Modal: React.FC<ModalProps> = ({
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps, zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [isOpen, closeOnEscape]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {

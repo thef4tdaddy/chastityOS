@@ -5,7 +5,7 @@ import {
   FaTimes,
   FaClock,
   FaSpinner,
-} from "react-icons/fa";
+} from "../../utils/iconImport";
 import type { DBReleaseRequest } from "../../types/database";
 import { useReleaseRequestMutations } from "../../hooks/api/useReleaseRequests";
 import { useToast } from "../../contexts";
