@@ -93,7 +93,10 @@ Object.defineProperty(globalThis, "crypto", {
           // Simple deterministic hash: sum all input bytes and use as seed
           let seed = 0;
           for (let i = 0; i < input.length; i++) {
-            seed += input[i];
+            const byte = input[i];
+            if (byte !== undefined) {
+              seed += byte;
+            }
           }
 
           // Fill hash buffer with deterministic pattern based on seed

@@ -441,7 +441,9 @@ function createManagementHandlers(
     ).length;
 
     const lastSecurityEvent =
-      securityEntries.length > 0 ? securityEntries[0].timestamp : undefined;
+      securityEntries.length > 0 && securityEntries[0]
+        ? securityEntries[0].timestamp
+        : undefined;
 
     return {
       totalEntries: auditState.recentEntries.length,

@@ -74,9 +74,11 @@ const statusColors = {
  */
 const getInitials = (name: string): string => {
   const parts = name.trim().split(" ");
-  if (parts.length === 0) return "";
+  if (parts.length === 0 || !parts[0]) return "";
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  const lastPart = parts[parts.length - 1];
+  if (!lastPart) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + lastPart.charAt(0)).toUpperCase();
 };
 
 /**

@@ -57,7 +57,7 @@ describe("useNotifications", () => {
     });
 
     expect(result.current.notifications.length).toBeGreaterThan(0);
-    const notification = result.current.notifications[0];
+    const notification = result.current.notifications[0]!;
     expect(notification.type).toBe(NotificationType.SUCCESS);
     expect(notification.title).toBe("Test Success");
     expect(notification.message).toBe("This is a test success message");
@@ -80,7 +80,7 @@ describe("useNotifications", () => {
     });
 
     expect(result.current.notifications.length).toBeGreaterThan(0);
-    const notification = result.current.notifications[0];
+    const notification = result.current.notifications[0]!;
     expect(notification.type).toBe(NotificationType.ERROR);
     expect(notification.priority).toBe(NotificationPriority.HIGH);
   });
@@ -99,8 +99,8 @@ describe("useNotifications", () => {
       await result.current.showInfo("Test Info", "This is a test info message");
     });
 
-    const notificationId = result.current.notifications[0].id;
-    expect(result.current.notifications[0].isRead).toBe(false);
+    const notificationId = result.current.notifications[0]!.id;
+    expect(result.current.notifications[0]!.isRead).toBe(false);
     expect(result.current.unreadCount).toBe(1);
 
     // Mark as read
@@ -108,7 +108,7 @@ describe("useNotifications", () => {
       await result.current.markAsRead(notificationId);
     });
 
-    expect(result.current.notifications[0].isRead).toBe(true);
+    expect(result.current.notifications[0]!.isRead).toBe(true);
     expect(result.current.unreadCount).toBe(0);
   });
 
@@ -129,7 +129,7 @@ describe("useNotifications", () => {
       );
     });
 
-    const notificationId = result.current.notifications[0].id;
+    const notificationId = result.current.notifications[0]!.id;
     expect(result.current.notifications.length).toBe(1);
 
     // Dismiss notification

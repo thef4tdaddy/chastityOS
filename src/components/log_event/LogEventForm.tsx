@@ -337,7 +337,9 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <EventTypeSelector
           selectedType={formData.type}
-          onTypeChange={(type) => setFormData((prev) => ({ ...prev, type }))}
+          onTypeChange={(type) =>
+            setFormData((prev) => ({ ...prev, type: type as EventType }))
+          }
         />
 
         <BasicFormFields

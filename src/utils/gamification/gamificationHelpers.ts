@@ -16,7 +16,8 @@ import { LEVEL_THRESHOLDS } from "../../constants/gamification";
 export function calculateLevel(experience: number): number {
   let level = 1;
   for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
-    if (experience >= LEVEL_THRESHOLDS[i]) {
+    const threshold = LEVEL_THRESHOLDS[i];
+    if (threshold !== undefined && experience >= threshold) {
       level = i + 1;
     } else {
       break;
@@ -32,8 +33,9 @@ export function calculateExperienceToNext(
   experience: number,
   level: number,
 ): number {
-  return level < LEVEL_THRESHOLDS.length
-    ? LEVEL_THRESHOLDS[level] - experience
+  const threshold = LEVEL_THRESHOLDS[level];
+  return level < LEVEL_THRESHOLDS.length && threshold !== undefined
+    ? threshold - experience
     : 0;
 }
 

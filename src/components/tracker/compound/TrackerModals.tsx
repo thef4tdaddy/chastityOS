@@ -40,12 +40,12 @@ export const TrackerModals: React.FC<TrackerModalsProps> = ({
 }) => {
   return (
     <ReasonModals
-      showReasonModal={showReasonModal}
+      showReasonModal={showReasonModal ?? false}
       onCancelRemoval={onCancelRemoval}
       onConfirmRemoval={onConfirmRemoval}
       reasonForRemoval={reasonForRemoval}
       onReasonChange={onReasonChange}
-      showPauseReasonModal={showPauseReasonModal}
+      showPauseReasonModal={showPauseReasonModal ?? false}
       onCancelPause={onCancelPause}
       onConfirmPause={onConfirmPause}
       pauseReason={pauseReason}

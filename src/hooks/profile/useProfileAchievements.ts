@@ -74,7 +74,7 @@ export const useProfileAchievements = (
               id: achievement.id,
               name: achievement.name,
               description: achievement.description,
-              earnedDate: userAchievement.earnedAt.toDate(),
+              earnedDate: userAchievement.earnedAt,
               icon: achievement.icon,
             }
           : null;
@@ -89,7 +89,7 @@ export const useProfileAchievements = (
     return visibleAchievements
       .sort(
         (a: DBUserAchievement, b: DBUserAchievement) =>
-          b.earnedAt.toDate().getTime() - a.earnedAt.toDate().getTime(),
+          b.earnedAt.getTime() - a.earnedAt.getTime(),
       )
       .slice(0, 5)
       .map((userAchievement: DBUserAchievement) => {
@@ -100,7 +100,7 @@ export const useProfileAchievements = (
           ? {
               id: achievement.id,
               title: achievement.name,
-              date: userAchievement.earnedAt.toDate(),
+              date: userAchievement.earnedAt,
               type: getAchievementType(achievement.category),
               icon: achievement.icon,
             }
