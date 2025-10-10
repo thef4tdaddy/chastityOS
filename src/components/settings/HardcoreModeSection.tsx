@@ -10,6 +10,7 @@ import {
 } from "../../utils/iconImport";
 import { EmergencyPinSetupSection } from "./EmergencyPinSetupSection";
 import { LockCombinationSection } from "./LockCombinationSection";
+import { Switch } from "@/components/ui";
 
 interface HardcoreModeSectionProps {
   isHardcoreMode: boolean;
@@ -55,16 +56,11 @@ export const HardcoreModeSection: React.FC<HardcoreModeSectionProps> = ({
             Hardcore Mode
           </label>
         </div>
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isHardcoreMode}
-            onChange={(e) => setIsHardcoreMode(e.target.checked)}
-            className="sr-only peer"
-            disabled={isCreating}
-          />
-          <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-        </label>
+        <Switch
+          checked={isHardcoreMode}
+          onCheckedChange={setIsHardcoreMode}
+          disabled={isCreating}
+        />
       </div>
       <p className="text-xs text-nightly-celadon/70 mb-3">
         Hardcore mode prevents early unlock and requires emergency PIN for

@@ -3,6 +3,7 @@
  * Reusable button for Google OAuth authentication
  */
 import React, { useState } from "react";
+import { Button } from "@/components/ui";
 import { FaGoogle, FaSpinner } from "../../utils/iconImport";
 import { useAuthActions } from "@/contexts/AuthContext";
 import { logger } from "@/utils/logging";
@@ -52,7 +53,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
     mode === "signin" ? "Sign in with Google" : "Link with Google";
 
   return (
-    <button
+    <Button
       onClick={handleGoogleAuth}
       disabled={isLoading}
       className={`
@@ -78,6 +79,6 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
             : "Linking..."
           : buttonText}
       </span>
-    </button>
+    </Button>
   );
 };

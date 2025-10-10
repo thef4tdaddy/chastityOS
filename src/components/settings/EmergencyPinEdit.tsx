@@ -9,7 +9,7 @@ import {
   FaTimes,
   FaSpinner,
 } from "../../utils/iconImport";
-import { Input, Card } from "@/components/ui";
+import { Input, Card, Button } from "@/components/ui";
 
 interface EmergencyPinEditProps {
   hasPin: boolean;
@@ -86,7 +86,7 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
         </div>
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={onSave}
             disabled={isSaving || !pin || !confirmPin}
             className="flex-1 bg-red-500/20 border border-red-500 hover:bg-red-500/30 text-red-400 font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -100,14 +100,14 @@ export const EmergencyPinEdit: React.FC<EmergencyPinEditProps> = ({
                 <FaCheck /> Save PIN
               </>
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onCancel}
             disabled={isSaving}
             className="flex-1 bg-white/5 border border-white/20 hover:bg-white/10 text-nightly-celadon font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <FaTimes /> Cancel
-          </button>
+          </Button>
         </div>
       </div>
     </Card>

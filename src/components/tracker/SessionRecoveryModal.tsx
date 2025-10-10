@@ -5,7 +5,7 @@ import {
   FaCalendarAlt,
 } from "../../utils/iconImport";
 import type { DBSession } from "../../types/database";
-import { Modal } from "@/components/ui";
+import { Modal, Button } from "@/components/ui";
 
 interface SessionRecoveryModalProps {
   corruptedSession: DBSession;
@@ -95,7 +95,7 @@ export const SessionRecoveryModal: React.FC<SessionRecoveryModalProps> = ({
       footer={
         <div>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <button
+            <Button
               onClick={() => onRecover(corruptedSession)}
               disabled={isRecovering}
               className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center"
@@ -108,15 +108,15 @@ export const SessionRecoveryModal: React.FC<SessionRecoveryModalProps> = ({
               ) : (
                 "Recover Session"
               )}
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={onDiscard}
               disabled={isRecovering}
               className="flex-1 bg-gray-600 hover:bg-gray-500 disabled:bg-gray-700 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition"
             >
               Discard Session
-            </button>
+            </Button>
           </div>
 
           <p className="text-xs text-gray-500 text-center">
