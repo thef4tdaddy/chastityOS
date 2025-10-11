@@ -20,11 +20,15 @@ export const SubmissiveRelationshipsDisplay: React.FC<
   if (relationships.length === 0) return null;
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
+    <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30 relationship-card-interactive">
       <h3 className="font-semibold text-purple-300 mb-3">Your Submissives</h3>
       <div className="space-y-2">
-        {relationships.map((relationship) => (
-          <div key={relationship.id} className="p-3 bg-gray-700 rounded border">
+        {relationships.map((relationship, index) => (
+          <div
+            key={relationship.id}
+            className="p-3 bg-gray-700 rounded border relationship-card-enter relationship-transition"
+            style={{ animationDelay: `${index * 75}ms` }}
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm">
                 <div className="text-green-400">Active Submissive</div>
@@ -38,7 +42,7 @@ export const SubmissiveRelationshipsDisplay: React.FC<
               </div>
               <Button
                 onClick={() => onEndRelationship(relationship.id)}
-                className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30"
+                className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30 icon-button"
               >
                 End
               </Button>

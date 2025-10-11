@@ -46,7 +46,7 @@ const CardActions: React.FC<CardActionsProps> = ({
   <div className="flex gap-2">
     <Button
       onClick={onSetActive}
-      className={`p-2 rounded ${
+      className={`p-2 rounded icon-button ${
         isActive
           ? "bg-blue-600 text-white"
           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -57,7 +57,7 @@ const CardActions: React.FC<CardActionsProps> = ({
     </Button>
 
     <Button
-      className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+      className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 icon-button"
       title="Relationship settings"
     >
       <FaCog />
@@ -65,7 +65,7 @@ const CardActions: React.FC<CardActionsProps> = ({
 
     <Button
       onClick={onEndRelationship}
-      className="p-2 rounded bg-red-100 text-red-600 hover:bg-red-200"
+      className="p-2 rounded bg-red-100 text-red-600 hover:bg-red-200 icon-button"
       title="End relationship"
     >
       <FaTrash />
@@ -88,28 +88,30 @@ const RelationshipCard: React.FC<RelationshipCardProps> = ({
   onEndRelationship,
 }) => (
   <div
-    className={`border rounded-lg p-4 ${
-      isActive ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white"
+    className={`border rounded-lg p-4 relationship-card-interactive relationship-card-enter ${
+      isActive
+        ? "border-blue-500 bg-blue-50 relationship-active-glow"
+        : "border-gray-200 bg-white"
     }`}
   >
     <div className="flex items-start justify-between">
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-2">
-          <h3 className="text-lg font-medium text-gray-900">
+          <h3 className="text-lg font-medium text-gray-900 relationship-transition">
             Relationship with{" "}
             {relationship.submissiveId === relationship.keyholderId
               ? "Yourself (Self-managed)"
               : relationship.keyholderId}
           </h3>
           <span
-            className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(
+            className={`px-2 py-1 rounded text-xs font-medium relationship-transition ${getStatusBadgeClass(
               relationship.status,
             )}`}
           >
             {relationship.status}
           </span>
         </div>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-sm text-gray-600 mt-1 relationship-transition">
           Your role:{" "}
           {getRoleDisplayText(
             relationship.submissiveId,
@@ -117,11 +119,11 @@ const RelationshipCard: React.FC<RelationshipCardProps> = ({
           )}
         </p>
         {relationship.notes && (
-          <p className="text-sm text-gray-700 mt-1 italic">
+          <p className="text-sm text-gray-700 mt-1 italic relationship-transition">
             "{relationship.notes}"
           </p>
         )}
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-gray-500 mt-2 relationship-transition">
           Established:{" "}
           {relationship.establishedAt.toDate().toLocaleDateString()}
         </p>
