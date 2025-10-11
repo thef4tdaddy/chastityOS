@@ -20,7 +20,7 @@ export interface SyncStats {
   lastSyncStatus: SyncStatus;
 }
 
-class SyncQueueService {
+export class SyncQueueService {
   private readonly MAX_RETRIES = 3;
   private readonly BASE_DELAY = 1000; // 1 second base delay
   private syncStatus: SyncStatus = "idle";
