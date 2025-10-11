@@ -67,27 +67,27 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
   );
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <Icon className={eventTypeInfo.color} />
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-nighty-honeydew">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <Icon className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0`} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-medium text-nighty-honeydew text-sm sm:text-base">
                 {eventTypeInfo.label}
               </h3>
               {showOwner && event.ownerName && (
-                <span className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-0.5 text-xs rounded">
+                <span className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-0.5 text-xs rounded whitespace-nowrap">
                   {event.ownerName}
                 </span>
               )}
             </div>
-            <div className="text-xs text-nightly-celadon">{formattedDate}</div>
+            <div className="text-xs text-nightly-celadon break-words">{formattedDate}</div>
           </div>
         </div>
         {event.isPrivate && (
-          <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded">
+          <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded whitespace-nowrap self-start">
             Private
           </span>
         )}
@@ -95,24 +95,24 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
 
       {/* Content */}
       {event.details.notes && (
-        <p className="text-nighty-honeydew mb-3">{event.details.notes}</p>
+        <p className="text-nighty-honeydew mb-3 text-sm sm:text-base break-words">{event.details.notes}</p>
       )}
 
       {/* Details */}
-      <div className="flex gap-4 text-xs text-nightly-celadon">
-        {event.details.mood && <span>Mood: {event.details.mood}</span>}
+      <div className="flex flex-wrap gap-3 sm:gap-4 text-xs text-nightly-celadon">
+        {event.details.mood && <span className="whitespace-nowrap">Mood: {event.details.mood}</span>}
         {event.details.intensity && (
-          <span>Intensity: {event.details.intensity}/10</span>
+          <span className="whitespace-nowrap">Intensity: {event.details.intensity}/10</span>
         )}
       </div>
 
       {/* Tags */}
       {event.details.tags && event.details.tags.length > 0 && (
-        <div className="flex gap-2 mt-3">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
           {event.details.tags.map((tag, index) => (
             <span
               key={index}
-              className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-1 text-xs rounded"
+              className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-1 text-xs rounded whitespace-nowrap"
             >
               {tag}
             </span>
@@ -139,10 +139,10 @@ const EventListComponent: React.FC<EventListProps> = ({
   if (events.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="text-center py-8">
-          <FaCalendar className="text-4xl text-nightly-celadon/50 mb-4 mx-auto" />
-          <div className="text-nightly-celadon">No events logged yet</div>
-          <div className="text-sm text-nightly-celadon/70">
+        <div className="text-center py-6 sm:py-8">
+          <FaCalendar className="text-3xl sm:text-4xl text-nightly-celadon/50 mb-3 sm:mb-4 mx-auto" />
+          <div className="text-nightly-celadon text-sm sm:text-base">No events logged yet</div>
+          <div className="text-xs sm:text-sm text-nightly-celadon/70">
             Log your first event above
           </div>
         </div>
@@ -151,7 +151,7 @@ const EventListComponent: React.FC<EventListProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {events.map((event) => (
         <EventItem key={event.id} event={event} showOwner={showOwner} />
       ))}
