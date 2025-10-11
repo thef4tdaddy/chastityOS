@@ -3,16 +3,14 @@
  * UI for managing notification preferences
  */
 import React from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Switch,
-  Button,
-  Alert,
-  Spinner,
-} from "@/components/ui";
+import { Card, CardHeader, CardBody, Spinner } from "@/components/ui";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
+import {
+  PermissionStatusSection,
+  NotificationTypeSection,
+  SoundVibrationSection,
+  QuietHoursSection,
+} from "./NotificationSettingsSections";
 
 interface NotificationSettingsProps {
   userId: string | null;
@@ -65,198 +63,21 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       </CardHeader>
 
       <CardBody className="space-y-6">
-        {/* Permission Status */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-nightly-spring-green">
-            Push Notifications
-          </h3>
+        <PermissionStatusSection
+          permission={permission}
+          isPermissionGranted={isPermissionGranted}
+          onRequestPermission={handleRequestPermission}
+          onTestNotification={sendTestNotification}
+        />
 
-          {permission === "denied" && (
-            <Alert variant="error">
-              <p>
-                Push notifications are blocked. Please enable them in your
-                browser settings to receive notifications.
-              </p>
-            </Alert>
-          )}
+        <NotificationTypeSection settings={settings} onToggle={handleToggle} />
 
-          {permission === "default" && (
-            <Alert variant="info">
-              <p>
-                Enable push notifications to receive alerts even when the app is
-                not open.
-              </p>
-            </Alert>
-          )}
+        <SoundVibrationSection settings={settings} onToggle={handleToggle} />
 
-          {permission === "granted" && (
-            <Alert variant="success">
-              <p>Push notifications are enabled.</p>
-            </Alert>
-          )}
-
-          <div className="flex gap-3">
-            {!isPermissionGranted && permission !== "denied" && (
-              <Button
-                variant="primary"
-                onClick={handleRequestPermission}
-                className="flex-1 sm:flex-initial"
-              >
-                Enable Notifications
-              </Button>
-            )}
-
-            {isPermissionGranted && (
-              <Button
-                variant="secondary"
-                onClick={sendTestNotification}
-                className="flex-1 sm:flex-initial"
-              >
-                Test Notification
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Notification Types */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-nightly-spring-green">
-            Notification Types
-          </h3>
-
-          <div className="space-y-2">
-            <Switch
-              label="Session Notifications"
-              description="Get notified about session starts, ends, and milestones"
-              checked={settings.sessionNotifications}
-              onCheckedChange={(checked) =>
-                handleToggle("sessionNotifications", checked)
-              }
-            />
-
-            <Switch
-              label="Task Notifications"
-              description="Get notified about new tasks, deadlines, and approvals"
-              checked={settings.taskNotifications}
-              onCheckedChange={(checked) =>
-                handleToggle("taskNotifications", checked)
-              }
-            />
-
-            <Switch
-              label="Keyholder Notifications"
-              description="Get notified about keyholder actions and messages"
-              checked={settings.keyholderNotifications}
-              onCheckedChange={(checked) =>
-                handleToggle("keyholderNotifications", checked)
-              }
-            />
-
-            <Switch
-              label="System Notifications"
-              description="Get notified about system updates and important announcements"
-              checked={settings.systemNotifications}
-              onCheckedChange={(checked) =>
-                handleToggle("systemNotifications", checked)
-              }
-            />
-          </div>
-        </div>
-
-        {/* Sound & Vibration */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-nightly-spring-green">
-            Alerts
-          </h3>
-
-          <div className="space-y-2">
-            <Switch
-              label="Notification Sound"
-              description="Play a sound when notifications arrive"
-              checked={settings.soundEnabled}
-              onCheckedChange={(checked) =>
-                handleToggle("soundEnabled", checked)
-              }
-            />
-
-            <Switch
-              label="Vibration"
-              description="Vibrate device when notifications arrive (mobile only)"
-              checked={settings.vibrationEnabled}
-              onCheckedChange={(checked) =>
-                handleToggle("vibrationEnabled", checked)
-              }
-            />
-          </div>
-        </div>
-
-        {/* Quiet Hours */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-nightly-spring-green">
-            Quiet Hours
-          </h3>
-
-          <Switch
-            label="Enable Quiet Hours"
-            description="Pause notifications during specified hours"
-            checked={settings.quietHours.enabled}
-            onCheckedChange={(checked) =>
-              updateSettings({
-                quietHours: { ...settings.quietHours, enabled: checked },
-              })
-            }
-          />
-
-          {settings.quietHours.enabled && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pl-4 border-l-2 border-nightly-spring-green/30">
-              <div>
-                <label
-                  htmlFor="quietStart"
-                  className="block text-sm font-medium text-nightly-celadon mb-1"
-                >
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  id="quietStart"
-                  value={settings.quietHours.startTime}
-                  onChange={(e) =>
-                    updateSettings({
-                      quietHours: {
-                        ...settings.quietHours,
-                        startTime: e.target.value,
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 bg-nightly-mobile-bg border border-nightly-celadon/30 rounded-md text-nightly-honeydew focus:outline-none focus:ring-2 focus:ring-nightly-spring-green"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="quietEnd"
-                  className="block text-sm font-medium text-nightly-celadon mb-1"
-                >
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  id="quietEnd"
-                  value={settings.quietHours.endTime}
-                  onChange={(e) =>
-                    updateSettings({
-                      quietHours: {
-                        ...settings.quietHours,
-                        endTime: e.target.value,
-                      },
-                    })
-                  }
-                  className="w-full px-3 py-2 bg-nightly-mobile-bg border border-nightly-celadon/30 rounded-md text-nightly-honeydew focus:outline-none focus:ring-2 focus:ring-nightly-spring-green"
-                />
-              </div>
-            </div>
-          )}
-        </div>
+        <QuietHoursSection
+          settings={settings}
+          onUpdateSettings={updateSettings}
+        />
       </CardBody>
     </Card>
   );
