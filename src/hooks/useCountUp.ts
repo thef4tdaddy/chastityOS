@@ -16,9 +16,10 @@ export const useCountUp = (
 
   useEffect(() => {
     // Check if user prefers reduced motion
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // If reduced motion is preferred or end value is 0, set immediately
     if (prefersReducedMotion || end === start) {
