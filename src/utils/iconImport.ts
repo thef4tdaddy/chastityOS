@@ -19,6 +19,7 @@ export {
   FaArrowRight,
   FaAward,
   FaBan,
+  FaBatteryHalf,
   FaBook,
   FaBug,
   FaBullseye,
