@@ -1773,6 +1773,307 @@ td {
   animation: slide-in-right var(--animation-duration-normal) var(--animation-easing);
 }
 
+/* =============================================
+   === KEYHOLDER & RELATIONSHIPS ANIMATIONS  ===
+   =============================================
+*/
+
+/* Relationship Card Animations */
+@keyframes relationship-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes relationship-card-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes relationship-card-hover-lift {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+  50% {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  }
+}
+
+/* Staggered animation for list items */
+.relationship-card-enter {
+  animation: relationship-card-enter var(--animation-duration-normal) var(--animation-easing);
+  animation-fill-mode: backwards;
+}
+
+.relationship-card-enter:nth-child(1) { animation-delay: 0ms; }
+.relationship-card-enter:nth-child(2) { animation-delay: 50ms; }
+.relationship-card-enter:nth-child(3) { animation-delay: 100ms; }
+.relationship-card-enter:nth-child(4) { animation-delay: 150ms; }
+.relationship-card-enter:nth-child(5) { animation-delay: 200ms; }
+
+.relationship-card-exit {
+  animation: relationship-card-exit var(--animation-duration-fast) var(--animation-easing);
+}
+
+/* Invitation Form Animations */
+@keyframes invitation-expand {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: scaleY(0.8);
+    transform-origin: top;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes invitation-collapse {
+  from {
+    opacity: 1;
+    max-height: 500px;
+    transform: scaleY(1);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: scaleY(0.8);
+    transform-origin: top;
+  }
+}
+
+.invitation-form-expand {
+  animation: invitation-expand var(--animation-duration-normal) var(--animation-easing);
+  overflow: hidden;
+}
+
+.invitation-form-collapse {
+  animation: invitation-collapse var(--animation-duration-normal) var(--animation-easing);
+  overflow: hidden;
+}
+
+/* Success/Error Feedback Animations */
+@keyframes success-flash {
+  0%, 100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  50% {
+    background-color: rgba(16, 185, 129, 0.2);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.success-flash {
+  animation: success-flash var(--animation-duration-slow) var(--animation-easing);
+}
+
+.error-shake {
+  animation: error-shake 0.5s var(--animation-easing);
+}
+
+/* Loading Skeleton for Relationships */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.relationship-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+.relationship-skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Permission Toggle Animations */
+@keyframes toggle-switch {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes toggle-bg-transition {
+  from {
+    background-color: #6b7280;
+  }
+  to {
+    background-color: #10b981;
+  }
+}
+
+.toggle-switch-on {
+  animation: toggle-switch var(--animation-duration-fast) var(--animation-easing);
+}
+
+/* Button Press Animation */
+@keyframes button-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.button-press {
+  animation: button-press var(--animation-duration-fast) var(--animation-easing);
+}
+
+/* Pending Request Badge Pulse */
+@keyframes badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.pending-badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Invite Code Display Animation */
+@keyframes invite-code-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) rotateX(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotateX(0);
+  }
+}
+
+.invite-code-appear {
+  animation: invite-code-appear var(--animation-duration-normal) var(--animation-easing);
+  transform-style: preserve-3d;
+}
+
+/* Status Badge Transition */
+@keyframes status-change {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.status-badge-change {
+  animation: status-change var(--animation-duration-normal) var(--animation-easing);
+}
+
+/* Micro-interactions */
+.relationship-card-interactive {
+  transition: all var(--animation-duration-fast) var(--animation-easing);
+  will-change: transform, box-shadow;
+}
+
+.relationship-card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.relationship-card-interactive:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon Button Hover */
+.icon-button {
+  transition: all var(--animation-duration-fast) var(--animation-easing);
+  will-change: transform, background-color;
+}
+
+.icon-button:hover {
+  transform: scale(1.1);
+}
+
+.icon-button:active {
+  transform: scale(0.95);
+}
+
+/* Relationship Active Indicator */
+@keyframes active-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+  }
+}
+
+.relationship-active-glow {
+  animation: active-glow 2s ease-in-out infinite;
+}
+
+/* Smooth transitions for all relationship components */
+.relationship-transition {
+  transition: all var(--animation-duration-normal) var(--animation-easing);
+}
+
+.relationship-transition-fast {
+  transition: all var(--animation-duration-fast) var(--animation-easing);
+}
+
 /* Accessibility: Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .task-card-hover:hover,
@@ -1788,13 +2089,35 @@ td {
   .pulse-cta,
   .status-badge-appear,
   .checkmark-animation,
-  .notification-slide-in {
+  .notification-slide-in,
+  .relationship-card-enter,
+  .relationship-card-exit,
+  .relationship-card-hover-lift,
+  .invitation-form-expand,
+  .invitation-form-collapse,
+  .success-flash,
+  .error-shake,
+  .relationship-skeleton,
+  .relationship-skeleton-pulse,
+  .toggle-switch-on,
+  .button-press,
+  .pending-badge-pulse,
+  .invite-code-appear,
+  .status-badge-change,
+  .relationship-active-glow,
+  .relationship-card-interactive:hover,
+  .icon-button:hover {
     animation: none !important;
-    transition: none !important;
+    transition: opacity var(--animation-duration-fast) ease !important;
     transform: none !important;
   }
   
   .loading-spinner {
     animation: spinner-rotate 1s linear infinite;
+  }
+  
+  /* Keep shimmer for loading states as it's functional */
+  .relationship-skeleton {
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
   }
 }
