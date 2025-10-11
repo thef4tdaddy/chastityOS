@@ -53,32 +53,32 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
       closeOnEscape={!isProcessing}
       className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-purple-500"
       footer={
-        <div className="flex flex-col space-y-3">
+        <div className="flex flex-col space-y-2 sm:space-y-3">
           <Button
             onClick={onSubmit}
             disabled={isProcessing}
-            className={`w-full font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 ${
+            className={`w-full font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 min-h-[44px] touch-manipulation ${
               isApprove
                 ? "bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
                 : "bg-red-600 hover:bg-red-700 disabled:bg-gray-600"
-            } disabled:cursor-not-allowed text-white`}
+            } disabled:cursor-not-allowed text-white text-sm sm:text-base`}
           >
             {isProcessing ? (
               <>
-                <FaSpinner className="animate-spin" />
-                Processing...
+                <FaSpinner className="animate-spin flex-shrink-0" />
+                <span>Processing...</span>
               </>
             ) : (
               <>
                 {isApprove ? (
                   <>
-                    <FaCheck />
-                    Approve Request
+                    <FaCheck className="flex-shrink-0" />
+                    <span>Approve Request</span>
                   </>
                 ) : (
                   <>
-                    <FaTimes />
-                    Deny Request
+                    <FaTimes className="flex-shrink-0" />
+                    <span>Deny Request</span>
                   </>
                 )}
               </>
@@ -87,7 +87,7 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
           <Button
             onClick={onClose}
             disabled={isProcessing}
-            className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"
+            className="w-full bg-gray-600 hover:bg-gray-500 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition min-h-[44px] touch-manipulation text-sm sm:text-base"
           >
             Cancel
           </Button>
@@ -96,13 +96,13 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
     >
       <div>
         <div
-          className={`border rounded-lg p-4 mb-6 ${
+          className={`border rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 ${
             isApprove
               ? "bg-green-900/30 border-green-600"
               : "bg-red-900/30 border-red-600"
           }`}
         >
-          <p className="text-sm text-gray-200">
+          <p className="text-xs sm:text-sm text-gray-200">
             {isApprove
               ? "The submissive will be able to end their session immediately."
               : "The submissive will not be able to end their session early."}
@@ -110,7 +110,7 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
             Message to Submissive (optional):
           </label>
           <Textarea
@@ -123,7 +123,7 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
             }
             rows={3}
             maxLength={500}
-            className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
+            className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white text-sm sm:text-base focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
           />
           <div className="text-xs text-gray-400 mt-1">
             {responseMessage.length}/500 characters
@@ -215,45 +215,51 @@ const ReleaseRequestCardComponent: React.FC<ReleaseRequestCardProps> = ({
 
   return (
     <>
-      <div className="bg-white/5 border border-purple-500/50 rounded-lg p-4 hover:bg-white/10 transition-colors">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <FaPrayingHands className="text-purple-400 text-xl" />
-            <div>
-              <h4 className="font-semibold text-nightly-honeydew">
+      <div className="bg-white/5 border border-purple-500/50 rounded-lg p-3 sm:p-4 hover:bg-white/10 transition-colors">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1">
+            <FaPrayingHands className="text-purple-400 text-lg sm:text-xl flex-shrink-0" />
+            <div className="min-w-0">
+              <h4 className="text-sm sm:text-base font-semibold text-nightly-honeydew">
                 Release Request
               </h4>
               <div className="flex items-center gap-2 text-xs text-gray-400">
-                <FaClock className="text-xs" />
+                <FaClock className="text-xs flex-shrink-0" />
                 <span>{timeAgo}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               onClick={() => handleOpenResponse("approve")}
               disabled={isProcessing}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded transition-colors"
+              className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 sm:p-2 rounded transition-colors min-h-[44px] sm:min-h-0 touch-manipulation flex items-center justify-center gap-2"
               title="Approve request"
             >
-              <FaCheck />
+              <FaCheck className="flex-shrink-0" />
+              <span className="sm:hidden">Approve</span>
             </Button>
             <Button
               onClick={() => handleOpenResponse("deny")}
               disabled={isProcessing}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded transition-colors"
+              className="flex-1 sm:flex-initial bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 sm:p-2 rounded transition-colors min-h-[44px] sm:min-h-0 touch-manipulation flex items-center justify-center gap-2"
               title="Deny request"
             >
-              <FaTimes />
+              <FaTimes className="flex-shrink-0" />
+              <span className="sm:hidden">Deny</span>
             </Button>
           </div>
         </div>
 
         {request.reason && (
           <div className="bg-purple-900/30 border border-purple-600/50 rounded p-3 mt-3">
-            <p className="text-sm font-medium text-purple-300 mb-1">Reason:</p>
-            <p className="text-sm text-purple-200">{request.reason}</p>
+            <p className="text-xs sm:text-sm font-medium text-purple-300 mb-1">
+              Reason:
+            </p>
+            <p className="text-xs sm:text-sm text-purple-200 break-words">
+              {request.reason}
+            </p>
           </div>
         )}
 
