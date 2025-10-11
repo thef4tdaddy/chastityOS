@@ -49,12 +49,20 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
     <Card
       variant="glass"
       padding="sm"
-      className={`bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md transition-all duration-500 h-full flex flex-col ${borderClass}`}
+      className={`
+        bg-lavender_web/10 dark:bg-lavender_web/5 backdrop-blur-md 
+        transition-all duration-500 h-full flex flex-col
+        tracker-card-hover tracker-state-transition
+        ${borderClass}
+      `}
     >
       <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Current Time Off: {isTickingOff ? (isPaused ? "🟡" : "🔴") : "💜"}
       </p>
-      <p className="text-2xl md:text-4xl font-bold" style={textColorStyle}>
+      <p
+        className="text-2xl md:text-4xl font-bold number-update"
+        style={textColorStyle}
+      >
         {stats.cageOffTimeFormatted}
       </p>
     </Card>

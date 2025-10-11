@@ -1521,6 +1521,220 @@ td {
    === 7. ANIMATIONS & MEDIA QUERIES         ===
    =============================================
 */
+
+/* =============================================
+   === 7.1 TRACKER ANIMATIONS                ===
+   =============================================
+*/
+
+/* Session state transitions */
+@keyframes tracker-state-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tracker-state-transition {
+  animation: tracker-state-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Timer pulse animation for active sessions */
+@keyframes timer-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+.timer-pulse {
+  animation: timer-pulse 2s ease-in-out infinite;
+}
+
+/* Smooth number counter animation */
+@keyframes number-update {
+  0% {
+    opacity: 0.7;
+    transform: translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.number-update {
+  animation: number-update 0.3s ease-out;
+}
+
+/* Loading skeleton shimmer */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(215, 210, 234, 0.1) 25%,
+    rgba(215, 210, 234, 0.2) 50%,
+    rgba(215, 210, 234, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite;
+}
+
+/* Button press feedback */
+@keyframes button-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.button-press-active:active {
+  animation: button-press 0.2s ease-out;
+}
+
+/* Glow effect for active states */
+@keyframes tracker-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5), 0 0 30px rgba(34, 197, 94, 0.3);
+  }
+}
+
+.tracker-glow-green {
+  animation: tracker-glow 3s ease-in-out infinite;
+}
+
+@keyframes tracker-glow-yellow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.3), 0 0 20px rgba(234, 179, 8, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.5), 0 0 30px rgba(234, 179, 8, 0.3);
+  }
+}
+
+.tracker-glow-yellow {
+  animation: tracker-glow-yellow 3s ease-in-out infinite;
+}
+
+/* Milestone celebration */
+@keyframes milestone-celebration {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.15) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.milestone-celebration {
+  animation: milestone-celebration 0.6s ease-out;
+}
+
+/* Confetti particles */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  animation: confetti-fall 3s linear forwards;
+}
+
+/* Stat card hover effect */
+.tracker-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tracker-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus ring animation */
+@keyframes focus-ring-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px var(--color-focus-ring);
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--color-focus-ring);
+  }
+}
+
+.focus-ring-animated:focus-visible {
+  animation: focus-ring-pulse 1s ease-in-out infinite;
+}
+
+/* Session recovery modal slide in */
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-slide-in {
+  animation: modal-slide-in 0.3s ease-out;
+}
+
+/* Progress bar fill animation */
+@keyframes progress-fill {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+.progress-fill-animated {
+  animation: progress-fill 1s ease-out forwards;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -1958,13 +2172,28 @@ td {
   .pulse-cta,
   .status-badge-appear,
   .checkmark-animation,
-  .notification-slide-in {
+  .notification-slide-in,
+  .tracker-state-transition,
+  .timer-pulse,
+  .number-update,
+  .tracker-glow-green,
+  .tracker-glow-yellow,
+  .milestone-celebration,
+  .tracker-card-hover:hover,
+  .focus-ring-animated:focus-visible,
+  .modal-slide-in,
+  .progress-fill-animated {
     animation: none !important;
-    transition: none !important;
+    transition: opacity 0.2s !important;
     transform: none !important;
   }
   
   .loading-spinner {
     animation: spinner-rotate 1s linear infinite;
+  }
+  
+  .skeleton-shimmer {
+    animation: none !important;
+    background: rgba(215, 210, 234, 0.15);
   }
 }
