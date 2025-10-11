@@ -2,7 +2,7 @@
  * Task Evidence Display Component
  * Shows submitted photo evidence with thumbnail grid and lightbox
  */
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import {
@@ -16,6 +16,63 @@ interface TaskEvidenceDisplayProps {
   attachments: string[];
   onImageClick?: (url: string) => void;
 }
+
+// Lazy loading image component with blur-up effect
+const LazyImage: React.FC<{
+  src: string;
+  alt: string;
+  thumbnailSrc?: string;
+  className?: string;
+  onError?: () => void;
+  onClick?: () => void;
+}> = ({ src, alt, thumbnailSrc, className, onError, onClick }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (!imgRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: "50px" },
+    );
+
+    observer.observe(imgRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imgRef} className="relative w-full h-full">
+      {thumbnailSrc && !isLoaded && (
+        <img
+          src={thumbnailSrc}
+          alt={alt}
+          className={`${className} blur-sm`}
+          style={{ position: "absolute", inset: 0 }}
+        />
+      )}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+          onLoad={() => setIsLoaded(true)}
+          onError={onError}
+          onClick={onClick}
+        />
+      )}
+    </div>
+  );
+};
 
 export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
   attachments,
@@ -82,8 +139,9 @@ export const TaskEvidenceDisplay: React.FC<TaskEvidenceDisplayProps> = ({
                 <FaImage className="text-xl sm:text-2xl" />
               </div>
             ) : (
-              <img
+              <LazyImage
                 src={getThumbnailUrl(url, 200, 200)}
+                thumbnailSrc={getThumbnailUrl(url, 50, 50)}
                 alt={`Evidence ${index + 1}`}
                 onError={() => handleImageError(index)}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform"

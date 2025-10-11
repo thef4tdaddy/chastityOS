@@ -4,6 +4,7 @@ import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
 import { TaskEvidenceDisplay } from "./TaskEvidenceDisplay";
 import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
+import { TaskError } from "./TaskError";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 import { Textarea, Button } from "@/components/ui";
@@ -248,9 +249,11 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
   const {
     note,
     isSubmitting,
+    submitError,
     setNote,
     setAttachments,
     handleSubmit,
+    retrySubmit,
     statusConfig,
     priorityStyles,
     isOverdue,
@@ -307,15 +310,26 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
       )}
 
       {task.status === "pending" && (
-        <TaskSubmission
-          taskId={task.id}
-          userId={userId || task.userId}
-          note={note}
-          isSubmitting={isSubmitting}
-          onNoteChange={setNote}
-          onAttachmentsChange={setAttachments}
-          onSubmit={handleSubmit}
-        />
+        <>
+          {submitError && (
+            <div className="mb-3">
+              <TaskError
+                error={submitError}
+                title="Submission Failed"
+                onRetry={retrySubmit}
+              />
+            </div>
+          )}
+          <TaskSubmission
+            taskId={task.id}
+            userId={userId || task.userId}
+            note={note}
+            isSubmitting={isSubmitting}
+            onNoteChange={setNote}
+            onAttachmentsChange={setAttachments}
+            onSubmit={handleSubmit}
+          />
+        </>
       )}
     </div>
   );
