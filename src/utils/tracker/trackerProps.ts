@@ -23,6 +23,9 @@ interface MockTrackerData {
   remainingGoalTime?: number;
   keyholderName?: string;
   savedSubmissivesName?: string;
+  topBoxTime?: string;
+  livePauseDuration?: number;
+  accumulatedPauseTimeThisSession?: number;
 }
 
 interface TrackerStatsPropsReal {
@@ -120,14 +123,16 @@ export const buildTrackerHeaderProps = (
     goals?.keyholderAssigned && goals.keyholderAssigned.length > 0;
 
   return {
-    remainingGoalTime: hasActiveGoals
-      ? goals.active![0].targetValue - goals.active![0].currentValue
-      : 0,
+    remainingGoalTime:
+      hasActiveGoals && goals.active?.[0]
+        ? goals.active[0].targetValue - goals.active[0].currentValue
+        : 0,
     keyholderName: hasKeyholderGoals ? "Keyholder" : "",
     savedSubmissivesName: "",
-    requiredKeyholderDurationSeconds: hasKeyholderGoals
-      ? goals.keyholderAssigned![0].targetValue
-      : 0,
+    requiredKeyholderDurationSeconds:
+      hasKeyholderGoals && goals.keyholderAssigned?.[0]
+        ? goals.keyholderAssigned[0].targetValue
+        : 0,
     isCageOn: isActive,
   };
 };
@@ -141,10 +146,11 @@ export const buildMockTrackerData = (mockData: MockTrackerData) => {
     isPaused: mockData.isPaused,
     sessionId: mockData.sessionId,
     userId: mockData.userId,
-    isGoalActive: mockData.isGoalActive,
-    isHardcoreGoal: mockData.isHardcoreGoal,
-    requiredKeyholderDurationSeconds: mockData.requiredKeyholderDurationSeconds,
-    hasPendingReleaseRequest: mockData.hasPendingReleaseRequest,
+    isGoalActive: mockData.isGoalActive ?? false,
+    isHardcoreGoal: mockData.isHardcoreGoal ?? false,
+    requiredKeyholderDurationSeconds:
+      mockData.requiredKeyholderDurationSeconds ?? 0,
+    hasPendingReleaseRequest: mockData.hasPendingReleaseRequest ?? false,
     mainChastityDisplayTime: mockData.mainChastityDisplayTime,
     totalChastityTime: mockData.totalChastityTime,
   };

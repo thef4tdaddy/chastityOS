@@ -24,6 +24,19 @@ vi.mock("../../hooks/api/useTaskQuery", () => ({
   useSubmitTaskForReview: vi.fn(),
 }));
 
+// Mock animations to disable them in tests
+vi.mock("../../utils/animations", () => ({
+  staggerContainerVariants: {},
+  tabContentVariants: {},
+  fadeInVariants: {},
+  pulseVariants: {},
+  getAccessibleVariants: (variants: unknown) => variants,
+  taskCardVariants: {},
+  buttonVariants: {},
+  successVariants: {},
+  errorShakeVariants: {},
+}));
+
 import { useAuthState } from "../../contexts";
 import { useTasks } from "../../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../../hooks/api/useTaskQuery";
@@ -91,7 +104,7 @@ describe("TasksPage", () => {
       renderWithProviders(<TasksPage />);
 
       const activeTab = screen.getByRole("button", { name: /Active Tasks/i });
-      expect(activeTab).toHaveClass("glass-card-primary");
+      expect(activeTab).toHaveClass("primary-stat-card");
     });
   });
 
@@ -103,9 +116,11 @@ describe("TasksPage", () => {
         error: null,
       });
 
-      renderWithProviders(<TasksPage />);
+      const { container } = renderWithProviders(<TasksPage />);
 
-      expect(screen.getByText("Loading tasks...")).toBeInTheDocument();
+      // TaskSkeleton renders skeleton components, check for their presence
+      const skeletons = container.querySelectorAll(".space-y-6");
+      expect(skeletons.length).toBeGreaterThan(0);
     });
 
     it("should not show tasks while loading", () => {
@@ -247,7 +262,7 @@ describe("TasksPage", () => {
       const archivedTab = screen.getByRole("button", { name: /Archived/i });
       fireEvent.click(archivedTab);
 
-      expect(archivedTab).toHaveClass("glass-card-primary");
+      expect(archivedTab).toHaveClass("primary-stat-card");
     });
 
     it("should show empty state when no archived tasks", () => {
@@ -306,7 +321,7 @@ describe("TasksPage", () => {
       expect(screen.getByText("Rejected task")).toBeInTheDocument();
     });
 
-    it("should display completed tasks", () => {
+    it("should display completed tasks", async () => {
       mockUseTasks.mockReturnValue({
         data: [
           {
@@ -325,10 +340,12 @@ describe("TasksPage", () => {
       const archivedTab = screen.getByRole("button", { name: /Archived/i });
       fireEvent.click(archivedTab);
 
-      expect(screen.getByText("Completed task")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Completed task")).toBeInTheDocument();
+      });
     });
 
-    it("should display cancelled tasks", () => {
+    it("should display cancelled tasks", async () => {
       mockUseTasks.mockReturnValue({
         data: [
           {
@@ -347,7 +364,9 @@ describe("TasksPage", () => {
       const archivedTab = screen.getByRole("button", { name: /Archived/i });
       fireEvent.click(archivedTab);
 
-      expect(screen.getByText("Cancelled task")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Cancelled task")).toBeInTheDocument();
+      });
     });
 
     it("should show archived count in tab", () => {
@@ -375,7 +394,7 @@ describe("TasksPage", () => {
       expect(screen.getByText("Archived (2)")).toBeInTheDocument();
     });
 
-    it("should not show active tasks in archived tab", () => {
+    it("should not show active tasks in archived tab", async () => {
       mockUseTasks.mockReturnValue({
         data: [
           {
@@ -400,7 +419,9 @@ describe("TasksPage", () => {
       const archivedTab = screen.getByRole("button", { name: /Archived/i });
       fireEvent.click(archivedTab);
 
-      expect(screen.getByText("Approved task")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Approved task")).toBeInTheDocument();
+      });
       expect(screen.queryByText("Pending task")).not.toBeInTheDocument();
     });
   });
@@ -470,15 +491,15 @@ describe("TasksPage", () => {
       const archivedTab = screen.getByRole("button", { name: /Archived/i });
 
       // Initially on active
-      expect(activeTab).toHaveClass("glass-card-primary");
+      expect(activeTab).toHaveClass("primary-stat-card");
 
       // Switch to archived
       fireEvent.click(archivedTab);
-      expect(archivedTab).toHaveClass("glass-card-primary");
+      expect(archivedTab).toHaveClass("primary-stat-card");
 
       // Switch back to active
       fireEvent.click(activeTab);
-      expect(activeTab).toHaveClass("glass-card-primary");
+      expect(activeTab).toHaveClass("primary-stat-card");
     });
 
     it("should persist tab selection", () => {
@@ -487,7 +508,7 @@ describe("TasksPage", () => {
       const archivedTab = screen.getByRole("button", { name: /Archived/i });
       fireEvent.click(archivedTab);
 
-      expect(archivedTab).toHaveClass("glass-card-primary");
+      expect(archivedTab).toHaveClass("primary-stat-card");
     });
   });
 

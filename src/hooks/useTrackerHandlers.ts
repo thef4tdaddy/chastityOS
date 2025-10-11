@@ -32,7 +32,7 @@ export const useTrackerHandlers = ({
     logger.debug("Session persistence initialized");
   }, [setIsSessionInitialized]);
 
-  const handleEmergencyUnlock = useCallback(() => {
+  const handleEmergencyUnlock = useCallback(async () => {
     logger.info("Emergency unlock completed - refreshing session state", {
       sessionId: mockData.sessionId,
       userId: mockData.userId,
