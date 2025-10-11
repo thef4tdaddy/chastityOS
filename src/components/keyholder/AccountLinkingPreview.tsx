@@ -112,8 +112,8 @@ const AccountLinkingContent: React.FC<AccountLinkingContentProps> = ({
     )}
 
     {/* Link Code Generation and Usage */}
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <SubmissivePanel
           currentLinkCode={currentLinkCode}
           isGeneratingCode={isGeneratingCode}
@@ -174,13 +174,13 @@ export const AccountLinkingPreview: React.FC = () => {
   );
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaUserShield className="text-nightly-lavender-floral" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
+        <FaUserShield className="text-nightly-lavender-floral flex-shrink-0" />
+        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Account Linking
         </h2>
-        <span className="bg-green-500/20 text-green-400 px-2 py-1 text-xs rounded">
+        <span className="bg-green-500/20 text-green-400 px-2 py-1 text-xs rounded flex-shrink-0">
           ACTIVE
         </span>
       </div>
