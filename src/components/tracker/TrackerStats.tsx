@@ -66,9 +66,9 @@ const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
 
       {/* Progress bar */}
       <div className="mb-2">
-        <div className="w-full bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
           <div
-            className={`h-2 rounded-full transition-all ${
+            className={`h-2 rounded-full transition-all duration-500 progress-fill-animated ${
               isHardcoreMode
                 ? "bg-gradient-to-r from-red-500 to-red-600"
                 : "bg-gradient-to-r from-nightly-aquamarine to-nightly-spring-green"
@@ -106,19 +106,25 @@ const TotalStats: React.FC<{
   stats: ReturnType<typeof useTrackerStats>["stats"];
 }> = ({ stats }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <Card variant="glass" className="glass-hover">
+    <Card
+      variant="glass"
+      className="glass-hover tracker-card-hover tracker-state-transition"
+    >
       <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Total Time In Chastity:
       </p>
-      <p className="text-2xl md:text-4xl font-bold text-white">
+      <p className="text-2xl md:text-4xl font-bold text-white number-update">
         {stats.totalChastityTimeFormatted}
       </p>
     </Card>
-    <Card variant="glass" className="glass-hover">
+    <Card
+      variant="glass"
+      className="glass-hover tracker-card-hover tracker-state-transition"
+    >
       <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
         Total Time Cage Off:
       </p>
-      <p className="text-2xl md:text-4xl font-bold text-white">
+      <p className="text-2xl md:text-4xl font-bold text-white number-update">
         {stats.totalCageOffTimeFormatted}
       </p>
     </Card>
@@ -133,18 +139,22 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
     <div className="space-y-6 mb-8">
       {/* Top stat card with timestamp info */}
       {stats.topBoxLabel && stats.topBoxTimestamp && (
-        <div className="primary-stat-card text-center glass-float">
+        <div className="primary-stat-card text-center glass-float tracker-state-transition">
           <p className="text-blue-200 text-sm md:text-lg font-medium mb-2">
             {stats.topBoxLabel}:
           </p>
-          <p className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+          <p className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent number-update">
             {stats.topBoxTimestamp}
           </p>
         </div>
       )}
 
       {/* Personal Goal Display */}
-      {personalGoal && <PersonalGoalDisplay goal={personalGoal} />}
+      {personalGoal && (
+        <div className="tracker-state-transition">
+          <PersonalGoalDisplay goal={personalGoal} />
+        </div>
+      )}
 
       <CurrentSessionStats displayData={displayData} stats={stats} />
 
