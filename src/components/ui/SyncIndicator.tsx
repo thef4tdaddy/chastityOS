@@ -4,7 +4,7 @@
  */
 import React from "react";
 import { Spinner, Button, Tooltip } from "@/components/ui";
-import { FiRefreshCw, FiCheck, FiAlertCircle } from "react-icons/fi";
+import { FaSync, FaCheck, FaExclamationTriangle } from "@/utils/iconImport";
 
 export type SyncStatus = "syncing" | "synced" | "failed" | "idle";
 
@@ -30,11 +30,11 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
       case "syncing":
         return <Spinner size="sm" className="text-nightly-spring-green" />;
       case "synced":
-        return <FiCheck className="w-4 h-4 text-green-500" />;
+        return <FaCheck className="w-4 h-4 text-green-500" />;
       case "failed":
-        return <FiAlertCircle className="w-4 h-4 text-red-500" />;
+        return <FaExclamationTriangle className="w-4 h-4 text-red-500" />;
       default:
-        return <FiRefreshCw className="w-4 h-4 text-nightly-celadon" />;
+        return <FaSync className="w-4 h-4 text-nightly-celadon" />;
     }
   };
 
@@ -89,7 +89,7 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
           className="p-1 h-auto min-h-0"
           aria-label="Manual sync"
         >
-          <FiRefreshCw className="w-3 h-3" />
+          <FaSync className="w-3 h-3" />
         </Button>
       )}
     </div>

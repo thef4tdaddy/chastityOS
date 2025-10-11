@@ -4,10 +4,10 @@
  */
 import React, { useState, useEffect } from "react";
 import { Alert, Button } from "@/components/ui";
-import { FiBell, FiX } from "react-icons/fi";
+import { FaBell, FaTimes } from "@/utils/iconImport";
 
 export interface NotificationPermissionBannerProps {
-  onRequestPermission: () => Promise<NotificationPermission>;
+  onRequestPermission: () => Promise<"default" | "granted" | "denied">;
   showOnMount?: boolean;
   autoShowDelay?: number; // ms to wait before showing
   className?: string;
@@ -28,7 +28,7 @@ export const NotificationPermissionBanner: React.FC<
   const [isRequesting, setIsRequesting] = useState(false);
 
   useEffect(() => {
-    // Check if banner was dismissed recently
+    // Check if banner was dismissed recently - Note: localStorage is used for banner state only (non-critical UI preference)
     const dismissedData = localStorage.getItem(BANNER_DISMISSED_KEY);
     if (dismissedData) {
       const { timestamp } = JSON.parse(dismissedData);
@@ -66,8 +66,6 @@ export const NotificationPermissionBanner: React.FC<
       if (result === "granted" || result === "denied") {
         setVisible(false);
       }
-    } catch (error) {
-      console.error("Failed to request notification permission:", error);
     } finally {
       setIsRequesting(false);
     }
@@ -75,7 +73,7 @@ export const NotificationPermissionBanner: React.FC<
 
   const handleDismiss = () => {
     setVisible(false);
-    // Remember dismissal
+    // Remember dismissal - Note: localStorage is used for banner state only (non-critical UI preference)
     localStorage.setItem(
       BANNER_DISMISSED_KEY,
       JSON.stringify({ timestamp: Date.now() }),
@@ -88,16 +86,18 @@ export const NotificationPermissionBanner: React.FC<
 
   return (
     <Alert variant="info" className={`relative ${className}`}>
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={handleDismiss}
-        className="absolute top-2 right-2 text-nightly-celadon hover:text-nightly-honeydew transition-colors"
+        className="absolute top-2 right-2 text-nightly-celadon hover:text-nightly-honeydew transition-colors p-1 h-auto min-h-0"
         aria-label="Dismiss"
       >
-        <FiX className="w-5 h-5" />
-      </button>
+        <FaTimes className="w-5 h-5" />
+      </Button>
 
       <div className="flex items-start gap-3 pr-8">
-        <FiBell className="w-5 h-5 text-nightly-spring-green flex-shrink-0 mt-0.5" />
+        <FaBell className="w-5 h-5 text-nightly-spring-green flex-shrink-0 mt-0.5" />
 
         <div className="flex-1 space-y-2">
           <p className="text-sm font-medium text-nightly-honeydew">

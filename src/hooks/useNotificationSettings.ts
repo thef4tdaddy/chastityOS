@@ -44,8 +44,8 @@ export interface UseNotificationSettingsReturn {
   settings: NotificationSettings;
   isLoading: boolean;
   updateSettings: (updates: Partial<NotificationSettings>) => Promise<void>;
-  requestPermission: () => Promise<NotificationPermission>;
-  permission: NotificationPermission;
+  requestPermission: () => Promise<"default" | "granted" | "denied">;
+  permission: "default" | "granted" | "denied";
   isPermissionGranted: boolean;
   sendTestNotification: () => void;
 }
@@ -136,31 +136,32 @@ export function useNotificationSettings(
   );
 
   // Request notification permission
-  const requestPermission =
-    useCallback(async (): Promise<NotificationPermission> => {
-      if (typeof Notification === "undefined") {
-        logger.warn("Notifications not supported");
-        return "denied";
+  const requestPermission = useCallback(async (): Promise<
+    "default" | "granted" | "denied"
+  > => {
+    if (typeof Notification === "undefined") {
+      logger.warn("Notifications not supported");
+      return "denied";
+    }
+
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+
+      if (result === "granted") {
+        await updateSettings({ pushEnabled: true });
+        logger.info("Notification permission granted");
+      } else {
+        logger.info("Notification permission denied");
       }
 
-      try {
-        const result = await Notification.requestPermission();
-        setPermission(result);
-
-        if (result === "granted") {
-          await updateSettings({ pushEnabled: true });
-          logger.info("Notification permission granted");
-        } else {
-          logger.info("Notification permission denied");
-        }
-
-        return result;
-      } catch (error) {
-        logger.error("Failed to request notification permission", { error });
-        Sentry.captureException(error);
-        return "denied";
-      }
-    }, [updateSettings]);
+      return result;
+    } catch (error) {
+      logger.error("Failed to request notification permission", { error });
+      Sentry.captureException(error);
+      return "denied";
+    }
+  }, [updateSettings]);
 
   // Send test notification
   const sendTestNotification = useCallback(() => {

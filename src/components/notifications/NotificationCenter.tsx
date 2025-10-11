@@ -8,18 +8,15 @@ import {
   CardHeader,
   CardBody,
   Button,
-  Badge,
   EmptyState,
   Tabs,
-  TabsList,
-  TabsTrigger,
   TabsContent,
 } from "@/components/ui";
 import {
   useNotifications,
   useNotificationActions,
 } from "@/stores/notificationStore";
-import { FiBell, FiTrash2, FiCheckCircle, FiX } from "react-icons/fi";
+import { FaBell, FaTrash, FaTimes } from "@/utils/iconImport";
 import type { Notification } from "@/stores/notificationStore";
 
 const NOTIFICATION_TYPES = [
@@ -35,7 +32,7 @@ interface NotificationCenterProps {
   className?: string;
 }
 
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({
+const NotificationCenterContent: React.FC<NotificationCenterProps> = ({
   className = "",
 }) => {
   const notifications = useNotifications();
@@ -110,7 +107,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-nightly-honeydew flex items-center gap-2">
-              <FiBell className="w-6 h-6" />
+              <FaBell className="w-6 h-6" />
               Notification Center
             </h2>
             <p className="text-nightly-celadon text-sm mt-1">
@@ -125,7 +122,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               onClick={handleClearAll}
               className="text-red-400 hover:text-red-300"
             >
-              <FiTrash2 className="w-4 h-4 mr-1" />
+              <FaTrash className="w-4 h-4 mr-1" />
               Clear All
             </Button>
           )}
@@ -151,7 +148,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           >
             {filteredNotifications.length === 0 ? (
               <EmptyState
-                icon={<FiBell className="w-12 h-12" />}
+                icon={<FaBell className="w-12 h-12" />}
                 title="No notifications"
                 description={
                   activeFilter === "all"
@@ -193,15 +190,17 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                               </p>
                             </div>
 
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() =>
                                 removeNotification(notification.id)
                               }
-                              className="flex-shrink-0 p-1 text-nightly-celadon/60 hover:text-red-400 transition-colors"
+                              className="flex-shrink-0 p-1 h-auto min-h-0 text-nightly-celadon/60 hover:text-red-400 transition-colors"
                               aria-label="Remove notification"
                             >
-                              <FiX className="w-4 h-4" />
-                            </button>
+                              <FaTimes className="w-4 h-4" />
+                            </Button>
                           </div>
 
                           {notification.action && (
@@ -229,3 +228,5 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     </Card>
   );
 };
+
+export const NotificationCenter = NotificationCenterContent;
