@@ -158,6 +158,10 @@ Object.defineProperty(navigator, "serviceWorker", {
   },
 });
 
+// Mock URL methods
+global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
+global.URL.revokeObjectURL = vi.fn();
+
 // Global test utilities
 globalThis.console = {
   ...console,
