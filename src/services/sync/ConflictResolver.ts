@@ -1,6 +1,7 @@
 /**
  * Conflict Resolver
  * Implements strategies for resolving data conflicts between local and remote versions
+ * Routes to specialized resolvers for type-safe conflict resolution
  */
 import { serviceLogger } from "@/utils/logging";
 import type {
@@ -8,8 +9,9 @@ import type {
   DBTask,
   DBSettings,
   ConflictInfo,
-  SettingsConflict,
 } from "@/types/database";
+import { settingsConflictResolver } from "./resolvers/SettingsConflictResolver";
+import { sessionConflictResolver } from "./resolvers/SessionConflictResolver";
 
 const logger = serviceLogger("ConflictResolver");
 
@@ -20,11 +22,11 @@ class ConflictResolver {
 
   /**
    * Resolve conflict for a session document
-   * Strategy: Latest timestamp wins
+   * Delegates to SessionConflictResolver for type-safe resolution
    */
   resolveSessionConflict(local: DBSession, remote: DBSession): DBSession {
-    logger.debug(`Resolving session conflict for ${local.id}`);
-    return local.lastModified > remote.lastModified ? local : remote;
+    logger.debug(`Delegating session conflict resolution for ${local.id}`);
+    return sessionConflictResolver.resolve(local, remote);
   }
 
   /**
@@ -60,94 +62,11 @@ class ConflictResolver {
 
   /**
    * Resolve conflict for a settings document
-   * Strategy: Merge non-conflicting fields and queue user choice for conflicts
+   * Delegates to SettingsConflictResolver for type-safe resolution
    */
   resolveSettingsConflict(local: DBSettings, remote: DBSettings): DBSettings {
-    logger.debug(`Resolving settings conflict for ${local.userId}`);
-
-    // Start with the remote settings as base
-    const merged: DBSettings = { ...remote };
-    const conflicts: SettingsConflict[] = [];
-
-    // System fields that should use latest timestamp
-    const systemFields = ["lastModified", "syncStatus", "userId"];
-
-    // Check each field for conflicts
-    Object.keys(local).forEach((key) => {
-      if (local[key as keyof DBSettings] !== remote[key as keyof DBSettings]) {
-        if (systemFields.includes(key)) {
-          // System fields: latest timestamp wins
-          if (local.lastModified > remote.lastModified) {
-            (merged as Record<string, unknown>)[key] = (
-              local as Record<string, unknown>
-            )[key];
-          }
-        } else {
-          // For complex objects, do deep comparison
-          const localVal = (local as Record<string, unknown>)[key];
-          const remoteVal = (remote as Record<string, unknown>)[key];
-
-          if (typeof localVal === "object" && typeof remoteVal === "object") {
-            // Merge objects recursively where possible
-            if (
-              key === "notifications" ||
-              key === "privacy" ||
-              key === "chastity" ||
-              key === "display"
-            ) {
-              (merged as Record<string, unknown>)[key] =
-                this.mergeSettingsObject(
-                  localVal as Record<string, unknown>,
-                  remoteVal as Record<string, unknown>,
-                  local.lastModified,
-                  remote.lastModified,
-                );
-            } else {
-              // For other objects, use timestamp rule
-              (merged as Record<string, unknown>)[key] =
-                local.lastModified > remote.lastModified ? localVal : remoteVal;
-            }
-          } else {
-            // Simple values: use timestamp rule for automatic resolution
-            (merged as Record<string, unknown>)[key] =
-              local.lastModified > remote.lastModified ? localVal : remoteVal;
-          }
-        }
-      }
-    });
-
-    // Update metadata
-    merged.lastModified = new Date();
-    merged.syncStatus = "synced";
-
-    logger.info(`Settings conflict resolved for ${local.userId}`, {
-      conflictsFound: conflicts.length,
-      resolvedAutomatically: true,
-    });
-
-    return merged;
-  }
-
-  /**
-   * Merge settings objects intelligently
-   */
-  private mergeSettingsObject(
-    local: Record<string, unknown>,
-    remote: Record<string, unknown>,
-    localTimestamp: Date,
-    remoteTimestamp: Date,
-  ): Record<string, unknown> {
-    const merged = { ...remote };
-
-    Object.keys(local).forEach((key) => {
-      if (local[key] !== remote[key]) {
-        // Use latest timestamp for individual settings
-        merged[key] =
-          localTimestamp > remoteTimestamp ? local[key] : remote[key];
-      }
-    });
-
-    return merged;
+    logger.debug(`Delegating settings conflict resolution for ${local.userId}`);
+    return settingsConflictResolver.resolve(local, remote);
   }
 
   /**
