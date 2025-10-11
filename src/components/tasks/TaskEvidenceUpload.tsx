@@ -8,11 +8,7 @@ import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
 import { FaUpload, FaTimes, FaImage, FaSpinner } from "../../utils/iconImport";
-import {
-  fadeInVariants,
-  scaleInVariants,
-  getAccessibleVariants,
-} from "../../utils/animations";
+import { scaleInVariants, getAccessibleVariants } from "../../utils/animations";
 
 interface TaskEvidenceUploadProps {
   taskId: string;

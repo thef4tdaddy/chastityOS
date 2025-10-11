@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
@@ -228,7 +228,11 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <motion.div variants={getAccessibleVariants(buttonVariants)} whileHover="hover" whileTap="tap">
+      <motion.div
+        variants={getAccessibleVariants(buttonVariants)}
+        whileHover="hover"
+        whileTap="tap"
+      >
         <Button
           onClick={onSubmit}
           disabled={isSubmitting}

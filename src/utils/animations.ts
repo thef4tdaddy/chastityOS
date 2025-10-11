@@ -270,6 +270,21 @@ export const celebrationVariants: Variants = {
 };
 
 /**
+ * Check if we're in a test environment
+ * Vitest sets import.meta.env.MODE to 'test'
+ */
+export const isTestEnvironment = (): boolean => {
+  return (
+    (typeof import.meta !== "undefined" &&
+      import.meta.env &&
+      (import.meta.env.MODE === "test" || import.meta.env.VITEST === "true")) ||
+    (typeof process !== "undefined" &&
+      process.env &&
+      process.env.NODE_ENV === "test")
+  );
+};
+
+/**
  * Check if user prefers reduced motion
  */
 export const prefersReducedMotion = (): boolean => {
@@ -278,11 +293,11 @@ export const prefersReducedMotion = (): boolean => {
 };
 
 /**
- * Get animation variants that respect prefers-reduced-motion
- * Returns instant transitions if reduced motion is preferred
+ * Get animation variants that respect prefers-reduced-motion and test environments
+ * Returns instant transitions if reduced motion is preferred or in test environment
  */
 export const getAccessibleVariants = (variants: Variants): Variants => {
-  if (prefersReducedMotion()) {
+  if (prefersReducedMotion() || isTestEnvironment()) {
     // Create instant transitions
     const accessibleVariants: Variants = {};
     Object.keys(variants).forEach((key) => {

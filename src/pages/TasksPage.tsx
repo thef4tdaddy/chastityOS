@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
@@ -100,17 +100,15 @@ const ActiveTasksSection: React.FC<{
       initial="initial"
       animate="animate"
     >
-      <AnimatePresence mode="popLayout">
-        {tasks.map((task) => (
-          <Card
-            key={task.id}
-            variant="glass"
-            className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
-          >
-            <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
-          </Card>
-        ))}
-      </AnimatePresence>
+      {tasks.map((task) => (
+        <Card
+          key={task.id}
+          variant="glass"
+          className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
+        >
+          <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
+        </Card>
+      ))}
     </motion.div>
   );
 };
@@ -150,20 +148,18 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
       initial="initial"
       animate="animate"
     >
-      <AnimatePresence mode="popLayout">
-        {tasks.map((task) => (
-          <Card
-            key={task.id}
-            variant="glass"
-            className="opacity-75 hover:opacity-100 transition-opacity duration-300"
-          >
-            <TaskItem
-              task={task}
-              onSubmit={() => {}} // Archived tasks can't be submitted
-            />
-          </Card>
-        ))}
-      </AnimatePresence>
+      {tasks.map((task) => (
+        <Card
+          key={task.id}
+          variant="glass"
+          className="opacity-75 hover:opacity-100 transition-opacity duration-300"
+        >
+          <TaskItem
+            task={task}
+            onSubmit={() => {}} // Archived tasks can't be submitted
+          />
+        </Card>
+      ))}
     </motion.div>
   );
 };
@@ -241,25 +237,22 @@ const TasksPage: React.FC = () => {
           <ErrorState />
         ) : (
           <FeatureErrorBoundary feature="tasks-management">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                variants={getAccessibleVariants(tabContentVariants)}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-              >
-                {activeTab === "active" ? (
-                  <ActiveTasksSection
-                    tasks={activeTasks}
-                    userId={user?.uid || ""}
-                    handleSubmitTask={handleSubmitTask}
-                  />
-                ) : (
-                  <ArchivedTasksSection tasks={archivedTasks} />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <motion.div
+              key={activeTab}
+              variants={getAccessibleVariants(tabContentVariants)}
+              initial="initial"
+              animate="animate"
+            >
+              {activeTab === "active" ? (
+                <ActiveTasksSection
+                  tasks={activeTasks}
+                  userId={user?.uid || ""}
+                  handleSubmitTask={handleSubmitTask}
+                />
+              ) : (
+                <ArchivedTasksSection tasks={archivedTasks} />
+              )}
+            </motion.div>
           </FeatureErrorBoundary>
         )}
       </div>
