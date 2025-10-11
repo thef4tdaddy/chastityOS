@@ -9,7 +9,7 @@ import {
   FaExclamationTriangle,
   FaWifi,
   FaLock,
-  FaFileUpload,
+  FaUpload,
   FaBan,
 } from "../../utils/iconImport";
 
@@ -32,7 +32,7 @@ export interface TaskErrorProps {
 const ERROR_ICONS = {
   network: FaWifi,
   permission: FaLock,
-  upload: FaFileUpload,
+  upload: FaUpload,
   "not-found": FaBan,
   "rate-limit": FaExclamationTriangle,
   generic: FaExclamationTriangle,
