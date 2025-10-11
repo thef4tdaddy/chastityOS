@@ -49,16 +49,6 @@ describe("TaskDBService", () => {
 
   describe("addTask", () => {
     it("should create a new task with required fields", async () => {
-      const mockTask = {
-        id: mockTaskId,
-        userId: mockUserId,
-        text: "Test task",
-        status: "pending" as TaskStatus,
-        priority: "medium" as const,
-        assignedBy: "keyholder" as const,
-        createdAt: expect.any(Date),
-      };
-
       (db.tasks.add as any).mockResolvedValue(mockTaskId);
 
       const taskId = await taskDBService.addTask(mockUserId, "Test task");
