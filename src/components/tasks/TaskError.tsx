@@ -50,47 +50,26 @@ const ERROR_MESSAGES = {
   generic: "An unexpected error occurred. Please try again.",
 };
 
+// Error pattern mappings for detection
+const ERROR_PATTERNS = {
+  network: ["network", "offline", "fetch failed", "failed to fetch"],
+  permission: ["permission", "unauthorized", "forbidden"],
+  upload: ["upload", "file", "size"],
+  "not-found": ["not found", "404"],
+  "rate-limit": ["rate limit", "too many requests", "429"],
+} as const;
+
 // Detect error type from error object
 function detectErrorType(error?: Error | null): TaskErrorProps["errorType"] {
   if (!error) return "generic";
 
   const message = error.message.toLowerCase();
 
-  if (
-    message.includes("network") ||
-    message.includes("offline") ||
-    message.includes("fetch failed") ||
-    message.includes("failed to fetch")
-  ) {
-    return "network";
-  }
-
-  if (
-    message.includes("permission") ||
-    message.includes("unauthorized") ||
-    message.includes("forbidden")
-  ) {
-    return "permission";
-  }
-
-  if (
-    message.includes("upload") ||
-    message.includes("file") ||
-    message.includes("size")
-  ) {
-    return "upload";
-  }
-
-  if (message.includes("not found") || message.includes("404")) {
-    return "not-found";
-  }
-
-  if (
-    message.includes("rate limit") ||
-    message.includes("too many requests") ||
-    message.includes("429")
-  ) {
-    return "rate-limit";
+  // Check each error pattern
+  for (const [type, patterns] of Object.entries(ERROR_PATTERNS)) {
+    if (patterns.some((pattern) => message.includes(pattern))) {
+      return type as TaskErrorProps["errorType"];
+    }
   }
 
   return "generic";
