@@ -170,18 +170,26 @@ const validateMultipleFields = (
 };
 
 // Form lifecycle actions
-const createFormLifecycleActions = (
-  set: (
-    state: Partial<FormState> | ((state: FormState) => FormState),
-    replace?: boolean,
+const createFormLifecycleActions = (set: {
+  (
+    state:
+      | Partial<FormState>
+      | ((state: FormState) => FormState | Partial<FormState>),
+    replace?: false,
     action?: string,
-  ) => void,
-) => ({
+  ): void;
+  (
+    state: FormState | ((state: FormState) => FormState),
+    replace: true,
+    action?: string,
+  ): void;
+}) => ({
   createForm: (formId: string, initialValues = {}) =>
     set(
       (state: FormState) => {
         if (state.forms[formId]) return state;
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: createFormInstance(initialValues),
@@ -196,7 +204,7 @@ const createFormLifecycleActions = (
     set(
       (state: FormState) => {
         const { [formId]: _removed, ...rest } = state.forms;
-        return { forms: rest };
+        return { ...state, forms: rest };
       },
       false,
       `destroyForm:${formId}`,
@@ -204,13 +212,20 @@ const createFormLifecycleActions = (
 });
 
 // Field manipulation actions
-const createFieldActions = (
-  set: (
-    state: Partial<FormState> | ((state: FormState) => FormState),
-    replace?: boolean,
+const createFieldActions = (set: {
+  (
+    state:
+      | Partial<FormState>
+      | ((state: FormState) => FormState | Partial<FormState>),
+    replace?: false,
     action?: string,
-  ) => void,
-) => ({
+  ): void;
+  (
+    state: FormState | ((state: FormState) => FormState),
+    replace: true,
+    action?: string,
+  ): void;
+}) => ({
   setFieldValue: (formId: string, fieldName: string, value: FormFieldValue) =>
     set(
       (state: FormState) => {
@@ -227,6 +242,7 @@ const createFieldActions = (
         const formIsDirty = calculateFormDirty(updatedForm.fields);
 
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: {
@@ -250,6 +266,7 @@ const createFieldActions = (
         const isValid = calculateFormValid(updatedForm.fields);
 
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: {
@@ -274,6 +291,7 @@ const createFieldActions = (
         });
 
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: updatedForm,
@@ -286,13 +304,20 @@ const createFieldActions = (
 });
 
 // Form state actions
-const createFormStateActions = (
-  set: (
-    state: Partial<FormState> | ((state: FormState) => FormState),
-    replace?: boolean,
+const createFormStateActions = (set: {
+  (
+    state:
+      | Partial<FormState>
+      | ((state: FormState) => FormState | Partial<FormState>),
+    replace?: false,
     action?: string,
-  ) => void,
-) => ({
+  ): void;
+  (
+    state: FormState | ((state: FormState) => FormState),
+    replace: true,
+    action?: string,
+  ): void;
+}) => ({
   resetForm: (formId: string, newValues = {}) =>
     set(
       (state: FormState) => {
@@ -300,6 +325,7 @@ const createFormStateActions = (
         if (!form) return state;
 
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: {
@@ -322,6 +348,7 @@ const createFormStateActions = (
         if (!form) return state;
 
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: {
@@ -343,6 +370,7 @@ const createFormStateActions = (
         if (!form) return state;
 
         return {
+          ...state,
           forms: {
             ...state.forms,
             [formId]: {
@@ -373,11 +401,20 @@ const createValidationActions = (get: () => FormState) => ({
 
 // Form state actions
 const createFormActions = (
-  set: (
-    state: Partial<FormState> | ((state: FormState) => FormState),
-    replace?: boolean,
-    action?: string,
-  ) => void,
+  set: {
+    (
+      state:
+        | Partial<FormState>
+        | ((state: FormState) => FormState | Partial<FormState>),
+      replace?: false,
+      action?: string,
+    ): void;
+    (
+      state: FormState | ((state: FormState) => FormState),
+      replace: true,
+      action?: string,
+    ): void;
+  },
   get: () => FormState,
 ) => ({
   ...createFormLifecycleActions(set),
