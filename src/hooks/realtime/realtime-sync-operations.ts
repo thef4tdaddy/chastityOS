@@ -276,12 +276,18 @@ const createMessageHandlers = (
     const subscriptionKeys = Object.keys(subscriptionsRef.current);
     for (let i = 0; i < subscriptionKeys.length; i++) {
       const key = subscriptionKeys[i];
-      const subscription = subscriptionsRef.current[key];
-      if (subscription.dataType === update.type && subscription.isActive) {
-        try {
-          subscription.callback(update);
-        } catch {
-          // Error in subscription callback
+      if (key !== undefined) {
+        const subscription = subscriptionsRef.current[key];
+        if (
+          subscription &&
+          subscription.dataType === update.type &&
+          subscription.isActive
+        ) {
+          try {
+            subscription.callback(update);
+          } catch {
+            // Error in subscription callback
+          }
         }
       }
     }
@@ -295,13 +301,13 @@ const createMessageHandlers = (
 
     switch (message.type) {
       case "channel_joined":
-        handleChannelJoined(message as Record<string, unknown>);
+        handleChannelJoined(message as { channel: SyncChannel });
         break;
       case "channel_left":
-        handleChannelLeft(message as Record<string, unknown>);
+        handleChannelLeft(message as { channelId: string });
         break;
       case "realtime_update":
-        handleRealtimeUpdate(message as RealtimeUpdate);
+        handleRealtimeUpdate(message as { update: RealtimeUpdate });
         break;
       case "heartbeat_ack":
         // Heartbeat acknowledged
