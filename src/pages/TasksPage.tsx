@@ -3,15 +3,29 @@ import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
-import { TaskItem, TaskSkeleton, TaskSearch } from "../components/tasks";
+  import {
+    TaskItem,
+    TaskSkeleton,
+    TaskErrorBoundary,
+    TaskError,
+    TaskSearch,
+  } from "../components/tasks";
+
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
+import { logger } from "../utils/logging";
 
-const ErrorState: React.FC = () => (
-  <div className="text-center py-8">
-    <div className="text-red-400">Error loading tasks. Please try again.</div>
-  </div>
+const ErrorState: React.FC<{ error?: Error; onRetry?: () => void }> = ({
+  error,
+  onRetry,
+}) => (
+  <TaskError
+    error={error}
+    title="Failed to Load Tasks"
+    message="We couldn't load your tasks. Please check your connection and try again."
+    onRetry={onRetry}
+  />
 );
 
 // Tab Navigation Component
@@ -138,6 +152,7 @@ const TasksPage: React.FC = () => {
     data: tasks = [],
     isLoading: loading,
     error,
+    refetch,
   } = useTasks(user?.uid || "");
 
   const submitTaskMutation = useSubmitTaskForReview();
@@ -156,9 +171,14 @@ const TasksPage: React.FC = () => {
         note,
         attachments,
       });
-    } catch {
-      // Error is already logged in the hook
-      // TODO: Add toast notification for user feedback on error
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error("Task submission failed");
+      logger.error("Task submission error", {
+        taskId,
+        userId: user.uid,
+        error: err.message,
+      });
+      throw err; // Re-throw to be caught by TaskItem error handling
     }
   };
 
@@ -205,86 +225,87 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      {/* Enhanced Header with Glass Effect */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
-          Task Management
-        </h1>
-        <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
-      </div>
-
-      {/* Task Stats Card */}
-      {user && (
-        <div className="max-w-4xl mx-auto mb-8">
-          <TaskStatsCard userId={user.uid} />
+    <TaskErrorBoundary>
+      <div className="p-6">
+        {/* Enhanced Header with Glass Effect */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+            Task Management
+          </h1>
+          <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
         </div>
-      )}
+          {/* Task Stats Card */}
+          {user && (
+            <div className="max-w-4xl mx-auto mb-8">
+              <TaskStatsCard userId={user.uid} />
+            </div>
+          )}
 
-      <TabNavigation
-        activeTab={activeTab}
-        setActiveTab={handleTabChange}
-        activeCount={activeTasks.length}
-        archivedCount={archivedTasks.length}
-      />
+          <TabNavigation
+            activeTab={activeTab}
+            setActiveTab={handleTabChange}
+            activeCount={activeTasks.length}
+            archivedCount={archivedTasks.length}
+          />
 
-      {/* Search Bar */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <TaskSearch
-          onSearchChange={handleSearchChange}
-          placeholder={`Search ${activeTab} tasks...`}
-        />
-        {searchQuery && (
-          <div className="text-sm text-gray-400 mt-2">
-            Found {filteredTasks.length} task(s) matching &quot;{searchQuery}&quot;
-          </div>
-        )}
-      </div>
-
-      {/* Content with Glass Container */}
-      <div className="max-w-4xl mx-auto">
-        {loading ? (
-          <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
-        ) : error ? (
-          <ErrorState />
-        ) : (
-          <FeatureErrorBoundary feature="tasks-management">
-            {activeTab === "active" ? (
-              <ActiveTasksSection
-                tasks={paginatedTasks}
-                userId={user?.uid || ""}
-                handleSubmitTask={handleSubmitTask}
-              />
-            ) : (
-              <ArchivedTasksSection tasks={paginatedTasks} />
+          {/* Search Bar */}
+          <div className="max-w-4xl mx-auto mb-6">
+            <TaskSearch
+              onSearchChange={handleSearchChange}
+              placeholder={`Search ${activeTab} tasks...`}
+            />
+            {searchQuery && (
+              <div className="text-sm text-gray-400 mt-2">
+                Found {filteredTasks.length} task(s) matching &quot;{searchQuery}&quot;
+              </div>
             )}
-          </FeatureErrorBoundary>
-        )}
-
-        {/* Pagination Controls */}
-        {!loading && !error && totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 mt-8">
-            <Button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </Button>
-            <span className="text-gray-300">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </Button>
           </div>
-        )}
+
+          {/* Content with Glass Container */}
+          <div className="max-w-4xl mx-auto">
+            {loading ? (
+              <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
+            ) : error ? (
+              <ErrorState error={error as Error} onRetry={() => refetch()} />
+            ) : (
+              <FeatureErrorBoundary feature="tasks-management">
+                {activeTab === "active" ? (
+                  <ActiveTasksSection
+                    tasks={paginatedTasks}
+                    userId={user?.uid || ""}
+                    handleSubmitTask={handleSubmitTask}
+                  />
+                ) : (
+                  <ArchivedTasksSection tasks={paginatedTasks} />
+                )}
+              </FeatureErrorBoundary>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && !error && totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8">
+                <Button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </Button>
+                <span className="text-gray-300">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
       </div>
-    </div>
+    </TaskErrorBoundary>
   );
 };
 
