@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
-import { TaskItem, TaskSkeleton } from "../components/tasks";
+import { TaskItem, TaskSkeleton, TaskSearch } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
@@ -130,6 +130,7 @@ const TasksPage: React.FC = () => {
   const { user } = useAuthState();
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const ITEMS_PER_PAGE = 20;
 
   // Use TanStack Query hooks for tasks
@@ -169,16 +170,37 @@ const TasksPage: React.FC = () => {
     ["approved", "rejected", "completed", "cancelled"].includes(task.status),
   );
 
+  // Filter tasks based on search query (memoized)
+  const filteredTasks = useMemo(() => {
+    const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
+    
+    if (!searchQuery.trim()) {
+      return tasksToFilter;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return tasksToFilter.filter(
+      (task) =>
+        task.text.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.category?.toLowerCase().includes(query),
+    );
+  }, [activeTasks, archivedTasks, activeTab, searchQuery]);
+
   // Calculate pagination
-  const currentTasks = activeTab === "active" ? activeTasks : archivedTasks;
-  const totalPages = Math.ceil(currentTasks.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTasks = currentTasks.slice(startIndex, endIndex);
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
 
-  // Reset to page 1 when switching tabs
+  // Reset to page 1 when switching tabs or searching
   const handleTabChange = (tab: "active" | "archived") => {
     setActiveTab(tab);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
     setCurrentPage(1);
   };
 
@@ -205,6 +227,19 @@ const TasksPage: React.FC = () => {
         activeCount={activeTasks.length}
         archivedCount={archivedTasks.length}
       />
+
+      {/* Search Bar */}
+      <div className="max-w-4xl mx-auto mb-6">
+        <TaskSearch
+          onSearchChange={handleSearchChange}
+          placeholder={`Search ${activeTab} tasks...`}
+        />
+        {searchQuery && (
+          <div className="text-sm text-gray-400 mt-2">
+            Found {filteredTasks.length} task(s) matching &quot;{searchQuery}&quot;
+          </div>
+        )}
+      </div>
 
       {/* Content with Glass Container */}
       <div className="max-w-4xl mx-auto">

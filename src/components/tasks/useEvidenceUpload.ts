@@ -66,7 +66,7 @@ export function useEvidenceUpload(
             compressedSize = result.compressedSize;
           } catch (error) {
             // If compression fails, use original file
-            console.warn("Image compression failed, using original:", error);
+            // Error is logged in the compression utility
           }
         }
         

@@ -38,6 +38,14 @@ export async function compressImage(
 
   const originalSize = file.size;
 
+  // Early return if file is already small enough
+  if (originalSize <= maxSizeMB * 1024 * 1024 * 0.9) {
+    logger.info("File already small enough, skipping compression", {
+      fileName: file.name,
+    });
+    return createResult(file, originalSize, originalSize);
+  }
+
   try {
     logger.info("Starting image compression", {
       fileName: file.name,
@@ -45,78 +53,13 @@ export async function compressImage(
       fileType: file.type,
     });
 
-    // If file is already small enough, return as-is
-    if (originalSize <= maxSizeMB * 1024 * 1024 * 0.9) {
-      logger.info("File already small enough, skipping compression", {
-        fileName: file.name,
-      });
-      return {
-        file,
-        originalSize,
-        compressedSize: originalSize,
-        compressionRatio: 1,
-      };
-    }
-
-    // Load image
-    const bitmap = await createImageBitmap(file);
-
-    // Calculate new dimensions while maintaining aspect ratio
-    let width = bitmap.width;
-    let height = bitmap.height;
-
-    if (width > maxWidthOrHeight || height > maxWidthOrHeight) {
-      if (width > height) {
-        height = Math.round((height * maxWidthOrHeight) / width);
-        width = maxWidthOrHeight;
-      } else {
-        width = Math.round((width * maxWidthOrHeight) / height);
-        height = maxWidthOrHeight;
-      }
-    }
-
-    // Create canvas and draw resized image
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      throw new Error("Failed to get canvas context");
-    }
-
-    // Use better image smoothing
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(bitmap, 0, 0, width, height);
-
-    // Convert to blob with quality setting
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (result) => {
-          if (result) {
-            resolve(result);
-          } else {
-            reject(new Error("Failed to create blob"));
-          }
-        },
-        fileType,
-        initialQuality,
-      );
-    });
-
-    // Create new file from blob
-    const compressedFile = new File(
-      [blob],
-      file.name.replace(/\.[^/.]+$/, ".webp"),
-      {
-        type: fileType,
-        lastModified: Date.now(),
-      },
+    const compressedFile = await compressImageToCanvas(
+      file,
+      maxWidthOrHeight,
+      fileType,
+      initialQuality,
     );
-
     const compressedSize = compressedFile.size;
-    const compressionRatio = originalSize / compressedSize;
 
     // If compressed file is larger, use original
     if (compressedSize >= originalSize) {
@@ -125,42 +68,125 @@ export async function compressImage(
         originalSize,
         compressedSize,
       });
-      return {
-        file,
-        originalSize,
-        compressedSize: originalSize,
-        compressionRatio: 1,
-      };
+      return createResult(file, originalSize, originalSize);
     }
 
     logger.info("Image compression successful", {
       fileName: file.name,
       originalSize,
       compressedSize,
-      compressionRatio: compressionRatio.toFixed(2),
+      compressionRatio: (originalSize / compressedSize).toFixed(2),
       savedBytes: originalSize - compressedSize,
     });
 
-    return {
-      file: compressedFile,
-      originalSize,
-      compressedSize,
-      compressionRatio,
-    };
+    return createResult(compressedFile, originalSize, compressedSize);
   } catch (error) {
     logger.error("Image compression failed, using original", {
       error: error instanceof Error ? error.message : String(error),
       fileName: file.name,
     });
+    return createResult(file, originalSize, originalSize);
+  }
+}
 
-    // Fall back to original file on error
+/**
+ * Helper to create compression result
+ */
+function createResult(
+  file: File,
+  originalSize: number,
+  compressedSize: number,
+): CompressionResult {
+  return {
+    file,
+    originalSize,
+    compressedSize,
+    compressionRatio: originalSize / compressedSize,
+  };
+}
+
+/**
+ * Compress image using canvas
+ */
+async function compressImageToCanvas(
+  file: File,
+  maxWidthOrHeight: number,
+  fileType: string,
+  initialQuality: number,
+): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  const { width, height } = calculateDimensions(
+    bitmap.width,
+    bitmap.height,
+    maxWidthOrHeight,
+  );
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Failed to get canvas context");
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, 0, 0, width, height);
+
+  const blob = await canvasToBlob(canvas, fileType, initialQuality);
+  return new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), {
+    type: fileType,
+    lastModified: Date.now(),
+  });
+}
+
+/**
+ * Calculate new dimensions while maintaining aspect ratio
+ */
+function calculateDimensions(
+  width: number,
+  height: number,
+  maxWidthOrHeight: number,
+): { width: number; height: number } {
+  if (width <= maxWidthOrHeight && height <= maxWidthOrHeight) {
+    return { width, height };
+  }
+
+  if (width > height) {
     return {
-      file,
-      originalSize,
-      compressedSize: originalSize,
-      compressionRatio: 1,
+      width: maxWidthOrHeight,
+      height: Math.round((height * maxWidthOrHeight) / width),
     };
   }
+
+  return {
+    width: Math.round((width * maxWidthOrHeight) / height),
+    height: maxWidthOrHeight,
+  };
+}
+
+/**
+ * Convert canvas to blob
+ */
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  fileType: string,
+  quality: number,
+): Promise<Blob> {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(new Error("Failed to create blob"));
+        }
+      },
+      fileType,
+      quality,
+    );
+  });
 }
 
 /**
