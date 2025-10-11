@@ -11,3 +11,6 @@ export type {
 
 export { Divider } from "./Divider";
 export type { DividerProps } from "./Divider";
+
+export { Sheet } from "./Sheet";
+export type { SheetProps } from "./Sheet";
