@@ -7,6 +7,7 @@ import { ActionButtons } from "../components/tracker/ActionButtons";
 import { PauseResumeButtons } from "../components/tracker/PauseResumeButtons";
 import { ReasonModals } from "../components/tracker/ReasonModals";
 import { TrackerHeader } from "../components/tracker/TrackerHeader";
+import { ErrorDisplay } from "../components/tracker/ErrorDisplay";
 import { useTrackerData } from "../hooks/tracker/useTrackerData";
 import { useTrackerSession } from "../hooks/tracker/useTrackerSession";
 import { logger } from "../utils/logging";
@@ -334,6 +335,8 @@ const TrackerPage: React.FC = () => {
     endSession,
     pauseSession,
     resumeSession,
+    sessionError,
+    clearSessionError,
   } = useTrackerData(USE_REAL_SESSIONS);
 
   // Mock data (for demo version - keep for #308)
@@ -402,6 +405,15 @@ const TrackerPage: React.FC = () => {
 
       {persistenceError && <SessionPersistenceError error={persistenceError} />}
 
+      {/* Display session operation errors */}
+      {USE_REAL_SESSIONS && sessionError && (
+        <ErrorDisplay
+          error={sessionError}
+          onDismiss={clearSessionError}
+          className="mx-4"
+        />
+      )}
+
       {mockData.showRestoreSessionPrompt && (
         <RestoreSessionPrompt onConfirm={() => {}} onDiscard={() => {}} />
       )}
@@ -416,35 +428,62 @@ const TrackerPage: React.FC = () => {
         feature="chastity-tracker"
         fallback={<TrackerErrorFallback />}
       >
-        <TrackerStats {...trackerStatsProps} />
+        <FeatureErrorBoundary
+          feature="tracker-stats"
+          fallback={
+            <div className="p-4 text-center text-yellow-600">
+              Unable to load session statistics
+            </div>
+          }
+        >
+          <TrackerStats {...trackerStatsProps} />
+        </FeatureErrorBoundary>
 
         {shouldShowPauseButtons(USE_REAL_SESSIONS, isActive) && (
-          <PauseResumeButtons
-            sessionId={sessionId || ""}
-            userId={user?.uid || ""}
-            isPaused={isPaused}
-            pauseState={{
-              canPause,
-              cooldownRemaining,
-              lastPauseTime: undefined,
-              nextPauseAvailable: undefined,
-            }}
-            onPause={() => pauseSession("bathroom")}
-            onResume={resumeSession}
-          />
+          <FeatureErrorBoundary
+            feature="pause-resume-controls"
+            fallback={
+              <div className="p-4 text-center text-yellow-600">
+                Pause controls temporarily unavailable
+              </div>
+            }
+          >
+            <PauseResumeButtons
+              sessionId={sessionId || ""}
+              userId={user?.uid || ""}
+              isPaused={isPaused}
+              pauseState={{
+                canPause,
+                cooldownRemaining,
+                lastPauseTime: undefined,
+                nextPauseAvailable: undefined,
+              }}
+              onPause={() => pauseSession("bathroom")}
+              onResume={resumeSession}
+            />
+          </FeatureErrorBoundary>
         )}
 
-        <ActionButtons
-          {...trackerData}
-          {...getActionButtonCallbacks(
-            USE_REAL_SESSIONS,
-            startSession,
-            endSession,
-            handleEmergencyUnlock,
-          )}
-          isStarting={USE_REAL_SESSIONS && isStarting}
-          isEnding={USE_REAL_SESSIONS && isEnding}
-        />
+        <FeatureErrorBoundary
+          feature="action-buttons"
+          fallback={
+            <div className="p-4 text-center text-yellow-600">
+              Session controls temporarily unavailable
+            </div>
+          }
+        >
+          <ActionButtons
+            {...trackerData}
+            {...getActionButtonCallbacks(
+              USE_REAL_SESSIONS,
+              startSession,
+              endSession,
+              handleEmergencyUnlock,
+            )}
+            isStarting={USE_REAL_SESSIONS && isStarting}
+            isEnding={USE_REAL_SESSIONS && isEnding}
+          />
+        </FeatureErrorBoundary>
       </FeatureErrorBoundary>
 
       <ReasonModals
