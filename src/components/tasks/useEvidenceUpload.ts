@@ -64,7 +64,7 @@ export function useEvidenceUpload(
             processedFile = result.file;
             originalSize = result.originalSize;
             compressedSize = result.compressedSize;
-          } catch (error) {
+          } catch (_error) {
             // If compression fails, use original file
             // Error is logged in the compression utility
           }

@@ -187,19 +187,26 @@ export const Sheet: React.FC<SheetProps> = ({
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
 
+  // Store onClose in a ref to avoid adding it to deps
+  // This prevents potential infinite loops if onClose changes on every render
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   // Handle ESC key press
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
+  }, [isOpen, closeOnEscape]);
 
   // Prevent body scroll when sheet is open
   useEffect(() => {
