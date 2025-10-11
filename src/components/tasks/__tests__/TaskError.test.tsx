@@ -26,10 +26,7 @@ describe("TaskError", () => {
 
   it("renders custom title and message", () => {
     render(
-      <TaskError
-        title="Custom Title"
-        message="Custom error description"
-      />,
+      <TaskError title="Custom Title" message="Custom error description" />,
     );
 
     expect(screen.getByText("Custom Title")).toBeInTheDocument();
@@ -49,18 +46,14 @@ describe("TaskError", () => {
     const error = new Error("Permission denied");
     render(<TaskError error={error} />);
 
-    expect(
-      screen.getByText(/don't have permission/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/don't have permission/i)).toBeInTheDocument();
   });
 
   it("detects upload error type", () => {
     const error = new Error("File upload failed");
     render(<TaskError error={error} />);
 
-    expect(
-      screen.getByText(/Failed to upload file/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Failed to upload file/i)).toBeInTheDocument();
   });
 
   it("detects rate limit error type", () => {

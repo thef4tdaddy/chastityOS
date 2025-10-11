@@ -1,19 +1,26 @@
 import React, { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
-  import {
-    TaskItem,
-    TaskSkeleton,
-    TaskErrorBoundary,
-    TaskError,
-    TaskSearch,
-  } from "../components/tasks";
-
+import {
+  TaskItem,
+  TaskSkeleton,
+  TaskErrorBoundary,
+  TaskError,
+  TaskSearch,
+} from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
+import {
+  staggerContainerVariants,
+  tabContentVariants,
+  fadeInVariants,
+  pulseVariants,
+  getAccessibleVariants,
+} from "../utils/animations";
 import { logger } from "../utils/logging";
 
 const ErrorState: React.FC<{ error?: Error; onRetry?: () => void }> = ({
@@ -75,22 +82,37 @@ const ActiveTasksSection: React.FC<{
 }> = ({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-8 sm:py-12">
-        <div className="glass-float">
-          <div className="text-4xl sm:text-6xl mb-4">📝</div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
-            No Active Tasks
-          </h3>
-          <p className="text-sm sm:text-base text-gray-400 px-4">
-            You're all caught up! New tasks will appear here when assigned.
-          </p>
-        </div>
-      </Card>
+      <motion.div
+        variants={getAccessibleVariants(fadeInVariants)}
+        initial="initial"
+        animate="animate"
+      >
+        <Card variant="glass" className="text-center py-8 sm:py-12">
+          <motion.div
+            className="glass-float"
+            variants={getAccessibleVariants(pulseVariants)}
+            animate="animate"
+          >
+            <div className="text-4xl sm:text-6xl mb-4">📝</div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
+              No Active Tasks
+            </h3>
+            <p className="text-sm sm:text-base text-gray-400 px-4">
+              You're all caught up! New tasks will appear here when assigned.
+            </p>
+          </motion.div>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <motion.div
+      className="space-y-4 sm:space-y-6"
+      variants={getAccessibleVariants(staggerContainerVariants)}
+      initial="initial"
+      animate="animate"
+    >
       {tasks.map((task) => (
         <Card
           key={task.id}
@@ -100,7 +122,7 @@ const ActiveTasksSection: React.FC<{
           <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
         </Card>
       ))}
-    </div>
+    </motion.div>
   );
 };
 
@@ -108,22 +130,37 @@ const ActiveTasksSection: React.FC<{
 const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-8 sm:py-12">
-        <div className="glass-float">
-          <div className="text-4xl sm:text-6xl mb-4">📚</div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
-            No Archived Tasks
-          </h3>
-          <p className="text-sm sm:text-base text-gray-400 px-4">
-            Completed and reviewed tasks will appear here.
-          </p>
-        </div>
-      </Card>
+      <motion.div
+        variants={getAccessibleVariants(fadeInVariants)}
+        initial="initial"
+        animate="animate"
+      >
+        <Card variant="glass" className="text-center py-8 sm:py-12">
+          <motion.div
+            className="glass-float"
+            variants={getAccessibleVariants(pulseVariants)}
+            animate="animate"
+          >
+            <div className="text-4xl sm:text-6xl mb-4">📚</div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
+              No Archived Tasks
+            </h3>
+            <p className="text-sm sm:text-base text-gray-400 px-4">
+              Completed and reviewed tasks will appear here.
+            </p>
+          </motion.div>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <motion.div
+      className="space-y-4 sm:space-y-6"
+      variants={getAccessibleVariants(staggerContainerVariants)}
+      initial="initial"
+      animate="animate"
+    >
       {tasks.map((task) => (
         <Card
           key={task.id}
@@ -136,7 +173,7 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
           />
         </Card>
       ))}
-    </div>
+    </motion.div>
   );
 };
 
@@ -172,7 +209,8 @@ const TasksPage: React.FC = () => {
         attachments,
       });
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Task submission failed");
+      const err =
+        error instanceof Error ? error : new Error("Task submission failed");
       logger.error("Task submission error", {
         taskId,
         userId: user.uid,
@@ -190,92 +228,93 @@ const TasksPage: React.FC = () => {
     ["approved", "rejected", "completed", "cancelled"].includes(task.status),
   );
 
-    // Filter tasks based on search query (memoized)
-    const filteredTasks = useMemo(() => {
-      const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
+  // Filter tasks based on search query (memoized)
+  const filteredTasks = useMemo(() => {
+    const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
 
-      if (!searchQuery.trim()) {
-        return tasksToFilter;
-      }
+    if (!searchQuery.trim()) {
+      return tasksToFilter;
+    }
 
-      const query = searchQuery.toLowerCase();
-      return tasksToFilter.filter(
-        (task) =>
-          task.text.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query) ||
-          task.category?.toLowerCase().includes(query),
-      );
-    }, [activeTasks, archivedTasks, activeTab, searchQuery]);
+    const query = searchQuery.toLowerCase();
+    return tasksToFilter.filter(
+      (task) =>
+        task.text.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.category?.toLowerCase().includes(query),
+    );
+  }, [activeTasks, archivedTasks, activeTab, searchQuery]);
 
-    // Calculate pagination
-    const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
 
-    // Reset to page 1 when switching tabs or searching
-    const handleTabChange = (tab: "active" | "archived") => {
-      setActiveTab(tab);
-      setCurrentPage(1);
-    };
+  // Reset to page 1 when switching tabs or searching
+  const handleTabChange = (tab: "active" | "archived") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
-    const handleSearchChange = (query: string) => {
-      setSearchQuery(query);
-      setCurrentPage(1);
-    };
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
 
-    return (
-      <TaskErrorBoundary>
-        <div className="p-3 sm:p-4 md:p-6">
-          {/* Enhanced Header with Glass Effect */}
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text
-  text-transparent mb-2">
-              Task Management
-            </h1>
-            <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
-          </div>
-
-          {/* Task Stats Card */}
-          {user && (
-            <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
-              <TaskStatsCard userId={user.uid} />
+  return (
+    <TaskErrorBoundary>
+      <div className="p-3 sm:p-4 md:p-6">
+        {/* Enhanced Header with Glass Effect */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+            Task Management
+          </h1>
+          <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
         </div>
-          {/* Task Stats Card */}
-          {user && (
-            <div className="max-w-4xl mx-auto mb-8">
-              <TaskStatsCard userId={user.uid} />
+
+        {/* Task Stats Card */}
+        {user && (
+          <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+            <TaskStatsCard userId={user.uid} />
+          </div>
+        )}
+
+        <TabNavigation
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          activeCount={activeTasks.length}
+          archivedCount={archivedTasks.length}
+        />
+
+        {/* Search Bar */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <TaskSearch
+            onSearchChange={handleSearchChange}
+            placeholder={`Search ${activeTab} tasks...`}
+          />
+          {searchQuery && (
+            <div className="text-sm text-gray-400 mt-2">
+              Found {filteredTasks.length} task(s) matching &quot;{searchQuery}
+              &quot;
             </div>
           )}
+        </div>
 
-          <TabNavigation
-            activeTab={activeTab}
-            setActiveTab={handleTabChange}
-            activeCount={activeTasks.length}
-            archivedCount={archivedTasks.length}
-          />
-
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto mb-6">
-            <TaskSearch
-              onSearchChange={handleSearchChange}
-              placeholder={`Search ${activeTab} tasks...`}
-            />
-            {searchQuery && (
-              <div className="text-sm text-gray-400 mt-2">
-                Found {filteredTasks.length} task(s) matching &quot;{searchQuery}&quot;
-              </div>
-            )}
-          </div>
-
-          {/* Content with Glass Container */}
-          <div className="max-w-4xl mx-auto">
-            {loading ? (
-              <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
-            ) : error ? (
-              <ErrorState error={error as Error} onRetry={() => refetch()} />
-            ) : (
-              <FeatureErrorBoundary feature="tasks-management">
+        {/* Content with Glass Container */}
+        <div className="max-w-4xl mx-auto">
+          {loading ? (
+            <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
+          ) : error ? (
+            <ErrorState error={error as Error} onRetry={() => refetch()} />
+          ) : (
+            <FeatureErrorBoundary feature="tasks-management">
+              <motion.div
+                key={activeTab}
+                variants={getAccessibleVariants(tabContentVariants)}
+                initial="initial"
+                animate="animate"
+              >
                 {activeTab === "active" ? (
                   <ActiveTasksSection
                     tasks={paginatedTasks}
@@ -285,32 +324,35 @@ const TasksPage: React.FC = () => {
                 ) : (
                   <ArchivedTasksSection tasks={paginatedTasks} />
                 )}
-              </FeatureErrorBoundary>
-            )}
+              </motion.div>
+            </FeatureErrorBoundary>
+          )}
 
-            {/* Pagination Controls */}
-            {!loading && !error && totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
-                <Button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </Button>
-                <span className="text-gray-300">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </div>
+          {/* Pagination Controls */}
+          {!loading && !error && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <Button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </Button>
+              <span className="text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </TaskErrorBoundary>
   );
