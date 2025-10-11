@@ -46,8 +46,12 @@ export function calculateLongestStreak(sessions: HistoricalSession[]): number {
   let longestStreak = 1;
 
   for (let i = 1; i < sortedSessions.length; i++) {
-    const prevDate = new Date(sortedSessions[i - 1].startTime);
-    const currentDate = new Date(sortedSessions[i].startTime);
+    const prevSession = sortedSessions[i - 1];
+    const currentSession = sortedSessions[i];
+    if (!prevSession || !currentSession) continue;
+
+    const prevDate = new Date(prevSession.startTime);
+    const currentDate = new Date(currentSession.startTime);
 
     // Check if sessions are on consecutive days
     const dayDiff = Math.floor(

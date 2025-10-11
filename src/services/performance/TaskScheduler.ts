@@ -152,6 +152,7 @@ class TaskScheduler {
       await new Promise<void>((resolve) => {
         this.scheduleIdleTask(async () => {
           const chunk = chunks[i];
+          if (!chunk) return;
           for (const item of chunk) {
             await processor(item);
           }
