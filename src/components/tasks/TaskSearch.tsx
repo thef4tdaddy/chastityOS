@@ -3,7 +3,7 @@
  * Provides debounced search functionality for filtering tasks
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { Input } from "@/components/ui";
+import { Input, Button } from "@/components/ui";
 import { FaSearch, FaTimes } from "../../utils/iconImport";
 
 interface TaskSearchProps {
@@ -45,14 +45,14 @@ export const TaskSearch: React.FC<TaskSearchProps> = ({
         className="pl-10 pr-10 bg-white/5 border border-white/10 rounded-lg py-2 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors"
       />
       {searchValue && (
-        <button
+        <Button
           type="button"
           onClick={handleClear}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1 bg-transparent border-none"
           aria-label="Clear search"
         >
           <FaTimes />
-        </button>
+        </Button>
       )}
     </div>
   );

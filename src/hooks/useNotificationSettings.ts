@@ -57,9 +57,9 @@ export function useNotificationSettings(
   const [settings, setSettings] =
     useState<NotificationSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
-  const [permission, setPermission] = useState<NotificationPermission>(
-    typeof Notification !== "undefined" ? Notification.permission : "default",
-  );
+  const [permission, setPermission] = useState<
+    "default" | "granted" | "denied"
+  >(typeof Notification !== "undefined" ? Notification.permission : "default");
 
   // Load settings from Firestore
   useEffect(() => {
