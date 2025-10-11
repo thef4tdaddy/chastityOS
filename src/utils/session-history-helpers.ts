@@ -153,7 +153,10 @@ export function getKeyholderView(
       totalSessions: sessions.length,
       averageDuration: averageSessionLength,
       goalCompletionRate,
-      lastSessionDate: sessions.length > 0 ? sessions[0].startTime : new Date(),
+      lastSessionDate:
+        sessions.length > 0
+          ? (sessions[0]?.startTime ?? new Date())
+          : new Date(),
     },
     accessLevel: keyholderAccess.accessLevel,
     restrictions: [],
