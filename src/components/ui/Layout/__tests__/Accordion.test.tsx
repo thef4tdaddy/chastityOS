@@ -66,7 +66,7 @@ describe("Accordion", () => {
       // Open second item
       fireEvent.click(screen.getByText("Section 2"));
       expect(screen.getByText("Content 2")).toBeInTheDocument();
-      
+
       // Wait for animation to complete
       await new Promise((resolve) => setTimeout(resolve, 250));
       expect(screen.queryByText("Content 1")).not.toBeInTheDocument();
@@ -89,7 +89,7 @@ describe("Accordion", () => {
 
       // Close
       fireEvent.click(trigger);
-      
+
       // Wait for animation to complete
       await new Promise((resolve) => setTimeout(resolve, 250));
       expect(screen.queryByText("Content 1")).not.toBeInTheDocument();
@@ -145,7 +145,7 @@ describe("Accordion", () => {
 
       // Close first item
       fireEvent.click(screen.getByText("Section 1"));
-      
+
       // Wait for animation to complete
       await new Promise((resolve) => setTimeout(resolve, 250));
       expect(screen.queryByText("Content 1")).not.toBeInTheDocument();
@@ -270,7 +270,7 @@ describe("Accordion", () => {
 
       fireEvent.click(screen.getByText("Section 2"));
       expect(screen.getByText("Content 2")).toBeInTheDocument();
-      
+
       // Wait for animation to complete
       await new Promise((resolve) => setTimeout(resolve, 250));
       expect(screen.queryByText("Content 1")).not.toBeInTheDocument();
@@ -562,7 +562,11 @@ describe("Accordion", () => {
     it("should call onValueChange with empty string when closing in single mode", () => {
       const handleChange = vi.fn();
       render(
-        <Accordion type="single" defaultValue="item-1" onValueChange={handleChange}>
+        <Accordion
+          type="single"
+          defaultValue="item-1"
+          onValueChange={handleChange}
+        >
           <AccordionItem value="item-1" title="Section 1">
             Content 1
           </AccordionItem>

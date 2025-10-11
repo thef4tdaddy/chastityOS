@@ -56,7 +56,7 @@ export interface TabsTriggerProps {
 
 export interface TabsContentProps {
   value: string;
-  activeValue: string;
+  activeValue?: string;
   children: React.ReactNode;
   className?: string;
 }
