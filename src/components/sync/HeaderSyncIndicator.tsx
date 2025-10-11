@@ -27,7 +27,7 @@ export const HeaderSyncIndicator: React.FC<HeaderSyncIndicatorProps> = ({
   const handleSync = async () => {
     try {
       await manualSync();
-    } catch (error) {
+    } catch {
       // Error is already logged by useSyncStatus
       // Silent fail - error will be shown in the UI
     }
