@@ -11,6 +11,7 @@ import type {
 } from "../../types/events";
 import { serviceLogger } from "../../utils/logging";
 import { generateUUID } from "../../utils/helpers/hash";
+import { NotificationService } from "../notifications";
 
 const logger = serviceLogger("EmergencyService");
 
@@ -114,6 +115,41 @@ class EmergencyService {
 
       // 7. Set emergency cooldown period
       await this.setEmergencyCooldown(userId);
+
+      // 8. Notify keyholder if session was under keyholder control
+      if (session.keyholderApprovalRequired) {
+        // Try to get keyholder from relationships
+        try {
+          const { keyholderRelationshipDBService } = await import(
+            "./KeyholderRelationshipDBService"
+          );
+          const relationships =
+            await keyholderRelationshipDBService.getRelationshipsForUser(
+              userId,
+            );
+          const activeRelationship = relationships.asSubmissive.find(
+            (r) => r.status === "active",
+          );
+
+          if (activeRelationship) {
+            NotificationService.notifyEmergencyUnlock({
+              sessionId,
+              userId,
+              keyholderUserId: activeRelationship.keyholderUserId,
+              reason: additionalNotes || reason,
+            }).catch((error) => {
+              logger.warn("Failed to send emergency unlock notification", {
+                error,
+              });
+            });
+          }
+        } catch (error) {
+          logger.warn(
+            "Failed to send keyholder notification for emergency unlock",
+            { error },
+          );
+        }
+      }
 
       logger.info("Emergency unlock completed successfully", {
         sessionId,

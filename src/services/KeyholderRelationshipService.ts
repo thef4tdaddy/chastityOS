@@ -8,6 +8,7 @@ import {
 } from "./database/KeyholderRelationshipDBService";
 import { KeyholderRelationship, KeyholderPermissions } from "../types/core";
 import { serviceLogger } from "../utils/logging";
+import { NotificationService } from "./notifications";
 
 const logger = serviceLogger("KeyholderRelationshipService");
 
@@ -79,6 +80,15 @@ export class KeyholderRelationshipService {
         relationshipId: relationship.id,
         submissiveUserId: relationship.submissiveUserId,
         keyholderUserId: relationship.keyholderUserId,
+      });
+
+      // Notify keyholder about the accepted invitation
+      NotificationService.notifyKeyholderRequest({
+        userId: relationship.submissiveUserId,
+        keyholderUserId: relationship.keyholderUserId,
+        requestType: "invite",
+      }).catch((error) => {
+        logger.warn("Failed to send keyholder request notification", { error });
       });
 
       return relationship;

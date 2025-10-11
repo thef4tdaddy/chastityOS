@@ -9,6 +9,7 @@ import type { KeyholderRelationship } from "../../types/core";
 import { KeyholderRelationshipService } from "../../services/KeyholderRelationshipService";
 import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
+import { NotificationService } from "../../services/notifications";
 
 const logger = serviceLogger("useSession");
 
@@ -368,13 +369,27 @@ export const useSession = (userId: string, relationshipId?: string) => {
           sessionId: newSession.id,
         });
 
+        // Notify keyholder if under keyholder control
+        if (relationship?.keyholderUserId) {
+          NotificationService.notifySessionStarted({
+            sessionId: newSession.id,
+            userId,
+            keyholderUserId: relationship.keyholderUserId,
+          }).catch((error) => {
+            logger.warn(
+              "Failed to send session started notification to keyholder",
+              { error },
+            );
+          });
+        }
+
         return newSession;
       } catch (error) {
         logger.error("Failed to start session", { error });
         throw error;
       }
     },
-    [userId, sessionContext],
+    [userId, sessionContext, relationship?.keyholderUserId],
   );
 
   const stopSession = useCallback(
@@ -400,6 +415,22 @@ export const useSession = (userId: string, relationshipId?: string) => {
         // End session in database
         await sessionDBService.endSession(currentSession.id, endTime, reason);
 
+        // Calculate session duration
+        const durationMs =
+          endTime.getTime() - currentSession.startTime.getTime();
+        const durationHours = durationMs / (1000 * 60 * 60);
+
+        // Send session completed notification
+        NotificationService.notifySessionCompleted({
+          sessionId: currentSession.id,
+          userId,
+          duration: durationHours,
+        }).catch((error) => {
+          logger.warn("Failed to send session completed notification", {
+            error,
+          });
+        });
+
         // Update local session with endTime (don't set to null - we need it for off-time tracking)
         setCurrentSession({
           ...currentSession,
@@ -418,7 +449,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
         throw error;
       }
     },
-    [currentSession, sessionContext, loadHistory, loadAnalytics],
+    [currentSession, sessionContext, loadHistory, loadAnalytics, userId],
   );
 
   // ==================== ENHANCED CONTROLS ====================

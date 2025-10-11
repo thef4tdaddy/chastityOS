@@ -1,8 +1,166 @@
-# Task Notification Service
+# Notification Services
+
+Centralized notification services for ChastityOS, handling all notification types across sessions, tasks, keyholder interactions, and system events.
+
+## Services Overview
+
+### NotificationService
+Main notification service handling:
+- **Session notifications**: ending soon, completed, pause cooldown
+- **Keyholder notifications**: session events, emergency unlock, requests, goals
+- **System notifications**: sync status, updates, achievements
+
+### TaskNotificationService
+Specialized service for task workflow notifications:
+- Task assignments, submissions, approvals, rejections
+- Deadline warnings and overdue reminders
+
+Both services use the notification store for in-app toast notifications and are structured for future push notification support.
+
+---
+
+## NotificationService
+
+### Session Notifications
+
+#### Session Ending Soon
+Warns user 5 minutes before session ends.
+```typescript
+await NotificationService.notifySessionEndingSoon({
+  sessionId: 'session-123',
+  userId: 'user-123',
+  minutesRemaining: 5,
+});
+```
+
+#### Session Completed
+Celebrates session completion.
+```typescript
+await NotificationService.notifySessionCompleted({
+  sessionId: 'session-123',
+  userId: 'user-123',
+  duration: 72, // hours
+});
+```
+
+#### Pause Cooldown Expired
+Notifies when ready to resume.
+```typescript
+await NotificationService.notifyPauseCooldownExpired({
+  sessionId: 'session-123',
+  userId: 'user-123',
+});
+```
+
+#### Emergency Unlock
+Urgent notification to keyholder.
+```typescript
+await NotificationService.notifyEmergencyUnlock({
+  sessionId: 'session-123',
+  userId: 'user-123',
+  keyholderUserId: 'keyholder-456',
+  submissiveName: 'Pet',
+  reason: 'Medical emergency',
+});
+```
+
+### Keyholder Notifications
+
+#### Session Events
+Notifies keyholder of session start/pause/resume.
+```typescript
+await NotificationService.notifySessionStarted({
+  sessionId: 'session-123',
+  userId: 'user-123',
+  keyholderUserId: 'keyholder-456',
+  submissiveName: 'Pet',
+});
+```
+
+#### Keyholder Request
+Notifies about new relationship requests.
+```typescript
+await NotificationService.notifyKeyholderRequest({
+  userId: 'user-123',
+  keyholderUserId: 'keyholder-456',
+  submissiveName: 'Pet',
+  requestType: 'invite', // or 'permission', 'general'
+});
+```
+
+#### Goal Completed
+Notifies keyholder when submissive completes a goal.
+```typescript
+await NotificationService.notifyGoalCompleted({
+  userId: 'user-123',
+  goalId: 'goal-789',
+  goalTitle: '30-day streak',
+  keyholderUserId: 'keyholder-456',
+  submissiveName: 'Pet',
+});
+```
+
+### System Notifications
+
+#### Sync Completed
+Confirms successful data sync (manual only).
+```typescript
+await NotificationService.notifySyncCompleted({
+  userId: 'user-123',
+  operationsCount: 15,
+  wasManualSync: true,
+});
+```
+
+#### Sync Failed
+Alerts about sync failures with retry option.
+```typescript
+await NotificationService.notifySyncFailed({
+  userId: 'user-123',
+  errorMessage: 'Network error',
+  retryable: true,
+});
+```
+
+#### App Update Available
+Notifies about new app versions.
+```typescript
+await NotificationService.notifyAppUpdateAvailable({
+  version: '4.0.1',
+  releaseNotes: 'Bug fixes and improvements',
+});
+```
+
+#### Achievement Unlocked
+Celebrates unlocked achievements.
+```typescript
+await NotificationService.notifyAchievementUnlocked({
+  userId: 'user-123',
+  achievementId: 'ach-001',
+  achievementTitle: 'First Week',
+  achievementDescription: 'Complete your first week in chastity',
+  points: 100,
+});
+```
+
+### Integration Points
+
+NotificationService is integrated at key event points:
+- `src/hooks/session/useSession.ts` - Session start/end
+- `src/hooks/session/usePauseSessionActions.ts` - Pause/resume
+- `src/services/database/EmergencyService.ts` - Emergency unlock
+- `src/services/sync/FirebaseSync.ts` - Sync completion/failure
+- `src/services/AchievementEngine.ts` - Achievement unlocks
+- `src/services/KeyholderRelationshipService.ts` - Relationship requests
+- `src/services/GoalTrackerService.ts` - Goal completion
+
+---
+
+## TaskNotificationService
 
 Centralized service for handling all task-related notifications in ChastityOS.
 
-## Overview
+### Overview
 
 The `TaskNotificationService` provides a unified interface for sending task workflow notifications to users. It currently supports in-app toast notifications and is designed to be easily extended to support push notifications in the future.
 

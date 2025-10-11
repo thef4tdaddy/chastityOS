@@ -24,6 +24,7 @@ import { taskDataSync } from "./TaskDataSync";
 import { achievementDataSync } from "./AchievementDataSync";
 import { relationshipDataSync } from "./RelationshipDataSync";
 import { syncConflictResolver } from "./SyncConflictResolver";
+import { NotificationService } from "../notifications";
 
 const logger = serviceLogger("FirebaseSync");
 
@@ -103,12 +104,35 @@ export class FirebaseSync {
           conflicts: result.operations.conflicts,
         },
       });
+
+      // Send sync completed notification if manual sync
+      const totalOperations =
+        result.operations.uploaded +
+        result.operations.downloaded +
+        result.operations.conflicts;
+
+      NotificationService.notifySyncCompleted({
+        userId,
+        operationsCount: totalOperations,
+        wasManualSync: options.force === true,
+      }).catch((error) => {
+        logger.warn("Failed to send sync completed notification", { error });
+      });
     } catch (error) {
       result.success = false;
       result.error = error as Error;
       logger.error("Orchestrated data synchronization failed", {
         error: error as Error,
         userId,
+      });
+
+      // Send sync failed notification
+      NotificationService.notifySyncFailed({
+        userId,
+        errorMessage: (error as Error).message,
+        retryable: true,
+      }).catch((err) => {
+        logger.warn("Failed to send sync failed notification", { error: err });
       });
     } finally {
       this.isSyncing = false;

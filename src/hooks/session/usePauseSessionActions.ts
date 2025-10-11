@@ -10,6 +10,7 @@ import {
   updatePauseStatusOnResume,
 } from "../../utils/pauseResumeHelpers";
 import { calculateCooldownDuration } from "../../utils/pauseAnalytics";
+import { NotificationService } from "../../services/notifications";
 import type {
   PauseReason,
   PauseStatus,
@@ -23,6 +24,9 @@ const logger = serviceLogger("usePauseSessionActions");
 
 export interface UsePauseSessionActionsOptions {
   sessionId: string;
+  userId?: string;
+  keyholderUserId?: string;
+  submissiveName?: string;
   canPause: boolean;
   canResume: boolean;
   pauseStatus: PauseStatus;
@@ -39,6 +43,9 @@ export interface UsePauseSessionActionsOptions {
 
 export function usePauseSessionActions({
   sessionId,
+  userId,
+  keyholderUserId,
+  submissiveName,
   canPause,
   canResume,
   pauseStatus,
@@ -77,6 +84,20 @@ export function usePauseSessionActions({
 
         startPause(reason);
         logger.info("Session paused successfully", { sessionId, reason });
+
+        // Notify keyholder if applicable
+        if (userId && keyholderUserId) {
+          NotificationService.notifySessionPaused({
+            sessionId,
+            userId,
+            keyholderUserId,
+            submissiveName,
+          }).catch((error) => {
+            logger.warn("Failed to send session paused notification", {
+              error,
+            });
+          });
+        }
       } catch (err) {
         logger.error("Failed to pause session", { error: err, sessionId });
         throw err;
@@ -88,6 +109,9 @@ export function usePauseSessionActions({
       startPause,
       cooldownState.isInCooldown,
       pauseStatus.isPaused,
+      userId,
+      keyholderUserId,
+      submissiveName,
     ],
   );
 
@@ -135,6 +159,18 @@ export function usePauseSessionActions({
         sessionId,
         pauseDuration: duration,
       });
+
+      // Notify keyholder if applicable
+      if (userId && keyholderUserId) {
+        NotificationService.notifySessionResumed({
+          sessionId,
+          userId,
+          keyholderUserId,
+          submissiveName,
+        }).catch((error) => {
+          logger.warn("Failed to send session resumed notification", { error });
+        });
+      }
     } catch (err) {
       logger.error("Failed to resume session", { error: err, sessionId });
       throw err;
@@ -148,6 +184,9 @@ export function usePauseSessionActions({
     setPauseStatus,
     setPauseHistory,
     startCooldown,
+    userId,
+    keyholderUserId,
+    submissiveName,
   ]);
 
   return {
