@@ -102,7 +102,7 @@ export const RelationshipRequestForm: React.FC<
   };
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-6">
+    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-6 invitation-form-expand">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Send Relationship Request
       </h3>
@@ -124,7 +124,7 @@ export const RelationshipRequestForm: React.FC<
           <Button
             type="submit"
             disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center relationship-transition-fast"
           >
             {isLoading ? (
               <>
@@ -138,7 +138,7 @@ export const RelationshipRequestForm: React.FC<
           <Button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 relationship-transition-fast"
           >
             Cancel
           </Button>

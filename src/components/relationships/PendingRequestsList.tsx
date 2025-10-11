@@ -19,16 +19,21 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
   if (pendingRequests.length === 0) return null;
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 relationship-card-enter">
       <h3 className="text-blue-800 font-semibold mb-3 flex items-center">
         <FaUsers className="mr-2" />
-        Pending Requests ({pendingRequests.length})
+        Pending Requests (
+        <span className="pending-badge-pulse">{pendingRequests.length}</span>)
       </h3>
       <div className="space-y-3">
-        {pendingRequests.map((request) => (
-          <div key={request.id} className="bg-white p-3 rounded border">
+        {pendingRequests.map((request, index) => (
+          <div
+            key={request.id}
+            className="bg-white p-3 rounded border relationship-card-enter relationship-transition"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-medium text-gray-900">
                   Relationship Request
                 </p>
@@ -48,7 +53,7 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                 <Button
                   onClick={() => onAccept(request.id)}
                   disabled={isLoading}
-                  className="bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50"
+                  className="bg-green-600 text-white p-2 rounded hover:bg-green-700 disabled:opacity-50 icon-button"
                   title="Accept"
                 >
                   {isLoading ? (
@@ -60,7 +65,7 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                 <Button
                   onClick={() => onReject(request.id)}
                   disabled={isLoading}
-                  className="bg-red-600 text-white p-2 rounded hover:bg-red-700 disabled:opacity-50"
+                  className="bg-red-600 text-white p-2 rounded hover:bg-red-700 disabled:opacity-50 icon-button"
                   title="Reject"
                 >
                   {isLoading ? (

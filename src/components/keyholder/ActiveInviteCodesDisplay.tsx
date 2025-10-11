@@ -21,15 +21,16 @@ export const ActiveInviteCodesDisplay: React.FC<
   if (activeInviteCodes.length === 0) return null;
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
+    <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30 relationship-card-interactive">
       <h3 className="font-semibold text-purple-300 mb-3">
         Active Invite Codes
       </h3>
       <div className="space-y-2">
-        {activeInviteCodes.map((invite) => (
+        {activeInviteCodes.map((invite, index) => (
           <div
             key={invite.id}
-            className="flex items-center justify-between p-2 bg-gray-700 rounded"
+            className="flex items-center justify-between p-2 bg-gray-700 rounded invite-code-appear relationship-transition"
+            style={{ animationDelay: `${index * 75}ms` }}
           >
             <div>
               <div className="font-mono text-lg text-green-400">
@@ -42,14 +43,14 @@ export const ActiveInviteCodesDisplay: React.FC<
             <div className="flex gap-2">
               <Button
                 onClick={() => onCopyCode(invite.code)}
-                className="text-purple-400 hover:text-purple-300 p-1"
+                className="text-purple-400 hover:text-purple-300 p-1 icon-button"
                 title="Copy code"
               >
                 <FaCopy />
               </Button>
               <Button
                 onClick={() => onRevokeCode(invite.id)}
-                className="text-red-400 hover:text-red-300 p-1"
+                className="text-red-400 hover:text-red-300 p-1 icon-button"
                 title="Revoke code"
               >
                 <FaTrash />
