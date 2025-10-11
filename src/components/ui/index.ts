@@ -99,3 +99,11 @@ export type {
 // Modal Component
 export { Modal } from "./Modal";
 export type { ModalProps } from "./Modal";
+
+// Sync Indicator Component
+export { SyncIndicator } from "./SyncIndicator";
+export type { SyncIndicatorProps, SyncStatus } from "./SyncIndicator";
+
+// Badge Indicator Component
+export { BadgeIndicator } from "./BadgeIndicator";
+export type { BadgeIndicatorProps } from "./BadgeIndicator";
