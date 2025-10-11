@@ -42,3 +42,9 @@ dist-ssr
 /playwright/.cache/
 /playwright/.auth/
 .eslintcache
+
+# Firebase
+.firebase/
+functions/lib/
+functions/node_modules/
+.runtimeconfig.json
