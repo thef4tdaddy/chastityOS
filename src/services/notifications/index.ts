@@ -13,3 +13,6 @@ export type {
   TaskDeadlineParams,
   TaskOverdueParams,
 } from "./TaskNotificationService";
+
+export { FCMService } from "./FCMService";
+export type { FCMServiceConfig } from "./FCMService";

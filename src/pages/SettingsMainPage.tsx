@@ -5,6 +5,7 @@ import { DisplaySettingsSection } from "../components/settings/DisplaySettingsSe
 import { SessionEditSection } from "../components/settings/SessionEditSection";
 import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
 import { PublicProfileSection } from "../components/settings/PublicProfileSection";
+import { NotificationSettingsSection } from "../components/settings/NotificationSettingsSection";
 
 const SettingsMainPage: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const SettingsMainPage: React.FC = () => {
       <PublicProfileSection />
       <PersonalGoalSection />
       <SessionEditSection />
+      <NotificationSettingsSection />
 
       <div className="card bg-nightly-celadon shadow-xl mt-6">
         <div className="card-body">

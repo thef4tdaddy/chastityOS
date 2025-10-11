@@ -2,12 +2,32 @@
  * Simple Navigation Component
  * Basic navigation for testing the relationship system
  */
-import React from "react";
+import React, { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaHome, FaLock, FaUsers, FaClipboardList } from "../utils/iconImport";
+import { BadgeIndicator } from "./ui/BadgeIndicator";
+import { useTasks } from "../hooks/api/useTasks";
+import { useAuthState } from "../contexts";
+import { useBadgeCount } from "../hooks/useBadgeCount";
 
 const Navigation: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuthState();
+  const { data: tasks } = useTasks(user?.uid || "");
+
+  // Count pending tasks for badge
+  const pendingTasksCount = useMemo(() => {
+    if (!tasks) return 0;
+    return tasks.filter(
+      (task) => task.status === "pending" || task.status === "submitted",
+    ).length;
+  }, [tasks]);
+
+  // Update app badge
+  useBadgeCount({
+    pendingTasksCount,
+    enabled: true,
+  });
 
   const navItems = [
     { path: "/", label: "Dashboard", icon: FaHome },
@@ -31,12 +51,14 @@ const Navigation: React.FC = () => {
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
+                const showBadge =
+                  item.path === "/tasks" && pendingTasksCount > 0;
 
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors relative ${
                       isActive
                         ? "text-blue-600 bg-blue-50"
                         : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -44,6 +66,12 @@ const Navigation: React.FC = () => {
                   >
                     <Icon className="mr-2" />
                     {item.label}
+                    {showBadge && (
+                      <BadgeIndicator
+                        count={pendingTasksCount}
+                        className="absolute -top-1 -right-1"
+                      />
+                    )}
                   </Link>
                 );
               })}
