@@ -2,7 +2,6 @@
  * NotificationCenter Component
  * Displays notification history with filtering and actions
  */
-/* eslint-disable no-legacy-toast/no-legacy-toast */
 import React, { useState, useMemo } from "react";
 import {
   Card,
@@ -15,6 +14,7 @@ import {
   useNotifications,
   useNotificationActions,
 } from "@/stores/notificationStore";
+import { useToast } from "@/contexts";
 import { FaBell, FaTrash } from "@/utils/iconImport";
 import type { Notification } from "@/stores/notificationStore";
 import {
@@ -33,7 +33,9 @@ const NotificationCenterContent: React.FC<NotificationCenterProps> = ({
   const notifications = useNotifications();
   const { removeNotification, clearAllNotifications } =
     useNotificationActions();
+  const { showSuccess, showWarning } = useToast();
   const [activeFilter, setActiveFilter] = useState<NotificationType>("all");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Filter notifications by type
   const filteredNotifications = useMemo(() => {
@@ -67,9 +69,17 @@ const NotificationCenterContent: React.FC<NotificationCenterProps> = ({
   }, [filteredNotifications]);
 
   const handleClearAll = () => {
-    if (window.confirm("Are you sure you want to clear all notifications?")) {
-      clearAllNotifications();
+    if (!showConfirm) {
+      setShowConfirm(true);
+      showWarning(
+        "Click 'Clear All' again to confirm deletion of all notifications",
+      );
+      return;
     }
+
+    clearAllNotifications();
+    setShowConfirm(false);
+    showSuccess("All notifications cleared");
   };
 
   const getNotificationIcon = (notification: Notification) => {
