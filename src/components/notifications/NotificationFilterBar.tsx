@@ -5,14 +5,7 @@
 import React from "react";
 import { Tabs, TabsContent } from "@/components/ui";
 
-const NOTIFICATION_TYPES = [
-  "all",
-  "session",
-  "task",
-  "keyholder",
-  "system",
-] as const;
-type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+type NotificationType = "all" | "session" | "task" | "keyholder" | "system";
 
 interface NotificationFilterBarProps {
   activeFilter: NotificationType;
