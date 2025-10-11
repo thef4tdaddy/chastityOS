@@ -73,8 +73,11 @@ const AddTaskForm: React.FC<{
           <Button
             onClick={handleAddTask}
             disabled={!newTaskText.trim() || isCreating}
-            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 py-2 rounded font-medium transition-colors"
+            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 disabled:cursor-not-allowed text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
           >
+            {isCreating && (
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+            )}
             {isCreating ? "Creating..." : "Create Task"}
           </Button>
           <Button
@@ -149,17 +152,25 @@ const TaskItem: React.FC<{
         <Button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
-          className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          className="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition-all"
         >
-          <FaCheckCircle />
+          {isUpdating ? (
+            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <FaCheckCircle />
+          )}
           {isUpdating ? "Processing..." : "Approve"}
         </Button>
         <Button
           onClick={() => handleTaskAction(task.id, "reject")}
           disabled={isUpdating}
-          className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+          className="bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition-all"
         >
-          <FaTimesCircle />
+          {isUpdating ? (
+            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <FaTimesCircle />
+          )}
           {isUpdating ? "Processing..." : "Reject"}
         </Button>
       </div>
@@ -176,7 +187,10 @@ const ErrorDisplay: React.FC = () => (
 
 // Loading Display Component
 const LoadingDisplay: React.FC = () => (
-  <div className="text-center text-nightly-celadon py-4">Loading tasks...</div>
+  <div className="text-center text-nightly-celadon py-4 flex items-center justify-center gap-2">
+    <div className="w-4 h-4 border-2 border-nightly-celadon border-t-transparent rounded-full animate-spin" />
+    <span>Loading tasks...</span>
+  </div>
 );
 
 // Task action handlers

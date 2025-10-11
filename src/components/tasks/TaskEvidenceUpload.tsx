@@ -72,15 +72,30 @@ const FilePreviewItem: React.FC<{
       alt="Preview"
       className="w-full h-full object-cover"
     />
-    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
       {file.uploading && (
-        <FaSpinner className="text-white text-2xl animate-spin" />
+        <>
+          <FaSpinner className="text-white text-2xl animate-spin mb-2" />
+          {file.progress > 0 && (
+            <div className="text-white text-sm font-semibold">
+              {file.progress}%
+            </div>
+          )}
+        </>
       )}
       {file.url && <FaImage className="text-green-400 text-2xl" />}
       {file.error && (
         <div className="text-red-400 text-xs p-2 text-center">{file.error}</div>
       )}
     </div>
+    {file.uploading && (
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+        <div
+          className="h-full bg-blue-500 transition-all duration-300"
+          style={{ width: `${file.progress}%` }}
+        />
+      </div>
+    )}
     {!file.uploading && (
       <Button
         type="button"
