@@ -53,6 +53,12 @@
   --animation-duration-normal: 300ms;
   --animation-duration-slow: 500ms;
   --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Responsive Breakpoints (for reference) */
+  --breakpoint-sm: 640px;   /* Mobile Large */
+  --breakpoint-md: 768px;   /* Tablet */
+  --breakpoint-lg: 1024px;  /* Desktop Small */
+  --breakpoint-xl: 1280px;  /* Desktop Large */
 }
 
 .theme-nightly {
