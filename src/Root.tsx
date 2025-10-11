@@ -7,6 +7,7 @@ import { PWAInstallPrompt } from "./components/system/PWAInstallPrompt";
 import { PWAUpdateNotification } from "./components/system/PWAUpdateNotification";
 import { NotificationPermissionPrompt } from "./components/notifications/NotificationPermissionPrompt";
 import { useFCMInitialization } from "./hooks/useFCMInitialization";
+import { useTaskPrefetch } from "./hooks/api/useTaskPrefetch";
 import { useAuth } from "./contexts/AuthContext";
 
 // Loading fallback component
@@ -27,6 +28,9 @@ const Root: React.FC = () => {
     userId: user?.uid || null,
     isAuthenticated,
   });
+
+  // Prefetch tasks for better UX when navigating
+  useTaskPrefetch(user?.uid);
 
   return (
     <AppLayout>
