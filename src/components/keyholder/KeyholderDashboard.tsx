@@ -66,9 +66,9 @@ const PendingReleaseRequests: React.FC<{ keyholderUserId: string }> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white/5 rounded-lg p-4 mb-6">
-        <div className="flex items-center gap-2 text-nightly-celadon">
-          <FaSpinner className="animate-spin" />
+      <div className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 text-nightly-celadon text-sm sm:text-base">
+          <FaSpinner className="animate-spin flex-shrink-0" />
           <span>Loading requests...</span>
         </div>
       </div>
@@ -80,14 +80,14 @@ const PendingReleaseRequests: React.FC<{ keyholderUserId: string }> = ({
   }
 
   return (
-    <div className="mb-6">
+    <div className="mb-4 sm:mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <FaPrayingHands className="text-purple-400" />
-        <h3 className="font-semibold text-nightly-honeydew">
+        <FaPrayingHands className="text-purple-400 flex-shrink-0" />
+        <h3 className="text-sm sm:text-base font-semibold text-nightly-honeydew">
           Pending Release Requests ({pendingRequests.length})
         </h3>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {pendingRequests.map((request) => (
           <ReleaseRequestCard key={request.id} request={request} />
         ))}
@@ -102,31 +102,31 @@ const AdminSessionStatus: React.FC<{
   isAdminSessionActive: boolean;
   onStartAdminSession: () => void;
 }> = ({ selectedRelationship, isAdminSessionActive, onStartAdminSession }) => (
-  <div className="bg-white/5 rounded-lg p-4 mb-6">
-    <div className="flex items-center justify-between">
-      <div>
-        <h3 className="font-medium text-nightly-honeydew mb-1">
+  <div className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="w-full sm:w-auto">
+        <h3 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-1">
           Admin Session
         </h3>
-        <p className="text-sm text-nightly-celadon">
+        <p className="text-xs sm:text-sm text-nightly-celadon break-words">
           {isAdminSessionActive
             ? `Active session for ${selectedRelationship.wearerId}`
             : "No active admin session"}
         </p>
       </div>
-      <div>
+      <div className="w-full sm:w-auto">
         {!isAdminSessionActive ? (
           <Button
             onClick={onStartAdminSession}
-            className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
           >
-            <FaShieldAlt />
-            Start Admin Session
+            <FaShieldAlt className="flex-shrink-0" />
+            <span>Start Admin Session</span>
           </Button>
         ) : (
           <div className="flex items-center gap-2 text-green-400">
-            <FaShieldAlt />
-            <span className="text-sm">Session Active</span>
+            <FaShieldAlt className="flex-shrink-0" />
+            <span className="text-xs sm:text-sm">Session Active</span>
           </div>
         )}
       </div>
@@ -149,7 +149,7 @@ const NavigationTabs: React.FC<{
   ];
 
   return (
-    <div className="flex space-x-1 bg-black/20 rounded-lg p-1 mb-6">
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-black/20 rounded-lg p-2 sm:p-1 mb-4 sm:mb-6">
       {tabs.map((tab) => (
         <Button
           key={tab.id}
@@ -158,14 +158,14 @@ const NavigationTabs: React.FC<{
               tab.id as "overview" | "sessions" | "tasks" | "settings",
             )
           }
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 touch-manipulation ${
             selectedTab === tab.id
               ? "bg-nightly-lavender-floral text-white"
               : "text-nightly-celadon hover:text-nightly-honeydew hover:bg-white/5"
           }`}
         >
-          <tab.icon />
-          {tab.label}
+          <tab.icon className="flex-shrink-0" />
+          <span>{tab.label}</span>
         </Button>
       ))}
     </div>
@@ -245,13 +245,13 @@ export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <div className="flex items-center gap-3 mb-6">
-        <FaUserShield className="text-nightly-lavender-floral" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <FaUserShield className="text-nightly-lavender-floral text-lg sm:text-base flex-shrink-0" />
+        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Keyholder Dashboard
         </h2>
-        <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded">
+        <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded flex-shrink-0">
           KEYHOLDER
         </span>
       </div>
@@ -299,17 +299,19 @@ export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
 const AdminOverview: React.FC<{ relationship: AdminRelationship }> = ({
   relationship,
 }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div className="bg-white/5 rounded-lg p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <FaUsers className="text-nightly-aquamarine" />
-        <h4 className="font-medium text-nightly-honeydew">Relationship</h4>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+        <FaUsers className="text-nightly-aquamarine flex-shrink-0" />
+        <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
+          Relationship
+        </h4>
       </div>
-      <div className="text-sm text-nightly-celadon space-y-1">
+      <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
         <p>
           Status: <span className="text-green-400">{relationship.status}</span>
         </p>
-        <p>
+        <p className="break-words">
           Established:{" "}
           {relationship.establishedAt.toDate().toLocaleDateString()}
         </p>
@@ -317,25 +319,29 @@ const AdminOverview: React.FC<{ relationship: AdminRelationship }> = ({
       </div>
     </div>
 
-    <div className="bg-white/5 rounded-lg p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <FaShieldAlt className="text-nightly-lavender-floral" />
-        <h4 className="font-medium text-nightly-honeydew">Permissions</h4>
+    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+        <FaShieldAlt className="text-nightly-lavender-floral flex-shrink-0" />
+        <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
+          Permissions
+        </h4>
       </div>
-      <div className="text-sm text-nightly-celadon space-y-1">
+      <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
         <p>Sessions: {relationship.permissions.controlSessions ? "✓" : "✗"}</p>
         <p>Tasks: {relationship.permissions.manageTasks ? "✓" : "✗"}</p>
         <p>Settings: {relationship.permissions.editSettings ? "✓" : "✗"}</p>
       </div>
     </div>
 
-    <div className="bg-white/5 rounded-lg p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <FaHistory className="text-nightly-spring-green" />
-        <h4 className="font-medium text-nightly-honeydew">Activity</h4>
+    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+        <FaHistory className="text-nightly-spring-green flex-shrink-0" />
+        <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
+          Activity
+        </h4>
       </div>
-      <div className="text-sm text-nightly-celadon">
-        <p>
+      <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
+        <p className="break-words">
           Last Access:{" "}
           {relationship.lastAdminAccess
             ? relationship.lastAdminAccess.toDate().toLocaleDateString()
@@ -351,34 +357,34 @@ const AdminSessions: React.FC<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
 }> = ({ relationship, isSessionActive }) => (
-  <div className="space-y-4">
-    <div className="bg-white/5 rounded-lg p-4">
-      <h4 className="font-medium text-nightly-honeydew mb-3">
+  <div className="space-y-3 sm:space-y-4">
+    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+      <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
         Session Control
       </h4>
       {isSessionActive ? (
-        <div className="space-y-4">
-          <p className="text-nightly-celadon">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-xs sm:text-sm text-nightly-celadon break-words">
             You have active admin access to manage {relationship.wearerId}'s
             chastity sessions.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded font-medium transition-colors">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               View Current Session
             </Button>
-            <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               Start New Session
             </Button>
-            <Button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               Pause Session
             </Button>
-            <Button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               End Session
             </Button>
           </div>
         </div>
       ) : (
-        <p className="text-nightly-celadon">
+        <p className="text-xs sm:text-sm text-nightly-celadon break-words">
           Start an admin session to control {relationship.wearerId}'s chastity
           sessions.
         </p>
@@ -391,33 +397,33 @@ const AdminTasks: React.FC<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
 }> = ({ relationship, isSessionActive }) => (
-  <div className="space-y-4">
-    <div className="bg-white/5 rounded-lg p-4">
-      <h4 className="font-medium text-nightly-honeydew mb-3">
+  <div className="space-y-3 sm:space-y-4">
+    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+      <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
         Task Management
       </h4>
       {isSessionActive ? (
-        <div className="space-y-4">
-          <p className="text-nightly-celadon">
+        <div className="space-y-3 sm:space-y-4">
+          <p className="text-xs sm:text-sm text-nightly-celadon break-words">
             Manage tasks for {relationship.wearerId}.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded font-medium transition-colors">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <Button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               View All Tasks
             </Button>
-            <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               Create New Task
             </Button>
-            <Button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               Review Submissions
             </Button>
-            <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-4 py-2 rounded font-medium transition-colors">
+            <Button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] sm:min-h-0 text-sm touch-manipulation">
               Set Rewards/Punishments
             </Button>
           </div>
         </div>
       ) : (
-        <p className="text-nightly-celadon">
+        <p className="text-xs sm:text-sm text-nightly-celadon">
           Start an admin session to manage tasks.
         </p>
       )}
@@ -429,25 +435,33 @@ const AdminSettings: React.FC<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
 }> = ({ relationship, isSessionActive: _isSessionActive }) => (
-  <div className="space-y-4">
-    <div className="bg-white/5 rounded-lg p-4">
-      <h4 className="font-medium text-nightly-honeydew mb-3">Admin Settings</h4>
+  <div className="space-y-3 sm:space-y-4">
+    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+      <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
+        Admin Settings
+      </h4>
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-nightly-celadon">Session Timeout</span>
-          <span className="text-nightly-honeydew">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <span className="text-xs sm:text-sm text-nightly-celadon">
+            Session Timeout
+          </span>
+          <span className="text-xs sm:text-sm text-nightly-honeydew font-medium">
             {relationship.security.sessionTimeout} minutes
           </span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-nightly-celadon">Audit Logging</span>
-          <span className="text-nightly-honeydew">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <span className="text-xs sm:text-sm text-nightly-celadon">
+            Audit Logging
+          </span>
+          <span className="text-xs sm:text-sm text-nightly-honeydew font-medium">
             {relationship.security.auditLog ? "Enabled" : "Disabled"}
           </span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-nightly-celadon">Wearer Notifications</span>
-          <span className="text-nightly-honeydew">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <span className="text-xs sm:text-sm text-nightly-celadon">
+            Wearer Notifications
+          </span>
+          <span className="text-xs sm:text-sm text-nightly-honeydew font-medium">
             {relationship.privacy.wearerCanSeeAdminActions
               ? "Enabled"
               : "Disabled"}

@@ -34,39 +34,39 @@ const KeyholderSettings: React.FC<{
   onLockControls: () => void;
   submissiveUserId?: string;
 }> = ({ onLockControls, submissiveUserId }) => (
-  <div className="space-y-6">
+  <div className="space-y-4 sm:space-y-6">
     {/* Keyholder Duration Goal */}
     {submissiveUserId && <KeyholderDurationSection userId={submissiveUserId} />}
 
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaCog className="text-nightly-spring-green" />
-        <h3 className="text-lg font-semibold text-nightly-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4">
+        <FaCog className="text-nightly-spring-green text-lg sm:text-base" />
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew">
           Keyholder Settings
         </h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
-          <div className="flex items-center gap-3 mb-2">
-            <FaEye className="text-nightly-aquamarine" />
-            <span className="font-medium text-nightly-honeydew">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+        <Button className="bg-white/5 hover:bg-white/10 p-3 sm:p-4 rounded-lg text-left transition-colors touch-manipulation">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <FaEye className="text-nightly-aquamarine flex-shrink-0" />
+            <span className="font-medium text-nightly-honeydew text-sm sm:text-base">
               View Full Report
             </span>
           </div>
-          <p className="text-sm text-nightly-celadon">
+          <p className="text-xs sm:text-sm text-nightly-celadon">
             See complete session history and statistics
           </p>
         </Button>
 
-        <Button className="bg-white/5 hover:bg-white/10 p-4 rounded-lg text-left transition-colors">
-          <div className="flex items-center gap-3 mb-2">
-            <FaCog className="text-nightly-lavender-floral" />
-            <span className="font-medium text-nightly-honeydew">
+        <Button className="bg-white/5 hover:bg-white/10 p-3 sm:p-4 rounded-lg text-left transition-colors touch-manipulation">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <FaCog className="text-nightly-lavender-floral flex-shrink-0" />
+            <span className="font-medium text-nightly-honeydew text-sm sm:text-base">
               Manage Rules
             </span>
           </div>
-          <p className="text-sm text-nightly-celadon">
+          <p className="text-xs sm:text-sm text-nightly-celadon">
             Set requirements and restrictions
           </p>
         </Button>
@@ -75,10 +75,10 @@ const KeyholderSettings: React.FC<{
       <Tooltip content="Lock keyholder controls. You'll need to re-enter your password to access them again.">
         <Button
           onClick={onLockControls}
-          className="mt-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+          className="mt-4 w-full sm:w-auto bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
         >
           <FaLock />
-          Lock Controls
+          <span>Lock Controls</span>
         </Button>
       </Tooltip>
     </div>
@@ -157,7 +157,7 @@ const KeyholderPage: React.FC = () => {
   return (
     <div className="text-nightly-spring-green">
       {/* Content */}
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
         {loading ? (
           <LoadingDisplay />
         ) : (
