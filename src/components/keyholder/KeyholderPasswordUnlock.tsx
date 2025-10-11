@@ -19,9 +19,9 @@ const PasswordForm: React.FC<{
   onSubmit,
   onClearMessage,
 }) => (
-  <form onSubmit={onSubmit} className="space-y-4">
+  <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4">
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+      <label className="block text-xs sm:text-sm font-medium text-nightly-celadon mb-2">
         Keyholder Password
       </label>
       <Input
@@ -29,18 +29,20 @@ const PasswordForm: React.FC<{
         value={passwordAttempt}
         onChange={(e) => onPasswordChange(e.target.value)}
         placeholder="Enter keyholder password"
-        className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
+        className="w-full bg-white/5 border border-white/10 rounded p-3 text-sm sm:text-base text-nightly-honeydew placeholder-nightly-celadon/50"
         disabled={isCheckingPassword}
       />
     </div>
 
     {keyholderMessage && (
       <div className="bg-yellow-500/10 border border-yellow-500/20 rounded p-3">
-        <p className="text-yellow-300 text-sm">{keyholderMessage}</p>
+        <p className="text-yellow-300 text-xs sm:text-sm break-words">
+          {keyholderMessage}
+        </p>
         <Button
           type="button"
           onClick={onClearMessage}
-          className="text-yellow-400 hover:text-yellow-300 text-sm mt-1"
+          className="text-yellow-400 hover:text-yellow-300 text-xs sm:text-sm mt-2 min-h-[44px] sm:min-h-0 py-2 sm:py-1 px-3 touch-manipulation"
         >
           Dismiss
         </Button>
@@ -50,17 +52,17 @@ const PasswordForm: React.FC<{
     <Button
       type="submit"
       disabled={isCheckingPassword || !passwordAttempt.trim()}
-      className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
+      className="w-full sm:w-auto bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
     >
       {isCheckingPassword ? (
         <>
-          <FaSpinner className="animate-spin" />
-          Checking...
+          <FaSpinner className="animate-spin flex-shrink-0" />
+          <span>Checking...</span>
         </>
       ) : (
         <>
-          <FaUnlock />
-          Unlock
+          <FaUnlock className="flex-shrink-0" />
+          <span>Unlock</span>
         </>
       )}
     </Button>
@@ -69,14 +71,14 @@ const PasswordForm: React.FC<{
 
 // Unlocked Status Component
 const UnlockedStatus: React.FC = () => (
-  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
-    <div className="flex items-center gap-3">
-      <FaUnlock className="text-green-400" />
-      <span className="text-green-400 font-medium">
+  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+    <div className="flex items-center gap-2 sm:gap-3">
+      <FaUnlock className="text-green-400 flex-shrink-0" />
+      <span className="text-green-400 font-medium text-sm sm:text-base">
         Keyholder Controls Unlocked
       </span>
     </div>
-    <p className="text-nightly-celadon text-sm mt-2">
+    <p className="text-nightly-celadon text-xs sm:text-sm mt-2">
       You have temporary admin access to this account's chastity controls.
     </p>
   </div>
@@ -121,15 +123,15 @@ export const KeyholderPasswordUnlock: React.FC = () => {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <div className="flex items-center gap-3 mb-4">
-        <FaLock className="text-nightly-aquamarine" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4">
+        <FaLock className="text-nightly-aquamarine flex-shrink-0" />
+        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Temporary Keyholder Access
         </h2>
       </div>
 
-      <p className="text-nightly-celadon mb-4">
+      <p className="text-nightly-celadon text-xs sm:text-sm mb-4">
         This is the current temporary password-based keyholder system. In the
         future, this will be replaced with secure account linking.
       </p>
@@ -137,10 +139,10 @@ export const KeyholderPasswordUnlock: React.FC = () => {
       {!isPasswordDialogOpen ? (
         <Button
           onClick={openPasswordDialog}
-          className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-2 rounded font-medium transition-colors flex items-center gap-2"
+          className="w-full sm:w-auto bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-black px-6 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
         >
-          <FaKey />
-          Unlock Keyholder Controls
+          <FaKey className="flex-shrink-0" />
+          <span>Unlock Keyholder Controls</span>
         </Button>
       ) : (
         <PasswordForm

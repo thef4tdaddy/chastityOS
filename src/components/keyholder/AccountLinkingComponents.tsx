@@ -32,20 +32,20 @@ export const RelationshipCard: React.FC<RelationshipCardProps> = ({
   type,
   onDisconnect,
 }) => (
-  <div className="bg-white/5 rounded-lg p-4 flex items-center justify-between">
-    <div>
-      <div className="font-medium text-nightly-honeydew">
+  <div className="bg-white/5 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+    <div className="flex-1 min-w-0">
+      <div className="text-sm sm:text-base font-medium text-nightly-honeydew break-words">
         {type === "keyholder"
           ? `Keyholder for: ${relationship.wearerId}`
           : `Managed by: ${relationship.keyholderId}`}
       </div>
-      <div className="text-sm text-nightly-celadon">
+      <div className="text-xs sm:text-sm text-nightly-celadon">
         Established: {relationship.establishedAt.toDate().toLocaleDateString()}
       </div>
     </div>
     <Button
       onClick={() => onDisconnect(relationship.id)}
-      className="text-red-400 hover:text-red-300 px-3 py-1 rounded text-sm"
+      className="w-full sm:w-auto text-red-400 hover:text-red-300 px-3 py-2 sm:py-1 rounded text-sm min-h-[44px] sm:min-h-0 touch-manipulation flex-shrink-0"
     >
       Disconnect
     </Button>
@@ -64,11 +64,11 @@ export const ActiveRelationships: React.FC<ActiveRelationshipsProps> = ({
   wearerRelationships,
   onDisconnect,
 }) => (
-  <div className="mb-6">
-    <h3 className="text-lg font-medium text-nightly-honeydew mb-3">
+  <div className="mb-4 sm:mb-6">
+    <h3 className="text-base sm:text-lg font-medium text-nightly-honeydew mb-3">
       Active Relationships
     </h3>
-    <div className="space-y-3">
+    <div className="space-y-2 sm:space-y-3">
       {keyholderRelationships.map((relationship) => (
         <RelationshipCard
           key={relationship.id}
@@ -109,46 +109,48 @@ export const LinkCodeDisplay: React.FC<LinkCodeDisplayProps> = ({
   onClear,
 }) => (
   <div className="space-y-3">
-    <div className="bg-black/20 rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-nightly-celadon text-sm">Your Link Code:</span>
+    <div className="bg-black/20 rounded-lg p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+        <span className="text-nightly-celadon text-xs sm:text-sm">
+          Your Link Code:
+        </span>
         <span className="text-xs text-nightly-celadon">
           {linkCode.expiresIn}
         </span>
       </div>
 
-      <div className="flex items-center gap-3 mb-3">
-        <code className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-3 py-2 rounded font-mono text-lg flex-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mb-3">
+        <code className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-3 py-2 rounded font-mono text-sm sm:text-base lg:text-lg flex-1 break-all">
           {linkCode.code}
         </code>
         <Button
           onClick={onCopy}
-          className="text-nightly-aquamarine hover:text-nightly-spring-green p-2"
+          className="text-nightly-aquamarine hover:text-nightly-spring-green p-3 sm:p-2 min-h-[44px] sm:min-h-0 touch-manipulation flex items-center justify-center"
           title="Copy to clipboard"
         >
           {copySuccess ? <FaCheck /> : <FaClipboard />}
         </Button>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Button
           onClick={onToggleQR}
-          className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-3 py-3 sm:py-2 rounded text-xs sm:text-sm flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
         >
-          <FaQrcode />
-          QR Code
+          <FaQrcode className="flex-shrink-0" />
+          <span>QR Code</span>
         </Button>
         <Button
           onClick={onClear}
-          className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-3 sm:py-2 rounded text-xs sm:text-sm flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
         >
-          <FaTimes />
-          Clear
+          <FaTimes className="flex-shrink-0" />
+          <span>Clear</span>
         </Button>
       </div>
     </div>
 
-    <div className="text-sm text-nightly-celadon">
+    <div className="text-xs sm:text-sm text-nightly-celadon">
       <p className="mb-2">
         <strong>Secure Sharing:</strong> Share this code privately with your
         keyholder via text, voice, QR code, or secure message.
@@ -183,12 +185,12 @@ export const SubmissivePanel: React.FC<SubmissivePanelProps> = ({
   onToggleQR,
   onClear,
 }) => (
-  <div className="bg-white/5 rounded-lg p-4">
-    <h3 className="font-medium text-nightly-honeydew mb-2 flex items-center gap-2">
-      <FaLink className="text-nightly-aquamarine" />
-      For Submissives
+  <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+    <h3 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-2 flex items-center gap-2">
+      <FaLink className="text-nightly-aquamarine flex-shrink-0" />
+      <span>For Submissives</span>
     </h3>
-    <ul className="text-sm text-nightly-celadon space-y-1 mb-4">
+    <ul className="text-xs sm:text-sm text-nightly-celadon space-y-1 mb-4">
       <li>• Generate secure link codes</li>
       <li>• Share privately with keyholder</li>
       <li>• Maintain ultimate control</li>
@@ -199,17 +201,17 @@ export const SubmissivePanel: React.FC<SubmissivePanelProps> = ({
       <Button
         onClick={onGenerateCode}
         disabled={isGeneratingCode}
-        className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+        className="w-full sm:w-auto bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 text-white px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px] sm:min-h-0 touch-manipulation"
       >
         {isGeneratingCode ? (
           <>
-            <FaSpinner className="animate-spin" />
-            Generating...
+            <FaSpinner className="animate-spin flex-shrink-0" />
+            <span>Generating...</span>
           </>
         ) : (
           <>
-            <FaPlus />
-            Generate Link Code
+            <FaPlus className="flex-shrink-0" />
+            <span>Generate Link Code</span>
           </>
         )}
       </Button>
@@ -224,9 +226,9 @@ export const SubmissivePanel: React.FC<SubmissivePanelProps> = ({
     )}
 
     {linkCodeError && (
-      <div className="bg-red-500/20 text-red-400 p-3 rounded mt-3 flex items-center gap-2">
-        <FaExclamationTriangle />
-        {linkCodeError}
+      <div className="bg-red-500/20 text-red-400 p-3 rounded mt-3 flex items-start gap-2 text-xs sm:text-sm">
+        <FaExclamationTriangle className="flex-shrink-0 mt-0.5" />
+        <span className="break-words">{linkCodeError}</span>
       </div>
     )}
   </div>
@@ -251,34 +253,41 @@ export const LinkCodeInputForm: React.FC<LinkCodeInputFormProps> = ({
   onCancel,
 }) => (
   <div className="space-y-3">
-    <div className="flex gap-2">
+    <div className="flex flex-col sm:flex-row gap-2">
       <Input
         type="text"
         value={linkCodeInput}
         onChange={(e) => onInputChange(e.target.value.toUpperCase())}
         placeholder="Enter link code"
-        className="flex-1 bg-black/20 text-nightly-honeydew px-3 py-2 rounded placeholder-nightly-celadon"
+        className="flex-1 bg-black/20 text-nightly-honeydew px-3 py-3 sm:py-2 rounded placeholder-nightly-celadon text-sm sm:text-base"
         maxLength={20}
       />
       <Button
         onClick={onSubmit}
         disabled={isUsingCode || !linkCodeInput.trim()}
-        className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors disabled:opacity-50"
+        className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-3 sm:py-2 rounded font-medium transition-colors disabled:opacity-50 min-h-[44px] sm:min-h-0 touch-manipulation flex items-center justify-center gap-2"
       >
-        {isUsingCode ? <FaSpinner className="animate-spin" /> : "Link"}
+        {isUsingCode ? (
+          <>
+            <FaSpinner className="animate-spin flex-shrink-0" />
+            <span>Linking...</span>
+          </>
+        ) : (
+          <span>Link</span>
+        )}
       </Button>
     </div>
     <Button
       onClick={onCancel}
-      className="text-nightly-celadon hover:text-nightly-honeydew text-sm"
+      className="text-nightly-celadon hover:text-nightly-honeydew text-xs sm:text-sm min-h-[44px] sm:min-h-0 py-2 sm:py-1 px-3 touch-manipulation"
     >
       Cancel
     </Button>
 
     {codeUsageError && (
-      <div className="bg-red-500/20 text-red-400 p-3 rounded flex items-center gap-2">
-        <FaExclamationTriangle />
-        {codeUsageError}
+      <div className="bg-red-500/20 text-red-400 p-3 rounded flex items-start gap-2 text-xs sm:text-sm">
+        <FaExclamationTriangle className="flex-shrink-0 mt-0.5" />
+        <span className="break-words">{codeUsageError}</span>
       </div>
     )}
   </div>
@@ -306,12 +315,12 @@ export const KeyholderPanel: React.FC<KeyholderPanelProps> = ({
   onSubmitCode,
   onCancelForm,
 }) => (
-  <div className="bg-white/5 rounded-lg p-4">
-    <h3 className="font-medium text-nightly-honeydew mb-2 flex items-center gap-2">
-      <FaUsers className="text-nightly-lavender-floral" />
-      For Keyholders
+  <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+    <h3 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-2 flex items-center gap-2">
+      <FaUsers className="text-nightly-lavender-floral flex-shrink-0" />
+      <span>For Keyholders</span>
     </h3>
-    <ul className="text-sm text-nightly-celadon space-y-1 mb-4">
+    <ul className="text-xs sm:text-sm text-nightly-celadon space-y-1 mb-4">
       <li>• Full admin dashboard access</li>
       <li>• Manage multiple submissives</li>
       <li>• Real-time control & monitoring</li>
@@ -321,10 +330,10 @@ export const KeyholderPanel: React.FC<KeyholderPanelProps> = ({
     {!showLinkForm ? (
       <Button
         onClick={onShowLinkForm}
-        className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+        className="w-full sm:w-auto bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
       >
-        <FaLink />
-        Enter Link Code
+        <FaLink className="flex-shrink-0" />
+        <span>Enter Link Code</span>
       </Button>
     ) : (
       <LinkCodeInputForm
@@ -347,11 +356,13 @@ interface QRCodeDisplayProps {
 export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   linkCode: _linkCode,
 }) => (
-  <div className="bg-white/5 rounded-lg p-4">
-    <h4 className="font-medium text-nightly-honeydew mb-3">QR Code</h4>
+  <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+    <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
+      QR Code
+    </h4>
     <div className="flex items-center justify-center">
-      <div className="bg-white p-4 rounded-lg">
-        <div className="text-center text-gray-600">
+      <div className="bg-white p-6 sm:p-8 rounded-lg">
+        <div className="text-center text-gray-600 text-xs sm:text-sm">
           QR Code would appear here
           <br />
           (Implementation requires QR library)
