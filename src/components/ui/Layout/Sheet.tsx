@@ -324,58 +324,56 @@ export const Sheet: React.FC<SheetProps> = ({
 
   const sheetContent = (
     <AnimatePresence>
-      {isOpen && (
-        <div className={getContainerClasses()}>
-          {/* Overlay */}
-          <motion.div
-            variants={overlayVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={smoothTransition}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={handleOverlayClick}
-            aria-hidden="true"
+      <div className={getContainerClasses()}>
+        {/* Overlay */}
+        <motion.div
+          variants={overlayVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={smoothTransition}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={handleOverlayClick}
+          aria-hidden="true"
+        />
+
+        {/* Sheet */}
+        <motion.div
+          ref={sheetRef}
+          variants={sheetVariants[side]}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={springTransition}
+          drag={side === "bottom" ? "y" : false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.2}
+          onDrag={handleDrag}
+          onDragEnd={handleDragEnd}
+          style={
+            side === "bottom" && dragOffset > 0
+              ? { y: dragOffset }
+              : undefined
+          }
+          className={`relative ${getSheetClasses()} ${className}`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={title ? "sheet-title" : undefined}
+        >
+          {/* Drag handle for bottom sheets */}
+          {side === "bottom" && <DragHandle />}
+
+          {/* Header */}
+          <SheetHeader
+            title={title}
+            showCloseButton={showCloseButton}
+            onClose={onClose}
           />
 
-          {/* Sheet */}
-          <motion.div
-            ref={sheetRef}
-            variants={sheetVariants[side]}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={springTransition}
-            drag={side === "bottom" ? "y" : false}
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.2}
-            onDrag={handleDrag}
-            onDragEnd={handleDragEnd}
-            style={
-              side === "bottom" && dragOffset > 0
-                ? { y: dragOffset }
-                : undefined
-            }
-            className={`relative ${getSheetClasses()} ${className}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={title ? "sheet-title" : undefined}
-          >
-            {/* Drag handle for bottom sheets */}
-            {side === "bottom" && <DragHandle />}
-
-            {/* Header */}
-            <SheetHeader
-              title={title}
-              showCloseButton={showCloseButton}
-              onClose={onClose}
-            />
-
-            {/* Content */}
-            <div className="overflow-y-auto flex-1 p-6">{children}</div>
-          </motion.div>
-        </div>
-      )}
+          {/* Content */}
+          <div className="overflow-y-auto flex-1 p-6">{children}</div>
+        </motion.div>
+      </div>
     </AnimatePresence>
   );
 
