@@ -7,3 +7,4 @@ export { TaskSkeleton } from "./TaskSkeleton";
 export { TaskErrorBoundary } from "./TaskErrorBoundary";
 export { TaskError } from "./TaskError";
 export type { TaskErrorProps } from "./TaskError";
+export { TaskSearch } from "./TaskSearch";
