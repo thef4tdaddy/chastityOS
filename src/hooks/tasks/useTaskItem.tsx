@@ -108,7 +108,8 @@ export const useTaskItem = (
       setNote("");
       setAttachments([]);
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Failed to submit task");
+      const err =
+        error instanceof Error ? error : new Error("Failed to submit task");
       logger.error("Task submission error", {
         taskId: task.id,
         error: err.message,

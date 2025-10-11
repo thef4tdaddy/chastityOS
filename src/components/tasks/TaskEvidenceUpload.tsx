@@ -3,12 +3,20 @@
  * Allows submissives to upload photo evidence when submitting tasks
  */
 import React, { useCallback, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
-import { FaUpload, FaTimes, FaImage, FaSpinner, FaExclamationTriangle } from "../../utils/iconImport";
+import {
+  FaUpload,
+  FaTimes,
+  FaImage,
+  FaSpinner,
+  FaExclamationTriangle,
+} from "../../utils/iconImport";
 import { TaskError } from "./TaskError";
 import { logger } from "@/utils/logging";
+import { scaleInVariants, getAccessibleVariants } from "../../utils/animations";
 
 interface TaskEvidenceUploadProps {
   taskId: string;
@@ -35,16 +43,19 @@ const UploadZone: React.FC<{
   onDrop,
   onBrowseClick,
 }) => (
-  <div
+  <motion.div
     className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-colors touch-manipulation ${
       isDragging
-        ? "border-blue-400 bg-blue-900/20"
+        ? "border-blue-400 bg-blue-900/20 drop-zone-active"
         : "border-gray-600 hover:border-gray-500"
     }`}
     onDragEnter={onDragEnter}
     onDragOver={onDragOver}
     onDragLeave={onDragLeave}
     onDrop={onDrop}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
   >
     <FaUpload className="mx-auto text-3xl sm:text-4xl text-gray-400 mb-2" />
     <p className="text-sm sm:text-base text-gray-300 mb-2">
@@ -60,7 +71,7 @@ const UploadZone: React.FC<{
     >
       Choose Files
     </Button>
-  </div>
+  </motion.div>
 );
 
 // File preview item sub-component
@@ -68,11 +79,21 @@ const FilePreviewItem: React.FC<{
   file: UploadedFile;
   onRemove: () => void;
 }> = ({ file, onRemove }) => (
-  <div className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border border-gray-700 touch-manipulation">
-    <img
+  <motion.div
+    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border border-gray-700 touch-manipulation"
+    variants={getAccessibleVariants(scaleInVariants)}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    layout
+  >
+    <motion.img
       src={file.preview}
       alt="Preview"
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover image-fade-in"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     />
     <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
       {file.uploading && (
@@ -92,9 +113,11 @@ const FilePreviewItem: React.FC<{
     </div>
     {file.uploading && (
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-        <div
-          className="h-full bg-blue-500 transition-all duration-300"
-          style={{ width: `${file.progress}%` }}
+        <motion.div
+          className="h-full bg-blue-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${file.progress}%` }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         />
       </div>
     )}
@@ -108,7 +131,7 @@ const FilePreviewItem: React.FC<{
         <FaTimes className="text-base sm:text-sm" />
       </Button>
     )}
-  </div>
+  </motion.div>
 );
 
 export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
@@ -173,7 +196,8 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
           handleFiles(e.target.files);
         }
       } catch (error) {
-        const err = error instanceof Error ? error : new Error("Failed to handle files");
+        const err =
+          error instanceof Error ? error : new Error("Failed to handle files");
         logger.error("Error handling file input", { error: err.message });
         setUploadError(err);
       }
@@ -187,7 +211,11 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
       await uploadAllFiles();
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Upload failed");
-      logger.error("Error uploading files", { error: err.message, taskId, userId });
+      logger.error("Error uploading files", {
+        error: err.message,
+        taskId,
+        userId,
+      });
       setUploadError(err);
     }
   }, [uploadAllFiles, taskId, userId]);
@@ -255,15 +283,22 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
       )}
 
       {hasFiles && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-          {files.map((file) => (
-            <FilePreviewItem
-              key={file.id}
-              file={file}
-              onRemove={() => removeFile(file.id)}
-            />
-          ))}
-        </div>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <AnimatePresence mode="popLayout">
+            {files.map((file) => (
+              <FilePreviewItem
+                key={file.id}
+                file={file}
+                onRemove={() => removeFile(file.id)}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {hasFiles && !allUploaded && (
@@ -284,7 +319,9 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
       {hasErrors && (
         <div className="flex items-center gap-2 text-red-400 text-sm p-3 bg-red-500/10 border border-red-500/30 rounded">
           <FaExclamationTriangle />
-          <span>Some files failed to upload. Please check file size and format.</span>
+          <span>
+            Some files failed to upload. Please check file size and format.
+          </span>
         </div>
       )}
 
