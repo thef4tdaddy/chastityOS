@@ -65,13 +65,23 @@ export type {
 } from "./Feedback";
 
 // Layout Components
-export { Card, CardHeader, CardBody, CardFooter, Divider } from "./Layout";
+export {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Divider,
+  Accordion,
+  AccordionItem,
+} from "./Layout";
 export type {
   CardProps,
   CardHeaderProps,
   CardBodyProps,
   CardFooterProps,
   DividerProps,
+  AccordionProps,
+  AccordionItemProps,
 } from "./Layout";
 
 // Data Display Components
