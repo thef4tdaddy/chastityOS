@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { motion } from "framer-motion";
 import type { DBTask } from "../../types/database";
 import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
@@ -8,6 +9,14 @@ import { TaskError } from "./TaskError";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 import { Textarea, Button } from "@/components/ui";
+import {
+  taskCardVariants,
+  buttonVariants,
+  fadeInVariants,
+  successVariants,
+  errorShakeVariants,
+  getAccessibleVariants,
+} from "../../utils/animations";
 
 // Task status badge component
 interface TaskStatusBadgeProps {
@@ -59,7 +68,9 @@ const TaskCountdownComponent: React.FC<TaskCountdownProps> = ({
   <div className="text-right flex-shrink-0">
     <div className="text-xs sm:text-sm text-nightly-celadon">Due in:</div>
     <CountdownTimer deadline={dueDate} />
-    {isOverdue && <div className="text-xs sm:text-sm text-red-400 mt-1">OVERDUE</div>}
+    {isOverdue && (
+      <div className="text-xs sm:text-sm text-red-400 mt-1">OVERDUE</div>
+    )}
   </div>
 );
 
@@ -77,9 +88,13 @@ const TaskContentComponent: React.FC<TaskContentProps> = ({
   description,
 }) => (
   <div className="mb-3">
-    <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-2 break-words">{text}</h3>
+    <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-2 break-words">
+      {text}
+    </h3>
     {description && (
-      <p className="text-nightly-celadon text-sm sm:text-base mb-2 break-words">{description}</p>
+      <p className="text-nightly-celadon text-sm sm:text-base mb-2 break-words">
+        {description}
+      </p>
     )}
   </div>
 );
@@ -220,16 +235,26 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
         />
       </div>
 
-      <Button
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 sm:py-2 rounded transition-colors flex items-center justify-center gap-2 text-base sm:text-sm font-medium min-h-[44px] touch-manipulation"
+      <motion.div
+        variants={getAccessibleVariants(buttonVariants)}
+        whileHover="hover"
+        whileTap="tap"
       >
-        {isSubmitting && (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        )}
-        {isSubmitting ? "Submitting..." : "Submit for Review"}
-      </Button>
+        <Button
+          onClick={onSubmit}
+          disabled={isSubmitting}
+          className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 sm:py-2 rounded transition-colors flex items-center justify-center gap-2 text-base sm:text-sm font-medium min-h-[44px] touch-manipulation"
+        >
+          {isSubmitting && (
+            <motion.div
+              className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+          {isSubmitting ? "Submitting..." : "Submit for Review"}
+        </Button>
+      </motion.div>
     </div>
   );
 };
@@ -259,12 +284,29 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
     isOverdue,
   } = useTaskItem(task, onSubmit);
 
+  // Get animation variants that respect prefers-reduced-motion
+  const cardVariants = getAccessibleVariants(taskCardVariants);
+  const statusVariants =
+    task.status === "approved"
+      ? getAccessibleVariants(successVariants)
+      : task.status === "rejected"
+        ? getAccessibleVariants(errorShakeVariants)
+        : getAccessibleVariants(fadeInVariants);
+
   return (
-    <div
-      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-3 sm:p-4 mb-4`}
+    <motion.div
+      variants={cardVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      whileHover="hover"
+      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-3 sm:p-4 mb-4 task-card-hover`}
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-3">
+      <motion.div
+        className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-3"
+        variants={statusVariants}
+      >
         <TaskStatusBadge
           statusConfig={statusConfig}
           priority={task.priority}
@@ -273,7 +315,7 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
         {task.dueDate && (
           <TaskCountdown dueDate={task.dueDate} isOverdue={isOverdue} />
         )}
-      </div>
+      </motion.div>
 
       <TaskContent text={task.text} description={task.description} />
 
@@ -331,7 +373,7 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
           />
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

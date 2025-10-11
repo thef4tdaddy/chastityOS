@@ -67,17 +67,18 @@ describe("Background Sync Integration", () => {
       });
 
       // User makes a change
-      const taskData = {
-        name: "Clean the room",
-        description: "Deep clean the entire room",
-        deadline: new Date("2024-12-31"),
+      const taskData: DBBase = {
+        id: "task-new",
+        userId: "user-123",
+        syncStatus: "pending",
+        lastModified: new Date(),
       };
 
       await offlineQueue.queueOperation({
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: taskData as unknown as DBBase,
+        payload: taskData,
       });
 
       expect(mockAdd).toHaveBeenCalledWith(
@@ -85,7 +86,7 @@ describe("Background Sync Integration", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: expect.any(Object),
+          payload: expect.any(Object),
           createdAt: expect.any(Date),
         }),
       );
@@ -101,11 +102,18 @@ describe("Background Sync Integration", () => {
         configurable: true,
       });
 
+      const updateData: DBBase = {
+        id: "task-123",
+        userId: "user-123",
+        syncStatus: "pending",
+        lastModified: new Date(),
+      };
+
       await offlineQueue.queueOperation({
         type: "update",
         collectionName: "tasks",
         userId: "user-123",
-        data: { id: "task-123", status: "completed" } as unknown as DBBase,
+        payload: updateData,
       });
 
       expect(mockAdd).toHaveBeenCalledWith(
@@ -125,11 +133,18 @@ describe("Background Sync Integration", () => {
         configurable: true,
       });
 
+      const deleteData: DBBase = {
+        id: "task-123",
+        userId: "user-123",
+        syncStatus: "pending",
+        lastModified: new Date(),
+      };
+
       await offlineQueue.queueOperation({
         type: "delete",
         collectionName: "tasks",
         userId: "user-123",
-        data: { id: "task-123" } as unknown as DBBase,
+        payload: deleteData,
       });
 
       expect(mockAdd).toHaveBeenCalledWith(
@@ -144,11 +159,18 @@ describe("Background Sync Integration", () => {
       const mockAdd = vi.fn().mockResolvedValue(1);
       db.offlineQueue.add = mockAdd;
 
+      const testData: DBBase = {
+        id: "test-id",
+        userId: "user-123",
+        syncStatus: "pending",
+        lastModified: new Date(),
+      };
+
       await offlineQueue.queueOperation({
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Test Task" } as unknown as DBBase,
+        payload: testData,
       });
 
       // Verify it was stored
@@ -167,19 +189,24 @@ describe("Background Sync Integration", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(),
         },
       ];
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
       firebaseSync.syncCollection = mockSyncCollection;
@@ -237,21 +264,23 @@ describe("Background Sync Integration", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: {
-          name: "Test Task",
-          status: "pending",
-        } as DBBase,
+        payload: {
+          id: "test-task",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        },
         createdAt: new Date(),
       };
 
       const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
       firebaseSync.syncCollection = mockSyncCollection;
@@ -271,7 +300,12 @@ describe("Background Sync Integration", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(Date.now() - 2000),
         },
         {
@@ -279,7 +313,12 @@ describe("Background Sync Integration", () => {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: { id: "task-1", status: "completed" } as DBBase,
+          payload: {
+            id: "task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(Date.now() - 1000),
         },
         {
@@ -287,19 +326,24 @@ describe("Background Sync Integration", () => {
           type: "delete",
           collectionName: "tasks",
           userId: "user-123",
-          data: { id: "task-2" } as DBBase,
+          payload: {
+            id: "task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(),
         },
       ];
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
       firebaseSync.syncCollection = mockSyncCollection;
@@ -320,16 +364,18 @@ describe("Background Sync Integration", () => {
         type: "update",
         collectionName: "tasks",
         userId: "user-123",
-        data: {
+        payload: {
           id: "task-123",
-          version: 1, // Outdated version
-        } as unknown as DBBase,
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        },
         createdAt: new Date(),
       };
 
       const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
@@ -339,7 +385,7 @@ describe("Background Sync Integration", () => {
         anyOf: mockAnyOf,
         equals: mockEquals,
       }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi
         .fn()
@@ -365,7 +411,12 @@ describe("Background Sync Integration", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(),
         },
         {
@@ -373,19 +424,24 @@ describe("Background Sync Integration", () => {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 2" } as DBBase,
+          payload: {
+            id: "task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(),
         },
       ];
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
       firebaseSync.syncCollection = mockSyncCollection;
@@ -405,14 +461,19 @@ describe("Background Sync Integration", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Task 1" } as DBBase,
+        payload: {
+          id: "task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        },
         createdAt: new Date(),
         retryCount: 2,
       };
 
       const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
@@ -422,7 +483,7 @@ describe("Background Sync Integration", () => {
         anyOf: mockAnyOf,
         equals: mockEquals,
       }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi
         .fn()
@@ -448,19 +509,24 @@ describe("Background Sync Integration", () => {
             type: "create",
             collectionName: "tasks",
             userId: "user-123",
-            data: { name: "Task 1" } as DBBase,
+            payload: {
+              id: "task-1",
+              userId: "user-123",
+              syncStatus: "pending",
+              lastModified: new Date(),
+            },
             createdAt: new Date(),
           },
         ])
         .mockResolvedValueOnce([]);
 
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
       firebaseSync.syncCollection = mockSyncCollection;
@@ -484,14 +550,19 @@ describe("Background Sync Integration", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Task 1" } as DBBase,
+        payload: {
+          id: "task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        },
         createdAt: new Date(),
         retryCount: 0,
       };
 
       const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockModify = vi.fn().mockResolvedValue(undefined);
       const mockEquals = vi.fn(() => ({ modify: mockModify }));
@@ -501,7 +572,7 @@ describe("Background Sync Integration", () => {
         equals: mockEquals,
         anyOf: mockAnyOf,
       }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi
         .fn()
@@ -524,7 +595,12 @@ describe("Background Sync Integration", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(),
         },
         {
@@ -532,14 +608,19 @@ describe("Background Sync Integration", () => {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 2" } as DBBase,
+          payload: {
+            id: "task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          },
           createdAt: new Date(),
         },
       ];
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockModify = vi.fn().mockResolvedValue(undefined);
       const mockEquals = vi.fn(() => ({ modify: mockModify }));
@@ -549,7 +630,7 @@ describe("Background Sync Integration", () => {
         equals: mockEquals,
         anyOf: mockAnyOf,
       }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       // First succeeds, second fails
       const mockSyncCollection = vi
