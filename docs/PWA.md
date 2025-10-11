@@ -122,24 +122,80 @@ const unsubscribe = pwaUpdateManager.onUpdateAvailable(() => {
 
 ### Background Sync
 
-The offline queue is automatically synced when connection is restored:
+The offline queue is automatically synced when connection is restored with exponential backoff retry logic:
 
 ```typescript
-import { offlineQueue } from "@/services/sync/OfflineQueue";
+import { syncQueueService } from "@/services/sync/SyncQueueService";
 
-// Queue an operation
-await offlineQueue.queueOperation({
-  type: "create",
-  collectionName: "events",
+// Add an operation to the queue
+await syncQueueService.addToQueue("create", "events", {
+  id: "event123",
   userId: "user123",
-  data: { /* ... */ },
+  /* ... */
 });
 
-// Process queue manually
-await offlineQueue.processQueue();
+// Process queue manually (triggered automatically on reconnect)
+await syncQueueService.processSyncQueue();
+
+// Get current sync status
+const status = syncQueueService.getStatus(); // "idle" | "syncing" | "synced" | "error"
 
 // Get queue statistics
-const stats = await offlineQueue.getQueueStats();
+const stats = await syncQueueService.getStats();
+// Returns: { total, pending, failed, lastSyncTime, lastSyncStatus }
+
+// Subscribe to status changes
+const unsubscribe = syncQueueService.subscribe((status) => {
+  console.log("Sync status changed:", status);
+});
+
+// Trigger manual sync
+await syncQueueService.triggerSync();
+```
+
+#### Retry Logic
+
+The sync queue implements exponential backoff for failed operations:
+
+- **Max Retries**: 3 attempts per operation
+- **Backoff Delays**: 1s → 2s → 4s between retries
+- **Auto Retry**: Operations automatically retry with increasing delays
+- **Failed Operations**: Operations that exceed max retries are removed from queue
+
+#### React Integration
+
+Use the `useSyncStatus` hook to monitor sync status in React components:
+
+```typescript
+import { useSyncStatus } from "@/hooks/useSyncStatus";
+
+function MyComponent() {
+  const { syncStatus, stats, isOnline, lastSyncTime, triggerSync } = useSyncStatus();
+  
+  return (
+    <div>
+      <p>Status: {syncStatus}</p>
+      <p>Pending: {stats?.pending}</p>
+      <button onClick={triggerSync} disabled={!isOnline}>
+        Sync Now
+      </button>
+    </div>
+  );
+}
+```
+
+#### UI Components
+
+The `SyncIndicator` component provides visual feedback:
+
+```typescript
+import { SyncIndicator } from "@/components/ui";
+
+// Compact mode (header)
+<SyncIndicator compact />
+
+// Full mode with stats (settings page)
+<SyncIndicator showStats showLastSync />
 ```
 
 ### Connection Status
@@ -280,6 +336,29 @@ workbox: {
 4. **Clear Old Caches**: Remove outdated service worker caches
 5. **Notify Users**: Keep users informed of sync status and updates
 6. **Graceful Degradation**: Disable features that require network gracefully
+
+## Recent Enhancements (Issue #392)
+
+### Background Sync & Retry Logic
+
+- ✅ **SyncQueueService**: Centralized queue management with retry logic
+- ✅ **Exponential Backoff**: 1s → 2s → 4s delays between retries
+- ✅ **Max Retry Limit**: Operations fail after 3 attempts
+- ✅ **Status Tracking**: Real-time sync status (idle, syncing, synced, error)
+- ✅ **React Integration**: `useSyncStatus` hook for UI updates
+- ✅ **UI Components**: `SyncIndicator` for visual feedback
+- ✅ **Settings Integration**: Detailed sync stats in Settings > Data
+- ✅ **Service Worker**: Enhanced with proper retry logic
+
+### Queued Operations
+
+The following operations are queued for background sync:
+
+- **Task Submissions**: Task creation and updates
+- **Session Updates**: Start, pause, resume, end session
+- **Settings Changes**: User preferences and configuration
+- **Event Logging**: Activity and milestone tracking
+- **Goal Progress**: Achievement and goal updates
 
 ## Future Enhancements
 
