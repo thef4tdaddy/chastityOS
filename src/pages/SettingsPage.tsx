@@ -42,6 +42,7 @@ import {
   SelectOption,
   Button,
   Switch,
+  SyncIndicator,
 } from "@/components/ui";
 import { TimezoneUtil } from "../utils/timezone";
 import { toastBridge } from "../utils/toastBridge";
@@ -707,6 +708,14 @@ const DataSection: React.FC<{ settings: DBSettings | null }> = ({
 }) => {
   return (
     <div className="space-y-6">
+      {/* Sync Status Section */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 border-2 border-black">
+        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">
+          Sync Status
+        </h3>
+        <SyncIndicator showStats showLastSync className="bg-transparent" />
+      </div>
+
       <DataControls />
     </div>
   );
