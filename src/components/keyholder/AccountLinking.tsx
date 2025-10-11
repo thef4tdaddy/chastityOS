@@ -19,6 +19,8 @@ import { GoogleAuthNotice } from "../auth/GoogleAuthNotice";
 import { KeyholderRelationship } from "../../types/core";
 import type { KeyholderRelationshipState } from "../../hooks/useKeyholderRelationships";
 import { checkGoogleSignIn } from "../../utils/auth/google-auth-check";
+import { FeatureErrorBoundary } from "../errors/FeatureErrorBoundary";
+import { RetryableErrorDisplay } from "../errors/fallbacks/RetryableErrorDisplay";
 
 interface AccountLinkingProps {
   className?: string;
@@ -252,6 +254,19 @@ const AccountLinkingContent: React.FC<{
   </div>
 );
 
+const AccountLinkingErrorFallback: React.FC<{ error?: Error | null; resetError?: () => void }> = ({ 
+  error, 
+  resetError 
+}) => (
+  <RetryableErrorDisplay
+    error={error}
+    title="Account Linking Error"
+    message="Unable to load account linking features. This might be due to network issues or permission problems."
+    onRetry={resetError}
+    showTechnicalDetails={true}
+  />
+);
+
 export const AccountLinking: React.FC<AccountLinkingProps> = ({
   className = "",
 }) => {
@@ -309,29 +324,34 @@ export const AccountLinking: React.FC<AccountLinkingProps> = ({
   }
 
   return (
-    <div className={className}>
-      <AccountLinkingContent
-        relationships={relationships}
-        activeKeyholder={activeKeyholder}
-        activeInviteCodes={activeInviteCodes}
-        relationshipSummary={relationshipSummary}
-        message={message}
-        messageType={messageType}
-        clearMessage={clearMessage}
-        endRelationship={endRelationship}
-        linkingState={linkingState}
-        isCreatingInvite={isCreatingInvite}
-        inviteCodeInput={inviteCodeInput}
-        keyholderNameInput={keyholderNameInput}
-        isAcceptingInvite={isAcceptingInvite}
-        setInviteCodeInput={setInviteCodeInput}
-        setKeyholderNameInput={setKeyholderNameInput}
-        revokeInviteCode={revokeInviteCode}
-        validateInviteCode={validateInviteCode}
-        isSignedInWithGoogle={isSignedInWithGoogle}
-        handlers={handlers}
-      />
-    </div>
+    <FeatureErrorBoundary 
+      feature="account-linking"
+      fallback={<AccountLinkingErrorFallback />}
+    >
+      <div className={className}>
+        <AccountLinkingContent
+          relationships={relationships}
+          activeKeyholder={activeKeyholder}
+          activeInviteCodes={activeInviteCodes}
+          relationshipSummary={relationshipSummary}
+          message={message}
+          messageType={messageType}
+          clearMessage={clearMessage}
+          endRelationship={endRelationship}
+          linkingState={linkingState}
+          isCreatingInvite={isCreatingInvite}
+          inviteCodeInput={inviteCodeInput}
+          keyholderNameInput={keyholderNameInput}
+          isAcceptingInvite={isAcceptingInvite}
+          setInviteCodeInput={setInviteCodeInput}
+          setKeyholderNameInput={setKeyholderNameInput}
+          revokeInviteCode={revokeInviteCode}
+          validateInviteCode={validateInviteCode}
+          isSignedInWithGoogle={isSignedInWithGoogle}
+          handlers={handlers}
+        />
+      </div>
+    </FeatureErrorBoundary>
   );
 };
 

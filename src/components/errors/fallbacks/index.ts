@@ -7,3 +7,5 @@ export { CriticalErrorFallback } from "./CriticalErrorFallback";
 export { ErrorFallback } from "./ErrorFallback";
 export { TrackerErrorFallback } from "./TrackerErrorFallback";
 export { KeyholderErrorFallback } from "./KeyholderErrorFallback";
+export { RetryableErrorDisplay } from "./RetryableErrorDisplay";
+export { ErrorMessage } from "./ErrorMessage";

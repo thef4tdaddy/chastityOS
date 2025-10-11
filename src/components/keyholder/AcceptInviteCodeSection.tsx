@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Input, Button } from "@/components/ui";
+import { ErrorMessage } from "../errors/fallbacks/ErrorMessage";
 
 interface AcceptInviteCodeSectionProps {
   inviteCodeInput: string;
@@ -25,11 +26,18 @@ export const AcceptInviteCodeSection: React.FC<
   disabled = false,
 }) => {
   const [showAcceptInvite, setShowAcceptInvite] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAcceptInvite = async () => {
     if (disabled) return;
-    await onAcceptInvite();
-    setShowAcceptInvite(false);
+    try {
+      setError(null);
+      await onAcceptInvite();
+      setShowAcceptInvite(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to accept invite code";
+      setError(errorMessage);
+    }
   };
 
   return (
@@ -52,6 +60,13 @@ export const AcceptInviteCodeSection: React.FC<
           <p className="text-sm text-gray-400">
             Enter an invite code from a submissive to become their keyholder.
           </p>
+          {error && (
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError(null)}
+              variant="error"
+            />
+          )}
           <Input
             type="text"
             value={inviteCodeInput}

@@ -27,6 +27,11 @@ export class KeyholderRelationshipService {
         expirationHours,
       });
 
+      // Validate input
+      if (!submissiveUserId) {
+        throw new Error("User ID is required to create an invite code");
+      }
+
       // Check for existing active invite codes (max 3 at a time)
       const activeInvites =
         await keyholderRelationshipDBService.getActiveInviteCodes(
@@ -34,7 +39,7 @@ export class KeyholderRelationshipService {
         );
 
       if (activeInvites.length >= 3) {
-        throw new Error("Maximum of 3 active invite codes allowed at once");
+        throw new Error("Maximum of 3 active invite codes allowed at once. Please revoke an existing code first.");
       }
 
       const inviteCode = await keyholderRelationshipDBService.createInviteCode({
@@ -50,7 +55,20 @@ export class KeyholderRelationshipService {
 
       return inviteCode;
     } catch (error) {
-      logger.error("Failed to create invite code", { error: error as Error });
+      const err = error as Error;
+      logger.error("Failed to create invite code", { 
+        error: err,
+        submissiveUserId,
+        errorMessage: err.message 
+      });
+      
+      // Re-throw with more context if it's a generic error
+      if (err.message.includes("permission-denied")) {
+        throw new Error("Permission denied: You don't have access to create invite codes");
+      } else if (err.message.includes("network")) {
+        throw new Error("Network error: Please check your internet connection and try again");
+      }
+      
       throw error;
     }
   }
@@ -68,6 +86,15 @@ export class KeyholderRelationshipService {
         code: inviteCode,
         keyholderUserId,
       });
+
+      // Validate input
+      if (!inviteCode || !keyholderUserId) {
+        throw new Error("Invite code and user ID are required");
+      }
+
+      if (!this.validateInviteCodeFormat(inviteCode)) {
+        throw new Error("Invalid invite code format. Code must be 6 alphanumeric characters.");
+      }
 
       const relationship =
         await keyholderRelationshipDBService.acceptInviteCode({
@@ -93,7 +120,26 @@ export class KeyholderRelationshipService {
 
       return relationship;
     } catch (error) {
-      logger.error("Failed to accept invite code", { error: error as Error });
+      const err = error as Error;
+      logger.error("Failed to accept invite code", { 
+        error: err,
+        keyholderUserId,
+        errorMessage: err.message 
+      });
+      
+      // Provide user-friendly error messages
+      if (err.message.includes("not found") || err.message.includes("invalid")) {
+        throw new Error("Invalid or expired invite code. Please check the code and try again.");
+      } else if (err.message.includes("already used")) {
+        throw new Error("This invite code has already been used.");
+      } else if (err.message.includes("expired")) {
+        throw new Error("This invite code has expired. Please request a new one.");
+      } else if (err.message.includes("permission-denied")) {
+        throw new Error("Permission denied: You don't have access to accept this invite code.");
+      } else if (err.message.includes("network")) {
+        throw new Error("Network error: Please check your internet connection and try again.");
+      }
+      
       throw error;
     }
   }
@@ -190,15 +236,40 @@ export class KeyholderRelationshipService {
     submissiveUserId: string,
   ): Promise<void> {
     try {
+      // Validate input
+      if (!relationshipId || !submissiveUserId) {
+        throw new Error("Relationship ID and user ID are required");
+      }
+
+      if (!permissions || typeof permissions !== 'object') {
+        throw new Error("Valid permissions object is required");
+      }
+
       await keyholderRelationshipDBService.updatePermissions(
         relationshipId,
         permissions,
         submissiveUserId,
       );
 
-      logger.info("Permissions updated", { relationshipId });
+      logger.info("Permissions updated", { relationshipId, permissions });
     } catch (error) {
-      logger.error("Failed to update permissions", { error: error as Error });
+      const err = error as Error;
+      logger.error("Failed to update permissions", { 
+        error: err,
+        relationshipId,
+        submissiveUserId,
+        errorMessage: err.message 
+      });
+      
+      // Provide user-friendly error messages
+      if (err.message.includes("permission-denied")) {
+        throw new Error("Permission denied: Only the submissive can update permissions.");
+      } else if (err.message.includes("not found")) {
+        throw new Error("Relationship not found. It may have been deleted.");
+      } else if (err.message.includes("network")) {
+        throw new Error("Network error: Please check your internet connection and try again.");
+      }
+      
       throw error;
     }
   }

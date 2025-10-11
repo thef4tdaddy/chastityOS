@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui";
+import { ErrorMessage } from "../errors/fallbacks/ErrorMessage";
 
 interface InviteCodeCreationSectionProps {
   shouldShow: boolean;
@@ -11,12 +12,19 @@ export const InviteCodeCreationSection: React.FC<
   InviteCodeCreationSectionProps
 > = ({ shouldShow, isCreatingInvite, onCreateInvite }) => {
   const [showCreateInvite, setShowCreateInvite] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!shouldShow) return null;
 
   const handleCreateInvite = async () => {
-    await onCreateInvite();
-    setShowCreateInvite(false);
+    try {
+      setError(null);
+      await onCreateInvite();
+      setShowCreateInvite(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to create invite code";
+      setError(errorMessage);
+    }
   };
 
   return (
@@ -24,7 +32,10 @@ export const InviteCodeCreationSection: React.FC<
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-purple-300">Create Invite Code</h3>
         <Button
-          onClick={() => setShowCreateInvite(!showCreateInvite)}
+          onClick={() => {
+            setShowCreateInvite(!showCreateInvite);
+            setError(null);
+          }}
           className="text-purple-400 hover:text-purple-300 text-sm relationship-transition-fast"
         >
           {showCreateInvite ? "Cancel" : "Create Code"}
@@ -36,6 +47,13 @@ export const InviteCodeCreationSection: React.FC<
           <p className="text-sm text-gray-400">
             Generate an invite code for a keyholder to link to your account.
           </p>
+          {error && (
+            <ErrorMessage
+              message={error}
+              onDismiss={() => setError(null)}
+              variant="error"
+            />
+          )}
           <Button
             onClick={handleCreateInvite}
             disabled={isCreatingInvite}
