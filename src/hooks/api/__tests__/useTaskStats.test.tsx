@@ -19,17 +19,14 @@ vi.mock("@/services/database", () => ({
 }));
 
 const createWrapper = () => {
-  const queryClient = new QueryClient(
-    {
-      defaultOptions: {
-        queries: {
-          retry: false,
-          gcTime: 0,
-        },
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
       },
     },
-    { timeout: 3000 },
-  );
+  });
 
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -41,19 +38,13 @@ describe(
   () => {
     const mockUserId = "test-user-123";
 
-    beforeEach(
-      () => {
-        vi.clearAllMocks();
-      },
-      { timeout: 3000 },
-    );
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
 
-    afterEach(
-      () => {
-        vi.resetAllMocks();
-      },
-      { timeout: 3000 },
-    );
+    afterEach(() => {
+      vi.resetAllMocks();
+    });
 
     it(
       "should calculate task statistics correctly",
@@ -96,36 +87,26 @@ describe(
 
         (taskDBService.findByUserId as any).mockResolvedValue(mockTasks);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
-        expect(result.current.data).toMatchObject(
-          {
-            total: 3,
-            pending: 1,
-            inProgress: 1, // submitted tasks count as in progress
-            completed: 1,
-            overdue: 0,
-            byPriority: {
-              high: 1,
-              medium: 1,
-              low: 1,
-            },
+        expect(result.current.data).toMatchObject({
+          total: 3,
+          pending: 1,
+          inProgress: 1, // submitted tasks count as in progress
+          completed: 1,
+          overdue: 0,
+          byPriority: {
+            high: 1,
+            medium: 1,
+            low: 1,
           },
-          { timeout: 3000 },
-        );
+        });
       },
       { timeout: 3000 },
     );
@@ -182,20 +163,13 @@ describe(
 
         (taskDBService.findByUserId as any).mockResolvedValue(mockTasks);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
         // 2 completed out of 4 total = 50%
         expect(result.current.data?.completionRate).toBe(50);
@@ -253,20 +227,13 @@ describe(
 
         (taskDBService.findByUserId as any).mockResolvedValue(mockTasks);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
         // Only the pending overdue task should count
         expect(result.current.data?.overdue).toBe(1);
@@ -279,37 +246,27 @@ describe(
       async () => {
         (taskDBService.findByUserId as any).mockResolvedValue([]);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
-        expect(result.current.data).toMatchObject(
-          {
-            total: 0,
-            pending: 0,
-            inProgress: 0,
-            completed: 0,
-            overdue: 0,
-            byPriority: {
-              high: 0,
-              medium: 0,
-              low: 0,
-            },
-            completionRate: 0,
+        expect(result.current.data).toMatchObject({
+          total: 0,
+          pending: 0,
+          inProgress: 0,
+          completed: 0,
+          overdue: 0,
+          byPriority: {
+            high: 0,
+            medium: 0,
+            low: 0,
           },
-          { timeout: 3000 },
-        );
+          completionRate: 0,
+        });
       },
       { timeout: 3000 },
     );
@@ -333,20 +290,13 @@ describe(
 
         (taskDBService.findByUserId as any).mockResolvedValue(mockTasks);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
         expect(result.current.data?.overdue).toBe(0);
       },
@@ -394,29 +344,19 @@ describe(
 
         (taskDBService.findByUserId as any).mockResolvedValue(mockTasks);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
-        expect(result.current.data?.byPriority).toEqual(
-          {
-            high: 2,
-            medium: 1,
-            low: 0,
-          },
-          { timeout: 3000 },
-        );
+        expect(result.current.data?.byPriority).toEqual({
+          high: 2,
+          medium: 1,
+          low: 0,
+        });
       },
       { timeout: 3000 },
     );
@@ -424,13 +364,9 @@ describe(
     it(
       "should not fetch when userId is undefined",
       async () => {
-        const { result } = renderHook(
-          () => useTaskStats(""),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(""), {
+          wrapper: createWrapper(),
+        });
 
         // Wait a bit
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -447,20 +383,13 @@ describe(
         const error = new Error("Database error");
         (taskDBService.findByUserId as any).mockRejectedValue(error);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isError).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isError).toBe(true);
+        });
 
         expect(result.current.error).toBeDefined();
       },
@@ -472,20 +401,13 @@ describe(
       async () => {
         (taskDBService.findByUserId as any).mockResolvedValue([]);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
         expect(result.current.data?.completionRate).toBe(0);
       },
@@ -533,20 +455,13 @@ describe(
 
         (taskDBService.findByUserId as any).mockResolvedValue(mockTasks);
 
-        const { result } = renderHook(
-          () => useTaskStats(mockUserId),
-          {
-            wrapper: createWrapper(),
-          },
-          { timeout: 3000 },
-        );
+        const { result } = renderHook(() => useTaskStats(mockUserId), {
+          wrapper: createWrapper(),
+        });
 
-        await waitFor(
-          () => {
-            expect(result.current.isSuccess).toBe(true);
-          },
-          { timeout: 3000 },
-        );
+        await waitFor(() => {
+          expect(result.current.isSuccess).toBe(true);
+        });
 
         // 1 out of 3 = 33.33... should round to 33
         expect(result.current.data?.completionRate).toBe(33);

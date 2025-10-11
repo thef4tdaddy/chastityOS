@@ -97,7 +97,11 @@ describe("NavigationStore", () => {
 
     it("should set breadcrumbs", () => {
       const { setBreadcrumbs } = useNavigationStore.getState();
-      const testBreadcrumbs = ["Home", "Settings", "Profile"];
+      const testBreadcrumbs = [
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
+        { label: "Profile", path: "/settings/profile" },
+      ];
 
       setBreadcrumbs(testBreadcrumbs);
 
@@ -109,13 +113,15 @@ describe("NavigationStore", () => {
     it("should add breadcrumb", () => {
       const { addBreadcrumb } = useNavigationStore.getState();
 
-      addBreadcrumb("Home");
-      expect(useNavigationStore.getState().breadcrumbs).toEqual(["Home"]);
-
-      addBreadcrumb("Settings");
+      addBreadcrumb({ label: "Home", path: "/" });
       expect(useNavigationStore.getState().breadcrumbs).toEqual([
-        "Home",
-        "Settings",
+        { label: "Home", path: "/" },
+      ]);
+
+      addBreadcrumb({ label: "Settings", path: "/settings" });
+      expect(useNavigationStore.getState().breadcrumbs).toEqual([
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
       ]);
     });
 
@@ -123,32 +129,42 @@ describe("NavigationStore", () => {
       const { setBreadcrumbs, removeBreadcrumb } =
         useNavigationStore.getState();
 
-      setBreadcrumbs(["Home", "Settings", "Profile"]);
+      setBreadcrumbs([
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
+        { label: "Profile", path: "/settings/profile" },
+      ]);
       expect(useNavigationStore.getState().breadcrumbs).toEqual([
-        "Home",
-        "Settings",
-        "Profile",
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
+        { label: "Profile", path: "/settings/profile" },
       ]);
 
       removeBreadcrumb();
       expect(useNavigationStore.getState().breadcrumbs).toEqual([
-        "Home",
-        "Settings",
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
       ]);
 
       removeBreadcrumb();
-      expect(useNavigationStore.getState().breadcrumbs).toEqual(["Home"]);
+      expect(useNavigationStore.getState().breadcrumbs).toEqual([
+        { label: "Home", path: "/" },
+      ]);
     });
 
     it("should clear all breadcrumbs", () => {
       const { setBreadcrumbs, clearBreadcrumbs } =
         useNavigationStore.getState();
 
-      setBreadcrumbs(["Home", "Settings", "Profile"]);
+      setBreadcrumbs([
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
+        { label: "Profile", path: "/settings/profile" },
+      ]);
       expect(useNavigationStore.getState().breadcrumbs).toEqual([
-        "Home",
-        "Settings",
-        "Profile",
+        { label: "Home", path: "/" },
+        { label: "Settings", path: "/settings" },
+        { label: "Profile", path: "/settings/profile" },
       ]);
 
       clearBreadcrumbs();
@@ -171,7 +187,10 @@ describe("NavigationStore", () => {
       setCurrentPage("custom-page");
       setPageTitle("Custom Title");
       openMobileMenu();
-      setBreadcrumbs(["Custom", "Path"]);
+      setBreadcrumbs([
+        { label: "Custom", path: "/custom" },
+        { label: "Path", path: "/custom/path" },
+      ]);
       setPageLoading(true);
 
       // Verify changes
@@ -179,7 +198,10 @@ describe("NavigationStore", () => {
       expect(state.currentPage).toBe("custom-page");
       expect(state.pageTitle).toBe("Custom Title");
       expect(state.isMobileMenuOpen).toBe(true);
-      expect(state.breadcrumbs).toEqual(["Custom", "Path"]);
+      expect(state.breadcrumbs).toEqual([
+        { label: "Custom", path: "/custom" },
+        { label: "Path", path: "/custom/path" },
+      ]);
       expect(state.isPageLoading).toBe(true);
 
       // Reset and verify
