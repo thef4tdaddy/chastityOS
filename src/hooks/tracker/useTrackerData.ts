@@ -105,5 +105,8 @@ export const useTrackerData = (_USE_REAL_SESSIONS: boolean) => {
     endSession,
     pauseSession,
     resumeSession,
+    // Expose session action errors
+    sessionError: sessionActions.error,
+    clearSessionError: sessionActions.clearError,
   };
 };

@@ -2,11 +2,13 @@
  * Session Actions Hook
  * Provides session control operations (start, end, pause, resume, lock, unlock)
  * Extracts session action logic from ActionButtons component
+ * Includes conflict detection and enhanced error handling
  */
 import { useState, useCallback, useMemo } from "react";
 import { useSession } from "./useSession";
 import { usePauseResume } from "./usePauseResume";
 import { serviceLogger } from "../../utils/logging";
+import { sessionConflictDetection } from "../../services/SessionConflictDetectionService";
 import type { DBGoal, DBSession } from "../../types/database";
 
 const logger = serviceLogger("useSessionActions");
@@ -31,6 +33,15 @@ async function handleStartSession(
     onSessionStarted?: () => void;
   },
 ): Promise<void> {
+  // Check for concurrent operations
+  if (sessionConflictDetection.isOperationInProgress(userId)) {
+    const err = new Error(
+      "Another session operation is already in progress. Please wait.",
+    );
+    actions.handleError(err, "Start session");
+    return;
+  }
+
   if (!canStart) {
     const err = new Error("Cannot start session");
     actions.handleError(err, "Start session");
@@ -39,6 +50,7 @@ async function handleStartSession(
 
   actions.setIsStarting(true);
   actions.setError(null);
+  sessionConflictDetection.startOperation(userId, "start");
 
   try {
     logger.debug("Starting session", { userId });
@@ -57,6 +69,7 @@ async function handleStartSession(
     throw err;
   } finally {
     actions.setIsStarting(false);
+    sessionConflictDetection.completeOperation(userId, "start");
   }
 }
 
@@ -75,6 +88,15 @@ async function handleEndSession(
     onSessionEnded?: () => void;
   },
 ): Promise<void> {
+  // Check for concurrent operations
+  if (sessionConflictDetection.isOperationInProgress(userId)) {
+    const err = new Error(
+      "Another session operation is already in progress. Please wait.",
+    );
+    actions.handleError(err, "End session");
+    return;
+  }
+
   if (!canEnd) {
     const err = new Error("Cannot end session");
     actions.handleError(err, "End session");
@@ -83,6 +105,7 @@ async function handleEndSession(
 
   actions.setIsEnding(true);
   actions.setError(null);
+  sessionConflictDetection.startOperation(userId, "end");
 
   try {
     logger.debug("Ending session", { userId, reason });
@@ -96,6 +119,7 @@ async function handleEndSession(
     throw err;
   } finally {
     actions.setIsEnding(false);
+    sessionConflictDetection.completeOperation(userId, "end");
   }
 }
 
@@ -113,6 +137,15 @@ async function handlePauseSession(
     onSessionPaused?: () => void;
   },
 ): Promise<void> {
+  // Check for concurrent operations
+  if (sessionConflictDetection.isOperationInProgress(userId)) {
+    const err = new Error(
+      "Another session operation is already in progress. Please wait.",
+    );
+    actions.handleError(err, "Pause session");
+    return;
+  }
+
   if (!canPause) {
     const err = new Error("Cannot pause session");
     actions.handleError(err, "Pause session");
@@ -120,6 +153,7 @@ async function handlePauseSession(
   }
 
   actions.setError(null);
+  sessionConflictDetection.startOperation(userId, "pause");
 
   try {
     logger.debug("Pausing session", { userId, reason });
@@ -131,6 +165,8 @@ async function handlePauseSession(
   } catch (err) {
     actions.handleError(err, "Pause session");
     throw err;
+  } finally {
+    sessionConflictDetection.completeOperation(userId, "pause");
   }
 }
 
@@ -147,6 +183,15 @@ async function handleResumeSession(
     onSessionResumed?: () => void;
   },
 ): Promise<void> {
+  // Check for concurrent operations
+  if (sessionConflictDetection.isOperationInProgress(userId)) {
+    const err = new Error(
+      "Another session operation is already in progress. Please wait.",
+    );
+    actions.handleError(err, "Resume session");
+    return;
+  }
+
   if (!canResume) {
     const err = new Error("Cannot resume session");
     actions.handleError(err, "Resume session");
@@ -154,6 +199,7 @@ async function handleResumeSession(
   }
 
   actions.setError(null);
+  sessionConflictDetection.startOperation(userId, "resume");
 
   try {
     logger.debug("Resuming session", { userId });
@@ -165,6 +211,8 @@ async function handleResumeSession(
   } catch (err) {
     actions.handleError(err, "Resume session");
     throw err;
+  } finally {
+    sessionConflictDetection.completeOperation(userId, "resume");
   }
 }
 
