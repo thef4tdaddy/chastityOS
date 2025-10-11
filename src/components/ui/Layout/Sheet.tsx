@@ -207,6 +207,7 @@ export const Sheet: React.FC<SheetProps> = ({
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [isOpen, closeOnEscape]);
 
   // Prevent body scroll when sheet is open
