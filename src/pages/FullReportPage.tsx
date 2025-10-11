@@ -7,9 +7,10 @@ import {
   CurrentStatusSection,
   StatisticsSection,
   SessionHistorySection,
+  FullReportSkeleton,
 } from "../components/full_report";
 import { EventList } from "../components/log_event/EventList";
-import { Card, LoadingState, Tooltip } from "@/components/ui";
+import { Card, Tooltip } from "@/components/ui";
 
 // Error state component
 const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
@@ -78,7 +79,7 @@ const UserStatusSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6">
+    <div className="mb-6 animate-fade-in-up">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         {activeSubmissive ? "Your Status" : "Current Status"}
       </h3>
@@ -86,7 +87,7 @@ const UserStatusSection: React.FC<ReportSectionProps> = ({
     </div>
 
     {activeSubmissive && submissiveReport.currentSession && (
-      <div className="mb-6">
+      <div className="mb-6 animate-fade-in-up stagger-2">
         <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
           {activeSubmissive.wearerName || "Submissive"}'s Status
         </h3>
@@ -105,7 +106,7 @@ const StatisticsReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6">
+    <div className="mb-6 animate-fade-in-up stagger-3">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         {activeSubmissive ? "Your Statistics" : "Statistics"}
       </h3>
@@ -118,7 +119,7 @@ const StatisticsReportSection: React.FC<ReportSectionProps> = ({
     </div>
 
     {activeSubmissive && (
-      <div className="mb-6">
+      <div className="mb-6 animate-fade-in-up stagger-4">
         <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
           {activeSubmissive.wearerName || "Submissive"}'s Statistics
         </h3>
@@ -140,7 +141,7 @@ const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6">
+    <div className="mb-6 animate-fade-in-up stagger-5">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         {activeSubmissive ? "Your Session History" : "Session History"}
       </h3>
@@ -148,7 +149,7 @@ const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
     </div>
 
     {activeSubmissive && (
-      <div className="mb-6">
+      <div className="mb-6 animate-fade-in-up stagger-6">
         <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
           {activeSubmissive.wearerName || "Submissive"}'s Session History
         </h3>
@@ -165,7 +166,7 @@ const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6">
+    <div className="mb-6 animate-fade-in-up stagger-7">
       <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
         {activeSubmissive ? "Your Events" : "Event History"}
       </h3>
@@ -173,7 +174,7 @@ const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
     </div>
 
     {activeSubmissive && submissiveReport.events.length > 0 && (
-      <div className="mb-6">
+      <div className="mb-6 animate-fade-in-up stagger-8">
         <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
           {activeSubmissive.wearerName || "Submissive"}'s Events
         </h3>
@@ -200,13 +201,7 @@ const FullReportPage: React.FC = () => {
   const error = userReport.error || submissiveReport.error;
 
   if (isLoading) {
-    return (
-      <div className="text-nightly-spring-green">
-        <div className="p-4 max-w-6xl mx-auto">
-          <LoadingState message="Loading report..." size="lg" />
-        </div>
-      </div>
-    );
+    return <FullReportSkeleton />;
   }
 
   if (error) {
