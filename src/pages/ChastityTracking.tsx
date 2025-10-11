@@ -10,6 +10,7 @@ import { TrackerHeader } from "../components/tracker/TrackerHeader";
 import { ErrorDisplay } from "../components/tracker/ErrorDisplay";
 import { useTrackerData } from "../hooks/tracker/useTrackerData";
 import { useTrackerSession } from "../hooks/tracker/useTrackerSession";
+import { useTimerSyncMonitor } from "../hooks/tracker/useTimerSyncMonitor";
 import { logger } from "../utils/logging";
 import {
   buildTrackerStatsProps,
@@ -356,6 +357,11 @@ const TrackerPage: React.FC = () => {
     handleDiscardSession,
   } = useTrackerSession(user?.uid, mockData);
 
+  // Monitor timer synchronization
+  const { syncIssue, hasSyncIssue, isCriticalSyncIssue } = useTimerSyncMonitor(
+    USE_REAL_SESSIONS ? realSession : null,
+  );
+
   // Build all component props
   const realTrackerData = buildRealTrackerDataParams({
     isActive,
@@ -404,6 +410,26 @@ const TrackerPage: React.FC = () => {
       )}
 
       {persistenceError && <SessionPersistenceError error={persistenceError} />}
+
+      {/* Display timer synchronization warnings */}
+      {USE_REAL_SESSIONS && hasSyncIssue && syncIssue && (
+        <div
+          className={`mx-4 mb-4 p-3 rounded-lg border ${
+            isCriticalSyncIssue
+              ? "bg-red-900/30 border-red-500/50"
+              : "bg-yellow-900/30 border-yellow-500/50"
+          }`}
+        >
+          <p
+            className={`text-sm ${
+              isCriticalSyncIssue ? "text-red-200" : "text-yellow-200"
+            }`}
+          >
+            <strong>Timer Sync {syncIssue.severity === "error" ? "Error" : "Warning"}:</strong>{" "}
+            {syncIssue.message}
+          </p>
+        </div>
+      )}
 
       {/* Display session operation errors */}
       {USE_REAL_SESSIONS && sessionError && (

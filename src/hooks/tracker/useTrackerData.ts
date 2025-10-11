@@ -1,6 +1,7 @@
 /**
  * Custom hook to manage tracker data state
  * Extracted from ChastityTracking to reduce complexity
+ * Enhanced with retry mechanisms for failed operations
  */
 
 import { useCallback } from "react";
@@ -12,6 +13,7 @@ import {
   usePersonalGoalQuery,
 } from "../api/usePersonalGoalQueries";
 import { logger } from "@/utils/logging";
+import { useRetryableOperation } from "./useRetryableOperation";
 
 export const useTrackerData = (_USE_REAL_SESSIONS: boolean) => {
   // Authentication state
@@ -54,35 +56,50 @@ export const useTrackerData = (_USE_REAL_SESSIONS: boolean) => {
   // Check if current goal is hardcore mode
   const isHardcoreMode = personalGoal?.isHardcoreMode || false;
 
-  // Wrap session actions to refresh lifetime stats
+  // Initialize retry mechanism for session operations
+  const { executeWithRetry, isRetrying } = useRetryableOperation({
+    maxRetries: 2,
+    baseDelay: 1000,
+    retryableErrors: ["network", "timeout", "fetch", "ECONNRESET"],
+  });
+
+  // Wrap session actions with retry logic and refresh lifetime stats
   const startSession = useCallback(
     async (config?: import("../session/useSessionActions").SessionConfig) => {
-      await startSessionCore(config);
-      await refreshLifetimeStats();
+      await executeWithRetry(async () => {
+        await startSessionCore(config);
+        await refreshLifetimeStats();
+      }, "startSession");
     },
-    [startSessionCore, refreshLifetimeStats],
+    [startSessionCore, refreshLifetimeStats, executeWithRetry],
   );
 
   const endSession = useCallback(
     async (reason?: string) => {
-      await endSessionCore(reason);
-      await refreshLifetimeStats();
+      await executeWithRetry(async () => {
+        await endSessionCore(reason);
+        await refreshLifetimeStats();
+      }, "endSession");
     },
-    [endSessionCore, refreshLifetimeStats],
+    [endSessionCore, refreshLifetimeStats, executeWithRetry],
   );
 
   const pauseSession = useCallback(
     async (reason?: string) => {
-      await pauseSessionCore(reason);
-      await refreshLifetimeStats();
+      await executeWithRetry(async () => {
+        await pauseSessionCore(reason);
+        await refreshLifetimeStats();
+      }, "pauseSession");
     },
-    [pauseSessionCore, refreshLifetimeStats],
+    [pauseSessionCore, refreshLifetimeStats, executeWithRetry],
   );
 
   const resumeSession = useCallback(async () => {
-    await resumeSessionCore();
-    await refreshLifetimeStats();
-  }, [resumeSessionCore, refreshLifetimeStats]);
+    await executeWithRetry(async () => {
+      await resumeSessionCore();
+      await refreshLifetimeStats();
+    }, "resumeSession");
+  }, [resumeSessionCore, refreshLifetimeStats, executeWithRetry]);
 
   return {
     user,
@@ -105,8 +122,9 @@ export const useTrackerData = (_USE_REAL_SESSIONS: boolean) => {
     endSession,
     pauseSession,
     resumeSession,
-    // Expose session action errors
+    // Expose session action errors and retry state
     sessionError: sessionActions.error,
     clearSessionError: sessionActions.clearError,
+    isRetrying,
   };
 };
