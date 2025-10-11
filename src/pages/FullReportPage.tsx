@@ -15,16 +15,16 @@ import { Card, Tooltip } from "@/components/ui";
 // Error state component
 const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
   <div className="text-nightly-spring-green">
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="text-center py-8">
+    <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
+      <div className="text-center py-6 sm:py-8">
         {hasSession ? (
-          <div className="text-red-400">Error loading report data</div>
+          <div className="text-red-400 text-sm sm:text-base">Error loading report data</div>
         ) : (
           <Card variant="glass" padding="lg">
-            <h3 className="text-xl font-semibold text-nightly-honeydew mb-3">
+            <h3 className="text-lg sm:text-xl font-semibold text-nightly-honeydew mb-3">
               No Session Data Available
             </h3>
-            <p className="text-nightly-celadon">
+            <p className="text-nightly-celadon text-sm sm:text-base">
               Start your first chastity session to generate report data. Once
               you begin tracking, your statistics and history will appear here.
             </p>
@@ -46,10 +46,10 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <Card variant="glass" padding="sm" className="mb-6">
-      <div className="flex items-center gap-2">
-        <FaUsers className="text-nightly-aquamarine text-xl" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">
+    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6">
+      <div className="flex flex-wrap items-center gap-2">
+        <FaUsers className="text-nightly-aquamarine text-lg sm:text-xl" />
+        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Combined Report
         </h2>
         <Tooltip content="This report includes data for both you and your submissive">
@@ -58,7 +58,7 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
           </span>
         </Tooltip>
       </div>
-      <p className="text-sm text-nightly-celadon mt-2">
+      <p className="text-xs sm:text-sm text-nightly-celadon mt-2 break-words">
         Showing statistics for you and{" "}
         {activeSubmissive.wearerName || "your submissive"}
       </p>
@@ -79,16 +79,16 @@ const UserStatusSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6 animate-fade-in-up">
-      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+    <div className="mb-4 sm:mb-6 animate-fade-in-up">
+      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
         {activeSubmissive ? "Your Status" : "Current Status"}
       </h3>
       <CurrentStatusSection currentSession={userReport.currentSession} />
     </div>
 
     {activeSubmissive && submissiveReport.currentSession && (
-      <div className="mb-6 animate-fade-in-up stagger-2">
-        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-2">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
           {activeSubmissive.wearerName || "Submissive"}'s Status
         </h3>
         <CurrentStatusSection
@@ -106,8 +106,8 @@ const StatisticsReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6 animate-fade-in-up stagger-3">
-      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+    <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-3">
+      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
         {activeSubmissive ? "Your Statistics" : "Statistics"}
       </h3>
       <StatisticsSection
@@ -119,8 +119,8 @@ const StatisticsReportSection: React.FC<ReportSectionProps> = ({
     </div>
 
     {activeSubmissive && (
-      <div className="mb-6 animate-fade-in-up stagger-4">
-        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-4">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
           {activeSubmissive.wearerName || "Submissive"}'s Statistics
         </h3>
         <StatisticsSection
@@ -141,16 +141,16 @@ const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6 animate-fade-in-up stagger-5">
-      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+    <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-5">
+      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
         {activeSubmissive ? "Your Session History" : "Session History"}
       </h3>
       <SessionHistorySection sessions={userReport.sessions} />
     </div>
 
     {activeSubmissive && (
-      <div className="mb-6 animate-fade-in-up stagger-6">
-        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-6">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
           {activeSubmissive.wearerName || "Submissive"}'s Session History
         </h3>
         <SessionHistorySection sessions={submissiveReport.sessions} />
@@ -166,16 +166,16 @@ const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-6 animate-fade-in-up stagger-7">
-      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+    <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-7">
+      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
         {activeSubmissive ? "Your Events" : "Event History"}
       </h3>
       <EventList events={userReport.events} />
     </div>
 
     {activeSubmissive && submissiveReport.events.length > 0 && (
-      <div className="mb-6 animate-fade-in-up stagger-8">
-        <h3 className="text-lg font-semibold text-nightly-lavender-floral mb-4">
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-8">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
           {activeSubmissive.wearerName || "Submissive"}'s Events
         </h3>
         <EventList events={submissiveReport.events} />
@@ -212,7 +212,7 @@ const FullReportPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-      <div className="p-4 max-w-6xl mx-auto">
+      <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
         <CombinedReportHeader activeSubmissive={activeSubmissive} />
         <UserStatusSection
           activeSubmissive={activeSubmissive}
