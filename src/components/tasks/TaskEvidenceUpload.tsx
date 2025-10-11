@@ -2,11 +2,13 @@
  * Task Evidence Upload Component
  * Allows submissives to upload photo evidence when submitting tasks
  */
-import React, { useCallback, useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
+import { useDragAndDrop } from "./useDragAndDrop";
+import { useFileHandling } from "./useFileHandling";
 import {
   FaUpload,
   FaTimes,
@@ -15,7 +17,6 @@ import {
   FaExclamationTriangle,
 } from "../../utils/iconImport";
 import { TaskError } from "./TaskError";
-import { logger } from "@/utils/logging";
 import { scaleInVariants, getAccessibleVariants } from "../../utils/animations";
 
 interface TaskEvidenceUploadProps {
@@ -141,7 +142,6 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
   maxFiles = 5,
 }) => {
   const { isConfigured } = useTaskEvidence();
-  const [uploadError, setUploadError] = useState<Error | null>(null);
   const {
     files,
     isDragging,
@@ -152,73 +152,17 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
     setIsDragging,
   } = useEvidenceUpload(taskId, userId, maxFiles, onUploadComplete);
 
-  const handleDragEnter = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(true);
-    },
-    [setIsDragging],
-  );
+  // Drag and drop handlers
+  const { handleDragEnter, handleDragLeave, handleDragOver, handleDrop } =
+    useDragAndDrop({ setIsDragging, handleFiles });
 
-  const handleDragLeave = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-    },
-    [setIsDragging],
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-      const droppedFiles = e.dataTransfer.files;
-      if (droppedFiles.length > 0) {
-        handleFiles(droppedFiles);
-      }
-    },
-    [handleFiles, setIsDragging],
-  );
-
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      try {
-        setUploadError(null);
-        if (e.target.files && e.target.files.length > 0) {
-          handleFiles(e.target.files);
-        }
-      } catch (error) {
-        const err =
-          error instanceof Error ? error : new Error("Failed to handle files");
-        logger.error("Error handling file input", { error: err.message });
-        setUploadError(err);
-      }
-    },
-    [handleFiles],
-  );
-
-  const handleUploadWithRetry = useCallback(async () => {
-    try {
-      setUploadError(null);
-      await uploadAllFiles();
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error("Upload failed");
-      logger.error("Error uploading files", {
-        error: err.message,
-        taskId,
-        userId,
-      });
-      setUploadError(err);
-    }
-  }, [uploadAllFiles, taskId, userId]);
+  // File handling with error management
+  const {
+    uploadError,
+    setUploadError,
+    handleFileInputChange,
+    handleUploadWithRetry,
+  } = useFileHandling({ handleFiles, uploadAllFiles, taskId, userId });
 
   React.useEffect(() => {
     return () => {
