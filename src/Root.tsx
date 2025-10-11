@@ -26,9 +26,6 @@ const Root: React.FC = () => {
   useFCMInitialization({
     userId: user?.uid || null,
     isAuthenticated,
-    onTokenReceived: (token) => {
-      console.log("FCM token received:", token);
-    },
   });
 
   return (
@@ -43,12 +40,6 @@ const Root: React.FC = () => {
       <NotificationPermissionPrompt
         userId={user?.uid || null}
         showAfterDelay={30000}
-        onPermissionGranted={(token) => {
-          console.log("Push notifications enabled:", token);
-        }}
-        onPermissionDenied={() => {
-          console.log("Push notifications denied");
-        }}
       />
     </AppLayout>
   );

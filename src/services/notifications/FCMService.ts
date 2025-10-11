@@ -17,7 +17,7 @@ export interface FCMServiceConfig {
  * FCM Service for managing push notification tokens
  */
 export class FCMService {
-  private static messaging: any = null;
+  private static messaging: unknown = null;
   private static isSupported = false;
   private static checkPromise: Promise<boolean> | null = null;
 
@@ -44,9 +44,7 @@ export class FCMService {
         }
 
         // Check if Firebase Messaging is supported
-        const { getMessaging, isSupported } = await import(
-          "firebase/messaging"
-        );
+        const { isSupported } = await import("firebase/messaging");
 
         const supported = await isSupported();
         if (!supported) {
@@ -81,7 +79,7 @@ export class FCMService {
     try {
       const app = await getFirebaseApp();
       const { getMessaging } = await import("firebase/messaging");
-      this.messaging = getMessaging(app as any);
+      this.messaging = getMessaging(app as unknown);
       return this.messaging;
     } catch (error) {
       logger.error("Failed to initialize FCM messaging", { error });
@@ -280,5 +278,3 @@ export class FCMService {
     }
   }
 }
-
-export default FCMService;

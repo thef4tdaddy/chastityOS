@@ -4,14 +4,10 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { FCMService } from "@/services/notifications/FCMService";
+import { NotificationPermissionStorage } from "@/services/notificationPermissionStorage";
 import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useNotificationPermission");
-
-// Local storage keys
-const PERMISSION_PROMPTED_KEY = "chastityos_notification_prompted";
-const PERMISSION_DENIED_COUNT_KEY = "chastityos_notification_denied_count";
-const PERMISSION_LAST_DENIED_KEY = "chastityos_notification_last_denied";
 
 // Constants
 const MAX_DENIAL_COUNT = 3; // Max times to re-prompt after denial
@@ -57,7 +53,7 @@ export const useNotificationPermission = (): NotificationPermissionHook => {
     checkSupport();
 
     // Check if we've already prompted the user
-    const prompted = localStorage.getItem(PERMISSION_PROMPTED_KEY) === "true";
+    const prompted = NotificationPermissionStorage.hasBeenPrompted();
     setHasPrompted(prompted);
   }, []);
 
@@ -76,11 +72,8 @@ export const useNotificationPermission = (): NotificationPermissionHook => {
     }
 
     // Check denial history
-    const denialCount = parseInt(
-      localStorage.getItem(PERMISSION_DENIED_COUNT_KEY) || "0",
-      10,
-    );
-    const lastDenied = localStorage.getItem(PERMISSION_LAST_DENIED_KEY);
+    const denialCount = NotificationPermissionStorage.getDenialCount();
+    const lastDeniedDate = NotificationPermissionStorage.getLastDenialDate();
 
     // If denied too many times, don't prompt again
     if (denialCount >= MAX_DENIAL_COUNT) {
@@ -89,8 +82,7 @@ export const useNotificationPermission = (): NotificationPermissionHook => {
     }
 
     // If recently denied, check cooldown period
-    if (lastDenied) {
-      const lastDeniedDate = new Date(lastDenied);
+    if (lastDeniedDate) {
       const cooldownEnd = new Date(
         lastDeniedDate.getTime() + DENIAL_COOLDOWN_DAYS * 24 * 60 * 60 * 1000,
       );
@@ -128,33 +120,20 @@ export const useNotificationPermission = (): NotificationPermissionHook => {
 
         logger.info("Permission request result", { result });
 
-        // Update local storage
-        localStorage.setItem(PERMISSION_PROMPTED_KEY, "true");
+        // Update storage
+        NotificationPermissionStorage.markAsPrompted();
         setHasPrompted(true);
 
         // Track denials
         if (result === "denied") {
-          const currentCount = parseInt(
-            localStorage.getItem(PERMISSION_DENIED_COUNT_KEY) || "0",
-            10,
-          );
-          localStorage.setItem(
-            PERMISSION_DENIED_COUNT_KEY,
-            String(currentCount + 1),
-          );
-          localStorage.setItem(
-            PERMISSION_LAST_DENIED_KEY,
-            new Date().toISOString(),
-          );
+          NotificationPermissionStorage.incrementDenialCount();
+          NotificationPermissionStorage.recordDenial();
 
-          logger.info("Permission denied", {
-            denialCount: currentCount + 1,
-          });
+          const denialCount = NotificationPermissionStorage.getDenialCount();
+          logger.info("Permission denied", { denialCount });
         } else if (result === "granted") {
           // Reset denial tracking on grant
-          localStorage.removeItem(PERMISSION_DENIED_COUNT_KEY);
-          localStorage.removeItem(PERMISSION_LAST_DENIED_KEY);
-
+          NotificationPermissionStorage.resetDenialTracking();
           logger.info("Permission granted");
         }
 
@@ -170,9 +149,7 @@ export const useNotificationPermission = (): NotificationPermissionHook => {
    * Reset prompt state (for testing/debugging)
    */
   const resetPromptState = useCallback(() => {
-    localStorage.removeItem(PERMISSION_PROMPTED_KEY);
-    localStorage.removeItem(PERMISSION_DENIED_COUNT_KEY);
-    localStorage.removeItem(PERMISSION_LAST_DENIED_KEY);
+    NotificationPermissionStorage.resetAll();
     setHasPrompted(false);
     logger.debug("Prompt state reset");
   }, []);
@@ -186,5 +163,3 @@ export const useNotificationPermission = (): NotificationPermissionHook => {
     resetPromptState,
   };
 };
-
-export default useNotificationPermission;

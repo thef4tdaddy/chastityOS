@@ -38,10 +38,7 @@ export const useFCMInitialization = ({
       }
 
       // Check current permission state
-      if (
-        "Notification" in window &&
-        Notification.permission === "granted"
-      ) {
+      if ("Notification" in window && Notification.permission === "granted") {
         logger.debug("Notification permission already granted, getting token");
 
         // Get or refresh token
@@ -104,5 +101,3 @@ export const useFCMInitialization = ({
     };
   }, []);
 };
-
-export default useFCMInitialization;
