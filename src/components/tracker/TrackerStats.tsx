@@ -45,23 +45,27 @@ const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
       variant="glass"
       className={isHardcoreMode ? "border-2 border-red-500/50" : ""}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <FaBullseye className="text-nightly-aquamarine" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">
+          <FaBullseye className="text-nightly-aquamarine text-base sm:text-lg" />
+          <h3 className="text-base sm:text-lg md:text-xl font-semibold text-nightly-honeydew">
             {goal.title}
           </h3>
         </div>
         {isHardcoreMode && (
-          <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded">
-            <FaLock className="text-red-400 text-sm" />
-            <span className="text-xs text-red-400 font-semibold">HARDCORE</span>
+          <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded flex-shrink-0">
+            <FaLock className="text-red-400 text-xs sm:text-sm" />
+            <span className="text-xs sm:text-sm text-red-400 font-semibold">
+              HARDCORE
+            </span>
           </div>
         )}
       </div>
 
       {goal.description && (
-        <p className="text-sm text-nightly-celadon mb-3">{goal.description}</p>
+        <p className="text-xs sm:text-sm text-nightly-celadon mb-3 leading-relaxed">
+          {goal.description}
+        </p>
       )}
 
       {/* Progress bar */}
@@ -78,7 +82,7 @@ const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
         </div>
       </div>
 
-      <div className="flex justify-between text-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 text-xs sm:text-sm">
         <span className="text-nightly-celadon">
           Progress: {progressPercent.toFixed(1)}%
         </span>
@@ -95,7 +99,7 @@ const CurrentSessionStats: React.FC<{
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
   stats: ReturnType<typeof useTrackerStats>["stats"];
 }> = ({ displayData, stats }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
     <CageOnStats displayData={displayData} stats={stats} />
     <CageOffStats displayData={displayData} stats={stats} />
   </div>
@@ -105,15 +109,15 @@ const CurrentSessionStats: React.FC<{
 const TotalStats: React.FC<{
   stats: ReturnType<typeof useTrackerStats>["stats"];
 }> = ({ stats }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
     <Card
       variant="glass"
       className="glass-hover tracker-card-hover tracker-state-transition"
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
+      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200">
         Total Time In Chastity:
       </p>
-      <p className="text-2xl md:text-4xl font-bold text-white number-update">
+      <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white number-update">
         {stats.totalChastityTimeFormatted}
       </p>
     </Card>
@@ -121,10 +125,10 @@ const TotalStats: React.FC<{
       variant="glass"
       className="glass-hover tracker-card-hover tracker-state-transition"
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
+      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200">
         Total Time Cage Off:
       </p>
-      <p className="text-2xl md:text-4xl font-bold text-white number-update">
+      <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white number-update">
         {stats.totalCageOffTimeFormatted}
       </p>
     </Card>
@@ -136,14 +140,14 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
   const { personalGoal } = props;
 
   return (
-    <div className="space-y-6 mb-8">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6 mb-6 md:mb-8">
       {/* Top stat card with timestamp info */}
       {stats.topBoxLabel && stats.topBoxTimestamp && (
         <div className="primary-stat-card text-center glass-float tracker-state-transition">
-          <p className="text-blue-200 text-sm md:text-lg font-medium mb-2">
+          <p className="text-blue-200 text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-1 md:mb-2">
             {stats.topBoxLabel}:
           </p>
-          <p className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent number-update">
+          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent number-update">
             {stats.topBoxTimestamp}
           </p>
         </div>
