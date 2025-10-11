@@ -6,6 +6,7 @@
 const PERMISSION_PROMPTED_KEY = "chastityos_notification_prompted";
 const PERMISSION_DENIED_COUNT_KEY = "chastityos_notification_denied_count";
 const PERMISSION_LAST_DENIED_KEY = "chastityos_notification_last_denied";
+const BANNER_DISMISSED_KEY = "chastityos_notification_banner_dismissed";
 
 export class NotificationPermissionStorage {
   /**
@@ -70,6 +71,36 @@ export class NotificationPermissionStorage {
     localStorage.removeItem(PERMISSION_PROMPTED_KEY);
     localStorage.removeItem(PERMISSION_DENIED_COUNT_KEY);
     localStorage.removeItem(PERMISSION_LAST_DENIED_KEY);
+    localStorage.removeItem(BANNER_DISMISSED_KEY);
+  }
+
+  /**
+   * Check if banner was recently dismissed
+   * @param expiryMs - Expiry time in milliseconds
+   * @returns true if banner is still dismissed
+   */
+  static isBannerDismissed(expiryMs: number): boolean {
+    const dismissedData = localStorage.getItem(BANNER_DISMISSED_KEY);
+    if (!dismissedData) {
+      return false;
+    }
+
+    try {
+      const { timestamp } = JSON.parse(dismissedData);
+      return Date.now() - timestamp < expiryMs;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Mark banner as dismissed
+   */
+  static dismissBanner(): void {
+    localStorage.setItem(
+      BANNER_DISMISSED_KEY,
+      JSON.stringify({ timestamp: Date.now() }),
+    );
   }
 }
 
