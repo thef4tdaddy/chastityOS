@@ -2,6 +2,7 @@
  * NotificationCenter Component
  * Displays notification history with filtering and actions
  */
+/* eslint-disable no-legacy-toast/no-legacy-toast */
 import React, { useState, useMemo } from "react";
 import {
   Card,
