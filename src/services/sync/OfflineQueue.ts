@@ -157,16 +157,18 @@ class OfflineQueue {
 
   /**
    * Get operations that are ready for retry
+   * Uses exponential backoff: 30s, 60s, 120s
    */
   async getRetryableOperations(): Promise<QueuedOperation<DBBase>[]> {
     const now = new Date();
-    const retryDelay = 30 * 1000; // 30 seconds
 
     return db.offlineQueue
       .where("retryCount")
       .below(this.MAX_RETRIES)
       .and((op) => {
         if (!op.lastRetryAt) return true;
+        // Exponential backoff: 30s * 2^retryCount
+        const retryDelay = 30 * 1000 * Math.pow(2, op.retryCount || 0);
         return now.getTime() - op.lastRetryAt.getTime() > retryDelay;
       })
       .toArray();

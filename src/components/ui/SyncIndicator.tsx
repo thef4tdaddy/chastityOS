@@ -4,9 +4,14 @@
  */
 import React from "react";
 import { Spinner, Button, Tooltip } from "@/components/ui";
-import { FaSync, FaCheck, FaExclamationTriangle } from "@/utils/iconImport";
+import {
+  FaSync,
+  FaCheck,
+  FaExclamationTriangle,
+  FaWifi,
+} from "@/utils/iconImport";
 
-export type SyncStatus = "syncing" | "synced" | "failed" | "idle";
+export type SyncStatus = "syncing" | "synced" | "failed" | "idle" | "offline";
 
 export interface SyncIndicatorProps {
   status: SyncStatus;
@@ -15,6 +20,8 @@ export interface SyncIndicatorProps {
   errorMessage?: string;
   className?: string;
   showLabel?: boolean;
+  pendingCount?: number;
+  isOnline?: boolean;
 }
 
 export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
@@ -24,9 +31,13 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
   errorMessage,
   className = "",
   showLabel = true,
+  pendingCount = 0,
+  isOnline = true,
 }) => {
   const getStatusIcon = () => {
     switch (status) {
+      case "offline":
+        return <FaWifi className="w-4 h-4 text-gray-400" />;
       case "syncing":
         return <Spinner size="sm" className="text-nightly-spring-green" />;
       case "synced":
@@ -40,8 +51,12 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
 
   const getStatusText = () => {
     switch (status) {
+      case "offline":
+        return pendingCount > 0
+          ? `Offline (${pendingCount} pending)`
+          : "Offline";
       case "syncing":
-        return "Syncing...";
+        return pendingCount > 0 ? `Syncing (${pendingCount})` : "Syncing...";
       case "synced":
         return lastSyncedAt
           ? `Synced ${formatRelativeTime(lastSyncedAt)}`
@@ -55,10 +70,25 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
 
   const getTooltipContent = () => {
     const baseText = getStatusText();
-    if (status === "synced" && lastSyncedAt) {
-      return `${baseText}\nLast sync: ${lastSyncedAt.toLocaleString()}`;
+    const details: string[] = [baseText];
+
+    if (!isOnline) {
+      details.push("Currently offline");
     }
-    return baseText;
+
+    if (status === "synced" && lastSyncedAt) {
+      details.push(`Last sync: ${lastSyncedAt.toLocaleString()}`);
+    }
+
+    if (pendingCount > 0) {
+      details.push(`${pendingCount} operation(s) pending`);
+    }
+
+    if (status === "failed" && errorMessage) {
+      details.push(`Error: ${errorMessage}`);
+    }
+
+    return details.join("\n");
   };
 
   const formatRelativeTime = (date: Date): string => {
@@ -81,13 +111,14 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
         </div>
       </Tooltip>
 
-      {onManualSync && status !== "syncing" && (
+      {onManualSync && status !== "syncing" && isOnline && (
         <Button
           variant="ghost"
           size="sm"
           onClick={onManualSync}
           className="p-1 h-auto min-h-0"
           aria-label="Manual sync"
+          disabled={status === "offline"}
         >
           <FaSync className="w-3 h-3" />
         </Button>

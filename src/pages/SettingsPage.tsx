@@ -21,6 +21,7 @@ import { KeyholderDurationSection } from "../components/settings/KeyholderDurati
 import { PeriodicSyncSection } from "../components/settings/PeriodicSyncSection";
 import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
 import { useIsAnonymous } from "../hooks/useIsAnonymous";
+import { SyncStatusPanel } from "../components/sync";
 import {
   useUpdateAccountSettings,
   useUpdateDisplaySettings,
@@ -282,7 +283,33 @@ const getInitialTimezone = (settings: DBSettings | null): string => {
 const SyncSection: React.FC = () => {
   return (
     <div className="space-y-6">
-      <PeriodicSyncSection />
+      {/* Offline Sync Status */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-nightly-celadon mb-2">
+            Offline Sync Status
+          </h3>
+          <p className="text-sm text-gray-400">
+            Monitor and manage offline data synchronization. Changes made while
+            offline are queued and automatically synced when your connection is
+            restored.
+          </p>
+        </div>
+        <SyncStatusPanel />
+      </div>
+
+      {/* Periodic Sync Settings */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold text-nightly-celadon mb-2">
+            Periodic Sync Settings
+          </h3>
+          <p className="text-sm text-gray-400">
+            Configure automatic background sync to keep your data up to date.
+          </p>
+        </div>
+        <PeriodicSyncSection />
+      </div>
     </div>
   );
 };
