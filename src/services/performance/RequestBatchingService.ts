@@ -142,6 +142,7 @@ class RequestBatchingService {
       // Resolve/reject individual requests
       results.forEach((result, index) => {
         const request = requests[index];
+        if (!request) return;
         if (result.status === "fulfilled") {
           request.resolve(result.value);
         } else {

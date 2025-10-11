@@ -319,7 +319,7 @@ describe("Push Notification Integration", () => {
       };
 
       expect(notificationOptions.actions).toHaveLength(3);
-      expect(notificationOptions.actions[0].action).toBe("approve");
+      expect(notificationOptions.actions?.[0]?.action).toBe("approve");
     });
 
     it("should handle notification with tag for grouping", () => {
