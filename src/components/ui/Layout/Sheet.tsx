@@ -187,19 +187,28 @@ export const Sheet: React.FC<SheetProps> = ({
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
 
+  // Store onClose in a ref to avoid adding it to deps
+  // This prevents potential infinite loops if onClose changes on every render
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [onClose]);
+
   // Handle ESC key press
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       }
     };
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [isOpen, closeOnEscape]);
 
   // Prevent body scroll when sheet is open
   useEffect(() => {
@@ -275,13 +284,19 @@ export const Sheet: React.FC<SheetProps> = ({
   };
 
   // Handle drag gesture (for bottom sheet)
-  const handleDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDrag = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
     if (side === "bottom" && info.offset.y > 0) {
       setDragOffset(info.offset.y);
     }
   };
 
-  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
     const threshold = 100; // pixels
     if (side === "bottom" && info.offset.y > threshold) {
       onClose();
@@ -306,8 +321,7 @@ export const Sheet: React.FC<SheetProps> = ({
   // Get sheet classes based on side and size
   const getSheetClasses = () => {
     const sizeClass = sizeClasses[side]?.[size] || sizeClasses.bottom.md;
-    const baseClasses =
-      "bg-white dark:bg-gray-900 shadow-xl overflow-hidden";
+    const baseClasses = "bg-white dark:bg-gray-900 shadow-xl overflow-hidden";
 
     switch (side) {
       case "left":
@@ -351,9 +365,7 @@ export const Sheet: React.FC<SheetProps> = ({
           onDrag={handleDrag}
           onDragEnd={handleDragEnd}
           style={
-            side === "bottom" && dragOffset > 0
-              ? { y: dragOffset }
-              : undefined
+            side === "bottom" && dragOffset > 0 ? { y: dragOffset } : undefined
           }
           className={`relative ${getSheetClasses()} ${className}`}
           role="dialog"

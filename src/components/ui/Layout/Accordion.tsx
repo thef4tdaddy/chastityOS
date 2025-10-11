@@ -60,8 +60,6 @@ export const useAccordionContext = () => {
   return context;
 };
 
-
-
 /**
  * Accordion Component
  *
