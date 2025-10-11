@@ -134,7 +134,9 @@ const TaskItem: React.FC<{
         )}
       </div>
       {task.description && (
-        <p className="text-xs sm:text-sm text-nightly-celadon mt-1 break-words">{task.description}</p>
+        <p className="text-xs sm:text-sm text-nightly-celadon mt-1 break-words">
+          {task.description}
+        </p>
       )}
     </div>
 
@@ -248,7 +250,8 @@ const useTaskActions = (params: {
         "Task Updated",
       );
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(`Failed to ${action} task`);
+      const err =
+        error instanceof Error ? error : new Error(`Failed to ${action} task`);
       logger.error(`Task ${action} failed`, {
         taskId,
         userId,
@@ -276,7 +279,8 @@ const useTaskActions = (params: {
       setShowAddTask(false);
       showSuccess("Task created successfully", "Task Added");
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Failed to create task");
+      const err =
+        error instanceof Error ? error : new Error("Failed to create task");
       logger.error("Task creation failed", {
         userId,
         title: newTaskText.trim(),
