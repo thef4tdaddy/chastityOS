@@ -70,6 +70,9 @@ const createCompressionPlugins = (isProduction) => {
 const createPWAConfig = (mode) => {
   return VitePWA({
     registerType: "prompt",
+    strategies: "injectManifest",
+    srcDir: "public",
+    filename: "sw-custom.js",
     workbox: {
       globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
       runtimeCaching: [
