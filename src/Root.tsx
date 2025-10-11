@@ -5,6 +5,9 @@ import { FeedbackFAB } from "./components/feedback";
 import NotificationContainer from "./components/ui/NotificationContainer";
 import { PWAInstallPrompt } from "./components/system/PWAInstallPrompt";
 import { PWAUpdateNotification } from "./components/system/PWAUpdateNotification";
+import { NotificationPermissionPrompt } from "./components/notifications/NotificationPermissionPrompt";
+import { useFCMInitialization } from "./hooks/useFCMInitialization";
+import { useAuth } from "./contexts/AuthContext";
 
 // Loading fallback component
 const PageLoadingFallback = () => (
@@ -17,6 +20,17 @@ const PageLoadingFallback = () => (
 );
 
 const Root: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+
+  // Initialize FCM and handle token management
+  useFCMInitialization({
+    userId: user?.uid || null,
+    isAuthenticated,
+    onTokenReceived: (token) => {
+      console.log("FCM token received:", token);
+    },
+  });
+
   return (
     <AppLayout>
       <Suspense fallback={<PageLoadingFallback />}>
@@ -26,6 +40,16 @@ const Root: React.FC = () => {
       <NotificationContainer />
       <PWAInstallPrompt />
       <PWAUpdateNotification />
+      <NotificationPermissionPrompt
+        userId={user?.uid || null}
+        showAfterDelay={30000}
+        onPermissionGranted={(token) => {
+          console.log("Push notifications enabled:", token);
+        }}
+        onPermissionDenied={() => {
+          console.log("Push notifications denied");
+        }}
+      />
     </AppLayout>
   );
 };
