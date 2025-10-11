@@ -192,6 +192,7 @@ export const Sheet: React.FC<SheetProps> = ({
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [onClose]);
 
   // Handle ESC key press
