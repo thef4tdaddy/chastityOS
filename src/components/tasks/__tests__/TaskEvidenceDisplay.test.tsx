@@ -199,7 +199,7 @@ describe("TaskEvidenceDisplay", () => {
     it("should show navigation buttons when multiple images", () => {
       render(<TaskEvidenceDisplay attachments={attachments} />);
 
-      const thumbnail = screen.getAllByRole("button")[0];
+      const thumbnail = screen.getAllByRole("button")[0]!;
       fireEvent.click(thumbnail);
 
       expect(screen.getByLabelText("Previous image")).toBeInTheDocument();
@@ -225,7 +225,7 @@ describe("TaskEvidenceDisplay", () => {
 
       // Open first image
       const thumbnails = screen.getAllByRole("button");
-      fireEvent.click(thumbnails[0]);
+      fireEvent.click(thumbnails[0]!);
 
       // Check initial counter
       expect(screen.getByText("1 / 3")).toBeInTheDocument();
@@ -243,7 +243,7 @@ describe("TaskEvidenceDisplay", () => {
 
       // Open second image
       const thumbnails = screen.getAllByRole("button");
-      fireEvent.click(thumbnails[1]);
+      fireEvent.click(thumbnails[1]!);
 
       // Check initial counter
       expect(screen.getByText("2 / 3")).toBeInTheDocument();
@@ -261,7 +261,7 @@ describe("TaskEvidenceDisplay", () => {
 
       // Open first image
       const thumbnails = screen.getAllByRole("button");
-      fireEvent.click(thumbnails[0]);
+      fireEvent.click(thumbnails[0]!);
 
       // Click previous
       const prevButton = screen.getByLabelText("Previous image");
@@ -276,7 +276,7 @@ describe("TaskEvidenceDisplay", () => {
 
       // Open last image
       const thumbnails = screen.getAllByRole("button");
-      fireEvent.click(thumbnails[2]);
+      fireEvent.click(thumbnails[2]!);
 
       // Click next
       const nextButton = screen.getByLabelText("Next image");
@@ -291,7 +291,7 @@ describe("TaskEvidenceDisplay", () => {
 
       // Open first image
       const thumbnails = screen.getAllByRole("button");
-      fireEvent.click(thumbnails[0]);
+      fireEvent.click(thumbnails[0]!);
 
       const dialog = screen.getByRole("dialog");
 
@@ -309,7 +309,7 @@ describe("TaskEvidenceDisplay", () => {
 
       // Open lightbox
       const thumbnails = screen.getAllByRole("button");
-      fireEvent.click(thumbnails[0]);
+      fireEvent.click(thumbnails[0]!);
 
       const nextButton = screen.getByLabelText("Next image");
       fireEvent.click(nextButton);
@@ -329,7 +329,7 @@ describe("TaskEvidenceDisplay", () => {
       render(<TaskEvidenceDisplay attachments={attachments} />);
 
       // Open lightbox
-      const thumbnail = screen.getAllByRole("button")[0];
+      const thumbnail = screen.getAllByRole("button")[0]!;
       fireEvent.click(thumbnail);
 
       expect(screen.getByText("1 / 2")).toBeInTheDocument();
@@ -403,7 +403,7 @@ describe("TaskEvidenceDisplay", () => {
       render(<TaskEvidenceDisplay attachments={attachments} />);
 
       // Open lightbox
-      const thumbnail = screen.getAllByRole("button")[0];
+      const thumbnail = screen.getAllByRole("button")[0]!;
       fireEvent.click(thumbnail);
 
       expect(screen.getByLabelText("Close lightbox")).toBeInTheDocument();
@@ -449,7 +449,7 @@ describe("TaskEvidenceDisplay", () => {
       fireEvent.click(thumbnail);
 
       // Trigger error in thumbnail
-      const thumbnailImg = screen.getAllByAltText(/Evidence/)[0];
+      const thumbnailImg = screen.getAllByAltText(/Evidence/)[0]!;
       fireEvent.error(thumbnailImg);
 
       // Check for error message or icon in lightbox
