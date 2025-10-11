@@ -30,16 +30,16 @@ export const PauseStats: React.FC<PauseStatsProps> = ({
           : "border border-rose_quartz/30"
       }`}
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-lavender_web">
+      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-lavender_web leading-tight">
         Pause Status:
       </p>
       {displayData.isPaused ? (
         <>
-          <p className="text-sm md:text-lg text-nightly-deep_rose bg-nightly-deep_rose/10 px-3 py-2 rounded-md font-semibold mb-2">
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg text-nightly-deep_rose bg-nightly-deep_rose/10 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md font-semibold mb-2">
             Currently Paused: {displayData.currentPauseDuration}
           </p>
           {hasAccumulatedPause && (
-            <p className="text-xs text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md">
+            <p className="text-xs text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md leading-relaxed">
               Total time paused this session:{" "}
               {currentSession
                 ? formatElapsedTime(currentSession.accumulatedPauseTime)
@@ -48,14 +48,14 @@ export const PauseStats: React.FC<PauseStatsProps> = ({
           )}
         </>
       ) : hasAccumulatedPause ? (
-        <p className="text-xs text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md">
+        <p className="text-xs text-rose_quartz bg-nightly-deep_rose/10 px-2 py-1 rounded-md leading-relaxed">
           Total time paused this session:{" "}
           {currentSession
             ? formatElapsedTime(currentSession.accumulatedPauseTime)
             : displayData.accumulatedPause}
         </p>
       ) : (
-        <p className="text-2xl md:text-4xl font-bold text-lavender_web/50">
+        <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-lavender_web/50">
           No Pauses
         </p>
       )}
