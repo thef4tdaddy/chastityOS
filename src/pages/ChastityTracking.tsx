@@ -68,23 +68,29 @@ interface RealTrackerData {
   trackerDataParams: {
     isActive: boolean;
     isPaused: boolean;
-    sessionId?: string;
-    userId?: string;
-    goals: { active: unknown[]; keyholderAssigned: unknown[] };
-    keyholderGoal?: unknown;
-    personalGoal?: unknown;
-    isHardcoreMode?: boolean;
-    duration?: number;
+    sessionId: string | null;
+    userId: string | undefined;
+    goals: {
+      active?: import("@/types/database").DBGoal[];
+      keyholderAssigned?: import("@/types/database").DBGoal[];
+    };
+    keyholderGoal: import("@/types/database").DBGoal | undefined;
+    personalGoal: import("@/types/database").DBGoal | undefined;
+    isHardcoreMode: boolean;
+    duration: number;
   };
   statsParams: {
     isActive: boolean;
     isPaused: boolean;
-    realSession: unknown;
+    realSession: import("@/types/database").DBSession | null;
     totalChastityTime: number;
     totalCageOffTime: number;
-    personalGoal?: unknown;
+    personalGoal: import("@/types/database").DBGoal | undefined;
   };
-  goals?: { active?: unknown[]; keyholderAssigned?: unknown[] };
+  goals?: {
+    active?: import("@/types/database").DBGoal[];
+    keyholderAssigned?: import("@/types/database").DBGoal[];
+  };
   isActive: boolean;
 }
 
@@ -106,23 +112,33 @@ const buildAllTrackerProps = (
     totalChastityTime: number;
     [key: string]: unknown;
   };
-  const trackerData = useRealSessions
-    ? buildTrackerData(real.trackerDataParams)
-    : buildMockTrackerData(mock);
+  const trackerData =
+    useRealSessions && real
+      ? buildTrackerData(real.trackerDataParams)
+      : buildMockTrackerData(mock);
 
-  const trackerStatsProps = useRealSessions
-    ? buildTrackerStatsProps(real.statsParams)
-    : buildMockTrackerStatsProps(mock, currentSession);
+  const trackerStatsProps =
+    useRealSessions && real
+      ? buildTrackerStatsProps(real.statsParams)
+      : buildMockTrackerStatsProps(
+          mock,
+          currentSession as
+            | import("@/types/database").DBSession
+            | null
+            | undefined,
+        );
 
-  const trackerHeaderProps = useRealSessions
-    ? buildTrackerHeaderProps(real.goals || {}, real.isActive)
-    : {
-        remainingGoalTime: mock.remainingGoalTime,
-        keyholderName: mock.keyholderName,
-        savedSubmissivesName: mock.savedSubmissivesName,
-        requiredKeyholderDurationSeconds: mock.requiredKeyholderDurationSeconds,
-        isCageOn: mock.isCageOn,
-      };
+  const trackerHeaderProps =
+    useRealSessions && real
+      ? buildTrackerHeaderProps(real.goals || {}, real.isActive)
+      : {
+          remainingGoalTime: mock.remainingGoalTime ?? 0,
+          keyholderName: mock.keyholderName ?? "",
+          savedSubmissivesName: mock.savedSubmissivesName ?? "",
+          requiredKeyholderDurationSeconds:
+            mock.requiredKeyholderDurationSeconds ?? 0,
+          isCageOn: mock.isCageOn,
+        };
 
   return { trackerData, trackerStatsProps, trackerHeaderProps };
 };
@@ -180,7 +196,7 @@ const DebugPanel: React.FC<{
 
 // Custom hook for mock data (DEMO VERSION - keep for #308)
 // Real version uses useSessionActions + useSession
-const useMockData = (user: User | null) => {
+const useMockData = (user: User | null | undefined) => {
   // Mock pause state data for now
   const pauseState: PauseState = {
     canPause: true,
@@ -294,21 +310,27 @@ const TrackerPage: React.FC = () => {
           isPaused,
           sessionId,
           userId: user?.uid,
-          goals: goals || { active: [], keyholderAssigned: [] },
-          keyholderGoal,
-          personalGoal,
+          goals: goals
+            ? { active: goals.active, keyholderAssigned: [] }
+            : { active: [], keyholderAssigned: [] },
+          keyholderGoal: keyholderGoal ?? undefined,
+          personalGoal: personalGoal ?? undefined,
           isHardcoreMode,
           duration,
         },
         statsParams: {
           isActive,
           isPaused,
-          realSession,
+          realSession: realSession as
+            | import("@/types/database").DBSession
+            | null,
           totalChastityTime: lifetimeStats.totalChastityTime,
           totalCageOffTime: lifetimeStats.totalCageOffTime,
-          personalGoal,
+          personalGoal: personalGoal ?? undefined,
         },
-        goals,
+        goals: goals
+          ? { active: goals.active, keyholderAssigned: [] }
+          : undefined,
         isActive,
       },
       mockData,
