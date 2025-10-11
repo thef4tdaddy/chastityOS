@@ -1,10 +1,12 @@
 /**
  * Sync Context
  * Provides sync state and conflict resolution across the app
+ * Enhanced with offline queue sync support (#392)
  */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useSync } from "@/hooks/useSync";
 import { useAuth } from "@/hooks/api/useAuth";
+import { useBackgroundSync } from "@/hooks/api/useBackgroundSync";
 import { ConflictResolutionModal } from "@/components/common/ConflictResolutionModal";
 import type { ConflictInfo } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
@@ -96,6 +98,9 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     resolveConflicts,
     error,
   } = useSync();
+
+  // Initialize background sync for offline queue
+  useBackgroundSync();
 
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
