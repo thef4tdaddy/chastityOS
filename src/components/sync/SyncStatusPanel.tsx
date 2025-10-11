@@ -6,7 +6,7 @@ import React from "react";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { SyncIndicator } from "@/components/ui/SyncIndicator";
 import { Button, Card } from "@/components/ui";
-import { FaSync, FaTrash, FaRedo } from "@/utils/iconImport";
+import { FaSync, FaTrash } from "@/utils/iconImport";
 
 interface SyncStatusPanelProps {
   className?: string;
@@ -195,7 +195,7 @@ export const SyncStatusPanel: React.FC<SyncStatusPanelProps> = ({
               variant="outline"
               className="flex items-center gap-2"
             >
-              <FaRedo className="w-3 h-3" />
+              <FaSync className="w-3 h-3" />
               Retry Failed ({failedOperations})
             </Button>
           )}
