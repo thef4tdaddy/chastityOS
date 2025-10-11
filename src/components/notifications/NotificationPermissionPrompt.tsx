@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useNotificationPermission } from "@/hooks/useNotificationPermission";
 import { FCMService } from "@/services/notifications/FCMService";
 import { serviceLogger } from "@/utils/logging";
+import { InitialPromptStep, ExplanationStep } from "./NotificationPromptSteps";
 
 const logger = serviceLogger("NotificationPermissionPrompt");
 
@@ -34,13 +35,8 @@ export const NotificationPermissionPrompt: React.FC<
   onPermissionDenied,
   forceShow = false,
 }) => {
-  const {
-    permission,
-    isSupported,
-    hasPrompted,
-    canPrompt,
-    requestPermission,
-  } = useNotificationPermission();
+  const { permission, isSupported, hasPrompted, canPrompt, requestPermission } =
+    useNotificationPermission();
 
   const [isVisible, setIsVisible] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
@@ -153,105 +149,17 @@ export const NotificationPermissionPrompt: React.FC<
           Enable Push Notifications
         </h3>
 
-        {/* Description */}
+        {/* Description and Actions */}
         {!showExplanation ? (
-          <div className="space-y-3 mb-6">
-            <p className="text-purple-300 text-center text-sm">
-              Get notified about important updates:
-            </p>
-            <ul className="space-y-2 text-purple-300 text-sm">
-              <li className="flex items-start">
-                <svg
-                  className="w-5 h-5 text-purple-400 mr-2 flex-shrink-0 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>Task assignments from your Keyholder</span>
-              </li>
-              <li className="flex items-start">
-                <svg
-                  className="w-5 h-5 text-purple-400 mr-2 flex-shrink-0 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>Task approvals and feedback</span>
-              </li>
-              <li className="flex items-start">
-                <svg
-                  className="w-5 h-5 text-purple-400 mr-2 flex-shrink-0 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span>Upcoming task deadlines</span>
-              </li>
-            </ul>
-            <button
-              onClick={handleShowExplanation}
-              className="text-purple-400 hover:text-purple-300 text-xs underline mt-2 w-full text-center"
-            >
-              Why do we need this permission?
-            </button>
-          </div>
+          <InitialPromptStep
+            onRequestPermission={handleRequestPermission}
+            onDismiss={handleDismiss}
+            onShowExplanation={handleShowExplanation}
+            isRequesting={isRequesting}
+          />
         ) : (
-          <div className="space-y-3 mb-6">
-            <p className="text-purple-300 text-sm">
-              Push notifications allow us to send you timely updates even when
-              you're not actively using the app. This helps you stay on top of:
-            </p>
-            <ul className="space-y-2 text-purple-300 text-sm list-disc list-inside">
-              <li>New tasks assigned by your Keyholder</li>
-              <li>Task review results (approved/rejected)</li>
-              <li>Approaching and overdue task deadlines</li>
-              <li>Important system updates</li>
-            </ul>
-            <p className="text-purple-400 text-xs italic">
-              You can disable notifications at any time in your device settings
-              or app settings.
-            </p>
-            <button
-              onClick={() => setShowExplanation(false)}
-              className="text-purple-400 hover:text-purple-300 text-xs underline mt-2 w-full text-center"
-            >
-              Back
-            </button>
-          </div>
+          <ExplanationStep onBack={() => setShowExplanation(false)} />
         )}
-
-        {/* Actions */}
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={handleRequestPermission}
-            disabled={isRequesting}
-            className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-purple-700 disabled:opacity-50 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-900 focus:ring-purple-400"
-          >
-            {isRequesting ? "Requesting..." : "Enable Notifications"}
-          </button>
-          <button
-            onClick={handleDismiss}
-            disabled={isRequesting}
-            className="w-full bg-transparent hover:bg-purple-800 text-purple-300 font-semibold py-2 px-4 rounded-lg border border-purple-600 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-900 focus:ring-purple-400"
-          >
-            Maybe Later
-          </button>
-        </div>
 
         {/* Privacy note */}
         <p className="text-purple-500 text-xs text-center mt-4">
