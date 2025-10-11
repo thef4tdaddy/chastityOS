@@ -12,6 +12,7 @@ import {
 import { DBSession, DBGoal, DBTask, AchievementCategory } from "../types";
 import { ACHIEVEMENTS_WITH_IDS } from "../constants/achievements/index";
 import { logger } from "../utils/logging";
+import { NotificationService } from "./notifications";
 
 export class AchievementEngine {
   private initialized = false;
@@ -424,6 +425,17 @@ export class AchievementEngine {
           `Achievement awarded: ${achievement.name} to user ${userId}`,
           "AchievementEngine",
         );
+
+        // Send in-app notification
+        NotificationService.notifyAchievementUnlocked({
+          userId,
+          achievementId,
+          achievementTitle: achievement.name,
+          achievementDescription: achievement.description,
+          points: achievement.points,
+        }).catch((error) => {
+          logger.warn("Failed to send achievement notification", { error });
+        });
       }
     }
   }

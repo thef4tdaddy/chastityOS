@@ -6,6 +6,7 @@ import { goalDBService } from "./database/GoalDBService";
 import type { DBSession, DBGoal } from "@/types/database";
 import { serviceLogger } from "@/utils/logging";
 import { eventDBService } from "./database/EventDBService";
+import { NotificationService } from "./notifications";
 
 const logger = serviceLogger("GoalTrackerService");
 
@@ -129,9 +130,40 @@ export class GoalTrackerService {
         { sessionId },
       );
 
+      // Notify keyholder if goal is under keyholder control
+      try {
+        const { keyholderRelationshipDBService } = await import(
+          "./database/KeyholderRelationshipDBService"
+        );
+        const relationships =
+          await keyholderRelationshipDBService.getRelationshipsForUser(
+            goal.userId,
+          );
+        const activeRelationship = relationships.asSubmissive.find(
+          (r) => r.status === "active",
+        );
+
+        if (activeRelationship) {
+          NotificationService.notifyGoalCompleted({
+            userId: goal.userId,
+            goalId: goal.id,
+            goalTitle: goal.title,
+            keyholderUserId: activeRelationship.keyholderUserId,
+          }).catch((error) => {
+            logger.warn("Failed to send goal completed notification", {
+              error,
+            });
+          });
+        }
+      } catch (error) {
+        logger.warn(
+          "Failed to send keyholder notification for goal completion",
+          { error },
+        );
+      }
+
       // TODO: Award points if configured (when points system is implemented)
       // TODO: Unlock achievement if configured (when achievement system is implemented)
-      // TODO: Send notification to user (when notification system is implemented)
     } catch (error) {
       logger.error("Failed to handle goal completion", {
         error: error as Error,
