@@ -180,8 +180,8 @@ describe("useTasksQuery", () => {
     );
 
     expect(result1.current.data).toEqual(mockTasks);
-    const firstCallCount = (taskDBService.findByUserId as any).mock.calls
-      .length;
+
+
 
     // Second render with same userId
     const { result: result2 } = renderHook(() => useTasksQuery(mockUserId), {
