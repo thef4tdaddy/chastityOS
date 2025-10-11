@@ -9,6 +9,8 @@ import {
   FaTimesCircle,
 } from "../../utils/iconImport";
 import { Input, Textarea, Button } from "@/components/ui";
+import { TaskError } from "../tasks/TaskError";
+import { logger } from "../../utils/logging";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
@@ -179,10 +181,16 @@ const TaskItem: React.FC<{
 );
 
 // Error Display Component
-const ErrorDisplay: React.FC = () => (
-  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-    Failed to load tasks. Please refresh the page.
-  </div>
+const ErrorDisplay: React.FC<{ error?: Error; onRetry?: () => void }> = ({
+  error,
+  onRetry,
+}) => (
+  <TaskError
+    error={error}
+    title="Failed to Load Tasks"
+    message="Unable to load tasks. Please check your connection and try again."
+    onRetry={onRetry}
+  />
 );
 
 // Loading Display Component
@@ -239,7 +247,13 @@ const useTaskActions = (params: {
         `Task ${action === "approve" ? "approved" : "rejected"} successfully`,
         "Task Updated",
       );
-    } catch {
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(`Failed to ${action} task`);
+      logger.error(`Task ${action} failed`, {
+        taskId,
+        userId,
+        error: err.message,
+      });
       showError(
         `Failed to ${action} task. Please try again.`,
         "Task Update Failed",
@@ -261,7 +275,13 @@ const useTaskActions = (params: {
       setNewTaskText("");
       setShowAddTask(false);
       showSuccess("Task created successfully", "Task Added");
-    } catch {
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error("Failed to create task");
+      logger.error("Task creation failed", {
+        userId,
+        title: newTaskText.trim(),
+        error: err.message,
+      });
       showError(
         "Failed to create task. Please try again.",
         "Task Creation Failed",
@@ -305,7 +325,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   const [showAddTask, setShowAddTask] = useState(false);
 
   // Use TanStack Query hooks instead of direct service calls
-  const { data: tasks = [], isLoading, error } = useTasksQuery(userId);
+  const { data: tasks = [], isLoading, error, refetch } = useTasksQuery(userId);
   const { approveTask, rejectTask, createTask } = useTaskMutations();
   const { showSuccess, showError } = useNotificationActions();
 
@@ -325,7 +345,7 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   });
 
   if (error) {
-    return <ErrorDisplay />;
+    return <ErrorDisplay error={error as Error} onRetry={() => refetch()} />;
   }
 
   return (
