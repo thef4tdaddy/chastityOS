@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { Alert, Button } from "@/components/ui";
 import { FaBell, FaTimes } from "@/utils/iconImport";
+import { NotificationPermissionStorage } from "@/services/notificationPermissionStorage";
 
 export interface NotificationPermissionBannerProps {
   onRequestPermission: () => Promise<"default" | "granted" | "denied">;
@@ -13,7 +14,6 @@ export interface NotificationPermissionBannerProps {
   className?: string;
 }
 
-const BANNER_DISMISSED_KEY = "chastityos-notification-banner-dismissed";
 const BANNER_DISMISSED_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export const NotificationPermissionBanner: React.FC<
@@ -28,13 +28,11 @@ export const NotificationPermissionBanner: React.FC<
   const [isRequesting, setIsRequesting] = useState(false);
 
   useEffect(() => {
-    // Check if banner was dismissed recently - Note: localStorage is used for banner state only (non-critical UI preference)
-    const dismissedData = localStorage.getItem(BANNER_DISMISSED_KEY);
-    if (dismissedData) {
-      const { timestamp } = JSON.parse(dismissedData);
-      if (Date.now() - timestamp < BANNER_DISMISSED_EXPIRY) {
-        return undefined;
-      }
+    // Check if banner was dismissed recently
+    if (
+      NotificationPermissionStorage.isBannerDismissed(BANNER_DISMISSED_EXPIRY)
+    ) {
+      return undefined;
     }
 
     // Check if permission is already granted or denied
@@ -73,11 +71,8 @@ export const NotificationPermissionBanner: React.FC<
 
   const handleDismiss = () => {
     setVisible(false);
-    // Remember dismissal - Note: localStorage is used for banner state only (non-critical UI preference)
-    localStorage.setItem(
-      BANNER_DISMISSED_KEY,
-      JSON.stringify({ timestamp: Date.now() }),
-    );
+    // Remember dismissal
+    NotificationPermissionStorage.dismissBanner();
   };
 
   if (!visible) {
