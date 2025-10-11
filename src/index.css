@@ -2493,6 +2493,8 @@ td {
   .icon-button:hover {
     animation: none !important;
     transition: opacity var(--animation-duration-fast) ease !important;
+  }
+  
   .tracker-state-transition,
   .timer-pulse,
   .number-update,
@@ -2515,6 +2517,8 @@ td {
   /* Keep shimmer for loading states as it's functional */
   .relationship-skeleton {
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+  
   .skeleton-shimmer {
     animation: none !important;
     background: rgba(215, 210, 234, 0.15);
