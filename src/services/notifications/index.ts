@@ -13,3 +13,21 @@ export type {
   TaskDeadlineParams,
   TaskOverdueParams,
 } from "./TaskNotificationService";
+
+export { NotificationService } from "./NotificationService";
+export type {
+  BaseNotificationParams,
+  SessionEndingSoonParams,
+  SessionCompletedParams,
+  PauseCooldownExpiredParams,
+  EmergencyUnlockParams,
+  SessionStartedParams,
+  SessionPausedParams,
+  SessionResumedParams,
+  KeyholderRequestParams,
+  GoalCompletedParams,
+  SyncCompletedParams,
+  SyncFailedParams,
+  AppUpdateAvailableParams,
+  AchievementUnlockedParams,
+} from "./NotificationService";
