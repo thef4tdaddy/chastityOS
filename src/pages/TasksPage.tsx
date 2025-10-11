@@ -35,11 +35,11 @@ const TabNavigation: React.FC<{
   activeCount: number;
   archivedCount: number;
 }> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
-  <div className="flex justify-center space-x-4 mb-8">
+  <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
     <Tooltip content="View tasks that are currently pending or awaiting approval">
       <Button
         onClick={() => setActiveTab("active")}
-        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+        className={`glass-nav px-4 sm:px-6 py-3 font-medium transition-all duration-300 min-h-[44px] touch-manipulation text-sm sm:text-base ${
           activeTab === "active"
             ? "primary-stat-card text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
@@ -51,7 +51,7 @@ const TabNavigation: React.FC<{
     <Tooltip content="View completed, approved, or rejected tasks">
       <Button
         onClick={() => setActiveTab("archived")}
-        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+        className={`glass-nav px-4 sm:px-6 py-3 font-medium transition-all duration-300 min-h-[44px] touch-manipulation text-sm sm:text-base ${
           activeTab === "archived"
             ? "primary-stat-card text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
@@ -75,13 +75,13 @@ const ActiveTasksSection: React.FC<{
 }> = ({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-12">
+      <Card variant="glass" className="text-center py-8 sm:py-12">
         <div className="glass-float">
-          <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">
+          <div className="text-4xl sm:text-6xl mb-4">📝</div>
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
             No Active Tasks
           </h3>
-          <p className="text-gray-400">
+          <p className="text-sm sm:text-base text-gray-400 px-4">
             You're all caught up! New tasks will appear here when assigned.
           </p>
         </div>
@@ -90,12 +90,12 @@ const ActiveTasksSection: React.FC<{
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {tasks.map((task) => (
         <Card
           key={task.id}
           variant="glass"
-          className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
+          className="glass-hover transform transition-all duration-300 sm:hover:scale-[1.02]"
         >
           <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
         </Card>
@@ -108,13 +108,13 @@ const ActiveTasksSection: React.FC<{
 const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-12">
+      <Card variant="glass" className="text-center py-8 sm:py-12">
         <div className="glass-float">
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">
+          <div className="text-4xl sm:text-6xl mb-4">📚</div>
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
             No Archived Tasks
           </h3>
-          <p className="text-gray-400">
+          <p className="text-sm sm:text-base text-gray-400 px-4">
             Completed and reviewed tasks will appear here.
           </p>
         </div>
@@ -123,7 +123,7 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {tasks.map((task) => (
         <Card
           key={task.id}
@@ -190,49 +190,56 @@ const TasksPage: React.FC = () => {
     ["approved", "rejected", "completed", "cancelled"].includes(task.status),
   );
 
-  // Filter tasks based on search query (memoized)
-  const filteredTasks = useMemo(() => {
-    const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
-    
-    if (!searchQuery.trim()) {
-      return tasksToFilter;
-    }
+    // Filter tasks based on search query (memoized)
+    const filteredTasks = useMemo(() => {
+      const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
 
-    const query = searchQuery.toLowerCase();
-    return tasksToFilter.filter(
-      (task) =>
-        task.text.toLowerCase().includes(query) ||
-        task.description?.toLowerCase().includes(query) ||
-        task.category?.toLowerCase().includes(query),
-    );
-  }, [activeTasks, archivedTasks, activeTab, searchQuery]);
+      if (!searchQuery.trim()) {
+        return tasksToFilter;
+      }
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+      const query = searchQuery.toLowerCase();
+      return tasksToFilter.filter(
+        (task) =>
+          task.text.toLowerCase().includes(query) ||
+          task.description?.toLowerCase().includes(query) ||
+          task.category?.toLowerCase().includes(query),
+      );
+    }, [activeTasks, archivedTasks, activeTab, searchQuery]);
 
-  // Reset to page 1 when switching tabs or searching
-  const handleTabChange = (tab: "active" | "archived") => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-  };
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
 
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
+    // Reset to page 1 when switching tabs or searching
+    const handleTabChange = (tab: "active" | "archived") => {
+      setActiveTab(tab);
+      setCurrentPage(1);
+    };
 
-  return (
-    <TaskErrorBoundary>
-      <div className="p-6">
-        {/* Enhanced Header with Glass Effect */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
-            Task Management
-          </h1>
-          <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
+    const handleSearchChange = (query: string) => {
+      setSearchQuery(query);
+      setCurrentPage(1);
+    };
+
+    return (
+      <TaskErrorBoundary>
+        <div className="p-3 sm:p-4 md:p-6">
+          {/* Enhanced Header with Glass Effect */}
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text
+  text-transparent mb-2">
+              Task Management
+            </h1>
+            <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
+          </div>
+
+          {/* Task Stats Card */}
+          {user && (
+            <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+              <TaskStatsCard userId={user.uid} />
         </div>
           {/* Task Stats Card */}
           {user && (
