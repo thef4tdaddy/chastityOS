@@ -40,8 +40,8 @@ const AddTaskForm: React.FC<{
   if (!showAddTask) return null;
 
   return (
-    <div className="mb-6 bg-white/5 rounded-lg p-4">
-      <h4 className="font-medium text-nightly-honeydew mb-3">
+    <div className="mb-6 bg-white/5 rounded-lg p-3 sm:p-4">
+      <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
         Create New Task
       </h4>
       <div className="space-y-3">
@@ -49,11 +49,11 @@ const AddTaskForm: React.FC<{
           value={newTaskText}
           onChange={(e) => setNewTaskText(e.target.value)}
           placeholder="Task description..."
-          className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
+          className="w-full bg-white/5 border border-white/10 rounded p-3 text-sm sm:text-base text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
           rows={3}
         />
         <div>
-          <label className="block text-sm text-nightly-celadon mb-1">
+          <label className="block text-xs sm:text-sm text-nightly-celadon mb-1">
             Point Value (optional)
           </label>
           <Input
@@ -65,17 +65,17 @@ const AddTaskForm: React.FC<{
               setPointValue(Math.max(0, Math.min(100, Number(e.target.value))))
             }
             placeholder="10"
-            className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50"
+            className="w-full bg-white/5 border border-white/10 rounded p-3 sm:p-2 text-sm sm:text-base text-nightly-honeydew placeholder-nightly-celadon/50"
           />
           <p className="text-xs text-nightly-celadon/70 mt-1">
             Points awarded when task is approved (0-100)
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Button
             onClick={handleAddTask}
             disabled={!newTaskText.trim() || isCreating}
-            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 disabled:cursor-not-allowed text-black px-4 py-2 rounded font-medium transition-colors flex items-center gap-2"
+            className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 disabled:cursor-not-allowed text-black px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] touch-manipulation"
           >
             {isCreating && (
               <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -84,7 +84,7 @@ const AddTaskForm: React.FC<{
           </Button>
           <Button
             onClick={() => setShowAddTask(false)}
-            className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-2 rounded font-medium transition-colors"
+            className="bg-white/10 hover:bg-white/20 text-nightly-celadon px-4 py-3 sm:py-2 rounded font-medium transition-colors min-h-[44px] touch-manipulation"
           >
             Cancel
           </Button>
@@ -113,28 +113,28 @@ const TaskItem: React.FC<{
   ) => void;
   isUpdating: boolean;
 }> = ({ task, handleTaskAction, isUpdating }) => (
-  <div key={task.id} className="bg-white/5 rounded-lg p-4">
+  <div key={task.id} className="bg-white/5 rounded-lg p-3 sm:p-4">
     <div className="mb-3">
-      <h4 className="font-medium text-nightly-honeydew mb-1">
+      <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-1 break-words">
         {task.title || task.text}
       </h4>
-      <div className="flex items-center gap-2 text-sm text-nightly-celadon">
+      <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-nightly-celadon">
         <span>Status: {task.status}</span>
         {task.priority && (
           <>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>Priority: {task.priority}</span>
           </>
         )}
         {task.deadline && (
           <>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>Due: {task.deadline.toLocaleDateString()}</span>
           </>
         )}
       </div>
       {task.description && (
-        <p className="text-sm text-nightly-celadon mt-1">{task.description}</p>
+        <p className="text-xs sm:text-sm text-nightly-celadon mt-1 break-words">{task.description}</p>
       )}
     </div>
 
@@ -143,37 +143,37 @@ const TaskItem: React.FC<{
         <div className="text-xs text-nightly-celadon mb-1">
           Submissive Note:
         </div>
-        <div className="text-sm text-nightly-honeydew">
+        <div className="text-xs sm:text-sm text-nightly-honeydew break-words">
           {task.submissiveNote}
         </div>
       </div>
     )}
 
     {task.status === "submitted" && (
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
-          className="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition-all"
+          className="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-1 transition-all min-h-[44px] sm:min-h-0 touch-manipulation"
         >
           {isUpdating ? (
             <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
             <FaCheckCircle />
           )}
-          {isUpdating ? "Processing..." : "Approve"}
+          <span>{isUpdating ? "Processing..." : "Approve"}</span>
         </Button>
         <Button
           onClick={() => handleTaskAction(task.id, "reject")}
           disabled={isUpdating}
-          className="bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded text-sm flex items-center gap-1 transition-all"
+          className="bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-1 transition-all min-h-[44px] sm:min-h-0 touch-manipulation"
         >
           {isUpdating ? (
             <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
             <FaTimesCircle />
           )}
-          {isUpdating ? "Processing..." : "Reject"}
+          <span>{isUpdating ? "Processing..." : "Reject"}</span>
         </Button>
       </div>
     )}
@@ -349,20 +349,20 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <FaTasks className="text-nightly-lavender-floral" />
-          <h3 className="text-lg font-semibold text-nightly-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-0">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <FaTasks className="text-nightly-lavender-floral text-lg sm:text-base" />
+          <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew">
             Task Management
           </h3>
         </div>
         <Button
           onClick={() => setShowAddTask(!showAddTask)}
-          className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 py-1 rounded text-sm flex items-center gap-2"
+          className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 sm:px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto touch-manipulation"
         >
           <FaPlus />
-          Add Task
+          <span>Add Task</span>
         </Button>
       </div>
 
