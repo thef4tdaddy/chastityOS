@@ -74,6 +74,14 @@ ChastityOS is a modern chastity and FLR (Female-Led Relationship) tracking web a
 - Works as a PWA with data cached locally
 - Changes sync to Firebase automatically once you reconnect
 
+### 🔔 Push Notifications (NEW)
+
+- Get notified about task assignments from your Keyholder
+- Receive alerts for task approvals and rejections  
+- Stay on top of approaching and overdue task deadlines
+- Notifications work even when the app is closed
+- See [FCM Setup Guide](docs/FCM_SETUP.md) for configuration
+
 ### 🔐 Authentication Options
 
 - Default anonymous sign-in (no setup required)
@@ -128,6 +136,7 @@ For comprehensive guides, API documentation, and architecture details:
 - **Architecture Overview:** `docs/development/architecture/`
 - **API Documentation:** `docs/api/`
 - **Contributing Guide:** `docs/contributing/guidelines.md`
+- **Push Notifications Setup:** `docs/FCM_SETUP.md`
 
 ---
 

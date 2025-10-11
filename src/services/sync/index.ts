@@ -26,3 +26,8 @@ export {
   SyncConflictResolver,
   syncConflictResolver,
 } from "./SyncConflictResolver";
+export {
+  periodicSyncService,
+  PeriodicSyncService,
+} from "./PeriodicSyncService";
+export type { PeriodicSyncSettings } from "./PeriodicSyncService";

@@ -2,6 +2,7 @@ import React, { lazy, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { firebaseListeners } from "./services/sync";
 import { useBackgroundSync } from "./hooks/api/useBackgroundSync";
+import { usePeriodicSync } from "./hooks/api/usePeriodicSync";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -170,16 +171,31 @@ function App(): React.ReactElement {
   // Initialize background sync for offline queue
   const { registerBackgroundSync } = useBackgroundSync();
 
+  // Initialize periodic sync
+  const { settings: periodicSyncSettings, register: registerPeriodicSync } =
+    usePeriodicSync();
+
   useEffect(() => {
     firebaseListeners.start();
 
     // Register background sync on app start
     registerBackgroundSync();
 
+    // Register periodic sync if enabled in settings
+    if (periodicSyncSettings.enabled) {
+      registerPeriodicSync().catch(() => {
+        // Error already logged by the hook
+      });
+    }
+
     return () => {
       firebaseListeners.stop();
     };
-  }, [registerBackgroundSync]);
+  }, [
+    registerBackgroundSync,
+    periodicSyncSettings.enabled,
+    registerPeriodicSync,
+  ]);
 
   return (
     <QueryClientProvider client={queryClient}>
