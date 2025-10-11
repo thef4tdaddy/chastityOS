@@ -3,9 +3,10 @@
  * A unified component for bottom sheets, side drawers, and modal panels
  * with animations, gestures, and accessibility features
  */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { useEscapeKey, useScrollLock, useFocusTrap } from "./useSheetBehaviors";
 
 export interface SheetProps {
   /**
@@ -184,97 +185,12 @@ export const Sheet: React.FC<SheetProps> = ({
   className = "",
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
-  const previousActiveElement = useRef<HTMLElement | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
 
-  // Store onClose in a ref to avoid adding it to deps
-  // This prevents potential infinite loops if onClose changes on every render
-  const onCloseRef = useRef(onClose);
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  // Handle ESC key press
-  useEffect(() => {
-    if (!isOpen || !closeOnEscape) return;
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onCloseRef.current();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-    // closeOnEscape is a boolean prop, not a store action - false positive
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
-  }, [isOpen, closeOnEscape]);
-
-  // Prevent body scroll when sheet is open
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, [isOpen]);
-
-  // Focus trap and focus management
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // Store the currently focused element
-    previousActiveElement.current = document.activeElement as HTMLElement;
-
-    // Focus the sheet
-    if (!sheetRef.current) return;
-
-    const focusableElements = sheetRef.current.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-
-    if (focusableElements.length > 0) {
-      (focusableElements[0] as HTMLElement).focus();
-    }
-
-    // Handle Tab key for focus trap
-    const handleTab = (event: KeyboardEvent) => {
-      if (event.key !== "Tab") return;
-
-      const focusable = Array.from(focusableElements) as HTMLElement[];
-      const firstFocusable = focusable[0];
-      const lastFocusable = focusable[focusable.length - 1];
-
-      if (
-        firstFocusable &&
-        event.shiftKey &&
-        document.activeElement === firstFocusable
-      ) {
-        event.preventDefault();
-        lastFocusable?.focus();
-      } else if (
-        lastFocusable &&
-        !event.shiftKey &&
-        document.activeElement === lastFocusable
-      ) {
-        event.preventDefault();
-        firstFocusable?.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleTab);
-
-    return () => {
-      document.removeEventListener("keydown", handleTab);
-      // Restore focus to the element that had it before the sheet opened
-      if (previousActiveElement.current) {
-        previousActiveElement.current.focus();
-      }
-    };
-  }, [isOpen]);
+  // Custom hooks for sheet behaviors
+  useEscapeKey(isOpen, closeOnEscape, onClose);
+  useScrollLock(isOpen);
+  useFocusTrap(isOpen, sheetRef);
 
   // Handle overlay click
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {

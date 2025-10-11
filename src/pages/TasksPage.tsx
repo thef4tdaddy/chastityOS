@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
+import { useTaskFilters } from "../hooks/useTaskFilters";
 import type { Task } from "../types";
 import {
   TaskItem,
@@ -179,10 +180,6 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
 
 const TasksPage: React.FC = () => {
   const { user } = useAuthState();
-  const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const ITEMS_PER_PAGE = 20;
 
   // Use TanStack Query hooks for tasks
   const {
@@ -193,6 +190,21 @@ const TasksPage: React.FC = () => {
   } = useTasks(user?.uid || "");
 
   const submitTaskMutation = useSubmitTaskForReview();
+
+  // Task filtering, pagination, and categorization
+  const {
+    activeTab,
+    activeTasks,
+    archivedTasks,
+    filteredTasks,
+    paginatedTasks,
+    searchQuery,
+    currentPage,
+    totalPages,
+    setActiveTab: handleTabChange,
+    setSearchQuery: handleSearchChange,
+    setCurrentPage,
+  } = useTaskFilters({ tasks, itemsPerPage: 20 });
 
   const handleSubmitTask = async (
     taskId: string,
@@ -218,48 +230,6 @@ const TasksPage: React.FC = () => {
       });
       throw err; // Re-throw to be caught by TaskItem error handling
     }
-  };
-
-  const activeTasks = tasks.filter((task) =>
-    ["pending", "submitted"].includes(task.status),
-  );
-
-  const archivedTasks = tasks.filter((task) =>
-    ["approved", "rejected", "completed", "cancelled"].includes(task.status),
-  );
-
-  // Filter tasks based on search query (memoized)
-  const filteredTasks = useMemo(() => {
-    const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
-
-    if (!searchQuery.trim()) {
-      return tasksToFilter;
-    }
-
-    const query = searchQuery.toLowerCase();
-    return tasksToFilter.filter(
-      (task) =>
-        task.text.toLowerCase().includes(query) ||
-        task.description?.toLowerCase().includes(query) ||
-        task.category?.toLowerCase().includes(query),
-    );
-  }, [activeTasks, archivedTasks, activeTab, searchQuery]);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
-
-  // Reset to page 1 when switching tabs or searching
-  const handleTabChange = (tab: "active" | "archived") => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-  };
-
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
   };
 
   return (
@@ -332,7 +302,7 @@ const TasksPage: React.FC = () => {
           {!loading && !error && totalPages > 1 && (
             <div className="flex justify-center items-center gap-4 mt-8">
               <Button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -342,9 +312,7 @@ const TasksPage: React.FC = () => {
                 Page {currentPage} of {totalPages}
               </span>
               <Button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
+                onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >

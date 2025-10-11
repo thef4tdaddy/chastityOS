@@ -143,6 +143,59 @@ const buildAllTrackerProps = (
   return { trackerData, trackerStatsProps, trackerHeaderProps };
 };
 
+// Helper to build real tracker data params
+const buildRealTrackerDataParams = (params: {
+  isActive: boolean;
+  isPaused: boolean;
+  sessionId: string | null;
+  userId: string | undefined;
+  goals: { active: import("@/types/database").DBGoal[] } | null;
+  keyholderGoal: import("@/types/database").DBGoal | null;
+  personalGoal: import("@/types/database").DBGoal | null;
+  isHardcoreMode: boolean;
+  duration: number;
+}): RealTrackerData => {
+  const {
+    isActive,
+    isPaused,
+    sessionId,
+    userId,
+    goals,
+    keyholderGoal,
+    personalGoal,
+    isHardcoreMode,
+    duration,
+  } = params;
+
+  const goalsData = goals
+    ? { active: goals.active, keyholderAssigned: [] }
+    : { active: [], keyholderAssigned: [] };
+
+  return {
+    trackerDataParams: {
+      isActive,
+      isPaused,
+      sessionId,
+      userId,
+      goals: goalsData,
+      keyholderGoal: keyholderGoal ?? undefined,
+      personalGoal: personalGoal ?? undefined,
+      isHardcoreMode,
+      duration,
+    },
+    statsParams: {
+      isActive,
+      isPaused,
+      realSession: null, // Will be set by caller
+      totalChastityTime: 0, // Will be set by caller
+      totalCageOffTime: 0, // Will be set by caller
+      personalGoal: personalGoal ?? undefined,
+    },
+    goals: goals ? { active: goals.active, keyholderAssigned: [] } : undefined,
+    isActive,
+  };
+};
+
 // Cooldown Display Component (currently unused but kept for future use)
 const _CooldownDisplay: React.FC<{
   pauseState: { cooldownRemaining?: number } | null;
@@ -301,38 +354,30 @@ const TrackerPage: React.FC = () => {
   } = useTrackerSession(user?.uid, mockData);
 
   // Build all component props
+  const realTrackerData = buildRealTrackerDataParams({
+    isActive,
+    isPaused,
+    sessionId,
+    userId: user?.uid,
+    goals,
+    keyholderGoal,
+    personalGoal,
+    isHardcoreMode,
+    duration,
+  });
+
+  // Add session and stats data
+  realTrackerData.statsParams.realSession = realSession as
+    | import("@/types/database").DBSession
+    | null;
+  realTrackerData.statsParams.totalChastityTime =
+    lifetimeStats.totalChastityTime;
+  realTrackerData.statsParams.totalCageOffTime = lifetimeStats.totalCageOffTime;
+
   const { trackerData, trackerStatsProps, trackerHeaderProps } =
     buildAllTrackerProps(
       USE_REAL_SESSIONS,
-      {
-        trackerDataParams: {
-          isActive,
-          isPaused,
-          sessionId,
-          userId: user?.uid,
-          goals: goals
-            ? { active: goals.active, keyholderAssigned: [] }
-            : { active: [], keyholderAssigned: [] },
-          keyholderGoal: keyholderGoal ?? undefined,
-          personalGoal: personalGoal ?? undefined,
-          isHardcoreMode,
-          duration,
-        },
-        statsParams: {
-          isActive,
-          isPaused,
-          realSession: realSession as
-            | import("@/types/database").DBSession
-            | null,
-          totalChastityTime: lifetimeStats.totalChastityTime,
-          totalCageOffTime: lifetimeStats.totalCageOffTime,
-          personalGoal: personalGoal ?? undefined,
-        },
-        goals: goals
-          ? { active: goals.active, keyholderAssigned: [] }
-          : undefined,
-        isActive,
-      },
+      realTrackerData,
       mockData,
       currentSession,
     );
