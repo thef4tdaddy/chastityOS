@@ -192,7 +192,6 @@ export const Sheet: React.FC<SheetProps> = ({
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [onClose]);
 
   // Handle ESC key press
@@ -207,6 +206,7 @@ export const Sheet: React.FC<SheetProps> = ({
 
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
+    // closeOnEscape is a boolean prop, not a store action - false positive
     // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
   }, [isOpen, closeOnEscape]);
 
