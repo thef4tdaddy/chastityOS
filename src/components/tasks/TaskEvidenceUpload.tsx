@@ -3,10 +3,16 @@
  * Allows submissives to upload photo evidence when submitting tasks
  */
 import React, { useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useEvidenceUpload, type UploadedFile } from "./useEvidenceUpload";
 import { FaUpload, FaTimes, FaImage, FaSpinner } from "../../utils/iconImport";
+import {
+  fadeInVariants,
+  scaleInVariants,
+  getAccessibleVariants,
+} from "../../utils/animations";
 
 interface TaskEvidenceUploadProps {
   taskId: string;
@@ -33,16 +39,19 @@ const UploadZone: React.FC<{
   onDrop,
   onBrowseClick,
 }) => (
-  <div
+  <motion.div
     className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
       isDragging
-        ? "border-blue-400 bg-blue-900/20"
+        ? "border-blue-400 bg-blue-900/20 drop-zone-active"
         : "border-gray-600 hover:border-gray-500"
     }`}
     onDragEnter={onDragEnter}
     onDragOver={onDragOver}
     onDragLeave={onDragLeave}
     onDrop={onDrop}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
   >
     <FaUpload className="mx-auto text-4xl text-gray-400 mb-2" />
     <p className="text-gray-300 mb-2">
@@ -58,7 +67,7 @@ const UploadZone: React.FC<{
     >
       Choose Files
     </Button>
-  </div>
+  </motion.div>
 );
 
 // File preview item sub-component
@@ -66,11 +75,21 @@ const FilePreviewItem: React.FC<{
   file: UploadedFile;
   onRemove: () => void;
 }> = ({ file, onRemove }) => (
-  <div className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
-    <img
+  <motion.div
+    className="relative aspect-square bg-gray-800 rounded-lg overflow-hidden border border-gray-700"
+    variants={getAccessibleVariants(scaleInVariants)}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    layout
+  >
+    <motion.img
       src={file.preview}
       alt="Preview"
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover image-fade-in"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     />
     <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
       {file.uploading && (
@@ -90,9 +109,11 @@ const FilePreviewItem: React.FC<{
     </div>
     {file.uploading && (
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-        <div
-          className="h-full bg-blue-500 transition-all duration-300"
-          style={{ width: `${file.progress}%` }}
+        <motion.div
+          className="h-full bg-blue-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${file.progress}%` }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         />
       </div>
     )}
@@ -106,7 +127,7 @@ const FilePreviewItem: React.FC<{
         <FaTimes />
       </Button>
     )}
-  </div>
+  </motion.div>
 );
 
 export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
@@ -219,15 +240,22 @@ export const TaskEvidenceUpload: React.FC<TaskEvidenceUploadProps> = ({
       )}
 
       {hasFiles && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {files.map((file) => (
-            <FilePreviewItem
-              key={file.id}
-              file={file}
-              onRemove={() => removeFile(file.id)}
-            />
-          ))}
-        </div>
+        <motion.div
+          className="grid grid-cols-2 sm:grid-cols-3 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <AnimatePresence mode="popLayout">
+            {files.map((file) => (
+              <FilePreviewItem
+                key={file.id}
+                file={file}
+                onRemove={() => removeFile(file.id)}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {hasFiles && !allUploaded && (

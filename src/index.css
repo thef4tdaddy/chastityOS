@@ -1521,3 +1521,274 @@ td {
 .achievement-toast .Toastify__progress-bar {
   background: linear-gradient(90deg, #fde047, #fcd34d) !important;
 }
+
+/* =============================================
+   === TASK UI ANIMATIONS & POLISH           ===
+   =============================================
+*/
+
+/* Task Card Animations */
+@keyframes task-card-hover-shadow {
+  from {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  to {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.task-card-hover {
+  transition: all var(--animation-duration-normal) var(--animation-easing);
+}
+
+.task-card-hover:hover {
+  transform: translateY(-4px);
+  animation: task-card-hover-shadow var(--animation-duration-normal) var(--animation-easing) forwards;
+}
+
+/* Button Animations */
+@keyframes button-success {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.button-success-animation {
+  animation: button-success 0.4s ease-out;
+}
+
+@keyframes spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  animation: spinner-rotate 1s linear infinite;
+}
+
+/* Task Status Change Animations */
+@keyframes task-approval-success {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.task-approved-animation {
+  animation: task-approval-success 0.5s ease-out;
+}
+
+@keyframes task-rejection-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.task-rejected-animation {
+  animation: task-rejection-shake 0.5s ease-out;
+}
+
+/* Evidence Upload Animations */
+@keyframes upload-progress {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+.upload-progress-bar {
+  animation: upload-progress 0.3s ease-out forwards;
+}
+
+@keyframes drop-zone-pulse {
+  0%, 100% {
+    border-color: rgba(147, 51, 234, 0.5);
+    background-color: rgba(147, 51, 234, 0.05);
+  }
+  50% {
+    border-color: rgba(147, 51, 234, 0.8);
+    background-color: rgba(147, 51, 234, 0.1);
+  }
+}
+
+.drop-zone-active {
+  animation: drop-zone-pulse 1.5s ease-in-out infinite;
+}
+
+.image-fade-in {
+  animation: fadeIn var(--animation-duration-normal) ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Celebration Animations */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  animation: confetti-fall 3s linear forwards;
+}
+
+@keyframes trophy-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.trophy-celebration {
+  animation: trophy-bounce 0.6s ease-out;
+}
+
+/* Empty State Animations */
+@keyframes empty-state-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.empty-state-animation {
+  animation: empty-state-float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+  }
+}
+
+.pulse-cta {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Status Badge Animations */
+@keyframes badge-appear {
+  from {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.status-badge-appear {
+  animation: badge-appear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Checkmark Animation */
+@keyframes checkmark-draw {
+  0% {
+    stroke-dashoffset: 50;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.checkmark-animation {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: checkmark-draw 0.5s ease-out forwards;
+}
+
+/* Slide-in Notification */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-slide-in {
+  animation: slide-in-right var(--animation-duration-normal) var(--animation-easing);
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .task-card-hover:hover,
+  .button-success-animation,
+  .task-approved-animation,
+  .task-rejected-animation,
+  .upload-progress-bar,
+  .drop-zone-active,
+  .image-fade-in,
+  .confetti-particle,
+  .trophy-celebration,
+  .empty-state-animation,
+  .pulse-cta,
+  .status-badge-appear,
+  .checkmark-animation,
+  .notification-slide-in {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  .loading-spinner {
+    animation: spinner-rotate 1s linear infinite;
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
@@ -7,6 +8,13 @@ import { TaskItem, TaskSkeleton } from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
+import {
+  staggerContainerVariants,
+  tabContentVariants,
+  fadeInVariants,
+  pulseVariants,
+  getAccessibleVariants,
+} from "../utils/animations";
 
 const ErrorState: React.FC = () => (
   <div className="text-center py-8">
@@ -61,32 +69,49 @@ const ActiveTasksSection: React.FC<{
 }> = ({ tasks, userId, handleSubmitTask }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-12">
-        <div className="glass-float">
-          <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">
-            No Active Tasks
-          </h3>
-          <p className="text-gray-400">
-            You're all caught up! New tasks will appear here when assigned.
-          </p>
-        </div>
-      </Card>
+      <motion.div
+        variants={getAccessibleVariants(fadeInVariants)}
+        initial="initial"
+        animate="animate"
+      >
+        <Card variant="glass" className="text-center py-12">
+          <motion.div
+            className="glass-float"
+            variants={getAccessibleVariants(pulseVariants)}
+            animate="animate"
+          >
+            <div className="text-6xl mb-4">📝</div>
+            <h3 className="text-xl font-semibold text-gray-200 mb-2">
+              No Active Tasks
+            </h3>
+            <p className="text-gray-400">
+              You're all caught up! New tasks will appear here when assigned.
+            </p>
+          </motion.div>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {tasks.map((task) => (
-        <Card
-          key={task.id}
-          variant="glass"
-          className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
-        >
-          <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
-        </Card>
-      ))}
-    </div>
+    <motion.div
+      className="space-y-6"
+      variants={getAccessibleVariants(staggerContainerVariants)}
+      initial="initial"
+      animate="animate"
+    >
+      <AnimatePresence mode="popLayout">
+        {tasks.map((task) => (
+          <Card
+            key={task.id}
+            variant="glass"
+            className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
+          >
+            <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
+          </Card>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
@@ -94,35 +119,52 @@ const ActiveTasksSection: React.FC<{
 const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
-      <Card variant="glass" className="text-center py-12">
-        <div className="glass-float">
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-xl font-semibold text-gray-200 mb-2">
-            No Archived Tasks
-          </h3>
-          <p className="text-gray-400">
-            Completed and reviewed tasks will appear here.
-          </p>
-        </div>
-      </Card>
+      <motion.div
+        variants={getAccessibleVariants(fadeInVariants)}
+        initial="initial"
+        animate="animate"
+      >
+        <Card variant="glass" className="text-center py-12">
+          <motion.div
+            className="glass-float"
+            variants={getAccessibleVariants(pulseVariants)}
+            animate="animate"
+          >
+            <div className="text-6xl mb-4">📚</div>
+            <h3 className="text-xl font-semibold text-gray-200 mb-2">
+              No Archived Tasks
+            </h3>
+            <p className="text-gray-400">
+              Completed and reviewed tasks will appear here.
+            </p>
+          </motion.div>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {tasks.map((task) => (
-        <Card
-          key={task.id}
-          variant="glass"
-          className="opacity-75 hover:opacity-100 transition-opacity duration-300"
-        >
-          <TaskItem
-            task={task}
-            onSubmit={() => {}} // Archived tasks can't be submitted
-          />
-        </Card>
-      ))}
-    </div>
+    <motion.div
+      className="space-y-6"
+      variants={getAccessibleVariants(staggerContainerVariants)}
+      initial="initial"
+      animate="animate"
+    >
+      <AnimatePresence mode="popLayout">
+        {tasks.map((task) => (
+          <Card
+            key={task.id}
+            variant="glass"
+            className="opacity-75 hover:opacity-100 transition-opacity duration-300"
+          >
+            <TaskItem
+              task={task}
+              onSubmit={() => {}} // Archived tasks can't be submitted
+            />
+          </Card>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
@@ -199,15 +241,25 @@ const TasksPage: React.FC = () => {
           <ErrorState />
         ) : (
           <FeatureErrorBoundary feature="tasks-management">
-            {activeTab === "active" ? (
-              <ActiveTasksSection
-                tasks={activeTasks}
-                userId={user?.uid || ""}
-                handleSubmitTask={handleSubmitTask}
-              />
-            ) : (
-              <ArchivedTasksSection tasks={archivedTasks} />
-            )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                variants={getAccessibleVariants(tabContentVariants)}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {activeTab === "active" ? (
+                  <ActiveTasksSection
+                    tasks={activeTasks}
+                    userId={user?.uid || ""}
+                    handleSubmitTask={handleSubmitTask}
+                  />
+                ) : (
+                  <ArchivedTasksSection tasks={archivedTasks} />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </FeatureErrorBoundary>
         )}
       </div>
