@@ -5,6 +5,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useTaskEvidence } from "@/hooks/api/useTaskEvidence";
 import { useToast } from "@/contexts";
+import { compressImage } from "@/utils/imageCompression";
 
 export interface UploadedFile {
   id: string;
@@ -14,6 +15,8 @@ export interface UploadedFile {
   uploading: boolean;
   progress: number;
   error?: string;
+  originalSize?: number;
+  compressedSize?: number;
 }
 
 export function useEvidenceUpload(
@@ -30,7 +33,7 @@ export function useEvidenceUpload(
   const { showError } = useToast();
 
   const handleFiles = useCallback(
-    (newFiles: FileList | File[]) => {
+    async (newFiles: FileList | File[]) => {
       const fileArray = Array.from(newFiles);
       const availableSlots = maxFiles - files.length;
 
@@ -40,18 +43,46 @@ export function useEvidenceUpload(
       }
 
       const filesToAdd = fileArray.slice(0, availableSlots);
-      const preparedFiles: UploadedFile[] = filesToAdd.map((file) => {
+
+      // Compress images before adding to state
+      const preparedFilesPromises = filesToAdd.map(async (file) => {
         const validation = validateFile(file);
+
+        // Compress image if valid
+        let processedFile = file;
+        let originalSize = file.size;
+        let compressedSize = file.size;
+
+        if (validation.valid && file.type.startsWith("image/")) {
+          try {
+            const result = await compressImage(file, {
+              maxSizeMB: 1,
+              maxWidthOrHeight: 1920,
+              fileType: "image/webp",
+              initialQuality: 0.85,
+            });
+            processedFile = result.file;
+            originalSize = result.originalSize;
+            compressedSize = result.compressedSize;
+          } catch (error) {
+            // If compression fails, use original file
+            // Error is logged in the compression utility
+          }
+        }
+
         return {
           id: `${Date.now()}-${Math.random()}`,
-          file,
-          preview: URL.createObjectURL(file),
+          file: processedFile,
+          preview: URL.createObjectURL(processedFile),
           uploading: false,
           progress: 0,
           error: validation.valid ? undefined : validation.error,
+          originalSize,
+          compressedSize,
         };
       });
 
+      const preparedFiles = await Promise.all(preparedFilesPromises);
       setFiles((prev) => [...prev, ...preparedFiles]);
     },
     [files.length, maxFiles, showError, validateFile],
@@ -84,7 +115,12 @@ export function useEvidenceUpload(
       ),
     );
 
-    for (const uploadFile of filesToUpload) {
+    // Upload files in parallel (max 3 concurrent uploads)
+    const MAX_CONCURRENT_UPLOADS = 3;
+    const uploadQueue = [...filesToUpload];
+    const activeUploads = new Map<string, Promise<void>>();
+
+    const uploadFile = async (uploadFile: UploadedFile) => {
       try {
         const result = await uploadEvidence(taskId, userId, uploadFile.file);
         setFiles((prev) =>
@@ -108,8 +144,32 @@ export function useEvidenceUpload(
           ),
         );
       }
+    };
+
+    // Process upload queue with concurrency limit
+    while (uploadQueue.length > 0 || activeUploads.size > 0) {
+      // Start new uploads if we're below the concurrency limit
+      while (
+        uploadQueue.length > 0 &&
+        activeUploads.size < MAX_CONCURRENT_UPLOADS
+      ) {
+        const file = uploadQueue.shift()!;
+        const uploadPromise = uploadFile(file);
+        activeUploads.set(file.id, uploadPromise);
+
+        // Clean up when upload completes
+        uploadPromise.finally(() => {
+          activeUploads.delete(file.id);
+        });
+      }
+
+      // Wait for at least one upload to complete before continuing
+      if (activeUploads.size > 0) {
+        await Promise.race(Array.from(activeUploads.values()));
+      }
     }
 
+    // Get all uploaded URLs after all uploads complete
     const uploadedUrls = files
       .map((f) => f.url)
       .filter((url): url is string => !!url);

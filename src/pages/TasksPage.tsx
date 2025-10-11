@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useAuthState } from "../contexts";
 import { useTasks } from "../hooks/api/useTasks";
 import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
 import type { Task } from "../types";
-import { TaskItem, TaskSkeleton } from "../components/tasks";
+import {
+  TaskItem,
+  TaskSkeleton,
+  TaskErrorBoundary,
+  TaskError,
+  TaskSearch,
+} from "../components/tasks";
 import { TaskStatsCard } from "../components/stats/TaskStatsCard";
 import { FeatureErrorBoundary } from "../components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
@@ -15,11 +21,18 @@ import {
   pulseVariants,
   getAccessibleVariants,
 } from "../utils/animations";
+import { logger } from "../utils/logging";
 
-const ErrorState: React.FC = () => (
-  <div className="text-center py-8">
-    <div className="text-red-400">Error loading tasks. Please try again.</div>
-  </div>
+const ErrorState: React.FC<{ error?: Error; onRetry?: () => void }> = ({
+  error,
+  onRetry,
+}) => (
+  <TaskError
+    error={error}
+    title="Failed to Load Tasks"
+    message="We couldn't load your tasks. Please check your connection and try again."
+    onRetry={onRetry}
+  />
 );
 
 // Tab Navigation Component
@@ -29,11 +42,11 @@ const TabNavigation: React.FC<{
   activeCount: number;
   archivedCount: number;
 }> = ({ activeTab, setActiveTab, activeCount, archivedCount }) => (
-  <div className="flex justify-center space-x-4 mb-8">
+  <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 px-2 sm:px-0">
     <Tooltip content="View tasks that are currently pending or awaiting approval">
       <Button
         onClick={() => setActiveTab("active")}
-        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+        className={`glass-nav px-4 sm:px-6 py-3 font-medium transition-all duration-300 min-h-[44px] touch-manipulation text-sm sm:text-base ${
           activeTab === "active"
             ? "primary-stat-card text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
@@ -45,7 +58,7 @@ const TabNavigation: React.FC<{
     <Tooltip content="View completed, approved, or rejected tasks">
       <Button
         onClick={() => setActiveTab("archived")}
-        className={`glass-nav px-6 py-3 font-medium transition-all duration-300 ${
+        className={`glass-nav px-4 sm:px-6 py-3 font-medium transition-all duration-300 min-h-[44px] touch-manipulation text-sm sm:text-base ${
           activeTab === "archived"
             ? "primary-stat-card text-blue-200 shadow-liquid transform scale-105"
             : "text-gray-300 hover:text-white glass-hover"
@@ -74,17 +87,17 @@ const ActiveTasksSection: React.FC<{
         initial="initial"
         animate="animate"
       >
-        <Card variant="glass" className="text-center py-12">
+        <Card variant="glass" className="text-center py-8 sm:py-12">
           <motion.div
             className="glass-float"
             variants={getAccessibleVariants(pulseVariants)}
             animate="animate"
           >
-            <div className="text-6xl mb-4">📝</div>
-            <h3 className="text-xl font-semibold text-gray-200 mb-2">
+            <div className="text-4xl sm:text-6xl mb-4">📝</div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
               No Active Tasks
             </h3>
-            <p className="text-gray-400">
+            <p className="text-sm sm:text-base text-gray-400 px-4">
               You're all caught up! New tasks will appear here when assigned.
             </p>
           </motion.div>
@@ -95,7 +108,7 @@ const ActiveTasksSection: React.FC<{
 
   return (
     <motion.div
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
       variants={getAccessibleVariants(staggerContainerVariants)}
       initial="initial"
       animate="animate"
@@ -104,7 +117,7 @@ const ActiveTasksSection: React.FC<{
         <Card
           key={task.id}
           variant="glass"
-          className="glass-hover transform transition-all duration-300 hover:scale-[1.02]"
+          className="glass-hover transform transition-all duration-300 sm:hover:scale-[1.02]"
         >
           <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
         </Card>
@@ -122,17 +135,17 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
         initial="initial"
         animate="animate"
       >
-        <Card variant="glass" className="text-center py-12">
+        <Card variant="glass" className="text-center py-8 sm:py-12">
           <motion.div
             className="glass-float"
             variants={getAccessibleVariants(pulseVariants)}
             animate="animate"
           >
-            <div className="text-6xl mb-4">📚</div>
-            <h3 className="text-xl font-semibold text-gray-200 mb-2">
+            <div className="text-4xl sm:text-6xl mb-4">📚</div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-200 mb-2 px-4">
               No Archived Tasks
             </h3>
-            <p className="text-gray-400">
+            <p className="text-sm sm:text-base text-gray-400 px-4">
               Completed and reviewed tasks will appear here.
             </p>
           </motion.div>
@@ -143,7 +156,7 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
 
   return (
     <motion.div
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
       variants={getAccessibleVariants(staggerContainerVariants)}
       initial="initial"
       animate="animate"
@@ -167,12 +180,16 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
 const TasksPage: React.FC = () => {
   const { user } = useAuthState();
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const ITEMS_PER_PAGE = 20;
 
   // Use TanStack Query hooks for tasks
   const {
     data: tasks = [],
     isLoading: loading,
     error,
+    refetch,
   } = useTasks(user?.uid || "");
 
   const submitTaskMutation = useSubmitTaskForReview();
@@ -191,9 +208,15 @@ const TasksPage: React.FC = () => {
         note,
         attachments,
       });
-    } catch {
-      // Error is already logged in the hook
-      // TODO: Add toast notification for user feedback on error
+    } catch (error) {
+      const err =
+        error instanceof Error ? error : new Error("Task submission failed");
+      logger.error("Task submission error", {
+        taskId,
+        userId: user.uid,
+        error: err.message,
+      });
+      throw err; // Re-throw to be caught by TaskItem error handling
     }
   };
 
@@ -205,58 +228,133 @@ const TasksPage: React.FC = () => {
     ["approved", "rejected", "completed", "cancelled"].includes(task.status),
   );
 
+  // Filter tasks based on search query (memoized)
+  const filteredTasks = useMemo(() => {
+    const tasksToFilter = activeTab === "active" ? activeTasks : archivedTasks;
+
+    if (!searchQuery.trim()) {
+      return tasksToFilter;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return tasksToFilter.filter(
+      (task) =>
+        task.text.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.category?.toLowerCase().includes(query),
+    );
+  }, [activeTasks, archivedTasks, activeTab, searchQuery]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTasks.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+
+  // Reset to page 1 when switching tabs or searching
+  const handleTabChange = (tab: "active" | "archived") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
   return (
-    <div className="p-6">
-      {/* Enhanced Header with Glass Effect */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
-          Task Management
-        </h1>
-        <div className="w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
-      </div>
-
-      {/* Task Stats Card */}
-      {user && (
-        <div className="max-w-4xl mx-auto mb-8">
-          <TaskStatsCard userId={user.uid} />
+    <TaskErrorBoundary>
+      <div className="p-3 sm:p-4 md:p-6">
+        {/* Enhanced Header with Glass Effect */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+            Task Management
+          </h1>
+          <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
         </div>
-      )}
 
-      <TabNavigation
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        activeCount={activeTasks.length}
-        archivedCount={archivedTasks.length}
-      />
-
-      {/* Content with Glass Container */}
-      <div className="max-w-4xl mx-auto">
-        {loading ? (
-          <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
-        ) : error ? (
-          <ErrorState />
-        ) : (
-          <FeatureErrorBoundary feature="tasks-management">
-            <motion.div
-              key={activeTab}
-              variants={getAccessibleVariants(tabContentVariants)}
-              initial="initial"
-              animate="animate"
-            >
-              {activeTab === "active" ? (
-                <ActiveTasksSection
-                  tasks={activeTasks}
-                  userId={user?.uid || ""}
-                  handleSubmitTask={handleSubmitTask}
-                />
-              ) : (
-                <ArchivedTasksSection tasks={archivedTasks} />
-              )}
-            </motion.div>
-          </FeatureErrorBoundary>
+        {/* Task Stats Card */}
+        {user && (
+          <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+            <TaskStatsCard userId={user.uid} />
+          </div>
         )}
+
+        <TabNavigation
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          activeCount={activeTasks.length}
+          archivedCount={archivedTasks.length}
+        />
+
+        {/* Search Bar */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <TaskSearch
+            onSearchChange={handleSearchChange}
+            placeholder={`Search ${activeTab} tasks...`}
+          />
+          {searchQuery && (
+            <div className="text-sm text-gray-400 mt-2">
+              Found {filteredTasks.length} task(s) matching &quot;{searchQuery}
+              &quot;
+            </div>
+          )}
+        </div>
+
+        {/* Content with Glass Container */}
+        <div className="max-w-4xl mx-auto">
+          {loading ? (
+            <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
+          ) : error ? (
+            <ErrorState error={error as Error} onRetry={() => refetch()} />
+          ) : (
+            <FeatureErrorBoundary feature="tasks-management">
+              <motion.div
+                key={activeTab}
+                variants={getAccessibleVariants(tabContentVariants)}
+                initial="initial"
+                animate="animate"
+              >
+                {activeTab === "active" ? (
+                  <ActiveTasksSection
+                    tasks={paginatedTasks}
+                    userId={user?.uid || ""}
+                    handleSubmitTask={handleSubmitTask}
+                  />
+                ) : (
+                  <ArchivedTasksSection tasks={paginatedTasks} />
+                )}
+              </motion.div>
+            </FeatureErrorBoundary>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && !error && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <Button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </Button>
+              <span className="text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </TaskErrorBoundary>
   );
 };
 

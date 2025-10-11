@@ -6,6 +6,7 @@ import {
   FaTrophy,
   FaClock,
 } from "../../utils/iconImport";
+import { logger } from "../../utils/logging";
 
 // Task status configuration type
 interface TaskStatusConfig {
@@ -28,6 +29,7 @@ export const useTaskItem = (
   const [note, setNote] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<Error | null>(null);
 
   // Task status configuration logic
   const getStatusConfig = (status: TaskStatus): TaskStatusConfig => {
@@ -100,14 +102,31 @@ export const useTaskItem = (
   // Submit handler logic - memoized with useCallback
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await onSubmit(task.id, note, attachments);
       setNote("");
       setAttachments([]);
+    } catch (error) {
+      const err =
+        error instanceof Error ? error : new Error("Failed to submit task");
+      logger.error("Task submission error", {
+        taskId: task.id,
+        error: err.message,
+        timestamp: new Date().toISOString(),
+      });
+      setSubmitError(err);
+      throw err; // Re-throw to allow parent components to handle
     } finally {
       setIsSubmitting(false);
     }
   }, [task.id, note, attachments, onSubmit]);
+
+  // Retry submission
+  const retrySubmit = useCallback(() => {
+    setSubmitError(null);
+    return handleSubmit();
+  }, [handleSubmit]);
 
   // Derived values - memoized with useMemo to prevent recalculation
   const statusConfig = useMemo(
@@ -128,11 +147,13 @@ export const useTaskItem = (
     note,
     attachments,
     isSubmitting,
+    submitError,
 
     // Actions
     setNote,
     setAttachments,
     handleSubmit,
+    retrySubmit,
 
     // Computed values
     statusConfig,
