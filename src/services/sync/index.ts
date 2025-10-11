@@ -1,11 +1,13 @@
 import { FirebaseSync } from "./FirebaseSync";
 import { FirebaseListeners } from "./FirebaseListeners";
 import { offlineQueue } from "./OfflineQueue";
+import { syncQueueService } from "./SyncQueueService";
 
 // Export main orchestrator (backward compatibility)
 export const firebaseSync = new FirebaseSync();
 export const firebaseListeners = new FirebaseListeners(firebaseSync);
 export { offlineQueue };
+export { syncQueueService };
 
 // Export individual sync services for direct use
 export { FirebaseSync } from "./FirebaseSync";
@@ -31,3 +33,10 @@ export {
   PeriodicSyncService,
 } from "./PeriodicSyncService";
 export type { PeriodicSyncSettings } from "./PeriodicSyncService";
+export { SyncQueueService } from "./SyncQueueService";
+export type {
+  SyncOperationType,
+  SyncableCollection,
+  SyncQueueStats,
+  OperationStatus,
+} from "./SyncQueueService";
