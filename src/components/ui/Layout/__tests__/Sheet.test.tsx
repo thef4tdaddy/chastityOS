@@ -30,7 +30,9 @@ describe("Sheet", () => {
         </Sheet>,
       );
 
-      expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('[role="dialog"]'),
+      ).not.toBeInTheDocument();
     });
 
     it("should render sheet when isOpen is true", () => {

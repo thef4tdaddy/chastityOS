@@ -59,7 +59,12 @@ describe("OfflineQueue", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Test Task" } as DBBase,
+        payload: {
+          id: "test-task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        } as DBBase,
       };
 
       await offlineQueue.queueOperation(operation);
@@ -69,7 +74,7 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: expect.any(Object),
+          payload: expect.any(Object),
           createdAt: expect.any(Date),
         }),
       );
@@ -84,13 +89,23 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "test-task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
         },
         {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 2" } as DBBase,
+          payload: {
+            id: "test-task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
         },
       ];
 
@@ -120,7 +135,12 @@ describe("OfflineQueue", () => {
           type,
           collectionName: "tasks",
           userId: "user-123",
-          data: {} as DBBase,
+          payload: {
+            id: "test-task",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
         });
       }
 
@@ -148,7 +168,12 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "test-task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
         },
         {
@@ -156,19 +181,24 @@ describe("OfflineQueue", () => {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 2" } as DBBase,
+          payload: {
+            id: "test-task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
         },
       ];
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
       firebaseSync.syncCollection = mockSyncCollection;
@@ -184,7 +214,7 @@ describe("OfflineQueue", () => {
 
       const mockToArray = vi.fn().mockResolvedValue([]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const result = await offlineQueue.processQueue();
 
@@ -201,7 +231,12 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "test-task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
         },
         {
@@ -209,26 +244,31 @@ describe("OfflineQueue", () => {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 2" } as DBBase,
+          payload: {
+            id: "test-task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
         },
       ];
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockDelete = vi.fn().mockResolvedValue(undefined);
       const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
       const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockModify = vi.fn().mockResolvedValue(undefined);
       const mockEquals = vi.fn(() => ({ modify: mockModify }));
       db.offlineQueue.where = vi.fn(() => ({
         equals: mockEquals,
         anyOf: mockAnyOf,
-      }));
+      })) as any;
 
       // First sync fails, second succeeds
       const mockSyncCollection = vi
@@ -256,7 +296,12 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "test-task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
           retryCount: 1,
           lastRetryAt: new Date(Date.now() - 40 * 1000), // 40 seconds ago
@@ -267,12 +312,12 @@ describe("OfflineQueue", () => {
       const mockAnd = vi.fn(() => ({ toArray: mockToArray }));
       const mockBelow = vi.fn(() => ({ and: mockAnd }));
       const mockWhere = vi.fn(() => ({ below: mockBelow }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const retryable = await offlineQueue.getRetryableOperations();
 
       expect(retryable).toHaveLength(1);
-      expect(retryable[0].retryCount).toBe(1);
+      expect(retryable[0]?.retryCount).toBe(1);
     });
 
     it("should not retry operations beyond max retries", async () => {
@@ -284,7 +329,12 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: { name: "Task 1" } as DBBase,
+          payload: {
+            id: "test-task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
           retryCount: 3, // MAX_RETRIES
         },
@@ -294,7 +344,7 @@ describe("OfflineQueue", () => {
       const mockAnd = vi.fn(() => ({ toArray: mockToArray }));
       const mockBelow = vi.fn(() => ({ and: mockAnd }));
       const mockWhere = vi.fn(() => ({ below: mockBelow }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const retryable = await offlineQueue.getRetryableOperations();
 
@@ -311,14 +361,19 @@ describe("OfflineQueue", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Task 1" } as DBBase,
+        payload: {
+          id: "test-task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        } as DBBase,
         createdAt: new Date(),
         retryCount: 0,
       };
 
       const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const mockModify = vi.fn().mockResolvedValue(undefined);
       const mockEquals = vi.fn(() => ({ modify: mockModify }));
@@ -328,7 +383,7 @@ describe("OfflineQueue", () => {
         equals: mockEquals,
         anyOf: mockAnyOf,
       }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi
         .fn()
@@ -349,7 +404,12 @@ describe("OfflineQueue", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Task 1" } as DBBase,
+        payload: {
+          id: "test-task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        } as DBBase,
         createdAt: new Date(),
         retryCount: 1,
         lastRetryAt: new Date(Date.now() - 10 * 1000), // 10 seconds ago (< 30s delay)
@@ -368,7 +428,7 @@ describe("OfflineQueue", () => {
       const mockAnd = vi.fn(() => ({ toArray: mockToArray }));
       const mockBelow = vi.fn(() => ({ and: mockAnd }));
       const mockWhere = vi.fn(() => ({ below: mockBelow }));
-      db.offlineQueue.where = mockWhere;
+      db.offlineQueue.where = mockWhere as any;
 
       const retryable = await offlineQueue.getRetryableOperations();
 
@@ -421,7 +481,12 @@ describe("OfflineQueue", () => {
           type: "create",
           collectionName: "tasks",
           userId: "user-123",
-          data: {} as DBBase,
+          payload: {
+            id: "test-task-1",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
           retryCount: 0,
         },
@@ -430,7 +495,12 @@ describe("OfflineQueue", () => {
           type: "update",
           collectionName: "tasks",
           userId: "user-123",
-          data: {} as DBBase,
+          payload: {
+            id: "test-task-2",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
           retryCount: 2,
         },
@@ -439,7 +509,12 @@ describe("OfflineQueue", () => {
           type: "delete",
           collectionName: "tasks",
           userId: "user-123",
-          data: {} as DBBase,
+          payload: {
+            id: "test-task-3",
+            userId: "user-123",
+            syncStatus: "pending",
+            lastModified: new Date(),
+          } as DBBase,
           createdAt: new Date(),
           retryCount: 3, // MAX_RETRIES
         },
@@ -447,7 +522,7 @@ describe("OfflineQueue", () => {
 
       const mockToArray = vi.fn().mockResolvedValue(mockOperations);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const stats = await offlineQueue.getQueueStats();
 
@@ -462,7 +537,7 @@ describe("OfflineQueue", () => {
 
       const mockToArray = vi.fn().mockResolvedValue([]);
       const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy;
+      db.offlineQueue.orderBy = mockOrderBy as any;
 
       const stats = await offlineQueue.getQueueStats();
 
@@ -483,7 +558,12 @@ describe("OfflineQueue", () => {
         type: "create",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "New Task" } as DBBase,
+        payload: {
+          id: "test-task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        } as DBBase,
         createdAt: new Date(),
       };
 
@@ -497,7 +577,12 @@ describe("OfflineQueue", () => {
         type: "update",
         collectionName: "tasks",
         userId: "user-123",
-        data: { name: "Updated Task" } as DBBase,
+        payload: {
+          id: "test-task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        } as DBBase,
         createdAt: new Date(),
       };
 
@@ -510,7 +595,12 @@ describe("OfflineQueue", () => {
         type: "delete",
         collectionName: "tasks",
         userId: "user-123",
-        data: {} as DBBase,
+        payload: {
+          id: "test-task-1",
+          userId: "user-123",
+          syncStatus: "pending",
+          lastModified: new Date(),
+        } as DBBase,
         createdAt: new Date(),
       };
 
