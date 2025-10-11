@@ -18,6 +18,7 @@ import { SecuritySettings } from "../components/settings/SecuritySettings";
 import { DataControls } from "../components/settings/DataControls";
 import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
 import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
+import { PeriodicSyncSection } from "../components/settings/PeriodicSyncSection";
 import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
 import { useIsAnonymous } from "../hooks/useIsAnonymous";
 import {
@@ -53,6 +54,7 @@ type SettingsTab =
   | "privacy"
   | "goals"
   | "sessions"
+  | "sync"
   | "data";
 
 // Account Settings Section
@@ -273,6 +275,15 @@ const getInitialTimezone = (settings: DBSettings | null): string => {
     settings?.display?.timezone ||
     settings?.timezone ||
     Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+};
+
+// Sync Settings Section
+const SyncSection: React.FC = () => {
+  return (
+    <div className="space-y-6">
+      <PeriodicSyncSection />
+    </div>
   );
 };
 
@@ -743,6 +754,7 @@ const SettingsPage: React.FC = () => {
     { value: "profile", label: "Profile", icon: <FaGlobe /> },
     { value: "privacy", label: "Privacy", icon: <FaShieldAlt /> },
     { value: "goals", label: "Goals", icon: <FaBullseye /> },
+    { value: "sync", label: "Sync", icon: <FaDatabase /> },
     { value: "data", label: "Data", icon: <FaDatabase /> },
   ];
 
@@ -785,6 +797,12 @@ const SettingsPage: React.FC = () => {
           <TabsContent value="goals">
             <div className="max-w-4xl">
               <GoalsSection settings={settings} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="sync">
+            <div className="max-w-4xl">
+              <SyncSection />
             </div>
           </TabsContent>
 

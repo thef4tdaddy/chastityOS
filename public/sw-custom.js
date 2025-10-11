@@ -165,6 +165,13 @@ self.addEventListener("sync", (event) => {
   }
 });
 
+// Periodic sync event handler
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "refresh-app-data") {
+    event.waitUntil(refreshAppData());
+  }
+});
+
 /**
  * Process the offline queue when back online
  */
@@ -273,4 +280,25 @@ async function notifyClients(message) {
   clients.forEach((client) => {
     client.postMessage(message);
   });
+}
+
+/**
+ * Refresh app data during periodic sync
+ * Notifies the client to handle the actual data fetching
+ */
+async function refreshAppData() {
+  try {
+    console.log("[SW] Periodic sync: refreshing app data");
+
+    // Notify clients to refresh their data
+    await notifyClients({
+      type: "PERIODIC_SYNC",
+      action: "REFRESH_DATA",
+      timestamp: Date.now(),
+    });
+
+    console.log("[SW] Periodic sync: data refresh triggered");
+  } catch (error) {
+    console.error("[SW] Error during periodic sync:", error);
+  }
 }
