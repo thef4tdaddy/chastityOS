@@ -10,6 +10,8 @@ import {
   FaHistory,
 } from "../../utils/iconImport";
 import { Card } from "@/components/ui";
+import { useCountUp } from "../../hooks/useCountUp";
+import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
 
 // Helper function to calculate statistics
 const useStatistics = (
@@ -78,20 +80,40 @@ const formatDuration = (seconds: number) => {
   }
 };
 
-// Statistics Item Component
+// Statistics Item Component with animations
 const StatItem: React.FC<{
   label: string;
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
-}> = ({ label, value, icon: Icon }) => (
-  <div className="text-center">
-    <Icon className="text-nightly-aquamarine text-2xl mb-2 mx-auto" />
-    <div className="text-lg font-semibold text-nightly-honeydew mb-1">
-      {value}
+  numericValue?: number;
+  isVisible: boolean;
+  index: number;
+}> = ({ label, value, icon: Icon, numericValue, isVisible, index }) => {
+  // Use counting animation for numeric values
+  const animatedCount = useCountUp(numericValue || 0, 1200, 0);
+  const displayValue =
+    typeof numericValue === "number" && numericValue === animatedCount
+      ? value
+      : typeof numericValue === "number"
+        ? animatedCount
+        : value;
+
+  return (
+    <div
+      className={`text-center stat-card-hover p-4 rounded-lg bg-white/5 ${
+        isVisible
+          ? `animate-scale-in stagger-${Math.min(index + 1, 8)}`
+          : "opacity-0"
+      }`}
+    >
+      <Icon className="text-nightly-aquamarine text-2xl mb-2 mx-auto" />
+      <div className="text-lg font-semibold text-nightly-honeydew mb-1">
+        {displayValue}
+      </div>
+      <div className="text-sm text-nightly-celadon">{label}</div>
     </div>
-    <div className="text-sm text-nightly-celadon">{label}</div>
-  </div>
-);
+  );
+};
 
 // Main Statistics Section Component
 export const StatisticsSection: React.FC<{
@@ -103,10 +125,16 @@ export const StatisticsSection: React.FC<{
   const stats = useStatistics(sessions, events, tasks, goals);
 
   const statItems = [
-    { label: "Total Sessions", value: stats.totalSessions, icon: FaPlay },
+    {
+      label: "Total Sessions",
+      value: stats.totalSessions,
+      numericValue: stats.totalSessions,
+      icon: FaPlay,
+    },
     {
       label: "Completed Sessions",
       value: stats.completedSessions,
+      numericValue: stats.completedSessions,
       icon: FaStop,
     },
     {
@@ -124,13 +152,31 @@ export const StatisticsSection: React.FC<{
       value: formatDuration(stats.longestSession),
       icon: FaTrophy,
     },
-    { label: "Completed Tasks", value: stats.completedTasks, icon: FaChartBar },
-    { label: "Completed Goals", value: stats.completedGoals, icon: FaTrophy },
-    { label: "Total Events", value: stats.totalEvents, icon: FaHistory },
+    {
+      label: "Completed Tasks",
+      value: stats.completedTasks,
+      numericValue: stats.completedTasks,
+      icon: FaChartBar,
+    },
+    {
+      label: "Completed Goals",
+      value: stats.completedGoals,
+      numericValue: stats.completedGoals,
+      icon: FaTrophy,
+    },
+    {
+      label: "Total Events",
+      value: stats.totalEvents,
+      numericValue: stats.totalEvents,
+      icon: FaHistory,
+    },
   ];
 
+  // Stagger animation for stat items
+  const visibleItems = useStaggerAnimation(statItems.length, 80);
+
   return (
-    <Card variant="glass" className="mb-6">
+    <Card variant="glass" className="mb-6 animate-fade-in-up">
       <div className="flex items-center gap-3 mb-6">
         <FaChartBar className="text-nightly-lavender-floral" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">
@@ -144,7 +190,10 @@ export const StatisticsSection: React.FC<{
             key={index}
             label={item.label}
             value={item.value}
+            numericValue={item.numericValue}
             icon={item.icon}
+            isVisible={visibleItems[index]}
+            index={index}
           />
         ))}
       </div>

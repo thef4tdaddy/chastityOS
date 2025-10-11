@@ -101,9 +101,9 @@ const SessionDetailsDisplay: React.FC<{
             </span>
           </div>
           {timerData.isGoalCompleted && (
-            <div className="text-center mt-2">
-              <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
-                <FaTrophy />
+            <div className="text-center mt-2 animate-bounce-celebration">
+              <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm animate-pulse-glow">
+                <FaTrophy className="text-yellow-400" />
                 Goal Completed!
               </span>
             </div>
@@ -129,7 +129,7 @@ export const CurrentStatusSection: React.FC<{
   const timerData = useSessionTimer(currentSession);
 
   return (
-    <Card variant="glass" className="mb-6">
+    <Card variant="glass" className="mb-6 animate-fade-in-up">
       <div className="flex items-center gap-3 mb-6">
         <FaClock className="text-nightly-aquamarine" />
         <h2 className="text-xl font-semibold text-nightly-honeydew">
@@ -138,14 +138,18 @@ export const CurrentStatusSection: React.FC<{
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SessionStatusDisplay
-          currentSession={currentSession}
-          timerData={timerData}
-        />
-        <SessionDetailsDisplay
-          currentSession={currentSession}
-          timerData={timerData}
-        />
+        <div className="animate-slide-in-right">
+          <SessionStatusDisplay
+            currentSession={currentSession}
+            timerData={timerData}
+          />
+        </div>
+        <div className="animate-slide-in-right stagger-2">
+          <SessionDetailsDisplay
+            currentSession={currentSession}
+            timerData={timerData}
+          />
+        </div>
       </div>
     </Card>
   );
