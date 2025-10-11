@@ -42,7 +42,12 @@
     "ci": "npm run lint && npm run typecheck && npm run test:unit:coverage && npm run build",
     "health-check": "./scripts/deployment/health-check.sh",
     "test:full": "./scripts/testing/run-tests.sh",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "functions:install": "cd functions && npm install",
+    "functions:build": "cd functions && npm run build",
+    "functions:serve": "cd functions && npm run serve",
+    "functions:deploy": "cd functions && npm run deploy",
+    "functions:logs": "cd functions && npm run logs"
   },
   "dependencies": {
     "@jridgewell/sourcemap-codec": "^1.5.5",
