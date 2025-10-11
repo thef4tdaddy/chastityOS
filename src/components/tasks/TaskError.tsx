@@ -46,15 +46,12 @@ const ERROR_MESSAGES = {
   upload:
     "Failed to upload file. Please check the file size and format, then try again.",
   "not-found": "The requested task could not be found.",
-  "rate-limit":
-    "Too many requests. Please wait a moment before trying again.",
+  "rate-limit": "Too many requests. Please wait a moment before trying again.",
   generic: "An unexpected error occurred. Please try again.",
 };
 
 // Detect error type from error object
-function detectErrorType(
-  error?: Error | null,
-): TaskErrorProps["errorType"] {
+function detectErrorType(error?: Error | null): TaskErrorProps["errorType"] {
   if (!error) return "generic";
 
   const message = error.message.toLowerCase();
@@ -116,8 +113,7 @@ export const TaskError: React.FC<TaskErrorProps> = ({
   const displayMessage = message || defaultMessage;
 
   // Check if offline
-  const isOffline =
-    typeof navigator !== "undefined" && !navigator.onLine;
+  const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
   const finalMessage = isOffline
     ? "You appear to be offline. Please check your internet connection."
     : displayMessage;
@@ -129,9 +125,7 @@ export const TaskError: React.FC<TaskErrorProps> = ({
           <Icon className="text-red-400 text-3xl" />
         </div>
         <div className="flex-grow">
-          <h3 className="text-lg font-semibold text-red-300 mb-2">
-            {title}
-          </h3>
+          <h3 className="text-lg font-semibold text-red-300 mb-2">{title}</h3>
           <p className="text-red-200 mb-4">{finalMessage}</p>
 
           {showDetails && error && (
