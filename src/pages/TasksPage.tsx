@@ -129,6 +129,8 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
 const TasksPage: React.FC = () => {
   const { user } = useAuthState();
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   // Use TanStack Query hooks for tasks
   const {
@@ -167,6 +169,19 @@ const TasksPage: React.FC = () => {
     ["approved", "rejected", "completed", "cancelled"].includes(task.status),
   );
 
+  // Calculate pagination
+  const currentTasks = activeTab === "active" ? activeTasks : archivedTasks;
+  const totalPages = Math.ceil(currentTasks.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTasks = currentTasks.slice(startIndex, endIndex);
+
+  // Reset to page 1 when switching tabs
+  const handleTabChange = (tab: "active" | "archived") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="p-6">
       {/* Enhanced Header with Glass Effect */}
@@ -186,7 +201,7 @@ const TasksPage: React.FC = () => {
 
       <TabNavigation
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         activeCount={activeTasks.length}
         archivedCount={archivedTasks.length}
       />
@@ -201,14 +216,37 @@ const TasksPage: React.FC = () => {
           <FeatureErrorBoundary feature="tasks-management">
             {activeTab === "active" ? (
               <ActiveTasksSection
-                tasks={activeTasks}
+                tasks={paginatedTasks}
                 userId={user?.uid || ""}
                 handleSubmitTask={handleSubmitTask}
               />
             ) : (
-              <ArchivedTasksSection tasks={archivedTasks} />
+              <ArchivedTasksSection tasks={paginatedTasks} />
             )}
           </FeatureErrorBoundary>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && !error && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </Button>
+            <span className="text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </Button>
+          </div>
         )}
       </div>
     </div>
