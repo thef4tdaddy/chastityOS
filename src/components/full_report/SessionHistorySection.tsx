@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import type { DBSession } from "../../types/database";
 import { FaHistory, FaCalendar } from "../../utils/iconImport";
 import { Card, Button } from "@/components/ui";
+import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
 
 // Helper function to format duration
 const formatDuration = (seconds: number) => {
@@ -28,8 +29,18 @@ const getSessionDuration = (session: DBSession) => {
 };
 
 // Session Item Component
-const SessionItem: React.FC<{ session: DBSession }> = ({ session }) => (
-  <div className="bg-white/5 rounded-lg p-4">
+const SessionItem: React.FC<{
+  session: DBSession;
+  isVisible: boolean;
+  index: number;
+}> = ({ session, isVisible, index }) => (
+  <div
+    className={`bg-white/5 rounded-lg p-4 stat-card-hover ${
+      isVisible
+        ? `animate-fade-in-up stagger-${Math.min(index + 1, 8)}`
+        : "opacity-0"
+    }`}
+  >
     <div className="flex items-center justify-between">
       <div>
         <div className="font-medium text-nightly-honeydew">
@@ -133,8 +144,11 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
     ? sortedSessions
     : sortedSessions.slice(0, 10);
 
+  // Stagger animation for session items
+  const visibleItems = useStaggerAnimation(displaySessions.length, 60);
+
   return (
-    <Card variant="glass" className="mb-6">
+    <Card variant="glass" className="mb-6 animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FaHistory className="text-nightly-spring-green" />
@@ -156,8 +170,13 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
         <EmptySessionsDisplay />
       ) : (
         <div className="space-y-3">
-          {displaySessions.map((session) => (
-            <SessionItem key={session.id} session={session} />
+          {displaySessions.map((session, index) => (
+            <SessionItem
+              key={session.id}
+              session={session}
+              isVisible={visibleItems[index]}
+              index={index}
+            />
           ))}
         </div>
       )}
