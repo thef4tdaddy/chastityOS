@@ -34,9 +34,9 @@ export const cacheConfig: QueryCacheConfig = {
   },
 
   tasks: {
-    staleTime: 1000 * 60 * 2, // 2 minutes
-    gcTime: 1000 * 60 * 15, // 15 minutes
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 3, // 3 minutes - tasks don't change that frequently
+    gcTime: 1000 * 60 * 30, // 30 minutes - keep longer for better UX
+    refetchOnWindowFocus: true, // Refetch when user returns to ensure fresh data
   },
 
   events: {

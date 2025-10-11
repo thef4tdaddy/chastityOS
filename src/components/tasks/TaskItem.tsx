@@ -4,6 +4,7 @@ import { CountdownTimer } from "./CountdownTimer";
 import { RecurringTaskBadge } from "./RecurringTaskBadge";
 import { TaskEvidenceDisplay } from "./TaskEvidenceDisplay";
 import { TaskEvidenceUpload } from "./TaskEvidenceUpload";
+import { TaskError } from "./TaskError";
 import { FaTrophy, FaGavel } from "../../utils/iconImport";
 import { useTaskItem } from "../../hooks/tasks/useTaskItem";
 import { Textarea, Button } from "@/components/ui";
@@ -27,9 +28,9 @@ const TaskStatusBadgeComponent: React.FC<TaskStatusBadgeProps> = ({
   priority,
   priorityStyles,
 }) => (
-  <div className="flex items-center gap-2">
+  <div className="flex flex-wrap items-center gap-2">
     {statusConfig.icon}
-    <span className="text-sm font-medium text-nightly-spring-green">
+    <span className="text-sm sm:text-base font-medium text-nightly-spring-green">
       {statusConfig.text}
     </span>
     {priority && priorityStyles && (
@@ -55,10 +56,10 @@ const TaskCountdownComponent: React.FC<TaskCountdownProps> = ({
   dueDate,
   isOverdue,
 }) => (
-  <div className="text-right">
-    <div className="text-xs text-nightly-celadon">Due in:</div>
+  <div className="text-right flex-shrink-0">
+    <div className="text-xs sm:text-sm text-nightly-celadon">Due in:</div>
     <CountdownTimer deadline={dueDate} />
-    {isOverdue && <div className="text-xs text-red-400 mt-1">OVERDUE</div>}
+    {isOverdue && <div className="text-xs sm:text-sm text-red-400 mt-1">OVERDUE</div>}
   </div>
 );
 
@@ -76,9 +77,9 @@ const TaskContentComponent: React.FC<TaskContentProps> = ({
   description,
 }) => (
   <div className="mb-3">
-    <h3 className="text-lg font-semibold text-nightly-honeydew mb-2">{text}</h3>
+    <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-2 break-words">{text}</h3>
     {description && (
-      <p className="text-nightly-celadon text-sm mb-2">{description}</p>
+      <p className="text-nightly-celadon text-sm sm:text-base mb-2 break-words">{description}</p>
     )}
   </div>
 );
@@ -98,7 +99,7 @@ const TaskMetadataComponent: React.FC<TaskMetadataProps> = ({
   submittedAt,
   approvedAt,
 }) => (
-  <div className="flex gap-4 text-xs text-nightly-celadon mb-3">
+  <div className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-nightly-celadon mb-3">
     <span>Created: {createdAt.toLocaleDateString()}</span>
     {submittedAt && <span>Submitted: {submittedAt.toLocaleDateString()}</span>}
     {approvedAt && <span>Approved: {approvedAt.toLocaleDateString()}</span>}
@@ -198,17 +199,17 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
   onSubmit,
 }) => {
   return (
-    <div className="border-t border-white/10 pt-3">
+    <div className="border-t border-white/10 pt-3 mt-3">
       <Textarea
         value={note}
         onChange={(e) => onNoteChange(e.target.value)}
         placeholder="Add submission notes (optional)..."
-        className="w-full bg-white/5 border border-white/10 rounded p-2 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none mb-3"
+        className="w-full bg-white/5 border border-white/10 rounded p-3 sm:p-2 text-sm sm:text-base text-nightly-honeydew placeholder-nightly-celadon/50 resize-none mb-3"
         rows={3}
       />
 
       <div className="mb-3">
-        <div className="text-sm text-nightly-celadon mb-2">
+        <div className="text-sm sm:text-base text-nightly-celadon mb-2">
           Upload Evidence (optional):
         </div>
         <TaskEvidenceUpload
@@ -222,7 +223,7 @@ const TaskSubmission: React.FC<TaskSubmissionProps> = ({
       <Button
         onClick={onSubmit}
         disabled={isSubmitting}
-        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded transition-colors flex items-center justify-center gap-2"
+        className="w-full mt-2 bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-3 sm:py-2 rounded transition-colors flex items-center justify-center gap-2 text-base sm:text-sm font-medium min-h-[44px] touch-manipulation"
       >
         {isSubmitting && (
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -248,9 +249,11 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
   const {
     note,
     isSubmitting,
+    submitError,
     setNote,
     setAttachments,
     handleSubmit,
+    retrySubmit,
     statusConfig,
     priorityStyles,
     isOverdue,
@@ -258,10 +261,10 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
 
   return (
     <div
-      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-4 mb-4`}
+      className={`bg-white/10 backdrop-blur-sm border-l-4 ${statusConfig.borderColor} rounded-lg p-3 sm:p-4 mb-4`}
     >
       {/* Header */}
-      <div className="flex justify-between items-start mb-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-3">
         <TaskStatusBadge
           statusConfig={statusConfig}
           priority={task.priority}
@@ -307,15 +310,26 @@ const TaskItemComponent: React.FC<TaskItemProps> = ({
       )}
 
       {task.status === "pending" && (
-        <TaskSubmission
-          taskId={task.id}
-          userId={userId || task.userId}
-          note={note}
-          isSubmitting={isSubmitting}
-          onNoteChange={setNote}
-          onAttachmentsChange={setAttachments}
-          onSubmit={handleSubmit}
-        />
+        <>
+          {submitError && (
+            <div className="mb-3">
+              <TaskError
+                error={submitError}
+                title="Submission Failed"
+                onRetry={retrySubmit}
+              />
+            </div>
+          )}
+          <TaskSubmission
+            taskId={task.id}
+            userId={userId || task.userId}
+            note={note}
+            isSubmitting={isSubmitting}
+            onNoteChange={setNote}
+            onAttachmentsChange={setAttachments}
+            onSubmit={handleSubmit}
+          />
+        </>
       )}
     </div>
   );
