@@ -420,6 +420,7 @@ export interface QueuedOperation<T extends DBBase> {
   userId: string;
   createdAt: Date;
   retryCount?: number;
+  lastRetryAt?: Date;
 }
 
 // Sync operation types and interfaces

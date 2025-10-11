@@ -189,6 +189,7 @@ export const useNotificationStore = create<NotificationState>()(
           type: "success",
           message,
           title,
+          priority: "medium",
         };
         if (duration !== undefined) {
           notificationData.duration = duration;
@@ -201,6 +202,7 @@ export const useNotificationStore = create<NotificationState>()(
           type: "error",
           message,
           title,
+          priority: "high",
         };
         if (duration !== undefined) {
           notificationData.duration = duration;
@@ -213,6 +215,7 @@ export const useNotificationStore = create<NotificationState>()(
           type: "warning",
           message,
           title,
+          priority: "medium",
         };
         if (duration !== undefined) {
           notificationData.duration = duration;
@@ -225,6 +228,7 @@ export const useNotificationStore = create<NotificationState>()(
           type: "info",
           message,
           title,
+          priority: "low",
         };
         if (duration !== undefined) {
           notificationData.duration = duration;
