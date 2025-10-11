@@ -30,18 +30,18 @@ const PauseButton: React.FC<PauseButtonProps> = ({
   pauseButtonText,
   cooldownDisplay,
 }) => (
-  <div className="flex flex-col items-center mb-8 tracker-state-transition">
+  <div className="flex flex-col items-center mb-6 sm:mb-8 tracker-state-transition">
     <Button
       variant="primary"
       onClick={onPauseClick}
       disabled={!canPause || isLoading}
       loading={isLoading}
-      className={`glass-button py-3 px-6 shadow-lg transform hover:scale-105 transition-all duration-300 button-press-active focus-ring-animated ${pauseButtonStyling}`}
+      className={`glass-button min-h-[44px] py-2.5 sm:py-3 px-5 sm:px-6 text-sm sm:text-base shadow-lg transform hover:scale-105 transition-all duration-300 button-press-active focus-ring-animated ${pauseButtonStyling}`}
     >
       ⏸️ {pauseButtonText}
     </Button>
     {!canPause && cooldownDisplay && (
-      <p className="text-sm text-nightly-deep_rose/80 mt-2 tracker-state-transition">
+      <p className="text-xs sm:text-sm text-nightly-deep_rose/80 mt-2 tracker-state-transition text-center">
         Next pause in: {cooldownDisplay}
       </p>
     )}
@@ -58,13 +58,13 @@ const ResumeButton: React.FC<ResumeButtonProps> = ({
   isLoading,
   onResumeClick,
 }) => (
-  <div className="flex justify-center mb-8 tracker-state-transition">
+  <div className="flex justify-center mb-6 sm:mb-8 tracker-state-transition">
     <Button
       variant="primary"
       onClick={onResumeClick}
       disabled={isLoading}
       loading={isLoading}
-      className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 py-3 px-6 shadow-lg hover:shadow-green-500/20 transform hover:scale-105 transition-all duration-300 button-press-active focus-ring-animated"
+      className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 min-h-[44px] py-2.5 sm:py-3 px-5 sm:px-6 text-sm sm:text-base shadow-lg hover:shadow-green-500/20 transform hover:scale-105 transition-all duration-300 button-press-active focus-ring-animated"
     >
       ▶️ {isLoading ? "Resuming..." : "Resume Session"}
     </Button>
@@ -116,7 +116,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
 
     {selectedReason === "Other" && (
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
           Custom reason:
         </label>
         <Input
@@ -124,7 +124,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
           value={customReason}
           onChange={(e) => onCustomReasonChange(e.target.value)}
           placeholder="Enter custom reason"
-          className="w-full p-2 rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="w-full min-h-[44px] p-2.5 sm:p-2 text-sm sm:text-base rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
         />
       </div>
     )}
@@ -137,7 +137,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
           isLoading || (selectedReason === "Other" && !customReason.trim())
         }
         loading={isLoading}
-        className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 py-2 px-4 transition-all duration-300 button-press-active focus-ring-animated"
+        className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 min-h-[44px] py-2.5 px-4 text-sm sm:text-base transition-all duration-300 button-press-active focus-ring-animated"
       >
         {isLoading ? "Pausing..." : "Confirm Pause"}
       </Button>
@@ -145,7 +145,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
         variant="secondary"
         onClick={onCancel}
         disabled={isLoading}
-        className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 py-2 px-4 transition-all duration-300 button-press-active"
+        className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 min-h-[44px] py-2.5 px-4 text-sm sm:text-base transition-all duration-300 button-press-active"
       >
         Cancel
       </Button>

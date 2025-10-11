@@ -56,11 +56,11 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
         ${borderClass}
       `}
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-gray-200">
+      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200 leading-tight">
         Current Time Off: {isTickingOff ? (isPaused ? "🟡" : "🔴") : "💜"}
       </p>
       <p
-        className="text-2xl md:text-4xl font-bold number-update"
+        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold number-update"
         style={textColorStyle}
       >
         {stats.cageOffTimeFormatted}

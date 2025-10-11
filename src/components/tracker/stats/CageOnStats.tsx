@@ -36,12 +36,12 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
         ${getAnimationClasses()}
       `}
     >
-      <p className="text-sm md:text-lg font-medium mb-3 text-lavender_web">
+      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-lavender_web leading-tight">
         Current Session In Chastity {displayData.isPaused ? "(Paused)" : ""}:
       </p>
       <p
         className={`
-          text-2xl md:text-4xl font-bold mb-2 number-update
+          text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 number-update
           ${
             displayData.isActive
               ? displayData.isPaused

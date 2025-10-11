@@ -25,21 +25,21 @@ export const RestoreSessionPrompt: React.FC<RestoreSessionPromptProps> = ({
           <Button
             type="button"
             onClick={onConfirm}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold min-h-[44px] py-2.5 px-4 text-sm sm:text-base rounded-lg transition"
           >
             Resume Previous Session
           </Button>
           <Button
             type="button"
             onClick={onDiscard}
-            className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition"
+            className="w-full sm:w-auto bg-gray-600 hover:bg-gray-500 text-white font-bold min-h-[44px] py-2.5 px-4 text-sm sm:text-base rounded-lg transition"
           >
             Start New Session
           </Button>
         </div>
       }
     >
-      <p className="text-sm text-gray-300 text-center">
+      <p className="text-xs sm:text-sm text-gray-300 text-center leading-relaxed">
         An active chastity session was found. Would you like to resume this
         session or start a new one?
       </p>
