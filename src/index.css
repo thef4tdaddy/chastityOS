@@ -1956,6 +1956,140 @@ td {
   animation: focus-ring-pulse 1s ease-in-out infinite;
 }
 
+/* =============================================
+   === ACCESSIBILITY ENHANCEMENTS (WCAG AA) ===
+   =============================================
+*/
+
+/* Enhanced focus indicators for all interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High contrast focus for glass buttons */
+.glass-button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(71, 22, 108, 0.2);
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-button-bg);
+  color: var(--color-button-text);
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 100;
+  font-weight: 600;
+  transition: top var(--animation-duration-fast) var(--animation-easing);
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Ensure minimum color contrast for text */
+.text-contrast-aa {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Live region for screen reader announcements */
+[aria-live] {
+  /* Ensure live regions are accessible but not visually intrusive */
+}
+
+/* Timer and status indicators - ensure they're accessible */
+[role="timer"],
+[role="status"] {
+  /* These already have appropriate styling, ensuring they're recognized */
+}
+
+/* Enhanced button press feedback for accessibility */
+.button-press-active:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.1s ease-out;
+}
+
+/* Keyboard-only focus indicators (not on mouse click) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button,
+  input,
+  select,
+  textarea,
+  .glass-button,
+  .card {
+    border: 2px solid currentColor;
+  }
+  
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  .glass-button:focus-visible {
+    outline: 4px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .focus-ring-animated:focus-visible {
+    animation: none;
+  }
+}
+
 /* Session recovery modal slide in */
 @keyframes modal-slide-in {
   from {

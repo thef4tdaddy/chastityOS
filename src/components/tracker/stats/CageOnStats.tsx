@@ -18,6 +18,13 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
     return "tracker-glow-green timer-pulse";
   };
 
+  // Get status for aria-label
+  const getStatusLabel = () => {
+    if (!displayData.isActive) return "inactive";
+    if (displayData.isPaused) return "paused";
+    return "active";
+  };
+
   return (
     <Card
       variant="glass"
@@ -35,8 +42,13 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
         }
         ${getAnimationClasses()}
       `}
+      role="region"
+      aria-label={`Current chastity session timer, status: ${getStatusLabel()}`}
     >
-      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-lavender_web leading-tight">
+      <p
+        className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-lavender_web leading-tight"
+        id="cage-on-label"
+      >
         Current Session In Chastity {displayData.isPaused ? "(Paused)" : ""}:
       </p>
       <p
@@ -50,6 +62,10 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
               : "text-lavender_web"
           }
         `}
+        role="timer"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-labelledby="cage-on-label"
       >
         {stats.currentSessionFormatted}
       </p>
