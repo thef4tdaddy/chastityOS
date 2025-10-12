@@ -45,7 +45,6 @@ const PersonalGoalDisplay = React.memo<{ goal: DBGoal }>(({ goal }) => {
     <Card
       variant="glass"
       className={isHardcoreMode ? "border-2 border-red-500/50" : ""}
-      role="region"
       aria-label={`Personal goal: ${goal.title}, ${progressPercent.toFixed(1)} percent complete${isHardcoreMode ? ", hardcore mode enabled" : ""}`}
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
@@ -125,7 +124,7 @@ const PersonalGoalDisplay = React.memo<{ goal: DBGoal }>(({ goal }) => {
 });
 PersonalGoalDisplay.displayName = "PersonalGoalDisplay";
 
-// Sub-component for current session stats
+// Subcomponent for current session stats
 // Memoized to prevent unnecessary re-renders
 const CurrentSessionStats = React.memo<{
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
@@ -138,7 +137,7 @@ const CurrentSessionStats = React.memo<{
 ));
 CurrentSessionStats.displayName = "CurrentSessionStats";
 
-// Sub-component for total stats
+// Subcomponent for total stats
 // Memoized to prevent unnecessary re-renders
 const TotalStats = React.memo<{
   stats: ReturnType<typeof useTrackerStats>["stats"];
@@ -147,7 +146,6 @@ const TotalStats = React.memo<{
     <Card
       variant="glass"
       className="glass-hover tracker-card-hover tracker-state-transition"
-      role="region"
       aria-label="Total time in chastity statistics"
     >
       <p
@@ -166,7 +164,6 @@ const TotalStats = React.memo<{
     <Card
       variant="glass"
       className="glass-hover tracker-card-hover tracker-state-transition"
-      role="region"
       aria-label="Total time cage off statistics"
     >
       <p

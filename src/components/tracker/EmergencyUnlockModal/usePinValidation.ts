@@ -65,7 +65,8 @@ export const usePinValidation = ({
   };
 
   const handleCombinationRetrieval = async () => {
-    const combination = await retrieveLockCombination(fetchLockCombination);
+    const result = await fetchLockCombination();
+    const combination = result.data;
 
     if (combination) {
       setLockCombination(combination);
