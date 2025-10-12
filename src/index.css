@@ -3043,3 +3043,128 @@ input[type="range"]::-moz-range-thumb:active {
   pointer-events: none;
   animation: confetti-fall linear forwards;
 }
+
+/* =============================================
+   === EVENTS UI ACCESSIBILITY              ===
+   =============================================
+   Accessibility improvements for Events/Logging feature
+   following WCAG 2.1 AA standards
+*/
+
+/* Enhanced focus indicators for event form controls */
+.event-button:focus-visible,
+.event-form-field:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Event type selector button focus with animation */
+.event-button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(88, 28, 135, 0.2);
+  animation: focus-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes focus-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 6px rgba(88, 28, 135, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(88, 28, 135, 0.3);
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus,
+.sr-only:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* High contrast mode support for events UI */
+@media (prefers-contrast: high) {
+  .event-button,
+  .event-form-field,
+  .event-item {
+    border: 2px solid currentColor;
+  }
+  
+  .event-button:focus-visible,
+  .event-form-field:focus-visible {
+    outline: 4px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+  
+  .event-item {
+    border: 2px solid var(--color-border-accent);
+  }
+}
+
+/* Reduced motion support for events UI */
+@media (prefers-reduced-motion: reduce) {
+  .event-button,
+  .event-form-field,
+  .event-item,
+  .animate-event-appear,
+  .animate-milestone-glow {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .confetti-particle {
+    display: none;
+  }
+}
+
+/* Event list item accessibility improvements */
+.event-item:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Ensure minimum touch targets for mobile */
+@media (max-width: 640px) {
+  .event-button,
+  .event-form-field,
+  button,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Skip link styling */
+a[href^="#"]:focus {
+  position: absolute;
+  z-index: 9999;
+  top: 1rem;
+  left: 1rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
