@@ -20,6 +20,7 @@ export {
   FaAward,
   FaBan,
   FaBatteryHalf,
+  FaBell,
   FaBook,
   FaBug,
   FaBullseye,
@@ -55,6 +56,7 @@ export {
   FaHome,
   FaImage,
   FaInfo,
+  FaQuestion,
   FaKey,
   FaLightbulb,
   FaLink,
@@ -102,7 +104,7 @@ export {
   MdWifiOff as FaWifiSlash, // Alias for compatibility
 } from "react-icons/md";
 
-// Lucide React imports (placeholder for future use)
+// lucide React imports (placeholder for future use)
 // Add lucide-react icons here as needed:
 // export { Lock, X, Plus } from 'lucide-react';
 

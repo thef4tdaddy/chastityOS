@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect } from "react";
 import { Alert, Button } from "@/components/ui";
-import { FaBell, FaTimes } from "../../utils/iconImport";
+import { FaBell, FaTimes } from "@/utils/iconImport";
 import { NotificationPermissionStorage } from "@/services/notificationPermissionStorage";
 
 export interface NotificationPermissionBannerProps {
