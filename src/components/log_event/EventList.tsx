@@ -9,6 +9,35 @@ import {
 } from "../../utils/iconImport";
 import { Button } from "@/components/ui";
 
+// Event Skeleton Loader Component
+const EventSkeletonItem: React.FC = () => (
+  <div className="event-skeleton-item bg-white/5 backdrop-blur-sm rounded-lg p-3 sm:p-4 animate-pulse">
+    <div className="flex items-start gap-3 mb-3">
+      <div className="w-5 h-5 bg-white/10 rounded-full flex-shrink-0"></div>
+      <div className="flex-1">
+        <div className="h-4 bg-white/10 rounded w-1/3 mb-2"></div>
+        <div className="h-3 bg-white/10 rounded w-1/4"></div>
+      </div>
+    </div>
+    <div className="h-3 bg-white/10 rounded w-full mb-2"></div>
+    <div className="h-3 bg-white/10 rounded w-4/5 mb-3"></div>
+    <div className="flex gap-2">
+      <div className="h-3 bg-white/10 rounded w-16"></div>
+      <div className="h-3 bg-white/10 rounded w-20"></div>
+    </div>
+  </div>
+);
+
+export const EventListSkeleton: React.FC<{ count?: number }> = ({
+  count = 3,
+}) => (
+  <div className="space-y-3 sm:space-y-4">
+    {Array.from({ length: count }).map((_, index) => (
+      <EventSkeletonItem key={index} />
+    ))}
+  </div>
+);
+
 // Event type definitions with modern icons
 const EVENT_TYPES = [
   {
@@ -67,13 +96,18 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
     [event.timestamp],
   );
 
+  const isMilestone = event.type === "milestone";
+
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+    <div
+      className={`event-item bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 ${isMilestone ? "event-milestone animate-milestone-glow" : ""}`}
+    >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-3">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Icon
-            className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0`}
+            className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0 transition-transform hover:scale-110`}
+
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -123,7 +157,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
           {event.details.tags.map((tag, index) => (
             <span
               key={index}
-              className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-1 text-xs rounded whitespace-nowrap"
+              className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-1 text-xs rounded whitespace-nowrap transition-all hover:bg-nightly-aquamarine/30"
             >
               {tag}
             </span>
@@ -165,7 +199,7 @@ const EventListComponent: React.FC<EventListProps> = ({
   if (events.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="text-center py-6 sm:py-8">
+        <div className="text-center py-6 sm:py-8 animate-fade-in">
           <FaCalendar className="text-3xl sm:text-4xl text-nightly-celadon/50 mb-3 sm:mb-4 mx-auto" />
           <div className="text-nightly-celadon text-sm sm:text-base">
             No events logged yet

@@ -661,6 +661,223 @@ html {
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
+/* =============================================
+   === EVENT LOGGING ANIMATIONS              ===
+   =============================================
+*/
+
+/* Event form animations */
+@keyframes form-field-focus {
+  from {
+    box-shadow: 0 0 0 0 rgba(88, 28, 135, 0.4);
+  }
+  to {
+    box-shadow: 0 0 0 3px rgba(88, 28, 135, 0.15);
+  }
+}
+
+@keyframes button-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes success-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  75% {
+    transform: scale(1.02);
+  }
+}
+
+/* Event list animations */
+@keyframes event-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes event-item-hover {
+  from {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  to {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(88, 28, 135, 0.2);
+  }
+}
+
+/* Milestone celebration animations */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes milestone-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px 10px rgba(34, 197, 94, 0.15);
+  }
+}
+
+@keyframes success-checkmark {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(-45deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Event loading skeletons */
+@keyframes event-skeleton-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Animation utility classes for events */
+.animate-event-appear {
+  animation: event-appear 0.4s var(--animation-easing) forwards;
+}
+
+.animate-success-bounce {
+  animation: success-bounce 0.5s var(--animation-easing);
+}
+
+.animate-button-press {
+  animation: button-press 0.2s var(--animation-easing);
+}
+
+.animate-milestone-glow {
+  animation: milestone-glow 2s ease-in-out infinite;
+}
+
+.animate-success-checkmark {
+  animation: success-checkmark 0.5s var(--animation-easing) forwards;
+}
+
+/* Event skeleton loader */
+.event-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 2s infinite;
+  border-radius: 0.5rem;
+  min-height: 80px;
+}
+
+.event-skeleton-item {
+  animation: event-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Event form micro-interactions */
+.event-form-field {
+  transition: all var(--animation-duration-fast) var(--animation-easing);
+}
+
+.event-form-field:focus {
+  animation: form-field-focus 0.3s var(--animation-easing) forwards;
+}
+
+.event-button {
+  transition: all var(--animation-duration-fast) var(--animation-easing);
+  transform-origin: center;
+}
+
+.event-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 28, 135, 0.3);
+}
+
+.event-button:active:not(:disabled) {
+  animation: button-press 0.2s var(--animation-easing);
+}
+
+/* Event list item interactions */
+.event-item {
+  transition: all var(--animation-duration-normal) var(--animation-easing);
+  transform-origin: center;
+}
+
+.event-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(88, 28, 135, 0.2);
+}
+
+/* Milestone event special styling */
+.event-milestone {
+  position: relative;
+  overflow: hidden;
+}
+
+.event-milestone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.1) 0%,
+    rgba(34, 197, 94, 0) 50%
+  );
+  pointer-events: none;
+}
+
+/* Confetti particle for milestone celebrations */
+.confetti-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confetti-fall 3s linear forwards;
+}
+
+/* Success message animation */
+.event-success-message {
+  animation: fade-in-up 0.4s var(--animation-easing) forwards;
+}
+
 /* Skeleton loading for report sections */
 .report-skeleton {
   background: linear-gradient(
@@ -737,6 +954,42 @@ html {
 
   .stat-card-hover:hover {
     transform: none;
+  }
+
+  /* Disable event-specific animations */
+  .animate-event-appear,
+  .animate-success-bounce,
+  .animate-button-press,
+  .animate-milestone-glow,
+  .animate-success-checkmark,
+  .event-success-message {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .event-item:hover,
+  .event-button:hover:not(:disabled) {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .event-button:active:not(:disabled) {
+    animation: none;
+  }
+
+  .event-form-field:focus {
+    animation: none;
+  }
+
+  .event-skeleton,
+  .event-skeleton-item {
+    animation: none;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .confetti-particle {
+    display: none;
   }
 }
 
