@@ -48,31 +48,63 @@ export function useGoalsQuery(userId: string | undefined) {
 }
 
 /**
- * Aggregates all data needed for Full Report page
- * Enhanced with comprehensive error handling and retry capabilities
+ * Configuration options for useReportData
  */
-export function useReportData(userId: string | undefined) {
+export interface ReportDataOptions {
+  enableSessions?: boolean;
+  enableEvents?: boolean;
+  enableTasks?: boolean;
+  enableGoals?: boolean;
+  deferHeavyQueries?: boolean; // Defer heavy queries until needed
+}
+
+/**
+ * Aggregates all data needed for Full Report page
+ * Enhanced with comprehensive error handling, retry capabilities, and selective loading
+ */
+export function useReportData(
+  userId: string | undefined,
+  options: ReportDataOptions = {},
+) {
+  const {
+    enableSessions = true,
+    enableEvents = true,
+    enableTasks = true,
+    enableGoals = true,
+    deferHeavyQueries = false,
+  } = options;
+
+  // Always fetch current session first (critical data)
   const currentSession = useCurrentSession(userId);
-  const sessions = useSessionHistory(userId);
-  const events = useEventHistory(userId || "");
+
+  // Defer heavy queries if specified for better initial load performance
+  const shouldLoadHeavyQueries = !deferHeavyQueries || currentSession.isSuccess;
+
+  // Selective query execution based on options
+  const sessions = useSessionHistory(userId, {
+    enabled: enableSessions && shouldLoadHeavyQueries,
+  });
+  const events = useEventHistory(userId || "", {
+    enabled: enableEvents && shouldLoadHeavyQueries && !!userId,
+  });
   const tasks = useTasksQuery(userId);
   const goals = useGoalsQuery(userId);
 
-  // Determine if any queries are loading
+  // Determine if any ENABLED queries are loading
   const isLoading =
     currentSession.isLoading ||
-    sessions.isLoading ||
-    events.isLoading ||
-    tasks.isLoading ||
-    goals.isLoading;
+    (enableSessions && shouldLoadHeavyQueries && sessions.isLoading) ||
+    (enableEvents && shouldLoadHeavyQueries && events.isLoading) ||
+    (enableTasks && tasks.isLoading) ||
+    (enableGoals && goals.isLoading);
 
-  // Collect all errors for comprehensive error reporting
+  // Collect all errors for comprehensive error reporting (only from enabled queries)
   const errors = [
     currentSession.error,
-    sessions.error,
-    events.error,
-    tasks.error,
-    goals.error,
+    enableSessions && sessions.error,
+    enableEvents && events.error,
+    enableTasks && tasks.error,
+    enableGoals && goals.error,
   ].filter((err): err is Error => err !== null && err !== undefined);
 
   // Log aggregated errors if any exist

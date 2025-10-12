@@ -7,6 +7,7 @@ import {
   FaGamepad,
   FaTint,
 } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 
 // Event Skeleton Loader Component
 const EventSkeletonItem: React.FC = () => (
@@ -106,6 +107,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Icon
             className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0 transition-transform hover:scale-110`}
+
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -169,16 +171,31 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
 // Memoize EventItem to prevent unnecessary re-renders
 const EventItem = memo(EventItemComponent);
 
-// Event List Component
+// Event List Component with pagination support
 interface EventListProps {
   events: (DBEvent & { ownerName?: string; ownerId?: string })[];
   showOwner?: boolean;
+  pageSize?: number;
 }
 
 const EventListComponent: React.FC<EventListProps> = ({
   events,
   showOwner = false,
+  pageSize = 20,
 }) => {
+  const [currentPage, setCurrentPage] = React.useState(0);
+
+  // Memoize paginated events to prevent recalculation
+  const paginatedEvents = React.useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    const endIndex = startIndex + pageSize;
+    return events.slice(startIndex, endIndex);
+  }, [events, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(events.length / pageSize);
+  const hasMorePages = currentPage < totalPages - 1;
+  const hasPreviousPages = currentPage > 0;
+
   if (events.length === 0) {
     return (
       <div className="space-y-4">
@@ -196,15 +213,39 @@ const EventListComponent: React.FC<EventListProps> = ({
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      {events.map((event, index) => (
-        <div
-          key={event.id}
-          className={`animate-event-appear ${index < 8 ? `stagger-${index + 1}` : ""}`}
-        >
-          <EventItem event={event} showOwner={showOwner} />
+    <div>
+      <div className="space-y-3 sm:space-y-4">
+        {paginatedEvents.map((event) => (
+          <EventItem key={event.id} event={event} showOwner={showOwner} />
+        ))}
+      </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-nightly-celadon/20">
+          <Button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            disabled={!hasPreviousPages}
+            variant="ghost"
+            size="sm"
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-nightly-celadon">
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <Button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
+            }
+            disabled={!hasMorePages}
+            variant="ghost"
+            size="sm"
+          >
+            Next
+          </Button>
         </div>
-      ))}
+      )}
     </div>
   );
 };

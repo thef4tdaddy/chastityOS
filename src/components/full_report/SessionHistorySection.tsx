@@ -146,7 +146,7 @@ const EmptySessionsDisplay: React.FC = () => (
 );
 
 // Main Session History Section Component
-export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
+const SessionHistorySectionComponent: React.FC<{ sessions: DBSession[] }> = ({
   sessions,
 }) => {
   const [showAll, setShowAll] = useState(false);
@@ -175,9 +175,26 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
     }
   }, [sessions]);
 
-  const displaySessions = showAll
-    ? sortedSessions
-    : sortedSessions.slice(0, 10);
+  // Optimize large datasets with pagination instead of showing all at once
+  const INITIAL_DISPLAY_COUNT = 10;
+  const LOAD_MORE_COUNT = 20;
+
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+
+  const displaySessions = useMemo(() => {
+    if (showAll) {
+      return sortedSessions.slice(0, displayCount);
+    }
+    return sortedSessions.slice(0, INITIAL_DISPLAY_COUNT);
+  }, [showAll, sortedSessions, displayCount]);
+
+  const hasMore = displaySessions.length < sortedSessions.length;
+
+  const loadMore = () => {
+    setDisplayCount((prev) =>
+      Math.min(prev + LOAD_MORE_COUNT, sortedSessions.length),
+    );
+  };
 
   // Stagger animation for session items
   const visibleItems = useStaggerAnimation(displaySessions.length, 60);
@@ -204,19 +221,36 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
       {displaySessions.length === 0 ? (
         <EmptySessionsDisplay />
       ) : (
-        <div className="space-y-2 sm:space-y-3">
-          {displaySessions.map((session, index) => (
-            <SessionItem
-              key={session.id}
-              session={session}
-              isVisible={visibleItems[index]}
-              index={index}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-2 sm:space-y-3">
+            {displaySessions.map((session, index) => (
+              <SessionItem
+                key={session.id}
+                session={session}
+                isVisible={visibleItems[index]}
+                index={index}
+              />
+            ))}
+          </div>
+          {showAll && hasMore && (
+            <div className="mt-4 text-center">
+              <Button
+                onClick={loadMore}
+                className="text-sm sm:text-base text-nightly-aquamarine hover:text-nightly-spring-green transition-colors"
+              >
+                Load More ({sortedSessions.length - displaySessions.length}{" "}
+                remaining)
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </Card>
   );
 };
 
+// Export memoized version to prevent unnecessary re-renders
+export const SessionHistorySection = React.memo(
+  SessionHistorySectionComponent,
+) as React.FC<{ sessions: DBSession[] }>;
 export default SessionHistorySection;
