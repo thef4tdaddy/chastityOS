@@ -1,6 +1,14 @@
 /**
  * Keyholder Relationship Service
  * Business logic layer for keyholder-submissive relationships
+ *
+ * PERFORMANCE NOTE: This service is now wrapped by TanStack Query hooks
+ * for automatic caching and request deduplication. Use the hooks from
+ * `src/hooks/api/useKeyholderRelationshipQueries.ts` instead of calling
+ * these methods directly from React components.
+ *
+ * @see src/hooks/api/useKeyholderRelationshipQueries.ts
+ * @see docs/KEYHOLDER_PERFORMANCE_OPTIMIZATIONS.md
  */
 import {
   keyholderRelationshipDBService,
@@ -39,7 +47,9 @@ export class KeyholderRelationshipService {
         );
 
       if (activeInvites.length >= 3) {
-        throw new Error("Maximum of 3 active invite codes allowed at once. Please revoke an existing code first.");
+        throw new Error(
+          "Maximum of 3 active invite codes allowed at once. Please revoke an existing code first.",
+        );
       }
 
       const inviteCode = await keyholderRelationshipDBService.createInviteCode({
@@ -56,19 +66,23 @@ export class KeyholderRelationshipService {
       return inviteCode;
     } catch (error) {
       const err = error as Error;
-      logger.error("Failed to create invite code", { 
+      logger.error("Failed to create invite code", {
         error: err,
         submissiveUserId,
-        errorMessage: err.message 
+        errorMessage: err.message,
       });
-      
+
       // Re-throw with more context if it's a generic error
       if (err.message.includes("permission-denied")) {
-        throw new Error("Permission denied: You don't have access to create invite codes");
+        throw new Error(
+          "Permission denied: You don't have access to create invite codes",
+        );
       } else if (err.message.includes("network")) {
-        throw new Error("Network error: Please check your internet connection and try again");
+        throw new Error(
+          "Network error: Please check your internet connection and try again",
+        );
       }
-      
+
       throw error;
     }
   }
@@ -93,7 +107,9 @@ export class KeyholderRelationshipService {
       }
 
       if (!this.validateInviteCodeFormat(inviteCode)) {
-        throw new Error("Invalid invite code format. Code must be 6 alphanumeric characters.");
+        throw new Error(
+          "Invalid invite code format. Code must be 6 alphanumeric characters.",
+        );
       }
 
       const relationship =
@@ -121,25 +137,36 @@ export class KeyholderRelationshipService {
       return relationship;
     } catch (error) {
       const err = error as Error;
-      logger.error("Failed to accept invite code", { 
+      logger.error("Failed to accept invite code", {
         error: err,
         keyholderUserId,
-        errorMessage: err.message 
+        errorMessage: err.message,
       });
-      
+
       // Provide user-friendly error messages
-      if (err.message.includes("not found") || err.message.includes("invalid")) {
-        throw new Error("Invalid or expired invite code. Please check the code and try again.");
+      if (
+        err.message.includes("not found") ||
+        err.message.includes("invalid")
+      ) {
+        throw new Error(
+          "Invalid or expired invite code. Please check the code and try again.",
+        );
       } else if (err.message.includes("already used")) {
         throw new Error("This invite code has already been used.");
       } else if (err.message.includes("expired")) {
-        throw new Error("This invite code has expired. Please request a new one.");
+        throw new Error(
+          "This invite code has expired. Please request a new one.",
+        );
       } else if (err.message.includes("permission-denied")) {
-        throw new Error("Permission denied: You don't have access to accept this invite code.");
+        throw new Error(
+          "Permission denied: You don't have access to accept this invite code.",
+        );
       } else if (err.message.includes("network")) {
-        throw new Error("Network error: Please check your internet connection and try again.");
+        throw new Error(
+          "Network error: Please check your internet connection and try again.",
+        );
       }
-      
+
       throw error;
     }
   }
@@ -241,7 +268,7 @@ export class KeyholderRelationshipService {
         throw new Error("Relationship ID and user ID are required");
       }
 
-      if (!permissions || typeof permissions !== 'object') {
+      if (!permissions || typeof permissions !== "object") {
         throw new Error("Valid permissions object is required");
       }
 
@@ -254,22 +281,26 @@ export class KeyholderRelationshipService {
       logger.info("Permissions updated", { relationshipId, permissions });
     } catch (error) {
       const err = error as Error;
-      logger.error("Failed to update permissions", { 
+      logger.error("Failed to update permissions", {
         error: err,
         relationshipId,
         submissiveUserId,
-        errorMessage: err.message 
+        errorMessage: err.message,
       });
-      
+
       // Provide user-friendly error messages
       if (err.message.includes("permission-denied")) {
-        throw new Error("Permission denied: Only the submissive can update permissions.");
+        throw new Error(
+          "Permission denied: Only the submissive can update permissions.",
+        );
       } else if (err.message.includes("not found")) {
         throw new Error("Relationship not found. It may have been deleted.");
       } else if (err.message.includes("network")) {
-        throw new Error("Network error: Please check your internet connection and try again.");
+        throw new Error(
+          "Network error: Please check your internet connection and try again.",
+        );
       }
-      
+
       throw error;
     }
   }

@@ -18,8 +18,8 @@ import { AdminRelationship } from "../../types/account-linking";
 import { Select, SelectOption, Button } from "@/components/ui";
 import { FeatureErrorBoundary } from "../errors/FeatureErrorBoundary";
 
-// Loading Component
-const AdminLoadingDisplay: React.FC = () => (
+// Loading Component - memoized to prevent re-renders
+const AdminLoadingDisplay = React.memo(() => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
     <div className="flex items-center justify-center py-8">
       <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine" />
@@ -28,14 +28,15 @@ const AdminLoadingDisplay: React.FC = () => (
       </span>
     </div>
   </div>
-);
+));
+AdminLoadingDisplay.displayName = "AdminLoadingDisplay";
 
-// Wearer Selection Component
-const WearerSelection: React.FC<{
+// Wearer Selection Component - memoized to prevent re-renders
+const WearerSelection = React.memo<{
   keyholderRelationships: AdminRelationship[];
   selectedWearerId: string | null;
   onSetSelectedWearer: (id: string | null) => void;
-}> = ({ keyholderRelationships, selectedWearerId, onSetSelectedWearer }) => {
+}>(({ keyholderRelationships, selectedWearerId, onSetSelectedWearer }) => {
   if (keyholderRelationships.length <= 1) return null;
 
   const wearerOptions: SelectOption[] = keyholderRelationships.map(
@@ -56,55 +57,57 @@ const WearerSelection: React.FC<{
       />
     </div>
   );
-};
+});
+WearerSelection.displayName = "WearerSelection";
 
-// Pending Release Requests Component
-const PendingReleaseRequests: React.FC<{ keyholderUserId: string }> = ({
-  keyholderUserId,
-}) => {
-  const { data: pendingRequests, isLoading } =
-    usePendingReleaseRequests(keyholderUserId);
+// Pending Release Requests Component - memoized for performance
+const PendingReleaseRequests = React.memo<{ keyholderUserId: string }>(
+  ({ keyholderUserId }) => {
+    const { data: pendingRequests, isLoading } =
+      usePendingReleaseRequests(keyholderUserId);
 
-  if (isLoading) {
+    if (isLoading) {
+      return (
+        <div className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 text-nightly-celadon text-sm sm:text-base">
+            <FaSpinner className="animate-spin flex-shrink-0" />
+            <span>Loading requests...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (!pendingRequests || pendingRequests.length === 0) {
+      return null;
+    }
+
     return (
-      <div className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-        <div className="flex items-center gap-2 text-nightly-celadon text-sm sm:text-base">
-          <FaSpinner className="animate-spin flex-shrink-0" />
-          <span>Loading requests...</span>
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <FaPrayingHands className="text-purple-400 flex-shrink-0" />
+          <h3 className="text-sm sm:text-base font-semibold text-nightly-honeydew">
+            Pending Release Requests ({pendingRequests.length})
+          </h3>
+        </div>
+        <div className="space-y-2 sm:space-y-3">
+          {pendingRequests.map((request) => (
+            <FeatureErrorBoundary key={request.id} feature="release-request">
+              <ReleaseRequestCard request={request} />
+            </FeatureErrorBoundary>
+          ))}
         </div>
       </div>
     );
-  }
+  },
+);
+PendingReleaseRequests.displayName = "PendingReleaseRequests";
 
-  if (!pendingRequests || pendingRequests.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="mb-4 sm:mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <FaPrayingHands className="text-purple-400 flex-shrink-0" />
-        <h3 className="text-sm sm:text-base font-semibold text-nightly-honeydew">
-          Pending Release Requests ({pendingRequests.length})
-        </h3>
-      </div>
-      <div className="space-y-2 sm:space-y-3">
-        {pendingRequests.map((request) => (
-          <FeatureErrorBoundary key={request.id} feature="release-request">
-            <ReleaseRequestCard request={request} />
-          </FeatureErrorBoundary>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Admin Session Status Component
-const AdminSessionStatus: React.FC<{
+// Admin Session Status Component - memoized for performance
+const AdminSessionStatus = React.memo<{
   selectedRelationship: AdminRelationship;
   isAdminSessionActive: boolean;
   onStartAdminSession: () => void;
-}> = ({ selectedRelationship, isAdminSessionActive, onStartAdminSession }) => (
+}>(({ selectedRelationship, isAdminSessionActive, onStartAdminSession }) => (
   <div className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div className="w-full sm:w-auto">
@@ -135,15 +138,16 @@ const AdminSessionStatus: React.FC<{
       </div>
     </div>
   </div>
-);
+));
+AdminSessionStatus.displayName = "AdminSessionStatus";
 
-// Navigation Tabs Component
-const NavigationTabs: React.FC<{
+// Navigation Tabs Component - memoized for performance
+const NavigationTabs = React.memo<{
   selectedTab: string;
   onSetSelectedTab: (
     tab: "overview" | "sessions" | "tasks" | "settings",
   ) => void;
-}> = ({ selectedTab, onSetSelectedTab }) => {
+}>(({ selectedTab, onSetSelectedTab }) => {
   const tabs = [
     { id: "overview", label: "Overview", icon: FaEye },
     { id: "sessions", label: "Sessions", icon: FaLock },
@@ -173,14 +177,15 @@ const NavigationTabs: React.FC<{
       ))}
     </div>
   );
-};
+});
+NavigationTabs.displayName = "NavigationTabs";
 
-// Tab Content Renderer
-const TabContentRenderer: React.FC<{
+// Tab Content Renderer - memoized for performance
+const TabContentRenderer = React.memo<{
   selectedTab: string;
   selectedRelationship: AdminRelationship;
   isAdminSessionActive: boolean;
-}> = ({ selectedTab, selectedRelationship, isAdminSessionActive }) => (
+}>(({ selectedTab, selectedRelationship, isAdminSessionActive }) => (
   <div className="space-y-6">
     {selectedTab === "overview" && (
       <AdminOverview relationship={selectedRelationship} />
@@ -207,7 +212,8 @@ const TabContentRenderer: React.FC<{
       />
     )}
   </div>
-);
+));
+TabContentRenderer.displayName = "TabContentRenderer";
 
 export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
   keyholderUserId,
@@ -226,22 +232,31 @@ export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
     "overview" | "sessions" | "tasks" | "settings"
   >("overview");
 
-  // Only show admin dashboard if user is a keyholder
-  const isKeyholder = keyholderRelationships.length > 0;
+  // Memoize keyholder check to prevent unnecessary re-computation
+  const isKeyholder = React.useMemo(
+    () => keyholderRelationships.length > 0,
+    [keyholderRelationships.length],
+  );
+
+  // Memoize selected relationship to prevent unnecessary re-computation
+  const selectedRelationship = React.useMemo(
+    () =>
+      selectedWearerId
+        ? relationships.find((r) => r.wearerId === selectedWearerId)
+        : keyholderRelationships[0],
+    [selectedWearerId, relationships, keyholderRelationships],
+  );
+
+  // Memoize callback to prevent re-creation on every render
+  const handleStartAdminSession = React.useCallback(() => {
+    if (selectedRelationship) {
+      startAdminSession(selectedRelationship.id);
+    }
+  }, [selectedRelationship, startAdminSession]);
 
   if (!isKeyholder) {
     return null;
   }
-
-  const selectedRelationship = selectedWearerId
-    ? relationships.find((r) => r.wearerId === selectedWearerId)
-    : keyholderRelationships[0];
-
-  const handleStartAdminSession = () => {
-    if (selectedRelationship) {
-      startAdminSession(selectedRelationship.id);
-    }
-  };
 
   if (isLoadingRelationships) {
     return <AdminLoadingDisplay />;
@@ -299,67 +314,72 @@ export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
 };
 
 // Sub-components for each tab (moved to separate functions to reduce main component size)
-const AdminOverview: React.FC<{ relationship: AdminRelationship }> = ({
-  relationship,
-}) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
-      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-        <FaUsers className="text-nightly-aquamarine flex-shrink-0" />
-        <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
-          Relationship
-        </h4>
+// Memoized for performance optimization
+const AdminOverview = React.memo<{ relationship: AdminRelationship }>(
+  ({ relationship }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+        <div className="flex items-center gap-2 sm:gap-3 mb-3">
+          <FaUsers className="text-nightly-aquamarine flex-shrink-0" />
+          <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
+            Relationship
+          </h4>
+        </div>
+        <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
+          <p>
+            Status:{" "}
+            <span className="text-green-400">{relationship.status}</span>
+          </p>
+          <p className="break-words">
+            Established:{" "}
+            {relationship.establishedAt.toDate().toLocaleDateString()}
+          </p>
+          <p>Method: {relationship.linkMethod}</p>
+        </div>
       </div>
-      <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
-        <p>
-          Status: <span className="text-green-400">{relationship.status}</span>
-        </p>
-        <p className="break-words">
-          Established:{" "}
-          {relationship.establishedAt.toDate().toLocaleDateString()}
-        </p>
-        <p>Method: {relationship.linkMethod}</p>
-      </div>
-    </div>
 
-    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
-      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-        <FaShieldAlt className="text-nightly-lavender-floral flex-shrink-0" />
-        <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
-          Permissions
-        </h4>
+      <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+        <div className="flex items-center gap-2 sm:gap-3 mb-3">
+          <FaShieldAlt className="text-nightly-lavender-floral flex-shrink-0" />
+          <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
+            Permissions
+          </h4>
+        </div>
+        <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
+          <p>
+            Sessions: {relationship.permissions.controlSessions ? "✓" : "✗"}
+          </p>
+          <p>Tasks: {relationship.permissions.manageTasks ? "✓" : "✗"}</p>
+          <p>Settings: {relationship.permissions.editSettings ? "✓" : "✗"}</p>
+        </div>
       </div>
-      <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
-        <p>Sessions: {relationship.permissions.controlSessions ? "✓" : "✗"}</p>
-        <p>Tasks: {relationship.permissions.manageTasks ? "✓" : "✗"}</p>
-        <p>Settings: {relationship.permissions.editSettings ? "✓" : "✗"}</p>
-      </div>
-    </div>
 
-    <div className="bg-white/5 rounded-lg p-3 sm:p-4">
-      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-        <FaHistory className="text-nightly-spring-green flex-shrink-0" />
-        <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
-          Activity
-        </h4>
-      </div>
-      <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
-        <p className="break-words">
-          Last Access:{" "}
-          {relationship.lastAdminAccess
-            ? relationship.lastAdminAccess.toDate().toLocaleDateString()
-            : "Never"}
-        </p>
-        <p>Session Timeout: {relationship.security.sessionTimeout}m</p>
+      <div className="bg-white/5 rounded-lg p-3 sm:p-4">
+        <div className="flex items-center gap-2 sm:gap-3 mb-3">
+          <FaHistory className="text-nightly-spring-green flex-shrink-0" />
+          <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew">
+            Activity
+          </h4>
+        </div>
+        <div className="text-xs sm:text-sm text-nightly-celadon space-y-1">
+          <p className="break-words">
+            Last Access:{" "}
+            {relationship.lastAdminAccess
+              ? relationship.lastAdminAccess.toDate().toLocaleDateString()
+              : "Never"}
+          </p>
+          <p>Session Timeout: {relationship.security.sessionTimeout}m</p>
+        </div>
       </div>
     </div>
-  </div>
+  ),
 );
+AdminOverview.displayName = "AdminOverview";
 
-const AdminSessions: React.FC<{
+const AdminSessions = React.memo<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
-}> = ({ relationship, isSessionActive }) => (
+}>(({ relationship, isSessionActive }) => (
   <div className="space-y-3 sm:space-y-4">
     <div className="bg-white/5 rounded-lg p-3 sm:p-4">
       <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
@@ -394,12 +414,13 @@ const AdminSessions: React.FC<{
       )}
     </div>
   </div>
-);
+));
+AdminSessions.displayName = "AdminSessions";
 
-const AdminTasks: React.FC<{
+const AdminTasks = React.memo<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
-}> = ({ relationship, isSessionActive }) => (
+}>(({ relationship, isSessionActive }) => (
   <div className="space-y-3 sm:space-y-4">
     <div className="bg-white/5 rounded-lg p-3 sm:p-4">
       <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
@@ -432,12 +453,13 @@ const AdminTasks: React.FC<{
       )}
     </div>
   </div>
-);
+));
+AdminTasks.displayName = "AdminTasks";
 
-const AdminSettings: React.FC<{
+const AdminSettings = React.memo<{
   relationship: AdminRelationship;
   isSessionActive: boolean;
-}> = ({ relationship, isSessionActive: _isSessionActive }) => (
+}>(({ relationship, isSessionActive: _isSessionActive }) => (
   <div className="space-y-3 sm:space-y-4">
     <div className="bg-white/5 rounded-lg p-3 sm:p-4">
       <h4 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
@@ -473,4 +495,5 @@ const AdminSettings: React.FC<{
       </div>
     </div>
   </div>
-);
+));
+AdminSettings.displayName = "AdminSettings";
