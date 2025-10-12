@@ -85,7 +85,7 @@ interface ReportSectionProps {
   submissiveReport: ReturnType<typeof useReportData>;
 }
 
-const UserStatusSection: React.FC<ReportSectionProps> = ({
+const UserStatusSectionComponent: React.FC<ReportSectionProps> = ({
   activeSubmissive,
   userReport,
   submissiveReport,
@@ -121,8 +121,13 @@ const UserStatusSection: React.FC<ReportSectionProps> = ({
   </>
 );
 
+// Memoize to prevent unnecessary re-renders
+const UserStatusSection = React.memo(
+  UserStatusSectionComponent,
+) as React.FC<ReportSectionProps>;
+
 // Statistics report section component
-const StatisticsReportSection: React.FC<ReportSectionProps> = ({
+const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
   activeSubmissive,
   userReport,
   submissiveReport,
@@ -166,8 +171,13 @@ const StatisticsReportSection: React.FC<ReportSectionProps> = ({
   </>
 );
 
+// Memoize to prevent unnecessary re-renders
+const StatisticsReportSection = React.memo(
+  StatisticsReportSectionComponent,
+) as React.FC<ReportSectionProps>;
+
 // Session history report section component
-const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
+const SessionHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
   activeSubmissive,
   userReport,
   submissiveReport,
@@ -201,8 +211,13 @@ const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
   </>
 );
 
+// Memoize to prevent unnecessary re-renders
+const SessionHistoryReportSection = React.memo(
+  SessionHistoryReportSectionComponent,
+) as React.FC<ReportSectionProps>;
+
 // Event history report section component
-const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
+const EventHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
   activeSubmissive,
   userReport,
   submissiveReport,
@@ -236,6 +251,11 @@ const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
   </>
 );
 
+// Memoize to prevent unnecessary re-renders
+const EventHistoryReportSection = React.memo(
+  EventHistoryReportSectionComponent,
+) as React.FC<ReportSectionProps>;
+
 const FullReportPage: React.FC = () => {
   const { user } = useAuthState();
   const { adminRelationships } = useAccountLinking();
@@ -243,11 +263,21 @@ const FullReportPage: React.FC = () => {
   // Get the active submissive relationship (first one for now)
   const activeSubmissive = adminRelationships?.[0];
 
-  // Fetch report data for current user
-  const userReport = useReportData(user?.uid);
+  // Fetch report data for current user with optimized loading
+  // Use deferred loading for heavy queries to improve initial page load
+  const userReport = useReportData(user?.uid, {
+    deferHeavyQueries: true, // Load current session first, then heavy data
+  });
 
   // Fetch report data for submissive if keyholder has one
-  const submissiveReport = useReportData(activeSubmissive?.wearerId);
+  // Only load if current user's data is ready
+  const submissiveReport = useReportData(activeSubmissive?.wearerId, {
+    deferHeavyQueries: true,
+    enableSessions: !!activeSubmissive,
+    enableEvents: !!activeSubmissive,
+    enableTasks: !!activeSubmissive,
+    enableGoals: !!activeSubmissive,
+  });
 
   const isLoading = userReport.isLoading || submissiveReport.isLoading;
   const error = userReport.error || submissiveReport.error;
