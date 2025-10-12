@@ -916,6 +916,72 @@ html {
   box-shadow: 0 8px 16px rgba(88, 28, 135, 0.2);
 }
 
+/* =============================================
+   === ACCESSIBILITY ENHANCEMENTS (WCAG AA)  ===
+   =============================================
+*/
+
+/* Skip links - hidden by default, visible on focus */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only.focus-within\:not-sr-only:focus-within,
+.focus-within\:not-sr-only:focus-within {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Enhanced focus indicators for better visibility */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(88, 28, 135, 0.2);
+}
+
+/* Ensure all interactive elements have visible focus states */
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .text-nightly-celadon,
+  .text-nightly-honeydew,
+  .text-purple-200,
+  .text-purple-300 {
+    font-weight: 600;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline-width: 4px;
+    outline-offset: 3px;
+  }
+}
+
 /* Accessibility improvements for mobile */
 @media (prefers-reduced-motion: reduce) {
   .touch-target:active,
