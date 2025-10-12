@@ -45,6 +45,27 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
     textColorStyle = { color: "#ffffff" }; // white
   }
 
+  // Get status for aria-label
+  const getStatusLabel = () => {
+    if (isPaused) return "paused";
+    if (!displayData.isActive) return "cage off";
+    return "active in chastity";
+  };
+
+  const getStatusEmoji = () => {
+    if (isTickingOff) {
+      return isPaused ? "🟡" : "🔴";
+    }
+    return "💜";
+  };
+
+  const getEmojiAriaLabel = () => {
+    if (isTickingOff) {
+      return isPaused ? "yellow indicator, paused" : "red indicator, cage off";
+    }
+    return "purple indicator, active";
+  };
+
   return (
     <Card
       variant="glass"
@@ -55,13 +76,25 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
         tracker-card-hover tracker-state-transition
         ${borderClass}
       `}
+      role="region"
+      aria-label={`Current cage off time, status: ${getStatusLabel()}`}
     >
-      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200 leading-tight">
-        Current Time Off: {isTickingOff ? (isPaused ? "🟡" : "🔴") : "💜"}
+      <p
+        className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200 leading-tight"
+        id="cage-off-label"
+      >
+        Current Time Off:{" "}
+        <span aria-label={getEmojiAriaLabel()} role="img">
+          {getStatusEmoji()}
+        </span>
       </p>
       <p
         className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold number-update"
         style={textColorStyle}
+        role="timer"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-labelledby="cage-off-label"
       >
         {stats.cageOffTimeFormatted}
       </p>
