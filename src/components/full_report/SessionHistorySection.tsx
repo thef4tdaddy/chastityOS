@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
-import type { DBSession } from "../../types/database";
-import { FaHistory, FaCalendar } from "../../utils/iconImport";
+import type { DBSession } from "@/types/database";
+import { FaHistory, FaCalendar } from "@/utils/iconImport";
 import { Card, Button } from "@/components/ui";
-import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
+import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { logger } from "@/utils/logging";
 
 // Helper function to format duration
@@ -202,7 +202,7 @@ const SessionHistorySectionComponent: React.FC<{ sessions: DBSession[] }> = ({
   };
 
   // Stagger animation for session items
-  const visibleItems = useStaggerAnimation(displaySessions.length, 60) || [];
+  const visibleItems = useStaggerAnimation(displaySessions.length, 60) ?? [];
 
   return (
     <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
