@@ -2,10 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useAuthState } from "../contexts";
 import { useEventHistory } from "../hooks/api/useEvents";
 import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
-import { LogEventForm, EventList } from "../components/log_event";
+import {
+  LogEventForm,
+  EventList,
+  EventListSkeleton,
+} from "../components/log_event";
 import { FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
-import { Card, LoadingState, Tooltip, Button } from "@/components/ui";
+import { Card, Tooltip, Button } from "@/components/ui";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -85,9 +89,9 @@ const EventListSection: React.FC<EventListSectionProps> = ({
     </h2>
 
     {loading ? (
-      <LoadingState message="Loading events..." size="lg" />
+      <EventListSkeleton count={5} />
     ) : error ? (
-      <div className="text-center py-8">
+      <div className="text-center py-8 animate-fade-in">
         <div className="text-red-400">
           Error loading events. Please try again.
         </div>

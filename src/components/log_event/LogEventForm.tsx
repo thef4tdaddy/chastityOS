@@ -62,16 +62,16 @@ const EventTypeSelector: React.FC<{
             key={eventType.value}
             type="button"
             onClick={() => onTypeChange(eventType.value)}
-            className={`p-3 rounded-lg border-2 transition-all ${
+            className={`event-button p-3 rounded-lg border-2 transition-all ${
               selectedType === eventType.value
                 ? "border-nightly-aquamarine bg-nightly-aquamarine/10"
                 : "border-white/10 bg-white/5 hover:bg-white/10"
             }`}
           >
             <Icon
-              className={`text-lg mb-2 mx-auto ${
+              className={`text-lg mb-2 mx-auto transition-transform ${
                 selectedType === eventType.value
-                  ? "text-nightly-aquamarine"
+                  ? "text-nightly-aquamarine scale-110"
                   : eventType.color
               }`}
             />
@@ -107,7 +107,7 @@ const BasicFormFields: React.FC<{
         type="datetime-local"
         value={timestamp}
         onChange={(e) => onTimestampChange(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew"
       />
     </div>
     <div>
@@ -118,7 +118,7 @@ const BasicFormFields: React.FC<{
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         placeholder="Describe the event..."
-        className="w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50 resize-none"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50 resize-none"
         rows={4}
       />
     </div>
@@ -142,7 +142,7 @@ const AdvancedFormFields: React.FC<{
         value={mood}
         onChange={(e) => onMoodChange(e.target.value)}
         placeholder="Happy, frustrated, excited..."
-        className="w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50"
       />
     </div>
     <div>
@@ -155,9 +155,11 @@ const AdvancedFormFields: React.FC<{
         max="10"
         value={intensity}
         onChange={(e) => onIntensityChange(parseInt(e.target.value))}
-        className="w-full mb-2"
+        className="w-full mb-2 transition-all"
       />
-      <div className="text-center text-nighty-honeydew">{intensity}</div>
+      <div className="text-center text-nighty-honeydew transition-all">
+        {intensity}
+      </div>
     </div>
   </div>
 );
@@ -179,7 +181,7 @@ const TagsAndPrivacy: React.FC<{
         value={tags}
         onChange={(e) => onTagsChange(e.target.value)}
         placeholder="romantic, intense, relaxed..."
-        className="w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50"
       />
     </div>
     <div className="flex items-center justify-between">
@@ -203,7 +205,7 @@ const SubmitButton: React.FC<{
   <Button
     type="submit"
     disabled={isPending}
-    className="w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2"
+    className="event-button w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2"
   >
     {isPending ? (
       <>
@@ -212,7 +214,7 @@ const SubmitButton: React.FC<{
       </>
     ) : (
       <>
-        <FaPlus />
+        <FaPlus className="transition-transform group-hover:scale-110" />
         Log Event
       </>
     )}
@@ -244,6 +246,32 @@ const useEventFormData = () => {
   };
 
   return { formData, setFormData, resetForm };
+};
+
+// Helper function to create confetti particles for milestone events
+const createConfetti = () => {
+  const colors = ["#22c55e", "#10b981", "#84cc16", "#eab308", "#f59e0b"];
+  const confettiCount = 30;
+
+  for (let i = 0; i < confettiCount; i++) {
+    const confetti = document.createElement("div");
+    confetti.className = "confetti-particle";
+    confetti.style.left = Math.random() * 100 + "%";
+    confetti.style.top = "-10px";
+    confetti.style.width = Math.random() * 10 + 5 + "px";
+    confetti.style.height = Math.random() * 10 + 5 + "px";
+    confetti.style.backgroundColor =
+      colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.animationDelay = Math.random() * 0.5 + "s";
+    confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
+
+    document.body.appendChild(confetti);
+
+    // Remove confetti after animation completes
+    setTimeout(() => {
+      confetti.remove();
+    }, 3500);
+  }
 };
 
 // Custom hook for form submission
@@ -289,7 +317,14 @@ const useEventSubmission = (
         },
       });
 
+      // Show success with animation
       showSuccess("Event logged successfully", "Event Added");
+
+      // Trigger confetti for milestone events
+      if (formData.type === "milestone") {
+        createConfetti();
+      }
+
       onEventLogged?.();
       resetForm();
     } catch {

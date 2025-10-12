@@ -1,2 +1,2 @@
 export { LogEventForm } from "./LogEventForm";
-export { EventList } from "./EventList";
+export { EventList, EventListSkeleton } from "./EventList";
