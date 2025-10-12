@@ -158,8 +158,8 @@ const StatItem: React.FC<{
   );
 };
 
-// Main Statistics Section Component
-export const StatisticsSection: React.FC<{
+// Main Statistics Section Component (Memoized to prevent unnecessary re-renders)
+const StatisticsSectionComponent: React.FC<{
   sessions: DBSession[];
   events: DBEvent[];
   tasks: DBTask[];
@@ -167,53 +167,57 @@ export const StatisticsSection: React.FC<{
 }> = ({ sessions, events, tasks, goals }) => {
   const stats = useStatistics(sessions, events, tasks, goals);
 
-  const statItems = [
-    {
-      label: "Total Sessions",
-      value: stats.totalSessions,
-      numericValue: stats.totalSessions,
-      icon: FaPlay,
-    },
-    {
-      label: "Completed Sessions",
-      value: stats.completedSessions,
-      numericValue: stats.completedSessions,
-      icon: FaStop,
-    },
-    {
-      label: "Total Chastity Time",
-      value: formatDuration(stats.totalChastityTime),
-      icon: FaClock,
-    },
-    {
-      label: "Total Pause Time",
-      value: formatDuration(stats.totalPauseTime),
-      icon: FaPause,
-    },
-    {
-      label: "Longest Session",
-      value: formatDuration(stats.longestSession),
-      icon: FaTrophy,
-    },
-    {
-      label: "Completed Tasks",
-      value: stats.completedTasks,
-      numericValue: stats.completedTasks,
-      icon: FaChartBar,
-    },
-    {
-      label: "Completed Goals",
-      value: stats.completedGoals,
-      numericValue: stats.completedGoals,
-      icon: FaTrophy,
-    },
-    {
-      label: "Total Events",
-      value: stats.totalEvents,
-      numericValue: stats.totalEvents,
-      icon: FaHistory,
-    },
-  ];
+  // Memoize stat items array to prevent recreation on every render
+  const statItems = useMemo(
+    () => [
+      {
+        label: "Total Sessions",
+        value: stats.totalSessions,
+        numericValue: stats.totalSessions,
+        icon: FaPlay,
+      },
+      {
+        label: "Completed Sessions",
+        value: stats.completedSessions,
+        numericValue: stats.completedSessions,
+        icon: FaStop,
+      },
+      {
+        label: "Total Chastity Time",
+        value: formatDuration(stats.totalChastityTime),
+        icon: FaClock,
+      },
+      {
+        label: "Total Pause Time",
+        value: formatDuration(stats.totalPauseTime),
+        icon: FaPause,
+      },
+      {
+        label: "Longest Session",
+        value: formatDuration(stats.longestSession),
+        icon: FaTrophy,
+      },
+      {
+        label: "Completed Tasks",
+        value: stats.completedTasks,
+        numericValue: stats.completedTasks,
+        icon: FaChartBar,
+      },
+      {
+        label: "Completed Goals",
+        value: stats.completedGoals,
+        numericValue: stats.completedGoals,
+        icon: FaTrophy,
+      },
+      {
+        label: "Total Events",
+        value: stats.totalEvents,
+        numericValue: stats.totalEvents,
+        icon: FaHistory,
+      },
+    ],
+    [stats],
+  );
 
   // Stagger animation for stat items
   const visibleItems = useStaggerAnimation(statItems.length, 80);
@@ -244,4 +248,13 @@ export const StatisticsSection: React.FC<{
   );
 };
 
+// Export memoized version to prevent unnecessary re-renders
+export const StatisticsSection = React.memo(
+  StatisticsSectionComponent,
+) as React.FC<{
+  sessions: DBSession[];
+  events: DBEvent[];
+  tasks: DBTask[];
+  goals: DBGoal[];
+}>;
 export default StatisticsSection;
