@@ -146,9 +146,17 @@ const StatItem: React.FC<{
           ? `animate-scale-in stagger-${Math.min(index + 1, 8)}`
           : "opacity-0"
       }`}
+      role="article"
+      aria-label={`${label}: ${value}`}
     >
-      <Icon className="text-nightly-aquamarine text-xl sm:text-2xl mb-1 sm:mb-2 mx-auto" />
-      <div className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-0.5 sm:mb-1 break-words">
+      <Icon
+        className="text-nightly-aquamarine text-xl sm:text-2xl mb-1 sm:mb-2 mx-auto"
+        aria-hidden="true"
+      />
+      <div
+        className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-0.5 sm:mb-1 break-words"
+        aria-live="polite"
+      >
         {displayValue}
       </div>
       <div className="text-xs sm:text-sm text-nightly-celadon leading-tight">
@@ -223,15 +231,30 @@ const StatisticsSectionComponent: React.FC<{
   const visibleItems = useStaggerAnimation(statItems.length, 80);
 
   return (
-    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
+    <Card
+      variant="glass"
+      className="mb-4 sm:mb-6 animate-fade-in-up"
+      role="region"
+      aria-labelledby="statistics-heading"
+    >
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <FaChartBar className="text-nightly-lavender-floral text-lg sm:text-xl" />
-        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
+        <FaChartBar
+          className="text-nightly-lavender-floral text-lg sm:text-xl"
+          aria-hidden="true"
+        />
+        <h2
+          id="statistics-heading"
+          className="text-lg sm:text-xl font-semibold text-nightly-honeydew"
+        >
           Statistics
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+        role="list"
+        aria-label="Session statistics"
+      >
         {statItems.map((item, index) => (
           <StatItem
             key={index}
