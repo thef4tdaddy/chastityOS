@@ -11,14 +11,26 @@ import {
 } from "../components/full_report";
 import { EventList } from "../components/log_event/EventList";
 import { Card, Tooltip } from "@/components/ui";
+import {
+  FeatureErrorBoundary,
+  ReportsErrorFallback,
+} from "../components/errors";
 
-// Error state component
-const ErrorState: React.FC<{ hasSession: boolean }> = ({ hasSession }) => (
+// Error state component with retry functionality
+const ErrorState: React.FC<{
+  hasSession: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
+}> = ({ hasSession, error, onRetry }) => (
   <div className="text-nightly-spring-green">
     <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
       <div className="text-center py-6 sm:py-8">
         {hasSession ? (
-          <div className="text-red-400 text-sm sm:text-base">Error loading report data</div>
+          <ReportsErrorFallback
+            error={error}
+            resetError={onRetry}
+            feature="Full Report"
+          />
         ) : (
           <Card variant="glass" padding="lg">
             <h3 className="text-lg sm:text-xl font-semibold text-nightly-honeydew mb-3">
@@ -79,22 +91,32 @@ const UserStatusSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-4 sm:mb-6 animate-fade-in-up">
-      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
-        {activeSubmissive ? "Your Status" : "Current Status"}
-      </h3>
-      <CurrentStatusSection currentSession={userReport.currentSession} />
-    </div>
+    <FeatureErrorBoundary
+      feature="Current Status"
+      fallback={<ReportsErrorFallback feature="Current Status" />}
+    >
+      <div className="mb-4 sm:mb-6 animate-fade-in-up">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
+          {activeSubmissive ? "Your Status" : "Current Status"}
+        </h3>
+        <CurrentStatusSection currentSession={userReport.currentSession} />
+      </div>
+    </FeatureErrorBoundary>
 
     {activeSubmissive && submissiveReport.currentSession && (
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-2">
-        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
-          {activeSubmissive.wearerName || "Submissive"}'s Status
-        </h3>
-        <CurrentStatusSection
-          currentSession={submissiveReport.currentSession}
-        />
-      </div>
+      <FeatureErrorBoundary
+        feature="Submissive Status"
+        fallback={<ReportsErrorFallback feature="Submissive Status" />}
+      >
+        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-2">
+          <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
+            {activeSubmissive.wearerName || "Submissive"}'s Status
+          </h3>
+          <CurrentStatusSection
+            currentSession={submissiveReport.currentSession}
+          />
+        </div>
+      </FeatureErrorBoundary>
     )}
   </>
 );
@@ -106,30 +128,40 @@ const StatisticsReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-3">
-      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
-        {activeSubmissive ? "Your Statistics" : "Statistics"}
-      </h3>
-      <StatisticsSection
-        sessions={userReport.sessions}
-        events={userReport.events}
-        tasks={userReport.tasks}
-        goals={userReport.goals}
-      />
-    </div>
-
-    {activeSubmissive && (
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-4">
-        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
-          {activeSubmissive.wearerName || "Submissive"}'s Statistics
+    <FeatureErrorBoundary
+      feature="Statistics"
+      fallback={<ReportsErrorFallback feature="Statistics" />}
+    >
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-3">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
+          {activeSubmissive ? "Your Statistics" : "Statistics"}
         </h3>
         <StatisticsSection
-          sessions={submissiveReport.sessions}
-          events={submissiveReport.events}
-          tasks={submissiveReport.tasks}
-          goals={submissiveReport.goals}
+          sessions={userReport.sessions}
+          events={userReport.events}
+          tasks={userReport.tasks}
+          goals={userReport.goals}
         />
       </div>
+    </FeatureErrorBoundary>
+
+    {activeSubmissive && (
+      <FeatureErrorBoundary
+        feature="Submissive Statistics"
+        fallback={<ReportsErrorFallback feature="Submissive Statistics" />}
+      >
+        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-4">
+          <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
+            {activeSubmissive.wearerName || "Submissive"}'s Statistics
+          </h3>
+          <StatisticsSection
+            sessions={submissiveReport.sessions}
+            events={submissiveReport.events}
+            tasks={submissiveReport.tasks}
+            goals={submissiveReport.goals}
+          />
+        </div>
+      </FeatureErrorBoundary>
     )}
   </>
 );
@@ -141,20 +173,30 @@ const SessionHistoryReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-5">
-      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
-        {activeSubmissive ? "Your Session History" : "Session History"}
-      </h3>
-      <SessionHistorySection sessions={userReport.sessions} />
-    </div>
+    <FeatureErrorBoundary
+      feature="Session History"
+      fallback={<ReportsErrorFallback feature="Session History" />}
+    >
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-5">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
+          {activeSubmissive ? "Your Session History" : "Session History"}
+        </h3>
+        <SessionHistorySection sessions={userReport.sessions} />
+      </div>
+    </FeatureErrorBoundary>
 
     {activeSubmissive && (
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-6">
-        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
-          {activeSubmissive.wearerName || "Submissive"}'s Session History
-        </h3>
-        <SessionHistorySection sessions={submissiveReport.sessions} />
-      </div>
+      <FeatureErrorBoundary
+        feature="Submissive Session History"
+        fallback={<ReportsErrorFallback feature="Submissive Session History" />}
+      >
+        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-6">
+          <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
+            {activeSubmissive.wearerName || "Submissive"}'s Session History
+          </h3>
+          <SessionHistorySection sessions={submissiveReport.sessions} />
+        </div>
+      </FeatureErrorBoundary>
     )}
   </>
 );
@@ -166,20 +208,30 @@ const EventHistoryReportSection: React.FC<ReportSectionProps> = ({
   submissiveReport,
 }) => (
   <>
-    <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-7">
-      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
-        {activeSubmissive ? "Your Events" : "Event History"}
-      </h3>
-      <EventList events={userReport.events} />
-    </div>
+    <FeatureErrorBoundary
+      feature="Event History"
+      fallback={<ReportsErrorFallback feature="Event History" />}
+    >
+      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-7">
+        <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
+          {activeSubmissive ? "Your Events" : "Event History"}
+        </h3>
+        <EventList events={userReport.events} />
+      </div>
+    </FeatureErrorBoundary>
 
     {activeSubmissive && submissiveReport.events.length > 0 && (
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-8">
-        <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
-          {activeSubmissive.wearerName || "Submissive"}'s Events
-        </h3>
-        <EventList events={submissiveReport.events} />
-      </div>
+      <FeatureErrorBoundary
+        feature="Submissive Event History"
+        fallback={<ReportsErrorFallback feature="Submissive Event History" />}
+      >
+        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-8">
+          <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
+            {activeSubmissive.wearerName || "Submissive"}'s Events
+          </h3>
+          <EventList events={submissiveReport.events} />
+        </div>
+      </FeatureErrorBoundary>
     )}
   </>
 );
@@ -207,7 +259,13 @@ const FullReportPage: React.FC = () => {
   if (error) {
     const hasSession =
       !!userReport.currentSession || !!submissiveReport.currentSession;
-    return <ErrorState hasSession={hasSession} />;
+    return (
+      <ErrorState
+        hasSession={hasSession}
+        error={error}
+        onRetry={userReport.refetch.all}
+      />
+    );
   }
 
   return (

@@ -34,27 +34,36 @@ const SessionStatusDisplay: React.FC<{
     <div className="text-center">
       <div className="flex items-center justify-center gap-2 mb-2">
         <StatusIcon className={`${sessionStatus.color} text-base sm:text-lg`} />
-        <span className={`text-base sm:text-lg font-medium ${sessionStatus.color}`}>
+        <span
+          className={`text-base sm:text-lg font-medium ${sessionStatus.color}`}
+        >
           {sessionStatus.status}
         </span>
       </div>
       {currentSession && (
         <>
           <div className="text-2xl sm:text-3xl font-mono text-nightly-honeydew mb-2">
-            {timerData.effectiveTimeFormatted}
+            {timerData.effectiveTimeFormatted || "0:00:00"}
           </div>
           <div className="text-xs sm:text-sm text-nightly-celadon break-words px-2">
-            Started: {currentSession.startTime.toLocaleDateString()}{" "}
-            {currentSession.startTime.toLocaleTimeString()}
+            {currentSession.startTime ? (
+              <>
+                Started: {currentSession.startTime.toLocaleDateString()}{" "}
+                {currentSession.startTime.toLocaleTimeString()}
+              </>
+            ) : (
+              "Start time unavailable"
+            )}
           </div>
-          {currentSession.goalDuration && (
-            <div className="text-xs sm:text-sm text-nightly-celadon">
-              Goal: {timerData.remainingGoalTimeFormatted} remaining
-            </div>
-          )}
+          {currentSession.goalDuration &&
+            timerData.remainingGoalTimeFormatted && (
+              <div className="text-xs sm:text-sm text-nightly-celadon">
+                Goal: {timerData.remainingGoalTimeFormatted} remaining
+              </div>
+            )}
           {timerData.isPaused && timerData.currentPauseDuration > 0 && (
             <div className="text-xs sm:text-sm text-yellow-400 mt-2">
-              Current pause: {timerData.currentPauseDurationFormatted}
+              Current pause: {timerData.currentPauseDurationFormatted || "0:00"}
             </div>
           )}
         </>
@@ -81,14 +90,14 @@ const SessionDetailsDisplay: React.FC<{
       <div className="flex justify-between gap-2">
         <span className="text-nightly-celadon">Total Time:</span>
         <span className="text-nightly-honeydew text-right">
-          {timerData.totalElapsedTimeFormatted}
+          {timerData.totalElapsedTimeFormatted || "0:00:00"}
         </span>
       </div>
       <div className="flex justify-between gap-2">
         <span className="text-nightly-celadon">Accumulated Pause:</span>
         <span className="text-nightly-honeydew text-right">
-          {currentSession.accumulatedPauseTime > 0
-            ? `${Math.floor(currentSession.accumulatedPauseTime / 60)}m ${currentSession.accumulatedPauseTime % 60}s`
+          {(currentSession.accumulatedPauseTime || 0) > 0
+            ? `${Math.floor((currentSession.accumulatedPauseTime || 0) / 60)}m ${(currentSession.accumulatedPauseTime || 0) % 60}s`
             : "0s"}
         </span>
       </div>
@@ -97,7 +106,8 @@ const SessionDetailsDisplay: React.FC<{
           <div className="flex justify-between gap-2">
             <span className="text-nightly-celadon">Goal Progress:</span>
             <span className="text-nightly-honeydew text-right">
-              {timerData.goalProgress.toFixed(1)}%
+              {timerData.goalProgress ? timerData.goalProgress.toFixed(1) : "0"}
+              %
             </span>
           </div>
           {timerData.isGoalCompleted && (
