@@ -1,12 +1,13 @@
 /**
  * Lifetime Stats Hook
  * Calculates cumulative stats across all user sessions
+ * Optimized with TanStack Query for better caching and performance
  */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { sessionDBService } from "../../services/database/SessionDBService";
 import { serviceLogger } from "../../utils/logging";
 import { useSharedTimer } from "../useSharedTimer";
-import type { DBSession } from "../../types/database";
 import {
   calculateSessionEffectiveTime,
   calculateSessionPauseTime,
@@ -27,74 +28,36 @@ export interface LifetimeStats {
 /**
  * Hook to calculate lifetime stats across all sessions
  * Updates in real-time as sessions change
+ * Optimized with TanStack Query for better performance
  */
 export function useLifetimeStats(userId: string | undefined): LifetimeStats {
-  const [sessions, setSessions] = useState<DBSession[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   // Use shared timer for perfect synchronization with other timer hooks
   const currentTime = useSharedTimer();
 
-  // Manual refresh function
-  const refresh = useCallback(async () => {
-    if (!userId) return;
+  // Use TanStack Query for efficient caching and automatic refetching
+  const {
+    data: sessions = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["sessions", "lifetime", userId],
+    queryFn: async () => {
+      if (!userId) return [];
 
-    try {
       const allSessions = await sessionDBService.getSessionHistory(
         userId,
         1000,
-      );
-      setSessions(allSessions);
-      logger.debug("Refreshed sessions for lifetime stats", {
+      ); // Get all sessions
+      logger.debug("Loaded sessions for lifetime stats", {
         count: allSessions.length,
       });
-    } catch (error) {
-      logger.error("Failed to refresh sessions for lifetime stats", {
-        error: error as Error,
-      });
-    }
-  }, [userId]);
-
-  // Load all sessions for the user
-  useEffect(() => {
-    if (!userId) {
-      setSessions([]);
-      setIsLoading(false);
-      return;
-    }
-
-    let mounted = true;
-
-    const loadSessions = async () => {
-      try {
-        setIsLoading(true);
-        const allSessions = await sessionDBService.getSessionHistory(
-          userId,
-          1000,
-        ); // Get all sessions
-        if (mounted) {
-          setSessions(allSessions);
-          logger.debug("Loaded sessions for lifetime stats", {
-            count: allSessions.length,
-          });
-        }
-      } catch (error) {
-        logger.error("Failed to load sessions for lifetime stats", {
-          error: error as Error,
-        });
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadSessions();
-
-    return () => {
-      mounted = false;
-    };
-  }, [userId]);
+      return allSessions;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes - stats don't need to be super fresh
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    enabled: !!userId,
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce load
+  });
 
   // Calculate lifetime stats
   const stats = useMemo(() => {
@@ -139,6 +102,8 @@ export function useLifetimeStats(userId: string | undefined): LifetimeStats {
 
   return {
     ...stats,
-    refresh,
+    refresh: async () => {
+      await refetch();
+    },
   };
 }
