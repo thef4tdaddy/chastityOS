@@ -8,11 +8,10 @@ import { test, expect, devices } from "@playwright/test";
 test.describe("Events UI - Responsive Design", () => {
   // Mobile viewport tests (320px - 640px)
   test.describe("Mobile (320px - 640px)", () => {
-    test.use({ ...devices["iPhone 12"] });
-
     test("should display event form with proper mobile layout", async ({
       page,
     }) => {
+      await page.setViewportSize({ width: 390, height: 844 }); // iPhone 12 size
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -40,6 +39,7 @@ test.describe("Events UI - Responsive Design", () => {
     test("should display event list with proper mobile cards", async ({
       page,
     }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -65,6 +65,7 @@ test.describe("Events UI - Responsive Design", () => {
     test("should have proper spacing and padding on mobile", async ({
       page,
     }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -119,11 +120,10 @@ test.describe("Events UI - Responsive Design", () => {
 
   // Tablet viewport tests (768px - 1024px)
   test.describe("Tablet (768px - 1024px)", () => {
-    test.use({ ...devices["iPad"] });
-
     test("should display 4-column event type grid on tablet", async ({
       page,
     }) => {
+      await page.setViewportSize({ width: 810, height: 1080 }); // iPad size
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -155,6 +155,7 @@ test.describe("Events UI - Responsive Design", () => {
     });
 
     test("should optimize form layout for tablet", async ({ page }) => {
+      await page.setViewportSize({ width: 810, height: 1080 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -233,11 +234,10 @@ test.describe("Events UI - Responsive Design", () => {
 
   // Touch interaction tests
   test.describe("Touch Interactions", () => {
-    test.use({ ...devices["iPhone 12"], hasTouch: true });
-
     test("should have proper touch targets for all interactive elements", async ({
       page,
     }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -265,6 +265,7 @@ test.describe("Events UI - Responsive Design", () => {
     });
 
     test("should handle form submission via touch", async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
@@ -322,11 +323,10 @@ test.describe("Events UI - Responsive Design", () => {
 
   // User selector responsive tests
   test.describe("User Selector", () => {
-    test.use({ ...devices["iPhone 12"] });
-
     test("should display user selector buttons with proper touch targets", async ({
       page,
     }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
