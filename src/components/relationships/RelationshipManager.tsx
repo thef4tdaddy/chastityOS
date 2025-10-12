@@ -72,7 +72,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
   };
 
   return (
-    <div className={`max-w-4xl mx-auto p-6 ${className}`}>
+    <main className={`max-w-4xl mx-auto p-6 ${className}`}>
       <ErrorDisplay error={error ?? null} onClear={clearError} />
 
       <MigrationBanner
@@ -88,9 +88,11 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
 
         <Button
           onClick={() => setShowRequestForm(true)}
+          aria-label="Create new relationship request"
+          aria-expanded={showRequestForm}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 inline-flex items-center"
         >
-          <FaUserPlus className="mr-2" />
+          <FaUserPlus className="mr-2" aria-hidden="true" />
           New Request
         </Button>
       </div>
@@ -115,7 +117,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
         onSetActive={handleSetActiveRelationship}
         onEndRelationship={endRelationship}
       />
-    </div>
+    </main>
   );
 };
 
