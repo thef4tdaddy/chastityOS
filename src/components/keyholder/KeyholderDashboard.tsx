@@ -20,9 +20,9 @@ import { FeatureErrorBoundary } from "../errors/FeatureErrorBoundary";
 
 // Loading Component - memoized to prevent re-renders
 const AdminLoadingDisplay = React.memo(() => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6" role="status" aria-live="polite">
     <div className="flex items-center justify-center py-8">
-      <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine" />
+      <FaSpinner className="animate-spin text-2xl text-nightly-aquamarine" aria-hidden="true" />
       <span className="ml-3 text-nightly-celadon">
         Loading admin dashboard...
       </span>
@@ -47,14 +47,18 @@ const WearerSelection = React.memo<{
   );
 
   return (
-    <div className="mb-6">
+    <div className="mb-6" role="group" aria-label="Wearer selection">
       <Select
         label="Select Wearer to Manage:"
         value={selectedWearerId || ""}
         onChange={(value) => onSetSelectedWearer((value as string) || null)}
         options={wearerOptions}
         fullWidth={false}
+        aria-describedby="wearer-selection-help"
       />
+      <span id="wearer-selection-help" className="sr-only">
+        Select which submissive wearer's account you want to manage
+      </span>
     </div>
   );
 });
@@ -108,13 +112,17 @@ const AdminSessionStatus = React.memo<{
   isAdminSessionActive: boolean;
   onStartAdminSession: () => void;
 }>(({ selectedRelationship, isAdminSessionActive, onStartAdminSession }) => (
-  <div className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+  <div 
+    className="bg-white/5 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6"
+    role="region"
+    aria-label="Admin session status"
+  >
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div className="w-full sm:w-auto">
         <h3 className="text-sm sm:text-base font-medium text-nightly-honeydew mb-1">
           Admin Session
         </h3>
-        <p className="text-xs sm:text-sm text-nightly-celadon break-words">
+        <p className="text-xs sm:text-sm text-nightly-celadon break-words" role="status" aria-live="polite">
           {isAdminSessionActive
             ? `Active session for ${selectedRelationship.wearerId}`
             : "No active admin session"}
@@ -124,14 +132,15 @@ const AdminSessionStatus = React.memo<{
         {!isAdminSessionActive ? (
           <Button
             onClick={onStartAdminSession}
+            aria-label={`Start admin session for ${selectedRelationship.wearerId}`}
             className="w-full sm:w-auto bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 touch-manipulation"
           >
-            <FaShieldAlt className="flex-shrink-0" />
+            <FaShieldAlt className="flex-shrink-0" aria-hidden="true" />
             <span>Start Admin Session</span>
           </Button>
         ) : (
-          <div className="flex items-center gap-2 text-green-400">
-            <FaShieldAlt className="flex-shrink-0" />
+          <div className="flex items-center gap-2 text-green-400" role="status">
+            <FaShieldAlt className="flex-shrink-0" aria-hidden="true" />
             <span className="text-xs sm:text-sm">Session Active</span>
           </div>
         )}
@@ -155,9 +164,43 @@ const NavigationTabs = React.memo<{
     { id: "settings", label: "Settings", icon: FaCog },
   ];
 
+  // Keyboard navigation for tabs
+  const handleKeyDown = (
+    e: React.KeyboardEvent,
+    tabId: string,
+    index: number,
+  ) => {
+    const tabsArray = tabs.map((t) => t.id);
+    let newIndex = index;
+
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      newIndex = index > 0 ? index - 1 : tabs.length - 1;
+    } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      newIndex = index < tabs.length - 1 ? index + 1 : 0;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      newIndex = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      newIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+
+    onSetSelectedTab(
+      tabsArray[newIndex] as "overview" | "sessions" | "tasks" | "settings",
+    );
+  };
+
   return (
-    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-black/20 rounded-lg p-2 sm:p-1 mb-4 sm:mb-6">
-      {tabs.map((tab) => (
+    <nav 
+      className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-black/20 rounded-lg p-2 sm:p-1 mb-4 sm:mb-6"
+      role="tablist"
+      aria-label="Dashboard sections"
+    >
+      {tabs.map((tab, index) => (
         <Button
           key={tab.id}
           onClick={() =>
@@ -165,17 +208,23 @@ const NavigationTabs = React.memo<{
               tab.id as "overview" | "sessions" | "tasks" | "settings",
             )
           }
+          onKeyDown={(e) => handleKeyDown(e, tab.id, index)}
+          role="tab"
+          id={`${tab.id}-tab`}
+          aria-selected={selectedTab === tab.id}
+          aria-controls={`${tab.id}-panel`}
+          tabIndex={selectedTab === tab.id ? 0 : -1}
           className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 touch-manipulation ${
             selectedTab === tab.id
               ? "bg-nightly-lavender-floral text-white"
               : "text-nightly-celadon hover:text-nightly-honeydew hover:bg-white/5"
           }`}
         >
-          <tab.icon className="flex-shrink-0" />
+          <tab.icon className="flex-shrink-0" aria-hidden="true" />
           <span>{tab.label}</span>
         </Button>
       ))}
-    </div>
+    </nav>
   );
 });
 NavigationTabs.displayName = "NavigationTabs";
@@ -188,28 +237,36 @@ const TabContentRenderer = React.memo<{
 }>(({ selectedTab, selectedRelationship, isAdminSessionActive }) => (
   <div className="space-y-6">
     {selectedTab === "overview" && (
-      <AdminOverview relationship={selectedRelationship} />
+      <div role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
+        <AdminOverview relationship={selectedRelationship} />
+      </div>
     )}
 
     {selectedTab === "sessions" && (
-      <AdminSessions
-        relationship={selectedRelationship}
-        isSessionActive={isAdminSessionActive}
-      />
+      <div role="tabpanel" id="sessions-panel" aria-labelledby="sessions-tab">
+        <AdminSessions
+          relationship={selectedRelationship}
+          isSessionActive={isAdminSessionActive}
+        />
+      </div>
     )}
 
     {selectedTab === "tasks" && (
-      <AdminTasks
-        relationship={selectedRelationship}
-        isSessionActive={isAdminSessionActive}
-      />
+      <div role="tabpanel" id="tasks-panel" aria-labelledby="tasks-tab">
+        <AdminTasks
+          relationship={selectedRelationship}
+          isSessionActive={isAdminSessionActive}
+        />
+      </div>
     )}
 
     {selectedTab === "settings" && (
-      <AdminSettings
-        relationship={selectedRelationship}
-        isSessionActive={isAdminSessionActive}
-      />
+      <div role="tabpanel" id="settings-panel" aria-labelledby="settings-tab">
+        <AdminSettings
+          relationship={selectedRelationship}
+          isSessionActive={isAdminSessionActive}
+        />
+      </div>
     )}
   </div>
 ));
@@ -263,13 +320,17 @@ export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+    <section 
+      className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6"
+      role="region"
+      aria-label="Keyholder Dashboard"
+    >
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <FaUserShield className="text-nightly-lavender-floral text-lg sm:text-base flex-shrink-0" />
+        <FaUserShield className="text-nightly-lavender-floral text-lg sm:text-base flex-shrink-0" aria-hidden="true" />
         <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Keyholder Dashboard
         </h2>
-        <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded flex-shrink-0">
+        <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded flex-shrink-0" role="status" aria-label="Current role">
           KEYHOLDER
         </span>
       </div>
@@ -309,7 +370,7 @@ export const KeyholderDashboard: React.FC<{ keyholderUserId?: string }> = ({
           />
         </>
       )}
-    </div>
+    </section>
   );
 };
 
