@@ -180,7 +180,7 @@ This document summarizes the implementation of integration and E2E tests for the
 npm run test:unit
 
 # Run specific test file
-npm run test:unit src/hooks/session/__tests__/sessionLifecycle.integration.test.ts
+npm run test:unit src/hooks/session/__tests__/sessionWorkflows.integration.test.ts
 
 # Run with coverage
 npm run test:unit:coverage
@@ -188,6 +188,8 @@ npm run test:unit:coverage
 # Watch mode
 npm run test:unit:watch
 ```
+
+**Note**: Integration tests that interact with IndexedDB require `fake-indexeddb` to be properly configured in the test setup. Tests that don't require database operations (analytics, state checks) will pass. See `src/test/setup.ts` for global test configuration.
 
 ### E2E Tests (Playwright)
 ```bash
