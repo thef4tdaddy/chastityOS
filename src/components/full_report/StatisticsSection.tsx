@@ -12,8 +12,9 @@ import {
 import { Card } from "@/components/ui";
 import { useCountUp } from "../../hooks/useCountUp";
 import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
+import { logger } from "@/utils/logging";
 
-// Helper function to calculate statistics
+// Helper function to calculate statistics with error handling
 const useStatistics = (
   sessions: DBSession[],
   events: DBEvent[],
@@ -21,47 +22,87 @@ const useStatistics = (
   goals: DBGoal[],
 ) => {
   return useMemo(() => {
-    const completedSessions = sessions.filter((s) => s.endTime);
-    const totalChastityTime = completedSessions.reduce((acc, session) => {
-      if (session.endTime) {
-        const duration = Math.floor(
-          (session.endTime.getTime() - session.startTime.getTime()) / 1000,
-        );
-        return acc + Math.max(0, duration - session.accumulatedPauseTime);
-      }
-      return acc;
-    }, 0);
+    try {
+      // Validate input arrays
+      const validSessions = Array.isArray(sessions) ? sessions : [];
+      const validEvents = Array.isArray(events) ? events : [];
+      const validTasks = Array.isArray(tasks) ? tasks : [];
+      const validGoals = Array.isArray(goals) ? goals : [];
 
-    const totalPauseTime = sessions.reduce(
-      (acc, session) => acc + session.accumulatedPauseTime,
-      0,
-    );
-    const completedTasks = tasks.filter((t) => t.status === "completed").length;
-    const completedGoals = goals.filter((g) => g.isCompleted).length;
+      const completedSessions = validSessions.filter((s) => s?.endTime);
 
-    const longestSession = Math.max(
-      ...completedSessions.map((s) => {
-        if (s.endTime) {
-          const duration = Math.floor(
-            (s.endTime.getTime() - s.startTime.getTime()) / 1000,
-          );
-          return Math.max(0, duration - s.accumulatedPauseTime);
+      const totalChastityTime = completedSessions.reduce((acc, session) => {
+        if (session?.endTime && session?.startTime) {
+          try {
+            const duration = Math.floor(
+              (session.endTime.getTime() - session.startTime.getTime()) / 1000,
+            );
+            const pauseTime = session.accumulatedPauseTime || 0;
+            return acc + Math.max(0, duration - pauseTime);
+          } catch {
+            // Skip invalid session data
+            return acc;
+          }
         }
-        return 0;
-      }),
-      0,
-    );
+        return acc;
+      }, 0);
 
-    return {
-      totalSessions: sessions.length,
-      completedSessions: completedSessions.length,
-      totalChastityTime,
-      totalPauseTime,
-      completedTasks,
-      completedGoals,
-      longestSession,
-      totalEvents: events.length,
-    };
+      const totalPauseTime = validSessions.reduce(
+        (acc, session) => acc + (session?.accumulatedPauseTime || 0),
+        0,
+      );
+
+      const completedTasks = validTasks.filter(
+        (t) => t?.status === "completed",
+      ).length;
+
+      const completedGoals = validGoals.filter((g) => g?.isCompleted).length;
+
+      const longestSession =
+        completedSessions.length > 0
+          ? Math.max(
+              ...completedSessions.map((s) => {
+                if (s?.endTime && s?.startTime) {
+                  try {
+                    const duration = Math.floor(
+                      (s.endTime.getTime() - s.startTime.getTime()) / 1000,
+                    );
+                    const pauseTime = s.accumulatedPauseTime || 0;
+                    return Math.max(0, duration - pauseTime);
+                  } catch {
+                    return 0;
+                  }
+                }
+                return 0;
+              }),
+              0,
+            )
+          : 0;
+
+      return {
+        totalSessions: validSessions.length,
+        completedSessions: completedSessions.length,
+        totalChastityTime,
+        totalPauseTime,
+        completedTasks,
+        completedGoals,
+        longestSession,
+        totalEvents: validEvents.length,
+      };
+    } catch (error) {
+      // Return safe defaults on error
+      logger.error("Error calculating statistics", { error });
+      return {
+        totalSessions: 0,
+        completedSessions: 0,
+        totalChastityTime: 0,
+        totalPauseTime: 0,
+        completedTasks: 0,
+        completedGoals: 0,
+        longestSession: 0,
+        totalEvents: 0,
+      };
+    }
   }, [sessions, events, tasks, goals]);
 };
 
@@ -110,7 +151,9 @@ const StatItem: React.FC<{
       <div className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-0.5 sm:mb-1 break-words">
         {displayValue}
       </div>
-      <div className="text-xs sm:text-sm text-nightly-celadon leading-tight">{label}</div>
+      <div className="text-xs sm:text-sm text-nightly-celadon leading-tight">
+        {label}
+      </div>
     </div>
   );
 };
