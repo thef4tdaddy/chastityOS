@@ -2777,3 +2777,135 @@ td {
     background: rgba(215, 210, 234, 0.15);
   }
 }
+
+/* =============================================
+   === EVENTS UI RESPONSIVE STYLES           ===
+   =============================================
+*/
+/* Range slider touch-friendly styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: var(--color-accent-purple, #581c87);
+  cursor: pointer;
+  margin-top: -8px;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-accent-purple, #581c87);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb:active {
+  transform: scale(1.2);
+}
+
+/* Event form responsive adjustments */
+@media (max-width: 640px) {
+  .event-button {
+    font-size: 0.875rem;
+  }
+  
+  .event-form-field {
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+}
+
+/* Event list responsive stagger animations */
+@keyframes event-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-event-appear {
+  animation: event-appear 0.3s ease-out forwards;
+}
+
+@media (max-width: 640px) {
+  .animate-event-appear {
+    animation-duration: 0.2s; /* Faster on mobile */
+  }
+}
+
+/* Milestone event glow animation */
+@keyframes milestone-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+  }
+}
+
+.animate-milestone-glow {
+  animation: milestone-glow 2s ease-in-out infinite;
+}
+
+/* Confetti animation for milestone events */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  animation: confetti-fall linear forwards;
+}
