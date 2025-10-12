@@ -37,11 +37,19 @@ const PauseButton: React.FC<PauseButtonProps> = ({
       disabled={!canPause || isLoading}
       loading={isLoading}
       className={`glass-button min-h-[44px] py-2.5 sm:py-3 px-5 sm:px-6 text-sm sm:text-base shadow-lg transform hover:scale-105 transition-all duration-300 button-press-active focus-ring-animated ${pauseButtonStyling}`}
+      aria-label={`Pause chastity session${!canPause && cooldownDisplay ? `, available in ${cooldownDisplay}` : ""}`}
     >
-      ⏸️ {pauseButtonText}
+      <span role="img" aria-label="pause icon">
+        ⏸️
+      </span>{" "}
+      {pauseButtonText}
     </Button>
     {!canPause && cooldownDisplay && (
-      <p className="text-xs sm:text-sm text-nightly-deep_rose/80 mt-2 tracker-state-transition text-center">
+      <p
+        className="text-xs sm:text-sm text-nightly-deep_rose/80 mt-2 tracker-state-transition text-center"
+        role="status"
+        aria-live="polite"
+      >
         Next pause in: {cooldownDisplay}
       </p>
     )}
@@ -65,8 +73,12 @@ const ResumeButton: React.FC<ResumeButtonProps> = ({
       disabled={isLoading}
       loading={isLoading}
       className="glass-button bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500/90 hover:to-emerald-500/90 min-h-[44px] py-2.5 sm:py-3 px-5 sm:px-6 text-sm sm:text-base shadow-lg hover:shadow-green-500/20 transform hover:scale-105 transition-all duration-300 button-press-active focus-ring-animated"
+      aria-label="Resume chastity session"
     >
-      ▶️ {isLoading ? "Resuming..." : "Resume Session"}
+      <span role="img" aria-label="play icon">
+        ▶️
+      </span>{" "}
+      {isLoading ? "Resuming..." : "Resume Session"}
     </Button>
   </div>
 );
@@ -111,20 +123,28 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
         value={selectedReason}
         onChange={(value) => onReasonChange(value as EnhancedPauseReason)}
         options={pauseReasonOptions}
+        aria-label="Select reason for pausing session"
+        aria-required="true"
       />
     </div>
 
     {selectedReason === "Other" && (
       <div className="mb-4">
-        <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
+        <label
+          className="block text-xs sm:text-sm font-medium text-gray-300 mb-2"
+          htmlFor="custom-pause-reason"
+        >
           Custom reason:
         </label>
         <Input
           type="text"
+          id="custom-pause-reason"
           value={customReason}
           onChange={(e) => onCustomReasonChange(e.target.value)}
           placeholder="Enter custom reason"
           className="w-full min-h-[44px] p-2.5 sm:p-2 text-sm sm:text-base rounded-lg border border-yellow-600/50 bg-gray-900/50 backdrop-blur-sm text-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          aria-label="Custom reason for pause"
+          aria-required="true"
         />
       </div>
     )}
@@ -138,6 +158,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
         }
         loading={isLoading}
         className="w-full sm:w-auto glass-button bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 hover:from-yellow-500/90 hover:to-yellow-600/90 min-h-[44px] py-2.5 px-4 text-sm sm:text-base transition-all duration-300 button-press-active focus-ring-animated"
+        aria-label="Confirm pause with selected reason"
       >
         {isLoading ? "Pausing..." : "Confirm Pause"}
       </Button>
@@ -146,6 +167,7 @@ const PauseModalContent: React.FC<PauseModalProps> = ({
         onClick={onCancel}
         disabled={isLoading}
         className="w-full sm:w-auto glass-button bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500/90 hover:to-gray-600/90 min-h-[44px] py-2.5 px-4 text-sm sm:text-base transition-all duration-300 button-press-active"
+        aria-label="Cancel pause"
       >
         Cancel
       </Button>

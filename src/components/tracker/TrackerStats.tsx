@@ -45,17 +45,32 @@ const PersonalGoalDisplay = React.memo<{ goal: DBGoal }>(({ goal }) => {
     <Card
       variant="glass"
       className={isHardcoreMode ? "border-2 border-red-500/50" : ""}
+      role="region"
+      aria-label={`Personal goal: ${goal.title}, ${progressPercent.toFixed(1)} percent complete${isHardcoreMode ? ", hardcore mode enabled" : ""}`}
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <FaBullseye className="text-nightly-aquamarine text-base sm:text-lg" />
-          <h3 className="text-base sm:text-lg md:text-xl font-semibold text-nightly-honeydew">
+          <FaBullseye
+            className="text-nightly-aquamarine text-base sm:text-lg"
+            aria-hidden="true"
+          />
+          <h3
+            className="text-base sm:text-lg md:text-xl font-semibold text-nightly-honeydew"
+            id={`goal-title-${goal.id || "current"}`}
+          >
             {goal.title}
           </h3>
         </div>
         {isHardcoreMode && (
-          <div className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded flex-shrink-0">
-            <FaLock className="text-red-400 text-xs sm:text-sm" />
+          <div
+            className="flex items-center gap-1 bg-red-500/20 px-2 py-1 rounded flex-shrink-0"
+            role="status"
+            aria-label="Hardcore mode active"
+          >
+            <FaLock
+              className="text-red-400 text-xs sm:text-sm"
+              aria-hidden="true"
+            />
             <span className="text-xs sm:text-sm text-red-400 font-semibold">
               HARDCORE
             </span>
@@ -70,7 +85,14 @@ const PersonalGoalDisplay = React.memo<{ goal: DBGoal }>(({ goal }) => {
       )}
 
       {/* Progress bar */}
-      <div className="mb-2">
+      <div
+        className="mb-2"
+        role="progressbar"
+        aria-valuenow={progressPercent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-labelledby={`goal-title-${goal.id || "current"}`}
+      >
         <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
           <div
             className={`h-2 rounded-full transition-all duration-500 progress-fill-animated ${
@@ -84,10 +106,17 @@ const PersonalGoalDisplay = React.memo<{ goal: DBGoal }>(({ goal }) => {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0 text-xs sm:text-sm">
-        <span className="text-nightly-celadon">
+        <span
+          className="text-nightly-celadon"
+          aria-label={`Progress: ${progressPercent.toFixed(1)} percent`}
+        >
           Progress: {progressPercent.toFixed(1)}%
         </span>
-        <span className="text-nightly-honeydew font-semibold">
+        <span
+          className="text-nightly-honeydew font-semibold"
+          role="status"
+          aria-live="polite"
+        >
           {remaining > 0 ? `${remainingFormatted} remaining` : "Goal Complete!"}
         </span>
       </div>
@@ -118,22 +147,38 @@ const TotalStats = React.memo<{
     <Card
       variant="glass"
       className="glass-hover tracker-card-hover tracker-state-transition"
+      role="region"
+      aria-label="Total time in chastity statistics"
     >
-      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200">
+      <p
+        className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200"
+        id="total-chastity-label"
+      >
         Total Time In Chastity:
       </p>
-      <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white number-update">
+      <p
+        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white number-update"
+        aria-labelledby="total-chastity-label"
+      >
         {stats.totalChastityTimeFormatted}
       </p>
     </Card>
     <Card
       variant="glass"
       className="glass-hover tracker-card-hover tracker-state-transition"
+      role="region"
+      aria-label="Total time cage off statistics"
     >
-      <p className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200">
+      <p
+        className="text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-2 md:mb-3 text-gray-200"
+        id="total-cage-off-label"
+      >
         Total Time Cage Off:
       </p>
-      <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white number-update">
+      <p
+        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white number-update"
+        aria-labelledby="total-cage-off-label"
+      >
         {stats.totalCageOffTimeFormatted}
       </p>
     </Card>
@@ -146,14 +191,28 @@ export const TrackerStats = React.memo<TrackerStatsProps>((props) => {
   const { personalGoal } = props;
 
   return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6 mb-6 md:mb-8">
+    <div
+      className="space-y-3 sm:space-y-4 md:space-y-6 mb-6 md:mb-8"
+      role="region"
+      aria-label="Chastity tracking statistics"
+    >
       {/* Top stat card with timestamp info */}
       {stats.topBoxLabel && stats.topBoxTimestamp && (
-        <div className="primary-stat-card text-center glass-float tracker-state-transition">
-          <p className="text-blue-200 text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-1 md:mb-2">
+        <div
+          className="primary-stat-card text-center glass-float tracker-state-transition"
+          role="region"
+          aria-label={`${stats.topBoxLabel}: ${stats.topBoxTimestamp}`}
+        >
+          <p
+            className="text-blue-200 text-xs sm:text-sm md:text-base lg:text-lg font-medium mb-1 md:mb-2"
+            id="top-stat-label"
+          >
             {stats.topBoxLabel}:
           </p>
-          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent number-update">
+          <p
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent number-update"
+            aria-labelledby="top-stat-label"
+          >
             {stats.topBoxTimestamp}
           </p>
         </div>

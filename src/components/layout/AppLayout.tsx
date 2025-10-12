@@ -80,6 +80,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <div
       className={`${themeClass} bg-dark_purple min-h-screen text-white font-inter`}
     >
+      {/* Skip link for keyboard navigation - WCAG 2.4.1 */}
+      <a
+        href="#main-content"
+        className="skip-link"
+        aria-label="Skip to main content"
+      >
+        Skip to main content
+      </a>
+
       <Header
         navItems={navItems}
         isMobileMenuOpen={isMobileMenuOpen}
@@ -92,7 +101,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         onClose={closeMobileMenu}
       />
 
-      <main className="flex-1 relative">
+      <main id="main-content" className="flex-1 relative" role="main">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Account conversion banner for anonymous users */}
           <AccountConversionBanner />
