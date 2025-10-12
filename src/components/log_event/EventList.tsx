@@ -71,7 +71,9 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-3">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <Icon className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0`} />
+          <Icon
+            className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0`}
+          />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-medium text-nighty-honeydew text-sm sm:text-base">
@@ -83,7 +85,9 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
                 </span>
               )}
             </div>
-            <div className="text-xs text-nightly-celadon break-words">{formattedDate}</div>
+            <div className="text-xs text-nightly-celadon break-words">
+              {formattedDate}
+            </div>
           </div>
         </div>
         {event.isPrivate && (
@@ -95,14 +99,20 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
 
       {/* Content */}
       {event.details.notes && (
-        <p className="text-nighty-honeydew mb-3 text-sm sm:text-base break-words">{event.details.notes}</p>
+        <p className="text-nighty-honeydew mb-3 text-sm sm:text-base break-words">
+          {event.details.notes}
+        </p>
       )}
 
       {/* Details */}
       <div className="flex flex-wrap gap-3 sm:gap-4 text-xs text-nightly-celadon">
-        {event.details.mood && <span className="whitespace-nowrap">Mood: {event.details.mood}</span>}
+        {event.details.mood && (
+          <span className="whitespace-nowrap">Mood: {event.details.mood}</span>
+        )}
         {event.details.intensity && (
-          <span className="whitespace-nowrap">Intensity: {event.details.intensity}/10</span>
+          <span className="whitespace-nowrap">
+            Intensity: {event.details.intensity}/10
+          </span>
         )}
       </div>
 
@@ -126,22 +136,39 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
 // Memoize EventItem to prevent unnecessary re-renders
 const EventItem = memo(EventItemComponent);
 
-// Event List Component
+// Event List Component with pagination support
 interface EventListProps {
   events: (DBEvent & { ownerName?: string; ownerId?: string })[];
   showOwner?: boolean;
+  pageSize?: number;
 }
 
 const EventListComponent: React.FC<EventListProps> = ({
   events,
   showOwner = false,
+  pageSize = 20,
 }) => {
+  const [currentPage, setCurrentPage] = React.useState(0);
+
+  // Memoize paginated events to prevent recalculation
+  const paginatedEvents = React.useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    const endIndex = startIndex + pageSize;
+    return events.slice(startIndex, endIndex);
+  }, [events, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(events.length / pageSize);
+  const hasMorePages = currentPage < totalPages - 1;
+  const hasPreviousPages = currentPage > 0;
+
   if (events.length === 0) {
     return (
       <div className="space-y-4">
         <div className="text-center py-6 sm:py-8">
           <FaCalendar className="text-3xl sm:text-4xl text-nightly-celadon/50 mb-3 sm:mb-4 mx-auto" />
-          <div className="text-nightly-celadon text-sm sm:text-base">No events logged yet</div>
+          <div className="text-nightly-celadon text-sm sm:text-base">
+            No events logged yet
+          </div>
           <div className="text-xs sm:text-sm text-nightly-celadon/70">
             Log your first event above
           </div>
@@ -151,10 +178,37 @@ const EventListComponent: React.FC<EventListProps> = ({
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      {events.map((event) => (
-        <EventItem key={event.id} event={event} showOwner={showOwner} />
-      ))}
+    <div>
+      <div className="space-y-3 sm:space-y-4">
+        {paginatedEvents.map((event) => (
+          <EventItem key={event.id} event={event} showOwner={showOwner} />
+        ))}
+      </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-nightly-celadon/20">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            disabled={!hasPreviousPages}
+            className="px-4 py-2 text-sm bg-nightly-aquamarine/20 text-nightly-aquamarine rounded hover:bg-nightly-aquamarine/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-nightly-celadon">
+            Page {currentPage + 1} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
+            }
+            disabled={!hasMorePages}
+            className="px-4 py-2 text-sm bg-nightly-aquamarine/20 text-nightly-aquamarine rounded hover:bg-nightly-aquamarine/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
