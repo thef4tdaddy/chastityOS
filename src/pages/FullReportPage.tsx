@@ -24,7 +24,11 @@ const ErrorState: React.FC<{
 }> = ({ hasSession, error, onRetry }) => (
   <div className="text-nightly-spring-green">
     <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
-      <div className="text-center py-6 sm:py-8">
+      <div
+        className="text-center py-6 sm:py-8"
+        role="alert"
+        aria-live="assertive"
+      >
         {hasSession ? (
           <ReportsErrorFallback
             error={error}
@@ -58,14 +62,21 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6">
+    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6" role="banner">
       <div className="flex flex-wrap items-center gap-2">
-        <FaUsers className="text-nightly-aquamarine text-lg sm:text-xl" />
+        <FaUsers
+          className="text-nightly-aquamarine text-lg sm:text-xl"
+          aria-hidden="true"
+        />
         <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Combined Report
         </h2>
         <Tooltip content="This report includes data for both you and your submissive">
-          <span className="text-nightly-aquamarine/60 cursor-help text-xs ml-1">
+          <span
+            className="text-nightly-aquamarine/60 cursor-help text-xs ml-1"
+            aria-label="Information: This report includes data for both you and your submissive"
+            role="img"
+          >
             ⓘ
           </span>
         </Tooltip>
@@ -95,12 +106,12 @@ const UserStatusSectionComponent: React.FC<ReportSectionProps> = ({
       feature="Current Status"
       fallback={<ReportsErrorFallback feature="Current Status" />}
     >
-      <div className="mb-4 sm:mb-6 animate-fade-in-up">
+      <section className="mb-4 sm:mb-6 animate-fade-in-up" id="your-status">
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Status" : "Current Status"}
         </h3>
         <CurrentStatusSection currentSession={userReport.currentSession} />
-      </div>
+      </section>
     </FeatureErrorBoundary>
 
     {activeSubmissive && submissiveReport.currentSession && (
@@ -108,14 +119,17 @@ const UserStatusSectionComponent: React.FC<ReportSectionProps> = ({
         feature="Submissive Status"
         fallback={<ReportsErrorFallback feature="Submissive Status" />}
       >
-        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-2">
+        <section
+          className="mb-4 sm:mb-6 animate-fade-in-up stagger-2"
+          id="submissive-status"
+        >
           <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
             {activeSubmissive.wearerName || "Submissive"}'s Status
           </h3>
           <CurrentStatusSection
             currentSession={submissiveReport.currentSession}
           />
-        </div>
+        </section>
       </FeatureErrorBoundary>
     )}
   </>
@@ -137,7 +151,10 @@ const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
       feature="Statistics"
       fallback={<ReportsErrorFallback feature="Statistics" />}
     >
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-3">
+      <section
+        className="mb-4 sm:mb-6 animate-fade-in-up stagger-3"
+        id="your-statistics"
+      >
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Statistics" : "Statistics"}
         </h3>
@@ -147,7 +164,7 @@ const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
           tasks={userReport.tasks}
           goals={userReport.goals}
         />
-      </div>
+      </section>
     </FeatureErrorBoundary>
 
     {activeSubmissive && (
@@ -155,7 +172,10 @@ const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
         feature="Submissive Statistics"
         fallback={<ReportsErrorFallback feature="Submissive Statistics" />}
       >
-        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-4">
+        <section
+          className="mb-4 sm:mb-6 animate-fade-in-up stagger-4"
+          id="submissive-statistics"
+        >
           <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
             {activeSubmissive.wearerName || "Submissive"}'s Statistics
           </h3>
@@ -165,7 +185,7 @@ const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
             tasks={submissiveReport.tasks}
             goals={submissiveReport.goals}
           />
-        </div>
+        </section>
       </FeatureErrorBoundary>
     )}
   </>
@@ -187,12 +207,15 @@ const SessionHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
       feature="Session History"
       fallback={<ReportsErrorFallback feature="Session History" />}
     >
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-5">
+      <section
+        className="mb-4 sm:mb-6 animate-fade-in-up stagger-5"
+        id="your-session-history"
+      >
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Session History" : "Session History"}
         </h3>
         <SessionHistorySection sessions={userReport.sessions} />
-      </div>
+      </section>
     </FeatureErrorBoundary>
 
     {activeSubmissive && (
@@ -200,12 +223,15 @@ const SessionHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
         feature="Submissive Session History"
         fallback={<ReportsErrorFallback feature="Submissive Session History" />}
       >
-        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-6">
+        <section
+          className="mb-4 sm:mb-6 animate-fade-in-up stagger-6"
+          id="submissive-session-history"
+        >
           <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
             {activeSubmissive.wearerName || "Submissive"}'s Session History
           </h3>
           <SessionHistorySection sessions={submissiveReport.sessions} />
-        </div>
+        </section>
       </FeatureErrorBoundary>
     )}
   </>
@@ -227,12 +253,15 @@ const EventHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
       feature="Event History"
       fallback={<ReportsErrorFallback feature="Event History" />}
     >
-      <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-7">
+      <section
+        className="mb-4 sm:mb-6 animate-fade-in-up stagger-7"
+        id="your-event-history"
+      >
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Events" : "Event History"}
         </h3>
         <EventList events={userReport.events} />
-      </div>
+      </section>
     </FeatureErrorBoundary>
 
     {activeSubmissive && submissiveReport.events.length > 0 && (
@@ -240,12 +269,15 @@ const EventHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
         feature="Submissive Event History"
         fallback={<ReportsErrorFallback feature="Submissive Event History" />}
       >
-        <div className="mb-4 sm:mb-6 animate-fade-in-up stagger-8">
+        <section
+          className="mb-4 sm:mb-6 animate-fade-in-up stagger-8"
+          id="submissive-event-history"
+        >
           <h3 className="text-base sm:text-lg font-semibold text-nightly-lavender-floral mb-3 sm:mb-4 break-words">
             {activeSubmissive.wearerName || "Submissive"}'s Events
           </h3>
           <EventList events={submissiveReport.events} />
-        </div>
+        </section>
       </FeatureErrorBoundary>
     )}
   </>
@@ -300,7 +332,31 @@ const FullReportPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-      <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
+      {/* Skip links for accessibility */}
+      <nav
+        className="sr-only focus-within:not-sr-only"
+        aria-label="Skip navigation"
+      >
+        <a
+          href="#your-status"
+          className="absolute top-0 left-0 bg-nightly-honeydew text-gray-900 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine z-50"
+        >
+          Skip to Current Status
+        </a>
+        <a
+          href="#your-statistics"
+          className="absolute top-0 left-40 bg-nightly-honeydew text-gray-900 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine z-50"
+        >
+          Skip to Statistics
+        </a>
+        <a
+          href="#your-session-history"
+          className="absolute top-0 left-80 bg-nightly-honeydew text-gray-900 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine z-50"
+        >
+          Skip to Session History
+        </a>
+      </nav>
+      <main className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto">
         <CombinedReportHeader activeSubmissive={activeSubmissive} />
         <UserStatusSection
           activeSubmissive={activeSubmissive}
@@ -322,7 +378,7 @@ const FullReportPage: React.FC = () => {
           userReport={userReport}
           submissiveReport={submissiveReport}
         />
-      </div>
+      </main>
     </div>
   );
 };
