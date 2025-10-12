@@ -3,6 +3,7 @@ import type { DBSession } from "../../types/database";
 import { FaHistory, FaCalendar } from "../../utils/iconImport";
 import { Card, Button } from "@/components/ui";
 import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
+import { logger } from "@/utils/logging";
 
 // Helper function to format duration
 const formatDuration = (seconds: number) => {
@@ -49,9 +50,9 @@ const SessionItem: React.FC<{
             {session.startTime.toLocaleTimeString()}
           </span>
           <span className="sm:hidden">
-            {session.startTime.toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            {session.startTime.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </span>
         </div>
@@ -63,9 +64,9 @@ const SessionItem: React.FC<{
                 {session.endTime.toLocaleTimeString()}
               </span>
               <span className="sm:hidden">
-                {session.endTime.toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
+                {session.endTime.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </span>
               {session.endReason && ` (${session.endReason})`}
@@ -151,9 +152,27 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
   const [showAll, setShowAll] = useState(false);
 
   const sortedSessions = useMemo(() => {
-    return [...sessions].sort(
-      (a, b) => b.startTime.getTime() - a.startTime.getTime(),
-    );
+    try {
+      // Validate sessions is an array
+      if (!Array.isArray(sessions)) {
+        logger.error("Sessions is not an array", { sessions });
+        return [];
+      }
+
+      // Filter out invalid sessions and sort
+      return [...sessions]
+        .filter((session) => session && session.startTime)
+        .sort((a, b) => {
+          try {
+            return b.startTime.getTime() - a.startTime.getTime();
+          } catch {
+            return 0;
+          }
+        });
+    } catch (error) {
+      logger.error("Error sorting sessions", { error });
+      return [];
+    }
   }, [sessions]);
 
   const displaySessions = showAll
