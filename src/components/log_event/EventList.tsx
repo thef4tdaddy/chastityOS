@@ -7,6 +7,7 @@ import {
   FaGamepad,
   FaTint,
 } from "../../utils/iconImport";
+import { Button } from "@/components/ui";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [
@@ -188,25 +189,27 @@ const EventListComponent: React.FC<EventListProps> = ({
       {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-nightly-celadon/20">
-          <button
+          <Button
             onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
             disabled={!hasPreviousPages}
-            className="px-4 py-2 text-sm bg-nightly-aquamarine/20 text-nightly-aquamarine rounded hover:bg-nightly-aquamarine/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            variant="ghost"
+            size="sm"
           >
             Previous
-          </button>
+          </Button>
           <span className="text-sm text-nightly-celadon">
             Page {currentPage + 1} of {totalPages}
           </span>
-          <button
+          <Button
             onClick={() =>
               setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
             }
             disabled={!hasMorePages}
-            className="px-4 py-2 text-sm bg-nightly-aquamarine/20 text-nightly-aquamarine rounded hover:bg-nightly-aquamarine/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            variant="ghost"
+            size="sm"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>
