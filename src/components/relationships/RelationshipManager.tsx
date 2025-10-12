@@ -27,8 +27,7 @@ const convertToKeyholderRelationship = (
   keyholderUserId: relationship.keyholderId,
   status: relationship.status === "active" ? "active" : "ended",
   permissions: {} as KeyholderPermissions,
-  createdAt: relationship.createdAt,
-  updatedAt: relationship.updatedAt,
+  createdAt: new Date(relationship.createdAt.toDate()),
 });
 
 const RelationshipManager: React.FC<RelationshipManagerProps> = ({

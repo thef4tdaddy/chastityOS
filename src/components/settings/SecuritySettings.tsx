@@ -18,14 +18,19 @@ export const SecuritySettings: React.FC = () => (
         <label className="block text-sm font-medium text-nightly-celadon mb-2">
           Auto-logout After Inactivity
         </label>
-        <Select className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew">
-          <option value="never">Never</option>
-          <option value="15">15 minutes</option>
-          <option value="30">30 minutes</option>
-          <option value="60">1 hour</option>
-          <option value="240">4 hours</option>
-          <option value="1440">24 hours</option>
-        </Select>
+        <Select
+          className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew"
+          value="never"
+          onChange={() => {}}
+          options={[
+            { value: "never", label: "Never" },
+            { value: "15", label: "15 minutes" },
+            { value: "30", label: "30 minutes" },
+            { value: "60", label: "1 hour" },
+            { value: "240", label: "4 hours" },
+            { value: "1440", label: "24 hours" },
+          ]}
+        />
       </div>
 
       <ToggleSwitch
