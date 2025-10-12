@@ -1,8 +1,14 @@
 // src/components/full_report/ChastityHistoryTable.jsx
-import React from "react";
+import React, { useMemo } from "react";
 import { formatTime, formatElapsedTime } from "../../utils";
 
 const ChastityHistoryTable = ({ chastityHistory }) => {
+  // Optimized: Memoize reversed array to prevent creating new array on every render
+  const reversedHistory = useMemo(
+    () => chastityHistory.slice().reverse(),
+    [chastityHistory],
+  );
+
   if (chastityHistory.length === 0) {
     return (
       <p className="text-center text-purple-200">
@@ -49,10 +55,7 @@ const ChastityHistoryTable = ({ chastityHistory }) => {
           </tr>
         </thead>
         <tbody className="bg-gray-800 divide-y divide-purple-700">
-          {chastityHistory
-            .slice()
-            .reverse()
-            .map((p) => {
+          {reversedHistory.map((p) => {
               const effectiveDuration = Math.max(
                 0,
                 (p.duration || 0) - (p.totalPauseDurationSeconds || 0),
@@ -122,4 +125,5 @@ const ChastityHistoryTable = ({ chastityHistory }) => {
   );
 };
 
-export default ChastityHistoryTable;
+// Optimized: Wrap with React.memo to prevent re-renders when props don't change
+export default React.memo(ChastityHistoryTable);

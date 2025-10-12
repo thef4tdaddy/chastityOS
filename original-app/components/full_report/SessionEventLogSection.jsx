@@ -1,10 +1,12 @@
 // src/components/full_report/SessionEventLogSection.jsx
-import React from "react";
+import React, { useMemo } from "react";
 import { formatTime } from "../../utils";
 
 const SessionEventLogSection = ({ isLoadingEvents, eventLog }) => {
-  const filteredLog = eventLog.filter(
-    (event) => event.eventType === "startTimeEdit",
+  // Optimized: Memoize filtering to prevent recalculation on every render
+  const filteredLog = useMemo(
+    () => eventLog.filter((event) => event.eventType === "startTimeEdit"),
+    [eventLog],
   );
 
   if (isLoadingEvents) {
@@ -75,4 +77,5 @@ const SessionEventLogSection = ({ isLoadingEvents, eventLog }) => {
   );
 };
 
-export default SessionEventLogSection;
+// Optimized: Wrap with React.memo to prevent re-renders when props don't change
+export default React.memo(SessionEventLogSection);

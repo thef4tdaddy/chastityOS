@@ -39,4 +39,5 @@ const TotalsSection = ({
   </>
 );
 
-export default TotalsSection;
+// Optimized: Wrap with React.memo to prevent re-renders when props don't change
+export default React.memo(TotalsSection);

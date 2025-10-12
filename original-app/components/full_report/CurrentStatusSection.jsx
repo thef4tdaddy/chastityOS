@@ -59,4 +59,5 @@ const CurrentStatusSection = ({
   </>
 );
 
-export default CurrentStatusSection;
+// Optimized: Wrap with React.memo to prevent re-renders when props don't change
+export default React.memo(CurrentStatusSection);
