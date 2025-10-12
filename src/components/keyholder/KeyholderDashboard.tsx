@@ -164,13 +164,43 @@ const NavigationTabs = React.memo<{
     { id: "settings", label: "Settings", icon: FaCog },
   ];
 
+  // Keyboard navigation for tabs
+  const handleKeyDown = (
+    e: React.KeyboardEvent,
+    tabId: string,
+    index: number,
+  ) => {
+    const tabsArray = tabs.map((t) => t.id);
+    let newIndex = index;
+
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      newIndex = index > 0 ? index - 1 : tabs.length - 1;
+    } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      newIndex = index < tabs.length - 1 ? index + 1 : 0;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      newIndex = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      newIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+
+    onSetSelectedTab(
+      tabsArray[newIndex] as "overview" | "sessions" | "tasks" | "settings",
+    );
+  };
+
   return (
     <nav 
       className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 bg-black/20 rounded-lg p-2 sm:p-1 mb-4 sm:mb-6"
       role="tablist"
       aria-label="Dashboard sections"
     >
-      {tabs.map((tab) => (
+      {tabs.map((tab, index) => (
         <Button
           key={tab.id}
           onClick={() =>
@@ -178,7 +208,9 @@ const NavigationTabs = React.memo<{
               tab.id as "overview" | "sessions" | "tasks" | "settings",
             )
           }
+          onKeyDown={(e) => handleKeyDown(e, tab.id, index)}
           role="tab"
+          id={`${tab.id}-tab`}
           aria-selected={selectedTab === tab.id}
           aria-controls={`${tab.id}-panel`}
           tabIndex={selectedTab === tab.id ? 0 : -1}
