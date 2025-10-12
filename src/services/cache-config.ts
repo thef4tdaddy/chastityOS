@@ -29,21 +29,22 @@ export const cacheConfig: QueryCacheConfig = {
   },
 
   // Warm data - moderately fresh
+  // Optimized for report performance: longer stale time for historical data
   sessionHistory: {
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: 1000 * 60 * 10, // 10 minutes (increased from 5)
+    gcTime: 1000 * 60 * 60, // 60 minutes (increased from 30)
     refetchOnWindowFocus: false,
   },
 
   tasks: {
-    staleTime: 1000 * 60 * 3, // 3 minutes - tasks don't change that frequently
-    gcTime: 1000 * 60 * 30, // 30 minutes - keep longer for better UX
-    refetchOnWindowFocus: true, // Refetch when user returns to ensure fresh data
+    staleTime: 1000 * 60 * 5, // 5 minutes (increased from 3)
+    gcTime: 1000 * 60 * 45, // 45 minutes (increased from 30)
+    refetchOnWindowFocus: false, // Changed to false to reduce unnecessary refetches
   },
 
   events: {
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: 1000 * 60 * 10, // 10 minutes (increased from 5)
+    gcTime: 1000 * 60 * 60, // 60 minutes (increased from 30)
     refetchOnWindowFocus: false,
   },
 
