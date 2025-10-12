@@ -35,9 +35,14 @@ interface CreateEventParams {
  * Get event history for a user with filters
  * Fixes: LogEventPage.tsx:20 (eventDBService.findByUserId)
  */
-export function useEventHistory(userId: string, filters?: EventFilters) {
+export function useEventHistory(
+  userId: string,
+  filters?: EventFilters & { enabled?: boolean },
+) {
+  const { enabled = true, ...eventFilters } = filters || {};
+
   return useQuery({
-    queryKey: eventKeys.list(userId, filters),
+    queryKey: eventKeys.list(userId, eventFilters),
     queryFn: async (): Promise<DBEvent[]> => {
       logger.info("Fetching event history", { userId, filters });
 
@@ -47,21 +52,21 @@ export function useEventHistory(userId: string, filters?: EventFilters) {
         // Apply filters
         let filteredEvents = events;
 
-        if (filters?.type) {
+        if (eventFilters?.type) {
           filteredEvents = filteredEvents.filter(
-            (event) => event.type === filters.type,
+            (event) => event.type === eventFilters.type,
           );
         }
 
-        if (filters?.startDate) {
+        if (eventFilters?.startDate) {
           filteredEvents = filteredEvents.filter(
-            (event) => new Date(event.timestamp) >= filters.startDate!,
+            (event) => new Date(event.timestamp) >= eventFilters.startDate!,
           );
         }
 
-        if (filters?.endDate) {
+        if (eventFilters?.endDate) {
           filteredEvents = filteredEvents.filter(
-            (event) => new Date(event.timestamp) <= filters.endDate!,
+            (event) => new Date(event.timestamp) <= eventFilters.endDate!,
           );
         }
 
@@ -71,8 +76,8 @@ export function useEventHistory(userId: string, filters?: EventFilters) {
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
         );
 
-        if (filters?.limit) {
-          filteredEvents = filteredEvents.slice(0, filters.limit);
+        if (eventFilters?.limit) {
+          filteredEvents = filteredEvents.slice(0, eventFilters.limit);
         }
 
         logger.info("Event history retrieved", {
@@ -92,7 +97,7 @@ export function useEventHistory(userId: string, filters?: EventFilters) {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - warm data
     gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
-    enabled: !!userId,
+    enabled: !!userId && enabled,
   });
 }
 
