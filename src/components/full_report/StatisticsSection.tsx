@@ -127,7 +127,7 @@ const StatItem: React.FC<{
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
   numericValue?: number;
-  isVisible: boolean;
+  isVisible: boolean | undefined;
   index: number;
 }> = ({ label, value, icon: Icon, numericValue, isVisible, index }) => {
   // Use counting animation for numeric values
@@ -228,7 +228,7 @@ const StatisticsSectionComponent: React.FC<{
   );
 
   // Stagger animation for stat items
-  const visibleItems = useStaggerAnimation(statItems.length, 80) ?? [];
+  const visibleItems = useStaggerAnimation(statItems.length, 80);
 
   return (
     <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
