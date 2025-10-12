@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useAuthState } from "../../contexts";
 import { useCreateEvent } from "../../hooks/api/useEvents";
 import { useNotificationActions } from "../../stores";
-import type { EventType } from "../../types/database";
 import {
   FaPlus,
   FaHeart,
@@ -12,43 +11,49 @@ import {
   FaSpinner,
 } from "../../utils/iconImport";
 import { Input, Textarea, Button, Switch } from "@/components/ui";
+import {
+  EventErrorDisplay,
+  createEventError,
+  EVENT_ERROR_MESSAGES,
+} from "./EventErrorDisplay";
+import type { EventError } from "./EventErrorDisplay";
 
 // Event type definitions with modern icons
 const EVENT_TYPES = [
   {
-    value: "orgasm" as EventType,
+    value: "orgasm",
     label: "Orgasm",
     icon: FaHeart,
     color: "text-red-400",
     description: "Self or partner induced orgasm",
   },
   {
-    value: "sexual_activity" as EventType,
+    value: "sexual_activity",
     label: "Sexual Activity",
     icon: FaFire,
     color: "text-orange-400",
     description: "Sexual play or activity",
   },
   {
-    value: "milestone" as EventType,
+    value: "milestone",
     label: "Milestone",
     icon: FaGamepad,
     color: "text-nightly-aquamarine",
     description: "Achievement or milestone reached",
   },
   {
-    value: "note" as EventType,
+    value: "note",
     label: "Note",
     icon: FaTint,
     color: "text-nightly-lavender-floral",
     description: "General note or observation",
   },
-];
+] as const;
 
 // Event Type Selection Component
 const EventTypeSelector: React.FC<{
-  selectedType: EventType;
-  onTypeChange: (type: EventType) => void;
+  selectedType: string;
+  onTypeChange: (type: string) => void;
 }> = ({ selectedType, onTypeChange }) => (
   <div>
     <label
@@ -284,7 +289,7 @@ const SubmitButton: React.FC<{
 // Custom hook for form data management
 const useEventFormData = () => {
   const [formData, setFormData] = useState({
-    type: "note" as EventType,
+    type: "note",
     notes: "",
     timestamp: new Date().toISOString().slice(0, 16),
     mood: "",
@@ -295,7 +300,7 @@ const useEventFormData = () => {
 
   const resetForm = () => {
     setFormData({
-      type: "note" as EventType,
+      type: "note",
       notes: "",
       timestamp: new Date().toISOString().slice(0, 16),
       mood: "",
@@ -321,7 +326,7 @@ const createConfetti = () => {
     confetti.style.width = Math.random() * 10 + 5 + "px";
     confetti.style.height = Math.random() * 10 + 5 + "px";
     confetti.style.backgroundColor =
-      colors[Math.floor(Math.random() * colors.length)];
+      colors[Math.floor(Math.random() * colors.length)] || "#22c55e";
     confetti.style.animationDelay = Math.random() * 0.5 + "s";
     confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
 
@@ -334,10 +339,48 @@ const createConfetti = () => {
   }
 };
 
-// Custom hook for form submission
+// Validation helper
+const validateEventForm = (formData: {
+  type: string;
+  timestamp: string;
+  notes: string;
+}): EventError | null => {
+  // Check if timestamp is valid
+  const timestamp = new Date(formData.timestamp);
+  if (isNaN(timestamp.getTime())) {
+    return createEventError(
+      "validation",
+      EVENT_ERROR_MESSAGES.VALIDATION_INVALID_DATE,
+      "Please select a valid date and time for the event",
+    );
+  }
+
+  // Check if timestamp is in the future
+  const now = new Date();
+  if (timestamp > now) {
+    return createEventError(
+      "timestamp",
+      EVENT_ERROR_MESSAGES.VALIDATION_FUTURE_DATE,
+      "Events can only be logged for past or current times",
+    );
+  }
+
+  // Check if notes are too long (optional validation)
+  if (formData.notes && formData.notes.length > 5000) {
+    return createEventError(
+      "validation",
+      "Notes are too long",
+      "Please keep notes under 5000 characters",
+    );
+  }
+
+  return null;
+};
+
+// Custom hook for form submission with enhanced error handling
 const useEventSubmission = (
   formData: {
-    type: EventType;
+    type: string;
     notes: string;
     timestamp: string;
     mood: string;
@@ -352,10 +395,22 @@ const useEventSubmission = (
   const { user } = useAuthState();
   const createEvent = useCreateEvent();
   const { showSuccess, showError } = useNotificationActions();
+  const [formError, setFormError] = useState<EventError | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Clear previous errors
+    setFormError(null);
+
+    // Validate form data
+    const validationError = validateEventForm(formData);
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
 
     // Use targetUserId if provided (for keyholders logging for submissives), otherwise use current user
     const userId = targetUserId || user.uid;
@@ -363,7 +418,7 @@ const useEventSubmission = (
     try {
       await createEvent.mutateAsync({
         userId,
-        type: formData.type,
+        type: formData.type as string,
         timestamp: new Date(formData.timestamp),
         notes: formData.notes,
         isPrivate: formData.isPrivate,
@@ -385,14 +440,82 @@ const useEventSubmission = (
         createConfetti();
       }
 
+      // Reset error state on success
+      setRetryCount(0);
+      setFormError(null);
+
       onEventLogged?.();
       resetForm();
-    } catch {
+    } catch (error) {
+      // Determine error type and provide appropriate message
+      const isOffline = !navigator.onLine;
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
+      if (isOffline) {
+        setFormError(
+          createEventError(
+            "network",
+            EVENT_ERROR_MESSAGES.NETWORK_OFFLINE,
+            "Your event will be saved and synced when you're back online",
+            false,
+          ),
+        );
+        // Still show success since it will be queued
+        showSuccess("Event queued for sync", "Will sync when online");
+      } else if (errorMessage.includes("timeout")) {
+        setFormError(
+          createEventError(
+            "network",
+            EVENT_ERROR_MESSAGES.NETWORK_TIMEOUT,
+            "The connection timed out. Your internet may be slow",
+            true,
+          ),
+        );
+      } else if (errorMessage.includes("duplicate")) {
+        setFormError(
+          createEventError(
+            "duplicate",
+            EVENT_ERROR_MESSAGES.VALIDATION_DUPLICATE,
+            "Try adjusting the timestamp or event type",
+            false,
+          ),
+        );
+      } else {
+        setFormError(
+          createEventError(
+            "unknown",
+            EVENT_ERROR_MESSAGES.NETWORK_ERROR,
+            retryCount > 0
+              ? `Failed after ${retryCount + 1} attempts. Please check your connection.`
+              : undefined,
+            true,
+          ),
+        );
+      }
+
       showError("Failed to log event. Please try again.", "Event Log Failed");
     }
   };
 
-  return { handleSubmit, isPending: createEvent.isPending };
+  const handleRetry = () => {
+    setRetryCount((prev) => prev + 1);
+    setFormError(null);
+    // Create a synthetic event to trigger handleSubmit
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+  };
+
+  const dismissError = () => {
+    setFormError(null);
+  };
+
+  return {
+    handleSubmit,
+    isPending: createEvent.isPending,
+    formError,
+    handleRetry,
+    dismissError,
+  };
 };
 
 // Event Form Component
@@ -406,12 +529,8 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
   targetUserId,
 }) => {
   const { formData, setFormData, resetForm } = useEventFormData();
-  const { handleSubmit, isPending } = useEventSubmission(
-    formData,
-    resetForm,
-    onEventLogged,
-    targetUserId,
-  );
+  const { handleSubmit, isPending, formError, handleRetry, dismissError } =
+    useEventSubmission(formData, resetForm, onEventLogged, targetUserId);
 
   return (
     <div
@@ -432,16 +551,24 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
         </h2>
       </div>
 
+
+      {/* Error Display */}
+      <EventErrorDisplay
+        error={formError}
+        onDismiss={dismissError}
+        onRetry={handleRetry}
+      />
+
+
       <form
         onSubmit={handleSubmit}
         className="space-y-3 sm:space-y-4"
         aria-label="Log new event form"
       >
+
         <EventTypeSelector
           selectedType={formData.type}
-          onTypeChange={(type) =>
-            setFormData((prev) => ({ ...prev, type: type as EventType }))
-          }
+          onTypeChange={(type) => setFormData((prev) => ({ ...prev, type }))}
         />
 
         <BasicFormFields
