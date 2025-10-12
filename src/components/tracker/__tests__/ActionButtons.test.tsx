@@ -38,7 +38,11 @@ vi.mock("@/components/ui", () => ({
 
 // Mock the icon imports
 vi.mock("../../utils/iconImport", () => ({
-  FaLock: () => <span data-testid="lock-icon">🔒</span>,
+  FaLock: ({ className }: { className?: string }) => (
+    <span data-testid="lock-icon" className={className}>
+      🔒
+    </span>
+  ),
 }));
 
 // Mock the child components
