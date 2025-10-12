@@ -1,13 +1,25 @@
 /**
  * Hook for managing keyholder relationships
  * Provides UI state and actions for account linking
+ * Optimized with TanStack Query for better performance and caching
  */
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useAuthState } from "../contexts";
 import { KeyholderRelationshipService } from "../services/KeyholderRelationshipService";
 import { KeyholderRelationship, KeyholderPermissions } from "../types/core";
 import { InviteCode } from "../services/database/KeyholderRelationshipDBService";
 import { serviceLogger } from "../utils/logging";
+import {
+  useKeyholderRelationships as useKeyholderRelationshipsQuery,
+  useActiveKeyholder as useActiveKeyholderQuery,
+  useActiveInviteCodes as useActiveInviteCodesQuery,
+  useRelationshipSummary as useRelationshipSummaryQuery,
+  useCreateInviteCode as useCreateInviteCodeMutation,
+  useAcceptInviteCode as useAcceptInviteCodeMutation,
+  useRevokeInviteCode as useRevokeInviteCodeMutation,
+  useUpdatePermissions as useUpdatePermissionsMutation,
+  useEndRelationship as useEndRelationshipMutation,
+} from "./api/useKeyholderRelationshipQueries";
 
 const logger = serviceLogger("useKeyholderRelationships");
 
@@ -78,102 +90,94 @@ export interface KeyholderRelationshipActions {
   ) => Promise<boolean>;
 }
 
-const initialState: KeyholderRelationshipState = {
-  relationships: {
-    asSubmissive: [],
-    asKeyholder: [],
-  },
-  activeKeyholder: null,
-  activeInviteCodes: [],
-  isLoading: false,
-  isCreatingInvite: false,
-  isAcceptingInvite: false,
-  isUpdatingPermissions: false,
-  inviteCodeInput: "",
-  keyholderNameInput: "",
-  message: "",
-  messageType: "info",
-  relationshipSummary: null,
-};
+// Initial state removed - now using TanStack Query for data management
 
-/**
- * Hook to load relationships data
- */
-function useLoadRelationships(
-  userId: string | undefined,
-  setState: React.Dispatch<React.SetStateAction<KeyholderRelationshipState>>,
-) {
-  return useCallback(async () => {
-    if (!userId) return;
+// Disable complexity warnings - this hook coordinates multiple related operations
+/* eslint-disable max-lines-per-function, max-statements */
+export function useKeyholderRelationships(): KeyholderRelationshipState &
+  KeyholderRelationshipActions {
+  const [formState, setFormState] = useState({
+    inviteCodeInput: "",
+    keyholderNameInput: "",
+    message: "",
+    messageType: "info" as "success" | "error" | "info",
+  });
 
-    setState((prev) => ({ ...prev, isLoading: true }));
+  const { user } = useAuthState();
+  const userId = user?.uid;
 
-    try {
-      const relationships =
-        await KeyholderRelationshipService.getUserRelationships(userId);
-      const activeKeyholder =
-        await KeyholderRelationshipService.getActiveKeyholder(userId);
+  // Use TanStack Query hooks for data fetching with automatic caching
+  const relationshipsQuery = useKeyholderRelationshipsQuery(userId);
+  const activeKeyholderQuery = useActiveKeyholderQuery(userId);
+  const inviteCodesQuery = useActiveInviteCodesQuery(userId);
+  const summaryQuery = useRelationshipSummaryQuery(userId);
 
-      setState((prev) => ({
-        ...prev,
-        relationships,
-        activeKeyholder,
-        isLoading: false,
-      }));
+  // Use mutations for data modifications with automatic cache invalidation
+  const createInviteMutation = useCreateInviteCodeMutation();
+  const acceptInviteMutation = useAcceptInviteCodeMutation();
+  const revokeInviteMutation = useRevokeInviteCodeMutation();
+  const updatePermissionsMutation = useUpdatePermissionsMutation();
+  const endRelationshipMutation = useEndRelationshipMutation();
 
-      logger.debug("Relationships loaded", {
-        submissiveCount: relationships.asSubmissive.length,
-        keyholderCount: relationships.asKeyholder.length,
-      });
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        message: "Failed to load relationships",
-        messageType: "error",
-      }));
-      logger.error("Failed to load relationships", { error: error as Error });
-    }
-  }, [userId, setState]);
-}
+  // Combine loading states
+  const isLoading = useMemo(
+    () =>
+      relationshipsQuery.isLoading ||
+      activeKeyholderQuery.isLoading ||
+      inviteCodesQuery.isLoading ||
+      summaryQuery.isLoading,
+    [
+      relationshipsQuery.isLoading,
+      activeKeyholderQuery.isLoading,
+      inviteCodesQuery.isLoading,
+      summaryQuery.isLoading,
+    ],
+  );
 
-/**
- * Hook to create invite codes
- */
-function useCreateInviteCode(
-  userId: string | undefined,
-  displayName: string | undefined | null,
-  setState: React.Dispatch<React.SetStateAction<KeyholderRelationshipState>>,
-  loadInviteCodes: () => Promise<void>,
-) {
-  return useCallback(
+  // Data loading functions (now just trigger refetch)
+  const loadRelationships = useCallback(async () => {
+    await relationshipsQuery.refetch();
+    await activeKeyholderQuery.refetch();
+  }, [relationshipsQuery, activeKeyholderQuery]);
+
+  const loadInviteCodes = useCallback(async () => {
+    await inviteCodesQuery.refetch();
+  }, [inviteCodesQuery]);
+
+  const loadRelationshipSummary = useCallback(async () => {
+    await summaryQuery.refetch();
+  }, [summaryQuery]);
+
+  // Create invite code with optimistic updates
+  const createInviteCode = useCallback(
     async (expirationHours = 24): Promise<InviteCode | null> => {
-      if (!userId || !displayName) return null;
+      if (!userId || !user?.displayName) return null;
 
-      setState((prev) => ({ ...prev, isCreatingInvite: true, message: "" }));
+      setFormState((prev) => ({
+        ...prev,
+        message: "",
+      }));
 
       try {
         const canCreate =
           await KeyholderRelationshipService.canCreateInviteCode(userId);
         if (!canCreate) {
-          setState((prev) => ({
+          setFormState((prev) => ({
             ...prev,
-            isCreatingInvite: false,
             message: "You already have an active keyholder relationship",
             messageType: "error",
           }));
           return null;
         }
 
-        const inviteCode = await KeyholderRelationshipService.createInviteCode(
+        const inviteCode = await createInviteMutation.mutateAsync({
           userId,
-          displayName,
+          displayName: user.displayName,
           expirationHours,
-        );
+        });
 
-        setState((prev) => ({
+        setFormState((prev) => ({
           ...prev,
-          isCreatingInvite: false,
           message: `Invite code created: ${inviteCode.code}`,
           messageType: "success",
         }));
@@ -182,14 +186,12 @@ function useCreateInviteCode(
           code: inviteCode.code,
         });
 
-        await loadInviteCodes();
         return inviteCode;
       } catch (error) {
         const errorMessage =
           (error as Error).message || "Failed to create invite code";
-        setState((prev) => ({
+        setFormState((prev) => ({
           ...prev,
-          isCreatingInvite: false,
           message: errorMessage,
           messageType: "error",
         }));
@@ -197,36 +199,28 @@ function useCreateInviteCode(
         return null;
       }
     },
-    [userId, displayName, setState, loadInviteCodes],
+    [userId, user?.displayName, createInviteMutation],
   );
-}
 
-/**
- * Hook to accept invite codes
- */
-function useAcceptInviteCode(
-  userId: string | undefined,
-  displayName: string | undefined | null,
-  setState: React.Dispatch<React.SetStateAction<KeyholderRelationshipState>>,
-  loadRelationships: () => Promise<void>,
-  loadRelationshipSummary: () => Promise<void>,
-) {
-  return useCallback(
+  // Accept invite code with optimistic updates
+  const acceptInviteCode = useCallback(
     async (code: string, keyholderName?: string): Promise<boolean> => {
       if (!userId) return false;
 
-      setState((prev) => ({ ...prev, isAcceptingInvite: true, message: "" }));
+      setFormState((prev) => ({
+        ...prev,
+        message: "",
+      }));
 
       try {
-        await KeyholderRelationshipService.acceptInviteCode(
+        await acceptInviteMutation.mutateAsync({
           code,
-          userId,
-          keyholderName || displayName,
-        );
+          keyholderUserId: userId,
+          keyholderName: keyholderName || user?.displayName,
+        });
 
-        setState((prev) => ({
+        setFormState((prev) => ({
           ...prev,
-          isAcceptingInvite: false,
           message: "Successfully linked with submissive!",
           messageType: "success",
           inviteCodeInput: "",
@@ -234,17 +228,12 @@ function useAcceptInviteCode(
         }));
 
         logger.info("Invite code accepted successfully");
-
-        await loadRelationships();
-        await loadRelationshipSummary();
-
         return true;
       } catch (error) {
         const errorMessage =
           (error as Error).message || "Failed to accept invite code";
-        setState((prev) => ({
+        setFormState((prev) => ({
           ...prev,
-          isAcceptingInvite: false,
           message: errorMessage,
           messageType: "error",
         }));
@@ -252,133 +241,93 @@ function useAcceptInviteCode(
         return false;
       }
     },
-    [userId, displayName, setState, loadRelationships, loadRelationshipSummary],
+    [userId, user?.displayName, acceptInviteMutation],
   );
-}
 
-/**
- * Hook composition for relationship actions
- */
-function useRelationshipActions(
-  userId: string | undefined,
-  setState: React.Dispatch<React.SetStateAction<KeyholderRelationshipState>>,
-  loadRelationships: () => Promise<void>,
-  loadRelationshipSummary: () => Promise<void>,
-  loadInviteCodes: () => Promise<void>,
-) {
+  // Revoke invite code
   const revokeInviteCode = useCallback(
     async (codeId: string) => {
       if (!userId) return;
 
       try {
-        await KeyholderRelationshipService.revokeInviteCode(codeId, userId);
+        await revokeInviteMutation.mutateAsync({ codeId, userId });
         logger.info("Invite code revoked successfully", { codeId });
-        await loadInviteCodes();
       } catch (error) {
         logger.error("Failed to revoke invite code", { error: error as Error });
       }
     },
-    [userId, loadInviteCodes],
+    [userId, revokeInviteMutation],
   );
 
+  // Update permissions
   const updatePermissions = useCallback(
     async (relationshipId: string, permissions: KeyholderPermissions) => {
       if (!userId) return;
 
-      setState((prev) => ({ ...prev, isUpdatingPermissions: true }));
-
       try {
-        await KeyholderRelationshipService.updatePermissions(
+        await updatePermissionsMutation.mutateAsync({
           relationshipId,
           permissions,
           userId,
-        );
-        setState((prev) => ({
+        });
+        setFormState((prev) => ({
           ...prev,
-          isUpdatingPermissions: false,
           message: "Permissions updated successfully",
           messageType: "success",
         }));
         logger.info("Permissions updated successfully");
-        await loadRelationships();
       } catch (error) {
         const errorMessage =
           (error as Error).message || "Failed to update permissions";
-        setState((prev) => ({
+        setFormState((prev) => ({
           ...prev,
-          isUpdatingPermissions: false,
           message: errorMessage,
           messageType: "error",
         }));
         logger.error("Failed to update permissions", { error: error as Error });
       }
     },
-    [userId, setState, loadRelationships],
+    [userId, updatePermissionsMutation],
   );
 
+  // End relationship
   const endRelationship = useCallback(
     async (relationshipId: string) => {
       if (!userId) return;
 
       try {
-        await KeyholderRelationshipService.endRelationship(
-          relationshipId,
-          userId,
-        );
+        await endRelationshipMutation.mutateAsync({ relationshipId, userId });
         logger.info("Relationship ended successfully");
-        await loadRelationships();
-        await loadRelationshipSummary();
       } catch (error) {
         logger.error("Failed to end relationship", { error: error as Error });
       }
     },
-    [userId, loadRelationships, loadRelationshipSummary],
+    [userId, endRelationshipMutation],
   );
 
-  return { revokeInviteCode, updatePermissions, endRelationship };
-}
+  // Form actions
+  const setInviteCodeInput = useCallback((code: string) => {
+    setFormState((prev) => ({ ...prev, inviteCodeInput: code.toUpperCase() }));
+  }, []);
 
-/**
- * Hook composition for form actions
- */
-function useFormActions(
-  setState: React.Dispatch<React.SetStateAction<KeyholderRelationshipState>>,
-) {
-  const setInviteCodeInput = useCallback(
-    (code: string) => {
-      setState((prev) => ({ ...prev, inviteCodeInput: code.toUpperCase() }));
-    },
-    [setState],
-  );
-
-  const setKeyholderNameInput = useCallback(
-    (name: string) => {
-      setState((prev) => ({ ...prev, keyholderNameInput: name }));
-    },
-    [setState],
-  );
+  const setKeyholderNameInput = useCallback((name: string) => {
+    setFormState((prev) => ({ ...prev, keyholderNameInput: name }));
+  }, []);
 
   const clearMessage = useCallback(() => {
-    setState((prev) => ({ ...prev, message: "", messageType: "info" }));
-  }, [setState]);
+    setFormState((prev) => ({ ...prev, message: "", messageType: "info" }));
+  }, []);
 
   const clearForm = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
+    setFormState({
       inviteCodeInput: "",
       keyholderNameInput: "",
       message: "",
       messageType: "info",
-    }));
-  }, [setState]);
+    });
+  }, []);
 
-  return { setInviteCodeInput, setKeyholderNameInput, clearMessage, clearForm };
-}
-
-/**
- * Hook composition for utility functions
- */
-function useRelationshipUtils(userId: string | undefined) {
+  // Utility functions
   const validateInviteCode = useCallback((code: string): boolean => {
     return KeyholderRelationshipService.validateInviteCodeFormat(code);
   }, []);
@@ -403,89 +352,41 @@ function useRelationshipUtils(userId: string | undefined) {
     [userId],
   );
 
-  return { validateInviteCode, canCreateInviteCode, hasPermission };
-}
-
-export function useKeyholderRelationships(): KeyholderRelationshipState &
-  KeyholderRelationshipActions {
-  const [state, setState] = useState<KeyholderRelationshipState>(initialState);
-  const { user } = useAuthState();
-
-  // Load invite codes
-  const loadInviteCodes = useCallback(async () => {
-    if (!user?.uid) return;
-
-    try {
-      const activeInviteCodes =
-        await KeyholderRelationshipService.getActiveInviteCodes(user.uid);
-      setState((prev) => ({ ...prev, activeInviteCodes }));
-    } catch (error) {
-      logger.error("Failed to load invite codes", { error: error as Error });
-    }
-  }, [user?.uid]);
-
-  // Load relationship summary
-  const loadRelationshipSummary = useCallback(async () => {
-    if (!user?.uid) return;
-
-    try {
-      const relationshipSummary =
-        await KeyholderRelationshipService.getRelationshipSummary(user.uid);
-      setState((prev) => ({ ...prev, relationshipSummary }));
-    } catch (error) {
-      logger.error("Failed to load relationship summary", {
-        error: error as Error,
-      });
-    }
-  }, [user?.uid]);
-
-  const loadRelationships = useLoadRelationships(user?.uid, setState);
-  const createInviteCode = useCreateInviteCode(
-    user?.uid,
-    user?.displayName,
-    setState,
-    loadInviteCodes,
-  );
-  const acceptInviteCode = useAcceptInviteCode(
-    user?.uid,
-    user?.displayName,
-    setState,
-    loadRelationships,
-    loadRelationshipSummary,
-  );
-
-  const relationshipActions = useRelationshipActions(
-    user?.uid,
-    setState,
-    loadRelationships,
-    loadRelationshipSummary,
-    loadInviteCodes,
-  );
-
-  const formActions = useFormActions(setState);
-  const utils = useRelationshipUtils(user?.uid);
-
-  // Load data on mount and user change
-  useEffect(() => {
-    if (user?.uid) {
-      loadRelationships();
-      loadInviteCodes();
-      loadRelationshipSummary();
-    } else {
-      setState(initialState);
-    }
-    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
-  }, [user?.uid, loadRelationships, loadInviteCodes, loadRelationshipSummary]);
-
   return {
-    ...state,
+    // State from queries
+    relationships: relationshipsQuery.data || {
+      asSubmissive: [],
+      asKeyholder: [],
+    },
+    activeKeyholder: activeKeyholderQuery.data || null,
+    activeInviteCodes: inviteCodesQuery.data || [],
+    relationshipSummary: summaryQuery.data || null,
+
+    // Loading states
+    isLoading,
+    isCreatingInvite: createInviteMutation.isPending,
+    isAcceptingInvite: acceptInviteMutation.isPending,
+    isUpdatingPermissions: updatePermissionsMutation.isPending,
+
+    // Form state
+    ...formState,
+
+    // Actions
     loadRelationships,
     loadInviteCodes,
     loadRelationshipSummary,
     createInviteCode,
     acceptInviteCode,
-    ...relationshipActions,
-    ...formActions,
-    ...utils,
+    revokeInviteCode,
+    updatePermissions,
+    endRelationship,
+    setInviteCodeInput,
+    setKeyholderNameInput,
+    clearMessage,
+    clearForm,
+    validateInviteCode,
+    canCreateInviteCode,
+    hasPermission,
   };
 }
+/* eslint-enable max-lines-per-function, max-statements */
