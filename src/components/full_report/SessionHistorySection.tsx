@@ -35,23 +35,39 @@ const SessionItem: React.FC<{
   index: number;
 }> = ({ session, isVisible, index }) => (
   <div
-    className={`bg-white/5 rounded-lg p-4 stat-card-hover ${
+    className={`bg-white/5 rounded-lg p-3 sm:p-4 stat-card-hover ${
       isVisible
         ? `animate-fade-in-up stagger-${Math.min(index + 1, 8)}`
         : "opacity-0"
     }`}
   >
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="font-medium text-nightly-honeydew">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-nightly-honeydew text-sm sm:text-base break-words">
           {session.startTime.toLocaleDateString()}{" "}
-          {session.startTime.toLocaleTimeString()}
+          <span className="hidden sm:inline">
+            {session.startTime.toLocaleTimeString()}
+          </span>
+          <span className="sm:hidden">
+            {session.startTime.toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </span>
         </div>
-        <div className="text-sm text-nightly-celadon">
+        <div className="text-xs sm:text-sm text-nightly-celadon break-words">
           {session.endTime ? (
             <>
               Ended: {session.endTime.toLocaleDateString()}{" "}
-              {session.endTime.toLocaleTimeString()}
+              <span className="hidden sm:inline">
+                {session.endTime.toLocaleTimeString()}
+              </span>
+              <span className="sm:hidden">
+                {session.endTime.toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </span>
               {session.endReason && ` (${session.endReason})`}
             </>
           ) : (
@@ -60,8 +76,8 @@ const SessionItem: React.FC<{
         </div>
       </div>
 
-      <div className="text-right">
-        <div className="font-mono text-nightly-honeydew">
+      <div className="text-left sm:text-right flex-shrink-0">
+        <div className="font-mono text-nightly-honeydew text-sm sm:text-base">
           {session.endTime
             ? formatDuration(getSessionDuration(session))
             : "Ongoing"}
@@ -76,17 +92,17 @@ const SessionItem: React.FC<{
 
     {/* Hardcore Mode Indicators */}
     {session.isHardcoreMode && (
-      <div className="mt-2 flex flex-wrap gap-2">
-        <span className="inline-block bg-red-500/20 text-red-400 px-2 py-1 text-xs rounded">
+      <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
+        <span className="inline-block bg-red-500/20 text-red-400 px-2 py-1 text-xs rounded whitespace-nowrap">
           🔒 Hardcore Mode
         </span>
         {session.hasLockCombination && (
-          <span className="inline-block bg-purple-500/20 text-purple-400 px-2 py-1 text-xs rounded">
+          <span className="inline-block bg-purple-500/20 text-purple-400 px-2 py-1 text-xs rounded whitespace-nowrap">
             🔐 Lock Combo Saved
           </span>
         )}
         {session.emergencyPinUsed && (
-          <span className="inline-block bg-yellow-500/20 text-yellow-400 px-2 py-1 text-xs rounded">
+          <span className="inline-block bg-yellow-500/20 text-yellow-400 px-2 py-1 text-xs rounded whitespace-nowrap">
             ⚠️ Emergency PIN Used
           </span>
         )}
@@ -100,12 +116,12 @@ const SessionItem: React.FC<{
           🚨 Emergency Unlock
         </div>
         {session.emergencyReason && (
-          <div className="text-xs text-yellow-300 mt-1">
+          <div className="text-xs text-yellow-300 mt-1 break-words">
             Reason: {session.emergencyReason}
           </div>
         )}
         {session.emergencyNotes && (
-          <div className="text-xs text-yellow-300 mt-1">
+          <div className="text-xs text-yellow-300 mt-1 break-words">
             {session.emergencyNotes}
           </div>
         )}
@@ -113,7 +129,7 @@ const SessionItem: React.FC<{
     )}
 
     {session.notes && (
-      <div className="mt-2 text-sm text-nightly-celadon">
+      <div className="mt-2 text-xs sm:text-sm text-nightly-celadon break-words">
         Notes: {session.notes}
       </div>
     )}
@@ -148,18 +164,18 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
   const visibleItems = useStaggerAnimation(displaySessions.length, 60);
 
   return (
-    <Card variant="glass" className="mb-6 animate-fade-in-up">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <FaHistory className="text-nightly-spring-green" />
-          <h2 className="text-xl font-semibold text-nightly-honeydew">
+    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <FaHistory className="text-nightly-spring-green text-lg sm:text-xl" />
+          <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
             Session History
           </h2>
         </div>
         {sessions.length > 10 && (
           <Button
             onClick={() => setShowAll(!showAll)}
-            className="text-nightly-aquamarine hover:text-nightly-spring-green transition-colors"
+            className="text-sm sm:text-base text-nightly-aquamarine hover:text-nightly-spring-green transition-colors whitespace-nowrap"
           >
             {showAll ? "Show Less" : `Show All (${sessions.length})`}
           </Button>
@@ -169,7 +185,7 @@ export const SessionHistorySection: React.FC<{ sessions: DBSession[] }> = ({
       {displaySessions.length === 0 ? (
         <EmptySessionsDisplay />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {displaySessions.map((session, index) => (
             <SessionItem
               key={session.id}

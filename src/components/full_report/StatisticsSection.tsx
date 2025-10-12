@@ -100,17 +100,17 @@ const StatItem: React.FC<{
 
   return (
     <div
-      className={`text-center stat-card-hover p-4 rounded-lg bg-white/5 ${
+      className={`text-center stat-card-hover p-3 sm:p-4 rounded-lg bg-white/5 ${
         isVisible
           ? `animate-scale-in stagger-${Math.min(index + 1, 8)}`
           : "opacity-0"
       }`}
     >
-      <Icon className="text-nightly-aquamarine text-2xl mb-2 mx-auto" />
-      <div className="text-lg font-semibold text-nightly-honeydew mb-1">
+      <Icon className="text-nightly-aquamarine text-xl sm:text-2xl mb-1 sm:mb-2 mx-auto" />
+      <div className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-0.5 sm:mb-1 break-words">
         {displayValue}
       </div>
-      <div className="text-sm text-nightly-celadon">{label}</div>
+      <div className="text-xs sm:text-sm text-nightly-celadon leading-tight">{label}</div>
     </div>
   );
 };
@@ -176,15 +176,15 @@ export const StatisticsSection: React.FC<{
   const visibleItems = useStaggerAnimation(statItems.length, 80);
 
   return (
-    <Card variant="glass" className="mb-6 animate-fade-in-up">
-      <div className="flex items-center gap-3 mb-6">
-        <FaChartBar className="text-nightly-lavender-floral" />
-        <h2 className="text-xl font-semibold text-nightly-honeydew">
+    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <FaChartBar className="text-nightly-lavender-floral text-lg sm:text-xl" />
+        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
           Statistics
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {statItems.map((item, index) => (
           <StatItem
             key={index}
