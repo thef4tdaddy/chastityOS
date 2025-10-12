@@ -5,8 +5,7 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { eventDBService } from "../../services/database/EventDBService";
-import { EventType } from "../../types/events";
-import { DBEvent, EventFilters } from "../../types/database";
+import { DBEvent, EventFilters, EventType } from "../../types/database";
 import { serviceLogger } from "../../utils/logging";
 import { eventKeys } from "@/utils/events";
 import { firebaseSync } from "@/services/sync";
@@ -212,7 +211,7 @@ export function useEvent(eventId: string) {
 }
 
 /**
- * Create new event
+ * Create new event with enhanced error handling
  * Strategy: Dexie-first write, Firebase background sync
  */
 export function useCreateEvent() {
@@ -223,42 +222,90 @@ export function useCreateEvent() {
       logger.info("Creating new event", {
         userId: params.userId,
         eventType: params.type,
+        timestamp: params.timestamp,
       });
 
+      // Validate params
+      if (!params.userId) {
+        const error = new Error("User ID is required to create an event");
+        logger.error("Event creation validation failed", {
+          error: error.message,
+        });
+        throw error;
+      }
+
+      if (!params.type) {
+        const error = new Error("Event type is required");
+        logger.error("Event creation validation failed", {
+          error: error.message,
+        });
+        throw error;
+      }
+
       // Prepare event data for database
-      const { notes, duration, ...restParams } = params;
+      const { notes, duration, metadata, ...restParams } = params;
       const eventData: Omit<DBEvent, "id" | "lastModified" | "syncStatus"> = {
-        ...restParams,
-        isPrivate: restParams.isPrivate ?? false,
+        userId: params.userId,
+        type: params.type,
+        timestamp: params.timestamp || new Date(),
+        sessionId: params.sessionId,
+        isPrivate: params.isPrivate ?? false,
         details: {
           notes,
           duration,
+          metadata,
         },
       };
 
-      // 1. Write to local Dexie immediately
-      const eventId = await eventDBService.createEvent(eventData);
+      try {
+        // 1. Write to local Dexie immediately
+        const eventId = await eventDBService.createEvent(eventData);
 
-      // 2. Trigger Firebase sync in background
-      if (navigator.onLine) {
-        firebaseSync.syncUserEvents(params.userId).catch((error) => {
-          logger.warn("Event creation sync failed", { error });
+        // 2. Trigger Firebase sync in background (best-effort)
+        if (navigator.onLine) {
+          firebaseSync.syncUserEvents(params.userId).catch((syncError) => {
+            logger.warn("Event creation sync failed (will retry later)", {
+              error:
+                syncError instanceof Error
+                  ? syncError.message
+                  : String(syncError),
+              eventId,
+            });
+          });
+        } else {
+          logger.info(
+            "Offline mode: Event will sync when connection is restored",
+            {
+              eventId,
+            },
+          );
+        }
+
+        logger.info("Event created successfully", {
+          eventId,
+          userId: params.userId,
+          type: params.type,
         });
+
+        // Return the created event with the generated ID
+        return {
+          id: eventId,
+          ...eventData,
+          lastModified: new Date(),
+          syncStatus: "pending" as const,
+        };
+      } catch (error) {
+        logger.error("Failed to create event in local database", {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          userId: params.userId,
+          eventType: params.type,
+        });
+        throw error;
       }
-
-      logger.info("Event created successfully", {
-        eventId,
-        userId: params.userId,
-      });
-
-      // Return the created event with the generated ID
-      return {
-        id: eventId,
-        ...eventData,
-        lastModified: new Date(),
-        syncStatus: "pending" as const,
-      };
     },
+    retry: 2, // Retry failed mutations up to 2 times
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
     onSuccess: (data, variables) => {
       // Invalidate list queries to trigger refetch
       queryClient.invalidateQueries({
@@ -270,12 +317,18 @@ export function useCreateEvent() {
       queryClient.invalidateQueries({
         queryKey: eventKeys.infinite(variables.userId),
       });
+
+      logger.info("Event cache invalidated successfully", {
+        userId: variables.userId,
+        eventId: data.id,
+      });
     },
-    onError: (error, variables) => {
-      logger.error("Failed to create event", {
+    onError: (error, variables, context) => {
+      logger.error("Failed to create event after retries", {
         error: error instanceof Error ? error.message : String(error),
         userId: variables.userId,
         eventType: variables.type,
+        attemptsMade: context,
       });
     },
   });
@@ -292,17 +345,14 @@ export function useUpdateEvent() {
       eventId: string;
       userId: string;
       updates: Partial<DBEvent>;
-    }): Promise<DBEvent> => {
+    }): Promise<void> => {
       logger.info("Updating event", {
         eventId: params.eventId,
         userId: params.userId,
       });
 
       // 1. Update local Dexie immediately
-      const updatedEvent = await eventDBService.updateEvent(
-        params.eventId,
-        params.updates,
-      );
+      await eventDBService.updateEvent(params.eventId, params.updates);
 
       // 2. Trigger Firebase sync in background
       if (navigator.onLine) {
@@ -312,8 +362,6 @@ export function useUpdateEvent() {
       }
 
       logger.info("Event updated successfully", { eventId: params.eventId });
-
-      return updatedEvent;
     },
     onSuccess: (data, variables) => {
       // Invalidate list queries
