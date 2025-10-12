@@ -30,11 +30,14 @@ const EmailField: React.FC<EmailFieldProps> = ({ value, onChange }) => (
     <Input
       type="email"
       id="email"
+      name="email"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       placeholder="person@example.com"
       required
+      aria-required="true"
+      autoComplete="email"
     />
   </div>
 );
@@ -76,12 +79,17 @@ const MessageField: React.FC<MessageFieldProps> = ({ value, onChange }) => (
     </label>
     <Textarea
       id="message"
+      name="message"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       rows={3}
       className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       placeholder="Add a personal message..."
+      aria-describedby="message-help"
     />
+    <span id="message-help" className="sr-only">
+      Optional personal message to include with your relationship request
+    </span>
   </div>
 );
 
@@ -102,11 +110,15 @@ export const RelationshipRequestForm: React.FC<
   };
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg p-4 mb-6 invitation-form-expand">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <section 
+      className="bg-white border border-gray-300 rounded-lg p-4 mb-6 invitation-form-expand"
+      role="region"
+      aria-labelledby="relationship-request-heading"
+    >
+      <h3 id="relationship-request-heading" className="text-lg font-semibold text-gray-900 mb-4">
         Send Relationship Request
       </h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" aria-label="Relationship request form">
         <EmailField
           value={formData.email}
           onChange={(email) => setFormData({ ...formData, email })}
@@ -120,15 +132,16 @@ export const RelationshipRequestForm: React.FC<
           onChange={(message) => setFormData({ ...formData, message })}
         />
 
-        <div className="flex gap-3">
+        <div className="flex gap-3" role="group" aria-label="Form actions">
           <Button
             type="submit"
             disabled={isLoading}
+            aria-label={isLoading ? "Sending request" : "Send relationship request"}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center relationship-transition-fast"
           >
             {isLoading ? (
               <>
-                <FaSpinner className="animate-spin mr-2" />
+                <FaSpinner className="animate-spin mr-2" aria-hidden="true" />
                 Sending...
               </>
             ) : (
@@ -138,12 +151,13 @@ export const RelationshipRequestForm: React.FC<
           <Button
             type="button"
             onClick={onCancel}
+            aria-label="Cancel and close form"
             className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 relationship-transition-fast"
           >
             Cancel
           </Button>
         </div>
       </form>
-    </div>
+    </section>
   );
 };
