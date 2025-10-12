@@ -202,15 +202,10 @@ const SessionHistorySectionComponent: React.FC<{ sessions: DBSession[] }> = ({
   };
 
   // Stagger animation for session items
-  const visibleItems = useStaggerAnimation(displaySessions.length, 60);
+  const visibleItems = useStaggerAnimation(displaySessions.length, 60) || [];
 
   return (
-    <Card
-      variant="glass"
-      className="mb-4 sm:mb-6 animate-fade-in-up"
-      role="region"
-      aria-labelledby="session-history-heading"
-    >
+    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <FaHistory

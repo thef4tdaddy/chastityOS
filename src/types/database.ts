@@ -99,6 +99,7 @@ export interface DBEvent extends DBBase {
     accumulatedPauseTime?: number;
   };
   isPrivate: boolean;
+  [key: string]: unknown;
 }
 
 export interface RecurringConfig {

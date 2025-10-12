@@ -150,12 +150,7 @@ export const CurrentStatusSection: React.FC<{
   const timerData = useSessionTimer(currentSession);
 
   return (
-    <Card
-      variant="glass"
-      className="mb-4 sm:mb-6 animate-fade-in-up"
-      role="region"
-      aria-labelledby="current-status-heading"
-    >
+    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
         <FaClock
           className="text-nightly-aquamarine text-lg sm:text-xl"

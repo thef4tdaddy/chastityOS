@@ -228,15 +228,10 @@ const StatisticsSectionComponent: React.FC<{
   );
 
   // Stagger animation for stat items
-  const visibleItems = useStaggerAnimation(statItems.length, 80);
+  const visibleItems = useStaggerAnimation(statItems.length, 80) || [];
 
   return (
-    <Card
-      variant="glass"
-      className="mb-4 sm:mb-6 animate-fade-in-up"
-      role="region"
-      aria-labelledby="statistics-heading"
-    >
+    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
         <FaChartBar
           className="text-nightly-lavender-floral text-lg sm:text-xl"

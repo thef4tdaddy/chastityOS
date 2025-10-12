@@ -89,7 +89,9 @@ describe("CurrentStatusSection", () => {
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+        syncStatus: "synced",
+        lastModified: new Date("2024-01-01T00:00:00Z"),
+      };
 
       render(<CurrentStatusSection currentSession={session} />);
 
@@ -107,7 +109,9 @@ describe("CurrentStatusSection", () => {
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+        syncStatus: "synced",
+        lastModified: new Date("2024-01-01T00:00:00Z"),
+      };
 
       render(<CurrentStatusSection currentSession={session} />);
 
@@ -124,7 +128,9 @@ describe("CurrentStatusSection", () => {
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+        syncStatus: "synced",
+        lastModified: new Date("2024-01-01T00:00:00Z"),
+      };
 
       render(<CurrentStatusSection currentSession={session} />);
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Select } from "@/components/ui";
-import { FaLock } from "../../utils/iconImport";
+import { FaLock } from "@/utils/iconImport";
 import { ToggleSwitch } from "./ToggleSwitch";
 
 export const SecuritySettings: React.FC = () => (
