@@ -15,6 +15,8 @@ export interface QueryCacheConfig {
   userSettings: CacheConfig;
   tasks: CacheConfig;
   events: CacheConfig;
+  relationships: CacheConfig;
+  permissions: CacheConfig;
 }
 
 // Cache configuration based on data freshness requirements
@@ -50,6 +52,20 @@ export const cacheConfig: QueryCacheConfig = {
     staleTime: 1000 * 60 * 30, // 30 minutes
     gcTime: 1000 * 60 * 60 * 2, // 2 hours
     refetchOnWindowFocus: false,
+  },
+
+  // Relationship data - moderately fresh
+  relationships: {
+    staleTime: 1000 * 60 * 2, // 2 minutes - relationships can change
+    gcTime: 1000 * 60 * 15, // 15 minutes
+    refetchOnWindowFocus: true, // Refetch to ensure fresh data
+  },
+
+  // Permission checks - can be cached longer
+  permissions: {
+    staleTime: 1000 * 60 * 5, // 5 minutes - permissions rarely change
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: false, // No need to refetch permissions frequently
   },
 };
 
