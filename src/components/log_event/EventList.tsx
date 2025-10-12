@@ -99,15 +99,17 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
   const isMilestone = event.type === "milestone";
 
   return (
-    <div
+    <article
       className={`event-item bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 ${isMilestone ? "event-milestone animate-milestone-glow" : ""}`}
+      role="article"
+      aria-label={`${eventTypeInfo.label} event${showOwner && event.ownerName ? ` by ${event.ownerName}` : ""} on ${formattedDate}${event.isPrivate ? ", marked as private" : ""}`}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-3">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Icon
             className={`${eventTypeInfo.color} text-lg sm:text-xl flex-shrink-0 transition-transform hover:scale-110`}
-
+            aria-hidden="true"
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -115,18 +117,29 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
                 {eventTypeInfo.label}
               </h3>
               {showOwner && event.ownerName && (
-                <span className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-0.5 text-xs rounded whitespace-nowrap">
+                <span
+                  className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-0.5 text-xs rounded whitespace-nowrap"
+                  role="note"
+                  aria-label={`Owner: ${event.ownerName}`}
+                >
                   {event.ownerName}
                 </span>
               )}
             </div>
-            <div className="text-xs text-nightly-celadon break-words">
+            <time
+              className="text-xs text-nightly-celadon break-words"
+              dateTime={event.timestamp.toISOString()}
+            >
               {formattedDate}
-            </div>
+            </time>
           </div>
         </div>
         {event.isPrivate && (
-          <span className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded whitespace-nowrap self-start">
+          <span
+            className="bg-nightly-lavender-floral/20 text-nightly-lavender-floral px-2 py-1 text-xs rounded whitespace-nowrap self-start"
+            role="note"
+            aria-label="Private event"
+          >
             Private
           </span>
         )}
@@ -153,10 +166,15 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
 
       {/* Tags */}
       {event.details.tags && event.details.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
+        <div
+          className="flex flex-wrap gap-1.5 sm:gap-2 mt-3"
+          role="list"
+          aria-label="Event tags"
+        >
           {event.details.tags.map((tag, index) => (
             <span
               key={index}
+              role="listitem"
               className="bg-nightly-aquamarine/20 text-nightly-aquamarine px-2 py-1 text-xs rounded whitespace-nowrap transition-all hover:bg-nightly-aquamarine/30"
             >
               {tag}
@@ -164,7 +182,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({ event, showOwner }) => {
           ))}
         </div>
       )}
-    </div>
+    </article>
   );
 };
 
@@ -198,9 +216,12 @@ const EventListComponent: React.FC<EventListProps> = ({
 
   if (events.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status">
         <div className="text-center py-6 sm:py-8 animate-fade-in">
-          <FaCalendar className="text-3xl sm:text-4xl text-nightly-celadon/50 mb-3 sm:mb-4 mx-auto" />
+          <FaCalendar
+            className="text-3xl sm:text-4xl text-nightly-celadon/50 mb-3 sm:mb-4 mx-auto"
+            aria-hidden="true"
+          />
           <div className="text-nightly-celadon text-sm sm:text-base">
             No events logged yet
           </div>
@@ -214,7 +235,11 @@ const EventListComponent: React.FC<EventListProps> = ({
 
   return (
     <div>
-      <div className="space-y-3 sm:space-y-4">
+      <div
+        className="space-y-3 sm:space-y-4"
+        role="feed"
+        aria-label="Event list"
+      >
         {paginatedEvents.map((event) => (
           <EventItem key={event.id} event={event} showOwner={showOwner} />
         ))}
@@ -222,16 +247,24 @@ const EventListComponent: React.FC<EventListProps> = ({
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-nightly-celadon/20">
+        <nav
+          className="flex items-center justify-between mt-6 pt-4 border-t border-nightly-celadon/20"
+          aria-label="Event list pagination"
+        >
           <Button
             onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
             disabled={!hasPreviousPages}
             variant="ghost"
             size="sm"
+            aria-label={`Go to previous page, currently on page ${currentPage + 1} of ${totalPages}`}
           >
             Previous
           </Button>
-          <span className="text-sm text-nightly-celadon">
+          <span
+            className="text-sm text-nightly-celadon"
+            aria-current="page"
+            aria-live="polite"
+          >
             Page {currentPage + 1} of {totalPages}
           </span>
           <Button
@@ -241,10 +274,11 @@ const EventListComponent: React.FC<EventListProps> = ({
             disabled={!hasMorePages}
             variant="ghost"
             size="sm"
+            aria-label={`Go to next page, currently on page ${currentPage + 1} of ${totalPages}`}
           >
             Next
           </Button>
-        </div>
+        </nav>
       )}
     </div>
   );
