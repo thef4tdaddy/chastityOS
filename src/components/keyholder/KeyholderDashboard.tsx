@@ -16,6 +16,7 @@ import { usePendingReleaseRequests } from "../../hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "./ReleaseRequestCard";
 import { AdminRelationship } from "../../types/account-linking";
 import { Select, SelectOption, Button } from "@/components/ui";
+import { FeatureErrorBoundary } from "../errors/FeatureErrorBoundary";
 
 // Loading Component
 const AdminLoadingDisplay: React.FC = () => (
@@ -89,7 +90,9 @@ const PendingReleaseRequests: React.FC<{ keyholderUserId: string }> = ({
       </div>
       <div className="space-y-2 sm:space-y-3">
         {pendingRequests.map((request) => (
-          <ReleaseRequestCard key={request.id} request={request} />
+          <FeatureErrorBoundary key={request.id} feature="release-request">
+            <ReleaseRequestCard request={request} />
+          </FeatureErrorBoundary>
         ))}
       </div>
     </div>

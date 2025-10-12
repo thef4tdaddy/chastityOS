@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui";
 import { formatDistanceToNow } from "date-fns";
+import { ErrorMessage } from "../errors/fallbacks/ErrorMessage";
 
 interface Relationship {
   id: string;
@@ -17,11 +18,31 @@ interface SubmissiveRelationshipsDisplayProps {
 export const SubmissiveRelationshipsDisplay: React.FC<
   SubmissiveRelationshipsDisplayProps
 > = ({ relationships, onEndRelationship }) => {
+  const [error, setError] = useState<string | null>(null);
+
   if (relationships.length === 0) return null;
+
+  const handleEndRelationship = (id: string) => {
+    try {
+      setError(null);
+      onEndRelationship(id);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to end relationship";
+      setError(errorMessage);
+    }
+  };
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30 relationship-card-interactive">
       <h3 className="font-semibold text-purple-300 mb-3">Your Submissives</h3>
+      {error && (
+        <ErrorMessage
+          message={error}
+          onDismiss={() => setError(null)}
+          variant="error"
+        />
+      )}
       <div className="space-y-2">
         {relationships.map((relationship, index) => (
           <div
@@ -41,7 +62,7 @@ export const SubmissiveRelationshipsDisplay: React.FC<
                 </div>
               </div>
               <Button
-                onClick={() => onEndRelationship(relationship.id)}
+                onClick={() => handleEndRelationship(relationship.id)}
                 className="text-red-400 hover:text-red-300 text-sm px-2 py-1 border border-red-500 rounded hover:bg-red-900/30 icon-button"
               >
                 End

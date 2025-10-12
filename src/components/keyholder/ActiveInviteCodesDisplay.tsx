@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui";
 import { FaCopy, FaTrash } from "../../utils/iconImport";
 import { formatDistanceToNow } from "date-fns";
+import { ErrorMessage } from "../errors/fallbacks/ErrorMessage";
 
 interface InviteCode {
   id: string;
@@ -18,13 +19,44 @@ interface ActiveInviteCodesDisplayProps {
 export const ActiveInviteCodesDisplay: React.FC<
   ActiveInviteCodesDisplayProps
 > = ({ activeInviteCodes, onCopyCode, onRevokeCode }) => {
+  const [error, setError] = useState<string | null>(null);
+
   if (activeInviteCodes.length === 0) return null;
+
+  const handleCopyCode = async (code: string) => {
+    try {
+      setError(null);
+      await onCopyCode(code);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to copy code";
+      setError(errorMessage);
+    }
+  };
+
+  const handleRevokeCode = (id: string) => {
+    try {
+      setError(null);
+      onRevokeCode(id);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to revoke code";
+      setError(errorMessage);
+    }
+  };
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30 relationship-card-interactive">
       <h3 className="font-semibold text-purple-300 mb-3">
         Active Invite Codes
       </h3>
+      {error && (
+        <ErrorMessage
+          message={error}
+          onDismiss={() => setError(null)}
+          variant="error"
+        />
+      )}
       <div className="space-y-2">
         {activeInviteCodes.map((invite, index) => (
           <div
@@ -42,14 +74,14 @@ export const ActiveInviteCodesDisplay: React.FC<
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => onCopyCode(invite.code)}
+                onClick={() => handleCopyCode(invite.code)}
                 className="text-purple-400 hover:text-purple-300 p-1 icon-button"
                 title="Copy code"
               >
                 <FaCopy />
               </Button>
               <Button
-                onClick={() => onRevokeCode(invite.id)}
+                onClick={() => handleRevokeCode(invite.id)}
                 className="text-red-400 hover:text-red-300 p-1 icon-button"
                 title="Revoke code"
               >
