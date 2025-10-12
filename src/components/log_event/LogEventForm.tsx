@@ -54,7 +54,7 @@ const EventTypeSelector: React.FC<{
     <label className="block text-sm font-medium text-nightly-celadon mb-3">
       Event Type
     </label>
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
       {EVENT_TYPES.map((eventType) => {
         const Icon = eventType.icon;
         return (
@@ -62,21 +62,21 @@ const EventTypeSelector: React.FC<{
             key={eventType.value}
             type="button"
             onClick={() => onTypeChange(eventType.value)}
-            className={`event-button p-3 rounded-lg border-2 transition-all ${
+            className={`event-button p-3 sm:p-4 rounded-lg border-2 transition-all min-h-[44px] ${
               selectedType === eventType.value
                 ? "border-nightly-aquamarine bg-nightly-aquamarine/10"
                 : "border-white/10 bg-white/5 hover:bg-white/10"
             }`}
           >
             <Icon
-              className={`text-lg mb-2 mx-auto transition-transform ${
+              className={`text-base sm:text-lg mb-1 sm:mb-2 mx-auto transition-transform ${
                 selectedType === eventType.value
                   ? "text-nightly-aquamarine scale-110"
                   : eventType.color
               }`}
             />
             <div
-              className={`text-sm font-medium ${
+              className={`text-xs sm:text-sm font-medium ${
                 selectedType === eventType.value
                   ? "text-nighty-honeydew"
                   : "text-nightly-celadon"
@@ -107,7 +107,7 @@ const BasicFormFields: React.FC<{
         type="datetime-local"
         value={timestamp}
         onChange={(e) => onTimestampChange(e.target.value)}
-        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew text-sm sm:text-base min-h-[44px]"
       />
     </div>
     <div>
@@ -118,7 +118,7 @@ const BasicFormFields: React.FC<{
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         placeholder="Describe the event..."
-        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50 resize-none"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew placeholder-nightly-celadon/50 resize-none text-sm sm:text-base"
         rows={4}
       />
     </div>
@@ -132,7 +132,7 @@ const AdvancedFormFields: React.FC<{
   onMoodChange: (mood: string) => void;
   onIntensityChange: (intensity: number) => void;
 }> = ({ mood, intensity, onMoodChange, onIntensityChange }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
     <div>
       <label className="block text-sm font-medium text-nightly-celadon mb-2">
         Mood
@@ -142,7 +142,7 @@ const AdvancedFormFields: React.FC<{
         value={mood}
         onChange={(e) => onMoodChange(e.target.value)}
         placeholder="Happy, frustrated, excited..."
-        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew placeholder-nightly-celadon/50 text-sm sm:text-base min-h-[44px]"
       />
     </div>
     <div>
@@ -155,9 +155,10 @@ const AdvancedFormFields: React.FC<{
         max="10"
         value={intensity}
         onChange={(e) => onIntensityChange(parseInt(e.target.value))}
-        className="w-full mb-2 transition-all"
+        className="w-full mb-2 transition-all h-[44px]"
+        style={{ WebkitAppearance: "none", appearance: "none" }}
       />
-      <div className="text-center text-nighty-honeydew transition-all">
+      <div className="text-center text-nighty-honeydew transition-all text-base sm:text-lg font-medium">
         {intensity}
       </div>
     </div>
@@ -181,10 +182,10 @@ const TagsAndPrivacy: React.FC<{
         value={tags}
         onChange={(e) => onTagsChange(e.target.value)}
         placeholder="romantic, intense, relaxed..."
-        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-3 text-nighty-honeydew placeholder-nightly-celadon/50"
+        className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew placeholder-nightly-celadon/50 text-sm sm:text-base min-h-[44px]"
       />
     </div>
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-0">
       <div>
         <div className="text-sm font-medium text-nightly-celadon">
           Private Event
@@ -205,16 +206,17 @@ const SubmitButton: React.FC<{
   <Button
     type="submit"
     disabled={isPending}
-    className="event-button w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-6 py-3 rounded font-medium transition-colors flex items-center justify-center gap-2"
+    className="event-button w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 sm:px-6 py-3 sm:py-4 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] text-sm sm:text-base"
   >
     {isPending ? (
       <>
-        <FaSpinner className="animate-spin" />
-        Logging Event...
+        <FaSpinner className="animate-spin text-base sm:text-lg" />
+        <span className="hidden sm:inline">Logging Event...</span>
+        <span className="sm:hidden">Logging...</span>
       </>
     ) : (
       <>
-        <FaPlus className="transition-transform group-hover:scale-110" />
+        <FaPlus className="transition-transform group-hover:scale-110 text-base sm:text-lg" />
         Log Event
       </>
     )}
@@ -354,15 +356,15 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
   );
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <div className="flex items-center gap-3 mb-6">
-        <FaPlus className="text-nightly-aquamarine" />
-        <h2 className="text-xl font-semibold text-nighty-honeydew">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <FaPlus className="text-nightly-aquamarine text-lg sm:text-xl" />
+        <h2 className="text-lg sm:text-xl font-semibold text-nighty-honeydew">
           Log New Event
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <EventTypeSelector
           selectedType={formData.type}
           onTypeChange={(type) =>
