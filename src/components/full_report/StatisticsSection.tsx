@@ -228,7 +228,7 @@ const StatisticsSectionComponent: React.FC<{
   );
 
   // Stagger animation for stat items
-  const visibleItems = useStaggerAnimation(statItems.length, 80) || [];
+  const visibleItems = useStaggerAnimation(statItems.length, 80) ?? [];
 
   return (
     <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
