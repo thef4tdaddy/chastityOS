@@ -51,35 +51,44 @@ const EventTypeSelector: React.FC<{
   onTypeChange: (type: EventType) => void;
 }> = ({ selectedType, onTypeChange }) => (
   <div>
-    <label className="block text-sm font-medium text-nightly-celadon mb-3">
+    <label
+      id="event-type-label"
+      className="block text-sm font-medium text-nightly-celadon mb-3"
+    >
       Event Type
     </label>
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+    <div
+      role="group"
+      aria-labelledby="event-type-label"
+      className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3"
+    >
       {EVENT_TYPES.map((eventType) => {
         const Icon = eventType.icon;
+        const isSelected = selectedType === eventType.value;
         return (
           <Button
             key={eventType.value}
             type="button"
             onClick={() => onTypeChange(eventType.value)}
+            aria-label={`${eventType.label}: ${eventType.description}`}
+            aria-pressed={isSelected}
             className={`event-button p-3 sm:p-4 rounded-lg border-2 transition-all min-h-[44px] ${
-              selectedType === eventType.value
+              isSelected
                 ? "border-nightly-aquamarine bg-nightly-aquamarine/10"
                 : "border-white/10 bg-white/5 hover:bg-white/10"
             }`}
           >
             <Icon
+              aria-hidden="true"
               className={`text-base sm:text-lg mb-1 sm:mb-2 mx-auto transition-transform ${
-                selectedType === eventType.value
+                isSelected
                   ? "text-nightly-aquamarine scale-110"
                   : eventType.color
               }`}
             />
             <div
               className={`text-xs sm:text-sm font-medium ${
-                selectedType === eventType.value
-                  ? "text-nighty-honeydew"
-                  : "text-nightly-celadon"
+                isSelected ? "text-nighty-honeydew" : "text-nightly-celadon"
               }`}
             >
               {eventType.label}
@@ -100,24 +109,35 @@ const BasicFormFields: React.FC<{
 }> = ({ timestamp, notes, onTimestampChange, onNotesChange }) => (
   <>
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+      <label
+        htmlFor="event-timestamp"
+        className="block text-sm font-medium text-nightly-celadon mb-2"
+      >
         Date & Time
       </label>
       <Input
+        id="event-timestamp"
         type="datetime-local"
         value={timestamp}
         onChange={(e) => onTimestampChange(e.target.value)}
+        aria-label="Event date and time"
+        required
         className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew text-sm sm:text-base min-h-[44px]"
       />
     </div>
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+      <label
+        htmlFor="event-notes"
+        className="block text-sm font-medium text-nightly-celadon mb-2"
+      >
         Notes
       </label>
       <Textarea
+        id="event-notes"
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         placeholder="Describe the event..."
+        aria-label="Event notes and description"
         className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew placeholder-nightly-celadon/50 resize-none text-sm sm:text-base"
         rows={4}
       />
@@ -134,31 +154,51 @@ const AdvancedFormFields: React.FC<{
 }> = ({ mood, intensity, onMoodChange, onIntensityChange }) => (
   <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+      <label
+        htmlFor="event-mood"
+        className="block text-sm font-medium text-nightly-celadon mb-2"
+      >
         Mood
       </label>
       <Input
+        id="event-mood"
         type="text"
         value={mood}
         onChange={(e) => onMoodChange(e.target.value)}
         placeholder="Happy, frustrated, excited..."
+        aria-label="Event mood or emotional state"
         className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew placeholder-nightly-celadon/50 text-sm sm:text-base min-h-[44px]"
       />
     </div>
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+      <label
+        htmlFor="event-intensity"
+        id="intensity-label"
+        className="block text-sm font-medium text-nightly-celadon mb-2"
+      >
         Intensity (1-10)
       </label>
       <input
+        id="event-intensity"
         type="range"
         min="1"
         max="10"
         value={intensity}
         onChange={(e) => onIntensityChange(parseInt(e.target.value))}
+        aria-label="Event intensity level from 1 to 10"
+        aria-labelledby="intensity-label"
+        aria-valuenow={intensity}
+        aria-valuemin={1}
+        aria-valuemax={10}
+        aria-valuetext={`${intensity} out of 10`}
         className="w-full mb-2 transition-all h-[44px]"
         style={{ WebkitAppearance: "none", appearance: "none" }}
       />
-      <div className="text-center text-nighty-honeydew transition-all text-base sm:text-lg font-medium">
+      <div
+        className="text-center text-nighty-honeydew transition-all text-base sm:text-lg font-medium"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {intensity}
       </div>
     </div>
@@ -174,19 +214,24 @@ const TagsAndPrivacy: React.FC<{
 }> = ({ tags, isPrivate, onTagsChange, onPrivacyChange }) => (
   <>
     <div>
-      <label className="block text-sm font-medium text-nightly-celadon mb-2">
+      <label
+        htmlFor="event-tags"
+        className="block text-sm font-medium text-nightly-celadon mb-2"
+      >
         Tags (comma separated)
       </label>
       <Input
+        id="event-tags"
         type="text"
         value={tags}
         onChange={(e) => onTagsChange(e.target.value)}
         placeholder="romantic, intense, relaxed..."
+        aria-label="Event tags, comma separated for categorization"
         className="event-form-field w-full bg-white/5 border border-white/10 rounded p-2 sm:p-3 text-nighty-honeydew placeholder-nightly-celadon/50 text-sm sm:text-base min-h-[44px]"
       />
     </div>
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-0">
-      <div>
+      <div id="privacy-label">
         <div className="text-sm font-medium text-nightly-celadon">
           Private Event
         </div>
@@ -194,7 +239,12 @@ const TagsAndPrivacy: React.FC<{
           Keep this event private
         </div>
       </div>
-      <Switch checked={isPrivate} onCheckedChange={onPrivacyChange} />
+      <Switch
+        checked={isPrivate}
+        onCheckedChange={onPrivacyChange}
+        aria-labelledby="privacy-label"
+        aria-label={`Mark event as private. Currently ${isPrivate ? "private" : "public"}`}
+      />
     </div>
   </>
 );
@@ -206,17 +256,25 @@ const SubmitButton: React.FC<{
   <Button
     type="submit"
     disabled={isPending}
+    aria-label={isPending ? "Submitting event" : "Log new event"}
+    aria-busy={isPending}
     className="event-button w-full bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 text-black px-4 sm:px-6 py-3 sm:py-4 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] text-sm sm:text-base"
   >
     {isPending ? (
       <>
-        <FaSpinner className="animate-spin text-base sm:text-lg" />
+        <FaSpinner
+          className="animate-spin text-base sm:text-lg"
+          aria-hidden="true"
+        />
         <span className="hidden sm:inline">Logging Event...</span>
         <span className="sm:hidden">Logging...</span>
       </>
     ) : (
       <>
-        <FaPlus className="transition-transform group-hover:scale-110 text-base sm:text-lg" />
+        <FaPlus
+          className="transition-transform group-hover:scale-110 text-base sm:text-lg"
+          aria-hidden="true"
+        />
         Log Event
       </>
     )}
@@ -356,15 +414,29 @@ export const LogEventForm: React.FC<LogEventFormProps> = ({
   );
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
+    <div
+      className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 md:p-6 mb-4 sm:mb-6"
+      role="region"
+      aria-labelledby="log-event-heading"
+    >
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <FaPlus className="text-nightly-aquamarine text-lg sm:text-xl" />
-        <h2 className="text-lg sm:text-xl font-semibold text-nighty-honeydew">
+        <FaPlus
+          className="text-nightly-aquamarine text-lg sm:text-xl"
+          aria-hidden="true"
+        />
+        <h2
+          id="log-event-heading"
+          className="text-lg sm:text-xl font-semibold text-nighty-honeydew"
+        >
           Log New Event
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-3 sm:space-y-4"
+        aria-label="Log new event form"
+      >
         <EventTypeSelector
           selectedType={formData.type}
           onTypeChange={(type) =>
