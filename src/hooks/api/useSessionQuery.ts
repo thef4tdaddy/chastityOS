@@ -37,29 +37,58 @@ export function useCurrentSession(userId: string | undefined) {
 }
 
 /**
- * Query for getting session history
+ * Query for getting session history with pagination support
  */
-export function useSessionHistory(userId: string | undefined, enabled = true) {
+export function useSessionHistory(
+  userId: string | undefined,
+  options: {
+    enabled?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {},
+) {
+  const { enabled = true, limit = 50, offset = 0 } = options;
+
   return useQuery({
-    queryKey: ["sessions", "history", userId],
+    queryKey: ["sessions", "history", userId, limit, offset],
     queryFn: async () => {
       if (!userId) return [];
 
-      const sessions = await sessionDBService.findByUserId(userId);
+      // Use paginated getSessionHistory method
+      const sessions = await sessionDBService.getSessionHistory(
+        userId,
+        limit,
+        offset,
+      );
 
-      // Trigger background sync if online
-      if (navigator.onLine) {
+      // Trigger background sync if online (only for first page)
+      if (navigator.onLine && offset === 0) {
         firebaseSync.syncUserSessions(userId).catch((error) => {
           logger.warn("Background session history sync failed:", { error });
         });
       }
 
-      return sessions.sort(
-        (a, b) => b.startTime.getTime() - a.startTime.getTime(),
-      );
+      return sessions;
     },
     ...cacheConfig.sessionHistory,
     enabled: !!userId && enabled,
+  });
+}
+
+/**
+ * Query for getting total session count
+ */
+export function useSessionCount(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["sessions", "count", userId],
+    queryFn: async () => {
+      if (!userId) return 0;
+      const sessions = await sessionDBService.findByUserId(userId);
+      return sessions.length;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    enabled: !!userId,
   });
 }
 

@@ -39,3 +39,12 @@ export {
   type UseSessionActionsOptions,
   type SessionConfig,
 } from "./useSessionActions";
+
+// Performance Optimization Hooks
+export {
+  useSessionHistoryPaginated,
+  useSessionHistoryCursor,
+  type UseSessionHistoryPaginatedReturn,
+  type UseSessionHistoryPaginatedOptions,
+  type SessionHistoryPage,
+} from "./useSessionHistoryPaginated";
