@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui";
 import { FaKey } from "../../utils/iconImport";
 import { formatDistanceToNow } from "date-fns";
+import { ErrorMessage } from "../errors/fallbacks/ErrorMessage";
 
 interface ActiveKeyholderDisplayProps {
   activeKeyholder: {
@@ -18,6 +19,18 @@ export const ActiveKeyholderDisplay: React.FC<ActiveKeyholderDisplayProps> = ({
   onEndRelationship,
 }) => {
   const [showPermissions, setShowPermissions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleEndRelationship = (id: string) => {
+    try {
+      setError(null);
+      onEndRelationship(id);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to end relationship";
+      setError(errorMessage);
+    }
+  };
 
   return (
     <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-lg p-4 border border-purple-500 relationship-card-interactive relationship-active-glow">
@@ -33,6 +46,14 @@ export const ActiveKeyholderDisplay: React.FC<ActiveKeyholderDisplayProps> = ({
           {showPermissions ? "Hide" : "View"} Permissions
         </Button>
       </div>
+
+      {error && (
+        <ErrorMessage
+          message={error}
+          onDismiss={() => setError(null)}
+          variant="error"
+        />
+      )}
 
       <div className="text-sm text-gray-300 mb-3">
         <p>
@@ -77,7 +98,7 @@ export const ActiveKeyholderDisplay: React.FC<ActiveKeyholderDisplayProps> = ({
 
       <div className="mt-3 flex gap-2">
         <Button
-          onClick={() => onEndRelationship(activeKeyholder.id)}
+          onClick={() => handleEndRelationship(activeKeyholder.id)}
           className="text-red-400 hover:text-red-300 text-sm px-3 py-1 border border-red-500 rounded hover:bg-red-900/30 relationship-transition icon-button"
         >
           End Relationship

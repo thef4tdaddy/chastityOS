@@ -11,6 +11,7 @@ import {
 import { Input, Textarea, Button } from "@/components/ui";
 import { TaskError } from "../tasks/TaskError";
 import { logger } from "../../utils/logging";
+import { FeatureErrorBoundary } from "../errors/FeatureErrorBoundary";
 
 // Task Management for Keyholder
 interface TaskManagementProps {
@@ -353,42 +354,46 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-0">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <FaTasks className="text-nightly-lavender-floral text-lg sm:text-base" />
-          <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew">
-            Task Management
-          </h3>
+    <FeatureErrorBoundary 
+      feature="task-management"
+    >
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-0">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <FaTasks className="text-nightly-lavender-floral text-lg sm:text-base" />
+            <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew">
+              Task Management
+            </h3>
+          </div>
+          <Button
+            onClick={() => setShowAddTask(!showAddTask)}
+            className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 sm:px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto touch-manipulation"
+          >
+            <FaPlus />
+            <span>Add Task</span>
+          </Button>
         </div>
-        <Button
-          onClick={() => setShowAddTask(!showAddTask)}
-          className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 sm:px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto touch-manipulation"
-        >
-          <FaPlus />
-          <span>Add Task</span>
-        </Button>
+
+        <AddTaskForm
+          showAddTask={showAddTask}
+          setShowAddTask={setShowAddTask}
+          newTaskText={newTaskText}
+          setNewTaskText={setNewTaskText}
+          pointValue={pointValue}
+          setPointValue={setPointValue}
+          handleAddTask={() => handleAddTask(newTaskText, pointValue)}
+          isCreating={createTask.isPending}
+        />
+
+        {isLoading && <LoadingDisplay />}
+
+        <TaskList
+          isLoading={isLoading}
+          pendingTasks={pendingTasks}
+          handleTaskAction={handleTaskAction}
+          isUpdating={approveTask.isPending || rejectTask.isPending}
+        />
       </div>
-
-      <AddTaskForm
-        showAddTask={showAddTask}
-        setShowAddTask={setShowAddTask}
-        newTaskText={newTaskText}
-        setNewTaskText={setNewTaskText}
-        pointValue={pointValue}
-        setPointValue={setPointValue}
-        handleAddTask={() => handleAddTask(newTaskText, pointValue)}
-        isCreating={createTask.isPending}
-      />
-
-      {isLoading && <LoadingDisplay />}
-
-      <TaskList
-        isLoading={isLoading}
-        pendingTasks={pendingTasks}
-        handleTaskAction={handleTaskAction}
-        isUpdating={approveTask.isPending || rejectTask.isPending}
-      />
-    </div>
+    </FeatureErrorBoundary>
   );
 };

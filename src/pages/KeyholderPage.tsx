@@ -178,19 +178,31 @@ const KeyholderPage: React.FC = () => {
 
             {/* Keyholder Controls - Only when unlocked */}
             {isKeyholderModeUnlocked && (
-              <FeatureErrorBoundary
-                feature="keyholder-controls"
-                fallback={<KeyholderErrorFallback />}
-              >
-                <SessionControls session={submissiveSession} />
-                <TaskManagement
-                  userId={selectedRelationship?.wearerId || user?.uid || ""}
-                />
-                <KeyholderSettings
-                  onLockControls={lockKeyholderControls}
-                  submissiveUserId={selectedRelationship?.wearerId}
-                />
-              </FeatureErrorBoundary>
+              <>
+                <FeatureErrorBoundary
+                  feature="session-controls"
+                  fallback={<KeyholderErrorFallback />}
+                >
+                  <SessionControls session={submissiveSession} />
+                </FeatureErrorBoundary>
+                <FeatureErrorBoundary
+                  feature="task-management"
+                  fallback={<KeyholderErrorFallback />}
+                >
+                  <TaskManagement
+                    userId={selectedRelationship?.wearerId || user?.uid || ""}
+                  />
+                </FeatureErrorBoundary>
+                <FeatureErrorBoundary
+                  feature="keyholder-settings"
+                  fallback={<KeyholderErrorFallback />}
+                >
+                  <KeyholderSettings
+                    onLockControls={lockKeyholderControls}
+                    submissiveUserId={selectedRelationship?.wearerId}
+                  />
+                </FeatureErrorBoundary>
+              </>
             )}
           </div>
         )}
