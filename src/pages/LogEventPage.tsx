@@ -6,10 +6,12 @@ import {
   LogEventForm,
   EventList,
   EventListSkeleton,
+  EventErrorBoundary,
 } from "../components/log_event";
 import { FaUsers } from "../utils/iconImport";
 import { combineAndSortEvents } from "../utils/events/eventHelpers";
 import { Card, Tooltip, Button } from "@/components/ui";
+import type { DBEvent } from "../types/database";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -92,8 +94,21 @@ const EventListSection: React.FC<EventListSectionProps> = ({
       <EventListSkeleton count={5} />
     ) : error ? (
       <div className="text-center py-6 sm:py-8 animate-fade-in">
-        <div className="text-red-400 text-sm sm:text-base">
-          Error loading events. Please try again.
+        <div className="bg-red-950/30 border-2 border-red-400/20 rounded-lg p-4 sm:p-6">
+          <div className="text-red-400 text-base sm:text-lg font-semibold mb-2">
+            Failed to Load Events
+          </div>
+          <div className="text-red-300/70 text-sm sm:text-base mb-4">
+            {error instanceof Error
+              ? error.message
+              : "Unable to load event history. Please check your connection and try again."}
+          </div>
+          <Button
+            onClick={() => window.location.reload()}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Reload Page
+          </Button>
         </div>
       </div>
     ) : (
@@ -131,9 +146,13 @@ const LogEventPage: React.FC = () => {
       combineAndSortEvents(userEvents.data || [], submissiveEvents.data || [], {
         userName: user?.displayName || "You",
         userId: user?.uid,
-        submissiveName: activeSubmissive?.wearerName || "Submissive",
+        submissiveName:
+          (activeSubmissive as { wearerName?: string })?.wearerName ||
+          "Submissive",
         submissiveId: activeSubmissive?.wearerId,
-      }),
+      }) as unknown as Array<
+        DBEvent & { ownerName?: string; ownerId?: string }
+      >,
     [userEvents.data, submissiveEvents.data, user, activeSubmissive],
   );
 
@@ -146,29 +165,31 @@ const LogEventPage: React.FC = () => {
   };
 
   return (
-    <div className="text-nightly-spring-green">
-      <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
-        <UserSelector
-          activeSubmissive={activeSubmissive}
-          selectedUserId={selectedUserId}
-          currentUserId={user?.uid || ""}
-          onSelectUser={setSelectedUserId}
-        />
+    <EventErrorBoundary>
+      <div className="text-nightly-spring-green">
+        <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
+          <UserSelector
+            activeSubmissive={activeSubmissive}
+            selectedUserId={selectedUserId}
+            currentUserId={user?.uid || ""}
+            onSelectUser={setSelectedUserId}
+          />
 
-        <LogEventForm
-          onEventLogged={handleEventLogged}
-          targetUserId={selectedUserId}
-        />
+          <LogEventForm
+            onEventLogged={handleEventLogged}
+            targetUserId={selectedUserId}
+          />
 
-        <EventListSection
-          loading={loading}
-          error={error}
-          events={activeSubmissive ? combinedEvents : userEvents.data || []}
-          showOwner={!!activeSubmissive}
-          hasSubmissive={!!activeSubmissive}
-        />
+          <EventListSection
+            loading={loading}
+            error={error}
+            events={activeSubmissive ? combinedEvents : userEvents.data || []}
+            showOwner={!!activeSubmissive}
+            hasSubmissive={!!activeSubmissive}
+          />
+        </div>
       </div>
-    </div>
+    </EventErrorBoundary>
   );
 };
 
