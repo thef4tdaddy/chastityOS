@@ -5,7 +5,7 @@ import {
   addDoc,
   query,
   orderBy,
-  getDocs,
+  onSnapshot,
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
@@ -42,20 +42,29 @@ export const useEventLog = (userId, isAuthReady) => {
     [userId],
   );
 
-  const fetchEvents = useCallback(
-    async (targetUserId = userId) => {
-      if (!isAuthReady || !targetUserId) return;
-      setIsLoadingEvents(true);
-      const eventsColRef = getEventsCollectionRef(targetUserId);
-      if (!eventsColRef) {
-        setEventLogMessage("Error: Could not get event log reference.");
-        setTimeout(() => setEventLogMessage(""), 3000);
-        setIsLoadingEvents(false);
-        return;
-      }
-      try {
-        const q = query(eventsColRef, orderBy("eventTimestamp", "desc"));
-        const querySnapshot = await getDocs(q);
+  // Optimized: Use real-time listener instead of polling for automatic updates
+  useEffect(() => {
+    if (!isAuthReady || !userId) {
+      setIsLoadingEvents(false);
+      setSexualEventsLog([]);
+      return;
+    }
+
+    const eventsColRef = getEventsCollectionRef(userId);
+    if (!eventsColRef) {
+      setEventLogMessage("Error: Could not get event log reference.");
+      setTimeout(() => setEventLogMessage(""), 3000);
+      setIsLoadingEvents(false);
+      return;
+    }
+
+    setIsLoadingEvents(true);
+    const q = query(eventsColRef, orderBy("eventTimestamp", "desc"));
+
+    // Real-time listener for automatic updates (follows Tasks pattern)
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
         setSexualEventsLog(
           querySnapshot.docs.map((d) => ({
             id: d.id,
@@ -65,22 +74,28 @@ export const useEventLog = (userId, isAuthReady) => {
             timestamp: d.data().timestamp?.toDate(),
           })),
         );
-      } catch (error) {
+        setIsLoadingEvents(false);
+      },
+      (error) => {
         console.error("Error fetching events:", error);
         setEventLogMessage("Failed to load events.");
         setTimeout(() => setEventLogMessage(""), 3000);
-      } finally {
         setIsLoadingEvents(false);
-      }
-    },
-    [isAuthReady, userId, getEventsCollectionRef],
-  );
+      },
+    );
 
-  useEffect(() => {
-    if (isAuthReady && userId) {
-      fetchEvents();
-    }
-  }, [isAuthReady, userId, fetchEvents]);
+    return () => unsubscribe();
+  }, [isAuthReady, userId, getEventsCollectionRef]);
+
+  // Manual refresh function for backward compatibility
+  const fetchEvents = useCallback(
+    async (targetUserId = userId) => {
+      // Real-time listener handles updates automatically now
+      // This function maintained for backward compatibility
+      if (!targetUserId) return;
+    },
+    [userId],
+  );
 
   const handleEventTypeChange = useCallback((type) => {
     setSelectedEventTypes((prev) =>
@@ -155,6 +170,7 @@ export const useEventLog = (userId, isAuthReady) => {
         setIsSubmitting(true);
         await addDoc(eventsColRef, newEventData);
         setEventLogMessage("Event logged!");
+        // Reset form state
         setNewEventDate(new Date().toISOString().slice(0, 10));
         setNewEventTime(new Date().toTimeString().slice(0, 5));
         setSelectedEventTypes([]);
@@ -165,7 +181,7 @@ export const useEventLog = (userId, isAuthReady) => {
         setNewEventDurationMinutes("");
         setNewEventSelfOrgasmAmount("");
         setNewEventPartnerOrgasmAmount("");
-        fetchEvents();
+        // Note: No need to call fetchEvents() - real-time listener handles updates
       } catch (error) {
         console.error("Error logging new event:", error);
         setEventLogMessage("Failed to log. See console.");

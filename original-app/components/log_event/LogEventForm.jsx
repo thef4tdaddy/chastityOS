@@ -1,5 +1,5 @@
 // src/components/log_event/LogEventForm.jsx
-import React from "react";
+import React, { useMemo } from "react";
 import { EVENT_TYPE_DEFINITIONS } from "../../event_types.js"; // Changed import
 
 const LogEventForm = ({
@@ -33,16 +33,25 @@ const LogEventForm = ({
   eventDisplayMode,
   isNightly, // Added isNightly prop for dynamic classes
 }) => {
-  const showSelfOrgasmAmountInput =
-    selectedEventTypes.includes("Orgasm (Self)");
-  const showPartnerOrgasmAmountInput =
-    selectedEventTypes.includes("Orgasm (Partner)");
+  // Optimized: Memoize computed values
+  const showSelfOrgasmAmountInput = useMemo(
+    () => selectedEventTypes.includes("Orgasm (Self)"),
+    [selectedEventTypes],
+  );
+  const showPartnerOrgasmAmountInput = useMemo(
+    () => selectedEventTypes.includes("Orgasm (Partner)"),
+    [selectedEventTypes],
+  );
 
-  // Filter event types based on userSelectable and current eventDisplayMode
-  const filteredEventTypes = EVENT_TYPE_DEFINITIONS.filter(
-    (typeDef) =>
-      typeDef.userSelectable &&
-      (eventDisplayMode === "kinky" || typeDef.mode === "vanilla"),
+  // Optimized: Memoize filtered event types to prevent recalculation
+  const filteredEventTypes = useMemo(
+    () =>
+      EVENT_TYPE_DEFINITIONS.filter(
+        (typeDef) =>
+          typeDef.userSelectable &&
+          (eventDisplayMode === "kinky" || typeDef.mode === "vanilla"),
+      ),
+    [eventDisplayMode],
   );
 
   return (
@@ -249,4 +258,6 @@ const LogEventForm = ({
     </form>
   );
 };
-export default LogEventForm;
+
+// Optimized: Wrap with React.memo to prevent re-renders when props don't change
+export default React.memo(LogEventForm);
