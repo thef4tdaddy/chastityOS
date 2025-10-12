@@ -23,7 +23,8 @@ interface TrackerStatsProps {
 }
 
 // Sub-component for personal goal display
-const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
+// Memoized to prevent unnecessary re-renders
+const PersonalGoalDisplay = React.memo<{ goal: DBGoal }>(({ goal }) => {
   const progressPercent = goal.progress || 0;
   const isHardcoreMode = goal.isHardcoreMode || false;
 
@@ -92,23 +93,27 @@ const PersonalGoalDisplay: React.FC<{ goal: DBGoal }> = ({ goal }) => {
       </div>
     </Card>
   );
-};
+});
+PersonalGoalDisplay.displayName = "PersonalGoalDisplay";
 
 // Sub-component for current session stats
-const CurrentSessionStats: React.FC<{
+// Memoized to prevent unnecessary re-renders
+const CurrentSessionStats = React.memo<{
   displayData: ReturnType<typeof useTrackerStats>["displayData"];
   stats: ReturnType<typeof useTrackerStats>["stats"];
-}> = ({ displayData, stats }) => (
+}>(({ displayData, stats }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
     <CageOnStats displayData={displayData} stats={stats} />
     <CageOffStats displayData={displayData} stats={stats} />
   </div>
-);
+));
+CurrentSessionStats.displayName = "CurrentSessionStats";
 
 // Sub-component for total stats
-const TotalStats: React.FC<{
+// Memoized to prevent unnecessary re-renders
+const TotalStats = React.memo<{
   stats: ReturnType<typeof useTrackerStats>["stats"];
-}> = ({ stats }) => (
+}>(({ stats }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
     <Card
       variant="glass"
@@ -133,9 +138,10 @@ const TotalStats: React.FC<{
       </p>
     </Card>
   </div>
-);
+));
+TotalStats.displayName = "TotalStats";
 
-export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
+export const TrackerStats = React.memo<TrackerStatsProps>((props) => {
   const { displayData, stats } = useTrackerStats(props);
   const { personalGoal } = props;
 
@@ -165,4 +171,5 @@ export const TrackerStats: React.FC<TrackerStatsProps> = (props) => {
       <TotalStats stats={stats} />
     </div>
   );
-};
+});
+TrackerStats.displayName = "TrackerStats";
