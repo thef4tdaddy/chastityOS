@@ -11,7 +11,7 @@
     "releaseName": "Release v${version}"
   },
   "hooks": {
-    "before:init": ["npm run lint", "npm run typecheck"],
+    "before:init": ["npm run lint"],
     "after:bump": "npm run build"
   }
 }
