@@ -28,18 +28,18 @@ const UserSelector: React.FC<UserSelectorProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <Card variant="glass" padding="sm" className="mb-6">
+    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <FaUsers className="text-nightly-aquamarine" />
-        <label className="text-sm font-medium text-nightly-celadon">
+        <FaUsers className="text-nightly-aquamarine text-base sm:text-lg" />
+        <label className="text-xs sm:text-sm font-medium text-nightly-celadon">
           Log event for:
         </label>
       </div>
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <Tooltip content="Log a sexual event for yourself">
           <Button
             onClick={() => onSelectUser(currentUserId)}
-            className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+            className={`flex-1 px-3 sm:px-4 py-3 sm:py-2 rounded-lg border-2 transition-all min-h-[44px] text-sm sm:text-base ${
               selectedUserId === currentUserId
                 ? "border-nightly-aquamarine bg-nightly-aquamarine/10 text-nightly-honeydew"
                 : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
@@ -53,7 +53,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
         >
           <Button
             onClick={() => onSelectUser(activeSubmissive.wearerId || "")}
-            className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+            className={`flex-1 px-3 sm:px-4 py-3 sm:py-2 rounded-lg border-2 transition-all min-h-[44px] text-sm sm:text-base ${
               selectedUserId === activeSubmissive.wearerId
                 ? "border-nightly-lavender-floral bg-nightly-lavender-floral/10 text-nightly-honeydew"
                 : "border-white/10 bg-white/5 text-nightly-celadon hover:bg-white/10"
@@ -83,16 +83,16 @@ const EventListSection: React.FC<EventListSectionProps> = ({
   showOwner,
   hasSubmissive,
 }) => (
-  <Card variant="glass">
-    <h2 className="text-xl font-semibold text-nightly-honeydew mb-6">
+  <Card variant="glass" className="p-3 sm:p-4 md:p-6">
+    <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew mb-4 sm:mb-6">
       {hasSubmissive ? "Combined Events" : "Recent Events"}
     </h2>
 
     {loading ? (
       <EventListSkeleton count={5} />
     ) : error ? (
-      <div className="text-center py-8 animate-fade-in">
-        <div className="text-red-400">
+      <div className="text-center py-6 sm:py-8 animate-fade-in">
+        <div className="text-red-400 text-sm sm:text-base">
           Error loading events. Please try again.
         </div>
       </div>
@@ -147,7 +147,7 @@ const LogEventPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
         <UserSelector
           activeSubmissive={activeSubmissive}
           selectedUserId={selectedUserId}
