@@ -6,6 +6,8 @@ import { getFirebaseApp } from "@/services/firebase";
 import { getFirestore } from "@/services/firebase";
 import { doc, setDoc, deleteField } from "firebase/firestore";
 import { serviceLogger } from "@/utils/logging";
+import type { FirebaseApp } from "firebase/app";
+import type { Messaging } from "firebase/messaging";
 
 const logger = serviceLogger("FCMService");
 
@@ -17,7 +19,7 @@ export interface FCMServiceConfig {
  * FCM Service for managing push notification tokens
  */
 export class FCMService {
-  private static messaging: unknown = null;
+  private static messaging: Messaging | null = null;
   private static isSupported = false;
   private static checkPromise: Promise<boolean> | null = null;
 
@@ -67,7 +69,7 @@ export class FCMService {
   /**
    * Initialize FCM messaging instance
    */
-  private static async getMessagingInstance() {
+  private static async getMessagingInstance(): Promise<Messaging> {
     if (!this.isSupported) {
       throw new Error("Push notifications not supported");
     }
@@ -79,7 +81,7 @@ export class FCMService {
     try {
       const app = await getFirebaseApp();
       const { getMessaging } = await import("firebase/messaging");
-      this.messaging = getMessaging(app as any);
+      this.messaging = getMessaging(app as FirebaseApp);
       return this.messaging;
     } catch (error) {
       logger.error("Failed to initialize FCM messaging", { error });
@@ -118,7 +120,7 @@ export class FCMService {
 
       logger.debug("Requesting FCM token");
 
-      const token = await getToken(messaging as any, {
+      const token = await getToken(messaging, {
         vapidKey,
       });
 
@@ -178,7 +180,7 @@ export class FCMService {
       const messaging = await this.getMessagingInstance();
       const { deleteToken } = await import("firebase/messaging");
 
-      await deleteToken(messaging as any);
+      await deleteToken(messaging);
       logger.debug("FCM token deleted from device");
 
       // Delete from Firestore
@@ -198,32 +200,6 @@ export class FCMService {
     } catch (error) {
       logger.error("Error deleting FCM token", { error });
       throw error;
-    }
-  }
-
-  /**
-   * Get current FCM token (if exists)
-   */
-  static async getCurrentToken(): Promise<string | null> {
-    try {
-      const supported = await this.isNotificationSupported();
-      if (!supported) {
-        return null;
-      }
-
-      const messaging = await this.getMessagingInstance();
-      const { getToken } = await import("firebase/messaging");
-
-      const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-      if (!vapidKey) {
-        return null;
-      }
-
-      const token = await getToken(messaging as any, { vapidKey });
-      return token || null;
-    } catch (error) {
-      logger.debug("No current FCM token available", { error });
-      return null;
     }
   }
 
@@ -258,7 +234,7 @@ export class FCMService {
       const { onMessage } = await import("firebase/messaging");
 
       // Listen for token refresh
-      const unsubscribe = onMessage(messaging as any, async (payload) => {
+      return onMessage(messaging, async (payload) => {
         logger.debug("FCM message received", { payload });
 
         // Check if this is a token refresh notification
@@ -270,8 +246,6 @@ export class FCMService {
           }
         }
       });
-
-      return unsubscribe;
     } catch (error) {
       logger.error("Error setting up token refresh listener", { error });
       return () => {}; // Return no-op cleanup function

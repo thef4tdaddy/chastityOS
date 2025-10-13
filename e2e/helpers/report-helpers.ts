@@ -3,7 +3,7 @@
  * Utilities for testing Full Report workflows and data aggregation
  */
 
-import { Page, expect } from "@playwright/test";
+import { Page } from "@playwright/test";
 
 /**
  * Mock session data for testing
@@ -167,7 +167,7 @@ export const extractStatistics = async (
     .textContent()
     .catch(() => null);
   if (totalSessionsText) {
-    const match = totalSessionsText.match(/\d+/);
+    const match = totalSessionsText.match(/[0-9]+/);
     if (match) stats.totalSessions = parseInt(match[0]);
   }
 
@@ -329,7 +329,7 @@ export const verifySessionDataInReport = async (
 ): Promise<boolean> => {
   // Check for session-related data in the report
   const sessionData = page.locator(
-    "text=/\\d+d|\\d+h|\\d+m|Duration|Start Time|End Time/i",
+    "text=/[0-9]+d|[0-9]+h|[0-9]+m|Duration|Start Time|End Time/i",
   );
   return (await sessionData.count()) > 0;
 };
@@ -440,12 +440,11 @@ export const measureReportLoadTime = async (page: Page): Promise<number> => {
  * Helper to generate large dataset for performance testing
  */
 export const generateLargeDataset = async (
-  page: Page,
-  sessionCount: number,
+  _page: Page,
+  _sessionCount: number,
 ) => {
   // This would be used for performance testing
   // In a real test, we'd either mock data or create multiple sessions
-  console.log(`Would generate ${sessionCount} sessions for testing`);
 };
 
 /**

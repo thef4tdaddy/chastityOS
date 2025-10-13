@@ -21,6 +21,8 @@ import {
   Unsubscribe,
   Firestore,
   Timestamp,
+  DocumentReference,
+  DocumentSnapshot,
 } from "firebase/firestore";
 import { getFirestore } from "../firebase";
 import {
@@ -30,10 +32,10 @@ import {
   RelationshipEvent,
   SessionEvent,
   RelationshipTaskStatus,
-} from "../../types/relationships";
+} from "@/types/relationships";
 import { relationshipService } from "./relationships/RelationshipService";
-import { serviceLogger } from "../../utils/logging";
-import { generateUUID } from "../../utils";
+import { serviceLogger } from "@/utils/logging";
+import { generateUUID } from "@/utils";
 
 const logger = serviceLogger("RelationshipChastityService");
 
@@ -41,7 +43,7 @@ class RelationshipChastityService {
   private db: Firestore | null = null;
 
   constructor() {
-    this.initializeDb();
+    // No-op: DB is initialized on first use via ensureDb
   }
 
   private async initializeDb() {
@@ -58,29 +60,89 @@ class RelationshipChastityService {
     return this.db;
   }
 
+  // ==================== HELPER METHODS ====================
+
+  private async _checkPermission(
+    relationshipId: string,
+    userId: string,
+    permission: string,
+  ) {
+    const hasPermission = await relationshipService.checkPermission(
+      relationshipId,
+      userId,
+      permission,
+    );
+    if (!hasPermission) {
+      throw new Error(`Insufficient permissions for ${permission}`);
+    }
+  }
+
+  private async _getKeyholderId(relationshipId: string): Promise<string> {
+    const relationship =
+      await relationshipService.getRelationship(relationshipId);
+    if (!relationship) {
+      throw new Error("Relationship not found");
+    }
+    return relationship.keyholderId;
+  }
+
+  private async _fetchCollection<T>(
+    relationshipId: string,
+    collectionName: string,
+    orderByField: string,
+    limitCount: number,
+  ): Promise<T[]> {
+    const db = await this.ensureDb();
+    const snapshot = await getDocs(
+      query(
+        collection(db, "chastityData", relationshipId, collectionName),
+        orderBy(orderByField, "desc"),
+        limit(limitCount),
+      ),
+    );
+    const items = snapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as T[];
+    logger.debug(`Retrieved ${collectionName}`, {
+      relationshipId,
+      count: items.length,
+    });
+    return items;
+  }
+
+  private async _getSession(
+    relationshipId: string,
+    sessionId: string,
+  ): Promise<{ sessionDoc: DocumentSnapshot; sessionRef: DocumentReference }> {
+    const db = await this.ensureDb();
+    const sessionRef = doc(
+      db,
+      "chastityData",
+      relationshipId,
+      "sessions",
+      sessionId,
+    );
+    const sessionDoc = await getDoc(sessionRef);
+    if (!sessionDoc.exists()) {
+      throw new Error("Session not found");
+    }
+    return { sessionDoc, sessionRef };
+  }
+
   // ==================== CHASTITY DATA MANAGEMENT ====================
 
-  /**
-   * Get chastity data for a relationship
-   */
   async getChastityData(
     relationshipId: string,
   ): Promise<RelationshipChastityData | null> {
     try {
       const db = await this.ensureDb();
       const docSnapshot = await getDoc(doc(db, "chastityData", relationshipId));
-
-      if (!docSnapshot.exists()) {
-        return null;
-      }
-
-      const data = {
+      if (!docSnapshot.exists()) return null;
+      return {
         ...docSnapshot.data(),
         relationshipId: docSnapshot.id,
       } as RelationshipChastityData;
-
-      logger.debug("Retrieved chastity data", { relationshipId });
-      return data;
     } catch (error) {
       logger.error("Failed to get chastity data", {
         error: error as Error,
@@ -90,53 +152,8 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * Update chastity data settings
-   */
-  async updateChastitySettings(
-    relationshipId: string,
-    settings: Partial<RelationshipChastityData["settings"]>,
-    userId: string,
-  ): Promise<void> {
-    try {
-      const db = await this.ensureDb();
-
-      // Check permissions
-      const hasPermission = await relationshipService.checkPermission(
-        relationshipId,
-        userId,
-        "settings",
-      );
-
-      if (!hasPermission) {
-        throw new Error("Insufficient permissions to update settings");
-      }
-
-      await updateDoc(doc(db, "chastityData", relationshipId), {
-        settings,
-        updatedAt: serverTimestamp(),
-      });
-
-      logger.info("Updated chastity settings", {
-        relationshipId,
-        userId,
-        settings,
-      });
-    } catch (error) {
-      logger.error("Failed to update chastity settings", {
-        error: error as Error,
-        relationshipId,
-        userId,
-      });
-      throw error;
-    }
-  }
-
   // ==================== SESSION MANAGEMENT ====================
 
-  /**
-   * Start a new chastity session
-   */
   async startSession(
     relationshipId: string,
     userId: string,
@@ -148,22 +165,8 @@ class RelationshipChastityService {
   ): Promise<string> {
     try {
       const db = await this.ensureDb();
-      if (!db) {
-        throw new Error("Database connection not available");
-      }
+      await this._checkPermission(relationshipId, userId, "sessions");
 
-      // Check if user has permission to start session
-      const hasPermission = await relationshipService.checkPermission(
-        relationshipId,
-        userId,
-        "sessions",
-      );
-
-      if (!hasPermission) {
-        throw new Error("Insufficient permissions to start session");
-      }
-
-      // Check if there's already an active session
       const chastityData = await this.getChastityData(relationshipId);
       if (chastityData?.currentSession.isActive) {
         throw new Error("A session is already active for this relationship");
@@ -171,13 +174,11 @@ class RelationshipChastityService {
 
       const sessionId = generateUUID();
       const batch = writeBatch(db);
-
-      // Create session record
       const sessionData: Omit<RelationshipSession, "createdAt" | "updatedAt"> =
         {
           id: sessionId,
           relationshipId,
-          startTime: serverTimestamp() as any,
+          startTime: serverTimestamp() as Timestamp,
           duration: 0,
           effectiveDuration: 0,
           events: [
@@ -192,9 +193,7 @@ class RelationshipChastityService {
             },
           ],
           goalMet: false,
-          keyholderApproval: {
-            required: false,
-          },
+          keyholderApproval: { required: false },
         };
 
       batch.set(
@@ -206,7 +205,6 @@ class RelationshipChastityService {
         },
       );
 
-      // Update current session in chastity data
       batch.update(doc(db, "chastityData", relationshipId), {
         currentSession: {
           id: sessionId,
@@ -220,14 +218,12 @@ class RelationshipChastityService {
       });
 
       await batch.commit();
-
       logger.info("Started new session", {
         sessionId,
         relationshipId,
         userId,
         options,
       });
-
       return sessionId;
     } catch (error) {
       logger.error("Failed to start session", {
@@ -240,9 +236,6 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * End a chastity session
-   */
   async endSession(
     relationshipId: string,
     sessionId: string,
@@ -251,53 +244,29 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
-      if (!db) {
-        throw new Error("Database connection not available");
-      }
+      await this._checkPermission(relationshipId, userId, "sessions");
 
-      // Check permissions
-      const hasPermission = await relationshipService.checkPermission(
+      const { sessionDoc, sessionRef } = await this._getSession(
         relationshipId,
-        userId,
-        "sessions",
-      );
-
-      if (!hasPermission) {
-        throw new Error("Insufficient permissions to end session");
-      }
-
-      const batch = writeBatch(db);
-
-      // Update session record
-      const sessionRef = doc(
-        db,
-        "chastityData",
-        relationshipId,
-        "sessions",
         sessionId,
       );
-      const sessionDoc = await getDoc(sessionRef);
-
-      if (!sessionDoc.exists()) {
-        throw new Error("Session not found");
-      }
-
       const sessionData = sessionDoc.data() as RelationshipSession;
       const endTime = new Date();
       const totalDuration =
-        endTime.getTime() - (sessionData.startTime as any).toDate().getTime();
+        endTime.getTime() -
+        (sessionData.startTime as Timestamp).toDate().getTime();
 
-      // Add end event
       const endEvent: SessionEvent = {
         type: "end",
         timestamp: serverTimestamp() as Timestamp,
         initiatedBy:
-          userId === (await this.getKeyholderId(relationshipId))
+          userId === (await this._getKeyholderId(relationshipId))
             ? "keyholder"
             : "submissive",
         reason: endReason,
       };
 
+      const batch = writeBatch(db);
       batch.update(sessionRef, {
         endTime: serverTimestamp(),
         duration: Math.floor(totalDuration / 1000),
@@ -305,12 +274,11 @@ class RelationshipChastityService {
         updatedAt: serverTimestamp(),
       });
 
-      // Update current session in chastity data
       batch.update(doc(db, "chastityData", relationshipId), {
         currentSession: {
           id: "",
           isActive: false,
-          startTime: serverTimestamp(),
+          startTime: null,
           accumulatedPauseTime: 0,
           keyholderApprovalRequired: false,
         },
@@ -318,7 +286,6 @@ class RelationshipChastityService {
       });
 
       await batch.commit();
-
       logger.info("Ended session", {
         sessionId,
         relationshipId,
@@ -336,9 +303,6 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * Pause a session
-   */
   async pauseSession(
     relationshipId: string,
     sessionId: string,
@@ -347,37 +311,12 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
-      if (!db) {
-        throw new Error("Database connection not available");
-      }
+      await this._checkPermission(relationshipId, userId, "pauseSession");
 
-      // Check if submissive can pause
-      const canPause = await relationshipService.checkPermission(
+      const { sessionDoc, sessionRef } = await this._getSession(
         relationshipId,
-        userId,
-        "pauseSession",
-      );
-
-      if (!canPause) {
-        throw new Error("Insufficient permissions to pause session");
-      }
-
-      const batch = writeBatch(db);
-
-      // Update session with pause event
-      const sessionRef = doc(
-        db,
-        "chastityData",
-        relationshipId,
-        "sessions",
         sessionId,
       );
-      const sessionDoc = await getDoc(sessionRef);
-
-      if (!sessionDoc.exists()) {
-        throw new Error("Session not found");
-      }
-
       const sessionData = sessionDoc.data() as RelationshipSession;
 
       const pauseEvent: SessionEvent = {
@@ -387,19 +326,17 @@ class RelationshipChastityService {
         reason: pauseReason,
       };
 
+      const batch = writeBatch(db);
       batch.update(sessionRef, {
         events: [...sessionData.events, pauseEvent],
         updatedAt: serverTimestamp(),
       });
-
-      // Update current session
       batch.update(doc(db, "chastityData", relationshipId), {
         "currentSession.pausedAt": serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
       await batch.commit();
-
       logger.info("Paused session", {
         sessionId,
         relationshipId,
@@ -417,9 +354,6 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * Resume a paused session
-   */
   async resumeSession(
     relationshipId: string,
     sessionId: string,
@@ -427,40 +361,24 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
-      if (!db) {
-        throw new Error("Database connection not available");
-      }
-
-      // Get current chastity data to calculate pause time
       const chastityData = await this.getChastityData(relationshipId);
       if (!chastityData?.currentSession.pausedAt) {
         throw new Error("Session is not paused");
       }
 
-      const batch = writeBatch(db);
+      const { sessionDoc, sessionRef } = await this._getSession(
+        relationshipId,
+        sessionId,
+      );
+      const sessionData = sessionDoc.data() as RelationshipSession;
 
-      // Calculate pause duration
       const pauseEnd = new Date();
-      const pauseStart = (chastityData.currentSession.pausedAt as any).toDate();
+      const pauseStart = (
+        chastityData.currentSession.pausedAt as Timestamp
+      ).toDate();
       const pauseDuration = Math.floor(
         (pauseEnd.getTime() - pauseStart.getTime()) / 1000,
       );
-
-      // Update session with resume event
-      const sessionRef = doc(
-        db,
-        "chastityData",
-        relationshipId,
-        "sessions",
-        sessionId,
-      );
-      const sessionDoc = await getDoc(sessionRef);
-
-      if (!sessionDoc.exists()) {
-        throw new Error("Session not found");
-      }
-
-      const sessionData = sessionDoc.data() as RelationshipSession;
 
       const resumeEvent: SessionEvent = {
         type: "resume",
@@ -468,12 +386,11 @@ class RelationshipChastityService {
         initiatedBy: "submissive",
       };
 
+      const batch = writeBatch(db);
       batch.update(sessionRef, {
         events: [...sessionData.events, resumeEvent],
         updatedAt: serverTimestamp(),
       });
-
-      // Update current session
       batch.update(doc(db, "chastityData", relationshipId), {
         "currentSession.pausedAt": null,
         "currentSession.accumulatedPauseTime":
@@ -482,7 +399,6 @@ class RelationshipChastityService {
       });
 
       await batch.commit();
-
       logger.info("Resumed session", {
         sessionId,
         relationshipId,
@@ -502,9 +418,6 @@ class RelationshipChastityService {
 
   // ==================== TASK MANAGEMENT ====================
 
-  /**
-   * Create a new task
-   */
   async createTask(
     relationshipId: string,
     taskData: {
@@ -516,21 +429,11 @@ class RelationshipChastityService {
   ): Promise<string> {
     try {
       const db = await this.ensureDb();
-
-      // Check permissions
-      const hasPermission = await relationshipService.checkPermission(
-        relationshipId,
-        userId,
-        "tasks",
-      );
-
-      if (!hasPermission) {
-        throw new Error("Insufficient permissions to create tasks");
-      }
+      await this._checkPermission(relationshipId, userId, "tasks");
 
       const taskId = generateUUID();
       const isKeyholder =
-        userId === (await this.getKeyholderId(relationshipId));
+        userId === (await this._getKeyholderId(relationshipId));
 
       const task: Omit<RelationshipTask, "createdAt" | "updatedAt"> = {
         id: taskId,
@@ -538,7 +441,9 @@ class RelationshipChastityService {
         text: taskData.text,
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
-        dueDate: taskData.dueDate ? (taskData.dueDate as any) : undefined,
+        dueDate: taskData.dueDate
+          ? Timestamp.fromDate(taskData.dueDate)
+          : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
       };
@@ -548,14 +453,12 @@ class RelationshipChastityService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-
       logger.info("Created task", {
         taskId,
         relationshipId,
         userId,
         isKeyholder,
       });
-
       return taskId;
     } catch (error) {
       logger.error("Failed to create task", {
@@ -567,9 +470,6 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * Update task status
-   */
   async updateTaskStatus(
     relationshipId: string,
     taskId: string,
@@ -579,15 +479,13 @@ class RelationshipChastityService {
   ): Promise<void> {
     try {
       const db = await this.ensureDb();
-
       const updateData: Record<string, unknown> = {
         status,
         updatedAt: serverTimestamp(),
       };
 
-      // Add role-specific fields
       const isKeyholder =
-        userId === (await this.getKeyholderId(relationshipId));
+        userId === (await this._getKeyholderId(relationshipId));
 
       if (status === RelationshipTaskStatus.SUBMITTED && !isKeyholder) {
         updateData.submittedAt = serverTimestamp();
@@ -607,7 +505,6 @@ class RelationshipChastityService {
         doc(db, "chastityData", relationshipId, "tasks", taskId),
         updateData,
       );
-
       logger.info("Updated task status", {
         taskId,
         relationshipId,
@@ -627,35 +524,17 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * Get tasks for a relationship
-   */
   async getTasks(
     relationshipId: string,
     limitCount: number = 50,
   ): Promise<RelationshipTask[]> {
     try {
-      const db = await this.ensureDb();
-
-      const tasksSnapshot = await getDocs(
-        query(
-          collection(db, "chastityData", relationshipId, "tasks"),
-          orderBy("createdAt", "desc"),
-          limit(limitCount),
-        ),
-      );
-
-      const tasks = tasksSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      })) as RelationshipTask[];
-
-      logger.debug("Retrieved tasks", {
+      return await this._fetchCollection<RelationshipTask>(
         relationshipId,
-        count: tasks.length,
-      });
-
-      return tasks;
+        "tasks",
+        "createdAt",
+        limitCount,
+      );
     } catch (error) {
       logger.error("Failed to get tasks", {
         error: error as Error,
@@ -667,9 +546,6 @@ class RelationshipChastityService {
 
   // ==================== EVENT LOGGING ====================
 
-  /**
-   * Log an event
-   */
   async logEvent(
     relationshipId: string,
     eventData: {
@@ -682,10 +558,9 @@ class RelationshipChastityService {
   ): Promise<string> {
     try {
       const db = await this.ensureDb();
-
       const eventId = generateUUID();
       const isKeyholder =
-        userId === (await this.getKeyholderId(relationshipId));
+        userId === (await this._getKeyholderId(relationshipId));
 
       const event: Omit<RelationshipEvent, "createdAt"> = {
         id: eventId,
@@ -702,7 +577,6 @@ class RelationshipChastityService {
         ...event,
         createdAt: serverTimestamp(),
       });
-
       logger.info("Logged event", {
         eventId,
         relationshipId,
@@ -710,7 +584,6 @@ class RelationshipChastityService {
         userId,
         isKeyholder,
       });
-
       return eventId;
     } catch (error) {
       logger.error("Failed to log event", {
@@ -722,35 +595,17 @@ class RelationshipChastityService {
     }
   }
 
-  /**
-   * Get events for a relationship
-   */
   async getEvents(
     relationshipId: string,
     limitCount: number = 100,
   ): Promise<RelationshipEvent[]> {
     try {
-      const db = await this.ensureDb();
-
-      const eventsSnapshot = await getDocs(
-        query(
-          collection(db, "chastityData", relationshipId, "events"),
-          orderBy("timestamp", "desc"),
-          limit(limitCount),
-        ),
-      );
-
-      const events = eventsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      })) as RelationshipEvent[];
-
-      logger.debug("Retrieved events", {
+      return await this._fetchCollection<RelationshipEvent>(
         relationshipId,
-        count: events.length,
-      });
-
-      return events;
+        "events",
+        "timestamp",
+        limitCount,
+      );
     } catch (error) {
       logger.error("Failed to get events", {
         error: error as Error,
@@ -760,49 +615,17 @@ class RelationshipChastityService {
     }
   }
 
-  // ==================== HELPER METHODS ====================
-
-  /**
-   * Get keyholder ID for a relationship
-   */
-  private async getKeyholderId(relationshipId: string): Promise<string> {
-    const relationship =
-      await relationshipService.getRelationship(relationshipId);
-    if (!relationship) {
-      throw new Error("Relationship not found");
-    }
-    return relationship.keyholderId;
-  }
-
-  /**
-   * Get session history for a relationship
-   */
   async getSessionHistory(
     relationshipId: string,
     limitCount: number = 50,
   ): Promise<RelationshipSession[]> {
     try {
-      const db = await this.ensureDb();
-
-      const sessionsSnapshot = await getDocs(
-        query(
-          collection(db, "chastityData", relationshipId, "sessions"),
-          orderBy("startTime", "desc"),
-          limit(limitCount),
-        ),
-      );
-
-      const sessions = sessionsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      })) as RelationshipSession[];
-
-      logger.debug("Retrieved session history", {
+      return await this._fetchCollection<RelationshipSession>(
         relationshipId,
-        count: sessions.length,
-      });
-
-      return sessions;
+        "sessions",
+        "startTime",
+        limitCount,
+      );
     } catch (error) {
       logger.error("Failed to get session history", {
         error: error as Error,
@@ -814,9 +637,6 @@ class RelationshipChastityService {
 
   // ==================== REAL-TIME LISTENERS ====================
 
-  /**
-   * Subscribe to chastity data changes
-   */
   async subscribeToChastityData(
     relationshipId: string,
     callback: (data: RelationshipChastityData | null) => void,
@@ -842,9 +662,6 @@ class RelationshipChastityService {
     );
   }
 
-  /**
-   * Subscribe to task changes
-   */
   async subscribeToTasks(
     relationshipId: string,
     callback: (tasks: RelationshipTask[]) => void,
@@ -863,10 +680,7 @@ class RelationshipChastityService {
         callback(tasks);
       },
       (error) => {
-        logger.error("Error in tasks subscription", {
-          error,
-          relationshipId,
-        });
+        logger.error("Error in tasks subscription", { error, relationshipId });
       },
     );
   }

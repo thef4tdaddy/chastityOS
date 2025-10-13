@@ -9,6 +9,15 @@ import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useBackgroundSync");
 
+// Type definitions for Background Sync API
+interface SyncManager {
+  register(tag: string): Promise<void>;
+}
+
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+  readonly sync: SyncManager;
+}
+
 /**
  * Hook to manage background sync for offline operations
  */
@@ -27,7 +36,9 @@ export function useBackgroundSync() {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      await registration.sync.register("offline-queue-sync");
+      await (registration as ServiceWorkerRegistrationWithSync).sync.register(
+        "offline-queue-sync",
+      );
       logger.info("Background sync registered");
     } catch (error) {
       logger.error("Failed to register background sync", error);
@@ -85,15 +96,13 @@ export function useBackgroundSync() {
 
   // Listen for online/offline events
   useEffect(() => {
-    const unsubscribe = connectionStatus.subscribe(async (isOnline) => {
+    return connectionStatus.subscribe(async (isOnline) => {
       if (isOnline) {
         logger.info("Connection restored, triggering sync");
         await registerBackgroundSync();
         await processQueueWhenOnline();
       }
     });
-
-    return unsubscribe;
   }, [registerBackgroundSync, processQueueWhenOnline]);
 
   return {

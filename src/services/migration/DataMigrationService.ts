@@ -13,8 +13,8 @@ import {
   WriteBatch,
   Timestamp,
 } from "firebase/firestore";
-import { getFirestore } from "../firebase";
-import { relationshipService } from "../database/relationships";
+import { getFirestore } from "@/services/firebase";
+import { relationshipService } from "@/services/database/relationships";
 import {
   Relationship,
   RelationshipStatus,
@@ -23,9 +23,9 @@ import {
   RelationshipTask,
   RelationshipEvent,
   RelationshipTaskStatus,
-} from "../../types/relationships";
-import { serviceLogger } from "../../utils/logging";
-import { generateUUID } from "../../utils";
+} from "@/types/relationships";
+import { serviceLogger } from "@/utils/logging";
+import { generateUUID } from "@/utils";
 
 const logger = serviceLogger("DataMigrationService");
 
@@ -38,11 +38,14 @@ export interface MigrationResult {
   errors: string[];
 }
 
+// Define a type for legacy event types for clarity and type safety
+type LegacyEventType = string | unknown;
+
 class DataMigrationService {
   private db: Firestore | null = null;
 
   constructor() {
-    this.initializeDb();
+    // No-op: DB is initialized on first use via ensureDb
   }
 
   private async initializeDb() {
@@ -530,47 +533,6 @@ class DataMigrationService {
     }
   }
 
-  /**
-   * Create a relationship invitation for migrated users
-   * This allows them to invite a keyholder after migration
-   */
-  async createPostMigrationInvitation(
-    userId: string,
-    keyholderEmail: string,
-    message?: string,
-  ): Promise<string> {
-    try {
-      // This would create a special invitation type for post-migration
-      // The keyholder would join the existing self-relationship
-      // For now, use the standard relationship request system
-
-      // First, get user's email from their profile
-      const userDoc = await getDoc(doc(await this.ensureDb(), "users", userId));
-      if (!userDoc.exists()) {
-        throw new Error("User not found");
-      }
-
-      // This is a placeholder for the actual invitation system
-      // In a real implementation, you'd send an email invitation
-      // with a special link to join the existing relationship
-
-      logger.info("Created post-migration invitation", {
-        userId,
-        keyholderEmail,
-        message,
-      });
-
-      return generateUUID() as any; // Return invitation ID
-    } catch (error) {
-      logger.error("Failed to create post-migration invitation", {
-        error: error as Error,
-        userId,
-        keyholderEmail,
-      });
-      throw error;
-    }
-  }
-
   // ==================== UTILITY METHODS ====================
 
   /**
@@ -598,7 +560,7 @@ class DataMigrationService {
    * Map legacy event type to new event type
    */
   private mapEventType(
-    oldType: string | unknown,
+    oldType: LegacyEventType,
   ): "orgasm" | "sexual_activity" | "milestone" | "note" {
     const typeMap: Record<
       string,
@@ -619,42 +581,6 @@ class DataMigrationService {
     }
 
     return "note"; // Default fallback
-  }
-
-  /**
-   * Clean up legacy data after successful migration
-   * WARNING: This permanently deletes old data
-   */
-  async cleanupLegacyData(userId: string): Promise<void> {
-    try {
-      const db = await this.ensureDb();
-      const batch = writeBatch(db);
-
-      // Delete legacy collections
-      const collections = ["sessions", "tasks", "events", "eventLog"];
-
-      for (const collectionName of collections) {
-        const snapshot = await getDocs(
-          collection(db, "users", userId, collectionName),
-        );
-        snapshot.docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-      }
-
-      await batch.commit();
-
-      logger.info("Cleaned up legacy data", {
-        userId,
-        collectionsDeleted: collections.length,
-      });
-    } catch (error) {
-      logger.error("Failed to cleanup legacy data", {
-        error: error as Error,
-        userId,
-      });
-      throw error;
-    }
   }
 }
 
