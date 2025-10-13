@@ -162,7 +162,10 @@ export class AchievementLeaderboardService {
     participateInGlobal: boolean;
     participateInMonthly: boolean;
     shareSessionTime: boolean;
-    showRealName: boolean;
+    shareStreakData: boolean;
+    shareAchievements: boolean;
+    displayName: "real" | "username" | "anonymous";
+    showOnPublicProfile: boolean;
   }> {
     // This would typically be stored in user settings
     // For now, return default settings
@@ -186,7 +189,10 @@ export class AchievementLeaderboardService {
       participateInGlobal?: boolean;
       participateInMonthly?: boolean;
       shareSessionTime?: boolean;
-      showRealName?: boolean;
+      shareStreakData?: boolean;
+      shareAchievements?: boolean;
+      displayName?: "real" | "username" | "anonymous";
+      showOnPublicProfile?: boolean;
     },
   ): Promise<void> {
     try {

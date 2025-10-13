@@ -14,7 +14,10 @@ const logger = serviceLogger("usePauseKeyholderActions");
 export function usePauseKeyholderActions(
   sessionId: string,
   keyholderOverrides: KeyholderOverrideCapabilities,
-  startPause: (reason: PauseReason, initiatedBy?: string) => void,
+  startPause: (
+    reason: PauseReason,
+    initiatedBy?: "submissive" | "keyholder" | "system",
+  ) => void,
   resumeSession: () => Promise<void>,
   clearCooldown: () => void,
 ) {

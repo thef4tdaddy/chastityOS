@@ -78,7 +78,7 @@ export abstract class BaseDBService<
         ...updates,
         lastModified: new Date(),
         syncStatus: "pending" as SyncStatus,
-      };
+      } as any;
 
       await this.table.update(id, updateData);
       logger.debug("Updated record", { id, updates: Object.keys(updateData) });
@@ -130,7 +130,7 @@ export abstract class BaseDBService<
    */
   async markAsSynced(id: string): Promise<void> {
     try {
-      await this.table.update(id, { syncStatus: "synced" });
+      await this.table.update(id, { syncStatus: "synced" } as any);
       logger.debug("Marked as synced", { id });
     } catch (error) {
       logger.error("Failed to mark as synced", { error: error as Error, id });
@@ -146,7 +146,7 @@ export abstract class BaseDBService<
       await this.table.bulkUpdate(
         ids.map((id) => ({
           key: id,
-          changes: { syncStatus: "synced" },
+          changes: { syncStatus: "synced" } as any,
         })),
       );
       logger.debug("Bulk marked as synced", { count: ids.length });

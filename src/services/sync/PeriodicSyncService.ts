@@ -3,7 +3,7 @@
  * Handles periodic background sync for refreshing app data
  */
 import { serviceLogger } from "@/utils/logging";
-import { db } from "../firebase";
+import { db } from "@/firebase";
 import { collection, getDocs, query, limit, orderBy } from "firebase/firestore";
 
 const logger = serviceLogger("PeriodicSyncService");
@@ -126,9 +126,12 @@ export class PeriodicSyncService {
       // Convert minutes to milliseconds for the minimum interval
       const minInterval = this.settings.intervalMinutes * 60 * 1000;
 
-      await this.registration.periodicSync.register("refresh-app-data", {
-        minInterval,
-      });
+      await (this.registration as any).periodicSync.register(
+        "refresh-app-data",
+        {
+          minInterval,
+        },
+      );
 
       this.settings.lastSyncTime = Date.now();
       this.saveSettings();
@@ -150,7 +153,7 @@ export class PeriodicSyncService {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      await registration.periodicSync.unregister("refresh-app-data");
+      await (registration as any).periodicSync.unregister("refresh-app-data");
       logger.info("Periodic sync unregistered");
     } catch (error) {
       logger.error("Failed to unregister periodic sync", error);
@@ -167,7 +170,7 @@ export class PeriodicSyncService {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      return await registration.periodicSync.getTags();
+      return await (registration as any).periodicSync.getTags();
     } catch (error) {
       logger.error("Failed to get periodic sync tags", error);
       return [];

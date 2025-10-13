@@ -50,7 +50,7 @@ export const useTimerSyncMonitor = (session: DBSession | null) => {
     const interval = setInterval(checkSync, 30000);
 
     return () => clearInterval(interval);
-  }, [session?.id, session?.startTime, session?.pauseStartTime]);
+  }, [session]);
 
   return {
     syncIssue: syncState.issue,

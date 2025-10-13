@@ -98,6 +98,7 @@ export abstract class FirebaseSyncCore {
       type: operation,
       collectionName,
       payload,
+      userId: payload.userId,
     });
   }
 

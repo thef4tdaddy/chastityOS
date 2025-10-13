@@ -299,7 +299,7 @@ export type Task = DBTask;
 
 /**
  * Release Request Type
- * For "Beg for Release" workflow between submissives and keyholders
+ * For "Beg for Release" workflow between submissive and keyholders
  */
 export interface DBReleaseRequest {
   id: string;
@@ -413,12 +413,12 @@ export interface TaskFilters {
   hasConsequence?: boolean;
 }
 
-export interface QueuedOperation<T extends DBBase> {
+export interface QueuedOperation<T> {
   id?: number;
   type: "create" | "update" | "delete";
   collectionName: string;
   payload: T;
-  userId: string;
+  userId?: string;
   createdAt: Date;
   retryCount?: number;
   lastRetryAt?: Date;

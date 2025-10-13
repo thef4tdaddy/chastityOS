@@ -13,7 +13,7 @@ import type {
   KeyholderOverrideCapabilities as _KeyholderOverrideCapabilities,
   PauseHistoryEntry as _PauseHistoryEntry,
   PauseAnalytics as _PauseAnalytics,
-  PauseReason as _PauseReason,
+  PauseReason,
   PauseRequestStatus as _PauseRequestStatus,
   OverrideRequestStatus as _OverrideRequestStatus,
   PausePattern,
