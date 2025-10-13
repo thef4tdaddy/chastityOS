@@ -75,7 +75,7 @@ describe("EventList", () => {
 
       expect(screen.getByText(/no events logged yet/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/log your first event above/i)
+        screen.getByText(/log your first event above/i),
       ).toBeInTheDocument();
     });
 
@@ -275,25 +275,33 @@ describe("EventList", () => {
 
   describe("Pagination", () => {
     // Create enough events to trigger pagination
-    const manyEvents: Array<DBEvent & { ownerName?: string; ownerId?: string }> =
-      Array.from({ length: 50 }, (_, i) => ({
+    const manyEvents: Array<
+      DBEvent & { ownerName?: string; ownerId?: string }
+    > = Array.from({ length: 50 }, (_, i) => {
+      // Create dates by adding days to a base date to ensure valid dates
+      const baseDate = new Date("2024-01-01T12:00:00");
+      const eventDate = new Date(baseDate);
+      eventDate.setDate(baseDate.getDate() + i);
+
+      return {
         id: `event-${i}`,
         userId: "user-1",
         type: "note",
-        timestamp: new Date(`2024-01-${Math.min(i + 1, 28)}T12:00:00`),
-        createdAt: new Date(`2024-01-${Math.min(i + 1, 28)}T12:00:00`),
+        timestamp: eventDate,
+        createdAt: eventDate,
         isPrivate: false,
         details: {
           notes: `Event ${i + 1}`,
         },
-      })) as Array<DBEvent & { ownerName?: string; ownerId?: string }>;
+      };
+    }) as Array<DBEvent & { ownerName?: string; ownerId?: string }>;
 
     it("should show pagination controls when there are more than pageSize events", () => {
       render(<EventList events={manyEvents} pageSize={20} />);
 
       expect(screen.getByText(/page 1 of/i)).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /previous/i })
+        screen.getByRole("button", { name: /previous/i }),
       ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
     });
@@ -383,7 +391,7 @@ describe("EventList", () => {
 
       const articles = screen.getAllByRole("article");
       const milestoneArticle = articles.find((article) =>
-        within(article).queryByText("Milestone")
+        within(article).queryByText("Milestone"),
       );
 
       expect(milestoneArticle).toHaveClass(/milestone/);
@@ -425,7 +433,7 @@ describe("EventList", () => {
 
       const articles = screen.getAllByRole("article");
       const privateArticle = articles.find((article) =>
-        within(article).queryByText("Private")
+        within(article).queryByText("Private"),
       );
 
       const label = privateArticle?.getAttribute("aria-label");
