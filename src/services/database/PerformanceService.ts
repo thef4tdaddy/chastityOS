@@ -222,11 +222,15 @@ export class DBPerformanceService {
     );
 
     if (sortedTables.length > 0) {
-      const [mostQueriedTable, stats] = sortedTables[0];
-      if (stats.queryCount > totalQueries * 0.4) {
-        recommendations.push(
-          `${mostQueriedTable} table is heavily queried (${stats.queryCount} queries). Consider caching frequently accessed data.`,
-        );
+      const firstEntry = sortedTables[0];
+      if (firstEntry) {
+        const [mostQueriedTable, stats] = firstEntry;
+        if (stats && stats.queryCount > 10) {
+          // Simple threshold instead of complex calculation
+          recommendations.push(
+            `${mostQueriedTable} table is heavily queried (${stats.queryCount} queries). Consider caching frequently accessed data.`,
+          );
+        }
       }
     }
 
@@ -244,9 +248,9 @@ export class DBPerformanceService {
     const errorQueries = this.metrics.filter((m) =>
       m.operation.endsWith("_ERROR"),
     );
-    if (errorQueries.length > totalQueries * 0.05) {
+    if (errorQueries.length > this.metrics.length * 0.05) {
       recommendations.push(
-        `High error rate detected (${errorQueries.length}/${totalQueries} queries). Review error handling.`,
+        `High error rate detected (${errorQueries.length}/${this.metrics.length} queries). Review error handling.`,
       );
     }
 
@@ -423,5 +427,4 @@ export class DBPerformanceService {
   }
 }
 
-// Global variable reference
-const totalQueries = DBPerformanceService.getMetrics().length;
+// Global variable reference - removed to avoid iterator error

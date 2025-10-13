@@ -16,7 +16,7 @@ export abstract class BaseDBService<
     userId?: string;
   },
 > {
-  constructor(protected table: Table<T>) {}
+  protected constructor(protected table: Table<T>) {}
 
   /**
    * Find record by ID
@@ -80,7 +80,11 @@ export abstract class BaseDBService<
         syncStatus: "pending" as SyncStatus,
       };
 
-      await this.table.update(id, updateData);
+      // Using `any` here is a pragmatic choice to satisfy Dexie's UpdateSpec type
+      // when dealing with a generic base class. The alternative would be complex
+      // type manipulation for each specific service.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await this.table.update(id, updateData as any);
       logger.debug("Updated record", { id, updates: Object.keys(updateData) });
     } catch (error) {
       logger.error("Failed to update record", { error: error as Error, id });
@@ -126,19 +130,6 @@ export abstract class BaseDBService<
   }
 
   /**
-   * Mark record as synced
-   */
-  async markAsSynced(id: string): Promise<void> {
-    try {
-      await this.table.update(id, { syncStatus: "synced" });
-      logger.debug("Marked as synced", { id });
-    } catch (error) {
-      logger.error("Failed to mark as synced", { error: error as Error, id });
-      throw error;
-    }
-  }
-
-  /**
    * Mark multiple records as synced
    */
   async bulkMarkAsSynced(ids: string[]): Promise<void> {
@@ -146,7 +137,9 @@ export abstract class BaseDBService<
       await this.table.bulkUpdate(
         ids.map((id) => ({
           key: id,
-          changes: { syncStatus: "synced" },
+          // Using `any` to satisfy Dexie's UpdateSpec within a bulk operation.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          changes: { syncStatus: "synced" } as any,
         })),
       );
       logger.debug("Bulk marked as synced", { count: ids.length });
@@ -169,23 +162,6 @@ export abstract class BaseDBService<
       return count;
     } catch (error) {
       logger.error("Failed to get count", { error: error as Error });
-      throw error;
-    }
-  }
-
-  /**
-   * Get count for specific user
-   */
-  async countByUserId(userId: string): Promise<number> {
-    try {
-      const count = await this.table.where("userId").equals(userId).count();
-      logger.debug("User record count", { userId, count });
-      return count;
-    } catch (error) {
-      logger.error("Failed to get user count", {
-        error: error as Error,
-        userId,
-      });
       throw error;
     }
   }

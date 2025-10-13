@@ -26,7 +26,6 @@ export const AchievementNotifications: React.FC<
           <AchievementToast
             key={notification.id}
             achievement={achievement}
-            notification={notification}
             onClose={() => markNotificationRead(notification.id)}
           />
         ) : null;

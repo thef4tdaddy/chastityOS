@@ -55,7 +55,7 @@ export const useScrollLock = (isOpen: boolean) => {
  */
 export const useFocusTrap = (
   isOpen: boolean,
-  sheetRef: React.RefObject<HTMLDivElement>,
+  sheetRef: React.RefObject<HTMLDivElement | null>,
 ) => {
   const previousActiveElement = useRef<HTMLElement | null>(null);
 

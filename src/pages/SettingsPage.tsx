@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useAuthState } from "../contexts";
-import { settingsDBService } from "../services/database";
-import type { DBSettings } from "../types/database";
-import { logger } from "../utils/logging";
+import { useAuthState } from "@/contexts";
+import { settingsDBService } from "@/services/database";
+import type { DBSettings } from "@/types/database";
+import { logger } from "@/utils/logging";
 import {
   FaUser,
   FaPalette,
@@ -12,26 +12,26 @@ import {
   FaSpinner,
   FaShieldAlt,
   FaCheckCircle,
-} from "../utils/iconImport";
-import { ToggleSwitch } from "../components/settings/ToggleSwitch";
-import { SecuritySettings } from "../components/settings/SecuritySettings";
-import { DataControls } from "../components/settings/DataControls";
-import { PersonalGoalSection } from "../components/settings/PersonalGoalSection";
-import { KeyholderDurationSection } from "../components/settings/KeyholderDurationSection";
-import { PeriodicSyncSection } from "../components/settings/PeriodicSyncSection";
-import { GoogleSignInButton } from "../components/auth/GoogleSignInButton";
-import { useIsAnonymous } from "../hooks/useIsAnonymous";
+} from "@/utils/iconImport";
+import { ToggleSwitch } from "@/components/settings/ToggleSwitch";
+import { SecuritySettings } from "@/components/settings/SecuritySettings";
+import { DataControls } from "@/components/settings/DataControls";
+import { PersonalGoalSection } from "@/components/settings/PersonalGoalSection";
+import { KeyholderDurationSection } from "@/components/settings/KeyholderDurationSection";
+import { PeriodicSyncSection } from "@/components/settings/PeriodicSyncSection";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { useIsAnonymous } from "@/hooks/useIsAnonymous";
 import {
   useUpdateAccountSettings,
   useUpdateDisplaySettings,
   useUpdateProfileSettings,
   useUpdatePrivacySettings,
-} from "../hooks/api/useSettings";
+} from "@/hooks/api/useSettings";
 import {
   validateAccountSettings,
   validateDisplaySettings,
   validateProfileSettings,
-} from "../utils/validation/settingsValidation";
+} from "@/utils/validation/settingsValidation";
 import {
   Input,
   Textarea,
@@ -44,8 +44,8 @@ import {
   Button,
   Switch,
 } from "@/components/ui";
-import { TimezoneUtil } from "../utils/timezone";
-import { toastBridge } from "../utils/toastBridge";
+import { TimezoneUtil } from "@/utils/timezone";
+import { toastBridge } from "@/utils/toastBridge";
 
 type SettingsTab =
   | "account"
@@ -564,7 +564,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
             </label>
             <div className="flex">
               <span className="bg-white/5 border border-white/10 border-r-0 rounded-l px-3 py-3 text-nightly-celadon text-sm">
-                chastityos.com/profile/
+                chastityOS.io/profile/
               </span>
               <Input
                 type="text"
@@ -745,7 +745,7 @@ const SettingsPage: React.FC = () => {
       }
     };
 
-    fetchSettings();
+    void fetchSettings();
   }, [user]);
 
   const tabs = [
@@ -765,7 +765,7 @@ const SettingsPage: React.FC = () => {
       ) : (
         <Tabs
           value={activeTab}
-          onValueChange={setActiveTab}
+          onValueChange={(value) => setActiveTab(value as SettingsTab)}
           tabs={tabs}
           orientation="vertical"
           className="lg:w-64 p-4"

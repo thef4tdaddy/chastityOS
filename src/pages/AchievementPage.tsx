@@ -4,23 +4,23 @@
  */
 
 import React, { useState } from "react";
-import { useAuthState } from "../contexts";
-import { useAchievements } from "../hooks/useAchievements";
+import { useAuthState } from "@/contexts";
+import { useAchievements } from "@/hooks/useAchievements";
 import {
   AchievementGallery,
   AchievementDashboard,
   AchievementLoadingState,
   AchievementSignInPrompt,
-} from "../components/achievements";
-import LeaderboardView from "../components/achievements/LeaderboardView";
-import AchievementPrivacySettings from "../components/achievements/AchievementPrivacySettings";
+} from "@/components/achievements";
+import LeaderboardView from "@/components/achievements/LeaderboardView";
+import AchievementPrivacySettings from "@/components/achievements/AchievementPrivacySettings";
 import {
   FaTrophy,
   FaChartBar,
   FaList,
   FaUsers,
   FaCog,
-} from "../utils/iconImport";
+} from "@/utils/iconImport";
 import { Tabs, TabsContent } from "@/components/ui";
 
 type ViewMode = "dashboard" | "gallery" | "leaderboards" | "privacy";
@@ -30,7 +30,6 @@ export const AchievementPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("gallery");
 
   const {
-    allAchievements: _allAchievements,
     getAchievementsWithProgress,
     toggleAchievementVisibility,
     isLoading,
@@ -53,6 +52,10 @@ export const AchievementPage: React.FC = () => {
     { value: "privacy", label: "Privacy", icon: <FaCog /> },
   ];
 
+  const handleViewModeChange = (value: string) => {
+    setViewMode(value as ViewMode);
+  };
+
   return (
     <div className="text-nightly-spring-green">
       <div className="p-4 max-w-6xl mx-auto">
@@ -67,7 +70,7 @@ export const AchievementPage: React.FC = () => {
         {/* Tabs Navigation and Content */}
         <Tabs
           value={viewMode}
-          onValueChange={setViewMode}
+          onValueChange={handleViewModeChange}
           tabs={tabs}
           orientation="horizontal"
         >

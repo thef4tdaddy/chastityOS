@@ -134,6 +134,8 @@ export const buildTrackerHeaderProps = (
         ? goals.keyholderAssigned[0].targetValue
         : 0,
     isCageOn: isActive,
+    denialCooldownActive: false,
+    pauseCooldownMessage: null,
   };
 };
 

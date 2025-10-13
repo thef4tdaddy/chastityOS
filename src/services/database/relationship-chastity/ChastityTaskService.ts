@@ -34,7 +34,7 @@ class ChastityTaskService {
   private db: Firestore | null = null;
 
   constructor() {
-    this.initializeDb();
+    // No-op: DB is initialized on first use via ensureDb
   }
 
   private async initializeDb() {
@@ -98,7 +98,7 @@ class ChastityTaskService {
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
         dueDate: taskData.dueDate
-          ? (serverTimestamp() as unknown as Timestamp)
+          ? Timestamp.fromDate(taskData.dueDate)
           : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
