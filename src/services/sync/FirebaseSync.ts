@@ -3,8 +3,8 @@
  * Main orchestrator for data synchronization between Dexie and Firebase
  */
 import { serviceLogger } from "@/utils/logging";
-import { getFirebaseAuth, getFirestore } from "../firebase";
-import { sessionDBService } from "../database";
+import { getFirebaseAuth, getFirestore } from "@/services/firebase";
+import { sessionDBService } from "@/services/database";
 import type { Auth } from "firebase/auth";
 import type { Firestore } from "firebase/firestore";
 import { doc, Timestamp, setDoc } from "firebase/firestore";
@@ -24,7 +24,7 @@ import { taskDataSync } from "./TaskDataSync";
 import { achievementDataSync } from "./AchievementDataSync";
 import { relationshipDataSync } from "./RelationshipDataSync";
 import { syncConflictResolver } from "./SyncConflictResolver";
-import { NotificationService } from "../notifications";
+import { NotificationService } from "@/services/notifications";
 
 const logger = serviceLogger("FirebaseSync");
 
@@ -37,9 +37,9 @@ export class FirebaseSync {
 
   constructor() {
     logger.info("FirebaseSync orchestrator initialized");
-    connectionStatus.subscribe((isOnline) => {
+    connectionStatus.subscribe(async (isOnline) => {
       if (isOnline) {
-        this.processOfflineQueue();
+        await this.processOfflineQueue();
       }
     });
   }
@@ -316,26 +316,6 @@ export class FirebaseSync {
   }
 
   /**
-   * Backward-compatible sync method
-   */
-  async sync(): Promise<void> {
-    const auth = (await getFirebaseAuth()) as Auth;
-    const user = auth.currentUser;
-
-    if (!user) {
-      logger.warn("No user authenticated, skipping sync");
-      return;
-    }
-
-    try {
-      await this.syncUserData(user.uid);
-    } catch (error) {
-      logger.error("Sync failed", { error: error as Error });
-      throw error;
-    }
-  }
-
-  /**
    * Process offline queue operations
    */
   async processOfflineQueue(): Promise<void> {
@@ -425,19 +405,6 @@ export class FirebaseSync {
     }
   }
 
-  async syncUserGoals(userId: string): Promise<void> {
-    try {
-      await taskDataSync.syncGoals(userId);
-      logger.debug("User goals synced successfully", { userId });
-    } catch (error) {
-      logger.error("Failed to sync user goals", {
-        error: error as Error,
-        userId,
-      });
-      throw error;
-    }
-  }
-
   /**
    * Apply remote changes to local database
    * Supports both SyncOperation array and collection-specific data
@@ -463,23 +430,6 @@ export class FirebaseSync {
       }
     } catch (error) {
       logger.error("Failed to apply remote changes", { error: error as Error });
-      throw error;
-    }
-  }
-
-  /**
-   * Sync a specific collection
-   */
-  async syncCollection(collectionName: string, userId: string): Promise<void> {
-    try {
-      logger.debug("Syncing collection", { collectionName, userId });
-      // TODO: Implement collection sync logic
-    } catch (error) {
-      logger.error("Failed to sync collection", {
-        error: error as Error,
-        collectionName,
-        userId,
-      });
       throw error;
     }
   }

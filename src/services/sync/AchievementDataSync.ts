@@ -97,15 +97,6 @@ export class AchievementDataSync extends FirebaseSyncCore {
     logger.debug("Achievement download placeholder", { userId });
   }
 
-  private async getRemoteDoc(
-    userId: string,
-    docId: string,
-  ): Promise<DBBase | null> {
-    // TODO: Implement when needed
-    logger.debug("Achievement getRemoteDoc placeholder", { userId, docId });
-    return null;
-  }
-
   private async updateLocalDoc(data: DBBase): Promise<void> {
     // TODO: Implement when achievement database service exists
     logger.debug("Achievement updateLocalDoc placeholder", { docId: data.id });
@@ -114,14 +105,6 @@ export class AchievementDataSync extends FirebaseSyncCore {
   private async createLocalDoc(data: DBBase): Promise<void> {
     // TODO: Implement when achievement database service exists
     logger.debug("Achievement createLocalDoc placeholder", { docId: data.id });
-  }
-
-  private async updateRemoteDoc(userId: string, data: DBBase): Promise<void> {
-    // TODO: Implement when needed
-    logger.debug("Achievement updateRemoteDoc placeholder", {
-      userId,
-      docId: data.id,
-    });
   }
 }
 

@@ -7,6 +7,7 @@ import { KeyholderRelationshipService } from "@/services/KeyholderRelationshipSe
 import { queryKeys } from "@/services/queryKeys";
 import { cacheConfig } from "@/services/cache-config";
 import { serviceLogger } from "@/utils/logging";
+import { KeyholderPermissions } from "@/types/core";
 
 const logger = serviceLogger("useKeyholderRelationshipQueries");
 
@@ -70,36 +71,6 @@ export function useRelationshipSummary(userId: string | undefined) {
 }
 
 /**
- * Query for checking permissions - with caching to reduce DB calls
- */
-export function useHasPermission(
-  keyholderUserId: string | undefined,
-  submissiveUserId: string | undefined,
-  permission: string,
-) {
-  return useQuery({
-    queryKey: queryKeys.keyholderRelationships.permissions(
-      keyholderUserId || "",
-      submissiveUserId || "",
-    ),
-    queryFn: async () => {
-      if (!keyholderUserId || !submissiveUserId) return null;
-      // Type assertion is necessary here as permission parameter is string but needs to be typed key
-      return KeyholderRelationshipService.hasPermission(
-        keyholderUserId,
-        submissiveUserId,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        permission as any,
-      );
-    },
-    enabled: !!keyholderUserId && !!submissiveUserId,
-    staleTime: cacheConfig.permissions.staleTime,
-    gcTime: cacheConfig.permissions.gcTime,
-    refetchOnWindowFocus: cacheConfig.permissions.refetchOnWindowFocus,
-  });
-}
-
-/**
  * Mutation for creating invite code
  */
 export function useCreateInviteCode() {
@@ -120,9 +91,9 @@ export function useCreateInviteCode() {
         displayName,
         expirationHours,
       ),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate invite codes query to refetch
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.inviteCodes(
           variables.userId,
         ),
@@ -153,19 +124,19 @@ export function useAcceptInviteCode() {
         keyholderUserId,
         keyholderName,
       ),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate all relevant queries
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.list(
           variables.keyholderUserId,
         ),
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.activeKeyholder(
           variables.keyholderUserId,
         ),
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.summary(
           variables.keyholderUserId,
         ),
@@ -184,9 +155,9 @@ export function useRevokeInviteCode() {
   return useMutation({
     mutationFn: ({ codeId, userId }: { codeId: string; userId: string }) =>
       KeyholderRelationshipService.revokeInviteCode(codeId, userId),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate invite codes query
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.inviteCodes(
           variables.userId,
         ),
@@ -209,20 +180,20 @@ export function useUpdatePermissions() {
       userId,
     }: {
       relationshipId: string;
-      permissions: unknown; // Use unknown instead of any for better type safety
+      permissions: Partial<KeyholderPermissions>; // Use Partial for type safety
       userId: string;
     }) =>
       KeyholderRelationshipService.updatePermissions(
         relationshipId,
-        permissions,
+        permissions as KeyholderPermissions, // Cast to KeyholderPermissions
         userId,
       ),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate relationships and permissions queries
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.list(variables.userId),
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.all,
       });
       logger.info("Permissions updated, cache invalidated");
@@ -244,17 +215,17 @@ export function useEndRelationship() {
       relationshipId: string;
       userId: string;
     }) => KeyholderRelationshipService.endRelationship(relationshipId, userId),
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       // Invalidate all relationship queries
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.list(variables.userId),
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.activeKeyholder(
           variables.userId,
         ),
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: queryKeys.keyholderRelationships.summary(variables.userId),
       });
       logger.info("Relationship ended, cache invalidated");

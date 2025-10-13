@@ -5,7 +5,7 @@ import { CageOnStats, CageOffStats } from "./stats";
 import { FaBullseye, FaLock } from "../../utils/iconImport";
 import { Card } from "@/components/ui";
 
-interface TrackerStatsProps {
+export interface TrackerStatsProps {
   // New props for real-time timer
   currentSession?: DBSession | null;
   personalGoal?: DBGoal | null; // Personal goal for display
