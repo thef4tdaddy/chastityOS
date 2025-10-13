@@ -15,15 +15,15 @@ interface ReasonModalsProps {
 
 export const ReasonModals: React.FC<ReasonModalsProps> = ({
   showReasonModal,
-  onCancelRemoval,
-  onConfirmRemoval,
-  reasonForRemoval,
-  onReasonChange,
+  onCancelRemoval: _onCancelRemoval,
+  onConfirmRemoval: _onConfirmRemoval,
+  reasonForRemoval: _reasonForRemoval,
+  onReasonChange: _onReasonChange,
   showPauseReasonModal,
-  onCancelPause,
-  onConfirmPause,
-  pauseReason,
-  onPauseReasonChange,
+  onCancelPause: _onCancelPause,
+  onConfirmPause: _onConfirmPause,
+  pauseReason: _pauseReason,
+  onPauseReasonChange: _onPauseReasonChange,
 }) => {
   return (
     <>

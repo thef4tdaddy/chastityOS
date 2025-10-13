@@ -265,6 +265,7 @@ export class FirebaseSync {
         type: "update",
         collectionName: "sessions",
         payload: session,
+        userId: session.userId,
       });
       return;
     }
@@ -360,7 +361,7 @@ export class FirebaseSync {
     const collectionsToSync = new Set<string>();
     operations.forEach((op) => collectionsToSync.add(op.collectionName));
 
-    for (const collection of collectionsToSync) {
+    for (const collection of Array.from(collectionsToSync)) {
       await this.syncSingleCollection(collection, user.uid, {});
     }
 

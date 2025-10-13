@@ -454,7 +454,7 @@ class DataMigrationService {
       id: eventId,
       relationshipId,
       type: this.mapEventType(oldEvent.type),
-      timestamp: oldEvent.timestamp || serverTimestamp(),
+      timestamp: (oldEvent.timestamp as Timestamp) || serverTimestamp(),
       details: {
         duration: details?.duration as number | undefined,
         notes:
@@ -560,7 +560,7 @@ class DataMigrationService {
         message,
       });
 
-      return generateUUID(); // Return invitation ID
+      return generateUUID() as any; // Return invitation ID
     } catch (error) {
       logger.error("Failed to create post-migration invitation", {
         error: error as Error,

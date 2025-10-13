@@ -56,7 +56,7 @@ const useConflictResolutionHandlers = (
     resolutions: Record<string, "local" | "remote">,
   ) => Promise<void>,
   setShowConflictModal: (show: boolean) => void,
-  sync: (userId: string, options?: any) => Promise<any>,
+  sync: (userId: string, options?: Record<string, unknown>) => Promise<unknown>,
   setLastSyncTime: (time: Date | null) => void,
   userId: string | undefined,
 ) => {

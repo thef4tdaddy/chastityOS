@@ -5,16 +5,16 @@
 import React from "react";
 import { useTrackerContext } from "./TrackerContext";
 import { CageOnStats, CageOffStats } from "../stats";
-import type { useTrackerStats } from "../../../hooks/tracker/useTrackerStats";
+import type { useTrackerStats } from "@/hooks/tracker/useTrackerStats";
 
 export const TrackerStats: React.FC = () => {
   const {
     isActive,
     isPaused,
-    session,
-    totalChastityTime,
-    totalCageOffTime,
-    personalGoal,
+    session: _session,
+    totalChastityTime: _totalChastityTime,
+    totalCageOffTime: _totalCageOffTime,
+    personalGoal: _personalGoal,
   } = useTrackerContext();
 
   // Mock the hook return for now - this should be replaced with actual hook usage

@@ -177,7 +177,7 @@ class RelationshipChastityService {
         {
           id: sessionId,
           relationshipId,
-          startTime: serverTimestamp() as Timestamp,
+          startTime: serverTimestamp() as any,
           duration: 0,
           effectiveDuration: 0,
           events: [
@@ -285,7 +285,7 @@ class RelationshipChastityService {
       const sessionData = sessionDoc.data() as RelationshipSession;
       const endTime = new Date();
       const totalDuration =
-        endTime.getTime() - sessionData.startTime.toDate().getTime();
+        endTime.getTime() - (sessionData.startTime as any).toDate().getTime();
 
       // Add end event
       const endEvent: SessionEvent = {
@@ -441,7 +441,7 @@ class RelationshipChastityService {
 
       // Calculate pause duration
       const pauseEnd = new Date();
-      const pauseStart = chastityData.currentSession.pausedAt.toDate();
+      const pauseStart = (chastityData.currentSession.pausedAt as any).toDate();
       const pauseDuration = Math.floor(
         (pauseEnd.getTime() - pauseStart.getTime()) / 1000,
       );
@@ -538,7 +538,7 @@ class RelationshipChastityService {
         text: taskData.text,
         assignedBy: isKeyholder ? "keyholder" : "submissive",
         assignedTo: "submissive",
-        dueDate: taskData.dueDate ? (taskData.dueDate as Timestamp) : undefined,
+        dueDate: taskData.dueDate ? (taskData.dueDate as any) : undefined,
         status: RelationshipTaskStatus.PENDING,
         consequence: taskData.consequence,
       };
@@ -817,60 +817,58 @@ class RelationshipChastityService {
   /**
    * Subscribe to chastity data changes
    */
-  subscribeToChastityData(
+  async subscribeToChastityData(
     relationshipId: string,
     callback: (data: RelationshipChastityData | null) => void,
   ): Promise<Unsubscribe> {
-    return this.ensureDb().then((db) => {
-      return onSnapshot(
-        doc(db, "chastityData", relationshipId),
-        (doc) => {
-          const data = doc.exists()
-            ? ({
-                ...doc.data(),
-                relationshipId: doc.id,
-              } as RelationshipChastityData)
-            : null;
-          callback(data);
-        },
-        (error) => {
-          logger.error("Error in chastity data subscription", {
-            error,
-            relationshipId,
-          });
-        },
-      );
-    });
+    const db = await this.ensureDb();
+    return onSnapshot(
+      doc(db, "chastityData", relationshipId),
+      (doc) => {
+        const data = doc.exists()
+          ? ({
+              ...doc.data(),
+              relationshipId: doc.id,
+            } as RelationshipChastityData)
+          : null;
+        callback(data);
+      },
+      (error) => {
+        logger.error("Error in chastity data subscription", {
+          error,
+          relationshipId,
+        });
+      },
+    );
   }
 
   /**
    * Subscribe to task changes
    */
-  subscribeToTasks(
+  async subscribeToTasks(
     relationshipId: string,
     callback: (tasks: RelationshipTask[]) => void,
   ): Promise<Unsubscribe> {
-    return this.ensureDb().then((db) => {
-      return onSnapshot(
-        query(
-          collection(db, "chastityData", relationshipId, "tasks"),
-          orderBy("createdAt", "desc"),
-        ),
-        (snapshot) => {
-          const tasks = snapshot.docs.map((doc) => ({
-            ...doc.data(),
-            id: doc.id,
-          })) as RelationshipTask[];
-          callback(tasks);
-        },
-        (error) => {
-          logger.error("Error in tasks subscription", {
-            error,
-            relationshipId,
-          });
-        },
-      );
-    });
+    const db = await this.ensureDb();
+    return onSnapshot(
+      query(
+        collection(db, "chastityData", relationshipId, "tasks"),
+        orderBy("createdAt", "desc"),
+      ),
+      (snapshot) => {
+        const tasks = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as RelationshipTask[];
+        callback(tasks);
+      },
+      (error) => {
+        logger.error("Error in tasks subscription", {
+          error,
+          relationshipId,
+        });
+      },
+    );
   }
 }
 

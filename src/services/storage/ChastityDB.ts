@@ -3,7 +3,7 @@
  * Comprehensive local database with sync capabilities
  * Based on issue #104 specifications
  */
-import Dexie, { type Table, type Transaction, type Version } from "dexie";
+import Dexie, { type Table, type Version, type Transaction } from "dexie";
 import {
   DBUser,
   DBSession,
@@ -39,7 +39,7 @@ export class ChastityDB extends Dexie {
   goals!: Table<DBGoal>;
   settings!: Table<DBSettings>;
   syncMeta!: Table<DBSyncMeta>;
-  offlineQueue!: Table<QueuedOperation>;
+  offlineQueue!: Table<QueuedOperation<any>>;
 
   // New achievement tables
   achievements!: Table<DBAchievement>;
@@ -55,19 +55,7 @@ export class ChastityDB extends Dexie {
   releaseRequests!: Table<DBReleaseRequest>;
 
   // User stats table
-  userStats!: Table<{
-    id: string;
-    userId: string;
-    totalPoints: number;
-    tasksCompleted: number;
-    tasksApproved: number;
-    tasksRejected: number;
-    currentStreak: number;
-    longestStreak: number;
-    lastTaskCompletedAt?: Date;
-    syncStatus: SyncStatus;
-    lastModified: Date;
-  }>;
+  userStats!: Table<DBUserStats>;
 
   // Emergency PINs table
   emergencyPins!: Table<{
@@ -89,15 +77,7 @@ export class ChastityDB extends Dexie {
   }>;
 
   // Explicitly declare Dexie methods we use to fix TypeScript issues
-  declare transaction: <T>(
-    mode: string,
-    tables: Table[],
-    callback: (trans: Transaction) => T | Promise<T>,
-  ) => Promise<T>;
-  declare on: (
-    eventName: string,
-    callback: (...args: unknown[]) => void,
-  ) => void;
+
   declare verno: number;
   declare tables: Table<unknown>[];
   declare version: (versionNumber: number) => Version;
@@ -196,17 +176,26 @@ export class ChastityDB extends Dexie {
     });
 
     // Add hooks for automatic timestamp and sync status updates
-    this.sessions.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating session", { id: obj.id, userId: obj.userId });
-    });
-
     this.sessions.hook(
+      "creating",
+      (_primKey: any, obj: DBSession, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating session", { id: obj.id, userId: obj.userId });
+      },
+    );
+
+    // Cast to any to satisfy Dexie hook overloads for "updating"
+    (this.sessions as any).hook(
       "updating",
-      (modifications: Partial<DBSession>, primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBSession>,
+        primKey: any,
+        _obj?: DBSession,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -215,53 +204,77 @@ export class ChastityDB extends Dexie {
       },
     );
 
-    this.events.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating event", { id: obj.id, type: obj.type });
-    });
-
     this.events.hook(
+      "creating",
+      (_primKey: any, obj: DBEvent, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating event", { id: obj.id, type: obj.type });
+      },
+    );
+
+    (this.events as any).hook(
       "updating",
-      (modifications: Partial<DBEvent>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBEvent>,
+        _primKey: any,
+        _obj?: DBEvent,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
         }
       },
     );
-
-    this.tasks.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating task", { id: obj.id, text: obj.text });
-    });
 
     this.tasks.hook(
+      "creating",
+      (_primKey: any, obj: DBTask, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating task", { id: obj.id, text: obj.text });
+      },
+    );
+
+    (this.tasks as any).hook(
       "updating",
-      (modifications: Partial<DBTask>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBTask>,
+        _primKey: any,
+        _obj?: DBTask,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
         }
       },
     );
-
-    this.goals.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating goal", { id: obj.id, title: obj.title });
-    });
 
     this.goals.hook(
+      "creating",
+      (_primKey: any, obj: DBGoal, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating goal", { id: obj.id, title: obj.title });
+      },
+    );
+
+    (this.goals as any).hook(
       "updating",
-      (modifications: Partial<DBGoal>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBGoal>,
+        _primKey: any,
+        _obj?: DBGoal,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -269,17 +282,25 @@ export class ChastityDB extends Dexie {
       },
     );
 
-    this.settings.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating settings", { userId: obj.userId });
-    });
-
     this.settings.hook(
+      "creating",
+      (_primKey: any, obj: DBSettings, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating settings", { userId: obj.userId });
+      },
+    );
+
+    (this.settings as any).hook(
       "updating",
-      (modifications: Partial<DBSettings>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBSettings>,
+        _primKey: any,
+        _obj?: DBSettings,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -288,38 +309,54 @@ export class ChastityDB extends Dexie {
     );
 
     // Achievement table hooks
-    this.achievements.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating achievement", { id: obj.id, name: obj.name });
-    });
-
     this.achievements.hook(
+      "creating",
+      (_primKey: any, obj: DBAchievement, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating achievement", { id: obj.id, name: obj.name });
+      },
+    );
+
+    (this.achievements as any).hook(
       "updating",
-      (modifications: Partial<DBAchievement>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBAchievement>,
+        _primKey: any,
+        _obj?: DBAchievement,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
         }
       },
     );
-
-    this.userAchievements.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating user achievement", {
-        userId: obj.userId,
-        achievementId: obj.achievementId,
-      });
-    });
 
     this.userAchievements.hook(
+      "creating",
+      (_primKey: any, obj: DBUserAchievement, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating user achievement", {
+          userId: obj.userId,
+          achievementId: obj.achievementId,
+        });
+      },
+    );
+
+    (this.userAchievements as any).hook(
       "updating",
-      (modifications: Partial<DBUserAchievement>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBUserAchievement>,
+        _primKey: any,
+        _obj?: DBUserAchievement,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -327,24 +364,27 @@ export class ChastityDB extends Dexie {
       },
     );
 
-    this.achievementProgress.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating achievement progress", {
-        userId: obj.userId,
-        achievementId: obj.achievementId,
-      });
-    });
-
     this.achievementProgress.hook(
+      "creating",
+      (_primKey: any, obj: DBAchievementProgress, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating achievement progress", {
+          userId: obj.userId,
+          achievementId: obj.achievementId,
+        });
+      },
+    );
+
+    (this.achievementProgress as any).hook(
       "updating",
       (
         modifications: Partial<DBAchievementProgress>,
-        _primKey,
-        _obj,
-        _trans,
+        _primKey: any,
+        _obj?: DBAchievementProgress,
+        _trans?: Transaction,
       ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
@@ -353,24 +393,27 @@ export class ChastityDB extends Dexie {
       },
     );
 
-    this.achievementNotifications.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating achievement notification", {
-        userId: obj.userId,
-        type: obj.type,
-      });
-    });
-
     this.achievementNotifications.hook(
+      "creating",
+      (_primKey: any, obj: DBAchievementNotification, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating achievement notification", {
+          userId: obj.userId,
+          type: obj.type,
+        });
+      },
+    );
+
+    (this.achievementNotifications as any).hook(
       "updating",
       (
         modifications: Partial<DBAchievementNotification>,
-        _primKey,
-        _obj,
-        _trans,
+        _primKey: any,
+        _obj?: DBAchievementNotification,
+        _trans?: Transaction,
       ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
@@ -379,20 +422,28 @@ export class ChastityDB extends Dexie {
       },
     );
 
-    this.leaderboardEntries.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating leaderboard entry", {
-        userId: obj.userId,
-        category: obj.category,
-      });
-    });
-
     this.leaderboardEntries.hook(
+      "creating",
+      (_primKey: any, obj: DBLeaderboardEntry, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating leaderboard entry", {
+          userId: obj.userId,
+          category: obj.category,
+        });
+      },
+    );
+
+    (this.leaderboardEntries as any).hook(
       "updating",
-      (modifications: Partial<DBLeaderboardEntry>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBLeaderboardEntry>,
+        _primKey: any,
+        _obj?: DBLeaderboardEntry,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -401,17 +452,26 @@ export class ChastityDB extends Dexie {
     );
 
     // Rules table hooks
-    this.rules.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating rule", { id: obj.id, title: obj.title });
-    });
-
     this.rules.hook(
+      "creating",
+      (_primKey: any, obj: KeyholderRule, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating rule", { id: obj.id, title: obj.title });
+      },
+    );
+
+    // Removed unused @ts-expect-error and cast table for updating hook
+    (this.rules as any).hook(
       "updating",
-      (modifications: Partial<KeyholderRule>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<KeyholderRule>,
+        _primKey: any,
+        _obj?: KeyholderRule,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -420,20 +480,28 @@ export class ChastityDB extends Dexie {
     );
 
     // Release requests table hooks
-    this.releaseRequests.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating release request", {
-        id: obj.id,
-        sessionId: obj.sessionId,
-      });
-    });
-
     this.releaseRequests.hook(
+      "creating",
+      (_primKey: any, obj: DBReleaseRequest, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating release request", {
+          id: obj.id,
+          sessionId: obj.sessionId,
+        });
+      },
+    );
+
+    (this.releaseRequests as any).hook(
       "updating",
-      (modifications: Partial<DBReleaseRequest>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBReleaseRequest>,
+        _primKey: any,
+        _obj?: DBReleaseRequest,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -442,17 +510,25 @@ export class ChastityDB extends Dexie {
     );
 
     // User stats table hooks
-    this.userStats.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating user stats", { userId: obj.userId });
-    });
-
     this.userStats.hook(
+      "creating",
+      (_primKey: any, obj: DBUserStats, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending" as SyncStatus;
+        }
+        logger.debug("Creating user stats", { userId: obj.userId });
+      },
+    );
+
+    (this.userStats as any).hook(
       "updating",
-      (modifications: Partial<DBUserStats>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBUserStats>,
+        _primKey: any,
+        _obj?: DBUserStats,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
           modifications.syncStatus = "pending" as SyncStatus;
@@ -568,35 +644,38 @@ export class ChastityDB extends Dexie {
         // Achievement sync status
         achievements: await this.achievements
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
         userAchievements: await this.userAchievements
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
         achievementProgress: await this.achievementProgress
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
         achievementNotifications: await this.achievementNotifications
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
         leaderboardEntries: await this.leaderboardEntries
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
         // Rules sync status
-        rules: await this.rules.where("syncStatus").equals("pending").count(),
+        rules: await this.rules
+          .where("syncStatus")
+          .equals("pending" as SyncStatus)
+          .count(),
         // Release requests sync status
         releaseRequests: await this.releaseRequests
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
         // User stats sync status
         userStats: await this.userStats
           .where("syncStatus")
-          .equals("pending")
+          .equals("pending" as SyncStatus)
           .count(),
       },
     };

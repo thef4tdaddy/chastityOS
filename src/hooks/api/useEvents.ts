@@ -3,10 +3,11 @@ import {
   useQuery,
   useQueryClient,
   useInfiniteQuery,
+  type QueryFunctionContext,
 } from "@tanstack/react-query";
-import { eventDBService } from "../../services/database/EventDBService";
-import { DBEvent, EventFilters, EventType } from "../../types/database";
-import { serviceLogger } from "../../utils/logging";
+import { eventDBService } from "@/services/database/EventDBService";
+import { DBEvent, EventFilters, EventType } from "@/types/database";
+import { serviceLogger } from "@/utils/logging";
 import { eventKeys } from "@/utils/events";
 import { firebaseSync } from "@/services/sync";
 
@@ -30,6 +31,14 @@ interface CreateEventParams {
   metadata?: Record<string, unknown>;
 }
 
+// New: explicit stats result type
+type EventStats = {
+  totalEvents: number;
+  eventsByType: Record<string, number>;
+  eventsPerDay: Record<string, number>;
+  mostRecentEvent: DBEvent | null;
+};
+
 /**
  * Get event history for a user with filters
  * Fixes: LogEventPage.tsx:20 (eventDBService.findByUserId)
@@ -40,7 +49,7 @@ export function useEventHistory(
 ) {
   const { enabled = true, ...eventFilters } = filters || {};
 
-  return useQuery({
+  return useQuery<DBEvent[], Error>({
     queryKey: eventKeys.list(userId, eventFilters),
     queryFn: async (): Promise<DBEvent[]> => {
       logger.info("Fetching event history", { userId, filters });
@@ -109,11 +118,19 @@ export function useInfiniteEventHistory(
   filters?: EventFilters,
   pageSize = 20,
 ) {
-  return useInfiniteQuery({
+  return useInfiniteQuery<
+    { events: DBEvent[]; nextPage?: number }, // TQueryFnData
+    Error, // TError
+    { events: DBEvent[]; nextPage?: number }, // TData
+    readonly unknown[], // TQueryKey
+    number // TPageParam
+  >({
     queryKey: eventKeys.infinite(userId, filters),
-    queryFn: async ({
-      pageParam = 0,
-    }): Promise<{ events: DBEvent[]; nextPage?: number }> => {
+    queryFn: async (
+      context: QueryFunctionContext<readonly unknown[], number>,
+    ): Promise<{ events: DBEvent[]; nextPage?: number }> => {
+      const pageParam = context.pageParam ?? 0;
+
       logger.info("Fetching infinite event page", {
         userId,
         pageParam,
@@ -161,7 +178,8 @@ export function useInfiniteEventHistory(
       };
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+    getNextPageParam: (lastPage: { events: DBEvent[]; nextPage?: number }) =>
+      lastPage.nextPage,
     staleTime: 5 * 60 * 1000,
     enabled: !!userId,
   });
@@ -172,7 +190,7 @@ export function useInfiniteEventHistory(
  * Useful for dashboard summaries
  */
 export function useRecentEvents(userId: string, limit = 10) {
-  return useQuery({
+  return useQuery<DBEvent[], Error>({
     queryKey: eventKeys.recent(userId, limit),
     queryFn: async (): Promise<DBEvent[]> => {
       logger.info("Fetching recent events", { userId, limit });
@@ -198,7 +216,7 @@ export function useRecentEvents(userId: string, limit = 10) {
  * Get single event by ID
  */
 export function useEvent(eventId: string) {
-  return useQuery({
+  return useQuery<DBEvent | null, Error>({
     queryKey: eventKeys.detail(eventId),
     queryFn: async (): Promise<DBEvent | null> => {
       logger.info("Fetching event detail", { eventId });
@@ -217,7 +235,7 @@ export function useEvent(eventId: string) {
 export function useCreateEvent() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<DBEvent, Error, CreateEventParams>({
     mutationFn: async (params: CreateEventParams): Promise<DBEvent> => {
       logger.info("Creating new event", {
         userId: params.userId,
@@ -243,7 +261,6 @@ export function useCreateEvent() {
       }
 
       // Prepare event data for database
-      const { notes, duration, metadata, ...restParams } = params;
       const eventData: Omit<DBEvent, "id" | "lastModified" | "syncStatus"> = {
         userId: params.userId,
         type: params.type,
@@ -251,9 +268,9 @@ export function useCreateEvent() {
         sessionId: params.sessionId,
         isPrivate: params.isPrivate ?? false,
         details: {
-          notes,
-          duration,
-          metadata,
+          notes: params.notes,
+          duration: params.duration,
+          metadata: params.metadata,
         },
       };
 
@@ -288,12 +305,18 @@ export function useCreateEvent() {
         });
 
         // Return the created event with the generated ID
-        return {
+        const created = {
           id: eventId,
-          ...eventData,
+          userId: eventData.userId,
+          type: eventData.type,
+          timestamp: eventData.timestamp,
+          sessionId: eventData.sessionId,
+          isPrivate: eventData.isPrivate,
+          details: eventData.details,
           lastModified: new Date(),
           syncStatus: "pending" as const,
         };
+        return created as DBEvent;
       } catch (error) {
         logger.error("Failed to create event in local database", {
           error: error instanceof Error ? error.message : String(error),
@@ -340,7 +363,11 @@ export function useCreateEvent() {
 export function useUpdateEvent() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<
+    void,
+    Error,
+    { eventId: string; userId: string; updates: Partial<DBEvent> }
+  >({
     mutationFn: async (params: {
       eventId: string;
       userId: string;
@@ -390,7 +417,7 @@ export function useUpdateEvent() {
 export function useDeleteEvent() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<string, Error, { eventId: string; userId: string }>({
     mutationFn: async (params: {
       eventId: string;
       userId: string;
@@ -440,9 +467,9 @@ export function useEventStats(
   userId: string,
   timeRange?: { start: Date; end: Date },
 ) {
-  return useQuery({
+  return useQuery<EventStats, Error>({
     queryKey: [...eventKeys.all, "stats", userId, timeRange],
-    queryFn: async () => {
+    queryFn: async (): Promise<EventStats> => {
       logger.info("Calculating event statistics", { userId, timeRange });
 
       const events = await eventDBService.findByUserId(userId);
@@ -456,7 +483,7 @@ export function useEventStats(
       }
 
       // Calculate statistics
-      const stats = {
+      const stats: EventStats = {
         totalEvents: filteredEvents.length,
         eventsByType: {} as Record<string, number>,
         eventsPerDay: {} as Record<string, number>,

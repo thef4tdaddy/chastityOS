@@ -20,7 +20,7 @@ interface EventErrorDisplayProps {
   onRetry?: () => void;
 }
 
-const getErrorIcon = (type: EventError["type"]) => {
+const getErrorIcon = (_type: EventError["type"]) => {
   return FaExclamationCircle;
 };
 
@@ -89,13 +89,14 @@ export const EventErrorDisplay: React.FC<EventErrorDisplayProps> = ({
           )}
         </div>
         {onDismiss && (
-          <button
+          <Button
             onClick={onDismiss}
-            className={`text-${color}-400 hover:text-${color}-300 transition-colors flex-shrink-0`}
+            size="sm"
+            className={`text-${color}-400 hover:text-${color}-300 transition-colors flex-shrink-0 p-1`}
             aria-label="Dismiss error"
           >
             <FaTimes className="text-base sm:text-lg" />
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -44,6 +44,7 @@ export default [
       'src/utils/logging.js',
       'original-app/**',
       'playwright.config.ts',
+      'src/test/test-helpers.ts',
     ],
   },
   {

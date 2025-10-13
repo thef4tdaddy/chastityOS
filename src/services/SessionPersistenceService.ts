@@ -38,7 +38,7 @@ interface SessionBroadcastData {
 
 export class SessionPersistenceService {
   private static instance: SessionPersistenceService;
-  private heartbeatInterval: number | null = null;
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private readonly HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
   private readonly BACKUP_KEY = "chastity_session_backup";
   private readonly MAX_INTERRUPTION_TIME_MS = 5 * 60 * 1000; // 5 minutes

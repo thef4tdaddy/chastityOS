@@ -69,7 +69,7 @@ class ChastityEventService {
         id: eventId,
         relationshipId,
         type: eventData.type,
-        timestamp: serverTimestamp() as FieldValue,
+        timestamp: serverTimestamp() as any,
         details: eventData.details,
         loggedBy: isKeyholder ? "keyholder" : "submissive",
         isPrivate: eventData.isPrivate || false,
