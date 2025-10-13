@@ -101,7 +101,7 @@ export class DBMigrationService {
       migrate: async () => {
         logger.info("Running migration v3: Add isPrivate field to events");
 
-        await db.transaction("rw", db.events, async () => {
+        await db.transaction("rw", [db.events], async () => {
           const events = await db.events
             .filter((event) => event.isPrivate === undefined)
             .toArray();

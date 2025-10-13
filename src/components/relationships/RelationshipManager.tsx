@@ -7,7 +7,7 @@ import { Button } from "@/components/ui";
 import { useRelationships } from "@/hooks/useRelationships";
 import { Relationship } from "@/types/relationships";
 import { KeyholderRelationship, KeyholderPermissions } from "@/types/core";
-import { FaUserPlus } from "../../utils/iconImport";
+import { FaUserPlus } from "@/utils/iconImport";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
 import { RelationshipRequestForm } from "./RelationshipRequestForm";
@@ -27,8 +27,7 @@ const convertToKeyholderRelationship = (
   keyholderUserId: relationship.keyholderId,
   status: relationship.status === "active" ? "active" : "ended",
   permissions: {} as KeyholderPermissions,
-  createdAt: relationship.createdAt,
-  updatedAt: relationship.updatedAt,
+  createdAt: new Date(relationship.createdAt.toDate()),
 });
 
 const RelationshipManager: React.FC<RelationshipManagerProps> = ({

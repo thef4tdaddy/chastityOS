@@ -59,12 +59,12 @@ export interface ReportDataOptions {
 }
 
 /**
- * Aggregates all data needed for Full Report page
- * Enhanced with comprehensive error handling, retry capabilities, and selective loading
+ * Internal sub-hook: runs all queries and returns the raw query results.
+ * This reduces the complexity inside the top-level hook.
  */
-export function useReportData(
+function useReportQueries(
   userId: string | undefined,
-  options: ReportDataOptions = {},
+  options: ReportDataOptions,
 ) {
   const {
     enableSessions = true,
@@ -90,15 +90,45 @@ export function useReportData(
   const tasks = useTasksQuery(userId);
   const goals = useGoalsQuery(userId);
 
-  // Determine if any ENABLED queries are loading
-  const isLoading =
+  return {
+    currentSession,
+    sessions,
+    events,
+    tasks,
+    goals,
+    flags: {
+      enableSessions,
+      enableEvents,
+      enableTasks,
+      enableGoals,
+      shouldLoadHeavyQueries,
+    },
+  };
+}
+
+function computeIsLoading(queries: ReturnType<typeof useReportQueries>) {
+  const { currentSession, sessions, events, tasks, goals, flags } = queries;
+  const {
+    enableSessions,
+    enableEvents,
+    enableTasks,
+    enableGoals,
+    shouldLoadHeavyQueries,
+  } = flags;
+
+  return (
     currentSession.isLoading ||
     (enableSessions && shouldLoadHeavyQueries && sessions.isLoading) ||
     (enableEvents && shouldLoadHeavyQueries && events.isLoading) ||
     (enableTasks && tasks.isLoading) ||
-    (enableGoals && goals.isLoading);
+    (enableGoals && goals.isLoading)
+  );
+}
 
-  // Collect all errors for comprehensive error reporting (only from enabled queries)
+function collectErrors(queries: ReturnType<typeof useReportQueries>) {
+  const { currentSession, sessions, events, tasks, goals, flags } = queries;
+  const { enableSessions, enableEvents, enableTasks, enableGoals } = flags;
+
   const errors = [
     currentSession.error,
     enableSessions && sessions.error,
@@ -107,7 +137,55 @@ export function useReportData(
     enableGoals && goals.error,
   ].filter((err): err is Error => err !== null && err !== undefined);
 
-  // Log aggregated errors if any exist
+  return errors;
+}
+
+function buildRefetchAll(
+  currentSession: ReturnType<typeof useCurrentSession>,
+  sessions: ReturnType<typeof useSessionHistory>,
+  events: ReturnType<typeof useEventHistory>,
+  tasks: ReturnType<typeof useTasksQuery>,
+  goals: ReturnType<typeof useGoalsQuery>,
+) {
+  return {
+    currentSession: currentSession.refetch,
+    sessions: sessions.refetch,
+    events: events.refetch,
+    tasks: tasks.refetch,
+    goals: goals.refetch,
+    all: async () => {
+      await Promise.all([
+        currentSession.refetch(),
+        sessions.refetch(),
+        events.refetch(),
+        tasks.refetch(),
+        goals.refetch(),
+      ]);
+    },
+  };
+}
+
+/**
+ * Pure aggregator: compose returned object from query results.
+ * Kept as a thin orchestrator that delegates to small helpers to reduce complexity.
+ */
+function buildReportFromQueries(
+  userId: string | undefined,
+  queries: ReturnType<typeof useReportQueries>,
+) {
+  // rename unused 'flags' to '_flags' to satisfy the lint rule for allowed unused vars
+  const {
+    currentSession,
+    sessions,
+    events,
+    tasks,
+    goals,
+    flags: _flags,
+  } = queries;
+
+  const isLoading = computeIsLoading(queries);
+  const errors = collectErrors(queries);
+
   if (errors.length > 0) {
     logger.error("Error(s) in report data aggregation", {
       userId,
@@ -126,9 +204,8 @@ export function useReportData(
     tasks: tasks.data || [],
     goals: goals.data || [],
     isLoading,
-    error: errors.length > 0 ? errors[0] : null, // Return first error for simplicity
-    hasPartialData: !isLoading && errors.length > 0 && errors.length < 5, // Some queries succeeded
-    // Provide individual error states for granular error handling
+    error: errors.length > 0 ? errors[0] : null,
+    hasPartialData: !isLoading && errors.length > 0 && errors.length < 5,
     errors: {
       currentSession: currentSession.error,
       sessions: sessions.error,
@@ -136,22 +213,18 @@ export function useReportData(
       tasks: tasks.error,
       goals: goals.error,
     },
-    // Provide retry functions for each query
-    refetch: {
-      currentSession: currentSession.refetch,
-      sessions: sessions.refetch,
-      events: events.refetch,
-      tasks: tasks.refetch,
-      goals: goals.refetch,
-      all: async () => {
-        await Promise.all([
-          currentSession.refetch(),
-          sessions.refetch(),
-          events.refetch(),
-          tasks.refetch(),
-          goals.refetch(),
-        ]);
-      },
-    },
+    refetch: buildRefetchAll(currentSession, sessions, events, tasks, goals),
   };
+}
+
+/**
+ * Top-level hook: now a thin composer that uses the sub-hook and aggregator.
+ * Complexity is reduced by delegating work to the two helpers above.
+ */
+export function useReportData(
+  userId: string | undefined,
+  options: ReportDataOptions = {},
+) {
+  const queries = useReportQueries(userId, options);
+  return buildReportFromQueries(userId, queries);
 }

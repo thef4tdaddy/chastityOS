@@ -64,7 +64,7 @@ class RelationshipService {
     return relationshipInviteService.sendRelationshipRequest(
       fromUserId,
       toUserId,
-      fromRole,
+      fromRole as "submissive" | "keyholder",
       message,
     );
   }
@@ -95,7 +95,16 @@ class RelationshipService {
   ) {
     return relationshipRoleService.updateRelationshipPermissions(
       relationshipId,
-      permissions,
+      {
+        ...permissions,
+        keyholderCanEdit: permissions.keyholderCanEdit || {
+          sessions: false,
+          tasks: false,
+          goals: false,
+          punishments: false,
+          settings: false,
+        },
+      } as RelationshipPermissions,
       updatingUserId,
     );
   }
@@ -150,7 +159,9 @@ class RelationshipService {
   }
 
   validatePermissions(permissions: Partial<RelationshipPermissions>) {
-    return relationshipValidationService.validatePermissions(permissions);
+    return relationshipValidationService.validatePermissions(
+      permissions as RelationshipPermissions,
+    );
   }
 
   validateStatusTransition(
@@ -219,7 +230,7 @@ class RelationshipService {
   ) {
     return relationshipSearchService.findRelationshipsByParticipants(
       participantIds,
-      status,
+      status ? [status] : undefined,
     );
   }
 

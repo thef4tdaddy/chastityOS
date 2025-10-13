@@ -11,7 +11,7 @@ import {
   limit,
   serverTimestamp,
   Firestore,
-  FieldValue,
+  Timestamp,
 } from "firebase/firestore";
 import { getFirestore } from "@/services/firebase";
 import { RelationshipEvent } from "@/types/relationships";
@@ -25,7 +25,7 @@ class ChastityEventService {
   private db: Firestore | null = null;
 
   constructor() {
-    this.initializeDb();
+    // No-op: DB is initialized on first use via ensureDb
   }
 
   private async initializeDb() {
@@ -69,7 +69,7 @@ class ChastityEventService {
         id: eventId,
         relationshipId,
         type: eventData.type,
-        timestamp: serverTimestamp() as FieldValue,
+        timestamp: serverTimestamp() as Timestamp,
         details: eventData.details,
         loggedBy: isKeyholder ? "keyholder" : "submissive",
         isPrivate: eventData.isPrivate || false,

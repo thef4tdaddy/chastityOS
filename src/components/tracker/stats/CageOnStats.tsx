@@ -42,7 +42,6 @@ export const CageOnStats: React.FC<CageOnStatsProps> = ({
         }
         ${getAnimationClasses()}
       `}
-      role="region"
       aria-label={`Current chastity session timer, status: ${getStatusLabel()}`}
     >
       <p

@@ -106,6 +106,8 @@ class OfflineQueue {
     if (failed.length > 0) {
       logger.warn(`${failed.length} operations failed to process`);
     }
+
+    return failed.length > 0 ? [] : undefined;
   }
 
   private readonly MAX_RETRIES = 3;

@@ -5,8 +5,14 @@
 import { serviceLogger } from "@/utils/logging";
 import { getFirestore, getFirebaseAuth } from "../firebase";
 import type { Auth } from "firebase/auth";
-import type { Firestore } from "firebase/firestore";
-import { collection, doc, writeBatch, Timestamp } from "firebase/firestore";
+import type { Firestore, DocumentSnapshot } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  writeBatch,
+  Timestamp,
+  getDoc,
+} from "firebase/firestore";
 import type { DBBase, SyncOptions, SyncResult } from "@/types/database";
 import { connectionStatus } from "./connectionStatus";
 import { offlineQueue } from "./OfflineQueue";
@@ -84,6 +90,32 @@ export abstract class FirebaseSyncCore {
   }
 
   /**
+   * Get a remote document from Firestore
+   */
+  protected async getRemoteDoc(
+    userId: string,
+    collectionName: string,
+    docId: string,
+  ): Promise<DBBase | null> {
+    try {
+      const { firestore } = await this.createBatch();
+      const docRef = this.getDocRef(firestore, userId, collectionName, docId);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) return null;
+
+      return this.snapshotToDBBase(docSnap);
+    } catch (error) {
+      logger.error("Failed to get remote document", {
+        error: error as Error,
+        collectionName,
+        docId,
+      });
+      return null;
+    }
+  }
+
+  /**
    * Handle offline operations by queueing them
    */
   protected async handleOfflineOperation(
@@ -98,6 +130,7 @@ export abstract class FirebaseSyncCore {
       type: operation,
       collectionName,
       payload,
+      userId: payload.userId,
     });
   }
 
@@ -155,6 +188,17 @@ export abstract class FirebaseSyncCore {
       userId,
       count,
     });
+  }
+
+  // Helper: convert a Firestore document snapshot to DBBase
+  protected snapshotToDBBase<T extends DBBase = DBBase>(
+    docSnap: DocumentSnapshot,
+  ): T {
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...(data as Record<string, unknown>),
+    } as unknown as T;
   }
 
   /**

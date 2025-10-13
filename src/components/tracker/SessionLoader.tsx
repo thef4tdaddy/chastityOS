@@ -56,7 +56,9 @@ export const SessionLoader: React.FC<SessionLoaderProps> = ({
           <h3 className="text-lg font-semibold text-red-300 mb-2">
             Session Restoration Failed
           </h3>
-          <p className="text-sm text-red-200 mb-4">{error}</p>
+          <p className="text-sm text-red-200 mb-4">
+            {error?.message || "Unknown error"}
+          </p>
           <Button
             onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"

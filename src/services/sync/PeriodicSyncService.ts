@@ -3,8 +3,35 @@
  * Handles periodic background sync for refreshing app data
  */
 import { serviceLogger } from "@/utils/logging";
-import { db } from "../firebase";
+import { db } from "@/firebase";
 import { collection, getDocs, query, limit, orderBy } from "firebase/firestore";
+
+// Type definitions for Periodic Sync API
+interface PeriodicSyncManager {
+  register(tag: string, options: PeriodicSyncOptions): Promise<void>;
+  unregister(tag: string): Promise<void>;
+  getTags(): Promise<string[]>;
+}
+
+interface PeriodicSyncOptions {
+  minInterval: number;
+}
+
+interface BatteryManager extends EventTarget {
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+  level: number;
+}
+
+interface NavigatorWithBattery {
+  getBattery(): Promise<BatteryManager>;
+}
+
+interface ServiceWorkerRegistrationWithPeriodicSync
+  extends ServiceWorkerRegistration {
+  periodicSync: PeriodicSyncManager;
+}
 
 const logger = serviceLogger("PeriodicSyncService");
 
@@ -113,9 +140,8 @@ export class PeriodicSyncService {
     try {
       // Check battery status if battery-aware is enabled
       if (this.settings.batteryAware && "getBattery" in navigator) {
-        // @ts-expect-error - Battery API types not available
-        const battery = await navigator.getBattery();
-        if (battery.charging === false && battery.level < 0.2) {
+        const battery = await (navigator as NavigatorWithBattery).getBattery();
+        if (!battery.charging && battery.level < 0.2) {
           logger.info("Battery low, skipping periodic sync registration");
           return;
         }
@@ -126,7 +152,9 @@ export class PeriodicSyncService {
       // Convert minutes to milliseconds for the minimum interval
       const minInterval = this.settings.intervalMinutes * 60 * 1000;
 
-      await this.registration.periodicSync.register("refresh-app-data", {
+      await (
+        this.registration as ServiceWorkerRegistrationWithPeriodicSync
+      ).periodicSync.register("refresh-app-data", {
         minInterval,
       });
 
@@ -150,27 +178,12 @@ export class PeriodicSyncService {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      await registration.periodicSync.unregister("refresh-app-data");
+      await (
+        registration as ServiceWorkerRegistrationWithPeriodicSync
+      ).periodicSync.unregister("refresh-app-data");
       logger.info("Periodic sync unregistered");
     } catch (error) {
       logger.error("Failed to unregister periodic sync", error);
-    }
-  }
-
-  /**
-   * Get list of registered periodic syncs
-   */
-  async getTags(): Promise<string[]> {
-    if (!this.isSupported()) {
-      return [];
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      return await registration.periodicSync.getTags();
-    } catch (error) {
-      logger.error("Failed to get periodic sync tags", error);
-      return [];
     }
   }
 

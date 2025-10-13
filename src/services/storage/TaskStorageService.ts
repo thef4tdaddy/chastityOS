@@ -70,19 +70,6 @@ export class TaskStorageService {
   }
 
   /**
-   * Generate a unique filename for the upload
-   */
-  private static generateFilename(
-    taskId: string,
-    userId: string,
-    originalName: string,
-  ): string {
-    const timestamp = Date.now();
-    const extension = originalName.split(".").pop() || "jpg";
-    return `tasks/${userId}/${taskId}/${timestamp}.${extension}`;
-  }
-
-  /**
    * Upload evidence file to Cloudinary
    */
   static async uploadEvidence(
@@ -186,6 +173,9 @@ export class TaskStorageService {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      if (!file) {
+        throw new Error(`File at index ${i} is undefined`);
+      }
       const result = await this.uploadEvidence(
         taskId,
         userId,

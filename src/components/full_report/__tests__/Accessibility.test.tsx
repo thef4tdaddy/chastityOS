@@ -8,6 +8,16 @@ import { render, screen } from "@testing-library/react";
 import { CurrentStatusSection } from "../CurrentStatusSection";
 import { StatisticsSection } from "../StatisticsSection";
 import { SessionHistorySection } from "../SessionHistorySection";
+import {
+  createMockDBSession,
+  createMockDBEvent,
+  createMockDBTask,
+  createMockDBGoal,
+  createMockDBSessions,
+  createMockDBEvents,
+  createMockDBTasks,
+  createMockDBGoals,
+} from "../../../test/test-helpers";
 import type {
   DBSession,
   DBEvent,
@@ -18,16 +28,16 @@ import type {
 describe("Full Report Accessibility", () => {
   describe("CurrentStatusSection Accessibility", () => {
     it("should have proper ARIA live region for status updates", () => {
-      const mockSession: DBSession = {
+      const mockSession = createMockDBSession({
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+        endTime: undefined,
         isPaused: false,
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+      });
 
       const { container } = render(
         <CurrentStatusSection currentSession={mockSession} />,
@@ -39,16 +49,16 @@ describe("Full Report Accessibility", () => {
     });
 
     it("should have proper region landmark with labelledby", () => {
-      const mockSession: DBSession = {
+      const mockSession = createMockDBSession({
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+        endTime: undefined,
         isPaused: false,
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+      });
 
       const { container } = render(
         <CurrentStatusSection currentSession={mockSession} />,
@@ -64,16 +74,16 @@ describe("Full Report Accessibility", () => {
     });
 
     it("should have proper heading with ID for landmark association", () => {
-      const mockSession: DBSession = {
+      const mockSession = createMockDBSession({
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+        endTime: undefined,
         isPaused: false,
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+      });
 
       render(<CurrentStatusSection currentSession={mockSession} />);
 
@@ -82,16 +92,16 @@ describe("Full Report Accessibility", () => {
     });
 
     it("should hide decorative icons from screen readers", () => {
-      const mockSession: DBSession = {
+      const mockSession = createMockDBSession({
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+        endTime: undefined,
         isPaused: false,
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+      });
 
       const { container } = render(
         <CurrentStatusSection currentSession={mockSession} />,
@@ -103,16 +113,16 @@ describe("Full Report Accessibility", () => {
     });
 
     it("should provide meaningful labels for time displays", () => {
-      const mockSession: DBSession = {
+      const mockSession = createMockDBSession({
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+        endTime: undefined,
         isPaused: false,
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+      });
 
       const { container } = render(
         <CurrentStatusSection currentSession={mockSession} />,
@@ -127,42 +137,25 @@ describe("Full Report Accessibility", () => {
   });
 
   describe("StatisticsSection Accessibility", () => {
-    const mockSessions: DBSession[] = [
-      {
-        id: "s1",
-        userId: "user1",
-        startTime: new Date("2024-01-01"),
-        endTime: new Date("2024-01-02"),
-        accumulatedPauseTime: 0,
-      } as DBSession,
-    ];
+    const mockSessions = createMockDBSessions(1, {
+      startTime: new Date("2024-01-01"),
+      endTime: new Date("2024-01-02"),
+    });
 
-    const mockEvents: DBEvent[] = [
-      {
-        id: "e1",
-        userId: "user1",
-        type: "Orgasm (Self)",
-        timestamp: new Date("2024-01-01"),
-      } as DBEvent,
-    ];
+    const mockEvents = createMockDBEvents(1, {
+      type: "Orgasm (Self)",
+      timestamp: new Date("2024-01-01"),
+    });
 
-    const mockTasks: DBTask[] = [
-      {
-        id: "t1",
-        userId: "user1",
-        title: "Task 1",
-        status: "completed",
-      } as DBTask,
-    ];
+    const mockTasks = createMockDBTasks(1, {
+      title: "Task 1",
+      status: "completed",
+    });
 
-    const mockGoals: DBGoal[] = [
-      {
-        id: "g1",
-        userId: "user1",
-        title: "Goal 1",
-        isCompleted: true,
-      } as DBGoal,
-    ];
+    const mockGoals = createMockDBGoals(1, {
+      title: "Goal 1",
+      isCompleted: true,
+    });
 
     it("should have proper region landmark with labelledby", () => {
       const { container } = render(
@@ -254,24 +247,10 @@ describe("Full Report Accessibility", () => {
   });
 
   describe("SessionHistorySection Accessibility", () => {
-    const mockSessions: DBSession[] = [
-      {
-        id: "s1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: new Date("2024-01-02T00:00:00Z"),
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-      } as DBSession,
-      {
-        id: "s2",
-        userId: "user1",
-        startTime: new Date("2024-01-03T00:00:00Z"),
-        endTime: new Date("2024-01-04T00:00:00Z"),
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-      } as DBSession,
-    ];
+    const mockSessions = createMockDBSessions(2, {
+      startTime: new Date("2024-01-01T00:00:00Z"),
+      endTime: new Date("2024-01-02T00:00:00Z"),
+    });
 
     it("should have proper region landmark with labelledby", () => {
       const { container } = render(
@@ -325,14 +304,10 @@ describe("Full Report Accessibility", () => {
     });
 
     it("should have expand/collapse button with proper ARIA attributes", () => {
-      const manySessions: DBSession[] = Array.from({ length: 15 }, (_, i) => ({
-        id: `s${i}`,
-        userId: "user1",
-        startTime: new Date(`2024-01-${i + 1}T00:00:00Z`),
-        endTime: new Date(`2024-01-${i + 1}T01:00:00Z`),
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-      })) as DBSession[];
+      const manySessions = createMockDBSessions(15, {
+        startTime: new Date("2024-01-01T00:00:00Z"),
+        endTime: new Date("2024-01-01T01:00:00Z"),
+      });
 
       const { container } = render(
         <SessionHistorySection sessions={manySessions} />,
@@ -358,14 +333,10 @@ describe("Full Report Accessibility", () => {
 
   describe("Keyboard Navigation", () => {
     it("should have focusable interactive elements with proper tab order", () => {
-      const manySessions: DBSession[] = Array.from({ length: 15 }, (_, i) => ({
-        id: `s${i}`,
-        userId: "user1",
-        startTime: new Date(`2024-01-${i + 1}T00:00:00Z`),
-        endTime: new Date(`2024-01-${i + 1}T01:00:00Z`),
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-      })) as DBSession[];
+      const manySessions = createMockDBSessions(15, {
+        startTime: new Date("2024-01-01T00:00:00Z"),
+        endTime: new Date("2024-01-01T01:00:00Z"),
+      });
 
       const { container } = render(
         <SessionHistorySection sessions={manySessions} />,
@@ -381,15 +352,10 @@ describe("Full Report Accessibility", () => {
 
   describe("Screen Reader Compatibility", () => {
     it("should provide context for numeric values", () => {
-      const mockSessions: DBSession[] = [
-        {
-          id: "s1",
-          userId: "user1",
-          startTime: new Date("2024-01-01"),
-          endTime: new Date("2024-01-02"),
-          accumulatedPauseTime: 0,
-        } as DBSession,
-      ];
+      const mockSessions = createMockDBSessions(1, {
+        startTime: new Date("2024-01-01"),
+        endTime: new Date("2024-01-02"),
+      });
 
       const { container } = render(
         <StatisticsSection
@@ -414,12 +380,14 @@ describe("Full Report Accessibility", () => {
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: true,
-        accumulatedPauseTime: 300,
+        endTime: undefined,
+        isPaused: false,
+        accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+        syncStatus: "synced",
+        lastModified: new Date("2024-01-01T00:00:00Z"),
+      };
 
       const { container } = render(
         <CurrentStatusSection currentSession={mockSession} />,
@@ -439,12 +407,14 @@ describe("Full Report Accessibility", () => {
         id: "session1",
         userId: "user1",
         startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+        endTime: undefined,
         isPaused: false,
         accumulatedPauseTime: 0,
         isHardcoreMode: false,
         keyholderApprovalRequired: false,
-      } as DBSession;
+        syncStatus: "synced",
+        lastModified: new Date("2024-01-01T00:00:00Z"),
+      };
 
       render(<CurrentStatusSection currentSession={mockSession} />);
 

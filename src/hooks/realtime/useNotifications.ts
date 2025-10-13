@@ -6,14 +6,14 @@
  */
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  NotificationState,
-  Notification,
+  type NotificationState,
+  type Notification,
   NotificationType,
   NotificationPriority,
   NotificationChannelType,
-  NotificationPreferences,
-  NotificationChannelSettings,
-} from "../../types/realtime";
+  type NotificationPreferences,
+  type NotificationChannelSettings,
+} from "@/types/realtime";
 import {
   defaultPreferences,
   isInQuietHours,
@@ -25,7 +25,7 @@ import {
   updateMultipleNotificationStatus,
   deleteNotification,
   saveNotificationPreferences,
-} from "../../utils/realtime/notification-helpers";
+} from "@/utils/realtime/notification-helpers";
 
 interface UseNotificationsOptions {
   userId: string;
@@ -48,7 +48,7 @@ const createAddNotificationFunction = (
   ): Promise<void> => {
     const newNotification: Notification = {
       ...notification,
-      id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       timestamp: new Date(),
       isRead: false,
       userId,
