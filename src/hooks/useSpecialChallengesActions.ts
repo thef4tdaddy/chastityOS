@@ -9,18 +9,27 @@ import { serviceLogger } from "@/utils/logging";
 import { getChallengeByType } from "@/utils/goals/challenges";
 import type { ChallengeStatusData } from "@/utils/goals/challenges";
 import type { DBGoal } from "@/types/database";
+// type-only import to avoid runtime circular deps
+import type { ChallengeKey } from "./useSpecialChallenges";
 
-const logger = serviceLogger("useSpecialChallengesActions");
+const logger = serviceLogger("useSpecialChallenges");
+
+// Add small derived parameter types so we can avoid `any` casts
+type GoalServiceChallengeKey = Parameters<
+  typeof goalDBService.getOrCreateChallengeGoal
+>[1];
+type GetChallengeByTypeKey = Parameters<typeof getChallengeByType>[1];
 
 interface UseSpecialChallengesActionsParams {
   userId: string | null;
   challengeStatus: ChallengeStatusData;
   setError: (error: string | null) => void;
   loadChallengeStatus: () => Promise<void>;
+  // require isCompleted to be explicit (prevent assignability issues)
   checkForChallengeAchievements: (params: {
     challengeType?: string;
     challengeYear?: number;
-    isCompleted?: boolean;
+    isCompleted: boolean;
   }) => Promise<void>;
 }
 
@@ -35,7 +44,7 @@ export const useSpecialChallengesActions = ({
    * Join a special challenge
    */
   const joinChallenge = useCallback(
-    async (challengeType: "locktober" | "no_nut_november"): Promise<DBGoal> => {
+    async (challengeType: ChallengeKey): Promise<DBGoal> => {
       if (!userId) {
         throw new Error("User not authenticated");
       }
@@ -44,7 +53,8 @@ export const useSpecialChallengesActions = ({
         setError(null);
         const goal = await goalDBService.getOrCreateChallengeGoal(
           userId,
-          challengeType,
+          // cast to the actual service param type (avoids `any`)
+          challengeType as unknown as GoalServiceChallengeKey,
         );
 
         // Refresh status
@@ -65,7 +75,8 @@ export const useSpecialChallengesActions = ({
           userId,
           challengeType,
         });
-        throw err;
+        // return a rejected promise with a proper Error (avoid re-throwing unknown)
+        return Promise.reject(new Error(errorMessage));
       }
     },
     [userId, loadChallengeStatus, setError],
@@ -75,16 +86,17 @@ export const useSpecialChallengesActions = ({
    * Update challenge progress
    */
   const updateChallengeProgress = useCallback(
-    async (
-      challengeType: "locktober" | "no_nut_november",
-      progressValue: number,
-    ) => {
+    async (challengeType: ChallengeKey, progressValue: number) => {
       if (!userId) {
         throw new Error("User not authenticated");
       }
 
       try {
-        const challenge = getChallengeByType(challengeStatus, challengeType);
+        const challenge = getChallengeByType(
+          challengeStatus,
+          // cast to the utility's expected param type (avoids `any`)
+          challengeType as unknown as GetChallengeByTypeKey,
+        );
         if (!challenge.goal) {
           throw new Error("Challenge goal not found");
         }
@@ -100,7 +112,7 @@ export const useSpecialChallengesActions = ({
           await checkForChallengeAchievements({
             challengeType: updatedGoal.challengeType,
             challengeYear: updatedGoal.challengeYear,
-            isCompleted: updatedGoal.isCompleted,
+            isCompleted: true,
           });
         }
 
@@ -123,7 +135,8 @@ export const useSpecialChallengesActions = ({
           challengeType,
           progressValue,
         });
-        throw err;
+        // return a rejected promise with a proper Error (avoid re-throwing unknown)
+        return Promise.reject(new Error(errorMessage));
       }
     },
     [

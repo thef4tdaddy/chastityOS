@@ -56,20 +56,21 @@ export const useDexieSync = () => {
    * Create a record with automatic sync queuing
    */
   const createWithSync = useCallback(
-    async <T extends Record<string, unknown>>(
-      service: keyof typeof services,
-      data: T,
+    async <K extends keyof typeof services>(
+      service: K,
+      data: Parameters<(typeof services)[K]["create"]>[0],
     ): Promise<string> => {
       if (!user?.uid) {
         throw new Error("No authenticated user");
       }
 
-      const id = await services[service].create(data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const id = await services[service].create(data as any);
 
       // Trigger background sync if online
       if (appState.isOnline) {
         try {
-          await firebaseSync.sync();
+          await firebaseSync.syncUserData(user.uid, { force: false });
         } catch (error) {
           logger.warn("Background sync failed", { error: error as Error });
           // Don't throw - local data is saved
@@ -85,21 +86,22 @@ export const useDexieSync = () => {
    * Update a record with automatic sync queuing
    */
   const updateWithSync = useCallback(
-    async <T extends Record<string, unknown>>(
-      service: keyof typeof services,
+    async <K extends keyof typeof services>(
+      service: K,
       id: string,
-      updates: T,
+      updates: Parameters<(typeof services)[K]["update"]>[1],
     ): Promise<void> => {
       if (!user?.uid) {
         throw new Error("No authenticated user");
       }
 
-      await services[service].update(id, updates);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await services[service].update(id, updates as any);
 
       // Trigger background sync if online
       if (appState.isOnline) {
         try {
-          await firebaseSync.sync();
+          await firebaseSync.syncUserData(user.uid, { force: false });
         } catch (error) {
           logger.warn("Background sync failed", { error: error as Error });
           // Don't throw - local data is saved
@@ -123,7 +125,7 @@ export const useDexieSync = () => {
       // Trigger background sync if online
       if (appState.isOnline) {
         try {
-          await firebaseSync.sync();
+          await firebaseSync.syncUserData(user.uid, { force: false });
         } catch (error) {
           logger.warn("Background sync failed", { error: error as Error });
           // Don't throw - local data is saved

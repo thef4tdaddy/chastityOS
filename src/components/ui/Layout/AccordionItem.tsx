@@ -3,7 +3,7 @@
  * Individual collapsible item within an Accordion
  */
 import React, { useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, easeIn, easeOut } from "framer-motion";
 import { useAccordionContext } from "./Accordion";
 
 export interface AccordionItemProps {
@@ -144,16 +144,16 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
       height: 0,
       opacity: 0,
       transition: {
-        height: { duration: 0.2, ease: "easeIn" },
-        opacity: { duration: 0.15, ease: "easeIn" },
+        height: { duration: 0.2, ease: easeIn },
+        opacity: { duration: 0.15, ease: easeIn },
       },
     },
     expanded: {
       height: "auto",
       opacity: 1,
       transition: {
-        height: { duration: 0.2, ease: "easeOut" },
-        opacity: { duration: 0.2, ease: "easeOut", delay: 0.05 },
+        height: { duration: 0.2, ease: easeOut },
+        opacity: { duration: 0.2, ease: easeOut, delay: 0.05 },
       },
     },
   };

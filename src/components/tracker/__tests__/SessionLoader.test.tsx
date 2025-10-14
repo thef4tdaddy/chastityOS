@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { SessionLoader } from "../SessionLoader";
 
 // Mock the UI components
@@ -33,7 +33,7 @@ const mockLoadSession = vi.fn();
 const mockHookReturn = {
   loadSession: mockLoadSession,
   isLoading: false,
-  error: null,
+  error: null as string | null,
   progress: 0,
   session: null,
 };

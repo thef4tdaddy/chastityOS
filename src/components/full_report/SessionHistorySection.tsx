@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
-import type { DBSession } from "../../types/database";
-import { FaHistory, FaCalendar } from "../../utils/iconImport";
+import type { DBSession } from "@/types/database";
+import { FaHistory, FaCalendar } from "@/utils/iconImport";
 import { Card, Button } from "@/components/ui";
-import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
+import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { logger } from "@/utils/logging";
 
-// Helper function to format duration
+// Helper function to format duration (shared with StatisticsSection)
 const formatDuration = (seconds: number) => {
   const days = Math.floor(seconds / (24 * 60 * 60));
   const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
@@ -20,6 +20,17 @@ const formatDuration = (seconds: number) => {
   }
 };
 
+// Helper function to format time display
+const formatTimeDisplay = (date: Date, isMobile: boolean = false) => {
+  if (isMobile) {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  return date.toLocaleTimeString();
+};
+
 // Helper function to calculate session duration
 const getSessionDuration = (session: DBSession) => {
   if (!session.endTime) return 0;
@@ -32,7 +43,7 @@ const getSessionDuration = (session: DBSession) => {
 // Session Item Component
 const SessionItem: React.FC<{
   session: DBSession;
-  isVisible: boolean;
+  isVisible: boolean | undefined;
   index: number;
 }> = ({ session, isVisible, index }) => (
   <div
@@ -49,13 +60,10 @@ const SessionItem: React.FC<{
         <div className="font-medium text-nightly-honeydew text-sm sm:text-base break-words">
           {session.startTime.toLocaleDateString()}{" "}
           <span className="hidden sm:inline">
-            {session.startTime.toLocaleTimeString()}
+            {formatTimeDisplay(session.startTime)}
           </span>
           <span className="sm:hidden">
-            {session.startTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {formatTimeDisplay(session.startTime, true)}
           </span>
         </div>
         <div className="text-xs sm:text-sm text-nightly-celadon break-words">
@@ -63,13 +71,10 @@ const SessionItem: React.FC<{
             <>
               Ended: {session.endTime.toLocaleDateString()}{" "}
               <span className="hidden sm:inline">
-                {session.endTime.toLocaleTimeString()}
+                {formatTimeDisplay(session.endTime)}
               </span>
               <span className="sm:hidden">
-                {session.endTime.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {formatTimeDisplay(session.endTime, true)}
               </span>
               {session.endReason && ` (${session.endReason})`}
             </>
@@ -205,12 +210,7 @@ const SessionHistorySectionComponent: React.FC<{ sessions: DBSession[] }> = ({
   const visibleItems = useStaggerAnimation(displaySessions.length, 60);
 
   return (
-    <Card
-      variant="glass"
-      className="mb-4 sm:mb-6 animate-fade-in-up"
-      role="region"
-      aria-labelledby="session-history-heading"
-    >
+    <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <FaHistory
@@ -282,4 +282,3 @@ const SessionHistorySectionComponent: React.FC<{ sessions: DBSession[] }> = ({
 export const SessionHistorySection = React.memo(
   SessionHistorySectionComponent,
 ) as React.FC<{ sessions: DBSession[] }>;
-export default SessionHistorySection;

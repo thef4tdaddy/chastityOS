@@ -192,29 +192,19 @@ const createAppActions = (
     logger.debug("Triggering manual sync", { userId });
 
     try {
-      await firebaseSync.sync();
-      const result = {
-        success: true,
-        data: {
-          syncStatus: "synced" as SyncStatus,
-          lastSyncTime: new Date(),
-        },
-      };
-
-      if (result.success && result.data) {
+      const result = await firebaseSync.syncUserData(userId, { force: true });
+      if (result.success) {
         setState((prev) => ({
           ...prev,
-          syncStatus: result.data.syncStatus,
-          lastSyncTime: result.data.lastSyncTime,
+          syncStatus: "synced" as SyncStatus,
+          lastSyncTime: new Date(),
         }));
         logger.info("Manual sync completed", { userId });
       }
     } catch (error) {
-      const result = {
-        success: false,
-        error: error instanceof Error ? error.message : "Sync failed",
-      };
-      logger.warn("Manual sync failed", { userId, error: result.error });
+      const errorMessage =
+        error instanceof Error ? error.message : "Sync failed";
+      logger.warn("Manual sync failed", { userId, error: errorMessage });
     }
   },
 

@@ -3,7 +3,7 @@
  * Comprehensive local database with sync capabilities
  * Based on issue #104 specifications
  */
-import Dexie, { type Table, type Transaction, type Version } from "dexie";
+import Dexie, { type Table, type Version, type Transaction } from "dexie";
 import {
   DBUser,
   DBSession,
@@ -12,7 +12,6 @@ import {
   DBGoal,
   DBSettings,
   DBSyncMeta,
-  SyncStatus,
   QueuedOperation,
   // New achievement types
   DBAchievement,
@@ -39,7 +38,7 @@ export class ChastityDB extends Dexie {
   goals!: Table<DBGoal>;
   settings!: Table<DBSettings>;
   syncMeta!: Table<DBSyncMeta>;
-  offlineQueue!: Table<QueuedOperation>;
+  offlineQueue!: Table<QueuedOperation<unknown>>;
 
   // New achievement tables
   achievements!: Table<DBAchievement>;
@@ -55,19 +54,7 @@ export class ChastityDB extends Dexie {
   releaseRequests!: Table<DBReleaseRequest>;
 
   // User stats table
-  userStats!: Table<{
-    id: string;
-    userId: string;
-    totalPoints: number;
-    tasksCompleted: number;
-    tasksApproved: number;
-    tasksRejected: number;
-    currentStreak: number;
-    longestStreak: number;
-    lastTaskCompletedAt?: Date;
-    syncStatus: SyncStatus;
-    lastModified: Date;
-  }>;
+  userStats!: Table<DBUserStats>;
 
   // Emergency PINs table
   emergencyPins!: Table<{
@@ -89,15 +76,7 @@ export class ChastityDB extends Dexie {
   }>;
 
   // Explicitly declare Dexie methods we use to fix TypeScript issues
-  declare transaction: <T>(
-    mode: string,
-    tables: Table[],
-    callback: (trans: Transaction) => T | Promise<T>,
-  ) => Promise<T>;
-  declare on: (
-    eventName: string,
-    callback: (...args: unknown[]) => void,
-  ) => void;
+
   declare verno: number;
   declare tables: Table<unknown>[];
   declare version: (versionNumber: number) => Version;
@@ -196,266 +175,393 @@ export class ChastityDB extends Dexie {
     });
 
     // Add hooks for automatic timestamp and sync status updates
-    this.sessions.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating session", { id: obj.id, userId: obj.userId });
-    });
-
     this.sessions.hook(
+      "creating",
+      (_primKey: number | string, obj: DBSession, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating session", { id: obj.id, userId: obj.userId });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.sessions as any).hook(
       "updating",
-      (modifications: Partial<DBSession>, primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBSession>,
+        primKey: number | string,
+        _obj?: DBSession,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
         logger.debug("Updating session", { id: primKey, modifications });
       },
     );
 
-    this.events.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating event", { id: obj.id, type: obj.type });
-    });
-
     this.events.hook(
-      "updating",
-      (modifications: Partial<DBEvent>, _primKey, _obj, _trans) => {
-        modifications.lastModified = new Date();
-        if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+      "creating",
+      (_primKey: number | string, obj: DBEvent, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
         }
+        logger.debug("Creating event", { id: obj.id, type: obj.type });
       },
     );
 
-    this.tasks.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating task", { id: obj.id, text: obj.text });
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.events as any).hook(
+      "updating",
+      (
+        modifications: Partial<DBEvent>,
+        _primKey: number | string,
+        _obj?: DBEvent,
+        _trans?: Transaction,
+      ) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending";
+        }
+      },
+    );
 
     this.tasks.hook(
-      "updating",
-      (modifications: Partial<DBTask>, _primKey, _obj, _trans) => {
-        modifications.lastModified = new Date();
-        if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+      "creating",
+      (_primKey: number | string, obj: DBTask, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
         }
+        logger.debug("Creating task", { id: obj.id, text: obj.text });
       },
     );
 
-    this.goals.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating goal", { id: obj.id, title: obj.title });
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.tasks as any).hook(
+      "updating",
+      (
+        modifications: Partial<DBTask>,
+        _primKey: number | string,
+        _obj?: DBTask,
+        _trans?: Transaction,
+      ) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending";
+        }
+      },
+    );
 
     this.goals.hook(
+      "creating",
+      (_primKey: number | string, obj: DBGoal, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating goal", { id: obj.id, title: obj.title });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.goals as any).hook(
       "updating",
-      (modifications: Partial<DBGoal>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBGoal>,
+        _primKey: number | string,
+        _obj?: DBGoal,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
-    this.settings.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating settings", { userId: obj.userId });
-    });
-
     this.settings.hook(
+      "creating",
+      (_primKey: number | string, obj: DBSettings, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating settings", { userId: obj.userId });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.settings as any).hook(
       "updating",
-      (modifications: Partial<DBSettings>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBSettings>,
+        _primKey: number | string,
+        _obj?: DBSettings,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
     // Achievement table hooks
-    this.achievements.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating achievement", { id: obj.id, name: obj.name });
-    });
-
     this.achievements.hook(
-      "updating",
-      (modifications: Partial<DBAchievement>, _primKey, _obj, _trans) => {
-        modifications.lastModified = new Date();
-        if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+      "creating",
+      (_primKey: number | string, obj: DBAchievement, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
         }
+        logger.debug("Creating achievement", { id: obj.id, name: obj.name });
       },
     );
 
-    this.userAchievements.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating user achievement", {
-        userId: obj.userId,
-        achievementId: obj.achievementId,
-      });
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.achievements as any).hook(
+      "updating",
+      (
+        modifications: Partial<DBAchievement>,
+        _primKey: number | string,
+        _obj?: DBAchievement,
+        _trans?: Transaction,
+      ) => {
+        modifications.lastModified = new Date();
+        if (!modifications.syncStatus) {
+          modifications.syncStatus = "pending";
+        }
+      },
+    );
 
     this.userAchievements.hook(
+      "creating",
+      (
+        _primKey: number | string,
+        obj: DBUserAchievement,
+        _trans?: Transaction,
+      ) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating user achievement", {
+          userId: obj.userId,
+          achievementId: obj.achievementId,
+        });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.userAchievements as any).hook(
       "updating",
-      (modifications: Partial<DBUserAchievement>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBUserAchievement>,
+        _primKey: number | string,
+        _obj?: DBUserAchievement,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
-    this.achievementProgress.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating achievement progress", {
-        userId: obj.userId,
-        achievementId: obj.achievementId,
-      });
-    });
-
     this.achievementProgress.hook(
+      "creating",
+      (
+        _primKey: number | string,
+        obj: DBAchievementProgress,
+        _trans?: Transaction,
+      ) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating achievement progress", {
+          userId: obj.userId,
+          achievementId: obj.achievementId,
+        });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.achievementProgress as any).hook(
       "updating",
       (
         modifications: Partial<DBAchievementProgress>,
-        _primKey,
-        _obj,
-        _trans,
+        _primKey: number | string,
+        _obj?: DBAchievementProgress,
+        _trans?: Transaction,
       ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
-    this.achievementNotifications.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating achievement notification", {
-        userId: obj.userId,
-        type: obj.type,
-      });
-    });
-
     this.achievementNotifications.hook(
+      "creating",
+      (
+        _primKey: number | string,
+        obj: DBAchievementNotification,
+        _trans?: Transaction,
+      ) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating achievement notification", {
+          userId: obj.userId,
+          type: obj.type,
+        });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.achievementNotifications as any).hook(
       "updating",
       (
         modifications: Partial<DBAchievementNotification>,
-        _primKey,
-        _obj,
-        _trans,
+        _primKey: number | string,
+        _obj?: DBAchievementNotification,
+        _trans?: Transaction,
       ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
-    this.leaderboardEntries.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating leaderboard entry", {
-        userId: obj.userId,
-        category: obj.category,
-      });
-    });
-
     this.leaderboardEntries.hook(
+      "creating",
+      (
+        _primKey: number | string,
+        obj: DBLeaderboardEntry,
+        _trans?: Transaction,
+      ) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating leaderboard entry", {
+          userId: obj.userId,
+          category: obj.category,
+        });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.leaderboardEntries as any).hook(
       "updating",
-      (modifications: Partial<DBLeaderboardEntry>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBLeaderboardEntry>,
+        _primKey: number | string,
+        _obj?: DBLeaderboardEntry,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
     // Rules table hooks
-    this.rules.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating rule", { id: obj.id, title: obj.title });
-    });
-
     this.rules.hook(
+      "creating",
+      (_primKey: number | string, obj: KeyholderRule, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating rule", { id: obj.id, title: obj.title });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.rules as any).hook(
       "updating",
-      (modifications: Partial<KeyholderRule>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<KeyholderRule>,
+        _primKey: number | string,
+        _obj?: KeyholderRule,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
     // Release requests table hooks
-    this.releaseRequests.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating release request", {
-        id: obj.id,
-        sessionId: obj.sessionId,
-      });
-    });
-
     this.releaseRequests.hook(
+      "creating",
+      (
+        _primKey: number | string,
+        obj: DBReleaseRequest,
+        _trans?: Transaction,
+      ) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating release request", {
+          id: obj.id,
+          sessionId: obj.sessionId,
+        });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.releaseRequests as any).hook(
       "updating",
-      (modifications: Partial<DBReleaseRequest>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBReleaseRequest>,
+        _primKey: number | string,
+        _obj?: DBReleaseRequest,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
 
     // User stats table hooks
-    this.userStats.hook("creating", (_primKey, obj, _trans) => {
-      obj.lastModified = new Date();
-      if (!obj.syncStatus) {
-        obj.syncStatus = "pending" as SyncStatus;
-      }
-      logger.debug("Creating user stats", { userId: obj.userId });
-    });
-
     this.userStats.hook(
+      "creating",
+      (_primKey: number | string, obj: DBUserStats, _trans?: Transaction) => {
+        obj.lastModified = new Date();
+        if (!obj.syncStatus) {
+          obj.syncStatus = "pending";
+        }
+        logger.debug("Creating user stats", { userId: obj.userId });
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.userStats as any).hook(
       "updating",
-      (modifications: Partial<DBUserStats>, _primKey, _obj, _trans) => {
+      (
+        modifications: Partial<DBUserStats>,
+        _primKey: number | string,
+        _obj?: DBUserStats,
+        _trans?: Transaction,
+      ) => {
         modifications.lastModified = new Date();
         if (!modifications.syncStatus) {
-          modifications.syncStatus = "pending" as SyncStatus;
+          modifications.syncStatus = "pending";
         }
       },
     );
@@ -603,75 +709,6 @@ export class ChastityDB extends Dexie {
 
     logger.debug("Database statistics", stats);
     return stats;
-  }
-
-  /**
-   * Clear all user data (for logout/reset)
-   */
-  async clearUserData(userId: string): Promise<void> {
-    try {
-      logger.info("Clearing all data for user", { userId });
-
-      await this.transaction(
-        "rw",
-        [
-          this.users,
-          this.sessions,
-          this.events,
-          this.tasks,
-          this.goals,
-          this.settings,
-          this.userAchievements,
-          this.achievementProgress,
-          this.achievementNotifications,
-          this.leaderboardEntries,
-          this.rules,
-          this.releaseRequests,
-          this.userStats,
-        ],
-        async () => {
-          await this.users.where("uid").equals(userId).delete();
-          await this.sessions.where("userId").equals(userId).delete();
-          await this.events.where("userId").equals(userId).delete();
-          await this.tasks.where("userId").equals(userId).delete();
-          await this.goals.where("userId").equals(userId).delete();
-          await this.settings.where("userId").equals(userId).delete();
-          // Clear user-specific achievement data
-          await this.userAchievements.where("userId").equals(userId).delete();
-          await this.achievementProgress
-            .where("userId")
-            .equals(userId)
-            .delete();
-          await this.achievementNotifications
-            .where("userId")
-            .equals(userId)
-            .delete();
-          await this.leaderboardEntries.where("userId").equals(userId).delete();
-          // Clear user-specific rules (both as keyholder and submissive)
-          await this.rules.where("keyholderUserId").equals(userId).delete();
-          await this.rules.where("submissiveUserId").equals(userId).delete();
-          // Clear release requests (both as keyholder and submissive)
-          await this.releaseRequests
-            .where("keyholderUserId")
-            .equals(userId)
-            .delete();
-          await this.releaseRequests
-            .where("submissiveUserId")
-            .equals(userId)
-            .delete();
-          // Clear user stats
-          await this.userStats.where("userId").equals(userId).delete();
-        },
-      );
-
-      logger.info("User data cleared successfully", { userId });
-    } catch (error) {
-      logger.error("Failed to clear user data", {
-        error: error as Error,
-        userId,
-      });
-      throw error;
-    }
   }
 }
 

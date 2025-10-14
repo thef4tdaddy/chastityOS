@@ -184,7 +184,7 @@ export function useSessionHistoryCursor(
     prevPage,
     goToPage,
     currentPage: Math.floor(offset / pageSize),
-    hasNextPage: (sessions?.length ?? 0) === pageSize,
+    hasNextPage: Array.isArray(sessions) && sessions.length === pageSize,
     hasPrevPage: offset > 0,
   };
 }

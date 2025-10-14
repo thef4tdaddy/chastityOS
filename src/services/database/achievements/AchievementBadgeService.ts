@@ -4,7 +4,7 @@
  */
 
 import { db } from "../../storage/ChastityDB";
-import { DBUserAchievement } from "../../../types";
+import { DBUserAchievement, AchievementCategory } from "../../../types";
 import { logger } from "../../../utils/logging";
 import { eventDBService } from "../EventDBService";
 
@@ -85,7 +85,8 @@ export class AchievementBadgeService {
         {
           action: "unlocked",
           title:
-            achievementRecord?.category === "milestone"
+            achievementRecord?.category ===
+            AchievementCategory.SESSION_MILESTONES
               ? "Milestone Reached"
               : "Achievement Unlocked",
           description: achievementRecord

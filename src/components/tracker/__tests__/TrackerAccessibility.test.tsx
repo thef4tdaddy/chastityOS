@@ -1,6 +1,6 @@
 /**
  * Tracker Accessibility Tests
- * Tests WCAG AA compliance for the tracker components
+ *  WCAG AA compliance for the tracker components
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -72,6 +72,32 @@ vi.mock("@/components/ui", () => ({
   Tooltip: vi.fn(({ children }) => <>{children}</>),
 }));
 
+// Mock data for tests
+const mockDisplayData = (overrides: Partial<any> = {}) => ({
+  effectiveTime: "1h 30m 0s",
+  isPaused: false,
+  currentPauseDuration: "0s",
+  accumulatedPause: "0s",
+  totalElapsed: "1h 30m 0s",
+  isActive: true,
+  timeCageOff: 0,
+  totalPauseTime: 0,
+  showPauseInfo: false,
+  ...overrides,
+});
+
+const mockStats = (overrides: Partial<any> = {}) => ({
+  topBoxLabel: "Session Started",
+  topBoxTimestamp: "1/1/2024, 12:00:00 AM",
+  totalElapsedFormatted: "1h 30m 0s",
+  currentSessionFormatted: "1h 30m",
+  cageOffTimeFormatted: "0s",
+  totalChastityTimeFormatted: "1 day",
+  totalCageOffTimeFormatted: "0s",
+  isCageOn: true,
+  ...overrides,
+});
+
 // Mock icons
 vi.mock("../../utils/iconImport", () => ({
   FaLock: () => <span data-testid="lock-icon">🔒</span>,
@@ -80,17 +106,8 @@ vi.mock("../../utils/iconImport", () => ({
 describe("Tracker Accessibility", () => {
   describe("CageOnStats - ARIA attributes", () => {
     it("should have proper ARIA labels for timer", () => {
-      const displayData = {
-        isActive: true,
-        isPaused: false,
-        showPauseInfo: false,
-        timeCageOff: 0,
-      };
-      const stats = {
-        currentSessionFormatted: "1h 30m",
-        cageOffTimeFormatted: "0s",
-        isCageOn: true,
-      };
+      const displayData = mockDisplayData();
+      const stats = mockStats();
 
       render(<CageOnStats displayData={displayData} stats={stats} />);
 
@@ -109,17 +126,8 @@ describe("Tracker Accessibility", () => {
     });
 
     it("should indicate paused status in ARIA label", () => {
-      const displayData = {
-        isActive: true,
-        isPaused: true,
-        showPauseInfo: false,
-        timeCageOff: 0,
-      };
-      const stats = {
-        currentSessionFormatted: "1h 30m",
-        cageOffTimeFormatted: "0s",
-        isCageOn: true,
-      };
+      const displayData = mockDisplayData({ isPaused: true });
+      const stats = mockStats();
 
       render(<CageOnStats displayData={displayData} stats={stats} />);
 
@@ -131,17 +139,11 @@ describe("Tracker Accessibility", () => {
     });
 
     it("should indicate inactive status in ARIA label", () => {
-      const displayData = {
-        isActive: false,
-        isPaused: false,
-        showPauseInfo: false,
-        timeCageOff: 0,
-      };
-      const stats = {
-        currentSessionFormatted: "0s",
-        cageOffTimeFormatted: "0s",
+      const displayData = mockDisplayData({ isActive: false });
+      const stats = mockStats({
         isCageOn: false,
-      };
+        currentSessionFormatted: "0s",
+      });
 
       render(<CageOnStats displayData={displayData} stats={stats} />);
 
@@ -159,17 +161,15 @@ describe("Tracker Accessibility", () => {
     });
 
     it("should have proper ARIA labels for cage off timer", () => {
-      const displayData = {
+      const displayData = mockDisplayData({
         isActive: false,
-        isPaused: false,
-        showPauseInfo: false,
         timeCageOff: 300,
-      };
-      const stats = {
+      });
+      const stats = mockStats({
+        isCageOn: false,
         currentSessionFormatted: "0s",
         cageOffTimeFormatted: "5m 0s",
-        isCageOn: false,
-      };
+      });
 
       render(<CageOffStats displayData={displayData} stats={stats} />);
 
@@ -187,17 +187,15 @@ describe("Tracker Accessibility", () => {
     });
 
     it("should have emoji with proper aria-label", () => {
-      const displayData = {
+      const displayData = mockDisplayData({
         isActive: false,
-        isPaused: false,
-        showPauseInfo: false,
         timeCageOff: 300,
-      };
-      const stats = {
+      });
+      const stats = mockStats({
+        isCageOn: false,
         currentSessionFormatted: "0s",
         cageOffTimeFormatted: "5m 0s",
-        isCageOn: false,
-      };
+      });
 
       render(<CageOffStats displayData={displayData} stats={stats} />);
 
@@ -374,17 +372,8 @@ describe("Tracker Accessibility", () => {
 
   describe("Live Regions", () => {
     it("should mark timer as aria-live=polite", () => {
-      const displayData = {
-        isActive: true,
-        isPaused: false,
-        showPauseInfo: false,
-        timeCageOff: 0,
-      };
-      const stats = {
-        currentSessionFormatted: "1h 30m",
-        cageOffTimeFormatted: "0s",
-        isCageOn: true,
-      };
+      const displayData = mockDisplayData();
+      const stats = mockStats();
 
       render(<CageOnStats displayData={displayData} stats={stats} />);
 

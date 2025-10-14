@@ -6,7 +6,7 @@
  * - Retry logic with exponential backoff
  * - Clearing processed items
  */
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { offlineQueue } from "../OfflineQueue";
 import type { QueuedOperation, DBBase } from "@/types/database";
 
@@ -40,7 +40,7 @@ vi.mock("../../database", () => ({
 // Mock firebaseSync
 vi.mock("../index", () => ({
   firebaseSync: {
-    syncCollection: vi.fn(),
+    syncSingleCollection: vi.fn(),
   },
 }));
 
@@ -201,7 +201,7 @@ describe("OfflineQueue", () => {
       db.offlineQueue.where = mockWhere as any;
 
       const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
+      (firebaseSync as any).syncSingleCollection = mockSyncCollection;
 
       await offlineQueue.processQueue();
 
@@ -275,7 +275,7 @@ describe("OfflineQueue", () => {
         .fn()
         .mockRejectedValueOnce(new Error("Network error"))
         .mockResolvedValueOnce(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
+      (firebaseSync as any).syncSingleCollection = mockSyncCollection;
 
       await offlineQueue.processQueue();
 
@@ -346,7 +346,7 @@ describe("OfflineQueue", () => {
       const mockWhere = vi.fn(() => ({ below: mockBelow }));
       db.offlineQueue.where = mockWhere as any;
 
-      const retryable = await offlineQueue.getRetryableOperations();
+      await offlineQueue.getRetryableOperations();
 
       // Should return empty since retryCount >= MAX_RETRIES
       expect(mockWhere).toHaveBeenCalled();
@@ -388,7 +388,7 @@ describe("OfflineQueue", () => {
       const mockSyncCollection = vi
         .fn()
         .mockRejectedValue(new Error("Sync failed"));
-      firebaseSync.syncCollection = mockSyncCollection;
+      (firebaseSync as any).syncSingleCollection = mockSyncCollection;
 
       await offlineQueue.processQueue();
 
@@ -551,7 +551,7 @@ describe("OfflineQueue", () => {
     it("should process create operations", async () => {
       const { firebaseSync } = await import("../index");
       const mockSync = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSync;
+      (firebaseSync as any).syncSingleCollection = mockSync;
 
       const operation: QueuedOperation<DBBase> = {
         id: 1,

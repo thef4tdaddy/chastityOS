@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useAuthState } from "../contexts";
-import { useEventHistory } from "../hooks/api/useEvents";
-import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
+import { useAuthState } from "@/contexts";
+import { useEventHistory } from "@/hooks/api/useEvents";
+import { useAccountLinking } from "@/hooks/account-linking/useAccountLinking";
 import {
   LogEventForm,
   EventList,
   EventListSkeleton,
   EventErrorBoundary,
-} from "../components/log_event";
-import { FaUsers } from "../utils/iconImport";
-import { combineAndSortEvents } from "../utils/events/eventHelpers";
+} from "@/components/log_event";
+import { FaUsers } from "@/utils/iconImport";
+import {
+  combineAndSortEvents,
+  EventWithOwner,
+} from "@/utils/events/eventHelpers";
 import { Card, Tooltip, Button } from "@/components/ui";
-import type { DBEvent } from "../types/database";
+import type { DBEvent } from "@/types/database";
 
 // User selector component for keyholders
 interface UserSelectorProps {
@@ -30,13 +33,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <Card
-      variant="glass"
-      padding="sm"
-      className="mb-4 sm:mb-6"
-      role="region"
-      aria-labelledby="user-selector-label"
-    >
+    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6">
       <div className="flex items-center gap-2 mb-3">
         <FaUsers
           className="text-nightly-aquamarine text-base sm:text-lg"
@@ -93,7 +90,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({
 interface EventListSectionProps {
   loading: boolean;
   error: Error | null;
-  events: unknown[];
+  events: EventWithOwner<DBEvent>[];
   showOwner: boolean;
   hasSubmissive: boolean;
 }
@@ -105,12 +102,7 @@ const EventListSection: React.FC<EventListSectionProps> = ({
   showOwner,
   hasSubmissive,
 }) => (
-  <Card
-    variant="glass"
-    className="p-3 sm:p-4 md:p-6"
-    role="region"
-    aria-labelledby="event-list-heading"
-  >
+  <Card variant="glass" className="p-3 sm:p-4 md:p-6">
     <h2
       id="event-list-heading"
       className="text-lg sm:text-xl font-semibold text-nightly-honeydew mb-4 sm:mb-6"
@@ -121,7 +113,6 @@ const EventListSection: React.FC<EventListSectionProps> = ({
     {loading ? (
       <EventListSkeleton count={5} />
     ) : error ? (
-
       <div
         className="text-center py-6 sm:py-8 animate-fade-in"
         role="alert"
@@ -142,7 +133,6 @@ const EventListSection: React.FC<EventListSectionProps> = ({
           >
             Reload Page
           </Button>
-
         </div>
       </div>
     ) : (
@@ -177,16 +167,18 @@ const LogEventPage: React.FC = () => {
   // Combine and sort events by timestamp
   const combinedEvents = React.useMemo(
     () =>
-      combineAndSortEvents(userEvents.data || [], submissiveEvents.data || [], {
-        userName: user?.displayName || "You",
-        userId: user?.uid,
-        submissiveName:
-          (activeSubmissive as { wearerName?: string })?.wearerName ||
-          "Submissive",
-        submissiveId: activeSubmissive?.wearerId,
-      }) as unknown as Array<
-        DBEvent & { ownerName?: string; ownerId?: string }
-      >,
+      combineAndSortEvents<DBEvent>(
+        userEvents.data || [],
+        submissiveEvents.data || [],
+        {
+          userName: user?.displayName || "You",
+          userId: user?.uid,
+          submissiveName:
+            (activeSubmissive as { wearerName?: string })?.wearerName ||
+            "Submissive",
+          submissiveId: activeSubmissive?.wearerId,
+        },
+      ),
     [userEvents.data, submissiveEvents.data, user, activeSubmissive],
   );
 
@@ -199,37 +191,37 @@ const LogEventPage: React.FC = () => {
   };
 
   return (
-<<<<EventErrorBoundary>
-  <div className="text-nightly-spring-green">
-    <a
-      href="#event-list-heading"
-      className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-nightly-aquamarine focus:text-black focus:rounded"
-    >
-      Skip to event list
-    </a>
-    <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
-      <UserSelector
-        activeSubmissive={activeSubmissive}
-        selectedUserId={selectedUserId}
-        currentUserId={user?.uid || ""}
-        onSelectUser={setSelectedUserId}
-      />
+    <EventErrorBoundary>
+      <div className="text-nightly-spring-green">
+        <a
+          href="#event-list-heading"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-nightly-aquamarine focus:text-black focus:rounded"
+        >
+          Skip to event list
+        </a>
+        <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto">
+          <UserSelector
+            activeSubmissive={activeSubmissive}
+            selectedUserId={selectedUserId}
+            currentUserId={user?.uid || ""}
+            onSelectUser={setSelectedUserId}
+          />
 
-      <LogEventForm
-        onEventLogged={handleEventLogged}
-        targetUserId={selectedUserId}
-      />
+          <LogEventForm
+            onEventLogged={handleEventLogged}
+            targetUserId={selectedUserId}
+          />
 
-      <EventListSection
-        loading={loading}
-        error={error}
-        events={activeSubmissive ? combinedEvents : userEvents.data || []}
-        showOwner={!!activeSubmissive}
-        hasSubmissive={!!activeSubmissive}
-      />
-    </div>
-  </div>
-</EventErrorBoundary>
+          <div>
+            <EventListSection
+              loading={loading}
+              error={error}
+              events={activeSubmissive ? combinedEvents : userEvents.data || []}
+              showOwner={!!activeSubmissive}
+              hasSubmissive={!!activeSubmissive}
+            />
+          </div>
+        </div>
       </div>
     </EventErrorBoundary>
   );

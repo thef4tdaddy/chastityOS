@@ -4,7 +4,7 @@ import { Button, Tooltip } from "@/components/ui";
 import { EmergencyUnlockButton } from "./EmergencyUnlockButton";
 import { BegForReleaseButton } from "./BegForReleaseButton";
 
-interface ActionButtonsProps {
+export interface ActionButtonsProps {
   isCageOn: boolean;
   isGoalActive: boolean;
   isHardcoreGoal: boolean;

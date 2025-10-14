@@ -78,7 +78,6 @@ describe("useSessionTimer", () => {
   it("should handle ended session with duration", () => {
     const session = createMockSession({
       endTime: new Date(),
-      duration: 3600, // 1 hour
     });
 
     const { result } = renderHook(() => useSessionTimer(session));

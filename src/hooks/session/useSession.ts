@@ -329,13 +329,13 @@ export const useSession = (userId: string, relationshipId?: string) => {
   // ==================== SESSION LIFECYCLE ====================
 
   const startSession = useCallback(
-    async (sessionGoals?: SessionGoals): Promise<DBSession> => {
+    async (options?: { goalDuration?: number }): Promise<DBSession> => {
       if (!userId) throw new Error("User ID required to start session");
 
       try {
         logger.debug("Starting new session", {
           userId,
-          hasGoals: !!sessionGoals,
+          options,
         });
 
         // Check permissions
@@ -348,6 +348,7 @@ export const useSession = (userId: string, relationshipId?: string) => {
 
         // Save session to database
         await sessionDBService.startSession(userId, {
+          goalDuration: options?.goalDuration,
           isHardcoreMode: false,
           keyholderApprovalRequired:
             sessionContext.sessionType === "keyholder_managed",
@@ -357,11 +358,6 @@ export const useSession = (userId: string, relationshipId?: string) => {
         const newSession = await sessionDBService.getCurrentSession(userId);
         if (!newSession) {
           throw new Error("Failed to load newly created session");
-        }
-
-        // Add goals if provided
-        if (sessionGoals) {
-          await setGoals(sessionGoals);
         }
 
         setCurrentSession(newSession);
@@ -451,6 +447,28 @@ export const useSession = (userId: string, relationshipId?: string) => {
     },
     [currentSession, sessionContext, loadHistory, loadAnalytics, userId],
   );
+
+  const pauseSession = useCallback(async (): Promise<void> => {
+    if (!currentSession) throw new Error("No active session to pause");
+    try {
+      await sessionDBService.pauseSession(currentSession.id, new Date());
+      await loadCurrentSession();
+    } catch (error) {
+      logger.error("Failed to pause session", { error });
+      throw error;
+    }
+  }, [currentSession, loadCurrentSession]);
+
+  const resumeSession = useCallback(async (): Promise<void> => {
+    if (!currentSession) throw new Error("No active session to resume");
+    try {
+      await sessionDBService.resumeSession(currentSession.id, new Date());
+      await loadCurrentSession();
+    } catch (error) {
+      logger.error("Failed to resume session", { error });
+      throw error;
+    }
+  }, [currentSession, loadCurrentSession]);
 
   // ==================== ENHANCED CONTROLS ====================
 
@@ -618,6 +636,8 @@ export const useSession = (userId: string, relationshipId?: string) => {
     // Session lifecycle
     startSession,
     stopSession,
+    pauseSession,
+    resumeSession,
 
     // Enhanced controls
     modifySession,

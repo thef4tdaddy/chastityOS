@@ -43,9 +43,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -62,18 +65,24 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
         {
           id: "s2",
           userId: "user1",
           startTime: new Date("2024-01-02T12:00:00Z"),
           endTime: new Date("2024-01-02T15:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-02T15:00:00Z"),
         } as DBSession,
       ];
 
@@ -91,9 +100,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -109,9 +121,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -127,10 +142,13 @@ describe("SessionHistorySection", () => {
           id: "s1",
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
-          endTime: null,
+          endTime: undefined,
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T12:00:00Z"),
         } as DBSession,
       ];
 
@@ -166,9 +184,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
-          accumulatedPauseTime: 600, // 10 minutes
+          isPaused: false,
+          accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -208,9 +229,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
-          isHardcoreMode: true,
+          isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -331,27 +355,36 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
+        } as DBSession,
+        {
+          id: "s1",
+          userId: "user1",
+          startTime: new Date("2024-01-01T12:00:00Z"),
+          endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
+          accumulatedPauseTime: 0,
+          isHardcoreMode: false,
+          keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
         {
           id: "s2",
           userId: "user1",
           startTime: new Date("2024-01-03T12:00:00Z"),
           endTime: new Date("2024-01-03T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
-        } as DBSession,
-        {
-          id: "s3",
-          userId: "user1",
-          startTime: new Date("2024-01-02T12:00:00Z"),
-          endTime: new Date("2024-01-02T14:00:00Z"),
-          accumulatedPauseTime: 0,
-          isHardcoreMode: false,
-          keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-03T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -466,9 +499,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("2024-01-01T12:00:00Z"),
           endTime: new Date("2024-01-01T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -510,13 +546,16 @@ describe("SessionHistorySection", () => {
     it("should handle sessions with missing data", () => {
       const sessions = [
         {
-          id: "s1",
+          id: "s3",
           userId: "user1",
-          startTime: new Date("2024-01-01T12:00:00Z"),
-          // Missing endTime
+          startTime: new Date("2024-01-02T12:00:00Z"),
+          endTime: new Date("2024-01-02T14:00:00Z"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-02T14:00:00Z"),
         } as DBSession,
       ];
 
@@ -533,9 +572,12 @@ describe("SessionHistorySection", () => {
           userId: "user1",
           startTime: new Date("invalid"),
           endTime: new Date("invalid"),
+          isPaused: false,
           accumulatedPauseTime: 0,
           isHardcoreMode: false,
           keyholderApprovalRequired: false,
+          syncStatus: "synced" as const,
+          lastModified: new Date("2024-01-01T12:00:00Z"),
         } as DBSession,
       ];
 

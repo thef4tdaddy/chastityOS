@@ -16,4 +16,8 @@ export { sessionPersistenceService } from "./SessionPersistenceService";
 export { GoalTrackerService } from "./GoalTrackerService";
 
 // Other services
-export * from "./firebase";
+import { db as firebaseDB, getFirebaseAuth, getFirestore } from "./firebase";
+export { firebaseDB, getFirebaseAuth, getFirestore };
+
+// Auth / migration helpers
+export { accountMigrationService } from "./auth/AccountMigrationService";

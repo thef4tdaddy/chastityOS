@@ -1,6 +1,6 @@
 import React from "react";
 
-interface TrackerHeaderProps {
+export interface TrackerHeaderProps {
   remainingGoalTime: number;
   keyholderName: string;
   savedSubmissivesName: string;
