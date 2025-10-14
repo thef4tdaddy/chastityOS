@@ -3,8 +3,7 @@
  * Tests event synchronization, validation, and cross-account scenarios
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { eventDBService } from "@/services/database/EventDBService";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { combineAndSortEvents } from "@/utils/events/eventHelpers";
 import type { DBEvent } from "@/types/database";
 
@@ -471,7 +470,7 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents(events, [], {
         userName: "User",
         userId: mockUserId1,
-        // submissiveName and submissiveId are optional
+        // submissiveId is optional when not filtering by submissive
       });
 
       expect(combined).toHaveLength(1);
