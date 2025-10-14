@@ -12,6 +12,7 @@ import {
   UserRole,
 } from "@/types/core";
 import { FaUserPlus } from "@/utils/iconImport";
+import { logger } from "@/utils/logging";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
 import { RelationshipRequestForm } from "./RelationshipRequestForm";
@@ -73,7 +74,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
       setShowRequestForm(false);
     } catch (error) {
       // Handle error silently or with proper error handling
-      console.error("Failed to send relationship request:", error);
+      logger.error("Failed to send relationship request:", error);
     }
   };
 

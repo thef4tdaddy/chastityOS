@@ -7,13 +7,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   SecuritySettingsState,
-  SessionSecuritySettings,
-  AccessControlSettings,
-  MonitoringSettings,
-  PrivacySecuritySettings,
   DeviceInfo,
   SecurityHealthCheck,
-} from "../../types/security";
+} from "@/types/security";
 import {
   defaultSessionSettings,
   defaultAccessSettings,
@@ -27,12 +23,11 @@ import {
   calculateSecurityLevel,
   mergeWithDefaultSettings,
   handleAutoSave,
-} from "../../utils/security/security-settings-utils";
+} from "@/utils/security/security-settings-utils";
 
 interface UseSecuritySettingsOptions {
   userId: string;
   autoSave?: boolean;
-  syncInterval?: number; // minutes
 }
 
 // Helper to load security settings
@@ -67,8 +62,8 @@ const initialSecurityState: SecuritySettingsState = {
 };
 
 // Helper to create a generic settings updater
-function createGenericUpdater<T>(
-  key: keyof SecuritySettingsState,
+function createGenericUpdater<K extends keyof SecuritySettingsState>(
+  key: K,
   params: {
     userId: string;
     autoSave: boolean;
@@ -87,7 +82,7 @@ function createGenericUpdater<T>(
     setHasUnsavedChanges,
   } = params;
 
-  return async (settings: Partial<T>): Promise<void> => {
+  return async (settings: Partial<SecuritySettingsState[K]>): Promise<void> => {
     setSecurityState((prev) => ({
       ...prev,
       [key]: { ...prev[key], ...settings },
@@ -111,20 +106,10 @@ function createSettingsUpdateCallbacks(params: {
   setHasUnsavedChanges: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   return {
-    updateSessionSettings: createGenericUpdater<SessionSecuritySettings>(
-      "sessionSettings",
-      params,
-    ),
-    updateAccessSettings: createGenericUpdater<AccessControlSettings>(
-      "accessSettings",
-      params,
-    ),
-    updateMonitoringSettings: createGenericUpdater<MonitoringSettings>(
+    updateSessionSettings: createGenericUpdater("sessionSettings", params),
+    updateAccessSettings: createGenericUpdater("accessSettings", params),
+    updateMonitoringSettings: createGenericUpdater(
       "monitoringSettings",
-      params,
-    ),
-    updatePrivacySettings: createGenericUpdater<PrivacySecuritySettings>(
-      "privacySettings",
       params,
     ),
   };
@@ -170,24 +155,46 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   useEffect(() => {
     if (userId) {
-      loadSecuritySettings(userId, setSecurityState, setError, setLoading);
+      loadSecuritySettings(
+        userId,
+        setSecurityState,
+        setError,
+        setLoading,
+      ).catch((err) => {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An unexpected error occurred while loading settings.",
+        );
+      });
     }
   }, [userId]);
+
   useEffect(() => {
-    if (autoSave && hasUnsavedChanges && !loading) {
-      const saveTimer = setTimeout(() => {
-        handleAutoSave(userId, securityState, setHasUnsavedChanges, setError);
-      }, 2000);
-      return () => clearTimeout(saveTimer);
+    if (!autoSave || !hasUnsavedChanges || loading) {
+      return;
     }
-  }, [hasUnsavedChanges, autoSave, loading, userId, securityState]);
+
+    const handler = setTimeout(() => {
+      // Fire-and-forget promise. Errors are handled inside handleAutoSave by setting the error state.
+      void handleAutoSave(
+        userId,
+        securityState,
+        setHasUnsavedChanges,
+        setError,
+      );
+    }, 2000);
+
+    return () => clearTimeout(handler);
+  }, [autoSave, hasUnsavedChanges, loading, userId, securityState]);
+
   const {
     updateSessionSettings,
     updateAccessSettings,
     updateMonitoringSettings,
-    updatePrivacySettings,
   } = useMemo(
     () =>
       createSettingsUpdateCallbacks({
@@ -235,6 +242,7 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
       securityState.accessSettings.trustedDevices,
     ],
   );
+
   const security = useMemo(
     () => createSecurityAnalysis(securityState),
     [securityState],
@@ -248,10 +256,6 @@ export const useSecuritySettings = (options: UseSecuritySettingsOptions) => {
     loading,
     error,
     hasUnsavedChanges,
-    updateSessionSettings,
-    updateAccessSettings,
-    updateMonitoringSettings,
-    updatePrivacySettings,
     ...actions,
     ...security,
   };

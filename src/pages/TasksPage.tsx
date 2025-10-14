@@ -4,7 +4,7 @@ import { useAuthState } from "@/contexts";
 import { useTasks } from "@/hooks/api/useTasks";
 import { useSubmitTaskForReview } from "@/hooks/api/useTaskQuery";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
-import type { Task, DBTask } from "@/types";
+import type { DBTask } from "@/types";
 import {
   TaskItem,
   TaskSkeleton,
@@ -74,7 +74,7 @@ const TabNavigation: React.FC<{
 // Active Tasks Section Component
 const ActiveTasksSection: React.FC<{
   tasks: DBTask[];
-  userId: string;
+  userId?: string;
   handleSubmitTask: (
     taskId: string,
     note: string,
@@ -120,7 +120,11 @@ const ActiveTasksSection: React.FC<{
           variant="glass"
           className="glass-hover transform transition-all duration-300 sm:hover:scale-[1.02]"
         >
-          <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
+          <TaskItem
+            task={task}
+            userId={userId || ""}
+            onSubmit={handleSubmitTask}
+          />
         </Card>
       ))}
     </motion.div>
@@ -128,7 +132,10 @@ const ActiveTasksSection: React.FC<{
 };
 
 // Archived Tasks Section Component
-const ArchivedTasksSection: React.FC<{ tasks: DBTask[] }> = ({ tasks }) => {
+const ArchivedTasksSection: React.FC<{ tasks: DBTask[]; userId?: string }> = ({
+  tasks,
+  userId,
+}) => {
   if (tasks.length === 0) {
     return (
       <motion.div
@@ -170,6 +177,7 @@ const ArchivedTasksSection: React.FC<{ tasks: DBTask[] }> = ({ tasks }) => {
         >
           <TaskItem
             task={task}
+            userId={userId}
             onSubmit={() => {}} // Archived tasks can't be submitted
           />
         </Card>
@@ -178,60 +186,52 @@ const ArchivedTasksSection: React.FC<{ tasks: DBTask[] }> = ({ tasks }) => {
   );
 };
 
-const TasksPage: React.FC = () => {
-  const { user } = useAuthState();
-
-  // Use TanStack Query hooks for tasks
-  const {
-    data: tasks = [],
-    isLoading: loading,
-    error,
-    refetch,
-  } = useTasks(user?.uid || "");
-
-  const submitTaskMutation = useSubmitTaskForReview();
-
-  // Task filtering, pagination, and categorization
-  const {
-    activeTab,
-    activeTasks,
-    archivedTasks,
-    filteredTasks,
-    paginatedTasks,
-    searchQuery,
-    currentPage,
-    totalPages,
-    setActiveTab: handleTabChange,
-    setSearchQuery: handleSearchChange,
-    setCurrentPage,
-  } = useTaskFilters({ tasks: tasks as unknown as Task[], itemsPerPage: 20 });
-
-  const handleSubmitTask = async (
+/**
+ * New: Extracted content component to reduce complexity of the TasksPage arrow function.
+ */
+type TasksContentProps = {
+  userId?: string;
+  user?: { uid: string } | null;
+  loading: boolean;
+  error: unknown;
+  refetch: () => void;
+  activeTab: "active" | "archived";
+  handleTabChange: (tab: "active" | "archived") => void;
+  activeTasks: DBTask[];
+  archivedTasks: DBTask[];
+  filteredTasks: DBTask[];
+  paginatedTasks: DBTask[];
+  searchQuery: string;
+  currentPage: number;
+  totalPages: number;
+  handleSearchChange: (q: string) => void;
+  setCurrentPage: (p: number) => void;
+  handleSubmitTask: (
     taskId: string,
     note: string,
     attachments?: string[],
-  ) => {
-    if (!user) return;
+  ) => Promise<void>;
+};
 
-    try {
-      await submitTaskMutation.mutateAsync({
-        taskId,
-        userId: user.uid,
-        note,
-        attachments,
-      });
-    } catch (error) {
-      const err =
-        error instanceof Error ? error : new Error("Task submission failed");
-      logger.error("Task submission error", {
-        taskId,
-        userId: user.uid,
-        error: err.message,
-      });
-      throw err; // Re-throw to be caught by TaskItem error handling
-    }
-  };
-
+const TasksContent: React.FC<TasksContentProps> = ({
+  user,
+  userId,
+  loading,
+  error,
+  refetch,
+  activeTab,
+  handleTabChange,
+  activeTasks,
+  archivedTasks,
+  filteredTasks,
+  paginatedTasks,
+  searchQuery,
+  currentPage,
+  totalPages,
+  handleSearchChange,
+  setCurrentPage,
+  handleSubmitTask,
+}) => {
   return (
     <TaskErrorBoundary>
       <div className="p-3 sm:p-4 md:p-6">
@@ -265,8 +265,7 @@ const TasksPage: React.FC = () => {
           />
           {searchQuery && (
             <div className="text-sm text-gray-400 mt-2">
-              Found {filteredTasks.length} task(s) matching &quot;{searchQuery}
-              &quot;
+              Found {filteredTasks.length} task(s) matching "{searchQuery}"
             </div>
           )}
         </div>
@@ -287,13 +286,14 @@ const TasksPage: React.FC = () => {
               >
                 {activeTab === "active" ? (
                   <ActiveTasksSection
-                    tasks={paginatedTasks as unknown as DBTask[]}
-                    userId={user?.uid || ""}
+                    tasks={paginatedTasks}
+                    userId={userId}
                     handleSubmitTask={handleSubmitTask}
                   />
                 ) : (
                   <ArchivedTasksSection
-                    tasks={paginatedTasks as unknown as DBTask[]}
+                    tasks={paginatedTasks}
+                    userId={userId}
                   />
                 )}
               </motion.div>
@@ -325,6 +325,83 @@ const TasksPage: React.FC = () => {
         </div>
       </div>
     </TaskErrorBoundary>
+  );
+};
+
+const TasksPage: React.FC = () => {
+  const { user } = useAuthState();
+
+  // Use TanStack Query hooks for tasks
+  const {
+    data: tasks = [],
+    isLoading: loading,
+    error,
+    refetch,
+  } = useTasks(user?.uid || "");
+
+  const submitTaskMutation = useSubmitTaskForReview();
+
+  // Task filtering, pagination, and categorization
+  const {
+    activeTab,
+    activeTasks,
+    archivedTasks,
+    filteredTasks,
+    paginatedTasks,
+    searchQuery,
+    currentPage,
+    totalPages,
+    setActiveTab: handleTabChange,
+    setSearchQuery: handleSearchChange,
+    setCurrentPage,
+  } = useTaskFilters({ tasks, itemsPerPage: 20 });
+
+  const handleSubmitTask = async (
+    taskId: string,
+    note: string,
+    attachments?: string[],
+  ) => {
+    if (!user) return;
+
+    try {
+      await submitTaskMutation.mutateAsync({
+        taskId,
+        userId: user.uid,
+        note,
+        attachments,
+      });
+    } catch (error) {
+      const err =
+        error instanceof Error ? error : new Error("Task submission failed");
+      logger.error("Task submission error", {
+        taskId,
+        userId: user.uid,
+        error: err.message,
+      });
+      throw err; // Re-throw to be caught by TaskItem error handling
+    }
+  };
+
+  return (
+    <TasksContent
+      user={user}
+      userId={user?.uid}
+      loading={loading}
+      error={error}
+      refetch={refetch}
+      activeTab={activeTab}
+      handleTabChange={handleTabChange}
+      activeTasks={activeTasks}
+      archivedTasks={archivedTasks}
+      filteredTasks={filteredTasks}
+      paginatedTasks={paginatedTasks}
+      searchQuery={searchQuery}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      handleSearchChange={handleSearchChange}
+      setCurrentPage={setCurrentPage}
+      handleSubmitTask={handleSubmitTask}
+    />
   );
 };
 

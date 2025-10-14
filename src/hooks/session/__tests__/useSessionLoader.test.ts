@@ -33,6 +33,7 @@ vi.mock("../../useSessionPersistence", () => ({
     restorationResult: null,
     error: null,
     getBackupState: mockGetBackupState,
+    isSessionRestored: false,
   }),
 }));
 
@@ -144,7 +145,7 @@ describe("useSessionLoader", () => {
     // Simulate restoration result update
     vi.mocked(
       await import("../../useSessionPersistence"),
-    ).useSessionPersistence = () => ({
+    ).useSessionPersistence = vi.fn(() => ({
       initializeSession: mockInitializeSession,
       isInitializing: false,
       restorationResult: {
@@ -158,7 +159,8 @@ describe("useSessionLoader", () => {
       startHeartbeat: vi.fn(),
       stopHeartbeat: vi.fn(),
       detectAndRecover: vi.fn(),
-    });
+      isSessionRestored: true,
+    }));
 
     rerender();
 

@@ -162,7 +162,6 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
           return;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [handleChannelJoined, handleChannelLeft, handleRealtimeUpdate],
   );
 
