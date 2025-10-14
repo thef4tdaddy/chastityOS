@@ -7,9 +7,10 @@
 import { useState, useCallback, useMemo } from "react";
 import { useSession } from "./useSession";
 import { usePauseResume } from "./usePauseResume";
-import { serviceLogger } from "../../utils/logging";
-import { sessionConflictDetection } from "../../services/SessionConflictDetectionService";
-import type { DBGoal, DBSession } from "../../types/database";
+import { serviceLogger } from "@/utils/logging";
+import { sessionConflictDetection } from "@/services/SessionConflictDetectionService";
+import type { DBGoal, DBSession } from "@/types/database";
+import type { PauseReason } from "@/types/pauseResume";
 
 const logger = serviceLogger("useSessionActions");
 
@@ -129,9 +130,9 @@ async function handleEndSession(
 async function handlePauseSession(
   canPause: boolean,
   userId: string,
-  reason: string | undefined,
+  reason: PauseReason | undefined,
   actions: {
-    pauseSessionCore: (reason: string) => Promise<void>;
+    pauseSessionCore: (reason: PauseReason) => Promise<void>;
     handleError: (err: unknown, context: string) => Error;
     setError: (error: Error | null) => void;
     onSessionPaused?: () => void;
@@ -158,7 +159,7 @@ async function handlePauseSession(
   try {
     logger.debug("Pausing session", { userId, reason });
 
-    await actions.pauseSessionCore(reason || "bathroom");
+    await actions.pauseSessionCore(reason || "other");
 
     logger.info("Session paused successfully", { userId });
     actions.onSessionPaused?.();
@@ -267,7 +268,7 @@ export interface UseSessionActionsReturn {
   // Actions
   startSession: (config?: SessionConfig) => Promise<void>;
   endSession: (reason?: string) => Promise<void>;
-  pauseSession: (reason?: string) => Promise<void>;
+  pauseSession: (reason?: PauseReason) => Promise<void>;
   resumeSession: () => Promise<void>;
 
   // State
@@ -382,8 +383,17 @@ export function useSessionActions({
 
   const startSession = useCallback(
     async (config?: SessionConfig): Promise<void> => {
+      const wrappedStartSession = async (coreConfig: {
+        goalDuration?: number;
+        isHardcoreMode: boolean;
+        keyholderApprovalRequired: boolean;
+        notes?: string;
+      }) => {
+        await startSessionCore(coreConfig);
+      };
+
       await handleStartSession(canStart, userId, config, {
-        startSessionCore,
+        startSessionCore: wrappedStartSession as any,
         handleError,
         setIsStarting,
         setError,
@@ -407,7 +417,7 @@ export function useSessionActions({
   );
 
   const pauseSession = useCallback(
-    async (reason?: string): Promise<void> => {
+    async (reason?: PauseReason): Promise<void> => {
       await handlePauseSession(canPause, userId, reason, {
         pauseSessionCore,
         handleError,

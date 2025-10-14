@@ -22,8 +22,8 @@ import {
   serverTimestamp,
   type DocumentReference,
 } from "firebase/firestore";
-import { getFirebaseAuth, getFirestore } from "../firebase";
-import { User, ApiResponse, LoginForm, RegisterForm } from "@/types";
+import { getFirebaseAuth, getFirestore } from "@/services/firebase";
+import { User, ApiResponse, LoginForm, RegisterForm, UserRole } from "@/types";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 
@@ -341,7 +341,7 @@ export class AuthService {
     firebaseUser: FirebaseUser,
     userData: RegisterForm,
   ): Promise<User> {
-    const user: User = {
+    const userPayload = {
       uid: firebaseUser.uid,
       email: firebaseUser.email || undefined,
       displayName: userData.displayName,
@@ -371,12 +371,21 @@ export class AuthService {
 
     const db = await getFirestore();
     const userRef: DocumentReference = doc(db, "users", firebaseUser.uid);
-    await setDoc(userRef, user);
+    await setDoc(userRef, userPayload);
 
     logger.debug("User profile created in Firestore", {
       uid: firebaseUser.uid,
     });
-    return user;
+
+    const createdUser = await this.getUserProfile(firebaseUser.uid);
+    if (!createdUser) {
+      logger.error("Failed to fetch newly created user profile", {
+        uid: firebaseUser.uid,
+      });
+      throw new Error("Could not retrieve user profile after creation.");
+    }
+
+    return createdUser;
   }
 
   /**
@@ -385,12 +394,10 @@ export class AuthService {
   private static async createAnonymousUserProfile(
     firebaseUser: FirebaseUser,
   ): Promise<User> {
-    // For anonymous users, create user data without email field
-    // Firestore doesn't allow undefined values, so we omit it from the document
     const userData = {
       uid: firebaseUser.uid,
       displayName: `Guest_${firebaseUser.uid.substring(0, 8)}`,
-      role: "submissive", // Default role for anonymous users
+      role: UserRole.SUBMISSIVE, // Default role for anonymous users
       profile: {
         isPublicProfileEnabled: false,
         profileToken: generateUUID(),
@@ -419,13 +426,19 @@ export class AuthService {
     const userRef: DocumentReference = doc(db, "users", firebaseUser.uid);
     await setDoc(userRef, userData);
 
-    // Return as User type (email will be undefined)
-    const user: User = { ...userData, email: undefined } as User;
-
     logger.debug("Anonymous user profile created in Firestore", {
       uid: firebaseUser.uid,
     });
-    return user;
+
+    const createdUser = await this.getUserProfile(firebaseUser.uid);
+    if (!createdUser) {
+      logger.error("Failed to fetch newly created anonymous user profile", {
+        uid: firebaseUser.uid,
+      });
+      throw new Error("Could not retrieve user profile after creation.");
+    }
+
+    return createdUser;
   }
 
   /**
@@ -501,7 +514,7 @@ export const authService = {
     const { reauthenticateWithCredential, EmailAuthProvider } = await import(
       "firebase/auth"
     );
-    const { getFirebaseAuth } = await import("../firebase");
+    const { getFirebaseAuth } = await import("@/services/firebase");
     const auth = await getFirebaseAuth();
     const user = auth.currentUser;
     if (!user) throw new Error("No authenticated user");

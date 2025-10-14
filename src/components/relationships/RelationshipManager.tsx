@@ -6,7 +6,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui";
 import { useRelationships } from "@/hooks/useRelationships";
 import { Relationship } from "@/types/relationships";
-import { KeyholderRelationship, KeyholderPermissions } from "@/types/core";
+import {
+  KeyholderRelationship,
+  KeyholderPermissions,
+  UserRole,
+} from "@/types/core";
 import { FaUserPlus } from "@/utils/iconImport";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
@@ -63,10 +67,13 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     message: string;
   }) => {
     try {
-      await sendRelationshipRequest(data.email, data.role, data.message);
+      const userRole =
+        data.role === "submissive" ? UserRole.SUBMISSIVE : UserRole.KEYHOLDER;
+      await sendRelationshipRequest(data.email, userRole, data.message);
       setShowRequestForm(false);
-    } catch {
+    } catch (error) {
       // Handle error silently or with proper error handling
+      console.error("Failed to send relationship request:", error);
     }
   };
 

@@ -152,6 +152,8 @@ describe("Events UI Accessibility", () => {
         isPrivate: false,
         createdAt: new Date("2024-01-15T10:30:00"),
         updatedAt: new Date("2024-01-15T10:30:00"),
+        syncStatus: "synced" as const,
+        lastModified: new Date("2024-01-15T10:30:00"),
       } as DBEvent,
     ];
 
