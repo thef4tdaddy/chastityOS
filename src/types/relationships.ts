@@ -4,6 +4,7 @@
  * relationships between submissives and keyholders
  */
 import { Timestamp } from "firebase/firestore";
+import { UserRole } from "./core";
 
 // ==================== RELATIONSHIP TYPES ====================
 
@@ -69,8 +70,8 @@ export interface RelationshipRequest {
   id: string;
   fromUserId: string;
   toUserId: string;
-  fromRole: "submissive" | "keyholder";
-  toRole: "submissive" | "keyholder";
+  fromRole: UserRole;
+  toRole: UserRole;
   status: RelationshipRequestStatus;
   message?: string;
   createdAt: Timestamp;

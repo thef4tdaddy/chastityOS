@@ -1,19 +1,19 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { useAuthState } from "../contexts";
-import { useTasks } from "../hooks/api/useTasks";
-import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
-import { useTaskFilters } from "../hooks/useTaskFilters";
-import type { Task } from "../types";
+import { useAuthState } from "@/contexts";
+import { useTasks } from "@/hooks/api/useTasks";
+import { useSubmitTaskForReview } from "@/hooks/api/useTaskQuery";
+import { useTaskFilters } from "@/hooks/useTaskFilters";
+import type { Task, DBTask } from "@/types";
 import {
   TaskItem,
   TaskSkeleton,
   TaskErrorBoundary,
   TaskError,
   TaskSearch,
-} from "../components/tasks";
-import { TaskStatsCard } from "../components/stats/TaskStatsCard";
-import { FeatureErrorBoundary } from "../components/errors";
+} from "@/components/tasks";
+import { TaskStatsCard } from "@/components/stats/TaskStatsCard";
+import { FeatureErrorBoundary } from "@/components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
 import {
   staggerContainerVariants,
@@ -21,8 +21,8 @@ import {
   fadeInVariants,
   pulseVariants,
   getAccessibleVariants,
-} from "../utils/animations";
-import { logger } from "../utils/logging";
+} from "@/utils/animations";
+import { logger } from "@/utils/logging";
 
 const ErrorState: React.FC<{ error?: Error; onRetry?: () => void }> = ({
   error,
@@ -73,7 +73,7 @@ const TabNavigation: React.FC<{
 
 // Active Tasks Section Component
 const ActiveTasksSection: React.FC<{
-  tasks: Task[];
+  tasks: DBTask[];
   userId: string;
   handleSubmitTask: (
     taskId: string,
@@ -128,7 +128,7 @@ const ActiveTasksSection: React.FC<{
 };
 
 // Archived Tasks Section Component
-const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
+const ArchivedTasksSection: React.FC<{ tasks: DBTask[] }> = ({ tasks }) => {
   if (tasks.length === 0) {
     return (
       <motion.div
@@ -204,7 +204,7 @@ const TasksPage: React.FC = () => {
     setActiveTab: handleTabChange,
     setSearchQuery: handleSearchChange,
     setCurrentPage,
-  } = useTaskFilters({ tasks, itemsPerPage: 20 });
+  } = useTaskFilters({ tasks: tasks as unknown as Task[], itemsPerPage: 20 });
 
   const handleSubmitTask = async (
     taskId: string,
@@ -287,12 +287,14 @@ const TasksPage: React.FC = () => {
               >
                 {activeTab === "active" ? (
                   <ActiveTasksSection
-                    tasks={paginatedTasks}
+                    tasks={paginatedTasks as unknown as DBTask[]}
                     userId={user?.uid || ""}
                     handleSubmitTask={handleSubmitTask}
                   />
                 ) : (
-                  <ArchivedTasksSection tasks={paginatedTasks} />
+                  <ArchivedTasksSection
+                    tasks={paginatedTasks as unknown as DBTask[]}
+                  />
                 )}
               </motion.div>
             </FeatureErrorBoundary>

@@ -1,20 +1,20 @@
 import React from "react";
-import { useAuthState } from "../contexts";
-import { useReportData } from "../hooks/api/useReportData";
-import { useAccountLinking } from "../hooks/account-linking/useAccountLinking";
-import { FaUsers } from "../utils/iconImport";
+import { useAuthState } from "@/contexts";
+import { useReportData } from "@/hooks/api/useReportData";
+import { useAccountLinking } from "@/hooks/account-linking/useAccountLinking";
+import { FaUsers } from "@/utils/iconImport";
 import {
   CurrentStatusSection,
   StatisticsSection,
   SessionHistorySection,
   FullReportSkeleton,
-} from "../components/full_report";
-import { EventList } from "../components/log_event/EventList";
+} from "@/components/full_report";
+import { EventList } from "@/components/log_event/EventList";
 import { Card, Tooltip } from "@/components/ui";
 import {
   FeatureErrorBoundary,
   ReportsErrorFallback,
-} from "../components/errors";
+} from "@/components/errors";
 
 // Error state component with retry functionality
 const ErrorState: React.FC<{
@@ -62,7 +62,7 @@ const CombinedReportHeader: React.FC<CombinedReportHeaderProps> = ({
   if (!activeSubmissive) return null;
 
   return (
-    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6" role="banner">
+    <Card variant="glass" padding="sm" className="mb-4 sm:mb-6">
       <div className="flex flex-wrap items-center gap-2">
         <FaUsers
           className="text-nightly-aquamarine text-lg sm:text-xl"
@@ -101,12 +101,12 @@ const UserStatusSectionComponent: React.FC<ReportSectionProps> = ({
   userReport,
   submissiveReport,
 }) => (
-  <>
+  <div id="your-status">
     <FeatureErrorBoundary
       feature="Current Status"
       fallback={<ReportsErrorFallback feature="Current Status" />}
     >
-      <section className="mb-4 sm:mb-6 animate-fade-in-up" id="your-status">
+      <section className="mb-4 sm:mb-6 animate-fade-in-up">
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Status" : "Current Status"}
         </h3>
@@ -132,7 +132,7 @@ const UserStatusSectionComponent: React.FC<ReportSectionProps> = ({
         </section>
       </FeatureErrorBoundary>
     )}
-  </>
+  </div>
 );
 
 // Memoize to prevent unnecessary re-renders
@@ -146,15 +146,12 @@ const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
   userReport,
   submissiveReport,
 }) => (
-  <>
+  <div id="your-statistics">
     <FeatureErrorBoundary
       feature="Statistics"
       fallback={<ReportsErrorFallback feature="Statistics" />}
     >
-      <section
-        className="mb-4 sm:mb-6 animate-fade-in-up stagger-3"
-        id="your-statistics"
-      >
+      <section className="mb-4 sm:mb-6 animate-fade-in-up stagger-3">
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Statistics" : "Statistics"}
         </h3>
@@ -188,7 +185,7 @@ const StatisticsReportSectionComponent: React.FC<ReportSectionProps> = ({
         </section>
       </FeatureErrorBoundary>
     )}
-  </>
+  </div>
 );
 
 // Memoize to prevent unnecessary re-renders
@@ -202,15 +199,12 @@ const SessionHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
   userReport,
   submissiveReport,
 }) => (
-  <>
+  <div id="your-session-history">
     <FeatureErrorBoundary
       feature="Session History"
       fallback={<ReportsErrorFallback feature="Session History" />}
     >
-      <section
-        className="mb-4 sm:mb-6 animate-fade-in-up stagger-5"
-        id="your-session-history"
-      >
+      <section className="mb-4 sm:mb-6 animate-fade-in-up stagger-5">
         <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
           {activeSubmissive ? "Your Session History" : "Session History"}
         </h3>
@@ -234,7 +228,7 @@ const SessionHistoryReportSectionComponent: React.FC<ReportSectionProps> = ({
         </section>
       </FeatureErrorBoundary>
     )}
-  </>
+  </div>
 );
 
 // Memoize to prevent unnecessary re-renders
@@ -293,22 +287,20 @@ const FullReportPage: React.FC = () => {
   const { adminRelationships } = useAccountLinking();
 
   // Get the active submissive relationship (first one for now)
-  const activeSubmissive = adminRelationships?.[0];
+  const activeSubmissiveRel = adminRelationships?.[0];
 
   // Fetch report data for current user with optimized loading
-  // Use deferred loading for heavy queries to improve initial page load
   const userReport = useReportData(user?.uid, {
     deferHeavyQueries: true, // Load current session first, then heavy data
   });
 
   // Fetch report data for submissive if keyholder has one
-  // Only load if current user's data is ready
-  const submissiveReport = useReportData(activeSubmissive?.wearerId, {
+  const submissiveReport = useReportData(activeSubmissiveRel?.wearerId, {
     deferHeavyQueries: true,
-    enableSessions: !!activeSubmissive,
-    enableEvents: !!activeSubmissive,
-    enableTasks: !!activeSubmissive,
-    enableGoals: !!activeSubmissive,
+    enableSessions: !!activeSubmissiveRel,
+    enableEvents: !!activeSubmissiveRel,
+    enableTasks: !!activeSubmissiveRel,
+    enableGoals: !!activeSubmissiveRel,
   });
 
   const isLoading = userReport.isLoading || submissiveReport.isLoading;
@@ -329,6 +321,11 @@ const FullReportPage: React.FC = () => {
       />
     );
   }
+
+  // Transform relationship object to match component props
+  const activeSubmissive = activeSubmissiveRel
+    ? { wearerName: undefined } // wearerName is not available on AdminRelationship
+    : undefined;
 
   return (
     <div className="text-nightly-spring-green">

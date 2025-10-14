@@ -11,7 +11,7 @@ import {
   SyncChannel,
   RealtimeUpdate,
   Subscription,
-} from "../../types/realtime";
+} from "@/types/realtime";
 import {
   connectWebSocket,
   createChannelHelpers,
@@ -69,69 +69,6 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
   const heartbeatTimeoutRef = useRef<number | null>(null);
   const connectionStartTimeRef = useRef<Date | null>(null);
 
-  // Disconnect WebSocket
-  const disconnect = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close(1000, "Intentional disconnect");
-      wsRef.current = null;
-    }
-
-    stopHeartbeat();
-
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // stopHeartbeat is stable
-
-  // Attempt reconnection
-  const attemptReconnect = useCallback(() => {
-    if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-      // Max reconnection attempts reached
-      return;
-    }
-
-    reconnectAttemptsRef.current++;
-
-    setSyncState((prev) => ({
-      ...prev,
-      connectionStatus: ConnectionStatus.RECONNECTING,
-    }));
-
-    reconnectTimeoutRef.current = setTimeout(() => {
-      // Reconnection attempt
-      connect();
-    }, reconnectInterval) as unknown as number;
-  }, [connect, maxReconnectAttempts, reconnectInterval]);
-
-  // Start heartbeat
-  const startHeartbeat = useCallback(() => {
-    const sendHeartbeat = () => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        sendMessage({ type: "heartbeat", timestamp: new Date().toISOString() });
-        heartbeatTimeoutRef.current = setTimeout(
-          sendHeartbeat,
-          heartbeatInterval,
-        ) as unknown as number;
-      }
-    };
-
-    heartbeatTimeoutRef.current = setTimeout(
-      sendHeartbeat,
-      heartbeatInterval,
-    ) as unknown as number;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [heartbeatInterval]); // sendMessage is stable
-
-  // Stop heartbeat
-  const stopHeartbeat = useCallback(() => {
-    if (heartbeatTimeoutRef.current) {
-      clearTimeout(heartbeatTimeoutRef.current);
-      heartbeatTimeoutRef.current = null;
-    }
-  }, []);
-
   // Send message via WebSocket
   const sendMessage = useCallback((message: WebSocketMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -146,36 +83,6 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       }));
     }
   }, []);
-
-  // Handle incoming messages
-  const handleMessage = useCallback((message: WebSocketMessage) => {
-    setSyncState((prev) => ({
-      ...prev,
-      syncMetrics: {
-        ...prev.syncMetrics,
-        messagesReceived: prev.syncMetrics.messagesReceived + 1,
-        lastSuccessfulSync: new Date(),
-      },
-    }));
-
-    switch (message.type) {
-      case "channel_joined":
-        handleChannelJoined(message);
-        break;
-      case "channel_left":
-        handleChannelLeft(message);
-        break;
-      case "realtime_update":
-        handleRealtimeUpdate(message);
-        break;
-      case "heartbeat_ack":
-        // Heartbeat acknowledged
-        break;
-      default:
-      // Unknown message type
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // handler functions are stable
 
   // Handle channel joined
   const handleChannelJoined = useCallback((message: WebSocketMessage) => {
@@ -225,8 +132,101 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
     });
   }, []);
 
+  // Handle incoming messages
+  const handleMessage = useCallback(
+    (message: WebSocketMessage) => {
+      setSyncState((prev) => ({
+        ...prev,
+        syncMetrics: {
+          ...prev.syncMetrics,
+          messagesReceived: prev.syncMetrics.messagesReceived + 1,
+          lastSuccessfulSync: new Date(),
+        },
+      }));
+
+      switch (message.type) {
+        case "channel_joined":
+          handleChannelJoined(message);
+          break;
+        case "channel_left":
+          handleChannelLeft(message);
+          break;
+        case "realtime_update":
+          handleRealtimeUpdate(message);
+          break;
+        case "heartbeat_ack":
+          // Heartbeat acknowledged
+          break;
+        default:
+          // Unknown message type
+          return;
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [handleChannelJoined, handleChannelLeft, handleRealtimeUpdate],
+  );
+
+  // Stop heartbeat
+  const stopHeartbeat = useCallback(() => {
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+      heartbeatTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Start heartbeat
+  const startHeartbeat = useCallback(() => {
+    const sendHeartbeat = () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        sendMessage({ type: "heartbeat", timestamp: new Date().toISOString() });
+        heartbeatTimeoutRef.current = setTimeout(
+          sendHeartbeat,
+          heartbeatInterval,
+        ) as unknown as number;
+      }
+    };
+
+    heartbeatTimeoutRef.current = setTimeout(
+      sendHeartbeat,
+      heartbeatInterval,
+    ) as unknown as number;
+  }, [heartbeatInterval, sendMessage]);
+
+  // Disconnect WebSocket
+  const disconnect = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.close(1000, "Intentional disconnect");
+      wsRef.current = null;
+    }
+
+    stopHeartbeat();
+
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, [stopHeartbeat]);
+
   // Connect to WebSocket
   const connect = useCallback(() => {
+    // Forward declaration of attemptReconnect
+    const attemptReconnect = () => {
+      if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+        return;
+      }
+
+      reconnectAttemptsRef.current++;
+
+      setSyncState((prev) => ({
+        ...prev,
+        connectionStatus: ConnectionStatus.RECONNECTING,
+      }));
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connect();
+      }, reconnectInterval) as unknown as number;
+    };
+
     connectWebSocket({
       wsRef,
       userId,
@@ -241,15 +241,15 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       activeChannels: syncState.activeChannels,
       maxReconnectAttempts,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     userId,
     maxReconnectAttempts,
+    reconnectInterval,
     startHeartbeat,
     stopHeartbeat,
-    attemptReconnect,
     sendMessage,
     handleMessage,
+    syncState.activeChannels,
   ]);
 
   // Channel management functions
@@ -308,7 +308,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
           syncMetrics: {
             ...prev.syncMetrics,
             connectionUptime:
-              Date.now() - connectionStartTimeRef.current!.getTime(),
+              Date.now() - (connectionStartTimeRef.current?.getTime() ?? 0),
           },
         }));
       };
@@ -316,6 +316,7 @@ export const useRealtimeSync = (options: UseRealtimeSyncOptions) => {
       const interval = setInterval(updateUptime, 1000);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [syncState.connectionStatus]);
 
   // Computed values

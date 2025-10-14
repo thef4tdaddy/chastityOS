@@ -3,7 +3,7 @@
  * Tests statistics calculation, data aggregation across features, and data accuracy
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // Mock data structures
 interface MockSession {
@@ -36,6 +36,7 @@ interface AggregatedStatistics {
   goalMetCount: number;
   goalNotMetCount: number;
   completionRate: number;
+  effectiveChastityTime: number;
 }
 
 describe("Report Integration Tests", () => {
@@ -203,7 +204,7 @@ describe("Report Integration Tests", () => {
       const syncedData = synchronizeReportData(sessions, events);
 
       expect(syncedData.sessions).toHaveLength(1);
-      expect(syncedData.sessions[0].eventsDuringSession).toBe(2);
+      expect(syncedData.sessions[0]?.eventsDuringSession).toBe(2);
       expect(syncedData.totalEvents).toBe(2);
     });
 
@@ -232,7 +233,7 @@ describe("Report Integration Tests", () => {
 
       const syncedData = synchronizeReportData(sessions, events);
 
-      expect(syncedData.sessions[0].eventsDuringSession).toBe(0);
+      expect(syncedData.sessions[0]?.eventsDuringSession).toBe(0);
       expect(syncedData.eventsOutsideSessions).toBe(2);
     });
 
@@ -454,10 +455,11 @@ describe("Report Integration Tests", () => {
     });
 
     it("should handle 5000 events efficiently", () => {
+      const eventTypes = ["orgasm", "denial", "tease", "edge"];
       const events: MockEvent[] = Array.from({ length: 5000 }, (_, i) => ({
         id: `event-${i}`,
         timestamp: new Date(Date.now() - i * 3600000), // One per hour
-        eventType: ["orgasm", "denial", "tease", "edge"][i % 4],
+        eventType: eventTypes[i % 4]!,
         intensity: Math.floor(Math.random() * 10) + 1,
       }));
 
@@ -510,6 +512,7 @@ function aggregateSessionStatistics(
       goalMetCount: 0,
       goalNotMetCount: 0,
       completionRate: 0,
+      effectiveChastityTime: 0,
     };
   }
 
@@ -552,7 +555,7 @@ function aggregateSessionStatistics(
     completionRate:
       totalGoalSessions > 0 ? (goalMetCount / totalGoalSessions) * 100 : 0,
     effectiveChastityTime: totalChastityTime - totalPauseTime,
-  } as AggregatedStatistics & { effectiveChastityTime: number };
+  };
 }
 
 function aggregateEventStatistics(events: MockEvent[]) {

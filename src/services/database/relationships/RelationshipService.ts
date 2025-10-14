@@ -64,7 +64,7 @@ class RelationshipService {
     return relationshipInviteService.sendRelationshipRequest(
       fromUserId,
       toUserId,
-      fromRole as "submissive" | "keyholder",
+      fromRole,
       message,
     );
   }
