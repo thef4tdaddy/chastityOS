@@ -86,7 +86,7 @@ export interface UseTaskManagementReturn {
 /**
  * Task Management Hook
  *
- * @param keyholderMode - Whether to operate in keyholder mode (shows all wearer tasks)
+ * @param _keyholderMode - Whether to operate in keyholder mode (shows all wearer tasks)
  * @returns Task management interface with CRUD operations and filtering
  */
 export function useTaskManagement(
@@ -119,7 +119,40 @@ export function useTaskManagement(
   // Assignment operations
   const { assignTask, bulkAssign, completeTask } = useTaskAssignment({
     setError,
-    updateTask,
+    updateTask: (id: string, updates: Partial<Task>) => {
+      // Build a payload matching UpdateTaskInput so we don't assign a Date into
+      // a Partial<Task> property that may be typed as a Firestore Timestamp.
+      const payload: UpdateTaskInput = {
+        ...(updates as unknown as UpdateTaskInput),
+      };
+
+      // Type guard for timestamp-like objects that expose toDate()
+      function isTimestampLike(v: unknown): v is { toDate: () => Date } {
+        return (
+          v != null && typeof (v as { toDate?: unknown }).toDate === "function"
+        );
+      }
+
+      // Type guard for Date-like values. Operates on unknown to avoid
+      // using `instanceof` directly on a union-typed expression.
+      function isDate(v: unknown): v is Date {
+        return (
+          Object.prototype.toString.call(v) === "[object Date]" ||
+          v instanceof Date
+        );
+      }
+
+      if (updates.dueDate && isTimestampLike(updates.dueDate)) {
+        payload.dueDate = updates.dueDate.toDate();
+      } else if (updates.dueDate && isDate(updates.dueDate)) {
+        payload.dueDate = updates.dueDate;
+      } else {
+        // ensure payload.dueDate is undefined when not provided
+        delete (payload as Partial<UpdateTaskInput>).dueDate;
+      }
+
+      return updateTask(id, payload);
+    },
   });
 
   // Filter and sort tasks

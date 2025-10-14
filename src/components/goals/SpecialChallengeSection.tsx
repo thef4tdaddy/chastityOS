@@ -12,6 +12,7 @@ import {
   useSpecialChallenges,
   type SpecialChallengeStatus,
 } from "@/hooks/useSpecialChallenges";
+import type { ChallengeKey } from "@/hooks/useSpecialChallenges";
 import { logger } from "@/utils/logging";
 
 interface SpecialChallengeSectionProps {
@@ -94,15 +95,15 @@ const ChallengeCompletedState: React.FC = () => (
 
 // Challenge Card Component
 const ChallengeCard: React.FC<{
-  type: "locktober" | "no_nut_november";
+  type: ChallengeKey;
   title: string;
   description: string;
   icon: React.ReactNode;
   month: string;
   colorClasses: string;
   challengeStatus: SpecialChallengeStatus;
-  onJoinChallenge: (type: "locktober" | "no_nut_november") => void;
-  getChallengeProgress: (type: "locktober" | "no_nut_november") => number;
+  onJoinChallenge: (type: ChallengeKey) => void;
+  getChallengeProgress: (type: ChallengeKey) => number;
 }> = ({
   type,
   title,
@@ -116,8 +117,8 @@ const ChallengeCard: React.FC<{
 }) => {
   const challengeMap = {
     locktober: challengeStatus.locktober,
-    no_nut_november: challengeStatus.noNutNovember,
-  };
+    noNutNovember: challengeStatus.noNutNovember,
+  } as const;
   const challenge = challengeMap[type as keyof typeof challengeMap];
   const progress = getChallengeProgress(type);
 
@@ -159,9 +160,7 @@ export const SpecialChallengeSection: React.FC<
     getChallengeProgress,
   } = useSpecialChallenges(userId);
 
-  const handleJoinChallenge = async (
-    challengeType: "locktober" | "no_nut_november",
-  ) => {
+  const handleJoinChallenge = async (challengeType: ChallengeKey) => {
     try {
       await joinChallenge(challengeType);
     } catch (err) {
@@ -220,7 +219,7 @@ export const SpecialChallengeSection: React.FC<
         />
 
         <ChallengeCard
-          type="no_nut_november"
+          type="noNutNovember"
           title="No Nut November"
           description="Abstain from orgasms for the entire month of November"
           icon={<FaBan className="text-2xl text-blue-400" />}

@@ -121,3 +121,75 @@ export function createMockDBGoal(overrides: Partial<DBGoal> = {}): DBGoal {
     ...overrides,
   };
 }
+
+/**
+ * Creates multiple mock DBSession objects.
+ * @param count - Number of sessions to create.
+ * @param overrides - Partial data to override the defaults for each session.
+ * @returns An array of mock DBSession objects.
+ */
+export function createMockDBSessions(
+  count: number,
+  overrides: Partial<DBSession> = {},
+): DBSession[] {
+  return Array.from({ length: count }, (_, index) =>
+    createMockDBSession({
+      id: `session_${index + 1}`,
+      ...overrides,
+    }),
+  );
+}
+
+/**
+ * Creates multiple mock DBEvent objects.
+ * @param count - Number of events to create.
+ * @param overrides - Partial data to override the defaults for each event.
+ * @returns An array of mock DBEvent objects.
+ */
+export function createMockDBEvents(
+  count: number,
+  overrides: Partial<DBEvent> = {},
+): DBEvent[] {
+  return Array.from({ length: count }, (_, index) =>
+    createMockDBEvent({
+      id: `event_${index + 1}`,
+      ...overrides,
+    }),
+  );
+}
+
+/**
+ * Creates multiple mock DBTask objects.
+ * @param count - Number of tasks to create.
+ * @param overrides - Partial data to override the defaults for each task.
+ * @returns An array of mock DBTask objects.
+ */
+export function createMockDBTasks(
+  count: number,
+  overrides: Partial<DBTask> = {},
+): DBTask[] {
+  return Array.from({ length: count }, (_, index) =>
+    createMockDBTask({
+      id: `task_${index + 1}`,
+      ...overrides,
+    }),
+  );
+}
+
+/**
+ * Creates multiple mock DBGoal objects.
+ * @param count - Number of goals to create.
+ * @param overrides - Partial data to override the defaults for each goal.
+ * @returns An array of mock DBGoal objects.
+ */
+export function createMockDBGoals(
+  count: number,
+  overrides: Partial<DBGoal> = {},
+): DBGoal[] {
+  return Array.from({ length: count }, (_, index) =>
+    createMockDBGoal({
+      id: `goal_${index + 1}`,
+      ...overrides,
+    }),
+  );
+}

@@ -141,7 +141,7 @@ export class UserSettingsSync extends FirebaseSyncCore {
   /**
    * Upload local settings changes to Firebase
    */
-  private async uploadLocalChanges(
+  protected async uploadLocalChanges(
     userId: string,
     result: SyncResult,
   ): Promise<void> {
@@ -162,7 +162,11 @@ export class UserSettingsSync extends FirebaseSyncCore {
     for (const docData of pendingDocs) {
       try {
         // Check for conflicts before uploading
-        const remoteDoc = await this.getRemoteDoc(userId, docData.id);
+        const remoteDoc = await this.getRemoteDoc(
+          userId,
+          this.collectionName,
+          docData.id,
+        );
 
         if (remoteDoc && syncConflictResolver.hasConflict(docData, remoteDoc)) {
           const conflictInfo = syncConflictResolver.createConflictInfo(
@@ -207,7 +211,7 @@ export class UserSettingsSync extends FirebaseSyncCore {
   /**
    * Download remote settings changes
    */
-  private async downloadRemoteChanges(
+  protected async downloadRemoteChanges(
     userId: string,
     result: SyncResult,
   ): Promise<void> {
@@ -247,18 +251,14 @@ export class UserSettingsSync extends FirebaseSyncCore {
   /**
    * Get remote settings document
    */
-  private async getRemoteDoc(
+  protected async getRemoteDoc(
     userId: string,
+    collectionName: string,
     docId: string,
   ): Promise<DBBase | null> {
     try {
       const { firestore } = await this.createBatch();
-      const docRef = this.getDocRef(
-        firestore,
-        userId,
-        this.collectionName,
-        docId,
-      );
+      const docRef = this.getDocRef(firestore, userId, collectionName, docId);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) return null;
@@ -277,14 +277,14 @@ export class UserSettingsSync extends FirebaseSyncCore {
   /**
    * Update local settings document
    */
-  private async updateLocalDoc(data: DBBase): Promise<void> {
+  protected async updateLocalDoc(data: DBBase): Promise<void> {
     await settingsDBService.update(data.id, data);
   }
 
   /**
    * Create local settings document
    */
-  private async createLocalDoc(data: DBBase): Promise<void> {
+  protected async createLocalDoc(data: DBBase): Promise<void> {
     const {
       lastModified: _lastModified,
       syncStatus: _syncStatus,
@@ -298,7 +298,7 @@ export class UserSettingsSync extends FirebaseSyncCore {
   /**
    * Update remote settings document
    */
-  private async updateRemoteDoc(userId: string, data: DBBase): Promise<void> {
+  protected async updateRemoteDoc(userId: string, data: DBBase): Promise<void> {
     const { firestore, batch } = await this.createBatch();
     const docRef = this.getDocRef(
       firestore,

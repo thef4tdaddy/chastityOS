@@ -95,6 +95,13 @@ const TrackerPage: React.FC = () => {
     pauseStateError: mockData.pauseStateError,
   };
 
+  // typed wrapper to avoid `as any` in JSX prop
+  const handlePause = React.useCallback(
+    (reason?: string) =>
+      pauseSession(reason as unknown as Parameters<typeof pauseSession>[0]),
+    [pauseSession],
+  );
+
   return (
     <TrackerView
       isInitializing={isInitializing}
@@ -126,7 +133,7 @@ const TrackerPage: React.FC = () => {
       handleRecoverSession={handleRecoverSession}
       handleDiscardSession={handleDiscardSession}
       clearSessionError={clearSessionError}
-      pauseSession={pauseSession}
+      pauseSession={handlePause}
       resumeSession={resumeSession}
     />
   );
