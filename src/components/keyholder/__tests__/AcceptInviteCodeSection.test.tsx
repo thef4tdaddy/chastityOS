@@ -38,16 +38,14 @@ describe("AcceptInviteCodeSection", () => {
     it("should render enter code button", () => {
       render(<AcceptInviteCodeSection {...defaultProps} />);
 
-      expect(
-        screen.getByText("Enter Code")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Enter Code")).toBeInTheDocument();
     });
 
     it("should initially hide the form", () => {
       render(<AcceptInviteCodeSection {...defaultProps} />);
 
       expect(
-        screen.queryByPlaceholderText(/Enter 6-character code/i)
+        screen.queryByPlaceholderText(/Enter 6-character code/i),
       ).not.toBeInTheDocument();
     });
 
@@ -55,7 +53,10 @@ describe("AcceptInviteCodeSection", () => {
       render(<AcceptInviteCodeSection {...defaultProps} />);
 
       const section = screen.getByRole("region");
-      expect(section).toHaveAttribute("aria-labelledby", "accept-invite-heading");
+      expect(section).toHaveAttribute(
+        "aria-labelledby",
+        "accept-invite-heading",
+      );
     });
   });
 
@@ -67,7 +68,7 @@ describe("AcceptInviteCodeSection", () => {
       fireEvent.click(enterButton);
 
       expect(
-        screen.getByPlaceholderText(/Enter 6-character code/i)
+        screen.getByPlaceholderText(/Enter 6-character code/i),
       ).toBeInTheDocument();
     });
 
@@ -79,11 +80,11 @@ describe("AcceptInviteCodeSection", () => {
       fireEvent.click(enterButton);
 
       // Hide form
-      const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+      const cancelButton = screen.getByText("Cancel");
       fireEvent.click(cancelButton);
 
       expect(
-        screen.queryByPlaceholderText(/Enter 6-character code/i)
+        screen.queryByPlaceholderText(/Enter 6-character code/i),
       ).not.toBeInTheDocument();
     });
 
@@ -93,9 +94,7 @@ describe("AcceptInviteCodeSection", () => {
       const button = screen.getByText("Enter Code");
       fireEvent.click(button);
 
-      expect(
-        screen.getByRole("button", { name: /Cancel/i })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Cancel")).toBeInTheDocument();
     });
 
     it("should display descriptive text", () => {
@@ -105,7 +104,7 @@ describe("AcceptInviteCodeSection", () => {
       fireEvent.click(enterButton);
 
       expect(
-        screen.getByText(/Enter an invite code from a submissive/i)
+        screen.getByText(/Enter an invite code from a submissive/i),
       ).toBeInTheDocument();
     });
 
@@ -124,7 +123,9 @@ describe("AcceptInviteCodeSection", () => {
     it("should render invite code input when form shown", () => {
       render(<AcceptInviteCodeSection {...defaultProps} />);
 
-      const enterButton = screen.getByRole("button", { name: /Show invite code form/i });
+      const enterButton = screen.getByRole("button", {
+        name: /Show invite code form/i,
+      });
       fireEvent.click(enterButton);
 
       const input = screen.getByPlaceholderText(/Enter 6-character code/i);
@@ -135,7 +136,9 @@ describe("AcceptInviteCodeSection", () => {
     it("should call onSetInviteCodeInput when typing", () => {
       render(<AcceptInviteCodeSection {...defaultProps} />);
 
-      const enterButton = screen.getByRole("button", { name: /Show invite code form/i });
+      const enterButton = screen.getByRole("button", {
+        name: /Show invite code form/i,
+      });
       fireEvent.click(enterButton);
 
       const input = screen.getByPlaceholderText(/Enter 6-character code/i);
@@ -146,7 +149,7 @@ describe("AcceptInviteCodeSection", () => {
 
     it("should display current invite code value", () => {
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="XYZ789" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="XYZ789" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -196,7 +199,7 @@ describe("AcceptInviteCodeSection", () => {
       fireEvent.click(enterButton);
 
       expect(
-        screen.getByPlaceholderText(/Your name \(optional\)/i)
+        screen.getByPlaceholderText(/Your name \(optional\)/i),
       ).toBeInTheDocument();
     });
 
@@ -217,7 +220,7 @@ describe("AcceptInviteCodeSection", () => {
         <AcceptInviteCodeSection
           {...defaultProps}
           keyholderNameInput="Jane Smith"
-        />
+        />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -246,7 +249,7 @@ describe("AcceptInviteCodeSection", () => {
       fireEvent.click(enterButton);
 
       expect(
-        screen.getByRole("button", { name: /Accept Invite Code/i })
+        screen.getByRole("button", { name: /Accept Invite Code/i }),
       ).toBeInTheDocument();
     });
 
@@ -268,7 +271,7 @@ describe("AcceptInviteCodeSection", () => {
       mockValidateInviteCode.mockReturnValue(true);
 
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -282,7 +285,7 @@ describe("AcceptInviteCodeSection", () => {
 
     it("should disable button when accepting", () => {
       render(
-        <AcceptInviteCodeSection {...defaultProps} isAcceptingInvite={true} />
+        <AcceptInviteCodeSection {...defaultProps} isAcceptingInvite={true} />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -296,14 +299,14 @@ describe("AcceptInviteCodeSection", () => {
 
     it("should show loading text when accepting", () => {
       render(
-        <AcceptInviteCodeSection {...defaultProps} isAcceptingInvite={true} />
+        <AcceptInviteCodeSection {...defaultProps} isAcceptingInvite={true} />,
       );
 
       const enterButton = screen.getByText("Enter Code");
       fireEvent.click(enterButton);
 
       expect(
-        screen.getByRole("button", { name: /Accepting.../i })
+        screen.getByRole("button", { name: /Accepting.../i }),
       ).toBeInTheDocument();
     });
 
@@ -312,7 +315,7 @@ describe("AcceptInviteCodeSection", () => {
       mockOnAcceptInvite.mockResolvedValue(undefined);
 
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -333,7 +336,7 @@ describe("AcceptInviteCodeSection", () => {
       mockOnAcceptInvite.mockResolvedValue(undefined);
 
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -346,7 +349,7 @@ describe("AcceptInviteCodeSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByPlaceholderText(/Enter 6-character code/i)
+          screen.queryByPlaceholderText(/Enter 6-character code/i),
         ).not.toBeInTheDocument();
       });
     });
@@ -358,7 +361,7 @@ describe("AcceptInviteCodeSection", () => {
       mockOnAcceptInvite.mockRejectedValue(new Error("Invalid invite code"));
 
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -379,7 +382,7 @@ describe("AcceptInviteCodeSection", () => {
       mockOnAcceptInvite.mockRejectedValue(new Error("Network error"));
 
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -410,7 +413,7 @@ describe("AcceptInviteCodeSection", () => {
       mockOnAcceptInvite.mockRejectedValue("String error");
 
       render(
-        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />
+        <AcceptInviteCodeSection {...defaultProps} inviteCodeInput="ABC123" />,
       );
 
       const enterButton = screen.getByText("Enter Code");
@@ -423,7 +426,7 @@ describe("AcceptInviteCodeSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Failed to accept invite code/i)
+          screen.getByText(/Failed to accept invite code/i),
         ).toBeInTheDocument();
       });
     });
@@ -433,16 +436,18 @@ describe("AcceptInviteCodeSection", () => {
     it("should disable all controls when disabled prop is true", () => {
       render(<AcceptInviteCodeSection {...defaultProps} disabled={true} />);
 
-      const enterButton = screen.getByText("Enter Code");
+      const enterButton = screen.getByRole("button", {
+        name: /Show invite code form/i,
+      });
       expect(enterButton).toBeDisabled();
     });
 
     it("should reduce opacity when disabled", () => {
       const { container } = render(
-        <AcceptInviteCodeSection {...defaultProps} disabled={true} />
+        <AcceptInviteCodeSection {...defaultProps} disabled={true} />,
       );
 
-      const section = container.querySelector('section');
+      const section = container.querySelector("section");
       expect(section?.className).toContain("opacity-60");
     });
 
@@ -469,7 +474,7 @@ describe("AcceptInviteCodeSection", () => {
 
       // Should not show form
       expect(
-        screen.queryByPlaceholderText(/Enter 6-character code/i)
+        screen.queryByPlaceholderText(/Enter 6-character code/i),
       ).not.toBeInTheDocument();
     });
   });

@@ -28,7 +28,9 @@ describe("InviteCodeCreationSection", () => {
     });
 
     it("should not render when shouldShow is false", () => {
-      render(<InviteCodeCreationSection {...defaultProps} shouldShow={false} />);
+      render(
+        <InviteCodeCreationSection {...defaultProps} shouldShow={false} />,
+      );
 
       expect(screen.queryByText("Create Invite Code")).not.toBeInTheDocument();
     });
@@ -36,9 +38,7 @@ describe("InviteCodeCreationSection", () => {
     it("should render create code button", () => {
       render(<InviteCodeCreationSection {...defaultProps} />);
 
-      expect(
-        screen.getByRole("button", { name: /Create Code/i })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Create Code")).toBeInTheDocument();
     });
 
     it("should have proper ARIA attributes", () => {
@@ -62,7 +62,7 @@ describe("InviteCodeCreationSection", () => {
       render(<InviteCodeCreationSection {...defaultProps} />);
 
       expect(
-        screen.queryByText(/Generate an invite code/i)
+        screen.queryByText(/Generate an invite code/i),
       ).not.toBeInTheDocument();
     });
 
@@ -74,9 +74,7 @@ describe("InviteCodeCreationSection", () => {
       });
       fireEvent.click(createButton);
 
-      expect(
-        screen.getByText(/Generate an invite code/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Generate an invite code/i)).toBeInTheDocument();
     });
 
     it("should hide form when cancel button clicked", () => {
@@ -89,29 +87,27 @@ describe("InviteCodeCreationSection", () => {
       fireEvent.click(createButton);
 
       // Hide form
-      const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+      const cancelButton = screen.getByText("Cancel");
       fireEvent.click(cancelButton);
 
       expect(
-        screen.queryByText(/Generate an invite code/i)
+        screen.queryByText(/Generate an invite code/i),
       ).not.toBeInTheDocument();
     });
 
     it("should update button text when form is shown", () => {
       render(<InviteCodeCreationSection {...defaultProps} />);
 
-      const button = screen.getByRole("button", { name: /Create Code/i });
+      const button = screen.getByText("Create Code");
       fireEvent.click(button);
 
-      expect(
-        screen.getByRole("button", { name: /Cancel/i })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Cancel")).toBeInTheDocument();
     });
 
     it("should have proper ARIA expanded attribute", () => {
       render(<InviteCodeCreationSection {...defaultProps} />);
 
-      const button = screen.getByRole("button", { name: /Create Code/i });
+      const button = screen.getByText("Create Code");
       expect(button).toHaveAttribute("aria-expanded", "false");
 
       fireEvent.click(button);
@@ -127,7 +123,7 @@ describe("InviteCodeCreationSection", () => {
       fireEvent.click(createButton);
 
       expect(
-        screen.getByText(/Generate an invite code for a keyholder/i)
+        screen.getByText(/Generate an invite code for a keyholder/i),
       ).toBeInTheDocument();
     });
   });
@@ -142,7 +138,7 @@ describe("InviteCodeCreationSection", () => {
       fireEvent.click(createButton);
 
       expect(
-        screen.getByRole("button", { name: /Generate Invite Code/i })
+        screen.getByRole("button", { name: /Generate Invite Code/i }),
       ).toBeInTheDocument();
     });
 
@@ -168,7 +164,7 @@ describe("InviteCodeCreationSection", () => {
 
     it("should disable button when creating", () => {
       render(
-        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />
+        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />,
       );
 
       const createButton = screen.getByRole("button", {
@@ -184,7 +180,7 @@ describe("InviteCodeCreationSection", () => {
 
     it("should show loading text when creating", () => {
       render(
-        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />
+        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />,
       );
 
       const createButton = screen.getByRole("button", {
@@ -193,7 +189,7 @@ describe("InviteCodeCreationSection", () => {
       fireEvent.click(createButton);
 
       expect(
-        screen.getByRole("button", { name: /Creating.../i })
+        screen.getByRole("button", { name: /Creating.../i }),
       ).toBeInTheDocument();
     });
 
@@ -214,7 +210,7 @@ describe("InviteCodeCreationSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText(/Generate an invite code/i)
+          screen.queryByText(/Generate an invite code/i),
         ).not.toBeInTheDocument();
       });
     });
@@ -232,13 +228,13 @@ describe("InviteCodeCreationSection", () => {
       });
       expect(generateButton).toHaveAttribute(
         "aria-label",
-        "Generate invite code"
+        "Generate invite code",
       );
     });
 
     it("should update ARIA label when creating", () => {
       render(
-        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />
+        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />,
       );
 
       const createButton = screen.getByRole("button", {
@@ -249,7 +245,10 @@ describe("InviteCodeCreationSection", () => {
       const generateButton = screen.getByRole("button", {
         name: /Creating.../i,
       });
-      expect(generateButton).toHaveAttribute("aria-label", "Creating invite code");
+      expect(generateButton).toHaveAttribute(
+        "aria-label",
+        "Creating invite code",
+      );
     });
   });
 
@@ -270,9 +269,7 @@ describe("InviteCodeCreationSection", () => {
       fireEvent.click(generateButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Failed to create code/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Failed to create code/i)).toBeInTheDocument();
       });
     });
 
@@ -323,7 +320,7 @@ describe("InviteCodeCreationSection", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Failed to create invite code/i)
+          screen.getByText(/Failed to create invite code/i),
         ).toBeInTheDocument();
       });
     });
@@ -348,7 +345,7 @@ describe("InviteCodeCreationSection", () => {
       });
 
       // Cancel the form
-      const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+      const cancelButton = screen.getByText("Cancel");
       fireEvent.click(cancelButton);
 
       // Error should be cleared
@@ -377,11 +374,11 @@ describe("InviteCodeCreationSection", () => {
       });
 
       // Close form
-      const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+      const cancelButton = screen.getByText("Cancel");
       fireEvent.click(cancelButton);
 
       // Reopen form
-      createButton = screen.getByRole("button", { name: /Create Code/i });
+      createButton = screen.getByText("Create Code");
       fireEvent.click(createButton);
 
       // Error should not be shown
@@ -396,12 +393,18 @@ describe("InviteCodeCreationSection", () => {
       const createButton = screen.getByRole("button", {
         name: /Create Code/i,
       });
-      expect(createButton).toHaveAttribute("aria-label", "Show invite code creation form");
+      expect(createButton).toHaveAttribute(
+        "aria-label",
+        "Show invite code creation form",
+      );
 
       fireEvent.click(createButton);
 
-      const cancelButton = screen.getByRole("button", { name: /Cancel/i });
-      expect(cancelButton).toHaveAttribute("aria-label", "Cancel invite code creation");
+      const cancelButton = screen.getByText("Cancel");
+      expect(cancelButton).toHaveAttribute(
+        "aria-label",
+        "Cancel invite code creation",
+      );
     });
 
     it("should have proper ARIA controls attribute", () => {
@@ -443,7 +446,7 @@ describe("InviteCodeCreationSection", () => {
 
       // Form should still be shown (last click closes it)
       expect(
-        screen.queryByText(/Generate an invite code/i)
+        screen.queryByText(/Generate an invite code/i),
       ).not.toBeInTheDocument();
     });
 
@@ -459,10 +462,10 @@ describe("InviteCodeCreationSection", () => {
       expect(screen.getByText(/Generate an invite code/i)).toBeInTheDocument();
 
       // Hide
-      const cancelButton = screen.getByRole("button", { name: /Cancel/i });
+      const cancelButton = screen.getByText("Cancel");
       fireEvent.click(cancelButton);
       expect(
-        screen.queryByText(/Generate an invite code/i)
+        screen.queryByText(/Generate an invite code/i),
       ).not.toBeInTheDocument();
 
       // Show again
@@ -475,7 +478,7 @@ describe("InviteCodeCreationSection", () => {
 
       // Don't show form, just try to find generate button
       expect(
-        screen.queryByRole("button", { name: /Generate Invite Code/i })
+        screen.queryByRole("button", { name: /Generate Invite Code/i }),
       ).not.toBeInTheDocument();
 
       // onCreateInvite should not have been called
@@ -493,13 +496,13 @@ describe("InviteCodeCreationSection", () => {
       fireEvent.click(createButton);
 
       expect(
-        screen.getByRole("button", { name: /Generate Invite Code/i })
+        screen.getByRole("button", { name: /Generate Invite Code/i }),
       ).toBeInTheDocument();
     });
 
     it("should prevent form closure during creation", () => {
       render(
-        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />
+        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />,
       );
 
       const createButton = screen.getByRole("button", {
@@ -516,19 +519,15 @@ describe("InviteCodeCreationSection", () => {
 
     it("should maintain form visibility during creation", () => {
       render(
-        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />
+        <InviteCodeCreationSection {...defaultProps} isCreatingInvite={true} />,
       );
 
-      const createButton = screen.getByRole("button", {
-        name: /Create Code/i,
-      });
+      const createButton = screen.getByText("Create Code");
       fireEvent.click(createButton);
 
       // Form should remain visible
       expect(screen.getByText(/Generate an invite code/i)).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /Creating.../i })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Creating...")).toBeInTheDocument();
     });
   });
 });
