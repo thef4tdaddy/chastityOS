@@ -5,13 +5,12 @@
 
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui";
-import { useToast } from "../../contexts";
-import { FaTrophy, FaTimes } from "../../utils/iconImport";
-import { DBAchievement, DBAchievementNotification } from "../../types";
+import { useToast } from "@/contexts";
+import { FaTrophy, FaTimes } from "@/utils/iconImport";
+import { DBAchievement, DBAchievementNotification } from "@/types";
 
 interface AchievementToastProps {
   achievement: DBAchievement;
-  notification: DBAchievementNotification;
   onClose: () => void;
 }
 

@@ -1,6 +1,6 @@
 /**
  * useEvents Tests
- * Tests for event management React Query hooks
+ *  for event management React Query hooks
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -11,13 +11,13 @@ import {
   useRecentEvents,
   useCreateEvent,
   useDeleteEvent,
-} from "../useEvents";
-import { eventDBService } from "../../../services/database/EventDBService";
+} from "@/hooks/api/useEvents";
+import { eventDBService } from "@/services/database/EventDBService";
 import type { DBEvent } from "@/types/database";
 import type { ReactNode } from "react";
 
 // Mock the eventDBService
-vi.mock("../../../services/database/EventDBService", () => ({
+vi.mock("@/services/database/EventDBService", () => ({
   eventDBService: {
     findByUserId: vi.fn(),
     findById: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock("../../../services/database/EventDBService", () => ({
 }));
 
 // Mock the logger
-vi.mock("../../../utils/logging", () => ({
+vi.mock("@/utils/logging", () => ({
   serviceLogger: () => ({
     debug: vi.fn(),
     info: vi.fn(),
@@ -38,14 +38,14 @@ vi.mock("../../../utils/logging", () => ({
 }));
 
 // Mock firebaseSync
-vi.mock("../../../services/sync", () => ({
+vi.mock("@/services/sync", () => ({
   firebaseSync: {
     syncUserEvents: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
 // Mock eventKeys
-vi.mock("../../../utils/events", () => ({
+vi.mock("@/utils/events", () => ({
   eventKeys: {
     all: ["events"],
     list: (userId: string, filters?: unknown) => [
@@ -150,8 +150,8 @@ describe("useEvents hooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       const events = result.current.data!;
-      expect(events[0].id).toBe("event-3"); // Most recent first
-      expect(events[2].id).toBe("event-1"); // Oldest last
+      expect(events[0]!.id).toBe("event-3"); // Most recent first
+      expect(events[2]!.id).toBe("event-1"); // Oldest last
     });
 
     it("should filter events by type", async () => {
@@ -165,7 +165,7 @@ describe("useEvents hooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(result.current.data).toHaveLength(1);
-      expect(result.current.data![0].type).toBe("SESSION_START");
+      expect(result.current.data![0]!.type).toBe("SESSION_START");
     });
 
     it("should filter events by date range", async () => {
@@ -250,14 +250,15 @@ describe("useEvents hooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(result.current.data).toHaveLength(2);
-      expect(result.current.data![0].id).toBe("event-3"); // Most recent
+      expect(result.current.data![0]!.id).toBe("event-3"); // Most recent
     });
 
     it("should default to 10 events when limit not specified", async () => {
-      const manyEvents = Array.from({ length: 15 }, (_, i) => ({
-        ...mockEvents[0],
+      const manyEvents: DBEvent[] = Array.from({ length: 15 }, (_, i) => ({
+        ...mockEvents[0]!,
         id: `event-${i}`,
         timestamp: new Date(2024, 0, i + 1),
+        type: "TEST_EVENT",
       }));
 
       vi.mocked(eventDBService.findByUserId).mockResolvedValue(manyEvents);

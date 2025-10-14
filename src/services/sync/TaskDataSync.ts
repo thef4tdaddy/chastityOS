@@ -136,7 +136,7 @@ export class TaskDataSync extends FirebaseSyncCore {
   /**
    * Sync a specific collection (tasks or goals)
    */
-  private async syncSpecificCollection(
+  protected async syncSpecificCollection(
     userId: string,
     collectionName: string,
     dbService: typeof taskDBService | typeof goalDBService,
@@ -180,7 +180,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async uploadLocalChangesForCollection(
+  protected async uploadLocalChangesForCollection(
     userId: string,
     collectionName: string,
     dbService: typeof taskDBService | typeof goalDBService,
@@ -248,7 +248,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async downloadRemoteChangesForCollection(
+  protected async downloadRemoteChangesForCollection(
     userId: string,
     collectionName: string,
     dbService: typeof taskDBService | typeof goalDBService,
@@ -292,7 +292,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async applyRemoteChangesForCollection(
+  protected async applyRemoteChangesForCollection(
     collectionName: string,
     dbService: typeof taskDBService | typeof goalDBService,
     docs: DBBase[],
@@ -332,7 +332,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async getRemoteDoc(
+  protected async getRemoteDoc(
     userId: string,
     collectionName: string,
     docId: string,
@@ -355,7 +355,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async updateLocalDocForCollection(
+  protected async updateLocalDocForCollection(
     collectionName: string,
     dbService: typeof taskDBService | typeof goalDBService,
     data: DBBase,
@@ -363,7 +363,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     await dbService.update(data.id, data);
   }
 
-  private async createLocalDocForCollection(
+  protected async createLocalDocForCollection(
     collectionName: string,
     dbService: typeof taskDBService | typeof goalDBService,
     data: DBBase,
@@ -384,7 +384,7 @@ export class TaskDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async updateRemoteDoc(
+  protected async updateRemoteDoc(
     userId: string,
     collectionName: string,
     data: DBBase,

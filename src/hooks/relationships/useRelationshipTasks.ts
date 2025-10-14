@@ -57,11 +57,16 @@ export function useRelationshipTasks(): RelationshipTasksState &
   const { clearError: clearErrorFn } = createBaseActions();
 
   const { loadTasks, createTask, updateTaskStatus } =
-    useRelationshipTaskOperations({ userId, setState });
+    useRelationshipTaskOperations({
+      userId,
+      setState: (updater) =>
+        setState((prevState) => ({ ...prevState, ...updater(prevState) })),
+    });
 
   const { loadEvents, logEvent } = useRelationshipEventOperations({
     userId,
-    setState,
+    setState: (updater) =>
+      setState((prevState) => ({ ...prevState, ...updater(prevState) })),
   });
 
   const loadRelationshipData = useCallback(

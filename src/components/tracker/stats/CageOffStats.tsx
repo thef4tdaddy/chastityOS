@@ -76,7 +76,6 @@ export const CageOffStats: React.FC<CageOffStatsProps> = ({
         tracker-card-hover tracker-state-transition
         ${borderClass}
       `}
-      role="region"
       aria-label={`Current cage off time, status: ${getStatusLabel()}`}
     >
       <p

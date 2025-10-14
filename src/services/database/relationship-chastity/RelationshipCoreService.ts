@@ -118,30 +118,29 @@ class RelationshipCoreService {
   /**
    * Subscribe to chastity data changes
    */
-  subscribeToChastityData(
+  async subscribeToChastityData(
     relationshipId: string,
     callback: (data: RelationshipChastityData | null) => void,
-  ): Unsubscribe {
-    return this.ensureDb().then((db) => {
-      return onSnapshot(
-        doc(db, "chastityData", relationshipId),
-        (doc) => {
-          const data = doc.exists()
-            ? ({
-                ...doc.data(),
-                relationshipId: doc.id,
-              } as RelationshipChastityData)
-            : null;
-          callback(data);
-        },
-        (error) => {
-          logger.error("Error in chastity data subscription", {
-            error,
-            relationshipId,
-          });
-        },
-      );
-    }) as Unsubscribe;
+  ): Promise<Unsubscribe> {
+    const db = await this.ensureDb();
+    return onSnapshot(
+      doc(db, "chastityData", relationshipId),
+      (doc) => {
+        const data = doc.exists()
+          ? ({
+              ...doc.data(),
+              relationshipId: doc.id,
+            } as RelationshipChastityData)
+          : null;
+        callback(data);
+      },
+      (error) => {
+        logger.error("Error in chastity data subscription", {
+          error,
+          relationshipId,
+        });
+      },
+    );
   }
 
   // ==================== HELPER METHODS ====================

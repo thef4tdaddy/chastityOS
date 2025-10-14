@@ -120,9 +120,7 @@ export function notifySubscribers(
   subscriptions: { [key: string]: Subscription },
   update: RealtimeUpdate,
 ): void {
-  const keys = Object.keys(subscriptions);
-  for (let i = 0; i < keys.length; i++) {
-    const subscription = subscriptions[keys[i]];
+  for (const subscription of Object.values(subscriptions)) {
     if (subscription.dataType === update.type && subscription.isActive) {
       try {
         subscription.callback(update);

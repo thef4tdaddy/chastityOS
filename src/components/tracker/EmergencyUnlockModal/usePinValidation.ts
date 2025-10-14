@@ -2,14 +2,11 @@
  * Hook for managing PIN validation in emergency unlock modal
  */
 import { useState, useEffect } from "react";
-import type { EmergencyUnlockReason } from "../../../types/events";
-import { useValidateEmergencyPin } from "../../../hooks/api/useEmergencyPin";
-import { useLockCombination } from "../../../hooks/api/useLockCombination";
-import {
-  validateEmergencyPinAttempt,
-  retrieveLockCombination,
-} from "../../../utils/emergency/pinValidation";
-import { serviceLogger } from "../../../utils/logging";
+import type { EmergencyUnlockReason } from "@/types/events";
+import { useValidateEmergencyPin } from "@/hooks/api/useEmergencyPin";
+import { useLockCombination } from "@/hooks/api/useLockCombination";
+import { validateEmergencyPinAttempt } from "@/utils/emergency/pinValidation";
+import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("EmergencyUnlockModal");
 
@@ -65,7 +62,8 @@ export const usePinValidation = ({
   };
 
   const handleCombinationRetrieval = async () => {
-    const combination = await retrieveLockCombination(fetchLockCombination);
+    const result = await fetchLockCombination();
+    const combination = result.data;
 
     if (combination) {
       setLockCombination(combination);

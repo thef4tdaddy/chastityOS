@@ -56,7 +56,7 @@ const useConflictResolutionHandlers = (
     resolutions: Record<string, "local" | "remote">,
   ) => Promise<void>,
   setShowConflictModal: (show: boolean) => void,
-  sync: (userId: string, options?: { force?: boolean }) => Promise<void>,
+  sync: (userId: string, options?: Record<string, unknown>) => Promise<unknown>,
   setLastSyncTime: (time: Date | null) => void,
   userId: string | undefined,
 ) => {
@@ -170,7 +170,9 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     useConflictResolutionHandlers(
       resolveConflicts,
       setShowConflictModal,
-      sync,
+      async (userId: string) => {
+        await sync(userId);
+      },
       setLastSyncTime,
       userId,
     );
