@@ -11,7 +11,7 @@ import {
   RelationshipPermissions,
   Relationship,
 } from "@/types/relationships";
-import type { KeyholderRelationship } from "@/types/core";
+import type { KeyholderRelationship, UserRole } from "@/types/core";
 import {
   useRelationshipList,
   useRelationshipInvites,
@@ -240,7 +240,7 @@ export interface RelationshipActions {
   // Relationship management
   sendRelationshipRequest: (
     targetUserId: string,
-    role: "submissive" | "keyholder",
+    role: UserRole,
     message?: string,
   ) => Promise<void>;
   acceptRelationshipRequest: (requestId: string) => Promise<void>;

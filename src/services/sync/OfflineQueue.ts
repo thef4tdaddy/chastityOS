@@ -3,7 +3,7 @@
  * Manages operations that need to be performed when the app is online
  */
 import { serviceLogger } from "@/utils/logging";
-import { db } from "../database";
+import { db } from "@/services/database";
 import type { QueuedOperation, DBBase } from "@/types/database";
 
 const logger = serviceLogger("OfflineQueue");
@@ -34,7 +34,9 @@ class OfflineQueue {
    * Get all operations from the queue
    */
   async getQueuedOperations(): Promise<QueuedOperation<DBBase>[]> {
-    return db.offlineQueue.orderBy("createdAt").toArray();
+    return db.offlineQueue.orderBy("createdAt").toArray() as Promise<
+      QueuedOperation<DBBase>[]
+    >;
   }
 
   /**
@@ -121,14 +123,22 @@ class OfflineQueue {
     // Import dynamically to avoid circular dependencies
     const { firebaseSync } = await import("./index");
 
+    if (!operation.userId) {
+      logger.warn("Skipping operation with no userId", {
+        operationId: operation.id,
+      });
+      return;
+    }
+
     switch (operation.type) {
       case "create":
       case "update":
       case "delete":
         // Delegate to Firebase sync service
-        await firebaseSync.syncCollection(
+        await firebaseSync.syncSingleCollection(
           operation.collectionName,
           operation.userId,
+          {},
         );
         break;
       default:
@@ -171,7 +181,7 @@ class OfflineQueue {
         if (!op.lastRetryAt) return true;
         return now.getTime() - op.lastRetryAt.getTime() > retryDelay;
       })
-      .toArray();
+      .toArray() as Promise<QueuedOperation<DBBase>[]>;
   }
 
   /**

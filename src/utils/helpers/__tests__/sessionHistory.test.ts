@@ -1,6 +1,6 @@
 /**
  * Session History Helpers Tests
- * Tests for session history utility functions
+ *  for session history utility functions
  */
 
 import { describe, it, expect } from "vitest";
@@ -12,7 +12,10 @@ import {
   calculateImprovementTrend,
   calculateConsistencyScore,
 } from "../sessionHistory";
-import type { HistoricalSession } from "../../../hooks/session/types/sessionHistory";
+import type {
+  HistoricalSession,
+  PauseEvent,
+} from "@/hooks/session/types/sessionHistory";
 
 describe("Session History Helpers", () => {
   const createMockSession = (
@@ -24,9 +27,19 @@ describe("Session History Helpers", () => {
     duration: 14400,
     effectiveDuration: 14400,
     goals: [],
+    goalCompletion: [],
     pauseEvents: [],
+    keyholderInteractions: [],
+    tags: [],
     notes: "",
-    rating: 5,
+    rating: {
+      overall: 5,
+      difficulty: 3,
+      satisfaction: 4,
+      wouldRepeat: true,
+    },
+    isHardcoreMode: false,
+    wasKeyholderControlled: false,
     ...overrides,
   });
 
@@ -56,8 +69,22 @@ describe("Session History Helpers", () => {
       const sessions = [
         createMockSession({
           goals: [
-            { id: "g1", completed: true, type: "duration", target: 3600 },
-            { id: "g2", completed: true, type: "duration", target: 7200 },
+            {
+              id: "g1",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
+            {
+              id: "g2",
+              completed: true,
+              type: "duration",
+              target: 7200,
+              unit: "seconds",
+              progress: 7200,
+            },
           ],
         }),
       ];
@@ -69,8 +96,22 @@ describe("Session History Helpers", () => {
       const sessions = [
         createMockSession({
           goals: [
-            { id: "g1", completed: true, type: "duration", target: 3600 },
-            { id: "g2", completed: false, type: "duration", target: 7200 },
+            {
+              id: "g1",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
+            {
+              id: "g2",
+              completed: false,
+              type: "duration",
+              target: 7200,
+              unit: "seconds",
+              progress: 3600,
+            },
           ],
         }),
       ];
@@ -82,14 +123,42 @@ describe("Session History Helpers", () => {
       const sessions = [
         createMockSession({
           goals: [
-            { id: "g1", completed: true, type: "duration", target: 3600 },
-            { id: "g2", completed: true, type: "duration", target: 7200 },
+            {
+              id: "g1",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
+            {
+              id: "g2",
+              completed: true,
+              type: "duration",
+              target: 7200,
+              unit: "seconds",
+              progress: 7200,
+            },
           ],
         }),
         createMockSession({
           goals: [
-            { id: "g3", completed: false, type: "duration", target: 3600 },
-            { id: "g4", completed: false, type: "duration", target: 7200 },
+            {
+              id: "g3",
+              completed: false,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 1800,
+            },
+            {
+              id: "g4",
+              completed: false,
+              type: "duration",
+              target: 7200,
+              unit: "seconds",
+              progress: 0,
+            },
           ],
         }),
       ];
@@ -155,26 +224,32 @@ describe("Session History Helpers", () => {
         createMockSession({
           pauseEvents: [
             {
+              id: "p1",
               startTime: new Date(),
               endTime: new Date(),
               duration: 1800,
               reason: "",
+              initiatedBy: "submissive",
             },
             {
+              id: "p2",
               startTime: new Date(),
               endTime: new Date(),
               duration: 1800,
               reason: "",
+              initiatedBy: "submissive",
             },
           ],
         }),
         createMockSession({
           pauseEvents: [
             {
+              id: "p3",
               startTime: new Date(),
               endTime: new Date(),
               duration: 1800,
               reason: "",
+              initiatedBy: "submissive",
             },
           ],
         }),
@@ -189,26 +264,32 @@ describe("Session History Helpers", () => {
         createMockSession({
           pauseEvents: [
             {
+              id: "p1",
               startTime: new Date(),
               endTime: new Date(),
               duration: 1800,
               reason: "",
+              initiatedBy: "submissive",
             },
           ],
         }),
         createMockSession({
           pauseEvents: [
             {
+              id: "p2",
               startTime: new Date(),
               endTime: new Date(),
               duration: 1800,
               reason: "",
+              initiatedBy: "submissive",
             },
             {
+              id: "p3",
               startTime: new Date(),
               endTime: new Date(),
               duration: 1800,
               reason: "",
+              initiatedBy: "submissive",
             },
           ],
         }),
@@ -270,13 +351,27 @@ describe("Session History Helpers", () => {
         createMockSession({
           startTime: new Date("2025-01-01"),
           goals: [
-            { id: "g1", completed: true, type: "duration", target: 3600 },
+            {
+              id: "g1",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
           ],
         }),
         createMockSession({
           startTime: new Date("2025-01-02"),
           goals: [
-            { id: "g2", completed: true, type: "duration", target: 3600 },
+            {
+              id: "g2",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
           ],
         }),
       ];
@@ -291,19 +386,40 @@ describe("Session History Helpers", () => {
         createMockSession({
           startTime: new Date("2025-01-01"),
           goals: [
-            { id: "g1", completed: true, type: "duration", target: 3600 },
+            {
+              id: "g1",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
           ],
         }),
         createMockSession({
           startTime: new Date("2025-01-02"),
           goals: [
-            { id: "g2", completed: true, type: "duration", target: 3600 },
+            {
+              id: "g2",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
           ],
         }),
         createMockSession({
           startTime: new Date("2025-01-03"),
           goals: [
-            { id: "g3", completed: true, type: "duration", target: 3600 },
+            {
+              id: "g3",
+              completed: true,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 3600,
+            },
           ],
         }),
       ];
@@ -311,7 +427,14 @@ describe("Session History Helpers", () => {
       const poorSessions = [
         createMockSession({
           goals: [
-            { id: "g1", completed: false, type: "duration", target: 3600 },
+            {
+              id: "g1",
+              completed: false,
+              type: "duration",
+              target: 3600,
+              unit: "seconds",
+              progress: 1800,
+            },
           ],
         }),
       ];
@@ -355,11 +478,13 @@ describe("Session History Helpers", () => {
     });
 
     it("should handle sessions with many pause events", () => {
-      const manyPauses = Array.from({ length: 50 }, () => ({
+      const manyPauses: PauseEvent[] = Array.from({ length: 50 }, (_, i) => ({
+        id: `p-${i}`,
         startTime: new Date(),
         endTime: new Date(),
         duration: 1800,
         reason: "",
+        initiatedBy: "submissive",
       }));
 
       const sessions = [createMockSession({ pauseEvents: manyPauses })];

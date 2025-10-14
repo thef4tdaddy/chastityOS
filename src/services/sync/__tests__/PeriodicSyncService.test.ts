@@ -2,7 +2,7 @@
  * Tests for PeriodicSyncService
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { PeriodicSyncService } from "../PeriodicSyncService";
+import { PeriodicSyncService } from "@/services/sync/PeriodicSyncService";
 
 describe("PeriodicSyncService", () => {
   let service: PeriodicSyncService;
@@ -11,12 +11,12 @@ describe("PeriodicSyncService", () => {
   beforeEach(() => {
     // Mock localStorage
     localStorageMock = {};
-    global.localStorage = {
-      getItem: vi.fn((key) => localStorageMock[key] || null),
-      setItem: vi.fn((key, value) => {
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn((key: string) => localStorageMock[key] || null),
+      setItem: vi.fn((key: string, value: string) => {
         localStorageMock[key] = value;
       }),
-      removeItem: vi.fn((key) => {
+      removeItem: vi.fn((key: string) => {
         delete localStorageMock[key];
       }),
       clear: vi.fn(() => {
@@ -24,13 +24,14 @@ describe("PeriodicSyncService", () => {
       }),
       length: 0,
       key: vi.fn(),
-    } as unknown as Storage;
+    });
 
     service = PeriodicSyncService.getInstance();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe("getInstance", () => {
@@ -43,8 +44,7 @@ describe("PeriodicSyncService", () => {
 
   describe("isSupported", () => {
     it("should return false when serviceWorker is not available", () => {
-      // @ts-expect-error - Mocking navigator
-      global.navigator = {} as Navigator;
+      vi.stubGlobal("navigator", {});
       expect(service.isSupported()).toBe(false);
     });
 
@@ -54,12 +54,11 @@ describe("PeriodicSyncService", () => {
       Object.defineProperty(mockServiceWorkerRegistration, "prototype", {
         value: {},
       });
-      global.ServiceWorkerRegistration = mockServiceWorkerRegistration as never;
+      vi.stubGlobal("ServiceWorkerRegistration", mockServiceWorkerRegistration);
 
-      // @ts-expect-error - Mocking navigator
-      global.navigator = {
+      vi.stubGlobal("navigator", {
         serviceWorker: {},
-      } as Navigator;
+      });
 
       expect(service.isSupported()).toBe(false);
     });

@@ -14,12 +14,19 @@ import { useCountUp } from "../../hooks/useCountUp";
 import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
 import { logger } from "@/utils/logging";
 
+interface StatisticsProps {
+  sessions?: DBSession[];
+  events?: DBEvent[];
+  tasks?: DBTask[];
+  goals?: DBGoal[];
+}
+
 // Helper function to calculate statistics with error handling
 const useStatistics = (
-  sessions: DBSession[],
-  events: DBEvent[],
-  tasks: DBTask[],
-  goals: DBGoal[],
+  sessions?: DBSession[],
+  events?: DBEvent[],
+  tasks?: DBTask[],
+  goals?: DBGoal[],
 ) => {
   return useMemo(() => {
     try {
@@ -167,12 +174,12 @@ const StatItem: React.FC<{
 };
 
 // Main Statistics Section Component (Memoized to prevent unnecessary re-renders)
-const StatisticsSectionComponent: React.FC<{
-  sessions: DBSession[];
-  events: DBEvent[];
-  tasks: DBTask[];
-  goals: DBGoal[];
-}> = ({ sessions, events, tasks, goals }) => {
+const StatisticsSectionComponent: React.FC<StatisticsProps> = ({
+  sessions,
+  events,
+  tasks,
+  goals,
+}) => {
   const stats = useStatistics(sessions, events, tasks, goals);
 
   // Memoize stat items array to prevent recreation on every render
@@ -269,10 +276,5 @@ const StatisticsSectionComponent: React.FC<{
 // Export memoized version to prevent unnecessary re-renders
 export const StatisticsSection = React.memo(
   StatisticsSectionComponent,
-) as React.FC<{
-  sessions: DBSession[];
-  events: DBEvent[];
-  tasks: DBTask[];
-  goals: DBGoal[];
-}>;
+) as React.FC<StatisticsProps>;
 export default StatisticsSection;

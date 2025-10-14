@@ -2,10 +2,10 @@
  * Hook for task filtering, pagination, and categorization
  */
 import { useMemo, useState } from "react";
-import type { Task } from "../types";
+import type { DBTask } from "../types/database";
 
 interface UseTaskFiltersProps {
-  tasks: Task[];
+  tasks: DBTask[];
   itemsPerPage?: number;
 }
 
@@ -84,5 +84,5 @@ export const useTaskFilters = ({
     setActiveTab: handleTabChange,
     setSearchQuery: handleSearchChange,
     setCurrentPage: handlePageChange,
-  };
+  } as const;
 };

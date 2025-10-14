@@ -140,7 +140,11 @@ export class SessionDataSync extends FirebaseSyncCore {
 
     for (const docData of pendingDocs) {
       try {
-        const remoteDoc = await this.getRemoteDoc(userId, docData.id);
+        const remoteDoc = await this.getRemoteDoc(
+          userId,
+          this.collectionName,
+          docData.id,
+        );
 
         if (remoteDoc && syncConflictResolver.hasConflict(docData, remoteDoc)) {
           const conflictInfo = syncConflictResolver.createConflictInfo(
@@ -219,18 +223,14 @@ export class SessionDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async getRemoteDoc(
+  protected async getRemoteDoc(
     userId: string,
+    collectionName: string,
     docId: string,
   ): Promise<DBBase | null> {
     try {
       const { firestore } = await this.createBatch();
-      const docRef = this.getDocRef(
-        firestore,
-        userId,
-        this.collectionName,
-        docId,
-      );
+      const docRef = this.getDocRef(firestore, userId, collectionName, docId);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) return null;

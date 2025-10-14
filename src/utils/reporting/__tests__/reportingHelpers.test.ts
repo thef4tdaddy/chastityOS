@@ -13,7 +13,11 @@ import {
   exportData,
   getContentType,
 } from "../reportingHelpers";
-import { ExportFormat, ReportSchedule } from "@/hooks/features/useReporting";
+import {
+  ExportFormat,
+  ReportSchedule,
+  type ReportParameters,
+} from "@/hooks/features/useReporting";
 
 describe("Reporting Helpers", () => {
   beforeEach(() => {
@@ -55,7 +59,7 @@ describe("Reporting Helpers", () => {
 
       expect(result.details).not.toBeNull();
       expect(result.details).toHaveProperty("sessions");
-      expect(Array.isArray(result.details.sessions)).toBe(true);
+      expect(Array.isArray(result.details?.sessions)).toBe(true);
     });
 
     it("should generate numeric values within expected ranges", async () => {
@@ -260,6 +264,12 @@ describe("Reporting Helpers", () => {
   });
 
   describe("exportReportData", () => {
+    const mockParameters: ReportParameters = {
+      dateRange: { start: new Date(), end: new Date() },
+      includeDetails: false,
+      filters: {},
+    };
+
     beforeEach(() => {
       // Mock URL.createObjectURL
       global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
@@ -270,7 +280,7 @@ describe("Reporting Helpers", () => {
         id: "report-1",
         templateId: "test",
         name: "Test Report",
-        parameters: {},
+        parameters: mockParameters,
         data: { summary: { totalSessions: 5 } },
         generatedAt: new Date(),
         generatedBy: "user",
@@ -289,7 +299,7 @@ describe("Reporting Helpers", () => {
         id: "report-1",
         templateId: "test",
         name: "Test Report",
-        parameters: {},
+        parameters: mockParameters,
         data: { test: "data" },
         generatedAt: new Date(),
         generatedBy: "user",
@@ -306,7 +316,7 @@ describe("Reporting Helpers", () => {
         id: "report-1",
         templateId: "test",
         name: "Test Report",
-        parameters: {},
+        parameters: mockParameters,
         data: {},
         generatedAt: new Date(),
         generatedBy: "user",
@@ -420,6 +430,12 @@ describe("Reporting Helpers", () => {
   });
 
   describe("Edge Cases", () => {
+    const mockParameters: ReportParameters = {
+      dateRange: { start: new Date(), end: new Date() },
+      includeDetails: false,
+      filters: {},
+    };
+
     it("should handle very large date ranges", async () => {
       const parameters = {
         dateRange: {
@@ -452,7 +468,7 @@ describe("Reporting Helpers", () => {
         id: "empty",
         templateId: "test",
         name: "Empty Report",
-        parameters: {},
+        parameters: mockParameters,
         data: {},
         generatedAt: new Date(),
         generatedBy: "user",

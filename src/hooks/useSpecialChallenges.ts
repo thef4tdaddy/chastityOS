@@ -12,6 +12,9 @@ import { useSpecialChallengesActions } from "./useSpecialChallengesActions";
 
 const logger = serviceLogger("useSpecialChallenges");
 
+// export a canonical challenge key union for other modules to consume
+export type ChallengeKey = "locktober" | "noNutNovember";
+
 export type SpecialChallengeStatus = ChallengeStatusData;
 
 /**
@@ -54,8 +57,8 @@ export const useSpecialChallenges = (userId: string | null) => {
 
       logger.debug("Loaded challenge status", {
         userId,
-        hasLocktober: !!status.locktober.goal,
-        hasNoNut: !!status.noNutNovember.goal,
+        hasLocktober: !!status.locktober?.goal,
+        hasNoNut: !!status.noNutNovember?.goal,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -80,7 +83,7 @@ export const useSpecialChallenges = (userId: string | null) => {
    * Get progress percentage for a challenge
    */
   const getChallengeProgress = useCallback(
-    (challengeType: "locktober" | "no_nut_november") => {
+    (challengeType: ChallengeKey) => {
       const challenge = challengeStatus[challengeType];
       return getChallengeProgressPercentage(challenge.goal);
     },
@@ -89,7 +92,7 @@ export const useSpecialChallenges = (userId: string | null) => {
 
   // Load challenge status on mount and when userId changes
   useEffect(() => {
-    loadChallengeStatus();
+    void loadChallengeStatus();
   }, [loadChallengeStatus]);
 
   // Refresh status every hour to check for date changes

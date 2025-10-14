@@ -1,6 +1,6 @@
 /**
  * Statistics Helper Functions Tests
- * Tests for session and goal statistics calculations
+ *  for session and goal statistics calculations
  */
 
 import { describe, it, expect } from "vitest";
@@ -26,25 +26,67 @@ describe("Statistics Helper Functions", () => {
 
     it("should calculate 100% for all improving trends", () => {
       const trends: TrendData[] = [
-        { metric: "duration", direction: "improving", changePercent: 10 },
-        { metric: "completion", direction: "improving", changePercent: 15 },
-        { metric: "frequency", direction: "improving", changePercent: 5 },
+        {
+          metric: "duration",
+          direction: "improving",
+          changePercentage: 10,
+          timeframe: "week",
+          dataPoints: [],
+        },
+        {
+          metric: "completion",
+          direction: "improving",
+          changePercentage: 15,
+          timeframe: "week",
+          dataPoints: [],
+        },
+        {
+          metric: "frequency",
+          direction: "improving",
+          changePercentage: 5,
+          timeframe: "week",
+          dataPoints: [],
+        },
       ];
       expect(calculateImprovementScore(trends)).toBe(100);
     });
 
     it("should calculate 50% for half improving trends", () => {
       const trends: TrendData[] = [
-        { metric: "duration", direction: "improving", changePercent: 10 },
-        { metric: "completion", direction: "declining", changePercent: -5 },
+        {
+          metric: "duration",
+          direction: "improving",
+          changePercentage: 10,
+          timeframe: "week",
+          dataPoints: [],
+        },
+        {
+          metric: "completion",
+          direction: "declining",
+          changePercentage: -5,
+          timeframe: "week",
+          dataPoints: [],
+        },
       ];
       expect(calculateImprovementScore(trends)).toBe(50);
     });
 
     it("should calculate 0% for no improving trends", () => {
       const trends: TrendData[] = [
-        { metric: "duration", direction: "declining", changePercent: -10 },
-        { metric: "completion", direction: "stable", changePercent: 0 },
+        {
+          metric: "duration",
+          direction: "declining",
+          changePercentage: -10,
+          timeframe: "week",
+          dataPoints: [],
+        },
+        {
+          metric: "completion",
+          direction: "stable",
+          changePercentage: 0,
+          timeframe: "week",
+          dataPoints: [],
+        },
       ];
       expect(calculateImprovementScore(trends)).toBe(0);
     });
@@ -53,17 +95,23 @@ describe("Statistics Helper Functions", () => {
   describe("calculateConsistencyRating", () => {
     it("should calculate consistency based on frequency and completion", () => {
       const sessionStats: SessionStatistics = {
-        totalSessions: 10,
+        totalSessionTime: 36000,
         averageSessionLength: 3600,
         longestSession: 7200,
         shortestSession: 1800,
+        sessionsThisWeek: 5,
+        sessionsThisMonth: 20,
         completionRate: 80,
+        goalAchievementRate: 75,
+        satisfactionRating: 4.5,
         sessionFrequency: {
           daily: 1,
           weekly: 5,
           monthly: 20,
+          trend: "stable",
         },
-        lastSessionDate: new Date(),
+        trends: [],
+        streaks: { current: 3, longest: 10, type: "session_consistency" },
       };
 
       const rating = calculateConsistencyRating(sessionStats);
@@ -73,17 +121,23 @@ describe("Statistics Helper Functions", () => {
 
     it("should return 50 for moderate consistency", () => {
       const sessionStats: SessionStatistics = {
-        totalSessions: 5,
+        totalSessionTime: 18000,
         averageSessionLength: 3600,
         longestSession: 7200,
         shortestSession: 1800,
+        sessionsThisWeek: 2,
+        sessionsThisMonth: 10,
         completionRate: 50,
+        goalAchievementRate: 50,
+        satisfactionRating: 3,
         sessionFrequency: {
           daily: 0.5,
           weekly: 2.5,
           monthly: 10,
+          trend: "stable",
         },
-        lastSessionDate: new Date(),
+        trends: [],
+        streaks: { current: 1, longest: 5, type: "session_consistency" },
       };
 
       const rating = calculateConsistencyRating(sessionStats);
@@ -97,9 +151,11 @@ describe("Statistics Helper Functions", () => {
         totalGoals: 0,
         completedGoals: 0,
         activeGoals: 0,
+        completionRate: 0,
         averageCompletionTime: 0,
-        goalsByType: {},
-        successRate: 0,
+        mostCommonGoalTypes: [],
+        hardestGoalTypes: [],
+        goalStreaks: { current: 0, longest: 0, type: "goal_completion" },
       };
 
       expect(calculateOverallProgress(goalStats)).toBe(0);
@@ -110,12 +166,18 @@ describe("Statistics Helper Functions", () => {
         totalGoals: 10,
         completedGoals: 10,
         activeGoals: 0,
+        completionRate: 100,
         averageCompletionTime: 3600,
-        goalsByType: {
-          duration: 5,
-          achievement: 5,
-        },
-        successRate: 100,
+        mostCommonGoalTypes: [
+          {
+            type: "duration",
+            count: 5,
+            completionRate: 100,
+            averageDuration: 3600,
+          },
+        ],
+        hardestGoalTypes: [],
+        goalStreaks: { current: 10, longest: 10, type: "goal_completion" },
       };
 
       expect(calculateOverallProgress(goalStats)).toBe(100);
@@ -125,10 +187,23 @@ describe("Statistics Helper Functions", () => {
   describe("calculateKeyholderSatisfaction", () => {
     it("should return a valid satisfaction score", () => {
       const sharedStats: SharedStatistics = {
-        sharedSessions: 5,
-        averageSharedDuration: 3600,
-        communicationFrequency: 10,
-        lastInteraction: new Date(),
+        allowedMetrics: ["session_duration", "goal_completion"],
+        keyholderView: {
+          sessionOverview: {
+            totalSessions: 5,
+            averageDuration: 3600,
+            lastSessionDate: new Date(),
+          },
+          goalProgress: { activeGoals: 2, completionRate: 80 },
+          behaviorPatterns: {
+            consistency: 90,
+            pauseFrequency: 0.1,
+            improvementTrend: "improving",
+          },
+          allowedInsights: [],
+        },
+        lastSharedAt: new Date(),
+        sharingLevel: "detailed",
       };
 
       const satisfaction = calculateKeyholderSatisfaction(sharedStats);

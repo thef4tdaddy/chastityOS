@@ -1,13 +1,28 @@
 /**
  * CurrentStatusSection Component Tests
- * Tests for current session status display and timer integration
+ *  for current session status display and timer integration
  * Issue #533
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { CurrentStatusSection } from "../CurrentStatusSection";
-import type { DBSession } from "../../../types/database";
+import type { DBSession } from "@/types/database";
+
+// Mock session factory
+const mockSession = (overrides: Partial<DBSession> = {}): DBSession => ({
+  id: "session1",
+  userId: "user1",
+  startTime: new Date("2024-01-01T00:00:00Z"),
+  endTime: undefined,
+  isPaused: false,
+  accumulatedPauseTime: 0,
+  isHardcoreMode: false,
+  keyholderApprovalRequired: false,
+  syncStatus: "synced",
+  lastModified: new Date("2024-01-01T00:00:00Z"),
+  ...overrides,
+});
 
 // Mock the useSessionTimer hook
 vi.mock("../../../hooks/useSessionTimer", () => ({
@@ -36,8 +51,12 @@ vi.mock("../../../hooks/useSessionTimer", () => ({
     );
 
     return {
-      effectiveTimeFormatted: `${Math.floor(effectiveSeconds / 3600)}:${String(Math.floor((effectiveSeconds % 3600) / 60)).padStart(2, "0")}:${String(effectiveSeconds % 60).padStart(2, "0")}`,
-      totalElapsedTimeFormatted: `${Math.floor(totalSeconds / 3600)}:${String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`,
+      effectiveTimeFormatted: `${Math.floor(effectiveSeconds / 3600)}:${String(
+        Math.floor((effectiveSeconds % 3600) / 60),
+      ).padStart(2, "0")}:${String(effectiveSeconds % 60).padStart(2, "0")}`,
+      totalElapsedTimeFormatted: `${Math.floor(totalSeconds / 3600)}:${String(
+        Math.floor((totalSeconds % 3600) / 60),
+      ).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`,
       currentPauseDurationFormatted: session.isPaused ? "5:00" : "0:00",
       remainingGoalTimeFormatted: session.goalDuration
         ? "2:30:00 remaining"
@@ -80,19 +99,7 @@ describe("CurrentStatusSection", () => {
 
   describe("Active Session Display", () => {
     it("should display active session status", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-        syncStatus: "synced",
-        lastModified: new Date("2024-01-01T00:00:00Z"),
-      };
-
+      const session = mockSession();
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText("Current Status")).toBeInTheDocument();
@@ -100,38 +107,16 @@ describe("CurrentStatusSection", () => {
     });
 
     it("should display session start time", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
+      const session = mockSession({
         startTime: new Date("2024-01-01T12:30:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-        syncStatus: "synced",
-        lastModified: new Date("2024-01-01T00:00:00Z"),
-      };
-
+      });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText(/Started:/)).toBeInTheDocument();
     });
 
     it("should display effective session time", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-        syncStatus: "synced",
-        lastModified: new Date("2024-01-01T00:00:00Z"),
-      };
-
+      const session = mockSession();
       render(<CurrentStatusSection currentSession={session} />);
 
       // Should display formatted time - using getAllByText since time appears in multiple places
@@ -139,51 +124,21 @@ describe("CurrentStatusSection", () => {
     });
 
     it("should display hardcore mode indicator", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: true,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession({ isHardcoreMode: true });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText("Hardcore")).toBeInTheDocument();
     });
 
     it("should display normal mode indicator", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession({ isHardcoreMode: false });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText("Normal")).toBeInTheDocument();
     });
 
     it("should display keyholder approval status", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: true,
-      } as DBSession;
-
+      const session = mockSession({ keyholderApprovalRequired: true });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText("Required")).toBeInTheDocument();
@@ -192,51 +147,30 @@ describe("CurrentStatusSection", () => {
 
   describe("Paused Session Display", () => {
     it("should display paused status", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+      const session = mockSession({
         isPaused: true,
         accumulatedPauseTime: 300,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText("Paused")).toBeInTheDocument();
     });
 
     it("should display current pause duration", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+      const session = mockSession({
         isPaused: true,
         accumulatedPauseTime: 300,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText(/Current pause:/)).toBeInTheDocument();
     });
 
     it("should display accumulated pause time", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
+      const session = mockSession({
         isPaused: true,
         accumulatedPauseTime: 600,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText(/Accumulated Pause:/)).toBeInTheDocument();
@@ -246,18 +180,7 @@ describe("CurrentStatusSection", () => {
 
   describe("Goal Progress Display", () => {
     it("should display goal progress when goal is set", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        goalDuration: 7200,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession({ goalDuration: 7200 });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText(/Goal Progress:/)).toBeInTheDocument();
@@ -265,35 +188,14 @@ describe("CurrentStatusSection", () => {
     });
 
     it("should display remaining goal time", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        goalDuration: 7200,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession({ goalDuration: 7200 });
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText(/remaining/)).toBeInTheDocument();
     });
 
     it("should not display goal info when no goal is set", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession();
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.queryByText(/Goal Progress:/)).not.toBeInTheDocument();
@@ -302,17 +204,7 @@ describe("CurrentStatusSection", () => {
 
   describe("Accessibility", () => {
     it("should have proper heading structure", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession();
       render(<CurrentStatusSection currentSession={session} />);
 
       const heading = screen.getByRole("heading", { name: /Current Status/i });
@@ -320,17 +212,7 @@ describe("CurrentStatusSection", () => {
     });
 
     it("should use semantic HTML structure", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession();
       const { container } = render(
         <CurrentStatusSection currentSession={session} />,
       );
@@ -342,17 +224,7 @@ describe("CurrentStatusSection", () => {
 
   describe("Edge Cases", () => {
     it("should handle session with undefined start time gracefully", () => {
-      const session = {
-        id: "session1",
-        userId: "user1",
-        startTime: undefined,
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 0,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as unknown as DBSession;
-
+      const session = mockSession({ startTime: undefined as any });
       render(<CurrentStatusSection currentSession={session} />);
 
       // Should not crash
@@ -360,34 +232,14 @@ describe("CurrentStatusSection", () => {
     });
 
     it("should handle very long accumulated pause times", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: 86400, // 24 hours
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession({ accumulatedPauseTime: 86400 }); // 24 hours
       render(<CurrentStatusSection currentSession={session} />);
 
       expect(screen.getByText(/1440m 0s/)).toBeInTheDocument();
     });
 
     it("should handle negative accumulated pause time", () => {
-      const session: DBSession = {
-        id: "session1",
-        userId: "user1",
-        startTime: new Date("2024-01-01T00:00:00Z"),
-        endTime: null,
-        isPaused: false,
-        accumulatedPauseTime: -100,
-        isHardcoreMode: false,
-        keyholderApprovalRequired: false,
-      } as DBSession;
-
+      const session = mockSession({ accumulatedPauseTime: -100 });
       render(<CurrentStatusSection currentSession={session} />);
 
       // Should handle gracefully, possibly showing 0s
