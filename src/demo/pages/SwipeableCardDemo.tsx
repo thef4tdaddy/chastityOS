@@ -7,6 +7,7 @@ export const SwipeableCardDemo: React.FC = () => {
       id: "delete",
       label: "Delete",
       color: "red" as const,
+      action: () => console.log("Delete action"),
       icon: (
         <svg
           className="w-4 h-4"

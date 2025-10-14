@@ -1,19 +1,19 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { useAuthState } from "../contexts";
-import { useTasks } from "../hooks/api/useTasks";
-import { useSubmitTaskForReview } from "../hooks/api/useTaskQuery";
-import { useTaskFilters } from "../hooks/useTaskFilters";
-import type { Task } from "../types";
+import { useAuthState } from "@/contexts";
+import { useTasks } from "@/hooks/api/useTasks";
+import { useSubmitTaskForReview } from "@/hooks/api/useTaskQuery";
+import { useTaskFilters } from "@/hooks/useTaskFilters";
+import type { DBTask } from "@/types";
 import {
   TaskItem,
   TaskSkeleton,
   TaskErrorBoundary,
   TaskError,
   TaskSearch,
-} from "../components/tasks";
-import { TaskStatsCard } from "../components/stats/TaskStatsCard";
-import { FeatureErrorBoundary } from "../components/errors";
+} from "@/components/tasks";
+import { TaskStatsCard } from "@/components/stats/TaskStatsCard";
+import { FeatureErrorBoundary } from "@/components/errors";
 import { Card, Tooltip, Button } from "@/components/ui";
 import {
   staggerContainerVariants,
@@ -21,8 +21,8 @@ import {
   fadeInVariants,
   pulseVariants,
   getAccessibleVariants,
-} from "../utils/animations";
-import { logger } from "../utils/logging";
+} from "@/utils/animations";
+import { logger } from "@/utils/logging";
 
 const ErrorState: React.FC<{ error?: Error; onRetry?: () => void }> = ({
   error,
@@ -73,8 +73,8 @@ const TabNavigation: React.FC<{
 
 // Active Tasks Section Component
 const ActiveTasksSection: React.FC<{
-  tasks: Task[];
-  userId: string;
+  tasks: DBTask[];
+  userId?: string;
   handleSubmitTask: (
     taskId: string,
     note: string,
@@ -120,7 +120,11 @@ const ActiveTasksSection: React.FC<{
           variant="glass"
           className="glass-hover transform transition-all duration-300 sm:hover:scale-[1.02]"
         >
-          <TaskItem task={task} userId={userId} onSubmit={handleSubmitTask} />
+          <TaskItem
+            task={task}
+            userId={userId || ""}
+            onSubmit={handleSubmitTask}
+          />
         </Card>
       ))}
     </motion.div>
@@ -128,7 +132,10 @@ const ActiveTasksSection: React.FC<{
 };
 
 // Archived Tasks Section Component
-const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
+const ArchivedTasksSection: React.FC<{ tasks: DBTask[]; userId?: string }> = ({
+  tasks,
+  userId,
+}) => {
   if (tasks.length === 0) {
     return (
       <motion.div
@@ -170,11 +177,154 @@ const ArchivedTasksSection: React.FC<{ tasks: Task[] }> = ({ tasks }) => {
         >
           <TaskItem
             task={task}
+            userId={userId}
             onSubmit={() => {}} // Archived tasks can't be submitted
           />
         </Card>
       ))}
     </motion.div>
+  );
+};
+
+/**
+ * New: Extracted content component to reduce complexity of the TasksPage arrow function.
+ */
+type TasksContentProps = {
+  userId?: string;
+  user?: { uid: string } | null;
+  loading: boolean;
+  error: unknown;
+  refetch: () => void;
+  activeTab: "active" | "archived";
+  handleTabChange: (tab: "active" | "archived") => void;
+  activeTasks: DBTask[];
+  archivedTasks: DBTask[];
+  filteredTasks: DBTask[];
+  paginatedTasks: DBTask[];
+  searchQuery: string;
+  currentPage: number;
+  totalPages: number;
+  handleSearchChange: (q: string) => void;
+  setCurrentPage: (p: number) => void;
+  handleSubmitTask: (
+    taskId: string,
+    note: string,
+    attachments?: string[],
+  ) => Promise<void>;
+};
+
+const TasksContent: React.FC<TasksContentProps> = ({
+  user,
+  userId,
+  loading,
+  error,
+  refetch,
+  activeTab,
+  handleTabChange,
+  activeTasks,
+  archivedTasks,
+  filteredTasks,
+  paginatedTasks,
+  searchQuery,
+  currentPage,
+  totalPages,
+  handleSearchChange,
+  setCurrentPage,
+  handleSubmitTask,
+}) => {
+  return (
+    <TaskErrorBoundary>
+      <div className="p-3 sm:p-4 md:p-6">
+        {/* Enhanced Header with Glass Effect */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
+            Task Management
+          </h1>
+          <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
+        </div>
+
+        {/* Task Stats Card */}
+        {user && (
+          <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
+            <TaskStatsCard userId={user.uid} />
+          </div>
+        )}
+
+        <TabNavigation
+          activeTab={activeTab}
+          setActiveTab={handleTabChange}
+          activeCount={activeTasks.length}
+          archivedCount={archivedTasks.length}
+        />
+
+        {/* Search Bar */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <TaskSearch
+            onSearchChange={handleSearchChange}
+            placeholder={`Search ${activeTab} tasks...`}
+          />
+          {searchQuery && (
+            <div className="text-sm text-gray-400 mt-2">
+              Found {filteredTasks.length} task(s) matching "{searchQuery}"
+            </div>
+          )}
+        </div>
+
+        {/* Content with Glass Container */}
+        <div className="max-w-4xl mx-auto">
+          {loading ? (
+            <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
+          ) : error ? (
+            <ErrorState error={error as Error} onRetry={() => refetch()} />
+          ) : (
+            <FeatureErrorBoundary feature="tasks-management">
+              <motion.div
+                key={activeTab}
+                variants={getAccessibleVariants(tabContentVariants)}
+                initial="initial"
+                animate="animate"
+              >
+                {activeTab === "active" ? (
+                  <ActiveTasksSection
+                    tasks={paginatedTasks}
+                    userId={userId}
+                    handleSubmitTask={handleSubmitTask}
+                  />
+                ) : (
+                  <ArchivedTasksSection
+                    tasks={paginatedTasks}
+                    userId={userId}
+                  />
+                )}
+              </motion.div>
+            </FeatureErrorBoundary>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && !error && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <Button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </Button>
+              <span className="text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </TaskErrorBoundary>
   );
 };
 
@@ -233,96 +383,25 @@ const TasksPage: React.FC = () => {
   };
 
   return (
-    <TaskErrorBoundary>
-      <div className="p-3 sm:p-4 md:p-6">
-        {/* Enhanced Header with Glass Effect */}
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent mb-2">
-            Task Management
-          </h1>
-          <div className="w-12 sm:w-16 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full"></div>
-        </div>
-
-        {/* Task Stats Card */}
-        {user && (
-          <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
-            <TaskStatsCard userId={user.uid} />
-          </div>
-        )}
-
-        <TabNavigation
-          activeTab={activeTab}
-          setActiveTab={handleTabChange}
-          activeCount={activeTasks.length}
-          archivedCount={archivedTasks.length}
-        />
-
-        {/* Search Bar */}
-        <div className="max-w-4xl mx-auto mb-6">
-          <TaskSearch
-            onSearchChange={handleSearchChange}
-            placeholder={`Search ${activeTab} tasks...`}
-          />
-          {searchQuery && (
-            <div className="text-sm text-gray-400 mt-2">
-              Found {filteredTasks.length} task(s) matching &quot;{searchQuery}
-              &quot;
-            </div>
-          )}
-        </div>
-
-        {/* Content with Glass Container */}
-        <div className="max-w-4xl mx-auto">
-          {loading ? (
-            <TaskSkeleton count={3} showSubmission={activeTab === "active"} />
-          ) : error ? (
-            <ErrorState error={error as Error} onRetry={() => refetch()} />
-          ) : (
-            <FeatureErrorBoundary feature="tasks-management">
-              <motion.div
-                key={activeTab}
-                variants={getAccessibleVariants(tabContentVariants)}
-                initial="initial"
-                animate="animate"
-              >
-                {activeTab === "active" ? (
-                  <ActiveTasksSection
-                    tasks={paginatedTasks}
-                    userId={user?.uid || ""}
-                    handleSubmitTask={handleSubmitTask}
-                  />
-                ) : (
-                  <ArchivedTasksSection tasks={paginatedTasks} />
-                )}
-              </motion.div>
-            </FeatureErrorBoundary>
-          )}
-
-          {/* Pagination Controls */}
-          {!loading && !error && totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <Button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </Button>
-              <span className="text-gray-300">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="glass-nav px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-    </TaskErrorBoundary>
+    <TasksContent
+      user={user}
+      userId={user?.uid}
+      loading={loading}
+      error={error}
+      refetch={refetch}
+      activeTab={activeTab}
+      handleTabChange={handleTabChange}
+      activeTasks={activeTasks}
+      archivedTasks={archivedTasks}
+      filteredTasks={filteredTasks}
+      paginatedTasks={paginatedTasks}
+      searchQuery={searchQuery}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      handleSearchChange={handleSearchChange}
+      setCurrentPage={setCurrentPage}
+      handleSubmitTask={handleSubmitTask}
+    />
   );
 };
 

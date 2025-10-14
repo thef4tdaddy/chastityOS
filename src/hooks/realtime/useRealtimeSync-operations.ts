@@ -185,7 +185,8 @@ export const createChannelHelpers = (
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       sendMessage({
         type: "create_channel",
-        channel,
+        channelId: channel.id,
+        data: channel,
         userId,
       });
     }
@@ -234,11 +235,12 @@ export const createSubscriptionHelpers = (
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       sendMessage({
         type: "publish_update",
-        update: {
+        data: {
           ...update,
           userId,
           timestamp: new Date(),
         },
+        userId,
       });
     } else {
       throw new Error("WebSocket not connected");

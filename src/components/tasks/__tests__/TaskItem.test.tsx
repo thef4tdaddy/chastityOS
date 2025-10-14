@@ -64,11 +64,14 @@ describe("TaskItem", () => {
   const createMockTask = (overrides?: Partial<DBTask>): DBTask => ({
     id: "task-1",
     userId: "user-1",
-    keyholderUserId: "keyholder-1",
     text: "Complete test task",
     description: "This is a test task",
     status: "pending",
+    priority: "medium",
+    assignedBy: "submissive",
     createdAt: baseDate,
+    syncStatus: "synced" as const,
+    lastModified: baseDate,
     ...overrides,
   });
 

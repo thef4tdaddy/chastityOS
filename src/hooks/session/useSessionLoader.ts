@@ -5,20 +5,25 @@
  */
 import { useState, useCallback, useEffect } from "react";
 import { useSessionPersistence } from "../useSessionPersistence";
-import type { DBSession } from "../../types/database";
+import type { DBSession } from "@/types/database";
 import { serviceLogger } from "../../utils/logging";
 import { SessionPersistenceService } from "../../services/SessionPersistenceService";
 
 const logger = serviceLogger("useSessionLoader");
+
+// local alias matching the shape actually used here (session is optional)
+type SessionRestorationResult = {
+  session?: DBSession;
+  wasRestored?: boolean;
+};
 
 /**
  * Helper function to handle session loading logic
  */
 async function handleLoadSession(
   userId: string,
-  initializeSession: (
-    userId: string,
-  ) => Promise<{ session: DBSession | null; wasRestored: boolean }>,
+  // accept the actual SessionRestorationResult-returning initializer
+  initializeSession: (userId: string) => Promise<SessionRestorationResult>,
   setError: (error: Error | null) => void,
   setProgress: (progress: number) => void,
   setSession: (session: DBSession | null) => void,
@@ -60,7 +65,8 @@ async function handleLoadSession(
  */
 async function handleRestoreFromBackup(
   getBackupState: () => { activeSessionId?: string } | null,
-  restorationResult: { session: DBSession | null } | null,
+  // accept the broader restoration result shape (session may be optional)
+  restorationResult: SessionRestorationResult | null,
   setIsRestoring: (isRestoring: boolean) => void,
   setError: (error: Error | null) => void,
   setSession: (session: DBSession | null) => void,
@@ -102,14 +108,13 @@ async function handleRestoreFromBackup(
  * Helper function to clear backup data
  */
 async function handleClearBackup(
-  sessionPersistenceService: ReturnType<
-    typeof import("../../services/SessionPersistenceService").SessionPersistenceService.getInstance
-  >,
+  // accept a minimal shape — only clearBackup is required
+  sessionPersistenceService: { clearBackup: () => void | Promise<void> },
   setError: (error: Error | null) => void,
 ): Promise<void> {
   try {
     logger.debug("Clearing session backup");
-    sessionPersistenceService.clearBackup();
+    await sessionPersistenceService.clearBackup();
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     setError(error);

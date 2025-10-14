@@ -14,6 +14,7 @@ import {
 } from "../api/usePersonalGoalQueries";
 import { logger } from "@/utils/logging";
 import { useRetryableOperation } from "./useRetryableOperation";
+import type { PauseReason } from "@/types/pauseResume";
 
 export const useTrackerData = (_USE_REAL_SESSIONS: boolean) => {
   // Authentication state
@@ -85,7 +86,7 @@ export const useTrackerData = (_USE_REAL_SESSIONS: boolean) => {
   );
 
   const pauseSession = useCallback(
-    async (reason?: string) => {
+    async (reason?: PauseReason) => {
       await executeWithRetry(async () => {
         await pauseSessionCore(reason);
         await refreshLifetimeStats();

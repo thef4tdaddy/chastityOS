@@ -171,7 +171,7 @@ export class FirebaseSync {
   /**
    * Sync a single collection using the appropriate service
    */
-  private async syncSingleCollection(
+  public async syncSingleCollection(
     collectionName: string,
     userId: string,
     options: SyncOptions,

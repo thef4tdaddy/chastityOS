@@ -9,10 +9,21 @@ import {
   taskDBService,
   goalDBService,
 } from "./database";
-import { DBSession, DBGoal, DBTask, AchievementCategory } from "../types";
-import { ACHIEVEMENTS_WITH_IDS } from "../constants/achievements/index";
+import {
+  DBSession,
+  DBGoal,
+  DBTask,
+  AchievementCategory,
+  DBAchievement,
+} from "../types";
+import * as achievementsModule from "../constants/achievements";
 import { logger } from "../utils/logging";
-import { NotificationService } from "./notifications";
+
+// Shape required by the DB create call: all fields except id/sync meta
+type AchievementInit = Omit<
+  DBAchievement,
+  "id" | "syncStatus" | "lastModified"
+>;
 
 export class AchievementEngine {
   private initialized = false;
@@ -31,12 +42,22 @@ export class AchievementEngine {
         await achievementDBService.getAllAchievements();
 
       if (existingAchievements.length === 0) {
+        // Typed helper to resolve possible export shapes and ensure
+        // each item matches the DB payload shape expected by createAchievement.
+        const mod = achievementsModule as unknown as {
+          ACHIEVEMENTS_WITH_IDS?: AchievementInit[];
+          default?: AchievementInit[];
+        };
+
+        const achievementsList: AchievementInit[] =
+          mod.ACHIEVEMENTS_WITH_IDS ?? mod.default ?? [];
+
         // Add all predefined achievements
-        for (const achievement of ACHIEVEMENTS_WITH_IDS) {
+        for (const achievement of achievementsList) {
           await achievementDBService.createAchievement(achievement);
         }
         logger.info(
-          `Initialized ${ACHIEVEMENTS_WITH_IDS.length} achievements`,
+          `Initialized ${achievementsList.length} achievements`,
           "AchievementEngine",
         );
       } else {
@@ -363,7 +384,7 @@ export class AchievementEngine {
       const requirement = achievement.requirements[0];
       if (!requirement) continue; // Skip if no requirements
 
-      if (requirement.type === "special_condition") {
+      if (requirement.type === "special_condition" && requirement.condition) {
         const shouldIncrement = this.checkSpecialCondition(
           requirement.condition,
           startTime,
@@ -425,17 +446,6 @@ export class AchievementEngine {
           `Achievement awarded: ${achievement.name} to user ${userId}`,
           "AchievementEngine",
         );
-
-        // Send in-app notification
-        NotificationService.notifyAchievementUnlocked({
-          userId,
-          achievementId,
-          achievementTitle: achievement.name,
-          achievementDescription: achievement.description,
-          points: achievement.points,
-        }).catch((error) => {
-          logger.warn("Failed to send achievement notification", { error });
-        });
       }
     }
   }
