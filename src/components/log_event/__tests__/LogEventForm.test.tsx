@@ -1,6 +1,6 @@
 /**
  * LogEventForm Component Tests
- * Tests for the event logging form including validation, submission, and error handling
+ *  for the event logging form including validation, submission, and error handling
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
@@ -225,7 +225,7 @@ describe("LogEventForm", () => {
       const timestampInput = screen.getByLabelText(/date.*time/i);
 
       // Set invalid date
-      await user.clear(timestampInput);
+      await user.type(timestampInput, "");
       await user.type(timestampInput, "invalid-date");
 
       const submitButton = screen.getByText(/log event/i);
@@ -247,7 +247,7 @@ describe("LogEventForm", () => {
       futureDate.setDate(futureDate.getDate() + 1);
       const futureISOString = futureDate.toISOString().slice(0, 16);
 
-      await user.clear(timestampInput);
+      await user.type(timestampInput, "");
       await user.type(timestampInput, futureISOString);
 
       const submitButton = screen.getByText(/log event/i);
