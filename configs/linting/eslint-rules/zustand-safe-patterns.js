@@ -54,7 +54,7 @@ export default {
             if (node.callee.name === 'useEffect') {
               inUseEffect = false;
             }
-          },
+          }
         };
       },
     },
@@ -313,7 +313,7 @@ export default {
                   node,
                   messageId: 'useStoreReference',
                 });
-                return;
+
               }
             }
           },
