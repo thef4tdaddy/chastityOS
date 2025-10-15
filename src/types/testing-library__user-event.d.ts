@@ -4,16 +4,21 @@ declare module "@testing-library/user-event" {
     document?: Document;
     pointerHover?: boolean;
     advanceTimers?: (ms: number) => void;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 
-  type UserEvent = {
-    setup: (options?: SetupOptions) => any;
-    // Some tests may call setup() directly via named import
-  };
+  interface UserEventInstance {
+    click(element: Element): Promise<void>;
+    type(element: Element, text: string): Promise<void>;
+    keyboard(text: string): Promise<void>;
+  }
 
-  const userEvent: UserEvent;
+  // userEvent.setup()
+  export function setup(options?: SetupOptions): UserEventInstance;
+
+  const userEvent: {
+    setup: typeof setup;
+  };
 
   export default userEvent;
-  export function setup(options?: SetupOptions): any;
 }

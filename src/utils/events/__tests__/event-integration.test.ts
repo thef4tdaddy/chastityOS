@@ -62,9 +62,9 @@ describe("Event Integration Tests", () => {
 
       expect(combined).toHaveLength(3);
       // Should be sorted by timestamp descending (most recent first)
-      expect(combined[0].timestamp).toEqual(new Date("2024-01-15T12:00:00Z"));
-      expect(combined[1].timestamp).toEqual(new Date("2024-01-15T11:00:00Z"));
-      expect(combined[2].timestamp).toEqual(new Date("2024-01-15T10:00:00Z"));
+      expect(combined[0]!.timestamp).toEqual(new Date("2024-01-15T12:00:00Z"));
+      expect(combined[1]!.timestamp).toEqual(new Date("2024-01-15T11:00:00Z"));
+      expect(combined[2]!.timestamp).toEqual(new Date("2024-01-15T10:00:00Z"));
     });
 
     it("should attribute events to correct owners", () => {
@@ -101,10 +101,11 @@ describe("Event Integration Tests", () => {
         submissiveId: mockUserId2,
       });
 
-      expect(combined[0].ownerName).toBe("TestSubmissive");
-      expect(combined[0].ownerId).toBe(mockUserId2);
-      expect(combined[1].ownerName).toBe("TestKeyholder");
-      expect(combined[1].ownerId).toBe(mockUserId1);
+      expect(combined).toHaveLength(2);
+      expect(combined[0]!.ownerName).toBe("TestSubmissive");
+      expect(combined[0]!.ownerId).toBe(mockUserId2);
+      expect(combined[1]!.ownerName).toBe("TestKeyholder");
+      expect(combined[1]!.ownerId).toBe(mockUserId1);
     });
 
     it("should handle empty event arrays gracefully", () => {
@@ -140,7 +141,7 @@ describe("Event Integration Tests", () => {
       });
 
       expect(combined).toHaveLength(1);
-      expect(combined[0].ownerName).toBe("User");
+      expect(combined[0]!.ownerName).toBe("User");
     });
   });
 
@@ -272,12 +273,13 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents(events, [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
       expect(combined).toHaveLength(2);
       // Both events should be present
-      expect(combined[0].id).toBeDefined();
-      expect(combined[1].id).toBeDefined();
+      expect(combined[0]!.id).toBeDefined();
+      expect(combined[1]!.id).toBeDefined();
     });
 
     it("should handle events with identical data but different IDs", () => {
@@ -306,7 +308,7 @@ describe("Event Integration Tests", () => {
       ];
 
       // Events should be kept separate if they have different IDs
-      expect(events[0].id).not.toBe(events[1].id);
+      expect(events[0]!.id).not.toBe(events[1]!.id);
       expect(events).toHaveLength(2);
     });
   });
@@ -331,13 +333,15 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents([originalEvent], [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
-      expect(combined[0].id).toBe(originalEvent.id);
-      expect(combined[0].type).toBe(originalEvent.type);
-      expect(combined[0].timestamp).toEqual(originalEvent.timestamp);
-      expect(combined[0].details).toEqual(originalEvent.details);
-      expect(combined[0].isPrivate).toBe(originalEvent.isPrivate);
+      expect(combined).toHaveLength(1);
+      expect(combined[0]!.id).toBe(originalEvent.id);
+      expect(combined[0]!.type).toBe(originalEvent.type);
+      expect(combined[0]!.timestamp).toEqual(originalEvent.timestamp);
+      expect(combined[0]!.details).toEqual(originalEvent.details);
+      expect(combined[0]!.isPrivate).toBe(originalEvent.isPrivate);
     });
 
     it("should preserve syncStatus through transformations", () => {
@@ -355,9 +359,11 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents([pendingEvent], [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
-      expect(combined[0].syncStatus).toBe("pending");
+      expect(combined).toHaveLength(1);
+      expect(combined[0]!.syncStatus).toBe("pending");
     });
   });
 
@@ -420,12 +426,13 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents(largeSet, [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
       // Verify descending order (most recent first)
       for (let i = 0; i < combined.length - 1; i++) {
-        expect(combined[i].timestamp.getTime()).toBeGreaterThanOrEqual(
-          combined[i + 1].timestamp.getTime(),
+        expect(combined[i]!.timestamp.getTime()).toBeGreaterThanOrEqual(
+          combined[i + 1]!.timestamp.getTime(),
         );
       }
     });
@@ -447,10 +454,11 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents([minimalEvent], [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
       expect(combined).toHaveLength(1);
-      expect(combined[0].details).toEqual({});
+      expect(combined[0]!.details).toEqual({});
     });
 
     it("should handle events with undefined submissive info", () => {
@@ -470,11 +478,12 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents(events, [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "",
         // submissiveId is optional when not filtering by submissive
       });
 
       expect(combined).toHaveLength(1);
-      expect(combined[0].ownerName).toBe("User");
+      expect(combined[0]!.ownerName).toBe("User");
     });
 
     it("should handle numeric timestamps correctly", () => {
@@ -493,10 +502,12 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents([event], [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
-      expect(combined[0].timestamp).toBeInstanceOf(Date);
-      expect(combined[0].timestamp.getTime()).toBe(numericTimestamp);
+      expect(combined).toHaveLength(1);
+      expect(combined[0]!.timestamp).toBeInstanceOf(Date);
+      expect(combined[0]!.timestamp.getTime()).toBe(numericTimestamp);
     });
 
     it("should handle events at exact same millisecond", () => {
@@ -527,12 +538,13 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents(events, [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
       expect(combined).toHaveLength(2);
       // Both should be present even with identical timestamps
-      expect(combined[0].timestamp.getTime()).toBe(exactTime.getTime());
-      expect(combined[1].timestamp.getTime()).toBe(exactTime.getTime());
+      expect(combined[0]!.timestamp.getTime()).toBe(exactTime.getTime());
+      expect(combined[1]!.timestamp.getTime()).toBe(exactTime.getTime());
     });
   });
 
@@ -552,9 +564,11 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents([privateEvent], [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
-      expect(combined[0].isPrivate).toBe(true);
+      expect(combined).toHaveLength(1);
+      expect(combined[0]!.isPrivate).toBe(true);
     });
 
     it("should handle mix of private and public events", () => {
@@ -584,11 +598,12 @@ describe("Event Integration Tests", () => {
       const combined = combineAndSortEvents(events, [], {
         userName: "User",
         userId: mockUserId1,
+        submissiveName: "Sub",
       });
 
       expect(combined).toHaveLength(2);
-      expect(combined[0].isPrivate).toBe(true);
-      expect(combined[1].isPrivate).toBe(false);
+      expect(combined[0]!.isPrivate).toBe(true);
+      expect(combined[1]!.isPrivate).toBe(false);
     });
   });
 });
