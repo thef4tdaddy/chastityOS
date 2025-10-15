@@ -86,7 +86,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       expect(container).toBeEmptyDOMElement();
@@ -102,7 +102,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       expect(screen.getByText("Log event for:")).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       expect(screen.getByText("Submissive")).toBeInTheDocument();
@@ -135,7 +135,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const region = screen.getByRole("region", {
@@ -154,7 +154,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const group = screen.getByRole("group", {
@@ -175,7 +175,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const yourselfButton = screen.getByRole("button", {
@@ -199,7 +199,7 @@ describe("UserSelector", () => {
           selectedUserId={submissiveId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const yourselfButton = screen.getByRole("button", {
@@ -224,7 +224,7 @@ describe("UserSelector", () => {
           selectedUserId={submissiveId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const yourselfButton = screen.getByRole("button", {
@@ -247,7 +247,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const submissiveButton = screen.getByRole("button", {
@@ -270,7 +270,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       // Click submissive button
@@ -291,7 +291,7 @@ describe("UserSelector", () => {
           selectedUserId={submissiveId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       // Verify new state
@@ -319,7 +319,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const yourselfButton = screen.getByRole("button", {
@@ -343,7 +343,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const buttons = screen.getAllByRole("button");
@@ -363,7 +363,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const yourselfButton = screen.getByRole("button", {
@@ -388,7 +388,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const tooltips = container.querySelectorAll("[data-tooltip]");
@@ -397,11 +397,11 @@ describe("UserSelector", () => {
       // Check tooltip content
       expect(tooltips[0]).toHaveAttribute(
         "data-tooltip",
-        "Log a sexual event for yourself"
+        "Log a sexual event for yourself",
       );
       expect(tooltips[1]).toHaveAttribute(
         "data-tooltip",
-        `Log a sexual event for ${submissiveName}`
+        `Log a sexual event for ${submissiveName}`,
       );
     });
   });
@@ -417,7 +417,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const submissiveButton = screen.getByRole("button", {
@@ -439,7 +439,7 @@ describe("UserSelector", () => {
           selectedUserId={""}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       // Both buttons should show as not pressed
@@ -459,7 +459,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       expect(screen.getByText("OldName")).toBeInTheDocument();
@@ -474,7 +474,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       expect(screen.getByText("NewName")).toBeInTheDocument();
@@ -493,7 +493,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const yourselfButton = screen.getByRole("button", {
@@ -514,7 +514,7 @@ describe("UserSelector", () => {
           selectedUserId={currentUserId}
           currentUserId={currentUserId}
           onSelectUser={mockOnSelectUser}
-        />
+        />,
       );
 
       const submissiveButton = screen.getByRole("button", {

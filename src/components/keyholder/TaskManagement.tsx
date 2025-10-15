@@ -41,13 +41,16 @@ const AddTaskForm: React.FC<{
   if (!showAddTask) return null;
 
   return (
-    <div 
-      id="add-task-form" 
+    <div
+      id="add-task-form"
       className="mb-6 bg-white/5 rounded-lg p-3 sm:p-4"
       role="form"
       aria-labelledby="add-task-heading"
     >
-      <h4 id="add-task-heading" className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3">
+      <h4
+        id="add-task-heading"
+        className="text-sm sm:text-base font-medium text-nightly-honeydew mb-3"
+      >
         Create New Task
       </h4>
       <div className="space-y-3">
@@ -66,7 +69,10 @@ const AddTaskForm: React.FC<{
           />
         </div>
         <div>
-          <label htmlFor="task-points" className="block text-xs sm:text-sm text-nightly-celadon mb-1">
+          <label
+            htmlFor="task-points"
+            className="block text-xs sm:text-sm text-nightly-celadon mb-1"
+          >
             Point Value (optional)
           </label>
           <Input
@@ -82,7 +88,10 @@ const AddTaskForm: React.FC<{
             className="w-full bg-white/5 border border-white/10 rounded p-3 sm:p-2 text-sm sm:text-base text-nightly-honeydew placeholder-nightly-celadon/50"
             aria-describedby="task-points-help"
           />
-          <p id="task-points-help" className="text-xs text-nightly-celadon/70 mt-1">
+          <p
+            id="task-points-help"
+            className="text-xs text-nightly-celadon/70 mt-1"
+          >
             Points awarded when task is approved (0-100)
           </p>
         </div>
@@ -94,7 +103,10 @@ const AddTaskForm: React.FC<{
             className="bg-nightly-aquamarine hover:bg-nightly-aquamarine/80 disabled:opacity-50 disabled:cursor-not-allowed text-black px-4 py-3 sm:py-2 rounded font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px] touch-manipulation"
           >
             {isCreating && (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+              <div
+                className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"
+                aria-hidden="true"
+              />
             )}
             {isCreating ? "Creating..." : "Create Task"}
           </Button>
@@ -130,8 +142,8 @@ const TaskItem: React.FC<{
   ) => void;
   isUpdating: boolean;
 }> = ({ task, handleTaskAction, isUpdating }) => (
-  <article 
-    key={task.id} 
+  <article
+    key={task.id}
     className="bg-white/5 rounded-lg p-3 sm:p-4"
     aria-label={`Task: ${task.title || task.text}`}
   >
@@ -140,17 +152,28 @@ const TaskItem: React.FC<{
         {task.title || task.text}
       </h4>
       <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-nightly-celadon">
-        <span><span className="sr-only">Task </span>Status: {task.status}</span>
+        <span>
+          <span className="sr-only">Task </span>Status: {task.status}
+        </span>
         {task.priority && (
           <>
-            <span className="hidden sm:inline" aria-hidden="true">•</span>
+            <span className="hidden sm:inline" aria-hidden="true">
+              •
+            </span>
             <span>Priority: {task.priority}</span>
           </>
         )}
         {task.deadline && (
           <>
-            <span className="hidden sm:inline" aria-hidden="true">•</span>
-            <span>Due: <time dateTime={task.deadline.toISOString()}>{task.deadline.toLocaleDateString()}</time></span>
+            <span className="hidden sm:inline" aria-hidden="true">
+              •
+            </span>
+            <span>
+              Due:{" "}
+              <time dateTime={task.deadline.toISOString()}>
+                {task.deadline.toLocaleDateString()}
+              </time>
+            </span>
           </>
         )}
       </div>
@@ -173,7 +196,11 @@ const TaskItem: React.FC<{
     )}
 
     {task.status === "submitted" && (
-      <div className="flex flex-col sm:flex-row gap-2" role="group" aria-label="Task approval actions">
+      <div
+        className="flex flex-col sm:flex-row gap-2"
+        role="group"
+        aria-label="Task approval actions"
+      >
         <Button
           onClick={() => handleTaskAction(task.id, "approve")}
           disabled={isUpdating}
@@ -181,7 +208,10 @@ const TaskItem: React.FC<{
           className="bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-1 transition-all min-h-[44px] sm:min-h-0 touch-manipulation"
         >
           {isUpdating ? (
-            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+            <div
+              className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"
+              aria-hidden="true"
+            />
           ) : (
             <FaCheckCircle aria-hidden="true" />
           )}
@@ -194,7 +224,10 @@ const TaskItem: React.FC<{
           className="bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-1 transition-all min-h-[44px] sm:min-h-0 touch-manipulation"
         >
           {isUpdating ? (
-            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+            <div
+              className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"
+              aria-hidden="true"
+            />
           ) : (
             <FaTimesCircle aria-hidden="true" />
           )}
@@ -220,8 +253,15 @@ const ErrorDisplay: React.FC<{ error?: Error; onRetry?: () => void }> = ({
 
 // Loading Display Component
 const LoadingDisplay: React.FC = () => (
-  <div className="text-center text-nightly-celadon py-4 flex items-center justify-center gap-2" role="status" aria-live="polite">
-    <div className="w-4 h-4 border-2 border-nightly-celadon border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+  <div
+    className="text-center text-nightly-celadon py-4 flex items-center justify-center gap-2"
+    role="status"
+    aria-live="polite"
+  >
+    <div
+      className="w-4 h-4 border-2 border-nightly-celadon border-t-transparent rounded-full animate-spin"
+      aria-hidden="true"
+    />
     <span>Loading tasks...</span>
   </div>
 );
@@ -332,7 +372,9 @@ const TaskList: React.FC<{
 }> = ({ isLoading, pendingTasks, handleTaskAction, isUpdating }) => (
   <div className="space-y-3" role="list" aria-label="Pending tasks">
     {!isLoading && pendingTasks.length === 0 ? (
-      <p className="text-nightly-celadon" role="status">No pending tasks</p>
+      <p className="text-nightly-celadon" role="status">
+        No pending tasks
+      </p>
     ) : (
       pendingTasks.map((task) => (
         <div key={task.id} role="listitem">
@@ -377,18 +419,22 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
   }
 
   return (
-    <FeatureErrorBoundary 
-      feature="task-management"
-    >
-      <section 
+    <FeatureErrorBoundary feature="task-management">
+      <section
         className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6"
         role="region"
         aria-labelledby="task-management-heading"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-0">
           <div className="flex items-center gap-2 sm:gap-3">
-            <FaTasks className="text-nightly-lavender-floral text-lg sm:text-base" aria-hidden="true" />
-            <h3 id="task-management-heading" className="text-base sm:text-lg font-semibold text-nightly-honeydew">
+            <FaTasks
+              className="text-nightly-lavender-floral text-lg sm:text-base"
+              aria-hidden="true"
+            />
+            <h3
+              id="task-management-heading"
+              className="text-base sm:text-lg font-semibold text-nightly-honeydew"
+            >
               Task Management
             </h3>
           </div>
@@ -396,7 +442,9 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ userId }) => {
             onClick={() => setShowAddTask(!showAddTask)}
             aria-expanded={showAddTask}
             aria-controls="add-task-form"
-            aria-label={showAddTask ? "Close add task form" : "Open add task form"}
+            aria-label={
+              showAddTask ? "Close add task form" : "Open add task form"
+            }
             className="bg-nightly-lavender-floral hover:bg-nightly-lavender-floral/80 text-white px-3 sm:px-3 py-3 sm:py-1 rounded text-sm flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto touch-manipulation"
           >
             <FaPlus aria-hidden="true" />

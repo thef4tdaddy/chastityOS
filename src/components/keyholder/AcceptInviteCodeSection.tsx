@@ -35,7 +35,8 @@ export const AcceptInviteCodeSection: React.FC<
       await onAcceptInvite();
       setShowAcceptInvite(false);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to accept invite code";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to accept invite code";
       setError(errorMessage);
     }
   };
@@ -48,13 +49,22 @@ export const AcceptInviteCodeSection: React.FC<
       aria-disabled={disabled}
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 id="accept-invite-heading" className="font-semibold text-purple-300">Accept Invite Code</h3>
+        <h3
+          id="accept-invite-heading"
+          className="font-semibold text-purple-300"
+        >
+          Accept Invite Code
+        </h3>
         <Button
           onClick={() => !disabled && setShowAcceptInvite(!showAcceptInvite)}
           disabled={disabled}
           aria-expanded={showAcceptInvite}
           aria-controls="accept-invite-form"
-          aria-label={showAcceptInvite ? "Cancel accepting invite code" : "Show invite code form"}
+          aria-label={
+            showAcceptInvite
+              ? "Cancel accepting invite code"
+              : "Show invite code form"
+          }
           className="text-purple-400 hover:text-purple-300 text-sm disabled:cursor-not-allowed disabled:opacity-50 relationship-transition-fast"
         >
           {showAcceptInvite ? "Cancel" : "Enter Code"}
@@ -62,7 +72,12 @@ export const AcceptInviteCodeSection: React.FC<
       </div>
 
       {showAcceptInvite && (
-        <div id="accept-invite-form" className="space-y-3 invitation-form-expand" role="form" aria-labelledby="accept-invite-heading">
+        <div
+          id="accept-invite-form"
+          className="space-y-3 invitation-form-expand"
+          role="form"
+          aria-labelledby="accept-invite-heading"
+        >
           <p className="text-sm text-gray-400">
             Enter an invite code from a submissive to become their keyholder.
           </p>
@@ -116,7 +131,9 @@ export const AcceptInviteCodeSection: React.FC<
               isAcceptingInvite ||
               !validateInviteCode(inviteCodeInput)
             }
-            aria-label={isAcceptingInvite ? "Accepting invite code" : "Accept invite code"}
+            aria-label={
+              isAcceptingInvite ? "Accepting invite code" : "Accept invite code"
+            }
             className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white py-2 px-4 rounded relationship-transition disabled:cursor-not-allowed"
           >
             {isAcceptingInvite ? "Accepting..." : "Accept Invite Code"}
