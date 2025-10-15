@@ -6,32 +6,24 @@
  * - Data synchronization to Firebase
  * - Queue cleanup on success
  */
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, Mock } from "vitest";
 import { offlineQueue } from "@/services/sync/OfflineQueue";
 import type { QueuedOperation, DBBase } from "@/types/database";
+import { db } from "@/services/database";
+import { firebaseSync } from "@/services/sync";
 
-// Mock the database and Firebase
+// Mock the database and Firebase services
 vi.mock("@/services/database", () => ({
   db: {
     offlineQueue: {
       add: vi.fn(),
       clear: vi.fn(),
       delete: vi.fn(),
-      orderBy: vi.fn(() => ({
-        toArray: vi.fn(),
-      })),
+      orderBy: vi.fn(() => ({ toArray: vi.fn() })),
       where: vi.fn(() => ({
-        equals: vi.fn(() => ({
-          modify: vi.fn(),
-        })),
-        anyOf: vi.fn(() => ({
-          delete: vi.fn(),
-        })),
-        below: vi.fn(() => ({
-          and: vi.fn(() => ({
-            toArray: vi.fn(),
-          })),
-        })),
+        equals: vi.fn(() => ({ modify: vi.fn() })),
+        anyOf: vi.fn(() => ({ delete: vi.fn() })),
+        below: vi.fn(() => ({ and: vi.fn(() => ({ toArray: vi.fn() })) })),
       })),
     },
     tasks: {
@@ -43,181 +35,115 @@ vi.mock("@/services/database", () => ({
   },
 }));
 
-vi.mock("@/services/sync/index", () => ({
+vi.mock("@/services/sync", () => ({
   firebaseSync: {
     syncCollection: vi.fn(),
   },
 }));
 
+interface MockSetupOptions {
+  operations?: QueuedOperation<DBBase>[];
+  syncShouldFail?: boolean;
+  syncConflict?: boolean;
+  partialSuccess?: boolean;
+}
+
+// Helper to set up mocks for processQueue tests
+const setupProcessQueueMocks = ({
+  operations = [],
+  syncShouldFail = false,
+  syncConflict = false,
+  partialSuccess = false,
+}: MockSetupOptions = {}) => {
+  (db.offlineQueue.orderBy as Mock).mockReturnValue({
+    toArray: vi.fn().mockResolvedValue(operations),
+  });
+
+  const mockDelete = vi.fn().mockResolvedValue(undefined);
+  const mockModify = vi.fn().mockResolvedValue(undefined);
+  (db.offlineQueue.where as Mock).mockReturnValue({
+    anyOf: vi.fn(() => ({ delete: mockDelete })),
+    equals: vi.fn(() => ({ modify: mockModify })),
+  });
+
+  const mockSyncCollection = vi.fn();
+  if (partialSuccess) {
+    mockSyncCollection
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error("Network error"));
+  } else if (syncConflict) {
+    mockSyncCollection.mockRejectedValue(new Error("Version conflict"));
+  } else if (syncShouldFail) {
+    mockSyncCollection.mockRejectedValue(new Error("Sync failed"));
+  } else {
+    mockSyncCollection.mockResolvedValue(undefined);
+  }
+  (firebaseSync as any).syncCollection = mockSyncCollection;
+
+  return { mockDelete, mockModify, mockSyncCollection };
+};
+
 describe("Background Sync Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(navigator, "onLine", {
+      value: true,
+      configurable: true,
+    });
+  });
+
+  const createMockOperation = (
+    overrides: Partial<QueuedOperation<DBBase>>,
+  ): QueuedOperation<DBBase> => ({
+    id: 1,
+    type: "create",
+    collectionName: "tasks",
+    userId: "user-123",
+    payload: {
+      id: `task-${Date.now()}`,
+      userId: "user-123",
+      syncStatus: "pending",
+      lastModified: new Date(),
+    },
+    createdAt: new Date(),
+    ...overrides,
   });
 
   describe("Offline Change Queueing", () => {
-    it("should queue task creation when offline", async () => {
-      const { db } = await import("@/services/database");
-      const mockAdd = vi.fn().mockResolvedValue(1);
-      db.offlineQueue.add = mockAdd;
-
-      // Simulate offline state
+    const setOffline = () =>
       Object.defineProperty(navigator, "onLine", {
         value: false,
         configurable: true,
       });
 
-      // User makes a change
-      const taskData: DBBase = {
-        id: "task-new",
-        userId: "user-123",
-        syncStatus: "pending",
-        lastModified: new Date(),
-      };
+    it.each(["create", "update", "delete"] as const)(
+      "should queue task %s when offline",
+      async (operationType) => {
+        setOffline();
+        const operation = createMockOperation({ type: operationType });
 
-      await offlineQueue.queueOperation({
-        type: "create",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: taskData,
-      });
+        await offlineQueue.queueOperation(operation);
 
-      expect(mockAdd).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "create",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: expect.any(Object),
-          createdAt: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should queue task update when offline", async () => {
-      const { db } = await import("@/services/database");
-      const mockAdd = vi.fn().mockResolvedValue(1);
-      db.offlineQueue.add = mockAdd;
-
-      Object.defineProperty(navigator, "onLine", {
-        value: false,
-        configurable: true,
-      });
-
-      const updateData: DBBase = {
-        id: "task-123",
-        userId: "user-123",
-        syncStatus: "pending",
-        lastModified: new Date(),
-      };
-
-      await offlineQueue.queueOperation({
-        type: "update",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: updateData,
-      });
-
-      expect(mockAdd).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "update",
-        }),
-      );
-    });
-
-    it("should queue task deletion when offline", async () => {
-      const { db } = await import("@/services/database");
-      const mockAdd = vi.fn().mockResolvedValue(1);
-      db.offlineQueue.add = mockAdd;
-
-      Object.defineProperty(navigator, "onLine", {
-        value: false,
-        configurable: true,
-      });
-
-      const deleteData: DBBase = {
-        id: "task-123",
-        userId: "user-123",
-        syncStatus: "pending",
-        lastModified: new Date(),
-      };
-
-      await offlineQueue.queueOperation({
-        type: "delete",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: deleteData,
-      });
-
-      expect(mockAdd).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "delete",
-        }),
-      );
-    });
+        expect(db.offlineQueue.add).toHaveBeenCalledWith(
+          expect.objectContaining({ type: operationType }),
+        );
+      },
+    );
 
     it("should store changes in IndexedDB", async () => {
-      const { db } = await import("@/services/database");
-      const mockAdd = vi.fn().mockResolvedValue(1);
-      db.offlineQueue.add = mockAdd;
-
-      const testData: DBBase = {
-        id: "test-id",
-        userId: "user-123",
-        syncStatus: "pending",
-        lastModified: new Date(),
-      };
-
-      await offlineQueue.queueOperation({
-        type: "create",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: testData,
-      });
-
-      // Verify it was stored
-      expect(mockAdd).toHaveBeenCalled();
+      const operation = createMockOperation({});
+      await offlineQueue.queueOperation(operation);
+      expect(db.offlineQueue.add).toHaveBeenCalledWith(operation);
     });
   });
 
   describe("Online Sync Trigger", () => {
     it("should process queue when app goes online", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperations: QueuedOperation<DBBase>[] = [
-        {
-          id: 1,
-          type: "create",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-1",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(),
-        },
-      ];
-
-      const mockToArray = vi.fn().mockResolvedValue(mockOperations);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
-
-      // Simulate going online
-      Object.defineProperty(navigator, "onLine", {
-        value: true,
-        configurable: true,
+      const operation = createMockOperation({});
+      const { mockSyncCollection } = setupProcessQueueMocks({
+        operations: [operation],
       });
 
-      // Trigger background sync
       await offlineQueue.processQueue();
 
       expect(mockSyncCollection).toHaveBeenCalled();
@@ -226,17 +152,12 @@ describe("Background Sync Integration", () => {
     it("should handle 'online' event listener", () => {
       const onlineHandler = vi.fn();
       window.addEventListener("online", onlineHandler);
-
-      // Simulate online event
       window.dispatchEvent(new Event("online"));
-
       expect(onlineHandler).toHaveBeenCalled();
-
       window.removeEventListener("online", onlineHandler);
     });
 
-    it("should handle sync event from service worker", async () => {
-      // Mock service worker sync event
+    it("should handle sync event from service worker", () => {
       const syncEvent = new Event("sync");
       Object.defineProperty(syncEvent, "tag", {
         value: "sync-tasks",
@@ -245,45 +166,18 @@ describe("Background Sync Integration", () => {
 
       const syncHandler = vi.fn();
       self.addEventListener("sync", syncHandler);
-
       self.dispatchEvent(syncEvent);
-
       expect(syncHandler).toHaveBeenCalled();
-
       self.removeEventListener("sync", syncHandler);
     });
   });
 
   describe("Data Synchronization to Firebase", () => {
     it("should sync queued data to Firebase", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperation: QueuedOperation<DBBase> = {
-        id: 1,
-        type: "create",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: {
-          id: "test-task",
-          userId: "user-123",
-          syncStatus: "pending",
-          lastModified: new Date(),
-        },
-        createdAt: new Date(),
-      };
-
-      const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
+      const operation = createMockOperation({});
+      const { mockSyncCollection } = setupProcessQueueMocks({
+        operations: [operation],
+      });
 
       await offlineQueue.processQueue();
 
@@ -291,360 +185,106 @@ describe("Background Sync Integration", () => {
     });
 
     it("should maintain operation order during sync", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperations: QueuedOperation<DBBase>[] = [
-        {
-          id: 1,
-          type: "create",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-1",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(Date.now() - 2000),
-        },
-        {
-          id: 2,
-          type: "update",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-1",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(Date.now() - 1000),
-        },
-        {
-          id: 3,
-          type: "delete",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-2",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(),
-        },
+      const operations = [
+        createMockOperation({ createdAt: new Date(Date.now() - 2000) }),
+        createMockOperation({ id: 2, createdAt: new Date(Date.now() - 1000) }),
+        createMockOperation({ id: 3, createdAt: new Date() }),
       ];
-
-      const mockToArray = vi.fn().mockResolvedValue(mockOperations);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
+      const { mockSyncCollection } = setupProcessQueueMocks({ operations });
 
       await offlineQueue.processQueue();
 
-      // Verify operations were processed in order
       expect(mockSyncCollection).toHaveBeenCalledTimes(3);
-      expect(mockOrderBy).toHaveBeenCalledWith("createdAt");
+      expect(db.offlineQueue.orderBy).toHaveBeenCalledWith("createdAt");
     });
 
-    it("should handle sync conflicts", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperation: QueuedOperation<DBBase> = {
-        id: 1,
-        type: "update",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: {
-          id: "task-123",
-          userId: "user-123",
-          syncStatus: "pending",
-          lastModified: new Date(),
-        },
-        createdAt: new Date(),
-      };
-
-      const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockModify = vi.fn().mockResolvedValue(undefined);
-      const mockEquals = vi.fn(() => ({ modify: mockModify }));
-      const mockWhere = vi.fn(() => ({
-        anyOf: mockAnyOf,
-        equals: mockEquals,
-      }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi
-        .fn()
-        .mockRejectedValue(new Error("Version conflict"));
-      firebaseSync.syncCollection = mockSyncCollection;
+    it("should handle sync conflicts by incrementing retry count", async () => {
+      const operation = createMockOperation({ retryCount: 0 });
+      const { mockModify, mockSyncCollection } = setupProcessQueueMocks({
+        operations: [operation],
+        syncConflict: true,
+      });
 
       await offlineQueue.processQueue();
 
-      // Should attempt to sync and handle the error
       expect(mockSyncCollection).toHaveBeenCalled();
-      expect(mockModify).toHaveBeenCalled(); // Retry count incremented
+      expect(mockModify).toHaveBeenCalledWith({ retryCount: 1 });
     });
   });
 
   describe("Queue Cleanup on Success", () => {
     it("should clear processed items from queue", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperations: QueuedOperation<DBBase>[] = [
-        {
-          id: 1,
-          type: "create",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-1",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(),
-        },
-        {
-          id: 2,
-          type: "update",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-2",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(),
-        },
+      const operations = [
+        createMockOperation({}),
+        createMockOperation({ id: 2 }),
       ];
-
-      const mockToArray = vi.fn().mockResolvedValue(mockOperations);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
+      const { mockDelete } = setupProcessQueueMocks({ operations });
 
       await offlineQueue.processQueue();
 
-      // Verify items were removed after successful sync
-      expect(mockDelete).toHaveBeenCalled();
+      expect(mockDelete).toHaveBeenCalledWith([1, 2]);
     });
 
-    it("should not clear failed items from queue", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperation: QueuedOperation<DBBase> = {
-        id: 1,
-        type: "create",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: {
-          id: "task-1",
-          userId: "user-123",
-          syncStatus: "pending",
-          lastModified: new Date(),
-        },
-        createdAt: new Date(),
-        retryCount: 2,
-      };
-
-      const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockModify = vi.fn().mockResolvedValue(undefined);
-      const mockEquals = vi.fn(() => ({ modify: mockModify }));
-      const mockWhere = vi.fn(() => ({
-        anyOf: mockAnyOf,
-        equals: mockEquals,
-      }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi
-        .fn()
-        .mockRejectedValue(new Error("Sync failed"));
-      firebaseSync.syncCollection = mockSyncCollection;
+    it("should not clear failed items from queue but increment retry count", async () => {
+      const operation = createMockOperation({ retryCount: 2 });
+      const { mockDelete, mockModify } = setupProcessQueueMocks({
+        operations: [operation],
+        syncShouldFail: true,
+      });
 
       await offlineQueue.processQueue();
 
-      // Failed item should have retry count incremented
-      expect(mockModify).toHaveBeenCalled();
+      expect(mockDelete).not.toHaveBeenCalled();
+      expect(mockModify).toHaveBeenCalledWith({ retryCount: 3 });
     });
 
     it("should verify queue is empty after successful sync", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
+      const operation = createMockOperation({});
+      (db.offlineQueue.orderBy as Mock).mockReturnValue({
+        toArray: vi
+          .fn()
+          .mockResolvedValueOnce([operation])
+          .mockResolvedValueOnce([]),
+      });
+      const { mockDelete, mockSyncCollection } = setupProcessQueueMocks();
 
-      // First call returns operations, second call returns empty
-      const mockToArray = vi
-        .fn()
-        .mockResolvedValueOnce([
-          {
-            id: 1,
-            type: "create",
-            collectionName: "tasks",
-            userId: "user-123",
-            payload: {
-              id: "task-1",
-              userId: "user-123",
-              syncStatus: "pending",
-              lastModified: new Date(),
-            },
-            createdAt: new Date(),
-          },
-        ])
-        .mockResolvedValueOnce([]);
-
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({ anyOf: mockAnyOf }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi.fn().mockResolvedValue(undefined);
-      firebaseSync.syncCollection = mockSyncCollection;
-
-      // First sync
       await offlineQueue.processQueue();
+      expect(mockDelete).toHaveBeenCalledWith([1]);
 
-      // Verify queue is now empty
-      const emptyResult = await offlineQueue.processQueue();
-      expect(emptyResult).toBeUndefined();
+      await offlineQueue.processQueue();
+      expect(mockSyncCollection).toHaveBeenCalledTimes(1); // Only called for the first process
     });
   });
 
   describe("Error Handling", () => {
-    it("should retry failed operations", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperation: QueuedOperation<DBBase> = {
-        id: 1,
-        type: "create",
-        collectionName: "tasks",
-        userId: "user-123",
-        payload: {
-          id: "task-1",
-          userId: "user-123",
-          syncStatus: "pending",
-          lastModified: new Date(),
-        },
-        createdAt: new Date(),
-        retryCount: 0,
-      };
-
-      const mockToArray = vi.fn().mockResolvedValue([mockOperation]);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockModify = vi.fn().mockResolvedValue(undefined);
-      const mockEquals = vi.fn(() => ({ modify: mockModify }));
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({
-        equals: mockEquals,
-        anyOf: mockAnyOf,
-      }));
-      db.offlineQueue.where = mockWhere as any;
-
-      const mockSyncCollection = vi
-        .fn()
-        .mockRejectedValue(new Error("Network error"));
-      firebaseSync.syncCollection = mockSyncCollection;
+    it("should retry failed operations by incrementing retry count", async () => {
+      const operation = createMockOperation({ retryCount: 0 });
+      const { mockModify } = setupProcessQueueMocks({
+        operations: [operation],
+        syncShouldFail: true,
+      });
 
       await offlineQueue.processQueue();
 
-      // Should increment retry count
-      expect(mockModify).toHaveBeenCalled();
+      expect(mockModify).toHaveBeenCalledWith({ retryCount: 1 });
     });
 
     it("should handle partial sync success", async () => {
-      const { db } = await import("@/services/database");
-      const { firebaseSync } = await import("@/services/sync/index");
-
-      const mockOperations: QueuedOperation<DBBase>[] = [
-        {
-          id: 1,
-          type: "create",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-1",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(),
-        },
-        {
-          id: 2,
-          type: "update",
-          collectionName: "tasks",
-          userId: "user-123",
-          payload: {
-            id: "task-2",
-            userId: "user-123",
-            syncStatus: "pending",
-            lastModified: new Date(),
-          },
-          createdAt: new Date(),
-        },
+      const operations = [
+        createMockOperation({}),
+        createMockOperation({ id: 2 }),
       ];
-
-      const mockToArray = vi.fn().mockResolvedValue(mockOperations);
-      const mockOrderBy = vi.fn(() => ({ toArray: mockToArray }));
-      db.offlineQueue.orderBy = mockOrderBy as any;
-
-      const mockModify = vi.fn().mockResolvedValue(undefined);
-      const mockEquals = vi.fn(() => ({ modify: mockModify }));
-      const mockDelete = vi.fn().mockResolvedValue(undefined);
-      const mockAnyOf = vi.fn(() => ({ delete: mockDelete }));
-      const mockWhere = vi.fn(() => ({
-        equals: mockEquals,
-        anyOf: mockAnyOf,
-      }));
-      db.offlineQueue.where = mockWhere as any;
-
-      // First succeeds, second fails
-      const mockSyncCollection = vi
-        .fn()
-        .mockResolvedValueOnce(undefined)
-        .mockRejectedValueOnce(new Error("Network error"));
-      firebaseSync.syncCollection = mockSyncCollection;
+      const { mockDelete, mockModify, mockSyncCollection } =
+        setupProcessQueueMocks({
+          operations,
+          partialSuccess: true,
+        });
 
       await offlineQueue.processQueue();
 
-      // Both operations should be attempted
       expect(mockSyncCollection).toHaveBeenCalledTimes(2);
-      // Both should be removed (failed one after retry)
-      expect(mockDelete).toHaveBeenCalled();
+      expect(mockDelete).toHaveBeenCalledWith([1]); // Only successful one deleted
+      expect(mockModify).toHaveBeenCalledWith({ retryCount: 1 }); // Failed one modified
     });
   });
 });

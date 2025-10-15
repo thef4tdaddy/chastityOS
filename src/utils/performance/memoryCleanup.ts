@@ -2,7 +2,7 @@
  * Memory Cleanup Utilities
  * Hooks for preventing memory leaks and managing cleanup
  */
-import { useEffect, useRef, useCallback, type MutableRefObject } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 /**
  * Hook to run cleanup function on component unmount
@@ -52,10 +52,8 @@ export function useAbortableRequest(): {
  * Hook to create a memoized ref that persists across renders
  * Useful for storing large data structures without causing re-renders
  */
-export function useMemoizedRef<T>(
-  initialValue: T | (() => T),
-): MutableRefObject<T> {
-  const ref = useRef<T>();
+export function useMemoizedRef<T>(initialValue: T | (() => T)): { current: T } {
+  const ref = useRef<T | undefined>(undefined);
 
   if (ref.current === undefined) {
     ref.current =
@@ -64,11 +62,11 @@ export function useMemoizedRef<T>(
         : initialValue;
   }
 
-  return ref as MutableRefObject<T>;
+  return ref as { current: T };
 }
 
 /**
- * Hook to cleanup timers on unmount
+ * Hook to clean up timers on unmount
  * Returns functions to set and clear timers that auto-cleanup
  */
 export function useTimerCleanup() {

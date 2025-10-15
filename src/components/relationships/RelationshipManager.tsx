@@ -6,8 +6,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui";
 import { useRelationships } from "@/hooks/useRelationships";
 import { Relationship } from "@/types/relationships";
-import { KeyholderRelationship, KeyholderPermissions } from "@/types/core";
-import { FaUserPlus } from "../../utils/iconImport";
+import {
+  KeyholderRelationship,
+  KeyholderPermissions,
+  UserRole,
+} from "@/types/core";
+import { FaUserPlus } from "@/utils/iconImport";
+import { logger } from "@/utils/logging";
 import { MigrationBanner } from "./MigrationBanner";
 import { PendingRequestsList } from "./PendingRequestsList";
 import { RelationshipRequestForm } from "./RelationshipRequestForm";
@@ -27,8 +32,7 @@ const convertToKeyholderRelationship = (
   keyholderUserId: relationship.keyholderId,
   status: relationship.status === "active" ? "active" : "ended",
   permissions: {} as KeyholderPermissions,
-  createdAt: relationship.createdAt,
-  updatedAt: relationship.updatedAt,
+  createdAt: new Date(relationship.createdAt.toDate()),
 });
 
 const RelationshipManager: React.FC<RelationshipManagerProps> = ({
@@ -64,15 +68,18 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
     message: string;
   }) => {
     try {
-      await sendRelationshipRequest(data.email, data.role, data.message);
+      const userRole =
+        data.role === "submissive" ? UserRole.SUBMISSIVE : UserRole.KEYHOLDER;
+      await sendRelationshipRequest(data.email, userRole, data.message);
       setShowRequestForm(false);
-    } catch {
+    } catch (error) {
       // Handle error silently or with proper error handling
+      logger.error("Failed to send relationship request:", error);
     }
   };
 
   return (
-    <div className={`max-w-4xl mx-auto p-6 ${className}`}>
+    <main className={`max-w-4xl mx-auto p-6 ${className}`}>
       <ErrorDisplay error={error ?? null} onClear={clearError} />
 
       <MigrationBanner
@@ -88,9 +95,11 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
 
         <Button
           onClick={() => setShowRequestForm(true)}
+          aria-label="Create new relationship request"
+          aria-expanded={showRequestForm}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 inline-flex items-center"
         >
-          <FaUserPlus className="mr-2" />
+          <FaUserPlus className="mr-2" aria-hidden="true" />
           New Request
         </Button>
       </div>
@@ -115,7 +124,7 @@ const RelationshipManager: React.FC<RelationshipManagerProps> = ({
         onSetActive={handleSetActiveRelationship}
         onEndRelationship={endRelationship}
       />
-    </div>
+    </main>
   );
 };
 

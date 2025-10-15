@@ -113,7 +113,7 @@ body,
 }
 .theme-prod,
 .theme-nightly {
-  font-family: var(--font-main);
+  font-family: var(--font-main), sans-serif;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
 }
@@ -146,7 +146,7 @@ html {
 */
 
 /* Touch-friendly interactive elements */
-.touch-target {
+.bottom-nav-item {
   min-height: var(--touch-target-min);
   min-width: var(--touch-target-min);
   position: relative;
@@ -155,98 +155,6 @@ html {
   justify-content: center;
   cursor: pointer;
   transition: all var(--animation-duration-fast) var(--animation-easing);
-}
-
-.touch-target:active {
-  transform: scale(0.98);
-}
-
-/* Mobile-optimized button styles */
-.btn-mobile {
-  min-height: var(--touch-target-min);
-  min-width: var(--touch-target-min);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--animation-duration-fast) var(--animation-easing);
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: var(--font-size-base);
-  background-color: var(--color-button-bg);
-  color: var(--color-button-text);
-  border: none;
-  outline: none;
-  overflow: hidden;
-}
-
-.btn-mobile:hover:not(:disabled) {
-  background-color: var(--color-button-bg-hover);
-}
-
-.btn-mobile:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 2px;
-}
-
-.btn-mobile:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-mobile:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Mobile-first form controls */
-.input-mobile {
-  min-height: var(--touch-target-min);
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: 2px solid var(--color-border-accent);
-  background-color: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  font-size: 16px; /* Prevents iOS zoom */
-  font-family: var(--font-main);
-  transition: all var(--animation-duration-fast) var(--animation-easing);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.input-mobile:focus {
-  border-color: var(--color-focus-ring);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(88, 28, 135, 0.1);
-}
-
-.input-mobile::placeholder {
-  color: var(--color-text-muted);
-  opacity: 0.7;
-}
-
-/* Mobile-safe select styling */
-.select-mobile {
-  min-height: var(--touch-target-min);
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: 2px solid var(--color-border-accent);
-  background-color: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  font-size: 16px; /* Prevents iOS zoom */
-  font-family: var(--font-main);
-  transition: all var(--animation-duration-fast) var(--animation-easing);
-  width: 100%;
-  box-sizing: border-box;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23a39fad' d='m2 0-2 2h4zm0 5 2-2H0z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 0.75rem;
-  padding-right: 2.5rem;
-  appearance: none;
-  cursor: pointer;
 }
 
 /* Fluid typography */
@@ -332,10 +240,7 @@ html {
   padding-right: env(safe-area-inset-right);
 }
 .safe-area-inset-all {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* Mobile-first responsive containers */
@@ -397,14 +302,6 @@ html {
 }
 
 .bottom-nav-item {
-  min-height: var(--touch-target-min);
-  min-width: var(--touch-target-min);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--animation-duration-fast) var(--animation-easing);
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.5rem;
@@ -413,7 +310,6 @@ html {
   text-decoration: none;
   font-size: var(--font-size-xs);
   font-weight: 500;
-  transition: all var(--animation-duration-fast) var(--animation-easing);
 }
 
 .bottom-nav-item.active {
@@ -557,27 +453,9 @@ html {
   }
 }
 
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+/* Note: canonical @keyframes fade-in-up and @keyframes fade-in are defined earlier
+   (near "Report section animations"). Later duplicate definitions were removed
+   to prevent conflicts and duplication. */
 
 /* Celebration animations */
 @keyframes bounce-celebration {
@@ -740,10 +618,10 @@ html {
 
 @keyframes milestone-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
   }
   50% {
-    box-shadow: 0 0 30px 10px rgba(34, 197, 94, 0.15);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
   }
 }
 
@@ -916,6 +794,72 @@ html {
   box-shadow: 0 8px 16px rgba(88, 28, 135, 0.2);
 }
 
+/* =============================================
+   === ACCESSIBILITY ENHANCEMENTS (WCAG AA)  ===
+   =============================================
+*/
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus,
+.sr-only:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Enhanced focus indicators for better visibility */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(88, 28, 135, 0.2);
+}
+
+/* Ensure all interactive elements have visible focus states */
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .text-nightly-celadon,
+  .text-nightly-honeydew,
+  .text-purple-200,
+  .text-purple-300 {
+    font-weight: 600;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline-width: 4px;
+    outline-offset: 3px;
+  }
+}
+
 /* Accessibility improvements for mobile */
 @media (prefers-reduced-motion: reduce) {
   .touch-target:active,
@@ -994,7 +938,7 @@ html {
 }
 
 /* High contrast mode support */
-@media (prefers-contrast: high) {
+@media (prefers-contrast: more) {
   .btn-mobile,
   .input-mobile,
   .card-mobile {
@@ -1712,7 +1656,6 @@ td {
 
 .glass-card-secondary {
   background: rgba(196, 181, 253, 0.08);
-  border-color: rgba(196, 181, 253, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(196, 181, 253, 0.2);
@@ -1726,7 +1669,6 @@ td {
 
 .glass-card-accent {
   background: rgba(251, 146, 60, 0.08);
-  border-color: rgba(251, 146, 60, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(251, 146, 60, 0.2);
@@ -1772,11 +1714,6 @@ td {
 
 /* =============================================
    === 7. ANIMATIONS & MEDIA QUERIES         ===
-   =============================================
-*/
-
-/* =============================================
-   === 7.1 TRACKER ANIMATIONS                ===
    =============================================
 */
 
@@ -2003,29 +1940,6 @@ textarea:focus-visible,
   outline-offset: 2px;
 }
 
-/* Screen reader only content */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-.sr-only-focusable:focus,
-.sr-only-focusable:active {
-  position: static;
-  width: auto;
-  height: auto;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
-
 /* Ensure minimum color contrast for text */
 .text-contrast-aa {
   color: #ffffff;
@@ -2055,7 +1969,7 @@ textarea:focus-visible,
 }
 
 /* High contrast mode support */
-@media (prefers-contrast: high) {
+@media (prefers-contrast: more) {
   button,
   input,
   select,
@@ -2122,105 +2036,12 @@ textarea:focus-visible,
   animation: progress-fill 1s ease-out forwards;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes glass-morph {
-  0%,
-  100% {
-    background-position: 0% 50%;
-    border-radius: 20px;
-  }
-  50% {
-    background-position: 100% 50%;
-    border-radius: 25px;
-  }
-}
-
-@keyframes liquid-flow {
-  0%,
-  100% {
-    background-size: 200% 200%;
-    background-position: 0% 0%;
-  }
-  50% {
-    background-size: 200% 200%;
-    background-position: 100% 100%;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes glass-shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out forwards;
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .glass-card::before,
-  .glass-button::after,
-  .liquid-glass,
-  .glass-morphism,
-  .glass-float {
-    animation: none;
-  }
-
-  .glass-hover:hover {
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
+/* Note: canonical @keyframes fade-in-up and @keyframes fade-in are defined earlier
+   (near "Report section animations"). Later duplicate definitions were removed
+   to prevent conflicts and duplication. */
 
 /* =============================================
-   === 7. ACHIEVEMENT TOAST STYLES           ===
+   === ACHIEVEMENT TOAST STYLES           ===
    =============================================
 */
 
@@ -2640,7 +2461,8 @@ textarea:focus-visible,
 
 /* Success/Error Feedback Animations */
 @keyframes success-flash {
-  0%, 100% {
+  0%,
+  100% {
     background-color: transparent;
     transform: scale(1);
   }
@@ -2926,6 +2748,7 @@ input[type="range"] {
   cursor: pointer;
 }
 
+/*noinspection ALL*/
 input[type="range"]::-webkit-slider-track {
   width: 100%;
   height: 8px;
@@ -3042,4 +2865,104 @@ input[type="range"]::-moz-range-thumb:active {
   z-index: 9999;
   pointer-events: none;
   animation: confetti-fall linear forwards;
+}
+
+/* =============================================
+   === EVENTS UI ACCESSIBILITY              ===
+   =============================================
+   Accessibility improvements for Events/Logging feature
+   following WCAG 2.1 AA standards
+*/
+
+/* Enhanced focus indicators for event form controls */
+.event-button:focus-visible,
+.event-form-field:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Event type selector button focus with animation */
+.event-button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(88, 28, 135, 0.2);
+  animation: focus-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes focus-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 6px rgba(88, 28, 135, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(88, 28, 135, 0.3);
+  }
+}
+
+/* High contrast mode support for events UI */
+@media (prefers-contrast: more) {
+  .event-button,
+  .event-form-field,
+  .event-item {
+    border: 2px solid currentColor;
+  }
+  
+  .event-button:focus-visible,
+  .event-form-field:focus-visible {
+    outline: 4px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+  
+  .event-item {
+    border: 2px solid var(--color-border-accent);
+  }
+}
+
+/* Reduced motion support for events UI */
+@media (prefers-reduced-motion: reduce) {
+  .event-button,
+  .event-form-field,
+  .event-item,
+  .animate-event-appear,
+  .animate-milestone-glow {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .confetti-particle {
+    display: none;
+  }
+}
+
+/* Event list item accessibility improvements */
+.event-item:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Ensure minimum touch targets for mobile */
+@media (max-width: 640px) {
+  .event-button,
+  .event-form-field,
+  button,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Skip link styling */
+a[href^="#"]:focus {
+  position: absolute;
+  z-index: 9999;
+  top: 1rem;
+  left: 1rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }

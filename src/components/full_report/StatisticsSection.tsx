@@ -14,12 +14,19 @@ import { useCountUp } from "../../hooks/useCountUp";
 import { useStaggerAnimation } from "../../hooks/useStaggerAnimation";
 import { logger } from "@/utils/logging";
 
+interface StatisticsProps {
+  sessions?: DBSession[];
+  events?: DBEvent[];
+  tasks?: DBTask[];
+  goals?: DBGoal[];
+}
+
 // Helper function to calculate statistics with error handling
 const useStatistics = (
-  sessions: DBSession[],
-  events: DBEvent[],
-  tasks: DBTask[],
-  goals: DBGoal[],
+  sessions?: DBSession[],
+  events?: DBEvent[],
+  tasks?: DBTask[],
+  goals?: DBGoal[],
 ) => {
   return useMemo(() => {
     try {
@@ -127,7 +134,7 @@ const StatItem: React.FC<{
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
   numericValue?: number;
-  isVisible: boolean;
+  isVisible: boolean | undefined;
   index: number;
 }> = ({ label, value, icon: Icon, numericValue, isVisible, index }) => {
   // Use counting animation for numeric values
@@ -146,9 +153,17 @@ const StatItem: React.FC<{
           ? `animate-scale-in stagger-${Math.min(index + 1, 8)}`
           : "opacity-0"
       }`}
+      role="article"
+      aria-label={`${label}: ${value}`}
     >
-      <Icon className="text-nightly-aquamarine text-xl sm:text-2xl mb-1 sm:mb-2 mx-auto" />
-      <div className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-0.5 sm:mb-1 break-words">
+      <Icon
+        className="text-nightly-aquamarine text-xl sm:text-2xl mb-1 sm:mb-2 mx-auto"
+        aria-hidden="true"
+      />
+      <div
+        className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-0.5 sm:mb-1 break-words"
+        aria-live="polite"
+      >
         {displayValue}
       </div>
       <div className="text-xs sm:text-sm text-nightly-celadon leading-tight">
@@ -159,12 +174,12 @@ const StatItem: React.FC<{
 };
 
 // Main Statistics Section Component (Memoized to prevent unnecessary re-renders)
-const StatisticsSectionComponent: React.FC<{
-  sessions: DBSession[];
-  events: DBEvent[];
-  tasks: DBTask[];
-  goals: DBGoal[];
-}> = ({ sessions, events, tasks, goals }) => {
+const StatisticsSectionComponent: React.FC<StatisticsProps> = ({
+  sessions,
+  events,
+  tasks,
+  goals,
+}) => {
   const stats = useStatistics(sessions, events, tasks, goals);
 
   // Memoize stat items array to prevent recreation on every render
@@ -225,13 +240,23 @@ const StatisticsSectionComponent: React.FC<{
   return (
     <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <FaChartBar className="text-nightly-lavender-floral text-lg sm:text-xl" />
-        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
+        <FaChartBar
+          className="text-nightly-lavender-floral text-lg sm:text-xl"
+          aria-hidden="true"
+        />
+        <h2
+          id="statistics-heading"
+          className="text-lg sm:text-xl font-semibold text-nightly-honeydew"
+        >
           Statistics
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+        role="list"
+        aria-label="Session statistics"
+      >
         {statItems.map((item, index) => (
           <StatItem
             key={index}
@@ -251,10 +276,5 @@ const StatisticsSectionComponent: React.FC<{
 // Export memoized version to prevent unnecessary re-renders
 export const StatisticsSection = React.memo(
   StatisticsSectionComponent,
-) as React.FC<{
-  sessions: DBSession[];
-  events: DBEvent[];
-  tasks: DBTask[];
-  goals: DBGoal[];
-}>;
+) as React.FC<StatisticsProps>;
 export default StatisticsSection;

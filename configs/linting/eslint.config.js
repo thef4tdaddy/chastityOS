@@ -38,12 +38,11 @@ export default [
       '**/*.spec.{js,jsx,ts,tsx}',
       '**/__tests__/**',
       'scripts/**',
-      'configs/linting/eslint-rules/**',
-      'configs/linting/config-modules/**', // Exclude config modules
-      'configs/linting/eslint.config.js', // Exclude main config file
+      'configs/**',
       'src/utils/logging.js',
       'original-app/**',
       'playwright.config.ts',
+      'src/test/test-helpers.ts',
     ],
   },
   {

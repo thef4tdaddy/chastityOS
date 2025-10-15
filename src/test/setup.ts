@@ -84,7 +84,7 @@ Object.defineProperty(globalThis, "crypto", {
     subtle: {
       digest: vi
         .fn()
-        .mockImplementation(async (algorithm: string, data: ArrayBuffer) => {
+        .mockImplementation(async (_algorithm: string, data: ArrayBuffer) => {
           // Create a deterministic hash based on input data for testing
           const input = new Uint8Array(data);
           const hash = new ArrayBuffer(32);
@@ -109,15 +109,11 @@ Object.defineProperty(globalThis, "crypto", {
     randomUUID: vi.fn().mockImplementation(() => {
       // Generate a mock UUID v4
       const chars = "0123456789abcdef";
-      const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-        /[xy]/g,
-        (c) => {
-          const r = Math.floor(Math.random() * 16);
-          const v = c === "x" ? r : (r & 0x3) | 0x8;
-          return chars[v];
-        },
-      );
-      return uuid;
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = Math.floor(Math.random() * 16);
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return chars[v]!;
+      });
     }),
   },
 });
@@ -161,21 +157,6 @@ Object.defineProperty(navigator, "serviceWorker", {
 // Mock URL methods
 global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
 global.URL.revokeObjectURL = vi.fn();
-
-// Mock window.matchMedia for animation tests
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
 
 // Global test utilities
 globalThis.console = {

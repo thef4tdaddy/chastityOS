@@ -9,6 +9,18 @@ export interface SyncStatus {
   error: string | null;
 }
 
+export interface SyncResult {
+  success: boolean;
+  operations: {
+    uploaded: number;
+    downloaded: number;
+    conflicts: number;
+  };
+  conflicts: DataConflict[];
+  timestamp: Date;
+  error?: string;
+}
+
 export interface RelationshipSyncStatus {
   relationshipId: string;
   partnerUserId: string;

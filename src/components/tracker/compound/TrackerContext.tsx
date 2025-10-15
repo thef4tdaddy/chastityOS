@@ -1,10 +1,10 @@
 /**
  * TrackerContext - Shared context for Tracker compound component
- * Provides session data and controls to all sub-components
+ * Provides session data and controls to all subcomponents
  */
 
 import { createContext, useContext } from "react";
-import type { DBSession, DBGoal } from "../../../types/database";
+import type { DBSession, DBGoal } from "@/types/database";
 
 export interface TrackerContextValue {
   // Session state

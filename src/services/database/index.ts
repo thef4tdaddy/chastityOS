@@ -4,7 +4,8 @@
  */
 
 // Database instance
-export { db, ChastityDB } from "../storage/ChastityDB";
+export { ChastityDB } from "../storage/ChastityDB";
+export { db } from "../storage/ChastityDB";
 
 // Base service
 export { BaseDBService } from "./BaseDBService";

@@ -1,6 +1,6 @@
 /**
  * Data Sync Operations Hooks
- * Hooks for performing sync operations
+ *  for performing sync operations
  */
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import type {
@@ -13,7 +13,7 @@ import type {
   SyncScope,
   DataEntityType,
 } from "./types/dataSync";
-import { serviceLogger } from "../../utils/logging";
+import { serviceLogger } from "@/utils/logging";
 
 const logger = serviceLogger("useDataSyncOperations");
 
@@ -89,6 +89,8 @@ export function useManualSyncOperations(
       logger.info("Force sync completed successfully", { result });
       return result;
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       logger.error("Force sync failed", { error });
 
       setSyncStatus({
@@ -96,7 +98,7 @@ export function useManualSyncOperations(
         lastSync: null,
         progress: 0,
         message: "Sync failed",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: errorMessage,
       });
 
       setSyncMetrics((prev) => ({
@@ -105,7 +107,13 @@ export function useManualSyncOperations(
         failedSyncs: prev.failedSyncs + 1,
       }));
 
-      throw error;
+      return {
+        success: false,
+        error: errorMessage,
+        operations: { uploaded: 0, downloaded: 0, conflicts: 0 },
+        conflicts: [],
+        timestamp: new Date(),
+      };
     }
   }, [userId, setSyncStatus, setSyncMetrics]);
 
@@ -120,7 +128,17 @@ export function useManualSyncOperations(
           (rs) => rs.relationshipId === relationshipId,
         );
         if (!relationshipStatus) {
-          throw new Error("Relationship not found");
+          const error = "Relationship not found";
+          logger.warn(error, { relationshipId });
+          return {
+            relationshipId,
+            success: false,
+            error,
+            syncedCollections: [],
+            conflictsFound: 0,
+            conflictsResolved: 0,
+            metrics: { duration: 0, itemsSynced: 0, bytesTransferred: 0 },
+          };
         }
 
         const result: RelationshipSyncResult = {

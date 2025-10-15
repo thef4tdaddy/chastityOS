@@ -31,18 +31,25 @@ const SessionStatusDisplay: React.FC<{
   const StatusIcon = sessionStatus.icon;
 
   return (
-    <div className="text-center">
+    <div className="text-center" role="status" aria-live="polite">
       <div className="flex items-center justify-center gap-2 mb-2">
-        <StatusIcon className={`${sessionStatus.color} text-base sm:text-lg`} />
+        <StatusIcon
+          className={`${sessionStatus.color} text-base sm:text-lg`}
+          aria-hidden="true"
+        />
         <span
           className={`text-base sm:text-lg font-medium ${sessionStatus.color}`}
+          aria-label={`Session status: ${sessionStatus.status}`}
         >
           {sessionStatus.status}
         </span>
       </div>
       {currentSession && (
         <>
-          <div className="text-2xl sm:text-3xl font-mono text-nightly-honeydew mb-2">
+          <div
+            className="text-2xl sm:text-3xl font-mono text-nightly-honeydew mb-2"
+            aria-label={`Effective session time: ${timerData.effectiveTimeFormatted || "0 hours 0 minutes 0 seconds"}`}
+          >
             {timerData.effectiveTimeFormatted || "0:00:00"}
           </div>
           <div className="text-xs sm:text-sm text-nightly-celadon break-words px-2">
@@ -80,7 +87,11 @@ const SessionDetailsDisplay: React.FC<{
   if (!currentSession) return null;
 
   return (
-    <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
+    <div
+      className="space-y-2 sm:space-y-3 text-sm sm:text-base"
+      role="complementary"
+      aria-label="Session details"
+    >
       <div className="flex justify-between gap-2">
         <span className="text-nightly-celadon">Mode:</span>
         <span className="text-nightly-honeydew text-right">
@@ -141,8 +152,14 @@ export const CurrentStatusSection: React.FC<{
   return (
     <Card variant="glass" className="mb-4 sm:mb-6 animate-fade-in-up">
       <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <FaClock className="text-nightly-aquamarine text-lg sm:text-xl" />
-        <h2 className="text-lg sm:text-xl font-semibold text-nightly-honeydew">
+        <FaClock
+          className="text-nightly-aquamarine text-lg sm:text-xl"
+          aria-hidden="true"
+        />
+        <h2
+          id="current-status-heading"
+          className="text-lg sm:text-xl font-semibold text-nightly-honeydew"
+        >
           Current Status
         </h2>
       </div>

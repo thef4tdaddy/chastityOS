@@ -16,8 +16,8 @@ import {
   serverTimestamp,
   type DocumentReference,
 } from "firebase/firestore";
-import { getFirebaseAuth, getFirestore } from "../firebase";
-import { User, ApiResponse } from "@/types";
+import { getFirebaseAuth, getFirestore } from "@/services/firebase";
+import { User, ApiResponse, UserRole } from "@/types";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 
@@ -115,7 +115,11 @@ export class GoogleAuthService {
       const credential = GoogleAuthProvider.credentialFromResult(result);
 
       if (!credential) {
-        throw new Error("No credential from Google");
+        logger.warn("Could not get credential from Google sign-in result");
+        return {
+          success: false,
+          error: "Could not get credential from Google. Please try again.",
+        };
       }
 
       // Link anonymous account to Google credential
@@ -175,12 +179,12 @@ export class GoogleAuthService {
   private static async createGoogleUserProfile(
     firebaseUser: FirebaseUser,
   ): Promise<User> {
-    const user: User = {
+    const userPayload = {
       uid: firebaseUser.uid,
       email: firebaseUser.email || undefined,
       displayName:
         firebaseUser.displayName || `User_${firebaseUser.uid.substring(0, 8)}`,
-      role: "submissive", // Default role
+      role: UserRole.SUBMISSIVE, // Default role
       profile: {
         isPublicProfileEnabled: false,
         profileToken: generateUUID(),
@@ -203,18 +207,27 @@ export class GoogleAuthService {
       createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
       isPremium: false,
+      isAnonymous: false, // New Google users are not anonymous
     };
 
     const db = await getFirestore();
     const userRef: DocumentReference = doc(db, "users", firebaseUser.uid);
-    await setDoc(userRef, user);
+    await setDoc(userRef, userPayload);
 
     logger.debug("Google user profile created in Firestore", {
       uid: firebaseUser.uid,
       email: firebaseUser.email,
     });
 
-    return user;
+    const createdUser = await this.getUserProfile(firebaseUser.uid);
+    if (!createdUser) {
+      logger.error("Failed to fetch newly created user profile", {
+        uid: firebaseUser.uid,
+      });
+      throw new Error("Could not retrieve user profile after creation.");
+    }
+
+    return createdUser;
   }
 
   /**

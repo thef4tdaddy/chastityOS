@@ -87,11 +87,11 @@ export function useRuleMutations() {
         "id" | "createdAt" | "syncStatus" | "lastModified"
       >,
     ) => {
-      const ruleId = `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const ruleId = `rule_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       const newRule: Omit<KeyholderRule, "syncStatus" | "lastModified"> = {
         ...rule,
         id: ruleId,
-        createdAt: Timestamp.now(),
+        createdAt: Timestamp.now().toDate(), // Convert to Date
       };
 
       await ruleDBService.create(newRule);
@@ -99,9 +99,9 @@ export function useRuleMutations() {
       logger.info("Rule created", { ruleId, title: rule.title });
       return ruleId;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all rule queries to refetch
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
+      await queryClient.invalidateQueries({ queryKey: ["rules"] });
     },
     onError: (error) => {
       logger.error("Failed to create rule", { error });
@@ -120,9 +120,9 @@ export function useRuleMutations() {
         updates: params.updates,
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all rule queries to refetch
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
+      await queryClient.invalidateQueries({ queryKey: ["rules"] });
     },
     onError: (error) => {
       logger.error("Failed to update rule", { error });
@@ -135,9 +135,9 @@ export function useRuleMutations() {
 
       logger.info("Rule toggled", { ruleId });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all rule queries to refetch
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
+      await queryClient.invalidateQueries({ queryKey: ["rules"] });
     },
     onError: (error) => {
       logger.error("Failed to toggle rule", { error });
@@ -150,9 +150,9 @@ export function useRuleMutations() {
 
       logger.info("Rule deleted", { ruleId });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate all rule queries to refetch
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
+      await queryClient.invalidateQueries({ queryKey: ["rules"] });
     },
     onError: (error) => {
       logger.error("Failed to delete rule", { error });
