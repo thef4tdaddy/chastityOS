@@ -245,9 +245,14 @@ export function parseUnsubscribeToken(token: string): {
   try {
     const decoded = atob(token);
     const [userId, notificationType, timestampStr] = decoded.split(":");
+
+    if (!userId || !notificationType || !timestampStr) {
+      return null;
+    }
+
     const timestamp = parseInt(timestampStr, 10);
 
-    if (!userId || !notificationType || isNaN(timestamp)) {
+    if (isNaN(timestamp)) {
       return null;
     }
 
