@@ -23,6 +23,10 @@ export interface NotificationSettings {
     startTime: string; // HH:mm format
     endTime: string; // HH:mm format
   };
+  // Privacy & Safety Settings
+  privacyMode: boolean; // Strip sensitive info from notifications
+  emailNotifications: boolean; // Allow email notifications
+  emailOptOut: boolean; // User has opted out of all emails
 }
 
 const defaultSettings: NotificationSettings = {
@@ -38,6 +42,9 @@ const defaultSettings: NotificationSettings = {
     startTime: "22:00",
     endTime: "08:00",
   },
+  privacyMode: false,
+  emailNotifications: true,
+  emailOptOut: false,
 };
 
 export interface UseNotificationSettingsReturn {

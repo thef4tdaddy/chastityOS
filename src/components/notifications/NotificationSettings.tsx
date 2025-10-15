@@ -10,16 +10,19 @@ import {
   NotificationTypeSection,
   SoundVibrationSection,
   QuietHoursSection,
+  PrivacySafetySection,
 } from "./NotificationSettingsSections";
 
 interface NotificationSettingsProps {
   userId: string | null;
   isAuthReady: boolean;
+  isAnonymous?: boolean;
 }
 
 export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   userId,
   isAuthReady,
+  isAnonymous = false,
 }) => {
   const {
     settings,
@@ -77,6 +80,12 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         <QuietHoursSection
           settings={settings}
           onUpdateSettings={updateSettings}
+        />
+
+        <PrivacySafetySection
+          settings={settings}
+          onToggle={handleToggle}
+          isAnonymous={isAnonymous}
         />
       </CardBody>
     </Card>

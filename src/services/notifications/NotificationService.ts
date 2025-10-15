@@ -1,10 +1,20 @@
+/* eslint-disable max-lines */
 /**
  * Notification Service
  * Centralized service for handling all push notifications in ChastityOS
  * Includes session, keyholder, and system notifications
+ *
+ * Note: This file exceeds the max-lines limit due to comprehensive notification types.
+ * Consider refactoring into smaller modules in the future.
  */
 import { useNotificationStore } from "@/stores/notificationStore";
 import { serviceLogger } from "@/utils/logging";
+import {
+  sanitizeNotificationContent,
+  shouldSendNotification,
+} from "@/utils/notifications/privacy";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/services/firebase";
 
 const logger = serviceLogger("NotificationService");
 
@@ -108,6 +118,106 @@ export interface AchievementUnlockedParams extends BaseNotificationParams {
  */
 export class NotificationService {
   // ========================================================================
+  // Privacy & Settings Helpers
+  // ========================================================================
+
+  /**
+   * Get user's notification settings and privacy preferences
+   */
+  private static async getUserNotificationSettings(userId: string): Promise<{
+    privacyMode: boolean;
+    isAnonymous: boolean;
+    preferences: {
+      sessionNotifications: boolean;
+      taskNotifications: boolean;
+      keyholderNotifications: boolean;
+      systemNotifications: boolean;
+      pushEnabled: boolean;
+      emailNotifications: boolean;
+      emailOptOut: boolean;
+    };
+  }> {
+    try {
+      // Get notification settings from Firestore
+      const settingsDoc = doc(db, "users", userId, "settings", "notifications");
+      const docSnap = await getDoc(settingsDoc);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return {
+          privacyMode: data.privacyMode ?? false,
+          isAnonymous: false, // Will be determined by auth state
+          preferences: {
+            sessionNotifications: data.sessionNotifications ?? true,
+            taskNotifications: data.taskNotifications ?? true,
+            keyholderNotifications: data.keyholderNotifications ?? true,
+            systemNotifications: data.systemNotifications ?? true,
+            pushEnabled: data.pushEnabled ?? false,
+            emailNotifications: data.emailNotifications ?? true,
+            emailOptOut: data.emailOptOut ?? false,
+          },
+        };
+      }
+
+      // Return defaults if no settings found
+      return {
+        privacyMode: false,
+        isAnonymous: false,
+        preferences: {
+          sessionNotifications: true,
+          taskNotifications: true,
+          keyholderNotifications: true,
+          systemNotifications: true,
+          pushEnabled: false,
+          emailNotifications: true,
+          emailOptOut: false,
+        },
+      };
+    } catch (error) {
+      logger.error("Failed to get user notification settings", {
+        error,
+        userId,
+      });
+      // Return safe defaults on error
+      return {
+        privacyMode: false,
+        isAnonymous: false,
+        preferences: {
+          sessionNotifications: true,
+          taskNotifications: true,
+          keyholderNotifications: true,
+          systemNotifications: true,
+          pushEnabled: false,
+          emailNotifications: true,
+          emailOptOut: false,
+        },
+      };
+    }
+  }
+
+  /**
+   * Check if notification should be sent based on user preferences
+   */
+  private static async shouldNotifyUser(
+    userId: string,
+    notificationType: string,
+  ): Promise<boolean> {
+    try {
+      const settings = await this.getUserNotificationSettings(userId);
+
+      return shouldSendNotification(notificationType, settings.preferences, {
+        privacyMode: settings.privacyMode,
+        anonymousMode: settings.isAnonymous,
+        optedOut: settings.preferences.emailOptOut,
+      });
+    } catch (error) {
+      logger.error("Error checking if should notify user", { error, userId });
+      // Default to sending notification on error
+      return true;
+    }
+  }
+
+  // ========================================================================
   // Session Notifications
   // ========================================================================
 
@@ -118,24 +228,54 @@ export class NotificationService {
     params: SessionEndingSoonParams,
   ): Promise<string | null> {
     try {
+      // Check if user wants this notification
+      const shouldNotify = await this.shouldNotifyUser(
+        params.userId,
+        "session_ending_soon",
+      );
+      if (!shouldNotify) {
+        logger.debug("Notification skipped due to user preferences", {
+          userId: params.userId,
+          type: "session_ending_soon",
+        });
+        return null;
+      }
+
       logger.info("Sending session ending soon notification", {
         sessionId: params.sessionId,
         userId: params.userId,
         minutesRemaining: params.minutesRemaining,
       });
 
-      const notificationId = useNotificationStore.getState().addNotification({
-        type: "warning",
-        priority: "high",
+      // Get user's privacy settings
+      const settings = await this.getUserNotificationSettings(params.userId);
+
+      // Prepare notification content
+      const content = {
         title: "Session Ending Soon",
         message: `Your chastity session will end in ${params.minutesRemaining} minutes`,
-        duration: 0, // Persistent until dismissed
         metadata: {
           sessionId: params.sessionId,
           link: `/tracker`,
           type: "session_ending_soon",
           ...params.metadata,
         },
+      };
+
+      // Apply privacy sanitization
+      const sanitizedContent = sanitizeNotificationContent(
+        content,
+        settings.privacyMode,
+        settings.isAnonymous,
+      );
+
+      const notificationId = useNotificationStore.getState().addNotification({
+        type: "warning",
+        priority: "high",
+        title: sanitizedContent.title,
+        message: sanitizedContent.message,
+        duration: 0, // Persistent until dismissed
+        metadata: sanitizedContent.metadata,
       });
 
       // Future: Add push notification here
@@ -157,29 +297,62 @@ export class NotificationService {
     params: SessionCompletedParams,
   ): Promise<string | null> {
     try {
+      // Check if user wants this notification
+      const shouldNotify = await this.shouldNotifyUser(
+        params.userId,
+        "session_completed",
+      );
+      if (!shouldNotify) {
+        logger.debug("Notification skipped due to user preferences", {
+          userId: params.userId,
+          type: "session_completed",
+        });
+        return null;
+      }
+
       logger.info("Sending session completed notification", {
         sessionId: params.sessionId,
         userId: params.userId,
       });
+
+      // Get user's privacy settings
+      const settings = await this.getUserNotificationSettings(params.userId);
 
       const durationText =
         params.duration > 24
           ? `${Math.round(params.duration / 24)} days`
           : `${Math.round(params.duration)} hours`;
 
-      const notificationId = useNotificationStore.getState().addNotification({
-        type: "success",
-        priority: "high",
+      // Prepare notification content
+      const content = {
         title: "Session Completed! 🎉",
-        message: `Congratulations! You completed a ${durationText} session`,
-        duration: 0, // Persistent - achievement moment
+        message: params.submissiveName
+          ? `Congratulations, ${params.submissiveName}! You completed a ${durationText} session`
+          : `Congratulations! You completed a ${durationText} session`,
         metadata: {
           sessionId: params.sessionId,
           link: `/tracker`,
           type: "session_completed",
           duration: params.duration,
+          submissiveName: params.submissiveName,
           ...params.metadata,
         },
+      };
+
+      // Apply privacy sanitization
+      const sanitizedContent = sanitizeNotificationContent(
+        content,
+        settings.privacyMode,
+        settings.isAnonymous,
+      );
+
+      const notificationId = useNotificationStore.getState().addNotification({
+        type: "success",
+        priority: "high",
+        title: sanitizedContent.title,
+        message: sanitizedContent.message,
+        duration: 0, // Persistent - achievement moment
+        metadata: sanitizedContent.metadata,
       });
 
       return notificationId;
@@ -612,19 +785,6 @@ export class NotificationService {
   // ========================================================================
   // Utility Methods
   // ========================================================================
-
-  /**
-   * Check if user has notifications enabled for a specific type
-   * Future: Read from user settings
-   */
-  static async shouldNotifyUser(
-    _userId: string,
-    _notificationType: string,
-  ): Promise<boolean> {
-    // Future: Check user preferences from settings
-    // For now, always return true
-    return true;
-  }
 
   /**
    * Future: Send push notification

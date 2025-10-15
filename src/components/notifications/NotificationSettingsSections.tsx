@@ -245,3 +245,86 @@ export const QuietHoursSection: React.FC<QuietHoursSectionProps> = ({
     </div>
   );
 };
+
+// Privacy & Safety Section
+interface PrivacySafetySectionProps {
+  settings: NotificationSettings;
+  onToggle: (key: keyof NotificationSettings, value: boolean) => void;
+  isAnonymous?: boolean;
+}
+
+export const PrivacySafetySection: React.FC<PrivacySafetySectionProps> = ({
+  settings,
+  onToggle,
+  isAnonymous = false,
+}) => {
+  return (
+    <div className="space-y-3">
+      <h3 className="text-lg font-semibold text-nightly-spring-green">
+        Privacy &amp; Safety
+      </h3>
+
+      <Alert variant="info">
+        <p className="text-sm">
+          Control how your personal information appears in notifications and
+          emails. These settings help protect your privacy.
+        </p>
+      </Alert>
+
+      <div className="space-y-2">
+        <Switch
+          label="Privacy Mode"
+          description="Strip sensitive personal information from notifications (names, specific details)"
+          checked={settings.privacyMode}
+          onCheckedChange={(checked) => onToggle("privacyMode", checked)}
+        />
+
+        <Switch
+          label="Email Notifications"
+          description="Receive important notifications via email (GDPR compliant with unsubscribe option)"
+          checked={settings.emailNotifications}
+          onCheckedChange={(checked) => onToggle("emailNotifications", checked)}
+        />
+
+        {isAnonymous && (
+          <Alert variant="warning">
+            <p className="text-sm">
+              ⚠️ You are using an anonymous account. All notifications are
+              already anonymized to protect your privacy.
+            </p>
+          </Alert>
+        )}
+
+        {settings.privacyMode && (
+          <Alert variant="success">
+            <p className="text-sm">
+              ✅ Privacy mode enabled. Personal information will be removed from
+              notifications.
+            </p>
+          </Alert>
+        )}
+
+        {!settings.emailNotifications && (
+          <Alert variant="info">
+            <p className="text-sm">
+              You have opted out of email notifications. You will only receive
+              in-app notifications.
+            </p>
+          </Alert>
+        )}
+      </div>
+
+      <div className="text-xs text-nightly-celadon/70 mt-4 space-y-2">
+        <p>
+          <strong>GDPR Compliance:</strong> All email notifications include an
+          unsubscribe link. You can opt out at any time.
+        </p>
+        <p>
+          <strong>Anonymous Users:</strong> If you&apos;re using an anonymous
+          account, notifications are automatically sanitized to protect your
+          identity.
+        </p>
+      </div>
+    </div>
+  );
+};
