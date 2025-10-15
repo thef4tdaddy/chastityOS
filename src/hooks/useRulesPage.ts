@@ -10,7 +10,7 @@ const convertToChastityRule = (rule: KeyholderRule): ChastityRule => ({
   content: rule.description,
   isActive: rule.isActive,
   createdBy: "keyholder", // Default to keyholder for now
-  createdAt: rule.createdAt.toDate(),
+  createdAt: rule.createdAt,
   lastModified: rule.lastModified || new Date(),
 });
 

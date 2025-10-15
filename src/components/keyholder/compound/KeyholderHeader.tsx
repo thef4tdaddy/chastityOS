@@ -4,8 +4,8 @@
 
 import React from "react";
 import { useKeyholderContext } from "./KeyholderContext";
-import { FaUserShield } from "../../../utils/iconImport";
-import { usePendingReleaseRequests } from "../../../hooks/api/useReleaseRequests";
+import { FaUserShield } from "@/utils/iconImport";
+import { usePendingReleaseRequests } from "@/hooks/api/useReleaseRequests";
 import { ReleaseRequestCard } from "../ReleaseRequestCard";
 
 export const KeyholderHeader: React.FC = () => {
@@ -41,11 +41,7 @@ export const KeyholderHeader: React.FC = () => {
               Pending Release Requests
             </h3>
             {pendingRequests.map((request) => (
-              <ReleaseRequestCard
-                key={request.id}
-                request={request}
-                keyholderUserId={keyholderUserId}
-              />
+              <ReleaseRequestCard key={request.id} request={request} />
             ))}
           </div>
         )}

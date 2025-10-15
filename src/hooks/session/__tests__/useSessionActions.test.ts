@@ -1,35 +1,28 @@
 /**
  * useSessionActions Hook Tests
- * Tests for session control operations (start, end, pause, resume)
+ *  for session control operations (start, end, pause, resume)
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { useSessionActions } from "../useSessionActions";
+import { renderHook, act } from "@testing-library/react";
+import { useSessionActions } from "@/hooks/session/useSessionActions";
+import { useSession } from "@/hooks/session/useSession";
 
 // Mock dependencies
-vi.mock("../useSession", () => ({
-  useSession: vi.fn(() => ({
-    session: null,
-    isActive: false,
-    startSession: vi.fn().mockResolvedValue({
-      id: "test-session",
-      userId: "test-user",
-      startTime: new Date(),
-    }),
-    stopSession: vi.fn().mockResolvedValue(undefined),
-  })),
-}));
+vi.mock("@/hooks/session/useSession");
 
-vi.mock("../usePauseResume", () => ({
+vi.mock("@/hooks/session/usePauseResume", () => ({
   usePauseResume: vi.fn(() => ({
     isPaused: false,
     pauseSession: vi.fn().mockResolvedValue(undefined),
     resumeSession: vi.fn().mockResolvedValue(undefined),
+    pauseStatus: { isPaused: false, pauseCount: 0, canResume: false },
+    cooldownState: { isInCooldown: false },
+    timeUntilNextPause: 0,
   })),
 }));
 
-vi.mock("../../../utils/logging", () => ({
+vi.mock("@/utils/logging", () => ({
   serviceLogger: () => ({
     debug: vi.fn(),
     info: vi.fn(),
@@ -38,7 +31,7 @@ vi.mock("../../../utils/logging", () => ({
   }),
 }));
 
-vi.mock("../../../services/SessionConflictDetectionService", () => ({
+vi.mock("@/services/SessionConflictDetectionService", () => ({
   sessionConflictDetection: {
     isOperationInProgress: vi.fn(() => false),
     startOperation: vi.fn(),
@@ -47,18 +40,73 @@ vi.mock("../../../services/SessionConflictDetectionService", () => ({
 }));
 
 describe("useSessionActions", () => {
+  const mockUserId = "test-user";
+
+  const mockUseSession = (isActive: boolean) => {
+    const mockSessionData: Partial<ReturnType<typeof useSession>> = {
+      session: isActive
+        ? {
+            id: "test-session",
+            userId: mockUserId,
+            startTime: new Date(),
+            isPaused: false,
+            accumulatedPauseTime: 0,
+            isHardcoreMode: false,
+            keyholderApprovalRequired: false,
+            syncStatus: "synced",
+            lastModified: new Date(),
+          }
+        : null,
+      isActive,
+      startSession: vi.fn().mockResolvedValue({
+        id: "test-session",
+        userId: mockUserId,
+        startTime: new Date(),
+      }),
+      stopSession: vi.fn().mockResolvedValue(undefined),
+      pauseSession: vi.fn().mockResolvedValue(undefined),
+      resumeSession: vi.fn().mockResolvedValue(undefined),
+      modifySession: vi.fn().mockResolvedValue(undefined),
+      setGoals: vi.fn().mockResolvedValue(undefined),
+      requestModification: vi.fn().mockResolvedValue(undefined),
+      requestKeyholderApproval: vi.fn().mockResolvedValue({ approved: true }),
+      canSelfModify: true,
+      refreshSession: vi.fn(),
+      duration: 0,
+      analytics: {
+        averageSessionLength: 0,
+        completionRate: 0,
+        goalAchievementRate: 0,
+        totalSessions: 0,
+        consistencyScore: 0,
+      },
+      context: {
+        userId: mockUserId,
+        sessionType: "self_managed",
+        permissions: [],
+      },
+      goals: { personal: [], keyholderAssigned: [], active: [] },
+      getPredictiveAnalytics: vi.fn(),
+      getSessionInsights: vi.fn(),
+      isUnderKeyholderControl: false,
+      keyholderControls: null,
+      goalProgress: 0,
+      isLoading: false,
+      error: null,
+    };
+    vi.mocked(useSession).mockReturnValue(
+      mockSessionData as ReturnType<typeof useSession>,
+    );
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should initialize with default state", () => {
+    mockUseSession(false);
     const { result } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: false,
-        onSessionStarted: vi.fn(),
-        onSessionEnded: vi.fn(),
-      }),
+      useSessionActions({ userId: mockUserId }),
     );
 
     expect(result.current.isStarting).toBe(false);
@@ -67,11 +115,9 @@ describe("useSessionActions", () => {
   });
 
   it("should expose start session function", () => {
+    mockUseSession(false);
     const { result } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: false,
-      }),
+      useSessionActions({ userId: mockUserId }),
     );
 
     expect(result.current.startSession).toBeDefined();
@@ -79,11 +125,9 @@ describe("useSessionActions", () => {
   });
 
   it("should expose end session function", () => {
+    mockUseSession(true);
     const { result } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: true,
-      }),
+      useSessionActions({ userId: mockUserId }),
     );
 
     expect(result.current.endSession).toBeDefined();
@@ -91,11 +135,9 @@ describe("useSessionActions", () => {
   });
 
   it("should expose pause and resume functions", () => {
+    mockUseSession(true);
     const { result } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: true,
-      }),
+      useSessionActions({ userId: mockUserId }),
     );
 
     expect(result.current.pauseSession).toBeDefined();
@@ -103,32 +145,24 @@ describe("useSessionActions", () => {
   });
 
   it("should determine if session can be started", () => {
+    mockUseSession(false);
     const { result: inactiveResult } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: false,
-      }),
+      useSessionActions({ userId: mockUserId }),
     );
+    expect(inactiveResult.current.canStart).toBe(true);
 
+    mockUseSession(true);
     const { result: activeResult } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: true,
-      }),
+      useSessionActions({ userId: mockUserId }),
     );
-
-    expect(inactiveResult.current.canStart).toBeDefined();
-    expect(activeResult.current.canEnd).toBeDefined();
+    expect(activeResult.current.canStart).toBe(false);
   });
 
   it("should call callbacks when provided", async () => {
+    mockUseSession(false);
     const onSessionStarted = vi.fn();
     const { result } = renderHook(() =>
-      useSessionActions({
-        userId: "test-user",
-        isActive: false,
-        onSessionStarted,
-      }),
+      useSessionActions({ userId: mockUserId, onSessionStarted }),
     );
 
     await act(async () => {
@@ -139,8 +173,6 @@ describe("useSessionActions", () => {
       });
     });
 
-    await waitFor(() => {
-      expect(onSessionStarted).toHaveBeenCalled();
-    });
+    expect(onSessionStarted).toHaveBeenCalled();
   });
 });

@@ -20,7 +20,7 @@ interface RelationshipInvitesState extends BaseHookState {
 interface RelationshipInvitesActions extends BaseHookActions {
   sendRelationshipRequest: (
     targetUserId: string,
-    role: "submissive" | "keyholder",
+    role: UserRole,
     message?: string,
   ) => Promise<void>;
   refreshPendingRequests: () => Promise<void>;

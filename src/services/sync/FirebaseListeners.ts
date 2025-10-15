@@ -3,7 +3,7 @@
  * Sets up real-time listeners for Firebase collections
  */
 import { serviceLogger } from "@/utils/logging";
-import { getFirestore, getFirebaseAuth } from "../firebase";
+import { getFirestore, getFirebaseAuth } from "@/services/firebase";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import type { FirebaseSync } from "./FirebaseSync";
 
@@ -56,7 +56,7 @@ export class FirebaseListeners {
         collection(firestore, `users/${userId}/${collectionName}`),
       );
 
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const unsubscribe = onSnapshot(q, async (querySnapshot) => {
         const changes = querySnapshot
           .docChanges()
           .map((change) => ({ id: change.doc.id, ...change.doc.data() }));
@@ -64,7 +64,10 @@ export class FirebaseListeners {
           logger.debug(
             `Received ${changes.length} real-time updates for ${collectionName}`,
           );
-          this.firebaseSync.applyRemoteChanges(changes);
+          await this.firebaseSync.applyRemoteChanges(
+            collectionName,
+            changes as Record<string, unknown>[],
+          );
         }
       });
 

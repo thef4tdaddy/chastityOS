@@ -3,6 +3,7 @@
  */
 import { Timestamp } from "firebase/firestore";
 import { SessionEvent, EventType, RemovalReason, PauseReason } from "./events";
+import { SyncStatus } from "./database";
 
 // ==================== USER TYPES ====================
 
@@ -225,9 +226,9 @@ export interface KeyholderRule {
   title: string;
   description: string;
   isActive: boolean;
-  createdAt: Timestamp;
+  createdAt: Date;
   consequences?: TaskConsequence[];
-  syncStatus: "pending" | "synced" | "error";
+  syncStatus: SyncStatus;
   lastModified: Date;
 }
 

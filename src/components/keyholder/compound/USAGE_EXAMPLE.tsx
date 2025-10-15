@@ -51,6 +51,21 @@ export const BasicKeyholderExample = () => {
  */
 export const CustomLayoutExample = () => {
   const keyholderContextValue: KeyholderContextValue = {
+    keyholderUserId: "keyholder-123",
+    relationships: [],
+    keyholderRelationships: [],
+    selectedRelationship: null,
+    selectedWearerId: null,
+    setSelectedWearer: () => {},
+    submissiveSession: null,
+    sessionLoading: false,
+    isKeyholderModeUnlocked: false,
+    lockKeyholderControls: () => {},
+    setSubmissiveSession: () => {},
+    keyholderControls: null,
+    setKeyholderControls: () => {},
+    isLoading: false,
+    error: null,
     /* ... context value ... */
   } as KeyholderContextValue;
 
@@ -88,10 +103,23 @@ export const CustomLayoutExample = () => {
  */
 export const ConditionalRenderingExample = () => {
   const keyholderContextValue: KeyholderContextValue = {
+    keyholderUserId: "keyholder-123",
     isKeyholderModeUnlocked: true,
     keyholderRelationships: [
       /* ... relationships ... */
     ],
+    relationships: [],
+    selectedRelationship: null,
+    selectedWearerId: null,
+    setSelectedWearer: () => {},
+    submissiveSession: null,
+    sessionLoading: false,
+    lockKeyholderControls: () => {},
+    setSubmissiveSession: () => {},
+    keyholderControls: null,
+    setKeyholderControls: () => {},
+    isLoading: false,
+    error: null,
     /* ... rest of context value ... */
   } as KeyholderContextValue;
 
@@ -198,6 +226,21 @@ const CustomKeyholderComponent = () => {
 
 export const CustomSubComponentExample = () => {
   const keyholderContextValue: KeyholderContextValue = {
+    keyholderUserId: "keyholder-123",
+    relationships: [],
+    keyholderRelationships: [],
+    selectedRelationship: null,
+    selectedWearerId: null,
+    setSelectedWearer: () => {},
+    submissiveSession: null,
+    sessionLoading: false,
+    isKeyholderModeUnlocked: false,
+    lockKeyholderControls: () => {},
+    setSubmissiveSession: () => {},
+    keyholderControls: null,
+    setKeyholderControls: () => {},
+    isLoading: false,
+    error: null,
     /* ... context value ... */
   } as KeyholderContextValue;
 

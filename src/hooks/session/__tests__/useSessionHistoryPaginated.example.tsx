@@ -9,7 +9,7 @@ import React from "react";
 import {
   useSessionHistoryPaginated,
   useSessionHistoryCursor,
-} from "../useSessionHistoryPaginated";
+} from "@/hooks/session/useSessionHistoryPaginated";
 import type { DBSession } from "@/types/database";
 
 /**
@@ -30,6 +30,11 @@ export const InfiniteScrollExample: React.FC<{ userId: string }> = ({
     enabled: true,
   });
 
+  const allSessions = React.useMemo(
+    () => (sessions as any)?.pages?.flatMap((page: DBSession[]) => page) ?? [],
+    [sessions],
+  );
+
   // Handle scroll to bottom
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
@@ -46,9 +51,9 @@ export const InfiniteScrollExample: React.FC<{ userId: string }> = ({
 
   return (
     <div onScroll={handleScroll} style={{ height: "500px", overflow: "auto" }}>
-      <h2>Session History ({sessions.length} loaded)</h2>
+      <h2>Session History ({allSessions.length} loaded)</h2>
 
-      {sessions.map((session) => (
+      {allSessions.map((session: DBSession) => (
         <SessionCard key={session.id} session={session} />
       ))}
 
@@ -56,7 +61,7 @@ export const InfiniteScrollExample: React.FC<{ userId: string }> = ({
         <div className="text-center py-4">Loading more sessions...</div>
       )}
 
-      {!hasNextPage && sessions.length > 0 && (
+      {!hasNextPage && allSessions.length > 0 && (
         <div className="text-center py-4 text-gray-500">
           No more sessions to load
         </div>
@@ -81,6 +86,11 @@ export const LoadMoreExample: React.FC<{ userId: string }> = ({ userId }) => {
     pageSize: 10,
   });
 
+  const allSessions = React.useMemo(
+    () => (sessions as any)?.pages?.flatMap((page: DBSession[]) => page) ?? [],
+    [sessions],
+  );
+
   if (isLoading) {
     return <div>Loading sessions...</div>;
   }
@@ -90,12 +100,12 @@ export const LoadMoreExample: React.FC<{ userId: string }> = ({ userId }) => {
       <div className="flex justify-between mb-4">
         <h2>Session History</h2>
         <span className="text-sm text-gray-500">
-          Showing {sessions.length} of {totalCount} sessions
+          Showing {allSessions.length} of {totalCount} sessions
         </span>
       </div>
 
       <div className="space-y-4">
-        {sessions.map((session) => (
+        {allSessions.map((session: DBSession) => (
           <SessionCard key={session.id} session={session} />
         ))}
       </div>
@@ -130,6 +140,11 @@ export const PaginatedExample: React.FC<{ userId: string }> = ({ userId }) => {
     pageSize: 20,
   });
 
+  const currentSessions = React.useMemo(
+    () => (sessions as any)?.pages?.flatMap((page: DBSession[]) => page) ?? [],
+    [sessions],
+  );
+
   if (isLoading) {
     return <div>Loading sessions...</div>;
   }
@@ -139,7 +154,7 @@ export const PaginatedExample: React.FC<{ userId: string }> = ({ userId }) => {
       <h2>Session History - Page {currentPage + 1}</h2>
 
       <div className="space-y-4 my-4">
-        {sessions.map((session) => (
+        {currentSessions.map((session: DBSession) => (
           <SessionCard key={session.id} session={session} />
         ))}
       </div>
@@ -183,13 +198,20 @@ export const FilteredPaginationExample: React.FC<{ userId: string }> = ({
       pageSize: 20,
     });
 
+  const allSessions = React.useMemo(
+    () => (sessions as any)?.pages?.flatMap((page: DBSession[]) => page) ?? [],
+    [sessions],
+  );
+
   // Filter sessions locally (or implement server-side filtering)
   const filteredSessions = React.useMemo(() => {
-    if (filter === "all") return sessions;
-    if (filter === "completed") return sessions.filter((s) => s.endTime);
-    if (filter === "active") return sessions.filter((s) => !s.endTime);
-    return sessions;
-  }, [sessions, filter]);
+    if (filter === "all") return allSessions;
+    if (filter === "completed")
+      return allSessions.filter((s: DBSession) => s.endTime);
+    if (filter === "active")
+      return allSessions.filter((s: DBSession) => !s.endTime);
+    return allSessions;
+  }, [allSessions, filter]);
 
   // Refetch when filter changes
   React.useEffect(() => {
@@ -235,7 +257,7 @@ export const FilteredPaginationExample: React.FC<{ userId: string }> = ({
         <div>Loading...</div>
       ) : (
         <div className="space-y-4">
-          {filteredSessions.map((session) => (
+          {filteredSessions.map((session: DBSession) => (
             <SessionCard key={session.id} session={session} />
           ))}
 
@@ -334,6 +356,11 @@ export const PerformanceMonitoringExample: React.FC<{ userId: string }> = ({
       pageSize: 20,
     });
 
+  const allSessions = React.useMemo(
+    () => (sessions as any)?.pages?.flatMap((page: DBSession[]) => page) ?? [],
+    [sessions],
+  );
+
   // Track renders
   React.useEffect(() => {
     setRenderCount((c) => c + 1);
@@ -348,14 +375,14 @@ export const PerformanceMonitoringExample: React.FC<{ userId: string }> = ({
         <h3 className="text-sm font-semibold mb-2">Performance Metrics</h3>
         <div className="text-xs space-y-1">
           <div>Renders: {renderCount}</div>
-          <div>Sessions Loaded: {sessions.length}</div>
+          <div>Sessions Loaded: {allSessions.length}</div>
           <div>Loading: {isLoading ? "Yes" : "No"}</div>
           <div>Has More: {hasNextPage ? "Yes" : "No"}</div>
         </div>
       </div>
 
       <div className="space-y-4">
-        {sessions.map((session) => (
+        {allSessions.map((session: DBSession) => (
           <SessionCard key={session.id} session={session} />
         ))}
 

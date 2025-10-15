@@ -6,14 +6,13 @@
 import { useCallback, useMemo } from "react";
 import { PauseCooldownService as _PauseCooldownService } from "../../services/PauseCooldownService";
 import { useSharedTimer } from "../useSharedTimer";
-import { serviceLogger } from "../../utils/logging";
+import { serviceLogger } from "@/utils/logging";
 import type {
   PauseStatus as _PauseStatus,
   CooldownState as _CooldownState,
   KeyholderOverrideCapabilities as _KeyholderOverrideCapabilities,
   PauseHistoryEntry as _PauseHistoryEntry,
   PauseAnalytics as _PauseAnalytics,
-  PauseReason as _PauseReason,
   PauseRequestStatus as _PauseRequestStatus,
   OverrideRequestStatus as _OverrideRequestStatus,
   PausePattern,

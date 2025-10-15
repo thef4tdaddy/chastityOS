@@ -40,7 +40,6 @@ export class AccountMigrationService {
       // Perform full sync to Firebase
       const firebaseSync = new FirebaseSync();
       const syncResult = await firebaseSync.syncUserData(userId, {
-        direction: "bidirectional",
         force: true, // Force sync all data
       });
 
@@ -61,9 +60,10 @@ export class AccountMigrationService {
         operations: syncResult.operations,
       });
 
+      const uploaded = syncResult.operations?.uploaded ?? 0;
       return {
         success: true,
-        message: `Account linked successfully. Synced ${syncResult.operations.uploaded} items to cloud.`,
+        message: `Account linked successfully. Synced ${uploaded} items to cloud.`,
       };
     } catch (error) {
       logger.error("Failed to sync data after account linking", {

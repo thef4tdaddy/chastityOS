@@ -81,7 +81,7 @@ export class RelationshipDataSync extends FirebaseSyncCore {
   /**
    * Future implementation methods for relationship sync
    */
-  private async uploadLocalChanges(
+  protected async uploadLocalChanges(
     userId: string,
     _result: SyncResult,
   ): Promise<void> {
@@ -89,7 +89,7 @@ export class RelationshipDataSync extends FirebaseSyncCore {
     logger.debug("Relationship upload placeholder", { userId });
   }
 
-  private async downloadRemoteChanges(
+  protected async downloadRemoteChanges(
     userId: string,
     _result: SyncResult,
   ): Promise<void> {
@@ -97,26 +97,31 @@ export class RelationshipDataSync extends FirebaseSyncCore {
     logger.debug("Relationship download placeholder", { userId });
   }
 
-  private async getRemoteDoc(
+  protected async getRemoteDoc(
     userId: string,
+    collectionName: string,
     docId: string,
   ): Promise<DBBase | null> {
     // TODO: Implement when needed
-    logger.debug("Relationship getRemoteDoc placeholder", { userId, docId });
-    return null;
+    logger.debug("Relationship getRemoteDoc placeholder", {
+      userId,
+      docId,
+      collectionName,
+    });
+    return super.getRemoteDoc(userId, collectionName, docId);
   }
 
-  private async updateLocalDoc(data: DBBase): Promise<void> {
+  protected async updateLocalDoc(data: DBBase): Promise<void> {
     // TODO: Implement when relationship database service exists
     logger.debug("Relationship updateLocalDoc placeholder", { docId: data.id });
   }
 
-  private async createLocalDoc(data: DBBase): Promise<void> {
+  protected async createLocalDoc(data: DBBase): Promise<void> {
     // TODO: Implement when relationship database service exists
     logger.debug("Relationship createLocalDoc placeholder", { docId: data.id });
   }
 
-  private async updateRemoteDoc(userId: string, data: DBBase): Promise<void> {
+  protected async updateRemoteDoc(userId: string, data: DBBase): Promise<void> {
     // TODO: Implement when needed
     logger.debug("Relationship updateRemoteDoc placeholder", {
       userId,

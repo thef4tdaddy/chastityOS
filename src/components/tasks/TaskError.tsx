@@ -11,17 +11,19 @@ import {
   FaLock,
   FaUpload,
   FaBan,
-} from "../../utils/iconImport";
+} from "@/utils/iconImport";
+
+type HandledErrorType =
+  | "network"
+  | "permission"
+  | "upload"
+  | "not-found"
+  | "rate-limit"
+  | "generic";
 
 export interface TaskErrorProps {
   error?: Error | null;
-  errorType?:
-    | "network"
-    | "permission"
-    | "upload"
-    | "not-found"
-    | "rate-limit"
-    | "generic";
+  errorType?: HandledErrorType;
   title?: string;
   message?: string;
   onRetry?: () => void;
@@ -60,7 +62,7 @@ const ERROR_PATTERNS = {
 } as const;
 
 // Detect error type from error object
-function detectErrorType(error?: Error | null): TaskErrorProps["errorType"] {
+function detectErrorType(error?: Error | null): HandledErrorType {
   if (!error) return "generic";
 
   const message = error.message.toLowerCase();
@@ -68,7 +70,7 @@ function detectErrorType(error?: Error | null): TaskErrorProps["errorType"] {
   // Check each error pattern
   for (const [type, patterns] of Object.entries(ERROR_PATTERNS)) {
     if (patterns.some((pattern) => message.includes(pattern))) {
-      return type as TaskErrorProps["errorType"];
+      return type as HandledErrorType;
     }
   }
 
@@ -96,6 +98,8 @@ export const TaskError: React.FC<TaskErrorProps> = ({
   const finalMessage = isOffline
     ? "You appear to be offline. Please check your internet connection."
     : displayMessage;
+
+  // Error details are accessed directly in the JSX below
 
   return (
     <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 my-4">

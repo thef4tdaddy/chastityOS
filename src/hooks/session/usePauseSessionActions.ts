@@ -3,14 +3,14 @@
  * Handles core pause and resume actions
  */
 import { useCallback } from "react";
-import { serviceLogger } from "../../utils/logging";
+import { serviceLogger } from "@/utils/logging";
 import {
   calculatePauseDuration,
   updatePauseHistoryOnResume,
   updatePauseStatusOnResume,
-} from "../../utils/pauseResumeHelpers";
-import { calculateCooldownDuration } from "../../utils/pauseAnalytics";
-import { NotificationService } from "../../services/notifications";
+} from "@/utils/pauseResumeHelpers";
+import { calculateCooldownDuration } from "@/utils/pauseAnalytics";
+import { NotificationService } from "@/services/notifications";
 import type {
   PauseReason,
   PauseStatus,
@@ -18,7 +18,7 @@ import type {
   PauseAnalytics,
   KeyholderOverrideCapabilities,
   CooldownState,
-} from "../../types/pauseResume";
+} from "@/types/pauseResume";
 
 const logger = serviceLogger("usePauseSessionActions");
 
@@ -33,7 +33,10 @@ export interface UsePauseSessionActionsOptions {
   cooldownState: CooldownState;
   pauseAnalytics: PauseAnalytics;
   keyholderOverrides: KeyholderOverrideCapabilities;
-  startPause: (reason: PauseReason, initiatedBy?: string) => void;
+  startPause: (
+    reason: PauseReason,
+    initiatedBy?: "submissive" | "keyholder" | "system",
+  ) => void;
   setPauseStatus: (status: PauseStatus) => void;
   setPauseHistory: (
     updater: (prev: PauseHistoryEntry[]) => PauseHistoryEntry[],

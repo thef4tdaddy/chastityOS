@@ -3,15 +3,16 @@
  * Handles sync operations for event logging data
  */
 import { serviceLogger } from "@/utils/logging";
-import { db, eventDBService } from "../database";
+import { db, eventDBService } from "@/services/database";
 import { FirebaseSyncCore } from "./FirebaseSyncCore";
 import type {
   DBBase,
   DBEvent,
   SyncOptions,
   SyncResult,
+  ConflictInfo,
 } from "@/types/database";
-import { query, where, getDocs, getDoc } from "firebase/firestore";
+import { query, where, getDocs } from "firebase/firestore";
 import { syncConflictResolver } from "./SyncConflictResolver";
 
 const logger = serviceLogger("EventDataSync");
@@ -44,17 +45,7 @@ export class EventDataSync extends FirebaseSyncCore {
       await this.uploadLocalChanges(userId, result);
       await this.downloadRemoteChanges(userId, result);
 
-      if (result.conflicts.length > 0) {
-        const resolvedDocs = await syncConflictResolver.handleConflicts(
-          result.conflicts,
-          options.conflictResolution || "auto",
-        );
-
-        for (const doc of resolvedDocs) {
-          await this.updateLocalDoc(doc);
-          await this.updateRemoteDoc(userId, doc);
-        }
-      }
+      await this.resolveConflicts(userId, result, options);
 
       this.logSyncOperation(
         "Completed sync",
@@ -76,6 +67,26 @@ export class EventDataSync extends FirebaseSyncCore {
     return result;
   }
 
+  private async resolveConflicts(
+    userId: string,
+    result: SyncResult,
+    options: SyncOptions = {},
+  ): Promise<void> {
+    if (result.conflicts.length === 0) {
+      return;
+    }
+
+    const resolvedDocs = await syncConflictResolver.handleConflicts(
+      result.conflicts,
+      options.conflictResolution || "auto",
+    );
+
+    for (const doc of resolvedDocs) {
+      await this.updateLocalDoc(doc);
+      await this.updateRemoteDoc(userId, doc);
+    }
+  }
+
   async getPendingDocs(userId: string): Promise<DBBase[]> {
     return eventDBService.getPendingSync(userId);
   }
@@ -89,13 +100,17 @@ export class EventDataSync extends FirebaseSyncCore {
       const localDoc = await eventDBService.findById(docData.id);
 
       if (localDoc) {
-        if (syncConflictResolver.hasConflict(localDoc, docData)) {
-          const conflictInfo = syncConflictResolver.createConflictInfo(
+        // cast docData to DBEvent when checking conflicts / resolving
+        if (
+          syncConflictResolver.hasConflict(
+            localDoc,
+            docData as unknown as DBEvent,
+          )
+        ) {
+          const conflictInfo = this.createConflict(
             "download_conflict",
-            this.collectionName,
-            docData.id,
-            localDoc as unknown as Record<string, unknown>,
-            docData as unknown as Record<string, unknown>,
+            localDoc,
+            docData,
           );
 
           if (result) {
@@ -115,6 +130,20 @@ export class EventDataSync extends FirebaseSyncCore {
         if (result) this.updateSyncResult(result, "downloaded");
       }
     }
+  }
+
+  private createConflict(
+    type: "download_conflict" | "upload_conflict",
+    localDoc: DBBase,
+    remoteDoc: DBBase,
+  ): ConflictInfo {
+    return syncConflictResolver.createConflictInfo(
+      type,
+      this.collectionName,
+      localDoc.id,
+      localDoc as unknown as Record<string, unknown>,
+      remoteDoc as unknown as Record<string, unknown>,
+    );
   }
 
   private async uploadLocalChanges(
@@ -137,15 +166,24 @@ export class EventDataSync extends FirebaseSyncCore {
 
     for (const docData of pendingDocs) {
       try {
-        const remoteDoc = await this.getRemoteDoc(userId, docData.id);
+        const remoteDoc = await this.getRemoteDoc(
+          userId,
+          this.collectionName,
+          docData.id,
+        );
 
-        if (remoteDoc && syncConflictResolver.hasConflict(docData, remoteDoc)) {
-          const conflictInfo = syncConflictResolver.createConflictInfo(
+        // cast to DBEvent when calling conflict checker
+        if (
+          remoteDoc &&
+          syncConflictResolver.hasConflict(
+            docData as unknown as DBEvent,
+            remoteDoc as unknown as DBEvent,
+          )
+        ) {
+          const conflictInfo = this.createConflict(
             "upload_conflict",
-            this.collectionName,
-            docData.id,
-            docData as unknown as Record<string, unknown>,
-            remoteDoc as unknown as Record<string, unknown>,
+            docData,
+            remoteDoc,
           );
           result.conflicts.push(conflictInfo);
           this.updateSyncResult(result, "conflicts");
@@ -158,11 +196,14 @@ export class EventDataSync extends FirebaseSyncCore {
           this.collectionName,
           docData.id,
         );
-        batch.set(
-          docRef,
-          { ...docData, lastModified: new Date() },
-          { merge: true },
-        );
+
+        // Build a payload typed as Partial<DBEvent> so we don't need all required DBEvent fields
+        const payload = {
+          ...docData,
+          lastModified: new Date(),
+        } as Partial<DBEvent> & { lastModified: Date };
+
+        batch.set(docRef, payload, { merge: true });
         syncedIds.push(docData.id);
         this.updateSyncResult(result, "uploaded");
       } catch (error) {
@@ -200,8 +241,8 @@ export class EventDataSync extends FirebaseSyncCore {
     );
 
     const querySnapshot = await getDocs(q);
-    const remoteDocs = querySnapshot.docs.map(
-      (doc) => ({ id: doc.id, ...doc.data() }) as DBBase,
+    const remoteDocs = querySnapshot.docs.map((doc) =>
+      this.snapshotToDBBase(doc),
     );
 
     if (remoteDocs.length > 0) {
@@ -216,45 +257,15 @@ export class EventDataSync extends FirebaseSyncCore {
     }
   }
 
-  private async getRemoteDoc(
-    userId: string,
-    docId: string,
-  ): Promise<DBBase | null> {
-    try {
-      const { firestore } = await this.createBatch();
-      const docRef = this.getDocRef(
-        firestore,
-        userId,
-        this.collectionName,
-        docId,
-      );
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) return null;
-
-      const docData = docSnap.data();
-      return { id: docId, ...docData } as DBBase;
-    } catch (error) {
-      logger.error("Failed to get remote event document", {
-        error: error as Error,
-        docId,
-      });
-      return null;
-    }
-  }
-
   private async updateLocalDoc(data: DBBase): Promise<void> {
-    await eventDBService.update(data.id, data);
+    // eventDBService.update expects Partial<DBEvent>, cast DBBase accordingly
+    await eventDBService.update(data.id, data as unknown as Partial<DBEvent>);
   }
 
   private async createLocalDoc(data: DBBase): Promise<void> {
-    const {
-      lastModified: _lastModified,
-      syncStatus: _syncStatus,
-      ...rest
-    } = data;
+    // Cast DBBase to the expected create payload (strip sync metadata at runtime if present)
     await eventDBService.create(
-      rest as Omit<DBEvent, "lastModified" | "syncStatus">,
+      data as unknown as Omit<DBEvent, "lastModified" | "syncStatus">,
     );
   }
 

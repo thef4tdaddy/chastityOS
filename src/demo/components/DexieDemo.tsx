@@ -202,7 +202,10 @@ const TaskList: React.FC<TaskListProps> = ({
 // Custom hook for task management
 const useTaskManagement = (
   user: User | null,
-  createWithSync: <T>(service: string, data: T) => Promise<string>,
+  createWithSync: <T extends Record<string, unknown>>(
+    service: "sessions" | "events" | "tasks" | "goals" | "settings",
+    data: T,
+  ) => Promise<string>,
   updateWithSync: <T>(service: string, id: string, updates: T) => Promise<void>,
   deleteWithSync: (service: string, id: string) => Promise<void>,
   findByUserId: (service: string, userId: string) => Promise<DBTask[]>,
@@ -247,10 +250,12 @@ const useTaskManagement = (
         assignedBy: "submissive",
         createdAt: new Date(),
         category: "general",
-        type: "manual",
       };
 
-      const createdTaskId = await createWithSync("tasks", newTask);
+      const createdTaskId = await createWithSync(
+        "tasks",
+        newTask as Record<string, unknown>,
+      );
       const fullTask: DBTask = { ...newTask, id: createdTaskId };
       setTasks((prev) => [...prev, fullTask]);
       setNewTaskText("");
@@ -310,7 +315,22 @@ export const DexieDemo: React.FC = () => {
     isOnline,
     syncStatus,
     triggerSync,
-  } = useDexieSync();
+  } = useDexieSync() as {
+    createWithSync: <T>(
+      service: "sessions" | "events" | "tasks" | "goals" | "settings",
+      data: T,
+    ) => Promise<string>;
+    updateWithSync: <T>(
+      service: string,
+      id: string,
+      updates: T,
+    ) => Promise<void>;
+    deleteWithSync: (service: string, id: string) => Promise<void>;
+    findByUserId: (service: string, userId: string) => Promise<DBTask[]>;
+    isOnline: boolean;
+    syncStatus: string | null;
+    triggerSync: () => Promise<void>;
+  };
 
   const { simulateOffline, simulateOnline } = useOfflineDemo();
 

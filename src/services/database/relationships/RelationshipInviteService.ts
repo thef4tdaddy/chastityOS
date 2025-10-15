@@ -26,6 +26,7 @@ import {
   RelationshipRequestStatus,
   DefaultRelationshipPermissions,
 } from "@/types/relationships";
+import { UserRole } from "@/types/core";
 import { serviceLogger } from "@/utils/logging";
 import { generateUUID } from "@/utils";
 import { relationshipCRUDService } from "./RelationshipCRUDService";
@@ -80,7 +81,7 @@ export class RelationshipInviteService {
   async sendRelationshipRequest(
     fromUserId: string,
     toUserId: string,
-    fromRole: "submissive" | "keyholder",
+    fromRole: UserRole,
     message?: string,
   ): Promise<string> {
     try {
@@ -116,7 +117,10 @@ export class RelationshipInviteService {
         );
       }
 
-      const toRole = fromRole === "submissive" ? "keyholder" : "submissive";
+      const toRole =
+        fromRole === UserRole.SUBMISSIVE
+          ? UserRole.KEYHOLDER
+          : UserRole.SUBMISSIVE;
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + 7); // Expire in 7 days
 

@@ -15,7 +15,7 @@ import {
   useNotificationActions,
 } from "@/stores/notificationStore";
 import { useToast } from "@/contexts";
-import { FaBell, FaTrash } from "@/utils/iconImport";
+import { FaBell, FaTrash } from "../../utils/iconImport";
 import type { Notification } from "@/stores/notificationStore";
 import {
   NotificationFilterBar,

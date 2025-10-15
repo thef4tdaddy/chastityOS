@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useSession } from "../useSession";
 
 // Mock Firebase
@@ -105,7 +105,7 @@ describe("Session Workflows Integration Tests", () => {
       });
 
       await act(async () => {
-        await result.current.pauseSession("Break time");
+        await result.current.pauseSession();
       });
 
       expect(result.current.session?.isPaused).toBe(true);
@@ -116,7 +116,7 @@ describe("Session Workflows Integration Tests", () => {
 
       await act(async () => {
         await result.current.startSession();
-        await result.current.pauseSession("Break");
+        await result.current.pauseSession();
       });
 
       expect(result.current.session?.isPaused).toBe(true);
@@ -209,7 +209,7 @@ describe("Session Workflows Integration Tests", () => {
       // Try to pause when no session is active
       await expect(
         act(async () => {
-          await result.current.pauseSession("Invalid");
+          await result.current.pauseSession();
         }),
       ).rejects.toThrow();
     });
@@ -225,8 +225,6 @@ describe("Session Workflows Integration Tests", () => {
 
     it("should update analytics on session changes", async () => {
       const { result } = renderHook(() => useSession(mockUserId));
-
-      const initialAnalytics = result.current.analytics;
 
       await act(async () => {
         await result.current.startSession();
