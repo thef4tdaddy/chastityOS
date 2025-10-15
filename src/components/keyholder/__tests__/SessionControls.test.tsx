@@ -28,7 +28,9 @@ describe("SessionControls", () => {
     it("should render no session message when session is null", () => {
       render(<SessionControls session={null} />);
 
-      expect(screen.getByText("No active session to control.")).toBeInTheDocument();
+      expect(
+        screen.getByText("No active session to control."),
+      ).toBeInTheDocument();
     });
 
     it("should display session control heading when no session", () => {
@@ -120,10 +122,10 @@ describe("SessionControls", () => {
       render(<SessionControls session={mockSession} />);
 
       expect(
-        screen.getByText(/Session control is managed by the submissive/i)
+        screen.getByText(/Session control is managed by the submissive/i),
       ).toBeInTheDocument();
       expect(
-        screen.getByText(/Use the Release Request system/i)
+        screen.getByText(/Use the Release Request system/i),
       ).toBeInTheDocument();
     });
   });
@@ -167,7 +169,8 @@ describe("SessionControls", () => {
 
       expect(screen.getByText(/Started:/i)).toBeInTheDocument();
       // Date format may vary by locale
-      const dateTimeText = screen.getByText(/Started:/i).parentElement?.textContent;
+      const dateTimeText =
+        screen.getByText(/Started:/i).parentElement?.textContent;
       expect(dateTimeText).toMatch(/6\/15\/2024|15\/6\/2024/);
     });
 
@@ -223,7 +226,7 @@ describe("SessionControls", () => {
 
       const infoMessage = screen.getByText(/Session control is managed/i);
       expect(infoMessage).toHaveTextContent(
-        "Session control is managed by the submissive. Use the Release Request system to approve early unlock."
+        "Session control is managed by the submissive. Use the Release Request system to approve early unlock.",
       );
     });
   });

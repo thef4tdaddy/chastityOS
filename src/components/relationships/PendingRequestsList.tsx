@@ -19,17 +19,27 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
   if (pendingRequests.length === 0) return null;
 
   return (
-    <section 
+    <section
       className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 relationship-card-enter"
       role="region"
       aria-labelledby="pending-requests-heading"
     >
-      <h3 id="pending-requests-heading" className="text-blue-800 font-semibold mb-3 flex items-center">
+      <h3
+        id="pending-requests-heading"
+        className="text-blue-800 font-semibold mb-3 flex items-center"
+      >
         <FaUsers className="mr-2" aria-hidden="true" />
         Pending Requests (
-        <span className="pending-badge-pulse" role="status" aria-live="polite">{pendingRequests.length}</span>)
+        <span className="pending-badge-pulse" role="status" aria-live="polite">
+          {pendingRequests.length}
+        </span>
+        )
       </h3>
-      <ul className="space-y-3" role="list" aria-label="Pending relationship requests">
+      <ul
+        className="space-y-3"
+        role="list"
+        aria-label="Pending relationship requests"
+      >
         {pendingRequests.map((request, index) => (
           <li
             key={request.id}
@@ -42,7 +52,8 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                   Relationship Request
                 </p>
                 <p className="text-sm text-gray-600">
-                  From: <strong>{request.fromUserId}</strong> (as {request.fromRole})
+                  From: <strong>{request.fromUserId}</strong> (as{" "}
+                  {request.fromRole})
                 </p>
                 <p className="text-sm text-gray-600">
                   You would be: <strong>{request.toRole}</strong>
@@ -53,7 +64,11 @@ export const PendingRequestsList: React.FC<PendingRequestsListProps> = ({
                   </p>
                 )}
               </div>
-              <div className="flex gap-2" role="group" aria-label={`Actions for request from ${request.fromUserId}`}>
+              <div
+                className="flex gap-2"
+                role="group"
+                aria-label={`Actions for request from ${request.fromUserId}`}
+              >
                 <Button
                   onClick={() => onAccept(request.id)}
                   disabled={isLoading}

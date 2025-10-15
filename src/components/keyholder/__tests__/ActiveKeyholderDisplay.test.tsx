@@ -31,7 +31,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(screen.getByText("Your Keyholder")).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(screen.getByText(/Active/i)).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(screen.getByText(/Connected:/i)).toBeInTheDocument();
@@ -64,11 +64,11 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(
-        screen.getByRole("button", { name: /End Relationship/i })
+        screen.getByRole("button", { name: /End Relationship/i }),
       ).toBeInTheDocument();
     });
 
@@ -77,11 +77,11 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(
-        screen.getByRole("button", { name: /View Permissions/i })
+        screen.getByRole("button", { name: /View Permissions/i }),
       ).toBeInTheDocument();
     });
   });
@@ -92,10 +92,12 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
-      expect(screen.queryByText("Keyholder Permissions")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Keyholder Permissions"),
+      ).not.toBeInTheDocument();
     });
 
     it("should show permissions when toggle clicked", () => {
@@ -103,7 +105,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
@@ -119,20 +121,22 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
         name: /View Permissions/i,
       });
-      
+
       // Show permissions
       fireEvent.click(toggleButton);
       expect(screen.getByText("Keyholder Permissions")).toBeInTheDocument();
 
       // Hide permissions
       fireEvent.click(toggleButton);
-      expect(screen.queryByText("Keyholder Permissions")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Keyholder Permissions"),
+      ).not.toBeInTheDocument();
     });
 
     it("should display all permissions correctly", () => {
@@ -140,7 +144,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
@@ -159,7 +163,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
@@ -167,7 +171,9 @@ describe("ActiveKeyholderDisplay", () => {
       });
       fireEvent.click(toggleButton);
 
-      const permissionsSection = screen.getByText("Keyholder Permissions").parentElement;
+      const permissionsSection = screen.getByText(
+        "Keyholder Permissions",
+      ).parentElement;
       expect(permissionsSection).toHaveTextContent("✓");
     });
 
@@ -176,7 +182,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
@@ -184,7 +190,9 @@ describe("ActiveKeyholderDisplay", () => {
       });
       fireEvent.click(toggleButton);
 
-      const permissionsSection = screen.getByText("Keyholder Permissions").parentElement;
+      const permissionsSection = screen.getByText(
+        "Keyholder Permissions",
+      ).parentElement;
       expect(permissionsSection).toHaveTextContent("✗");
     });
 
@@ -193,7 +201,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
@@ -202,7 +210,7 @@ describe("ActiveKeyholderDisplay", () => {
       fireEvent.click(toggleButton);
 
       expect(
-        screen.getByRole("button", { name: /Hide Permissions/i })
+        screen.getByRole("button", { name: /Hide Permissions/i }),
       ).toBeInTheDocument();
     });
   });
@@ -213,7 +221,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const endButton = screen.getByRole("button", {
@@ -234,7 +242,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={differentKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const endButton = screen.getByRole("button", {
@@ -254,7 +262,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const endButton = screen.getByRole("button", {
@@ -263,7 +271,9 @@ describe("ActiveKeyholderDisplay", () => {
       fireEvent.click(endButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Failed to end relationship/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Failed to end relationship/i),
+        ).toBeInTheDocument();
       });
     });
 
@@ -276,7 +286,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const endButton = screen.getByRole("button", {
@@ -285,16 +295,20 @@ describe("ActiveKeyholderDisplay", () => {
       fireEvent.click(endButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/Failed to end relationship/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Failed to end relationship/i),
+        ).toBeInTheDocument();
       });
 
       // Find and click dismiss button (implementation may vary)
       const errorElement = screen.getByText(/Failed to end relationship/i);
-      const dismissButton = errorElement.parentElement?.querySelector('button');
+      const dismissButton = errorElement.parentElement?.querySelector("button");
       if (dismissButton) {
         fireEvent.click(dismissButton);
         await waitFor(() => {
-          expect(screen.queryByText(/Failed to end relationship/i)).not.toBeInTheDocument();
+          expect(
+            screen.queryByText(/Failed to end relationship/i),
+          ).not.toBeInTheDocument();
         });
       }
     });
@@ -312,7 +326,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={withAcceptedDate}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(screen.getByText(/Connected:/i)).toBeInTheDocument();
@@ -329,7 +343,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={withoutAcceptedDate}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(screen.getByText(/Connected:/i)).toBeInTheDocument();
@@ -343,14 +357,14 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       expect(
-        screen.getByRole("button", { name: /View Permissions/i })
+        screen.getByRole("button", { name: /View Permissions/i }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /End Relationship/i })
+        screen.getByRole("button", { name: /End Relationship/i }),
       ).toBeInTheDocument();
     });
 
@@ -359,7 +373,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={mockActiveKeyholder}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const heading = screen.getByText("Your Keyholder");
@@ -378,7 +392,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={noPermissions}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {
@@ -404,7 +418,7 @@ describe("ActiveKeyholderDisplay", () => {
         <ActiveKeyholderDisplay
           activeKeyholder={complexPermissions}
           onEndRelationship={mockOnEndRelationship}
-        />
+        />,
       );
 
       const toggleButton = screen.getByRole("button", {

@@ -46,12 +46,15 @@ export const ActiveInviteCodesDisplay: React.FC<
   };
 
   return (
-    <section 
+    <section
       className="bg-gray-800 rounded-lg p-4 border border-purple-500/30 relationship-card-interactive"
       role="region"
       aria-labelledby="active-codes-heading"
     >
-      <h3 id="active-codes-heading" className="font-semibold text-purple-300 mb-3">
+      <h3
+        id="active-codes-heading"
+        className="font-semibold text-purple-300 mb-3"
+      >
         Active Invite Codes
       </h3>
       {error && (
@@ -69,7 +72,10 @@ export const ActiveInviteCodesDisplay: React.FC<
             style={{ animationDelay: `${index * 75}ms` }}
           >
             <div>
-              <div className="font-mono text-lg text-green-400" aria-label={`Code: ${invite.code.split('').join(' ')}`}>
+              <div
+                className="font-mono text-lg text-green-400"
+                aria-label={`Code: ${invite.code.split("").join(" ")}`}
+              >
                 {invite.code}
               </div>
               <div className="text-xs text-gray-400">
@@ -78,7 +84,11 @@ export const ActiveInviteCodesDisplay: React.FC<
                 </time>
               </div>
             </div>
-            <div className="flex gap-2" role="group" aria-label={`Actions for code ${invite.code}`}>
+            <div
+              className="flex gap-2"
+              role="group"
+              aria-label={`Actions for code ${invite.code}`}
+            >
               <Button
                 onClick={() => handleCopyCode(invite.code)}
                 className="text-purple-400 hover:text-purple-300 p-1 icon-button"

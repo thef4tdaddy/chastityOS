@@ -110,8 +110,8 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
         </div>
 
         <div>
-          <label 
-            htmlFor="response-message" 
+          <label
+            htmlFor="response-message"
             className="block text-xs sm:text-sm font-medium text-gray-300 mb-2"
           >
             Message to Submissive (optional):
@@ -130,7 +130,13 @@ const ResponseModalComponent: React.FC<ResponseModalProps> = ({
             className="w-full p-3 rounded-lg border border-gray-600 bg-gray-800 text-white text-sm sm:text-base focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none"
             aria-describedby="char-count"
           />
-          <div id="char-count" className="text-xs text-gray-400 mt-1" role="status" aria-live="polite" aria-atomic="true">
+          <div
+            id="char-count"
+            className="text-xs text-gray-400 mt-1"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {responseMessage.length}/500 characters
           </div>
         </div>

@@ -58,13 +58,11 @@ describe("useSessionActions", () => {
           }
         : null,
       isActive,
-      startSession: vi
-        .fn()
-        .mockResolvedValue({
-          id: "test-session",
-          userId: mockUserId,
-          startTime: new Date(),
-        }),
+      startSession: vi.fn().mockResolvedValue({
+        id: "test-session",
+        userId: mockUserId,
+        startTime: new Date(),
+      }),
       stopSession: vi.fn().mockResolvedValue(undefined),
       pauseSession: vi.fn().mockResolvedValue(undefined),
       resumeSession: vi.fn().mockResolvedValue(undefined),

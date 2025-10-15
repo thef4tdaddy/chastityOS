@@ -110,15 +110,22 @@ export const RelationshipRequestForm: React.FC<
   };
 
   return (
-    <section 
+    <section
       className="bg-white border border-gray-300 rounded-lg p-4 mb-6 invitation-form-expand"
       role="region"
       aria-labelledby="relationship-request-heading"
     >
-      <h3 id="relationship-request-heading" className="text-lg font-semibold text-gray-900 mb-4">
+      <h3
+        id="relationship-request-heading"
+        className="text-lg font-semibold text-gray-900 mb-4"
+      >
         Send Relationship Request
       </h3>
-      <form onSubmit={handleSubmit} className="space-y-4" aria-label="Relationship request form">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        aria-label="Relationship request form"
+      >
         <EmailField
           value={formData.email}
           onChange={(email) => setFormData({ ...formData, email })}
@@ -136,7 +143,9 @@ export const RelationshipRequestForm: React.FC<
           <Button
             type="submit"
             disabled={isLoading}
-            aria-label={isLoading ? "Sending request" : "Send relationship request"}
+            aria-label={
+              isLoading ? "Sending request" : "Send relationship request"
+            }
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center relationship-transition-fast"
           >
             {isLoading ? (
