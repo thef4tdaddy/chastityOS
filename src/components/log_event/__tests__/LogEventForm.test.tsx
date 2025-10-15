@@ -5,21 +5,62 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Timestamp } from "firebase/firestore";
 import { LogEventForm } from "../LogEventForm";
 import * as AuthContext from "../../../contexts/AuthContext";
 import * as useEventsHook from "../../../hooks/api/useEvents";
 import * as notificationStore from "../../../stores/notificationStore";
+import { User, UserRole } from "@/types";
+import React from "react";
 
 // Mock dependencies
 vi.mock("../../../contexts/AuthContext");
 vi.mock("../../../hooks/api/useEvents");
 vi.mock("../../../stores/notificationStore");
+vi.mock("firebase/firestore", () => ({
+  Timestamp: {
+    now: vi.fn(() => ({
+      toDate: () => new Date(),
+      toMillis: () => Date.now(),
+    })),
+  },
+}));
 
 describe("LogEventForm", () => {
-  const mockUser = { uid: "test-user-id", displayName: "Test User" };
+  const mockUser: User = {
+    uid: "test-user-id",
+    displayName: "Test User",
+    email: "test@example.com",
+    role: UserRole.SUBMISSIVE,
+    profile: {
+      isPublicProfileEnabled: false,
+    },
+    verification: {
+      emailVerified: true,
+      phoneVerified: false,
+      twoFactorEnabled: false,
+    },
+    settings: {
+      theme: "dark",
+      notifications: true,
+      vanillaMode: false,
+      language: "en",
+      timezone: "UTC",
+      dateFormat: "MM/dd/yyyy",
+      timeFormat: "24h",
+    },
+    createdAt: Timestamp.now(),
+    lastLogin: Timestamp.now(),
+    isPremium: false,
+  };
   const mockCreateEvent = vi.fn();
   const mockShowSuccess = vi.fn();
   const mockShowError = vi.fn();
+
+  const setup = (props: React.ComponentProps<typeof LogEventForm> = {}) => {
+    render(<LogEventForm {...props} />);
+    return { user: userEvent.setup() };
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -27,7 +68,8 @@ describe("LogEventForm", () => {
     // Mock auth context
     vi.mocked(AuthContext.useAuthState).mockReturnValue({
       user: mockUser,
-      loading: false,
+      isAuthenticated: true,
+      isLoading: false,
       error: null,
     });
 
@@ -49,6 +91,9 @@ describe("LogEventForm", () => {
       showError: mockShowError,
       showInfo: vi.fn(),
       showWarning: vi.fn(),
+      addNotification: vi.fn(),
+      removeNotification: vi.fn(),
+      clearAllNotifications: vi.fn(),
     });
 
     mockCreateEvent.mockResolvedValue({});
@@ -56,7 +101,7 @@ describe("LogEventForm", () => {
 
   describe("Form Rendering", () => {
     it("should render the form with all required fields", () => {
-      render(<LogEventForm />);
+      setup();
 
       // Check for heading
       expect(screen.getByText("Log New Event")).toBeInTheDocument();
@@ -86,7 +131,7 @@ describe("LogEventForm", () => {
     });
 
     it("should have proper accessibility attributes", () => {
-      render(<LogEventForm />);
+      setup();
 
       // Check for region landmark
       const region = screen.getByRole("region");
@@ -101,7 +146,7 @@ describe("LogEventForm", () => {
     });
 
     it("should render with default values", () => {
-      render(<LogEventForm />);
+      setup();
 
       // Note should be selected by default (4th button)
       const noteButton = screen.getByRole("button", {
@@ -131,8 +176,7 @@ describe("LogEventForm", () => {
 
   describe("Event Type Selection", () => {
     it("should allow selecting different event types", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       // Click orgasm button
       const orgasmButton = screen.getByRole("button", {
@@ -144,8 +188,7 @@ describe("LogEventForm", () => {
     });
 
     it("should show visual feedback for selected event type", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const sexualActivityButton = screen.getByRole("button", {
         name: /sexual activity/i,
@@ -158,8 +201,7 @@ describe("LogEventForm", () => {
     });
 
     it("should allow changing event type selection", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       // Initially note is selected
       const noteButton = screen.getByRole("button", { name: /note/i });
@@ -178,8 +220,7 @@ describe("LogEventForm", () => {
 
   describe("Form Validation", () => {
     it("should validate invalid timestamp", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const timestampInput = screen.getByLabelText(/date.*time/i);
 
@@ -197,8 +238,7 @@ describe("LogEventForm", () => {
     });
 
     it("should show error for future date", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const timestampInput = screen.getByLabelText(/date.*time/i);
 
@@ -226,8 +266,7 @@ describe("LogEventForm", () => {
     });
 
     it("should validate notes length", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const notesInput = screen.getByRole("textbox", { name: /notes/i });
 
@@ -250,8 +289,7 @@ describe("LogEventForm", () => {
 
   describe("Form Submission", () => {
     it("should submit form with valid data", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       // Fill in form
       const notesInput = screen.getByRole("textbox", { name: /notes/i });
@@ -292,8 +330,7 @@ describe("LogEventForm", () => {
     });
 
     it("should reset form after successful submission", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const notesInput = screen.getByRole("textbox", { name: /notes/i });
       await user.type(notesInput, "Test notes");
@@ -312,9 +349,8 @@ describe("LogEventForm", () => {
     });
 
     it("should call onEventLogged callback after successful submission", async () => {
-      const user = userEvent.setup();
       const onEventLogged = vi.fn();
-      render(<LogEventForm onEventLogged={onEventLogged} />);
+      const { user } = setup({ onEventLogged });
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -325,9 +361,8 @@ describe("LogEventForm", () => {
     });
 
     it("should log event for targetUserId when provided", async () => {
-      const user = userEvent.setup();
       const targetUserId = "other-user-id";
-      render(<LogEventForm targetUserId={targetUserId} />);
+      const { user } = setup({ targetUserId });
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -344,12 +379,11 @@ describe("LogEventForm", () => {
 
   describe("Error Handling", () => {
     it("should display network error", async () => {
-      const user = userEvent.setup();
       mockCreateEvent.mockRejectedValueOnce(
         new Error("Failed to connect to server"),
       );
 
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -365,8 +399,6 @@ describe("LogEventForm", () => {
     });
 
     it("should handle offline error gracefully", async () => {
-      const user = userEvent.setup();
-
       // Mock navigator.onLine
       Object.defineProperty(navigator, "onLine", {
         writable: true,
@@ -375,7 +407,7 @@ describe("LogEventForm", () => {
 
       mockCreateEvent.mockRejectedValueOnce(new Error("Network error"));
 
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -394,10 +426,9 @@ describe("LogEventForm", () => {
     });
 
     it("should show retry button for retriable errors", async () => {
-      const user = userEvent.setup();
       mockCreateEvent.mockRejectedValueOnce(new Error("timeout"));
 
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -408,12 +439,10 @@ describe("LogEventForm", () => {
     });
 
     it("should retry submission when retry button clicked", async () => {
-      const user = userEvent.setup();
-
       // First submission fails
       mockCreateEvent.mockRejectedValueOnce(new Error("timeout"));
 
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -434,10 +463,9 @@ describe("LogEventForm", () => {
     });
 
     it("should allow dismissing errors", async () => {
-      const user = userEvent.setup();
       mockCreateEvent.mockRejectedValueOnce(new Error("Test error"));
 
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -457,12 +485,11 @@ describe("LogEventForm", () => {
     });
 
     it("should handle duplicate event error", async () => {
-      const user = userEvent.setup();
       mockCreateEvent.mockRejectedValueOnce(
         new Error("duplicate event detected"),
       );
 
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const submitButton = screen.getByText(/log event/i);
       await user.click(submitButton);
@@ -476,9 +503,7 @@ describe("LogEventForm", () => {
   });
 
   describe("Loading States", () => {
-    it("should show loading state during submission", async () => {
-      const user = userEvent.setup();
-
+    it("should show loading state during submission", () => {
       // Mock pending state
       vi.mocked(useEventsHook.useCreateEvent).mockReturnValue({
         mutateAsync: mockCreateEvent,
@@ -491,7 +516,7 @@ describe("LogEventForm", () => {
         reset: vi.fn(),
       } as any);
 
-      render(<LogEventForm />);
+      setup();
 
       const submitButton = screen.getByRole("button", {
         name: /submitting event|logging/i,
@@ -500,9 +525,7 @@ describe("LogEventForm", () => {
       expect(submitButton).toHaveAttribute("aria-busy", "true");
     });
 
-    it("should disable form during submission", async () => {
-      const user = userEvent.setup();
-
+    it("should disable form during submission", () => {
       vi.mocked(useEventsHook.useCreateEvent).mockReturnValue({
         mutateAsync: mockCreateEvent,
         isPending: true,
@@ -514,7 +537,7 @@ describe("LogEventForm", () => {
         reset: vi.fn(),
       } as any);
 
-      render(<LogEventForm />);
+      setup();
 
       const submitButton = screen.getByRole("button", {
         name: /submitting event|logging/i,
@@ -525,8 +548,7 @@ describe("LogEventForm", () => {
 
   describe("User Interactions", () => {
     it("should update mood field on input", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const moodInput = screen.getByRole("textbox", { name: /mood/i });
       await user.type(moodInput, "Excited");
@@ -534,9 +556,8 @@ describe("LogEventForm", () => {
       expect(moodInput).toHaveValue("Excited");
     });
 
-    it("should update intensity slider", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+    it("should update intensity slider", () => {
+      setup();
 
       const intensitySlider = screen.getByLabelText(/intensity level/i);
       fireEvent.change(intensitySlider, { target: { value: "8" } });
@@ -546,8 +567,7 @@ describe("LogEventForm", () => {
     });
 
     it("should toggle privacy switch", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const privacyCheckbox = screen.getByRole("checkbox", {
         name: /private/i,
@@ -560,8 +580,7 @@ describe("LogEventForm", () => {
     });
 
     it("should parse tags correctly", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const tagsInput = screen.getByRole("textbox", { name: /tags/i });
       await user.type(tagsInput, "romantic, intense, relaxed");
@@ -583,7 +602,7 @@ describe("LogEventForm", () => {
 
   describe("Accessibility", () => {
     it("should have proper ARIA labels for all interactive elements", () => {
-      render(<LogEventForm />);
+      setup();
 
       // Check button labels
       const orgasmButton = screen.getByRole("button", {
@@ -603,7 +622,7 @@ describe("LogEventForm", () => {
     });
 
     it("should announce intensity changes", () => {
-      render(<LogEventForm />);
+      setup();
 
       // Find the intensity value display - it should have aria-live
       const intensityDisplay = screen.getByText("5");
@@ -615,8 +634,7 @@ describe("LogEventForm", () => {
     });
 
     it("should have keyboard accessible event type buttons", async () => {
-      const user = userEvent.setup();
-      render(<LogEventForm />);
+      const { user } = setup();
 
       const orgasmButton = screen.getByRole("button", {
         name: /orgasm/i,

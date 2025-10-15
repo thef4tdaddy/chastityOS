@@ -2,11 +2,11 @@
  * EventList Component Tests
  * Tests for the event list display including pagination, empty states, and interactions
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EventList, EventListSkeleton } from "../EventList";
-import type { DBEvent } from "../../../types/database";
+import type { DBEvent } from "@/types/database";
 
 describe("EventList", () => {
   const mockEvents: Array<DBEvent & { ownerName?: string; ownerId?: string }> =
@@ -24,6 +24,8 @@ describe("EventList", () => {
           intensity: 7,
           tags: ["romantic", "intense"],
         },
+        syncStatus: "synced",
+        lastModified: new Date(),
       },
       {
         id: "event-2",
@@ -38,6 +40,8 @@ describe("EventList", () => {
           intensity: 8,
           tags: [],
         },
+        syncStatus: "synced",
+        lastModified: new Date(),
       },
       {
         id: "event-3",
@@ -52,6 +56,8 @@ describe("EventList", () => {
           intensity: 10,
           tags: ["milestone", "achievement"],
         },
+        syncStatus: "synced",
+        lastModified: new Date(),
       },
       {
         id: "event-4",
@@ -66,6 +72,8 @@ describe("EventList", () => {
           intensity: 5,
           tags: ["daily"],
         },
+        syncStatus: "synced",
+        lastModified: new Date(),
       },
     ] as Array<DBEvent & { ownerName?: string; ownerId?: string }>;
 
@@ -205,6 +213,8 @@ describe("EventList", () => {
           details: {
             notes: "Simple note",
           },
+          syncStatus: "synced",
+          lastModified: new Date(),
         } as DBEvent & { ownerName?: string; ownerId?: string },
       ];
 
@@ -293,6 +303,8 @@ describe("EventList", () => {
         details: {
           notes: `Event ${i + 1}`,
         },
+        syncStatus: "synced",
+        lastModified: new Date(),
       };
     }) as Array<DBEvent & { ownerName?: string; ownerId?: string }>;
 
