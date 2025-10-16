@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { motion } from "framer-motion";
 import {
   FaTrophy,
   FaLock,
@@ -18,6 +19,12 @@ import {
 } from "../../types";
 import { AchievementDifficulty } from "../../types/achievements";
 import { Input, Select, SelectOption, Checkbox, Button } from "@/components/ui";
+import {
+  achievementCardVariants,
+  trophyBounceVariants,
+  badgeAppearVariants,
+  getAccessibleVariants,
+} from "../../utils/animations";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -188,7 +195,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
 
   const getCardClasses = (): string => {
     const baseClasses =
-      "relative p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 touch-manipulation";
+      "relative p-3 sm:p-4 rounded-lg border-2 touch-manipulation overflow-hidden";
 
     // Map string difficulty to enum for getDifficultyColor
     const difficultyMap: Record<string, AchievementDifficulty> = {
@@ -207,7 +214,30 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
   };
 
   return (
-    <div className={getCardClasses()}>
+    <motion.div
+      className={getCardClasses()}
+      variants={getAccessibleVariants(achievementCardVariants)}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+      whileTap="tap"
+      layout
+    >
+      {/* Shine effect for newly earned achievements */}
+      {isEarned && (
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
+          initial={{ x: "-100%" }}
+          animate={{ x: "200%" }}
+          transition={{
+            duration: 1.5,
+            ease: "easeInOut",
+            repeat: 1,
+            repeatDelay: 0,
+          }}
+        />
+      )}
+
       <VisibilityToggle
         achievement={achievement}
         isEarned={isEarned}
@@ -226,7 +256,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
           <HiddenIndicator achievement={achievement} isEarned={isEarned} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -293,19 +323,36 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({
 
       <div className="flex items-center justify-between mt-2 sm:mt-3 gap-2">
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <span className={getBadgeClasses("points")}>
+          <motion.span
+            className={getBadgeClasses("points")}
+            variants={getAccessibleVariants(badgeAppearVariants)}
+            initial="initial"
+            animate="animate"
+          >
             {achievement.points} pts
-          </span>
-          <span className={getBadgeClasses("difficulty")}>
+          </motion.span>
+          <motion.span
+            className={getBadgeClasses("difficulty")}
+            variants={getAccessibleVariants(badgeAppearVariants)}
+            initial="initial"
+            animate="animate"
+            transition={{ delay: 0.1 }}
+          >
             {achievement.difficulty}
-          </span>
+          </motion.span>
         </div>
 
         {isEarned && (
-          <FaTrophy
-            className="text-yellow-600 flex-shrink-0 text-sm sm:text-base"
-            title="Achievement Earned!"
-          />
+          <motion.div
+            variants={getAccessibleVariants(trophyBounceVariants)}
+            initial="initial"
+            animate="animate"
+          >
+            <FaTrophy
+              className="text-yellow-600 flex-shrink-0 text-sm sm:text-base"
+              title="Achievement Earned!"
+            />
+          </motion.div>
         )}
       </div>
     </>
@@ -326,14 +373,25 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, isEarned }) => {
     <div className="mt-3">
       <div className="flex justify-between text-xs text-nightly-celadon mb-1">
         <span>Progress</span>
-        <span>
+        <motion.span
+          key={progress.currentValue}
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           {progress.currentValue} / {progress.targetValue}
-        </span>
+        </motion.span>
       </div>
-      <div className="w-full bg-gray-700 rounded-full h-2">
-        <div
-          className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full transition-all duration-300"
-          style={{ width: `${Math.min(progress.percentage, 100)}%` }}
+      <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+        <motion.div
+          className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: Math.min(progress.percentage, 100) / 100 }}
+          transition={{
+            duration: 0.8,
+            ease: "easeOut",
+          }}
+          style={{ originX: 0 }}
         />
       </div>
     </div>
