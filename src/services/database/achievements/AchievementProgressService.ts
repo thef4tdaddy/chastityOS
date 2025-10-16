@@ -70,6 +70,27 @@ export class AchievementProgressService {
     targetValue: number,
   ): Promise<void> {
     try {
+      // Validate input parameters
+      if (!userId || !achievementId) {
+        throw new Error("userId and achievementId are required");
+      }
+
+      // Handle edge cases for numeric values
+      if (!Number.isFinite(currentValue) || !Number.isFinite(targetValue)) {
+        logger.error(
+          `Invalid numeric values for achievement progress: currentValue=${currentValue}, targetValue=${targetValue}`,
+          null,
+          "AchievementProgressService",
+        );
+        throw new Error(
+          "Achievement progress calculation failed: Invalid numeric values",
+        );
+      }
+
+      // Ensure non-negative values
+      const sanitizedCurrentValue = Math.max(0, currentValue);
+      const sanitizedTargetValue = Math.max(1, targetValue); // Ensure target is at least 1 to avoid division by zero
+
       // Check cache first for performance
       let existing: DBAchievementProgress | null = this.getCachedProgress(
         userId,
@@ -89,9 +110,9 @@ export class AchievementProgressService {
         id: existing?.id || this.generateId(),
         userId,
         achievementId,
-        currentValue,
-        targetValue,
-        isCompleted: currentValue >= targetValue,
+        currentValue: sanitizedCurrentValue,
+        targetValue: sanitizedTargetValue,
+        isCompleted: sanitizedCurrentValue >= sanitizedTargetValue,
         syncStatus: "pending",
         lastModified: new Date(),
       };
@@ -123,11 +144,20 @@ export class AchievementProgressService {
         !existing?.isCompleted &&
         this.badgeService
       ) {
-        await this.badgeService.awardAchievement(userId, achievementId, 100);
+        try {
+          await this.badgeService.awardAchievement(userId, achievementId, 100);
+        } catch (awardError) {
+          logger.error(
+            "Failed to award achievement, but progress was saved",
+            awardError,
+            "AchievementProgressService",
+          );
+          // Don't throw - progress is saved, award can be retried
+        }
       }
 
       logger.debug(
-        `Progress updated for ${achievementId}: ${currentValue}/${targetValue}`,
+        `Progress updated for ${achievementId}: ${sanitizedCurrentValue}/${sanitizedTargetValue}`,
         "AchievementProgressService",
       );
     } catch (error) {
