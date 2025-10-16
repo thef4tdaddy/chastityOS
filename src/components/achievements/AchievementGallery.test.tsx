@@ -270,7 +270,7 @@ describe("AchievementGallery", () => {
 
       // Find the card by looking for the outer card container
       const card = container.querySelector(
-        ".relative.p-4.rounded-lg.border-2.transition-all",
+        "[class*='relative'][class*='rounded-lg'][class*='border-2']",
       );
       expect(card).toHaveClass("opacity-75");
     });
@@ -297,7 +297,7 @@ describe("AchievementGallery", () => {
 
       // Find the card by looking for the outer card container
       const card = container.querySelector(
-        ".relative.p-4.rounded-lg.border-2.transition-all",
+        "[class*='relative'][class*='rounded-lg'][class*='border-2']",
       );
       expect(card).not.toHaveClass("opacity-75");
     });
@@ -324,7 +324,7 @@ describe("AchievementGallery", () => {
 
       // Find the card by looking for the outer card container
       const card = container.querySelector(
-        ".relative.p-4.rounded-lg.border-2.transition-all",
+        "[class*='relative'][class*='rounded-lg'][class*='border-2']",
       );
       // Should have yellow border for legendary
       expect(card).toHaveClass("border-yellow-400");
