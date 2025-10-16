@@ -55,7 +55,7 @@ const useConflictResolutionHandlers = (
   resolveConflicts: (
     resolutions: Record<string, "local" | "remote">,
   ) => Promise<void>,
-  setShowConflictModal: (show: boolean) => void,
+  setIsDismissed: (dismissed: boolean) => void,
   sync: (userId: string, options?: Record<string, unknown>) => Promise<unknown>,
   setLastSyncTime: (time: Date | null) => void,
   userId: string | undefined,
@@ -65,7 +65,7 @@ const useConflictResolutionHandlers = (
   ) => {
     try {
       await resolveConflicts(resolutions);
-      setShowConflictModal(false);
+      setIsDismissed(true);
 
       // Trigger a sync after resolving conflicts
       if (userId) {
@@ -78,7 +78,7 @@ const useConflictResolutionHandlers = (
   };
 
   const handleCancelConflictResolution = () => {
-    setShowConflictModal(false);
+    setIsDismissed(true);
     // Conflicts remain pending - user can resolve them later
   };
 
@@ -97,9 +97,12 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     error,
   } = useSync();
 
-  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [canSync, setCanSync] = useState(false);
+
+  // Derive showConflictModal from pendingConflicts instead of using setState in effect
+  const showConflictModal = pendingConflicts.length > 0 && !isDismissed;
 
   // Check if user can sync (requires Google sign-in)
   useEffect(() => {
@@ -139,12 +142,12 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, [userId, sync, canSync]);
 
-  // Show conflict modal when conflicts are detected
+  // Reset dismissed state when new conflicts appear after previous ones were dismissed
   useEffect(() => {
-    if (pendingConflicts.length > 0 && !showConflictModal) {
-      setShowConflictModal(true);
+    if (pendingConflicts.length === 0 && isDismissed) {
+      setIsDismissed(false);
     }
-  }, [pendingConflicts.length, showConflictModal]);
+  }, [pendingConflicts.length, isDismissed]);
 
   const triggerSync = async (): Promise<void> => {
     if (!userId) {
@@ -169,7 +172,7 @@ export const SyncProvider: React.FC<SyncProviderProps> = ({ children }) => {
   const { handleResolveConflicts, handleCancelConflictResolution } =
     useConflictResolutionHandlers(
       resolveConflicts,
-      setShowConflictModal,
+      setIsDismissed,
       async (userId: string) => {
         await sync(userId);
       },

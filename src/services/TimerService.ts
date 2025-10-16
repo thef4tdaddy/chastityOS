@@ -9,7 +9,11 @@ import { serviceLogger } from "../utils/logging";
 const logger = serviceLogger("TimerService");
 
 export interface TimerSyncIssue {
-  type: "clock_skew" | "negative_duration" | "future_timestamp" | "missing_data";
+  type:
+    | "clock_skew"
+    | "negative_duration"
+    | "future_timestamp"
+    | "missing_data";
   message: string;
   severity: "warning" | "error";
 }

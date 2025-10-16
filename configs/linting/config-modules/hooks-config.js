@@ -18,10 +18,8 @@ export default {
     'no-restricted-syntax': [
       'error',
       {
-        selector:
-          "ExportDefaultDeclaration > Identifier:not([name^='use'])",
-        message:
-          "Hook files should only export hooks (functions starting with 'use')",
+        selector: "ExportDefaultDeclaration > Identifier:not([name^='use'])",
+        message: "Hook files should only export hooks (functions starting with 'use')",
       },
       {
         selector:

@@ -181,8 +181,6 @@ describe("useTasksQuery", () => {
 
     expect(result1.current.data).toEqual(mockTasks);
 
-
-
     // Second render with same userId
     const { result: result2 } = renderHook(() => useTasksQuery(mockUserId), {
       wrapper,
