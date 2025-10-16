@@ -96,6 +96,14 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Skip link for keyboard navigation */}
+      <a
+        href="#achievement-gallery-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-nightly-aquamarine focus:text-black focus:px-4 focus:py-2 focus:rounded"
+      >
+        Skip to achievement gallery
+      </a>
+
       <StatsHeader stats={stats} />
 
       <Filters
@@ -109,11 +117,14 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
         onEarnedFilterChange={setShowOnlyEarned}
         getCategoryName={getCategoryName}
       />
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6" id="achievement-gallery-content">
         {Object.entries(paginatedGroupedAchievements).map(
           ([categoryName, achievements]) => (
             <div key={categoryName} className="space-y-3 sm:space-y-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
+              <h3
+                className="text-lg sm:text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2"
+                id={`category-${categoryName.toLowerCase().replace(/\s+/g, "-")}`}
+              >
                 {categoryName} ({achievements.length})
               </h3>
 
@@ -122,6 +133,8 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
                 variants={getAccessibleVariants(achievementStaggerVariants)}
                 initial="initial"
                 animate="animate"
+                role="list"
+                aria-label={`${categoryName} achievements`}
               >
                 {achievements.map((item) => (
                   <AchievementCard
