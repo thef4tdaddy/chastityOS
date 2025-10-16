@@ -32,7 +32,7 @@ export class AchievementEngine {
     eventType: string;
     timestamp: number;
   }> = [];
-  private checkTimeout: NodeJS.Timeout | null = null;
+  private checkTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly BATCH_DELAY = 1000; // 1 second batching delay
 
   /**
@@ -212,7 +212,7 @@ export class AchievementEngine {
   async processGoalEvent(
     userId: string,
     eventType: "goal_completed",
-    goalData?: DBGoal,
+    _goalData?: DBGoal,
   ): Promise<void> {
     try {
       if (!this.initialized) await this.initialize();
