@@ -9,6 +9,8 @@ import { logger } from "../../../utils/logging";
 
 export class AchievementProgressService {
   private achievementProgressTable = db.achievementProgress;
+  private progressCache = new Map<string, DBAchievementProgress>();
+  private cacheExpiry = 30000; // 30 seconds cache
 
   private generateId(): string {
     return `ap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -22,6 +24,30 @@ export class AchievementProgressService {
   ): Promise<void> {
     // Simplified sync queue - would normally integrate with proper sync service
     logger.debug(`Queued sync: ${operation} ${collection}/${id}`);
+  }
+
+  private getCacheKey(userId: string, achievementId: string): string {
+    return `${userId}:${achievementId}`;
+  }
+
+  private getCachedProgress(
+    userId: string,
+    achievementId: string,
+  ): DBAchievementProgress | null {
+    const cacheKey = this.getCacheKey(userId, achievementId);
+    const cached = this.progressCache.get(cacheKey);
+    if (
+      cached &&
+      Date.now() - cached.lastModified.getTime() < this.cacheExpiry
+    ) {
+      return cached;
+    }
+    return null;
+  }
+
+  private setCachedProgress(progress: DBAchievementProgress): void {
+    const cacheKey = this.getCacheKey(progress.userId, progress.achievementId);
+    this.progressCache.set(cacheKey, progress);
   }
 
   constructor(
@@ -44,11 +70,20 @@ export class AchievementProgressService {
     targetValue: number,
   ): Promise<void> {
     try {
-      const existing = await this.achievementProgressTable
-        .where("userId")
-        .equals(userId)
-        .and((ap) => ap.achievementId === achievementId)
-        .first();
+      // Check cache first for performance
+      let existing: DBAchievementProgress | null = this.getCachedProgress(
+        userId,
+        achievementId,
+      );
+
+      if (!existing) {
+        const result = await this.achievementProgressTable
+          .where("userId")
+          .equals(userId)
+          .and((ap) => ap.achievementId === achievementId)
+          .first();
+        existing = result || null;
+      }
 
       const progressData: DBAchievementProgress = {
         id: existing?.id || this.generateId(),
@@ -78,6 +113,9 @@ export class AchievementProgressService {
           progressData,
         );
       }
+
+      // Update cache
+      this.setCachedProgress(progressData);
 
       // If completed, award the achievement (requires badge service)
       if (

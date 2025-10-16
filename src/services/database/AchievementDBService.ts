@@ -36,6 +36,13 @@ export class AchievementDBService extends BaseDBService<DBAchievement> {
   protected achievementNotificationsTable = this.db.achievementNotifications;
   protected leaderboardEntriesTable = this.db.leaderboardEntries;
 
+  // Simple in-memory cache for frequently accessed data
+  private achievementsCache: {
+    data: DBAchievement[] | null;
+    timestamp: number;
+  } = { data: null, timestamp: 0 };
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
   constructor() {
     super(db.achievements);
   }
@@ -77,6 +84,9 @@ export class AchievementDBService extends BaseDBService<DBAchievement> {
         achievementData as unknown as Record<string, unknown>,
       );
 
+      // Clear cache after modification
+      this.clearAchievementsCache();
+
       logger.info(
         `Achievement created: ${achievementData.name}`,
         "AchievementDBService",
@@ -94,14 +104,44 @@ export class AchievementDBService extends BaseDBService<DBAchievement> {
 
   /**
    * Get all achievements (for system reference)
+   * Uses in-memory cache to reduce database queries
    */
   async getAllAchievements(): Promise<DBAchievement[]> {
     try {
-      return await this.achievementsTable.where("isActive").equals(1).toArray();
+      const now = Date.now();
+
+      // Return cached data if still valid
+      if (
+        this.achievementsCache.data &&
+        now - this.achievementsCache.timestamp < this.CACHE_TTL
+      ) {
+        return this.achievementsCache.data;
+      }
+
+      // Fetch fresh data
+      const achievements = await this.achievementsTable
+        .where("isActive")
+        .equals(1)
+        .toArray();
+
+      // Update cache
+      this.achievementsCache = {
+        data: achievements,
+        timestamp: now,
+      };
+
+      return achievements;
     } catch (error) {
       logger.error("Failed to get achievements", error, "AchievementDBService");
       return [];
     }
+  }
+
+  /**
+   * Clear achievements cache (call after creating/updating achievements)
+   */
+  private clearAchievementsCache(): void {
+    this.achievementsCache = { data: null, timestamp: 0 };
   }
 
   /**

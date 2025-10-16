@@ -49,7 +49,8 @@ export const useAchievements = (userId?: string) => {
       queryKey: ["achievements"],
       queryFn: () => achievementDBService.getAllAchievements(),
       enabled: true,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 10 * 60 * 1000, // 10 minutes - achievements rarely change
+      gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
     });
 
   /**
@@ -60,7 +61,8 @@ export const useAchievements = (userId?: string) => {
       queryKey: ["achievements", "user", userId],
       queryFn: () => achievementDBService.getUserAchievements(userId!),
       enabled: Boolean(userId),
-      staleTime: 30 * 1000, // 30 seconds
+      staleTime: 2 * 60 * 1000, // 2 minutes - balance freshness with performance
+      gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     });
 
   /**
@@ -81,7 +83,8 @@ export const useAchievements = (userId?: string) => {
       queryKey: ["achievements", "progress", userId],
       queryFn: () => achievementDBService.getUserAchievementProgress(userId!),
       enabled: Boolean(userId),
-      staleTime: 30 * 1000, // 30 seconds
+      staleTime: 1 * 60 * 1000, // 1 minute - progress updates less frequently than notifications
+      gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     });
 
   /**
@@ -92,7 +95,9 @@ export const useAchievements = (userId?: string) => {
       queryKey: ["achievements", "notifications", userId],
       queryFn: () => achievementDBService.getUserUnreadNotifications(userId!),
       enabled: Boolean(userId),
-      refetchInterval: 30 * 1000, // Check every 30 seconds
+      staleTime: 30 * 1000, // Fresh for 30 seconds
+      refetchInterval: 60 * 1000, // Check every minute instead of 30 seconds - reduce polling
+      refetchIntervalInBackground: false, // Don't poll when tab is in background
     });
 
   /**
@@ -114,7 +119,8 @@ export const useAchievements = (userId?: string) => {
       };
     },
     enabled: Boolean(userId),
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 3 * 60 * 1000, // 3 minutes - stats change infrequently
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
   // ==================== HELPER FUNCTIONS ====================
