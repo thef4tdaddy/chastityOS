@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Session Persistence Demo - ChastityOS</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module">
+      const { useState, useEffect } = React;
+
+      function SessionPersistenceDemo() {
+        const [demoSession, setDemoSession] = useState(null);
+        const [backupState, setBackupState] = useState(null);
+        const [heartbeatCount, setHeartbeatCount] = useState(0);
+        const [isHeartbeatActive, setIsHeartbeatActive] = useState(false);
+        const [logs, setLogs] = useState([]);
+
+        const BACKUP_KEY = "demo_session_backup";
+
+        useEffect(() => {
+          const backup = localStorage.getItem(BACKUP_KEY);
+          if (backup) {
+            try {
+              const parsed = JSON.parse(backup);
+              setBackupState(parsed);
+              addLog("🔄 Backup state loaded from localStorage");
+            } catch (error) {
+              addLog("❌ Failed to parse backup state");
+            }
+          }
+        }, []);
+
+        useEffect(() => {
+          let interval = null;
+
+          if (isHeartbeatActive && demoSession) {
+            interval = setInterval(() => {
+              setHeartbeatCount((prev) => prev + 1);
+
+              const backupData = {
+                sessionId: demoSession.id,
+                startTime: demoSession.startTime,
+                lastHeartbeat: new Date().toISOString(),
+                duration:
+                  Date.now() - new Date(demoSession.startTime).getTime(),
+              };
+
+              localStorage.setItem(BACKUP_KEY, JSON.stringify(backupData));
+              setBackupState(backupData);
+
+              addLog(`💓 Heartbeat #${heartbeatCount + 1} - Session backed up`);
+            }, 2000);
+          }
+
+          return () => {
+            if (interval) clearInterval(interval);
+          };
+        }, [isHeartbeatActive, demoSession, heartbeatCount]);
+
+        const addLog = (message) => {
+          const timestamp = new Date().toLocaleTimeString();
+          setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
+        };
+
+        const startDemoSession = () => {
+          const session = {
+            id: `demo-${Date.now()}`,
+            startTime: new Date().toISOString(),
+            isPaused: false,
+          };
+
+          setDemoSession(session);
+          setHeartbeatCount(0);
+          setIsHeartbeatActive(true);
+          addLog(`🚀 Session started: ${session.id}`);
+        };
+
+        const stopDemoSession = () => {
+          if (demoSession) {
+            setDemoSession(null);
+            setIsHeartbeatActive(false);
+            localStorage.removeItem(BACKUP_KEY);
+            setBackupState(null);
+            addLog(`🛑 Session stopped and backup cleared`);
+          }
+        };
+
+        const pauseHeartbeat = () => {
+          setIsHeartbeatActive(false);
+          addLog(`⏸️ Heartbeat paused (simulating app interruption)`);
+        };
+
+        const resumeHeartbeat = () => {
+          if (demoSession) {
+            setIsHeartbeatActive(true);
+            addLog(`▶️ Heartbeat resumed`);
+          }
+        };
+
+        const restoreFromBackup = () => {
+          if (backupState) {
+            const restoredSession = {
+              id: backupState.sessionId,
+              startTime: backupState.startTime,
+              isPaused: false,
+            };
+
+            setDemoSession(restoredSession);
+            setIsHeartbeatActive(true);
+            addLog(`🔄 Session restored from backup: ${restoredSession.id}`);
+          }
+        };
+
+        const clearAll = () => {
+          setDemoSession(null);
+          setIsHeartbeatActive(false);
+          setBackupState(null);
+          setHeartbeatCount(0);
+          setLogs([]);
+          localStorage.removeItem(BACKUP_KEY);
+          addLog("🗑️ All data cleared");
+        };
+
+        const formatDuration = (ms) => {
+          const seconds = Math.floor(ms / 1000);
+          const minutes = Math.floor(seconds / 60);
+          const remainingSeconds = seconds % 60;
+
+          if (minutes > 0) {
+            return `${minutes}m ${remainingSeconds}s`;
+          }
+          return `${remainingSeconds}s`;
+        };
+
+        return React.createElement(
+          "div",
+          {
+            className:
+              "p-6 bg-gray-900 text-white rounded-lg max-w-4xl mx-auto min-h-screen",
+          },
+          [
+            React.createElement(
+              "h2",
+              {
+                key: "title",
+                className: "text-2xl font-bold mb-6 text-purple-300",
+              },
+              "Session Persistence Demo",
+            ),
+
+            React.createElement(
+              "div",
+              {
+                key: "grid",
+                className: "grid grid-cols-1 lg:grid-cols-2 gap-6",
+              },
+              [
+                // Controls panel
+                React.createElement(
+                  "div",
+                  {
+                    key: "controls",
+                    className: "bg-gray-800 p-4 rounded-lg",
+                  },
+                  [
+                    React.createElement(
+                      "h3",
+                      {
+                        key: "controls-title",
+                        className: "text-lg font-semibold mb-4 text-green-300",
+                      },
+                      "Controls",
+                    ),
+
+                    React.createElement(
+                      "div",
+                      {
+                        key: "buttons",
+                        className: "grid grid-cols-2 gap-2",
+                      },
+                      [
+                        React.createElement(
+                          "button",
+                          {
+                            key: "start",
+                            onClick: startDemoSession,
+                            disabled: !!demoSession,
+                            className:
+                              "bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded",
+                          },
+                          "▶️ Start Session",
+                        ),
+
+                        React.createElement(
+                          "button",
+                          {
+                            key: "stop",
+                            onClick: stopDemoSession,
+                            disabled: !demoSession,
+                            className:
+                              "bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded",
+                          },
+                          "⏹️ Stop Session",
+                        ),
+
+                        React.createElement(
+                          "button",
+                          {
+                            key: "pause",
+                            onClick: pauseHeartbeat,
+                            disabled: !isHeartbeatActive,
+                            className:
+                              "bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded",
+                          },
+                          "⏸️ Pause Heartbeat",
+                        ),
+
+                        React.createElement(
+                          "button",
+                          {
+                            key: "resume",
+                            onClick: resumeHeartbeat,
+                            disabled: isHeartbeatActive || !demoSession,
+                            className:
+                              "bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded",
+                          },
+                          "🔄 Resume Heartbeat",
+                        ),
+
+                        React.createElement(
+                          "button",
+                          {
+                            key: "restore",
+                            onClick: restoreFromBackup,
+                            disabled: !backupState || !!demoSession,
+                            className:
+                              "bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded",
+                          },
+                          "🔄 Restore Backup",
+                        ),
+
+                        React.createElement(
+                          "button",
+                          {
+                            key: "clear",
+                            onClick: clearAll,
+                            className:
+                              "bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded",
+                          },
+                          "🗑️ Clear All",
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                // Status panel
+                React.createElement(
+                  "div",
+                  {
+                    key: "status",
+                    className: "bg-gray-800 p-4 rounded-lg",
+                  },
+                  [
+                    React.createElement(
+                      "h3",
+                      {
+                        key: "status-title",
+                        className: "text-lg font-semibold mb-4 text-blue-300",
+                      },
+                      "Status",
+                    ),
+
+                    React.createElement(
+                      "div",
+                      {
+                        key: "status-items",
+                        className: "space-y-3",
+                      },
+                      [
+                        React.createElement(
+                          "div",
+                          {
+                            key: "active",
+                            className: "flex justify-between items-center",
+                          },
+                          [
+                            React.createElement(
+                              "span",
+                              {
+                                key: "active-label",
+                                className: "text-gray-300",
+                              },
+                              "Active Session:",
+                            ),
+                            React.createElement(
+                              "span",
+                              {
+                                key: "active-value",
+                                className: demoSession
+                                  ? "text-green-400"
+                                  : "text-red-400",
+                              },
+                              demoSession ? "Yes" : "No",
+                            ),
+                          ],
+                        ),
+
+                        demoSession &&
+                          React.createElement(
+                            "div",
+                            {
+                              key: "session-id",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "id-label",
+                                  className: "text-gray-300",
+                                },
+                                "Session ID:",
+                              ),
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "id-value",
+                                  className: "text-gray-100 font-mono text-sm",
+                                },
+                                demoSession.id.slice(-8) + "...",
+                              ),
+                            ],
+                          ),
+
+                        demoSession &&
+                          React.createElement(
+                            "div",
+                            {
+                              key: "duration",
+                              className: "flex justify-between items-center",
+                            },
+                            [
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "duration-label",
+                                  className: "text-gray-300",
+                                },
+                                "Duration:",
+                              ),
+                              React.createElement(
+                                "span",
+                                {
+                                  key: "duration-value",
+                                  className: "text-gray-100",
+                                },
+                                formatDuration(
+                                  Date.now() -
+                                    new Date(demoSession.startTime).getTime(),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        React.createElement(
+                          "div",
+                          {
+                            key: "heartbeat",
+                            className: "flex justify-between items-center",
+                          },
+                          [
+                            React.createElement(
+                              "span",
+                              {
+                                key: "heartbeat-label",
+                                className: "text-gray-300",
+                              },
+                              "Heartbeat Active:",
+                            ),
+                            React.createElement(
+                              "span",
+                              {
+                                key: "heartbeat-value",
+                                className: isHeartbeatActive
+                                  ? "text-green-400"
+                                  : "text-yellow-400",
+                              },
+                              isHeartbeatActive ? "Yes" : "No",
+                            ),
+                          ],
+                        ),
+
+                        React.createElement(
+                          "div",
+                          {
+                            key: "count",
+                            className: "flex justify-between items-center",
+                          },
+                          [
+                            React.createElement(
+                              "span",
+                              {
+                                key: "count-label",
+                                className: "text-gray-300",
+                              },
+                              "Heartbeat Count:",
+                            ),
+                            React.createElement(
+                              "span",
+                              {
+                                key: "count-value",
+                                className: "text-gray-100",
+                              },
+                              heartbeatCount,
+                            ),
+                          ],
+                        ),
+
+                        React.createElement(
+                          "div",
+                          {
+                            key: "backup",
+                            className: "flex justify-between items-center",
+                          },
+                          [
+                            React.createElement(
+                              "span",
+                              {
+                                key: "backup-label",
+                                className: "text-gray-300",
+                              },
+                              "Backup Available:",
+                            ),
+                            React.createElement(
+                              "span",
+                              {
+                                key: "backup-value",
+                                className: backupState
+                                  ? "text-green-400"
+                                  : "text-red-400",
+                              },
+                              backupState ? "Yes" : "No",
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            // Activity Log
+            React.createElement(
+              "div",
+              {
+                key: "log",
+                className: "mt-6 bg-gray-800 p-4 rounded-lg",
+              },
+              [
+                React.createElement(
+                  "h3",
+                  {
+                    key: "log-title",
+                    className: "text-lg font-semibold mb-4 text-yellow-300",
+                  },
+                  "Activity Log",
+                ),
+                React.createElement(
+                  "div",
+                  {
+                    key: "log-content",
+                    className:
+                      "bg-black p-3 rounded font-mono text-sm max-h-48 overflow-y-auto",
+                  },
+                  logs.length === 0
+                    ? React.createElement(
+                        "div",
+                        {
+                          key: "no-activity",
+                          className: "text-gray-500",
+                        },
+                        "No activity yet...",
+                      )
+                    : logs.map((log, index) =>
+                        React.createElement(
+                          "div",
+                          {
+                            key: index,
+                            className: "text-gray-300 mb-1",
+                          },
+                          log,
+                        ),
+                      ),
+                ),
+              ],
+            ),
+
+            // Instructions
+            React.createElement(
+              "div",
+              {
+                key: "instructions",
+                className: "mt-6 bg-gray-800 p-4 rounded-lg",
+              },
+              [
+                React.createElement(
+                  "h3",
+                  {
+                    key: "instructions-title",
+                    className: "text-lg font-semibold mb-4 text-orange-300",
+                  },
+                  "How It Works",
+                ),
+                React.createElement(
+                  "div",
+                  {
+                    key: "instructions-content",
+                    className: "text-sm text-gray-300 space-y-2",
+                  },
+                  [
+                    React.createElement(
+                      "p",
+                      { key: "p1" },
+                      "1. Start Session: Creates a demo session and begins heartbeat backup",
+                    ),
+                    React.createElement(
+                      "p",
+                      { key: "p2" },
+                      "2. Heartbeat: Every 2 seconds, the session state is backed up to localStorage",
+                    ),
+                    React.createElement(
+                      "p",
+                      { key: "p3" },
+                      "3. Pause Heartbeat: Simulates app interruption (browser close, page reload)",
+                    ),
+                    React.createElement(
+                      "p",
+                      { key: "p4" },
+                      "4. Restore Backup: Recovers the session from localStorage backup",
+                    ),
+                    React.createElement(
+                      "p",
+                      { key: "p5" },
+                      "5. Open browser DevTools → Application → Local Storage to see the backup data",
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        );
+      }
+
+      ReactDOM.render(
+        React.createElement(SessionPersistenceDemo),
+        document.getElementById("root"),
+      );
+    </script>
+  </body>
+</html>
