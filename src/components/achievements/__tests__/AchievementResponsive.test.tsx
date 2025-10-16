@@ -49,7 +49,7 @@ describe("Achievement Responsive Design", () => {
     description: `Description for ${name}`,
     category: AchievementCategory.SESSION_MILESTONES,
     icon: "🏆",
-    difficulty: "common",
+    difficulty: AchievementDifficulty.UNCOMMON,
     points: 100,
     requirements: [{ type: "session_count", value: 10, unit: "count" }],
     isHidden: false,
