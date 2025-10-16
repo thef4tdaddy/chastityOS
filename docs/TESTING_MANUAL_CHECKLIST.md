@@ -34,11 +34,11 @@ This document provides a comprehensive manual testing checklist for background s
   2. Switch network to "Online" in DevTools
   3. Wait 2-5 seconds
   4. Check Firebase Console
-- **Expected Result:** 
+- **Expected Result:**
   - Queued operations sync to Firebase
   - Local queue is cleared
   - UI reflects synced state
-- **Verification:** 
+- **Verification:**
   - Firebase Console shows new/updated/deleted items
   - IndexedDB offlineQueue is empty
 
@@ -96,7 +96,7 @@ This document provides a comprehensive manual testing checklist for background s
 - **Expected Result:**
   - Browser shows permission prompt
   - Permission state saved in settings
-- **Verification:** 
+- **Verification:**
   - Check `Notification.permission` in console
   - Verify localStorage contains notification settings
 
@@ -110,7 +110,7 @@ This document provides a comprehensive manual testing checklist for background s
 - **Expected Result:**
   - Toast notification appears in app
   - (Future) Push notification if app in background
-- **Verification:** 
+- **Verification:**
   - Notification displays task title
   - Click notification navigates to task detail
 
@@ -124,7 +124,7 @@ This document provides a comprehensive manual testing checklist for background s
 - **Expected Result:**
   - Notification when session ends
   - Badge count updates
-- **Verification:** 
+- **Verification:**
   - Notification displays session info
   - App shows updated session status
 
@@ -459,6 +459,7 @@ This document provides a comprehensive manual testing checklist for background s
 ### Reporting Issues
 
 When reporting issues, include:
+
 - Test ID
 - Browser/OS version
 - Network conditions

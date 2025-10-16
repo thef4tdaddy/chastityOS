@@ -7,6 +7,7 @@ The Periodic Background Sync feature enables automatic data refresh every 15 min
 ## Features
 
 ### Data Refreshed
+
 - **Active session status** - Current chastity session state
 - **Pending tasks** - Tasks assigned by keyholder
 - **Unread notifications** - New notifications and updates
@@ -14,6 +15,7 @@ The Periodic Background Sync feature enables automatic data refresh every 15 min
 - **Badge count** - App icon badge with unread count
 
 ### Settings & Controls
+
 - **Enable/Disable** - Toggle periodic sync on/off
 - **Battery-Aware** - Automatically pauses when battery is low (<20%)
 - **Sync Interval** - Fixed at 15 minutes (browser minimum)
@@ -51,7 +53,9 @@ The Periodic Background Sync feature enables automatic data refresh every 15 min
 ### Key Components
 
 #### 1. PeriodicSyncService (`src/services/sync/PeriodicSyncService.ts`)
+
 Core service managing periodic sync lifecycle:
+
 - Singleton pattern for single instance
 - Browser feature detection
 - Settings persistence in localStorage
@@ -60,21 +64,27 @@ Core service managing periodic sync lifecycle:
 - Badge count management
 
 #### 2. usePeriodicSync Hook (`src/hooks/api/usePeriodicSync.ts`)
+
 React hook providing interface to periodic sync:
+
 - Settings management
 - Registration/unregistration
 - Service worker message handling
 - State synchronization
 
 #### 3. PeriodicSyncSection Component (`src/components/settings/PeriodicSyncSection.tsx`)
+
 Settings UI for user control:
+
 - Toggle switches for enable/disable
 - Battery-aware option
 - Last sync time display
 - Feature availability check
 
 #### 4. Service Worker Handler (`public/sw-custom.js`)
+
 Handles `periodicsync` events:
+
 - Listens for sync triggers
 - Notifies client app
 - Coordinates data refresh
@@ -82,11 +92,13 @@ Handles `periodicsync` events:
 ## Browser Support
 
 ### Supported Browsers
+
 - **Chrome/Edge 80+** - Full support
 - **Android Chrome** - Full support
 - **Opera** - Full support
 
 ### Unsupported Browsers
+
 - **Firefox** - Not yet supported
 - **Safari/iOS** - Not yet supported
 
@@ -114,28 +126,28 @@ The feature gracefully degrades in unsupported browsers with a clear message to 
 ```typescript
 class PeriodicSyncService {
   // Get singleton instance
-  static getInstance(): PeriodicSyncService
+  static getInstance(): PeriodicSyncService;
 
   // Check browser support
-  isSupported(): boolean
+  isSupported(): boolean;
 
   // Get current settings
-  getSettings(): PeriodicSyncSettings
+  getSettings(): PeriodicSyncSettings;
 
   // Update settings
-  updateSettings(settings: Partial<PeriodicSyncSettings>): Promise<void>
+  updateSettings(settings: Partial<PeriodicSyncSettings>): Promise<void>;
 
   // Register periodic sync
-  register(): Promise<void>
+  register(): Promise<void>;
 
   // Unregister periodic sync
-  unregister(): Promise<void>
+  unregister(): Promise<void>;
 
   // Refresh app data
-  refreshAppData(userId: string | null): Promise<void>
+  refreshAppData(userId: string | null): Promise<void>;
 
   // Get last sync timestamp
-  getLastSyncTime(): number | undefined
+  getLastSyncTime(): number | undefined;
 }
 ```
 
@@ -153,10 +165,13 @@ interface PeriodicSyncSettings {
 ## Configuration
 
 ### Sync Interval
+
 The minimum sync interval is **15 minutes**, enforced by browsers to prevent battery drain. This cannot be configured to a lower value.
 
 ### Battery Awareness
+
 When enabled, syncing pauses if:
+
 - Battery level is below 20%
 - Device is not charging
 
@@ -165,6 +180,7 @@ When enabled, syncing pauses if:
 ### Testing
 
 Run unit tests:
+
 ```bash
 npm run test:unit -- src/services/sync/__tests__/PeriodicSyncService.test.ts
 ```
@@ -203,6 +219,7 @@ npm run lint
 ### Last Sync Time Not Updating
 
 This could indicate:
+
 - Sync is disabled
 - Browser denied permission
 - Service worker not running
@@ -211,16 +228,19 @@ This could indicate:
 ## Performance
 
 ### Battery Impact
+
 - Minimal battery usage (browser-optimized)
 - Battery-aware feature prevents drain on low battery
 - Respects system battery saver mode
 
 ### Network Usage
+
 - Efficient queries (limit 10 items per collection)
 - Only fetches changed data
 - Caches results locally
 
 ### Memory Usage
+
 - Singleton pattern prevents multiple instances
 - Automatic cleanup of old cache data
 - Small memory footprint (~1-2MB)
@@ -235,6 +255,7 @@ This could indicate:
 ## Future Enhancements
 
 Potential improvements:
+
 - [ ] Configurable sync interval (when browsers support it)
 - [ ] Smart sync based on app usage patterns
 - [ ] Offline queue sync integration
