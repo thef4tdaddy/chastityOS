@@ -101,7 +101,7 @@ export const usePinValidation = ({
             if (!hasCombination) {
               await handleUnlockAfterPinValidation();
             }
-          } catch (error) {
+          } catch {
             setPinError("Failed to process unlock after PIN validation");
           }
         },
@@ -120,7 +120,7 @@ export const usePinValidation = ({
           }, 5000);
         },
       });
-    } catch (error) {
+    } catch {
       setPinError("An error occurred during PIN validation");
       setPin("");
     } finally {

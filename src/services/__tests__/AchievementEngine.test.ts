@@ -265,7 +265,16 @@ describe("AchievementEngine", () => {
         achievement,
       ]);
       mockAchievementDBService.getUserAchievements.mockResolvedValue([
-        { achievementId: "ach-milestone-10" },
+        {
+          id: "user-ach-1",
+          userId,
+          achievementId: "ach-milestone-10",
+          earnedAt: new Date(),
+          progress: 100,
+          isVisible: true,
+          syncStatus: "synced",
+          lastModified: new Date(),
+        },
       ]);
 
       await engine.processSessionEvent(userId, "session_end");
@@ -307,9 +316,14 @@ describe("AchievementEngine", () => {
         achievement,
       ]);
       mockAchievementDBService.getAchievementProgress.mockResolvedValue({
+        id: "progress-1",
+        userId,
+        achievementId: "ach-early-bird",
         currentValue: 3,
         targetValue: 5,
         isCompleted: false,
+        syncStatus: "synced",
+        lastModified: new Date(),
       });
 
       await engine.processSessionEvent(userId, "session_start", earlySession);
