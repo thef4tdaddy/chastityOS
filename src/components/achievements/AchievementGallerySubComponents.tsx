@@ -50,25 +50,51 @@ interface StatsHeaderProps {
 }
 
 const StatsHeaderComponent: React.FC<StatsHeaderProps> = ({ stats }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+  <div
+    className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4"
+    role="region"
+    aria-label="Achievement Statistics"
+  >
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-3">
       <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
         Achievement Gallery
       </h2>
-      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-        <span className="text-nightly-celadon whitespace-nowrap">
+      <div
+        className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm"
+        role="list"
+      >
+        <span
+          className="text-nightly-celadon whitespace-nowrap"
+          role="listitem"
+          aria-label={`${stats.totalEarned} out of ${stats.totalVisible} achievements earned`}
+        >
           {stats.totalEarned} / {stats.totalVisible} Earned
         </span>
-        <span className="text-nightly-aquamarine font-semibold whitespace-nowrap">
+        <span
+          className="text-nightly-aquamarine font-semibold whitespace-nowrap"
+          role="listitem"
+          aria-label={`${stats.totalPoints} total points earned`}
+        >
           {stats.totalPoints} Points
         </span>
-        <span className="text-nightly-lavender-floral whitespace-nowrap">
+        <span
+          className="text-nightly-lavender-floral whitespace-nowrap"
+          role="listitem"
+          aria-label={`${stats.completionPercentage.toFixed(1)} percent complete`}
+        >
           {stats.completionPercentage.toFixed(1)}% Complete
         </span>
       </div>
     </div>
 
-    <div className="w-full bg-gray-700 rounded-full h-2">
+    <div
+      className="w-full bg-gray-700 rounded-full h-2"
+      role="progressbar"
+      aria-label="Overall achievement completion"
+      aria-valuenow={Math.round(stats.completionPercentage)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
       <div
         className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full transition-all duration-300"
         style={{ width: `${stats.completionPercentage}%` }}
@@ -123,16 +149,24 @@ const FiltersComponent: React.FC<FiltersProps> = ({
   ];
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+    <div
+      className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4"
+      role="search"
+      aria-label="Filter achievements"
+    >
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
         <div className="relative flex-1 min-w-full sm:min-w-[200px]">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <FaSearch
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            aria-hidden="true"
+          />
           <Input
             type="text"
             placeholder="Search achievements..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-nightly-aquamarine"
+            aria-label="Search achievements by name or description"
           />
         </div>
 
@@ -145,6 +179,7 @@ const FiltersComponent: React.FC<FiltersProps> = ({
             options={categoryOptions}
             size="sm"
             fullWidth={false}
+            aria-label="Filter by category"
           />
 
           <Select
@@ -155,12 +190,14 @@ const FiltersComponent: React.FC<FiltersProps> = ({
             options={difficultyOptions}
             size="sm"
             fullWidth={false}
+            aria-label="Filter by difficulty"
           />
 
           <Checkbox
             checked={showOnlyEarned}
             onChange={onEarnedFilterChange}
             label="Earned Only"
+            aria-label="Show only earned achievements"
           />
         </div>
       </div>
@@ -177,8 +214,12 @@ interface EmptyStateProps {
 const EmptyStateComponent: React.FC<EmptyStateProps> = ({
   message = "No achievements found matching your filters.",
 }) => (
-  <div className="text-center py-12 text-nightly-celadon">
-    <FaTrophy className="mx-auto text-4xl mb-4 opacity-50" />
+  <div
+    className="text-center py-12 text-nightly-celadon"
+    role="status"
+    aria-live="polite"
+  >
+    <FaTrophy className="mx-auto text-4xl mb-4 opacity-50" aria-hidden="true" />
     <p>{message}</p>
   </div>
 );
@@ -229,6 +270,9 @@ const AchievementCardComponent: React.FC<AchievementCardProps> = ({
       whileHover="hover"
       whileTap="tap"
       layout
+      role="article"
+      aria-label={`${achievement.name} achievement ${isEarned ? "earned" : "locked"}`}
+      tabIndex={0}
     >
       {/* Shine effect for newly earned achievements */}
       {isEarned && (
@@ -237,6 +281,7 @@ const AchievementCardComponent: React.FC<AchievementCardProps> = ({
           variants={getAccessibleVariants(shineVariants)}
           initial="initial"
           animate="animate"
+          aria-hidden="true"
         />
       )}
 
@@ -249,7 +294,7 @@ const AchievementCardComponent: React.FC<AchievementCardProps> = ({
       />
 
       <div className="flex items-start space-x-2 sm:space-x-3">
-        <div className="text-2xl sm:text-3xl flex-shrink-0">
+        <div className="text-2xl sm:text-3xl flex-shrink-0" aria-hidden="true">
           {achievement.icon}
         </div>
         <div className="flex-1 min-w-0">
@@ -300,8 +345,13 @@ const VisibilityToggleComponent: React.FC<VisibilityToggleProps> = ({
     <Button
       onClick={() => onToggleVisibility(achievement.id)}
       className="absolute top-2 right-2 p-2 sm:p-1 rounded text-gray-400 hover:text-white transition-colors touch-manipulation min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"
+      aria-label={`${isVisible ? "Hide" : "Show"} ${achievement.name} achievement from your profile`}
     >
-      {isVisible ? <FaEye /> : <FaEyeSlash />}
+      {isVisible ? (
+        <FaEye aria-hidden="true" />
+      ) : (
+        <FaEyeSlash aria-hidden="true" />
+      )}
     </Button>
   );
 };
@@ -369,7 +419,7 @@ const AchievementInfoComponent: React.FC<AchievementInfoProps> = ({
           >
             <FaTrophy
               className="text-yellow-600 flex-shrink-0 text-sm sm:text-base"
-              title="Achievement Earned!"
+              aria-label="Achievement Earned!"
             />
           </motion.div>
         )}
@@ -402,11 +452,21 @@ const ProgressBarComponent: React.FC<ProgressBarProps> = ({
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          aria-live="polite"
+          aria-atomic="true"
         >
           {progress.currentValue} / {progress.targetValue}
         </motion.span>
       </div>
-      <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+      <div
+        className="w-full bg-gray-700 rounded-full h-2 overflow-hidden"
+        role="progressbar"
+        aria-label="Achievement progress"
+        aria-valuenow={progress.currentValue}
+        aria-valuemin={0}
+        aria-valuemax={progress.targetValue}
+        aria-valuetext={`${progress.currentValue} out of ${progress.targetValue}`}
+      >
         <motion.div
           className="bg-gradient-to-r from-nightly-aquamarine to-nightly-lavender-floral h-2 rounded-full"
           initial={{ scaleX: 0 }}
@@ -438,8 +498,12 @@ const HiddenIndicator: React.FC<HiddenIndicatorProps> = ({
   }
 
   return (
-    <div className="flex items-center space-x-1 mt-2 text-xs text-gray-500">
-      <FaLock />
+    <div
+      className="flex items-center space-x-1 mt-2 text-xs text-gray-500"
+      role="status"
+      aria-label="This is a hidden achievement"
+    >
+      <FaLock aria-hidden="true" />
       <span>Hidden Achievement</span>
     </div>
   );

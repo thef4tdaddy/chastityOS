@@ -31,6 +31,9 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
     initial="initial"
     animate="animate"
     exit="exit"
+    role="status"
+    aria-live="assertive"
+    aria-atomic="true"
   >
     {/* Shine effect */}
     <motion.div
@@ -38,6 +41,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
       variants={getAccessibleVariants(shineContinuousVariants)}
       initial="initial"
       animate="animate"
+      aria-hidden="true"
     />
 
     <motion.div
@@ -45,6 +49,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
       variants={getAccessibleVariants(trophyBounceVariants)}
       initial="initial"
       animate="animate"
+      aria-hidden="true"
     >
       {achievement.icon}
     </motion.div>
@@ -55,7 +60,10 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
           initial="initial"
           animate="animate"
         >
-          <FaTrophy className="text-yellow-500 text-sm sm:text-base flex-shrink-0" />
+          <FaTrophy
+            className="text-yellow-500 text-sm sm:text-base flex-shrink-0"
+            aria-hidden="true"
+          />
         </motion.div>
         <span className="font-semibold text-white text-xs sm:text-sm">
           Achievement Unlocked!
@@ -83,6 +91,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
+          aria-label={`${achievement.points} points earned`}
         >
           +{achievement.points} points
         </motion.span>
@@ -91,6 +100,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
+          aria-label={`Difficulty: ${achievement.difficulty}`}
         >
           {achievement.difficulty}
         </motion.span>
@@ -100,8 +110,9 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
       <Button
         onClick={onClose}
         className="text-gray-400 hover:text-white transition-colors touch-manipulation p-2 flex-shrink-0"
+        aria-label="Close achievement notification"
       >
-        <FaTimes />
+        <FaTimes aria-hidden="true" />
       </Button>
     </motion.div>
   </motion.div>

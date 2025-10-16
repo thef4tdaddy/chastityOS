@@ -14,7 +14,11 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
   onViewModeChange,
 }) => {
   return (
-    <div className="flex items-center bg-white/10 rounded-lg p-1">
+    <div
+      className="flex items-center bg-white/10 rounded-lg p-1"
+      role="tablist"
+      aria-label="Achievement view options"
+    >
       <Button
         onClick={() => onViewModeChange("dashboard")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-colors ${
@@ -22,8 +26,12 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
             ? "bg-nightly-aquamarine text-black font-semibold"
             : "text-nightly-celadon hover:text-nightly-honeydew"
         }`}
+        role="tab"
+        aria-selected={viewMode === "dashboard"}
+        aria-controls="achievement-view-panel"
+        aria-label="Dashboard view"
       >
-        <FaChartBar />
+        <FaChartBar aria-hidden="true" />
         <span>Dashboard</span>
       </Button>
       <Button
@@ -33,8 +41,12 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
             ? "bg-nightly-aquamarine text-black font-semibold"
             : "text-nightly-celadon hover:text-nightly-honeydew"
         }`}
+        role="tab"
+        aria-selected={viewMode === "gallery"}
+        aria-controls="achievement-view-panel"
+        aria-label="Gallery view"
       >
-        <FaList />
+        <FaList aria-hidden="true" />
         <span>Gallery</span>
       </Button>
       <Button
@@ -44,8 +56,12 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
             ? "bg-nightly-aquamarine text-black font-semibold"
             : "text-nightly-celadon hover:text-nightly-honeydew"
         }`}
+        role="tab"
+        aria-selected={viewMode === "leaderboards"}
+        aria-controls="achievement-view-panel"
+        aria-label="Leaderboards view"
       >
-        <FaUsers />
+        <FaUsers aria-hidden="true" />
         <span>Leaderboards</span>
       </Button>
       <Button
@@ -55,8 +71,12 @@ export const AchievementViewToggle: React.FC<AchievementViewToggleProps> = ({
             ? "bg-nightly-aquamarine text-black font-semibold"
             : "text-nightly-celadon hover:text-nightly-honeydew"
         }`}
+        role="tab"
+        aria-selected={viewMode === "privacy"}
+        aria-controls="achievement-view-panel"
+        aria-label="Privacy settings view"
       >
-        <FaCog />
+        <FaCog aria-hidden="true" />
         <span>Privacy</span>
       </Button>
     </div>
