@@ -115,7 +115,7 @@ jobs:
 
       - name: Comment PR with Lighthouse results
         if: github.event_name == 'pull_request' && steps.lighthouse_results.outputs.performance_score
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const perfScore = ${{ steps.lighthouse_results.outputs.performance_score }};
