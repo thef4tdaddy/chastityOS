@@ -2,7 +2,7 @@
  * Custom hook for Account Linking Demo state and logic
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Timestamp } from "firebase/firestore";
 import {
   LinkCode,
@@ -105,8 +105,8 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
     "info",
   );
 
-  // Generate mock data based on scenario
-  const getMockData = () => {
+  // Generate mock data based on scenario (memoized to avoid Date.now() in render)
+  const mockData = useMemo(() => {
     const activeKeyholder =
       scenario === "submissive-with-keyholder" ? mockActiveKeyholder : null;
 
@@ -162,9 +162,7 @@ export const useAccountLinkingDemo = (scenario: DemoScenario) => {
       relationshipSummary,
       relationships,
     };
-  };
-
-  const mockData = getMockData();
+  }, [scenario]); // Memoize based on scenario
 
   // Message handlers
   const showMessage = (

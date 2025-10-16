@@ -71,12 +71,14 @@ const points = PointsService.calculateTaskPoints({
 Base points: **10**
 
 ### Priority Multipliers
+
 - **Critical**: 3x (30 points)
 - **High**: 2x (20 points)
 - **Medium**: 1x (10 points)
 - **Low**: 0.5x (5 points)
 
 ### Bonuses
+
 - **Evidence Attached**: +5 points
 - **Completed Before Deadline**: +5 points
 
@@ -105,7 +107,9 @@ import { useUserStats } from "@/hooks/api/useUserStats";
 const { data: stats } = useUserStats(userId);
 
 console.log(`Total Points: ${stats.totalPoints}`);
-console.log(`Approval Rate: ${(stats.tasksApproved / (stats.tasksApproved + stats.tasksRejected)) * 100}%`);
+console.log(
+  `Approval Rate: ${(stats.tasksApproved / (stats.tasksApproved + stats.tasksRejected)) * 100}%`,
+);
 ```
 
 ## Components
@@ -165,9 +169,9 @@ interface DBUserStats {
 ```typescript
 interface DBTask {
   // ... other fields
-  pointValue?: number;          // Points awarded for completion
-  pointsAwarded?: boolean;      // Flag to prevent duplicate awards
-  pointsAwardedAt?: Date;       // When points were awarded
+  pointValue?: number; // Points awarded for completion
+  pointsAwarded?: boolean; // Flag to prevent duplicate awards
+  pointsAwardedAt?: Date; // When points were awarded
 }
 ```
 

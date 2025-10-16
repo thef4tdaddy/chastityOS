@@ -2,7 +2,7 @@
  * Select Component
  * Dropdown select field with label, error states, and icons
  */
-import React, { forwardRef, useState, useRef, useEffect } from "react";
+import React, { forwardRef, useState, useRef, useEffect, useId } from "react";
 
 export interface SelectOption {
   /**
@@ -231,8 +231,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref,
   ) => {
-    // Generate unique ID if not provided
-    const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique ID if not provided using React's useId hook
+    const generatedId = useId();
+    const selectId = id || generatedId;
 
     const selectClasses = `
       ${fullWidth ? "w-full" : ""}

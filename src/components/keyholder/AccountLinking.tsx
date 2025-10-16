@@ -254,10 +254,10 @@ const AccountLinkingContent: React.FC<{
   </div>
 );
 
-const AccountLinkingErrorFallback: React.FC<{ error?: Error | null; resetError?: () => void }> = ({ 
-  error, 
-  resetError 
-}) => (
+const AccountLinkingErrorFallback: React.FC<{
+  error?: Error | null;
+  resetError?: () => void;
+}> = ({ error, resetError }) => (
   <RetryableErrorDisplay
     error={error}
     title="Account Linking Error"
@@ -324,7 +324,7 @@ export const AccountLinking: React.FC<AccountLinkingProps> = ({
   }
 
   return (
-    <FeatureErrorBoundary 
+    <FeatureErrorBoundary
       feature="account-linking"
       fallback={<AccountLinkingErrorFallback />}
     >

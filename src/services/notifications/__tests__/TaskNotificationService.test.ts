@@ -31,7 +31,9 @@ describe("TaskNotificationService", () => {
       const result = await TaskNotificationService.notifyTaskAssigned(params);
 
       expect(result).toBe("test-notification-id");
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "info",
           priority: "medium",
@@ -55,7 +57,9 @@ describe("TaskNotificationService", () => {
 
       await TaskNotificationService.notifyTaskAssigned(params);
 
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining("Master John assigned you"),
         }),
@@ -72,7 +76,9 @@ describe("TaskNotificationService", () => {
 
       await TaskNotificationService.notifyTaskAssigned(params);
 
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           priority: "high",
           message: expect.stringContaining("due"),
@@ -94,7 +100,9 @@ describe("TaskNotificationService", () => {
       const result = await TaskNotificationService.notifyTaskSubmitted(params);
 
       expect(result).toBe("test-notification-id");
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "info",
           priority: "high",
@@ -119,7 +127,9 @@ describe("TaskNotificationService", () => {
 
       await TaskNotificationService.notifyTaskSubmitted(params);
 
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining("with evidence"),
         }),
@@ -138,7 +148,9 @@ describe("TaskNotificationService", () => {
       const result = await TaskNotificationService.notifyTaskApproved(params);
 
       expect(result).toBe("test-notification-id");
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "success",
           priority: "medium",
@@ -162,7 +174,9 @@ describe("TaskNotificationService", () => {
 
       await TaskNotificationService.notifyTaskApproved(params);
 
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining("+10 points"),
         }),
@@ -182,7 +196,9 @@ describe("TaskNotificationService", () => {
       const result = await TaskNotificationService.notifyTaskRejected(params);
 
       expect(result).toBe("test-notification-id");
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "warning",
           priority: "high",
@@ -207,7 +223,9 @@ describe("TaskNotificationService", () => {
 
       await TaskNotificationService.notifyTaskRejected(params);
 
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining("Not thorough enough"),
         }),
@@ -228,7 +246,9 @@ describe("TaskNotificationService", () => {
         await TaskNotificationService.notifyDeadlineApproaching(params);
 
       expect(result).toBe("test-notification-id");
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "warning",
           priority: "high",
@@ -257,12 +277,16 @@ describe("TaskNotificationService", () => {
 
       expect(result.submissiveNotificationId).toBe("test-notification-id");
       expect(result.keyholderNotificationId).toBe("test-notification-id");
-      
+
       // Should call addNotification twice (once for submissive, once for keyholder)
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledTimes(2);
-      
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledTimes(2);
+
       // Check submissive notification
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "error",
           priority: "high",
@@ -273,9 +297,11 @@ describe("TaskNotificationService", () => {
           }),
         }),
       );
-      
+
       // Check keyholder notification
-      expect(useNotificationStore.getState().addNotification).toHaveBeenCalledWith(
+      expect(
+        useNotificationStore.getState().addNotification,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "warning",
           priority: "medium",

@@ -1,21 +1,25 @@
 # Goal Tracking Implementation - App Parity
 
 ## Overview
+
 This document describes the basic personal goal tracking functionality implemented for app parity with the original ChastityOS application.
 
 ## What Was Implemented
 
 ### 1. Automatic Goal Progress Tracking
+
 - Goals automatically update when sessions complete
 - Session duration (excluding pauses) is added to goal progress
 - Multiple active goals can be tracked simultaneously
 
 ### 2. Goal Completion Detection
+
 - Automatically detects when a goal's target is reached
 - Marks goal as completed
 - Logs completion event for the user's timeline
 
 ### 3. Progress Calculation
+
 - Calculates progress percentage (0-100%)
 - Handles edge cases (zero targets, over-completion)
 - Provides accurate statistics
@@ -41,6 +45,7 @@ GoalTrackerService.isGoalCompleted(goal: DBGoal)
 ### Integration Point: `SessionDBService`
 
 When a session ends, the system:
+
 1. Updates the session record
 2. Logs the session end event
 3. **Calls `GoalTrackerService.trackSessionCompletion()`** ← NEW
@@ -58,7 +63,7 @@ const { data: goal } = usePersonalGoalQuery(userId);
 const { data: stats } = useGoalStatisticsQuery(userId);
 
 // Create/update/delete goals
-const { createPersonalGoal, updatePersonalGoal, deletePersonalGoal } = 
+const { createPersonalGoal, updatePersonalGoal, deletePersonalGoal } =
   usePersonalGoalMutations();
 ```
 
@@ -109,6 +114,7 @@ interface DBGoal {
 ## Features
 
 ### ✅ Implemented
+
 - Personal goal creation with duration target
 - Automatic progress tracking from sessions
 - Goal completion detection
@@ -120,6 +126,7 @@ interface DBGoal {
 - Keyholder-created goals (via `createdBy` field)
 
 ### ❌ Not Implemented (Out of Scope)
+
 - Task-based goals
 - Behavioral goals
 - Achievement-based goals
@@ -133,7 +140,9 @@ interface DBGoal {
 ## Testing
 
 ### Automated Tests
+
 12 comprehensive tests cover all functionality:
+
 - Session completion tracking
 - Progress updates
 - Completion detection
@@ -142,6 +151,7 @@ interface DBGoal {
 - Edge cases
 
 Run tests with:
+
 ```bash
 npm run test:unit -- src/services/__tests__/GoalTrackerService.test.ts
 ```
@@ -195,23 +205,23 @@ npm run test:unit -- src/services/__tests__/GoalTrackerService.test.ts
 ### Creating a Goal
 
 ```typescript
-import { useCreatePersonalGoal } from '@/hooks/api/usePersonalGoalQueries';
+import { useCreatePersonalGoal } from "@/hooks/api/usePersonalGoalQueries";
 
 const createGoal = useCreatePersonalGoal();
 
 // Create a 7-day goal
 createGoal.mutate({
-  userId: 'user-123',
-  title: '7 Day Challenge',
+  userId: "user-123",
+  title: "7 Day Challenge",
   targetDuration: 7 * 24 * 3600, // 7 days in seconds
-  description: 'Complete a full week in chastity'
+  description: "Complete a full week in chastity",
 });
 ```
 
 ### Getting Goal Progress
 
 ```typescript
-import { usePersonalGoalQuery } from '@/hooks/api/usePersonalGoalQueries';
+import { usePersonalGoalQuery } from "@/hooks/api/usePersonalGoalQueries";
 
 const { data: goal } = usePersonalGoalQuery(userId);
 
@@ -224,7 +234,7 @@ if (goal) {
 ### Getting Statistics
 
 ```typescript
-import { useGoalStatisticsQuery } from '@/hooks/api/usePersonalGoalQueries';
+import { useGoalStatisticsQuery } from "@/hooks/api/usePersonalGoalQueries";
 
 const { data: stats } = useGoalStatisticsQuery(userId);
 
@@ -238,6 +248,7 @@ if (stats) {
 ## Error Handling
 
 The goal tracker includes comprehensive error handling:
+
 - Invalid sessions are skipped (no userId, no endTime, etc.)
 - Goal tracking errors don't break session completion
 - Failed progress updates are logged but don't throw
@@ -253,6 +264,7 @@ The goal tracker includes comprehensive error handling:
 ## Future Enhancements
 
 When implementing the full goal system (issue #409043e5):
+
 - Add task-based goal tracking
 - Implement streak detection
 - Add recurring goals with auto-reset
@@ -264,18 +276,21 @@ When implementing the full goal system (issue #409043e5):
 ## Troubleshooting
 
 ### Goal progress not updating
+
 1. Check that the session completed successfully
 2. Verify the goal is active (`isCompleted: false`)
 3. Check that the goal type is `"duration"`
 4. Look for errors in the console/logs
 
 ### Progress calculation seems wrong
+
 1. Verify the session duration is correct
 2. Check if paused time is being excluded correctly
 3. Ensure target value is in seconds
 4. Check that multiple sessions are accumulating correctly
 
 ### Completion not detected
+
 1. Verify `currentValue >= targetValue`
 2. Check that `isCompleted` is being set to `true`
 3. Look for completion event in the events table
