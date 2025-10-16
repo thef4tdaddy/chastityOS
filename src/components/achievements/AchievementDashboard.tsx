@@ -22,6 +22,8 @@ import {
   DBAchievementNotification,
 } from "../../types";
 import { Card } from "@/components/ui";
+import { AchievementErrorBoundary } from "./AchievementErrorBoundary";
+import { AchievementError } from "./AchievementError";
 
 // Types
 interface AchievementStats {
@@ -95,7 +97,10 @@ const StatsCards: React.FC<{
             Completion
           </p>
           <p className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
-            {achievementStats.completionPercentage.toFixed(0)}%
+            {Number.isFinite(achievementStats.completionPercentage)
+              ? achievementStats.completionPercentage.toFixed(0)
+              : 0}
+            %
           </p>
         </div>
         <FaBullseye className="text-xl sm:text-2xl text-nightly-spring-green flex-shrink-0 ml-2" />
@@ -203,7 +208,7 @@ const CategoryProgress: React.FC<{
   </Card>
 );
 
-export const AchievementDashboard: React.FC = () => {
+const AchievementDashboardContent: React.FC = () => {
   const { user } = useAuthState();
   const {
     achievementStats,
@@ -216,6 +221,18 @@ export const AchievementDashboard: React.FC = () => {
 
   if (isLoading || !achievementStats) {
     return <LoadingState />;
+  }
+
+  // Handle missing or invalid data gracefully
+  if (!achievementStats) {
+    return (
+      <AchievementError
+        errorType="data-load"
+        title="Unable to Load Achievement Data"
+        message="Achievement statistics are temporarily unavailable."
+        onRetry={() => window.location.reload()}
+      />
+    );
   }
 
   const recentAchievements = userAchievements
@@ -238,13 +255,14 @@ export const AchievementDashboard: React.FC = () => {
     const categoryAchievements = getAchievementsByCategory(category);
     const earned = achievementStats.categoryCounts[category] || 0;
     const total = categoryAchievements.length;
-    const percentage = total > 0 ? (earned / total) * 100 : 0;
+    // Safely handle division by zero
+    const percentage = total > 0 ? Math.min((earned / total) * 100, 100) : 0;
 
     return {
       category,
       earned,
       total,
-      percentage,
+      percentage: Number.isFinite(percentage) ? percentage : 0,
       name: getCategoryDisplayName(category),
       icon: getCategoryIcon(category),
     };
@@ -276,6 +294,14 @@ export const AchievementDashboard: React.FC = () => {
 
       <CategoryProgress categoryProgress={categoryProgress} />
     </div>
+  );
+};
+
+export const AchievementDashboard: React.FC = () => {
+  return (
+    <AchievementErrorBoundary>
+      <AchievementDashboardContent />
+    </AchievementErrorBoundary>
   );
 };
 

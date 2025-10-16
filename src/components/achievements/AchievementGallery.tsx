@@ -23,6 +23,8 @@ import {
   achievementStaggerVariants,
   getAccessibleVariants,
 } from "../../utils/animations";
+import { AchievementErrorBoundary } from "./AchievementErrorBoundary";
+import { AchievementError } from "./AchievementError";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -43,11 +45,17 @@ interface AchievementGalleryProps {
   isOwnGallery?: boolean;
 }
 
-export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
+const AchievementGalleryContent: React.FC<AchievementGalleryProps> = ({
   achievementsWithProgress,
   onToggleVisibility,
   isOwnGallery = false,
 }) => {
+  // Validate input data early but safely with fallback
+  const validatedData = Array.isArray(achievementsWithProgress)
+    ? achievementsWithProgress
+    : [];
+  const hasInvalidData = !Array.isArray(achievementsWithProgress);
+
   const {
     selectedCategory,
     selectedDifficulty,
@@ -60,7 +68,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
     stats,
     filteredAchievements,
     groupedAchievements,
-  } = useAchievementGallery(achievementsWithProgress);
+  } = useAchievementGallery(validatedData);
 
   // Flatten grouped achievements for pagination
   const flattenedAchievements = React.useMemo(
@@ -93,6 +101,17 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
     });
     return groups;
   }, [paginatedAchievements]);
+
+  // Show error after all hooks have been called (maintaining hook order)
+  if (hasInvalidData) {
+    return (
+      <AchievementError
+        errorType="data-load"
+        title="Invalid Achievement Data"
+        message="The achievement data is in an unexpected format."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -152,6 +171,16 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
         />
       )}
     </div>
+  );
+};
+
+export const AchievementGallery: React.FC<AchievementGalleryProps> = (
+  props,
+) => {
+  return (
+    <AchievementErrorBoundary>
+      <AchievementGalleryContent {...props} />
+    </AchievementErrorBoundary>
   );
 };
 

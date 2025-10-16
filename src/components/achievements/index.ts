@@ -20,3 +20,5 @@ export {
   AchievementSignInPrompt,
 } from "./AchievementPageStates";
 export { AchievementViewToggle } from "./AchievementViewToggle";
+export { AchievementErrorBoundary } from "./AchievementErrorBoundary";
+export { AchievementError } from "./AchievementError";
