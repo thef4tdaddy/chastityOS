@@ -93,17 +93,37 @@ interface OptInPromptProps {
 }
 
 const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 md:p-8 text-center">
-    <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6">🏆</div>
-    <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew mb-3 sm:mb-4">
+  <div
+    className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 md:p-8 text-center"
+    role="dialog"
+    aria-labelledby="leaderboard-opt-in-title"
+    aria-describedby="leaderboard-opt-in-description"
+  >
+    <div
+      className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6"
+      aria-hidden="true"
+    >
+      🏆
+    </div>
+    <h2
+      id="leaderboard-opt-in-title"
+      className="text-xl sm:text-2xl font-bold text-nightly-honeydew mb-3 sm:mb-4"
+    >
       Join the Leaderboards!
     </h2>
-    <p className="text-sm sm:text-base text-nightly-celadon mb-4 sm:mb-6 max-w-md mx-auto">
+    <p
+      id="leaderboard-opt-in-description"
+      className="text-sm sm:text-base text-nightly-celadon mb-4 sm:mb-6 max-w-md mx-auto"
+    >
       Compete with other users and see how your achievement progress stacks up.
       Your participation is completely optional and anonymous.
     </p>
 
-    <div className="bg-blue-900/30 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-left max-w-md mx-auto">
+    <div
+      className="bg-blue-900/30 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-left max-w-md mx-auto"
+      role="region"
+      aria-label="Privacy features"
+    >
       <h3 className="font-semibold text-blue-300 mb-2 text-sm sm:text-base">
         🔒 Privacy Features:
       </h3>
@@ -119,12 +139,14 @@ const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
       <Button
         onClick={onOptIn}
         className="px-6 py-3 bg-nightly-aquamarine text-black font-semibold rounded-lg hover:bg-nightly-aquamarine/80 transition-colors touch-manipulation"
+        aria-label="Join leaderboards and compete with others"
       >
         Join Leaderboards
       </Button>
       <Button
         onClick={onSkip}
         className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors touch-manipulation"
+        aria-label="Skip joining leaderboards for now"
       >
         Maybe Later
       </Button>
@@ -134,7 +156,12 @@ const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
 
 // Loading state component
 const LoadingState: React.FC = () => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+  <div
+    className="bg-white/10 backdrop-blur-sm rounded-lg p-6"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading leaderboard"
+  >
     <div className="animate-pulse">
       <div className="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
       <div className="space-y-3">
@@ -143,13 +170,20 @@ const LoadingState: React.FC = () => (
         ))}
       </div>
     </div>
+    <span className="sr-only">Loading leaderboard data...</span>
   </div>
 );
 
 // Error state component
 const ErrorState: React.FC = () => (
-  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 text-center">
-    <div className="text-red-400 text-xl mb-2">⚠️</div>
+  <div
+    className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 text-center"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div className="text-red-400 text-xl mb-2" aria-hidden="true">
+      ⚠️
+    </div>
     <h3 className="text-red-300 font-semibold mb-2">Leaderboard Error</h3>
     <p className="text-red-200 text-sm">
       Unable to load leaderboard data. Please try again later.
@@ -227,10 +261,16 @@ interface UserRankProps {
 }
 
 const UserRank: React.FC<UserRankProps> = ({ userRank, selectedCategory }) => (
-  <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-3 sm:p-4 border border-blue-500/30">
+  <div
+    className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-3 sm:p-4 border border-blue-500/30"
+    role="region"
+    aria-label="Your leaderboard rank"
+  >
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
       <div className="flex items-center space-x-2 sm:space-x-3">
-        <div className="text-xl sm:text-2xl">{getRankIcon(userRank.rank)}</div>
+        <div className="text-xl sm:text-2xl" aria-hidden="true">
+          {getRankIcon(userRank.rank)}
+        </div>
         <div>
           <div className="font-semibold text-nightly-honeydew text-sm sm:text-base">
             Your Rank
@@ -269,14 +309,18 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   selectedCategory,
   selectedPeriod,
 }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
+  <div
+    className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden"
+    role="region"
+    aria-label="Leaderboard rankings"
+  >
     <div className="p-3 sm:p-4 border-b border-white/20">
       <h3 className="font-semibold text-nightly-honeydew text-sm sm:text-base truncate">
         {getCategoryLabel(selectedCategory)} - {getPeriodLabel(selectedPeriod)}
       </h3>
     </div>
 
-    <div className="divide-y divide-white/10">
+    <div className="divide-y divide-white/10" role="list">
       {leaderboardData.map((entry, index) => (
         <div
           key={entry.id}
@@ -285,14 +329,20 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               ? "bg-blue-900/20 border-l-4 border-blue-400"
               : ""
           }`}
+          role="listitem"
+          aria-label={`${entry.displayName}, rank ${index + 1}, ${formatValue(entry.value, selectedCategory)}`}
         >
           <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
-            <div className="text-xl sm:text-2xl min-w-[32px] sm:min-w-[40px] text-center flex-shrink-0">
+            <div
+              className="text-xl sm:text-2xl min-w-[32px] sm:min-w-[40px] text-center flex-shrink-0"
+              aria-hidden="true"
+            >
               {getRankIcon(index + 1)}
             </div>
             <div className="min-w-0">
               <div className="font-semibold text-nightly-honeydew text-sm sm:text-base truncate">
                 {entry.displayName}
+                {entry.isCurrentUser && <span className="sr-only"> (You)</span>}
               </div>
               <div className="text-xs sm:text-sm text-nightly-celadon">
                 Rank #{index + 1}
@@ -313,8 +363,14 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     </div>
 
     {leaderboardData.length === 0 && (
-      <div className="p-6 sm:p-8 text-center text-nightly-celadon">
-        <FaUsers className="text-3xl sm:text-4xl mx-auto mb-3 sm:mb-4 opacity-50" />
+      <div
+        className="p-6 sm:p-8 text-center text-nightly-celadon"
+        role="status"
+      >
+        <FaUsers
+          className="text-3xl sm:text-4xl mx-auto mb-3 sm:mb-4 opacity-50"
+          aria-hidden="true"
+        />
         <p className="text-sm sm:text-base">
           No participants in this leaderboard yet.
         </p>
@@ -336,9 +392,12 @@ const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
   onOptIn,
   onOptOut,
 }) => (
-  <div className="flex items-center justify-between gap-2">
+  <div className="flex items-center justify-between gap-2" role="banner">
     <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-      <FaTrophy className="text-xl sm:text-2xl text-nightly-lavender-floral flex-shrink-0" />
+      <FaTrophy
+        className="text-xl sm:text-2xl text-nightly-lavender-floral flex-shrink-0"
+        aria-hidden="true"
+      />
       <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew truncate">
         Leaderboards
       </h2>
@@ -348,16 +407,18 @@ const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
         <Button
           onClick={onOptOut}
           className="flex items-center space-x-1 text-red-400 hover:text-red-300 touch-manipulation whitespace-nowrap"
+          aria-label="Opt out of leaderboards"
         >
-          <FaEyeSlash />
+          <FaEyeSlash aria-hidden="true" />
           <span className="hidden sm:inline">Opt Out</span>
         </Button>
       ) : (
         <Button
           onClick={onOptIn}
           className="flex items-center space-x-1 text-green-400 hover:text-green-300 touch-manipulation whitespace-nowrap"
+          aria-label="Join leaderboards"
         >
-          <FaEye />
+          <FaEye aria-hidden="true" />
           <span className="hidden sm:inline">Join</span>
         </Button>
       )}

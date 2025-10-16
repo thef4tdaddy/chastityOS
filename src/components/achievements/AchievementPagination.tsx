@@ -66,14 +66,17 @@ const AchievementPaginationComponent: React.FC<AchievementPaginationProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+    <nav
+      className="flex items-center justify-center gap-2 mt-6 flex-wrap"
+      aria-label="Achievement pagination"
+    >
       <Button
         onClick={onPrevPage}
         disabled={!hasPrevPage}
         className="p-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Previous page"
       >
-        <FaChevronLeft />
+        <FaChevronLeft aria-hidden="true" />
       </Button>
 
       {renderPageNumbers().map((page, index) => {
@@ -82,6 +85,7 @@ const AchievementPaginationComponent: React.FC<AchievementPaginationProps> = ({
             <span
               key={`ellipsis-${index}`}
               className="px-2 text-nightly-celadon"
+              aria-hidden="true"
             >
               ...
             </span>
@@ -99,11 +103,11 @@ const AchievementPaginationComponent: React.FC<AchievementPaginationProps> = ({
               px-3 py-2 rounded-lg min-w-[44px] min-h-[44px] transition-colors
               ${
                 isActive
-                  ? "bg-nightly-aquamarine text-white font-semibold"
+                  ? "bg-nightly-aquamarine text-black font-semibold"
                   : "bg-white/10 hover:bg-white/20 text-nightly-celadon"
               }
             `}
-            aria-label={`Page ${pageNum}`}
+            aria-label={`Go to page ${pageNum}`}
             aria-current={isActive ? "page" : undefined}
           >
             {pageNum}
@@ -117,9 +121,9 @@ const AchievementPaginationComponent: React.FC<AchievementPaginationProps> = ({
         className="p-2 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Next page"
       >
-        <FaChevronRight />
+        <FaChevronRight aria-hidden="true" />
       </Button>
-    </div>
+    </nav>
   );
 };
 
