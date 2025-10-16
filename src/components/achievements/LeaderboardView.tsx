@@ -9,6 +9,8 @@ import { useAuthState } from "../../contexts";
 import { LeaderboardCategory, LeaderboardPeriod } from "../../types";
 import { useLeaderboardActions } from "../../hooks/achievements/useLeaderboardActions";
 import { Select, SelectOption, Button } from "@/components/ui";
+import { AchievementErrorBoundary } from "./AchievementErrorBoundary";
+import { AchievementError } from "./AchievementError";
 
 export interface LeaderboardViewProps {
   category?: LeaderboardCategory;
@@ -175,20 +177,14 @@ const LoadingState: React.FC = () => (
 );
 
 // Error state component
-const ErrorState: React.FC = () => (
-  <div
-    className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 text-center"
-    role="alert"
-    aria-live="assertive"
-  >
-    <div className="text-red-400 text-xl mb-2" aria-hidden="true">
-      ⚠️
-    </div>
-    <h3 className="text-red-300 font-semibold mb-2">Leaderboard Error</h3>
-    <p className="text-red-200 text-sm">
-      Unable to load leaderboard data. Please try again later.
-    </p>
-  </div>
+const ErrorState: React.FC<{ error?: Error }> = ({ error }) => (
+  <AchievementError
+    error={error}
+    errorType="data-load"
+    title="Leaderboard Error"
+    message="Unable to load leaderboard data. Please try again later."
+    onRetry={() => window.location.reload()}
+  />
 );
 
 // Leaderboard filters component
@@ -426,7 +422,7 @@ const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
   </div>
 );
 
-export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
+const LeaderboardViewContent: React.FC<LeaderboardViewProps> = ({
   category = LeaderboardCategory.TOTAL_POINTS,
   period = LeaderboardPeriod.ALL_TIME,
   showOptInPrompt = true,
@@ -458,7 +454,12 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   }
 
   if (error) {
-    return <ErrorState />;
+    return <ErrorState error={error} />;
+  }
+
+  // Validate leaderboard data
+  if (!Array.isArray(leaderboardData)) {
+    return <ErrorState error={new Error("Invalid leaderboard data format")} />;
   }
 
   return (
@@ -486,6 +487,14 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
         selectedPeriod={selectedPeriod}
       />
     </div>
+  );
+};
+
+export const LeaderboardView: React.FC<LeaderboardViewProps> = (props) => {
+  return (
+    <AchievementErrorBoundary>
+      <LeaderboardViewContent {...props} />
+    </AchievementErrorBoundary>
   );
 };
 
