@@ -2,7 +2,7 @@
  * Radio Component
  * Custom styled radio button with label and description
  */
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 
 export interface RadioProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
@@ -117,8 +117,9 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     },
     ref,
   ) => {
-    // Generate unique ID if not provided
-    const radioId = id || `radio-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique ID if not provided using React's useId hook
+    const generatedId = useId();
+    const radioId = id || generatedId;
 
     const { radio, dot, text, description: descSize } = sizeClasses[size];
 

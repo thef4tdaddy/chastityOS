@@ -45,7 +45,7 @@ export interface TaskOverdueParams extends TaskNotificationParams {
 /**
  * Task Notification Service
  * Provides centralized notification handling for task workflow events
- * 
+ *
  * Design: This service uses the existing notification store for toast notifications
  * but is structured to easily support push notifications in the future by adding
  * additional notification channels alongside the toast notifications.
@@ -257,9 +257,10 @@ export class TaskNotificationService {
   /**
    * Notify about overdue task
    */
-  static async notifyTaskOverdue(
-    params: TaskOverdueParams,
-  ): Promise<{ submissiveNotificationId: string | null; keyholderNotificationId: string | null }> {
+  static async notifyTaskOverdue(params: TaskOverdueParams): Promise<{
+    submissiveNotificationId: string | null;
+    keyholderNotificationId: string | null;
+  }> {
     try {
       logger.info("Sending task overdue notifications", {
         taskId: params.taskId,

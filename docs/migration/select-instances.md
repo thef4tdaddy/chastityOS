@@ -11,6 +11,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ## Select Instances
 
 ### 1. SettingsPage.tsx - Timezone Select
+
 - **File**: `src/pages/SettingsPage.tsx`
 - **Line**: 344
 - **Current Implementation**:
@@ -30,6 +31,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 2. FeedbackModal.tsx - Feedback Type Select
+
 - **File**: `src/components/feedback/FeedbackModal.tsx`
 - **Line**: 102
 - **Current Implementation**:
@@ -47,6 +49,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 3. RulesPageControls.tsx - Filter Select
+
 - **File**: `src/components/rules/RulesPageControls.tsx`
 - **Line**: 22
 - **Current Implementation**:
@@ -65,6 +68,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 4. RuleEditor.tsx - Created By Select
+
 - **File**: `src/components/rules/RuleEditor.tsx`
 - **Line**: 92
 - **Current Implementation**:
@@ -83,6 +87,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 5. RecurringTaskForm.tsx - Frequency Select
+
 - **File**: `src/components/keyholder/RecurringTaskForm.tsx`
 - **Line**: 67
 - **Current Implementation**:
@@ -101,6 +106,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 6. KeyholderRelationshipsList.tsx - Wearer Select
+
 - **File**: `src/components/keyholder/compound/KeyholderRelationshipsList.tsx`
 - **Line**: 25
 - **Current Implementation**:
@@ -117,6 +123,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 7. KeyholderDashboard.tsx - Wearer Select
+
 - **File**: `src/components/keyholder/KeyholderDashboard.tsx`
 - **Line**: 44
 - **Current Implementation**:
@@ -133,6 +140,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 8. RewardsPunishmentsControls.tsx - Filter Select
+
 - **File**: `src/components/rewards_punishments/RewardsPunishmentsControls.tsx`
 - **Line**: 20
 - **Current Implementation**:
@@ -147,6 +155,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 9. SecuritySettings.tsx - Auto-logout Select
+
 - **File**: `src/components/settings/SecuritySettings.tsx`
 - **Line**: 20
 - **Current Implementation**:
@@ -165,6 +174,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 10. RelationshipRequestForm.tsx - Role Select
+
 - **File**: `src/components/relationships/RelationshipRequestForm.tsx`
 - **Line**: 55
 - **Current Implementation**:
@@ -182,6 +192,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 11. PauseResumeButtons.tsx - Pause Reason Select
+
 - **File**: `src/components/tracker/PauseResumeButtons.tsx`
 - **Line**: 112
 - **Current Implementation**:
@@ -198,6 +209,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 12. LeaderboardView.tsx - Category Select
+
 - **File**: `src/components/achievements/LeaderboardView.tsx`
 - **Line**: 177
 - **Current Implementation**:
@@ -216,6 +228,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 13. LeaderboardView.tsx - Period Select
+
 - **File**: `src/components/achievements/LeaderboardView.tsx`
 - **Line**: 202
 - **Current Implementation**:
@@ -232,6 +245,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 14. AchievementGallerySubComponents.tsx - Category Select
+
 - **File**: `src/components/achievements/AchievementGallerySubComponents.tsx`
 - **Line**: 108
 - **Current Implementation**:
@@ -250,6 +264,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 15. AchievementGallerySubComponents.tsx - Difficulty Select
+
 - **File**: `src/components/achievements/AchievementGallerySubComponents.tsx`
 - **Line**: 125
 - **Current Implementation**:
@@ -268,6 +283,7 @@ This document tracks all select/dropdown instances found in the codebase and the
 ---
 
 ### 16. MainNav.jsx - Mobile Navigation Select (Note: In original-app directory)
+
 - **File**: `original-app/components/MainNav.jsx`
 - **Line**: ~17
 - **Current Implementation**:
@@ -278,7 +294,7 @@ This document tracks all select/dropdown instances found in the codebase and the
     className="w-full p-3 rounded-lg bg-gray-700 text-purple-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 border-gray-600 shadow-sm text-sm"
   >
   ```
-- **Migration Status**: ⏳ Pending  
+- **Migration Status**: ⏳ Pending
 - **Notes**: Mobile navigation dropdown (in archived original-app, low priority)
 
 ---
@@ -302,6 +318,7 @@ For each select migration:
 ## Common Patterns
 
 ### Pattern 1: Basic Select
+
 ```tsx
 // Before
 <select
@@ -325,6 +342,7 @@ For each select migration:
 ```
 
 ### Pattern 2: Select with Type Casting
+
 ```tsx
 // Before
 <select
@@ -342,6 +360,7 @@ For each select migration:
 ```
 
 ### Pattern 3: Select with Label
+
 ```tsx
 // Before
 <label htmlFor="timezone">Timezone</label>

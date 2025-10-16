@@ -2,7 +2,7 @@
  * SyncIndicator Component
  * Displays sync status and provides manual sync control
  */
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Spinner, Button, Tooltip } from "@/components/ui";
 import { FaSync, FaCheck, FaExclamationTriangle } from "@/utils/iconImport";
 
@@ -25,6 +25,18 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
   className = "",
   showLabel = true,
 }) => {
+  // Use state to track current time for relative time calculations
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Update current time every minute for relative time display
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
   const getStatusIcon = () => {
     switch (status) {
       case "syncing":
@@ -62,7 +74,7 @@ export const SyncIndicator: React.FC<SyncIndicatorProps> = ({
   };
 
   const formatRelativeTime = (date: Date): string => {
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    const seconds = Math.floor((currentTime - date.getTime()) / 1000);
 
     if (seconds < 60) return "just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;

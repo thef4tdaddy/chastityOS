@@ -19,9 +19,9 @@ export const KeyholderErrorFallback: React.FC<KeyholderErrorFallbackProps> = ({
   // Provide user-friendly error messages based on error type
   const getErrorMessage = () => {
     if (!error) return "Unable to load keyholder features.";
-    
+
     const message = error.message.toLowerCase();
-    
+
     if (message.includes("permission") || message.includes("unauthorized")) {
       return "You don't have permission to access this feature. Please check your account status.";
     }
@@ -31,7 +31,7 @@ export const KeyholderErrorFallback: React.FC<KeyholderErrorFallbackProps> = ({
     if (message.includes("timeout")) {
       return "The request timed out. Please try again.";
     }
-    
+
     return "Unable to load keyholder features. Please try again.";
   };
 

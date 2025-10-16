@@ -23,11 +23,13 @@ This checklist ensures push notifications are properly configured for deployment
 Add the following environment variable to your deployment platform:
 
 **For Vercel:**
+
 ```bash
 VITE_FIREBASE_VAPID_KEY=your-vapid-key-here
 ```
 
 **For Netlify:**
+
 ```bash
 VITE_FIREBASE_VAPID_KEY=your-vapid-key-here
 ```
@@ -137,6 +139,7 @@ Use Firebase Analytics or your preferred analytics platform.
 **Symptoms:** No token in console, FCM service fails silently
 
 **Solutions:**
+
 1. Check VAPID key is correct
 2. Verify HTTPS is being used
 3. Check browser console for errors
@@ -147,6 +150,7 @@ Use Firebase Analytics or your preferred analytics platform.
 **Symptoms:** No prompt appears after delay
 
 **Solutions:**
+
 1. Clear localStorage and try again
 2. Check if already prompted (stored in localStorage)
 3. Verify 30-second delay hasn't been skipped
@@ -157,6 +161,7 @@ Use Firebase Analytics or your preferred analytics platform.
 **Symptoms:** Token exists but no notifications appear
 
 **Solutions:**
+
 1. Verify token is valid (test with Firebase Console)
 2. Check service worker is active
 3. Ensure notification permission is granted
@@ -171,6 +176,7 @@ If issues arise in production:
    - Or comment out `<NotificationPermissionPrompt>` in Root.tsx
 
 2. **Revert Code:**
+
    ```bash
    git revert <commit-hash>
    ```

@@ -9,6 +9,7 @@ The application now uses React lazy loading and smart vendor bundle splitting to
 ## Bundle Size Improvements
 
 ### Before Optimization
+
 ```
 vendor.js: 1.3MB (289KB gzipped)
 index.js:  596KB (105KB gzipped)
@@ -19,9 +20,10 @@ Total:     ~1.9MB (394KB gzipped)
 All pages were bundled into the main JavaScript file, requiring users to download everything upfront.
 
 ### After Optimization
+
 ```
 firebase-vendor.js: 715KB (134KB gzipped)
-react-vendor.js:    292KB (80KB gzipped)  
+react-vendor.js:    292KB (80KB gzipped)
 vendor.js:          208KB (59KB gzipped)
 ui-vendor.js:       78KB  (22KB gzipped)
 index.js:           244KB (49KB gzipped)
@@ -45,6 +47,7 @@ const ChastityTracking = lazy(() => import("./pages/ChastityTracking"));
 ```
 
 Individual page chunks:
+
 - Dashboard: 4KB (1.5KB gzipped)
 - ChastityTracking: 76KB (17KB gzipped)
 - SettingsPage: 46KB (8.5KB gzipped)
@@ -95,6 +98,7 @@ export function preloadRoute(path: string): void {
 ```
 
 This is integrated into:
+
 - Header navigation (desktop)
 - Mobile menu
 - Bottom navigation (mobile)
@@ -120,17 +124,20 @@ const PageLoadingFallback = () => (
 ## Benefits
 
 ### Performance
+
 - **21% smaller initial bundle** - Faster first load
 - **On-demand loading** - Pages load only when needed
 - **Instant navigation** - Preloading on hover eliminates wait time
 - **Parallel loading** - Multiple smaller chunks load simultaneously
 
 ### Caching
+
 - **Better cache hits** - Vendor bundles rarely change
 - **Granular updates** - Only changed chunks need redownload
 - **Long-term caching** - Vendor bundles can be cached for months
 
 ### Developer Experience
+
 - **Descriptive chunks** - Easy to identify in DevTools
 - **Source maps** - Debugging remains straightforward
 - **Automatic splitting** - Vite handles chunk generation
@@ -138,16 +145,19 @@ const PageLoadingFallback = () => (
 ## Testing
 
 ### Build Verification
+
 ```bash
 npm run build
 ```
 
 Verify in output:
+
 - All page chunks are generated separately
 - Vendor bundles are split correctly
 - Bundle sizes meet targets
 
 ### Runtime Testing
+
 1. Open DevTools Network tab
 2. Navigate to Dashboard
 3. Verify only necessary chunks load
@@ -158,6 +168,7 @@ Verify in output:
 ## Future Optimizations
 
 ### Out of Scope (Phase 2)
+
 These were considered but deferred per project requirements:
 
 - **Image optimization** - Convert to WebP with fallbacks
@@ -166,6 +177,7 @@ These were considered but deferred per project requirements:
 - **Third-party scripts** - Defer non-critical analytics
 
 ### Potential Improvements
+
 - Dynamic import for chart libraries when/if used
 - Further split settings page into sub-components
 - Prefetch critical assets on idle

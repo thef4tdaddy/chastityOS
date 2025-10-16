@@ -12,8 +12,7 @@ export default {
         patterns: [
           {
             group: ['react', 'react-*'],
-            message:
-              'Services should not import React. Keep business logic separate from UI.',
+            message: 'Services should not import React. Keep business logic separate from UI.',
           },
         ],
       },
@@ -23,8 +22,7 @@ export default {
       'error',
       {
         selector: 'CallExpression[callee.name=/^use[A-Z]/]',
-        message:
-          'Services should not use React hooks. Move hook usage to src/hooks/ layer.',
+        message: 'Services should not use React hooks. Move hook usage to src/hooks/ layer.',
       },
     ],
   },

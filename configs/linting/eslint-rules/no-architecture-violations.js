@@ -42,8 +42,7 @@ export default {
   create(context) {
     const filename = context.getFilename();
     const options = context.options[0] || {};
-    const allowStorageInServices =
-      options.allowStorageInServices !== false;
+    const allowStorageInServices = options.allowStorageInServices !== false;
 
     // Check if file is in hooks directory
     const isInHooksDir = filename.includes('/src/hooks/');
@@ -67,8 +66,7 @@ export default {
         // Check for localStorage or sessionStorage
         if (
           node.object.type === 'Identifier' &&
-          (node.object.name === 'localStorage' ||
-            node.object.name === 'sessionStorage')
+          (node.object.name === 'localStorage' || node.object.name === 'sessionStorage')
         ) {
           // Only error in hooks directory
           if (isInHooksDir) {
@@ -124,8 +122,7 @@ export default {
         // Check for exported const functionName = () => {} patterns
         if (
           node.init &&
-          (node.init.type === 'ArrowFunctionExpression' ||
-            node.init.type === 'FunctionExpression')
+          (node.init.type === 'ArrowFunctionExpression' || node.init.type === 'FunctionExpression')
         ) {
           const variableName = node.id?.name || '';
           const isValidationFunction =
