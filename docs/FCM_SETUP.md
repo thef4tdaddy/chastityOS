@@ -24,16 +24,19 @@ This guide explains how to set up Firebase Cloud Messaging for push notification
 Add the VAPID key to your environment files:
 
 **`.env.development`**:
+
 ```env
 VITE_FIREBASE_VAPID_KEY=your-vapid-key-here
 ```
 
 **`.env.production`**:
+
 ```env
 VITE_FIREBASE_VAPID_KEY=your-vapid-key-here
 ```
 
 **`.env.nightly`**:
+
 ```env
 VITE_FIREBASE_VAPID_KEY=your-vapid-key-here
 ```
@@ -50,33 +53,30 @@ When implementing server-side notification sending:
 
 ```typescript
 // functions/src/notifications/sendTaskNotification.ts
-import * as admin from 'firebase-admin';
+import * as admin from "firebase-admin";
 
 export async function sendTaskAssignedNotification(
   userId: string,
-  taskTitle: string
+  taskTitle: string,
 ) {
-  const userDoc = await admin.firestore()
-    .collection('users')
-    .doc(userId)
-    .get();
+  const userDoc = await admin.firestore().collection("users").doc(userId).get();
 
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) {
-    console.log('No FCM token for user:', userId);
+    console.log("No FCM token for user:", userId);
     return;
   }
 
   const message = {
     notification: {
-      title: 'New Task Assigned',
+      title: "New Task Assigned",
       body: `Your Keyholder assigned you: "${taskTitle}"`,
     },
     data: {
-      type: 'task_assigned',
+      type: "task_assigned",
       taskId: taskId,
-      link: '/tasks',
+      link: "/tasks",
     },
     token: fcmToken,
   };
@@ -203,9 +203,9 @@ Use Firebase Console to send test messages:
 
 ```typescript
 // In browser console
-const { FCMService } = await import('./src/services/notifications/FCMService');
-const token = await FCMService.requestToken('your-user-id');
-console.log('Token:', token);
+const { FCMService } = await import("./src/services/notifications/FCMService");
+const token = await FCMService.requestToken("your-user-id");
+console.log("Token:", token);
 ```
 
 ## Security Considerations

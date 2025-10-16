@@ -4,14 +4,14 @@ This document provides a comprehensive summary of all tests implemented for back
 
 ## Test Coverage Overview
 
-| Test Category | Test File | Tests | Status |
-|--------------|-----------|-------|--------|
-| Notification Service | `NotificationService.test.ts` | 25 | ✅ Passing |
-| Offline Queue | `OfflineQueue.test.ts` | 18 | ✅ Passing |
-| Background Sync Integration | `BackgroundSync.test.ts` | 15 | ✅ Passing |
-| Push Notifications Integration | `PushNotifications.test.ts` | 33 | ✅ Passing |
-| PWA E2E Tests | `pwa-notifications.spec.ts` | 15+ | ✅ Implemented |
-| **Total** | **5 files** | **91+** | **✅ All Passing** |
+| Test Category                  | Test File                     | Tests   | Status             |
+| ------------------------------ | ----------------------------- | ------- | ------------------ |
+| Notification Service           | `NotificationService.test.ts` | 25      | ✅ Passing         |
+| Offline Queue                  | `OfflineQueue.test.ts`        | 18      | ✅ Passing         |
+| Background Sync Integration    | `BackgroundSync.test.ts`      | 15      | ✅ Passing         |
+| Push Notifications Integration | `PushNotifications.test.ts`   | 33      | ✅ Passing         |
+| PWA E2E Tests                  | `pwa-notifications.spec.ts`   | 15+     | ✅ Implemented     |
+| **Total**                      | **5 files**                   | **91+** | **✅ All Passing** |
 
 ---
 
@@ -241,6 +241,7 @@ This document provides a comprehensive summary of all tests implemented for back
 Comprehensive manual testing checklist covering:
 
 ### Background Sync (5 test cases)
+
 - BS-01: Queue operation while offline
 - BS-02: Go online and verify sync
 - BS-03: Test sync failure and retry
@@ -248,6 +249,7 @@ Comprehensive manual testing checklist covering:
 - BS-05: Verify sync status indicator
 
 ### Push Notifications (6 test cases)
+
 - PN-01: Request notification permission
 - PN-02: Receive task assigned notification
 - PN-03: Receive session ending notification
@@ -256,6 +258,7 @@ Comprehensive manual testing checklist covering:
 - PN-06: Test badge count updates
 
 ### Periodic Sync (6 test cases)
+
 - PS-01: Enable periodic sync
 - PS-02: Background refresh triggers
 - PS-03: Data fetched from Firebase
@@ -264,6 +267,7 @@ Comprehensive manual testing checklist covering:
 - PS-06: Disable periodic sync
 
 ### Cross-Browser Testing (6 browsers)
+
 - Chrome Desktop - Full support
 - Chrome Android - Full support
 - Edge Desktop - Full support
@@ -272,6 +276,7 @@ Comprehensive manual testing checklist covering:
 - Safari iOS - Limited support
 
 ### Mobile PWA Testing (5 test cases)
+
 - PWA-01: Install PWA on Android
 - PWA-02: Receive notifications when app closed
 - PWA-03: Badge count on app icon
@@ -279,6 +284,7 @@ Comprehensive manual testing checklist covering:
 - PWA-05: Battery usage acceptable
 
 ### Performance Testing (5 test cases)
+
 - PERF-01: Background sync completion time (< 5 seconds)
 - PERF-02: Notification display latency (< 2 seconds)
 - PERF-03: Periodic sync frequency (every 15 minutes)
@@ -290,11 +296,13 @@ Comprehensive manual testing checklist covering:
 ## Test Execution Commands
 
 ### Run All Unit Tests
+
 ```bash
 npm run test:unit
 ```
 
 ### Run Specific Test Suites
+
 ```bash
 # Notification Service tests
 npx vitest run src/services/notifications/__tests__/NotificationService.test.ts
@@ -310,6 +318,7 @@ npx vitest run src/__tests__/integration/PushNotifications.test.ts
 ```
 
 ### Run E2E Tests
+
 ```bash
 # All E2E tests
 npm run test:e2e
@@ -325,6 +334,7 @@ npm run test:e2e:headed
 ```
 
 ### Run with Coverage
+
 ```bash
 npm run test:unit:coverage
 ```
@@ -362,12 +372,12 @@ npm run test:unit:coverage
 
 ## Coverage Goals
 
-| Category | Target | Current Status |
-|----------|--------|----------------|
-| Unit Tests | 80% | ✅ Achieved |
-| Integration Tests | 70% | ✅ Achieved |
-| E2E Tests | Core flows | ✅ Implemented |
-| Manual Tests | All scenarios | ✅ Documented |
+| Category          | Target        | Current Status |
+| ----------------- | ------------- | -------------- |
+| Unit Tests        | 80%           | ✅ Achieved    |
+| Integration Tests | 70%           | ✅ Achieved    |
+| E2E Tests         | Core flows    | ✅ Implemented |
+| Manual Tests      | All scenarios | ✅ Documented  |
 
 ---
 
@@ -423,6 +433,7 @@ npm run test:unit:coverage
 ## Changelog
 
 ### 2025-10-11
+
 - ✅ Initial test suite implementation
 - ✅ 91+ tests passing
 - ✅ Manual testing checklist created

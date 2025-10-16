@@ -2,7 +2,7 @@
  * Textarea Component
  * Multi-line text input field with label and error states
  */
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -170,9 +170,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     },
     ref,
   ) => {
-    // Generate unique ID if not provided
-    const textareaId =
-      id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique ID if not provided using React's useId hook
+    const generatedId = useId();
+    const textareaId = id || generatedId;
 
     // Calculate character count
     const characterCount =

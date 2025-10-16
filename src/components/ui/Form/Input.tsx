@@ -2,7 +2,7 @@
  * Input Component
  * Text input field with label, error states, and icons
  */
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 
 export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
@@ -166,8 +166,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    // Generate unique ID if not provided
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique ID if not provided using React's useId hook
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     const inputClasses = `
       w-full

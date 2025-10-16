@@ -78,7 +78,7 @@ import { useBackgroundSync } from "./hooks/api/useBackgroundSync";
 
 function App() {
   const { registerBackgroundSync } = useBackgroundSync();
-  
+
   useEffect(() => {
     // Register background sync on app start
     registerBackgroundSync();
@@ -132,7 +132,9 @@ await offlineQueue.queueOperation({
   type: "create",
   collectionName: "events",
   userId: "user123",
-  data: { /* ... */ },
+  data: {
+    /* ... */
+  },
 });
 
 // Process queue manually

@@ -161,7 +161,7 @@ jobs:
 
       - name: Create deployment success issue
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `Production Deployment Successful - v${{ github.sha }}`;
@@ -197,7 +197,7 @@ jobs:
 
       - name: Notify deployment failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `Production Deployment Failed - ${{ github.sha }}`;
