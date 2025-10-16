@@ -44,8 +44,8 @@ interface CategoryProgressItem {
 const LoadingState: React.FC = () => (
   <Card variant="glass">
     <div className="animate-pulse">
-      <div className="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="h-6 bg-gray-300 rounded w-1/3 mb-3 sm:mb-4"></div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="h-20 bg-gray-300 rounded"></div>
         ))}
@@ -59,52 +59,60 @@ const StatsCards: React.FC<{
   achievementStats: AchievementStats;
   unreadNotifications: DBAchievementNotification[];
 }> = ({ achievementStats, unreadNotifications }) => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-    <div className="bg-gradient-to-br from-nightly-aquamarine/20 to-nightly-aquamarine/10 rounded-lg p-4 border border-nightly-aquamarine/30">
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="bg-gradient-to-br from-nightly-aquamarine/20 to-nightly-aquamarine/10 rounded-lg p-3 sm:p-4 border border-nightly-aquamarine/30">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-nightly-celadon">Total Earned</p>
-          <p className="text-2xl font-bold text-nightly-honeydew">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm text-nightly-celadon truncate">
+            Total Earned
+          </p>
+          <p className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
             {achievementStats.totalEarned}
           </p>
         </div>
-        <FaTrophy className="text-2xl text-nightly-aquamarine" />
+        <FaTrophy className="text-xl sm:text-2xl text-nightly-aquamarine flex-shrink-0 ml-2" />
       </div>
     </div>
 
-    <div className="bg-gradient-to-br from-nightly-lavender-floral/20 to-nightly-lavender-floral/10 rounded-lg p-4 border border-nightly-lavender-floral/30">
+    <div className="bg-gradient-to-br from-nightly-lavender-floral/20 to-nightly-lavender-floral/10 rounded-lg p-3 sm:p-4 border border-nightly-lavender-floral/30">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-nightly-celadon">Total Points</p>
-          <p className="text-2xl font-bold text-nightly-honeydew">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm text-nightly-celadon truncate">
+            Total Points
+          </p>
+          <p className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
             {achievementStats.totalPoints}
           </p>
         </div>
-        <FaStar className="text-2xl text-nightly-lavender-floral" />
+        <FaStar className="text-xl sm:text-2xl text-nightly-lavender-floral flex-shrink-0 ml-2" />
       </div>
     </div>
 
-    <div className="bg-gradient-to-br from-nightly-spring-green/20 to-nightly-spring-green/10 rounded-lg p-4 border border-nightly-spring-green/30">
+    <div className="bg-gradient-to-br from-nightly-spring-green/20 to-nightly-spring-green/10 rounded-lg p-3 sm:p-4 border border-nightly-spring-green/30">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-nightly-celadon">Completion</p>
-          <p className="text-2xl font-bold text-nightly-honeydew">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm text-nightly-celadon truncate">
+            Completion
+          </p>
+          <p className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
             {achievementStats.completionPercentage.toFixed(0)}%
           </p>
         </div>
-        <FaBullseye className="text-2xl text-nightly-spring-green" />
+        <FaBullseye className="text-xl sm:text-2xl text-nightly-spring-green flex-shrink-0 ml-2" />
       </div>
     </div>
 
-    <div className="bg-gradient-to-br from-red-500/20 to-red-500/10 rounded-lg p-4 border border-red-500/30">
+    <div className="bg-gradient-to-br from-red-500/20 to-red-500/10 rounded-lg p-3 sm:p-4 border border-red-500/30">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-nightly-celadon">New Unlocks</p>
-          <p className="text-2xl font-bold text-nightly-honeydew">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm text-nightly-celadon truncate">
+            New Unlocks
+          </p>
+          <p className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
             {unreadNotifications.length}
           </p>
         </div>
-        <FaFire className="text-2xl text-red-400" />
+        <FaFire className="text-xl sm:text-2xl text-red-400 flex-shrink-0 ml-2" />
       </div>
     </div>
   </div>
@@ -119,10 +127,10 @@ const RecentAchievements: React.FC<{
 
   return (
     <Card variant="glass">
-      <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+      <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
         Recent Achievements
       </h3>
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {recentAchievements.map((userAchievement: DBUserAchievement) => {
           const achievement = allAchievements.find(
             (a: DBAchievement) => a.id === userAchievement.achievementId,
@@ -132,21 +140,23 @@ const RecentAchievements: React.FC<{
           return (
             <div
               key={userAchievement.id}
-              className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg"
+              className="flex items-start sm:items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/5 rounded-lg"
             >
-              <div className="text-2xl">{achievement.icon}</div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-nightly-honeydew">
+              <div className="text-xl sm:text-2xl flex-shrink-0">
+                {achievement.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-nightly-honeydew text-sm sm:text-base truncate">
                   {achievement.name}
                 </h4>
-                <p className="text-sm text-nightly-celadon">
+                <p className="text-xs sm:text-sm text-nightly-celadon line-clamp-2">
                   {achievement.description}
                 </p>
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded">
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded whitespace-nowrap">
                     +{achievement.points} points
                   </span>
-                  <span className="text-xs text-nightly-celadon">
+                  <span className="text-xs text-nightly-celadon whitespace-nowrap">
                     {formatDate(userAchievement.earnedAt)}
                   </span>
                 </div>
@@ -164,18 +174,20 @@ const CategoryProgress: React.FC<{
   categoryProgress: CategoryProgressItem[];
 }> = ({ categoryProgress }) => (
   <Card variant="glass">
-    <h3 className="text-lg font-semibold text-nightly-honeydew mb-4">
+    <h3 className="text-base sm:text-lg font-semibold text-nightly-honeydew mb-3 sm:mb-4">
       Progress by Category
     </h3>
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {categoryProgress.map((category) => (
-        <div key={category.category} className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+        <div key={category.category} className="space-y-1 sm:space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-2 min-w-0">
               {category.icon}
-              <span className="text-nightly-celadon">{category.name}</span>
+              <span className="text-nightly-celadon text-xs sm:text-sm truncate">
+                {category.name}
+              </span>
             </div>
-            <span className="text-sm text-nightly-celadon">
+            <span className="text-xs sm:text-sm text-nightly-celadon whitespace-nowrap flex-shrink-0">
               {category.earned} / {category.total}
             </span>
           </div>
@@ -239,14 +251,15 @@ export const AchievementDashboard: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-end">
         <Link
           to="/achievements"
-          className="flex items-center space-x-2 text-nightly-aquamarine hover:text-nightly-lavender-floral transition-colors"
+          className="flex items-center space-x-2 text-nightly-aquamarine hover:text-nightly-lavender-floral transition-colors text-sm sm:text-base"
         >
-          <span>View All Achievements</span>
+          <span className="hidden sm:inline">View All Achievements</span>
+          <span className="sm:hidden">View All</span>
           <FaArrowRight />
         </Link>
       </div>

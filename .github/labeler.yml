@@ -1,14 +1,48 @@
+# Label based on changed files
 feature:
-  - "**/feat:*"
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/components/**'
+          - 'src/pages/**'
+          - 'src/hooks/**'
 
 bug:
-  - "**/fix:*"
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.test.*'
+          - '**/*.spec.*'
 
 chore:
-  - "**/chore:*"
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'scripts/**'
+          - 'configs/**'
+          - 'package.json'
+          - '.husky/**'
 
 docs:
-  - "**/docs:*"
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '**.md'
+          - 'README.md'
 
 refactor:
-  - "**/refactor:*"
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/services/**'
+          - 'src/utils/**'
+
+testing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.test.*'
+          - '**/*.spec.*'
+          - 'e2e/**'
+          - 'tests/**'
+
+workflows:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
