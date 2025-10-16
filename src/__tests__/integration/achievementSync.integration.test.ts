@@ -115,7 +115,29 @@ describe("Achievement Synchronization Integration Tests", () => {
       );
 
       expect(achievementsToSync).toHaveLength(1);
-      expect(achievementsToSync[0]?.id).toBe("achievement-1");
+      // Non-null assertion is safe because we asserted length above
+      expect(achievementsToSync[0]!.id).toBe("achievement-1");
+    });
+
+    it("should handle undefined achievement in sync", async () => {
+      const localAchievements: (DBAchievement | undefined)[] = [
+        createMockAchievement("achievement-1", "pending"),
+        undefined,
+      ];
+
+      (achievementDBService.getAllAchievements as any).mockResolvedValue(
+        localAchievements,
+      );
+
+      // Simulated sync logic
+      const achievementsToSync = localAchievements.filter(
+        (a): a is DBAchievement =>
+          a !== undefined && a.syncStatus === "pending",
+      );
+
+      expect(achievementsToSync).toHaveLength(1);
+      // Non-null assertion is safe because we asserted length above
+      expect(achievementsToSync[0]!.id).toBe("achievement-1");
     });
 
     it("should sync user achievement progress across devices", async () => {
@@ -133,7 +155,8 @@ describe("Achievement Synchronization Integration Tests", () => {
       );
 
       expect(pendingSync).toHaveLength(1);
-      expect(pendingSync[0]?.achievementId).toBe("achievement-1");
+      // Non-null assertion is safe because we asserted length above
+      expect(pendingSync[0]!.achievementId).toBe("achievement-1");
     });
 
     it("should handle sync conflicts with last-write-wins strategy", async () => {
@@ -172,9 +195,9 @@ describe("Achievement Synchronization Integration Tests", () => {
         },
       ];
 
-      (achievementDBService.getNotifications as any).mockResolvedValue(
-        notifications,
-      );
+      (
+        achievementDBService.getUserUnreadNotifications as any
+      ).mockResolvedValue(notifications);
 
       const pendingNotifications = notifications.filter(
         (n) => n.syncStatus === "pending",
@@ -200,11 +223,13 @@ describe("Achievement Synchronization Integration Tests", () => {
       const toSync = [offlineAchievement];
 
       expect(toSync).toHaveLength(1);
-      expect(toSync[0]?.syncStatus).toBe("pending");
+      // Non-null assertion is safe because we asserted length above
+      expect(toSync[0]!.syncStatus).toBe("pending");
 
       // After sync
-      toSync[0].syncStatus = "synced";
-      expect(toSync[0].syncStatus).toBe("synced");
+      toSync[0]!.syncStatus = "synced";
+      // Non-null assertion is safe because we asserted length above
+      expect(toSync[0]!.syncStatus).toBe("synced");
     });
 
     it("should queue multiple offline achievements for sync", async () => {
@@ -232,7 +257,7 @@ describe("Achievement Synchronization Integration Tests", () => {
       ];
 
       // Simulate first one syncs successfully
-      achievements[0].syncStatus = "synced";
+      achievements[0]!.syncStatus = "synced";
 
       // Second one fails to sync
       const stillPending = achievements.filter(
@@ -240,7 +265,8 @@ describe("Achievement Synchronization Integration Tests", () => {
       );
 
       expect(stillPending).toHaveLength(1);
-      expect(stillPending[0]?.id).toBe("ua-2");
+      // Non-null assertion is safe because we asserted length above
+      expect(stillPending[0]!.id).toBe("ua-2");
     });
   });
 
@@ -267,7 +293,8 @@ describe("Achievement Synchronization Integration Tests", () => {
       );
 
       expect(pendingProgress).toHaveLength(1);
-      expect(pendingProgress[0]?.currentValue).toBe(5);
+      // Non-null assertion is safe because we asserted length above
+      expect(pendingProgress[0]!.currentValue).toBe(5);
     });
 
     it("should merge progress from multiple devices", async () => {
@@ -329,7 +356,8 @@ describe("Achievement Synchronization Integration Tests", () => {
         await achievementDBService.getUserAchievements(mockUserId);
 
       expect(achievements).toHaveLength(1);
-      expect(achievements[0]?.syncStatus).toBe("synced");
+      // Non-null assertion is safe because we asserted length above
+      expect(achievements[0]!.syncStatus).toBe("synced");
     });
 
     it("should deduplicate achievements unlocked on multiple devices", async () => {
@@ -389,7 +417,7 @@ describe("Achievement Synchronization Integration Tests", () => {
     it("should retry failed sync operations", async () => {
       let attemptCount = 0;
 
-      (achievementDBService.updateAchievement as any).mockImplementation(
+      (achievementDBService.createAchievement as any).mockImplementation(
         async () => {
           attemptCount++;
           if (attemptCount < 3) {
@@ -402,7 +430,7 @@ describe("Achievement Synchronization Integration Tests", () => {
       // Simulate retry logic
       for (let i = 0; i < 3; i++) {
         try {
-          await achievementDBService.updateAchievement("achievement-1", {});
+          await (achievementDBService as any).createAchievement({} as any);
           break;
         } catch (error) {
           if (i === 2) throw error;
@@ -435,7 +463,10 @@ describe("Achievement Synchronization Integration Tests", () => {
       );
 
       await expect(
-        achievementDBService.awardAchievement(mockUserId, "achievement-1"),
+        (achievementDBService as any).awardAchievement(
+          mockUserId,
+          "achievement-1",
+        ),
       ).rejects.toThrow("Constraint violation");
     });
   });
@@ -508,14 +539,15 @@ describe("Achievement Synchronization Integration Tests", () => {
         syncStatus: "pending" as const,
       };
 
-      (achievementDBService.getNotifications as any).mockResolvedValue([
-        notification,
-      ]);
+      (
+        achievementDBService.getUserUnreadNotifications as any
+      ).mockResolvedValue([notification]);
 
       const notifications =
-        await achievementDBService.getNotifications(mockUserId);
+        await achievementDBService.getUserUnreadNotifications(mockUserId);
 
-      expect(notifications[0]?.isRead).toBe(true);
+      // Non-null assertion is safe because the mock resolves a single notification
+      expect(notifications[0]!.isRead).toBe(true);
     });
 
     it("should avoid duplicate notifications across devices", async () => {

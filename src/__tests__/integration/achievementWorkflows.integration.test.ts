@@ -115,11 +115,14 @@ describe("Achievement Workflows Integration Tests", () => {
     id,
     userId: mockUserId,
     type: "duration",
+    title: `Goal ${id}`,
     targetValue: targetDuration,
     currentValue: isCompleted ? targetDuration : targetDuration / 2,
-    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    isActive: true,
+    unit: "seconds",
     isCompleted,
+    createdAt: new Date(),
+    createdBy: "submissive",
+    isPublic: false,
     syncStatus: "synced",
     lastModified: new Date(),
   });
@@ -131,14 +134,15 @@ describe("Achievement Workflows Integration Tests", () => {
   ): DBTask => ({
     id,
     userId: mockUserId,
-    title: `Task ${id}`,
+    text: `Task ${id}`,
     description: "Test task",
     status: isCompleted ? "completed" : "pending",
-    isCompleted,
-    keyholderApprovalStatus,
+    priority: "medium",
+    assignedBy: "submissive",
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     syncStatus: "synced",
     lastModified: new Date(),
+    title: `Task ${id}`,
   });
 
   beforeEach(() => {
