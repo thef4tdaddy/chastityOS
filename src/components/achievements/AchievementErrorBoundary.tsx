@@ -42,7 +42,7 @@ export class AchievementErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     // Log error to console and monitoring service
-    logger.error("Achievement Error Boundary caught error", error, {
+    logger.error("Achievement Error Boundary caught error", {
       stack: error.stack,
       componentStack: errorInfo.componentStack,
       timestamp: new Date().toISOString(),
