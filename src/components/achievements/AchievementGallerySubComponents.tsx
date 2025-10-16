@@ -49,7 +49,7 @@ interface StatsHeaderProps {
   };
 }
 
-export const StatsHeader: React.FC<StatsHeaderProps> = ({ stats }) => (
+const StatsHeaderComponent: React.FC<StatsHeaderProps> = ({ stats }) => (
   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-3">
       <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
@@ -76,6 +76,8 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({ stats }) => (
     </div>
   </div>
 );
+StatsHeaderComponent.displayName = "StatsHeader";
+export const StatsHeader = React.memo(StatsHeaderComponent);
 
 interface FiltersProps {
   searchTerm: string;
@@ -89,7 +91,7 @@ interface FiltersProps {
   getCategoryName: (category: AchievementCategory) => string;
 }
 
-export const Filters: React.FC<FiltersProps> = ({
+const FiltersComponent: React.FC<FiltersProps> = ({
   searchTerm,
   selectedCategory,
   selectedDifficulty,
@@ -165,12 +167,14 @@ export const Filters: React.FC<FiltersProps> = ({
     </div>
   );
 };
+FiltersComponent.displayName = "Filters";
+export const Filters = React.memo(FiltersComponent);
 
 interface EmptyStateProps {
   message?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+const EmptyStateComponent: React.FC<EmptyStateProps> = ({
   message = "No achievements found matching your filters.",
 }) => (
   <div className="text-center py-12 text-nightly-celadon">
@@ -178,6 +182,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     <p>{message}</p>
   </div>
 );
+EmptyStateComponent.displayName = "EmptyState";
+export const EmptyState = React.memo(EmptyStateComponent);
 
 interface AchievementCardProps {
   item: AchievementWithProgress;
@@ -186,7 +192,7 @@ interface AchievementCardProps {
   getDifficultyColor: (difficulty: AchievementDifficulty) => string;
 }
 
-export const AchievementCard: React.FC<AchievementCardProps> = ({
+const AchievementCardComponent: React.FC<AchievementCardProps> = ({
   item,
   onToggleVisibility,
   isOwnGallery,
@@ -255,6 +261,21 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
     </motion.div>
   );
 };
+AchievementCardComponent.displayName = "AchievementCard";
+export const AchievementCard = React.memo(
+  AchievementCardComponent,
+  (prevProps, nextProps) => {
+    // Custom comparison function to optimize re-renders
+    return (
+      prevProps.item.achievement.id === nextProps.item.achievement.id &&
+      prevProps.item.isEarned === nextProps.item.isEarned &&
+      prevProps.item.isVisible === nextProps.item.isVisible &&
+      prevProps.item.progress?.currentValue ===
+        nextProps.item.progress?.currentValue &&
+      prevProps.isOwnGallery === nextProps.isOwnGallery
+    );
+  },
+);
 
 interface VisibilityToggleProps {
   achievement: DBAchievement;
@@ -264,7 +285,7 @@ interface VisibilityToggleProps {
   onToggleVisibility?: (achievementId: string) => void;
 }
 
-const VisibilityToggle: React.FC<VisibilityToggleProps> = ({
+const VisibilityToggleComponent: React.FC<VisibilityToggleProps> = ({
   achievement,
   isEarned,
   isVisible,
@@ -284,13 +305,15 @@ const VisibilityToggle: React.FC<VisibilityToggleProps> = ({
     </Button>
   );
 };
+VisibilityToggleComponent.displayName = "VisibilityToggle";
+const VisibilityToggle = React.memo(VisibilityToggleComponent);
 
 interface AchievementInfoProps {
   achievement: DBAchievement;
   isEarned: boolean;
 }
 
-const AchievementInfo: React.FC<AchievementInfoProps> = ({
+const AchievementInfoComponent: React.FC<AchievementInfoProps> = ({
   achievement,
   isEarned,
 }) => {
@@ -354,13 +377,18 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({
     </>
   );
 };
+AchievementInfoComponent.displayName = "AchievementInfo";
+const AchievementInfo = React.memo(AchievementInfoComponent);
 
 interface ProgressBarProps {
   progress: AchievementWithProgress["progress"];
   isEarned: boolean;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ progress, isEarned }) => {
+const ProgressBarComponent: React.FC<ProgressBarProps> = ({
+  progress,
+  isEarned,
+}) => {
   if (!progress || isEarned) {
     return null;
   }
@@ -393,6 +421,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress, isEarned }) => {
     </div>
   );
 };
+ProgressBarComponent.displayName = "ProgressBar";
+const ProgressBar = React.memo(ProgressBarComponent);
 
 interface HiddenIndicatorProps {
   achievement: DBAchievement;

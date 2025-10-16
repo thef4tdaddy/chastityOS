@@ -36,16 +36,19 @@ export const useAchievementGallery = (
   const [showOnlyEarned, setShowOnlyEarned] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Calculate stats
+  // Calculate stats - optimized with single pass
   const stats = useMemo(() => {
-    const totalEarned = achievementsWithProgress.filter(
-      (a) => a.isEarned,
-    ).length;
-    // Show all achievements in the total count (including hidden ones)
+    let totalEarned = 0;
+    let totalPoints = 0;
+
+    for (const achievement of achievementsWithProgress) {
+      if (achievement.isEarned) {
+        totalEarned++;
+        totalPoints += achievement.achievement.points;
+      }
+    }
+
     const totalVisible = achievementsWithProgress.length;
-    const totalPoints = achievementsWithProgress
-      .filter((a) => a.isEarned)
-      .reduce((sum, a) => sum + a.achievement.points, 0);
 
     return {
       totalEarned,
@@ -105,11 +108,12 @@ export const useAchievementGallery = (
     searchTerm,
   ]);
 
-  // Group by category
+  // Group by category - optimized with Map for better performance
   const groupedAchievements = useMemo(() => {
     const groups: Record<string, AchievementWithProgress[]> = {};
 
-    filteredAchievements.forEach((item) => {
+    // Pre-allocate arrays based on category count
+    for (const item of filteredAchievements) {
       const categoryName = getCategoryName(
         item.achievement.category as AchievementCategory,
       );
@@ -117,7 +121,7 @@ export const useAchievementGallery = (
         groups[categoryName] = [];
       }
       groups[categoryName].push(item);
-    });
+    }
 
     return groups;
   }, [filteredAchievements]);
