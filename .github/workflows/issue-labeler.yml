@@ -22,84 +22,123 @@ jobs:
             const issue = context.payload.issue;
             const title = issue.title.toLowerCase();
             const body = (issue.body || '').toLowerCase();
-            const labels = [];
+            const suggestedLabels = [];
 
             // Type labels based on keywords
             if (title.includes('bug') || body.includes('error') || body.includes('crash') || body.includes('broken')) {
-              labels.push('bug');
+              suggestedLabels.push('bug');
             }
             if (title.includes('feat') || title.includes('feature') || body.includes('new feature')) {
-              labels.push('enhancement');
+              suggestedLabels.push('enhancement');
             }
             if (title.includes('docs') || title.includes('documentation')) {
-              labels.push('documentation');
+              suggestedLabels.push('documentation');
             }
             if (title.includes('test') || body.includes('testing')) {
-              labels.push('testing');
+              suggestedLabels.push('testing');
             }
             if (title.includes('perf') || body.includes('performance') || body.includes('slow')) {
-              labels.push('performance');
+              suggestedLabels.push('performance');
             }
             if (title.includes('security') || body.includes('vulnerability')) {
-              labels.push('security');
+              suggestedLabels.push('security');
             }
             if (title.includes('a11y') || title.includes('accessibility') || body.includes('accessibility')) {
-              labels.push('accessibility');
+              suggestedLabels.push('accessibility');
             }
 
             // Component/area labels
             if (title.includes('tracker') || body.includes('session') || body.includes('chastity tracking')) {
-              labels.push('area: tracker');
+              suggestedLabels.push('area: tracker');
             }
             if (title.includes('keyholder') || body.includes('keyholder')) {
-              labels.push('area: keyholder');
+              suggestedLabels.push('area: keyholder');
             }
             if (title.includes('task') || body.includes('task')) {
-              labels.push('area: tasks');
+              suggestedLabels.push('area: tasks');
             }
             if (title.includes('notification') || body.includes('notification')) {
-              labels.push('area: notifications');
+              suggestedLabels.push('area: notifications');
             }
             if (title.includes('auth') || body.includes('authentication') || body.includes('login')) {
-              labels.push('area: auth');
+              suggestedLabels.push('area: auth');
             }
             if (title.includes('ui') || title.includes('ux') || body.includes('design')) {
-              labels.push('ui/ux');
+              suggestedLabels.push('ui/ux');
             }
             if (title.includes('db') || title.includes('database') || body.includes('dexie') || body.includes('firestore')) {
-              labels.push('area: database');
+              suggestedLabels.push('area: database');
             }
             if (title.includes('pwa') || body.includes('offline') || body.includes('service worker')) {
-              labels.push('pwa');
+              suggestedLabels.push('pwa');
             }
 
             // Priority indicators
             if (title.includes('critical') || title.includes('urgent') || body.includes('production down')) {
-              labels.push('priority: critical');
+              suggestedLabels.push('priority: critical');
             } else if (title.includes('high priority') || body.includes('blocking')) {
-              labels.push('priority: high');
+              suggestedLabels.push('priority: high');
             }
 
             // Good first issue indicators
             if (body.includes('good first issue') || body.includes('beginner friendly')) {
-              labels.push('good first issue');
+              suggestedLabels.push('good first issue');
             }
 
             // Question/help indicators
             if (title.startsWith('how') || title.includes('?') || body.includes('help needed')) {
-              labels.push('question');
+              suggestedLabels.push('question');
             }
 
-            // Add labels if any were found
-            if (labels.length > 0) {
+            if (suggestedLabels.length === 0) {
+              console.log('No labels suggested based on content');
+              return;
+            }
+
+            // Get existing labels in the repo
+            const { data: repoLabels } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const existingLabelNames = repoLabels.map(l => l.name);
+
+            // Split into labels that exist vs don't exist
+            const validLabels = [];
+            const missingLabels = [];
+
+            for (const label of suggestedLabels) {
+              if (existingLabelNames.includes(label)) {
+                validLabels.push(label);
+              } else {
+                missingLabels.push(label);
+              }
+            }
+
+            // Add valid labels
+            if (validLabels.length > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                labels: labels
+                labels: validLabels
+              });
+              console.log(`Added labels: ${validLabels.join(', ')}`);
+            }
+
+            // Comment about missing labels
+            if (missingLabels.length > 0) {
+              const labelList = missingLabels.map(l => `- \`${l}\``).join('\n');
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `🏷️ **Suggested labels** (not yet created in this repository):\n\n${labelList}\n\n*A maintainer can create these labels in [repository settings](/${context.repo.owner}/${context.repo.repo}/labels).*`
               });
 
-              console.log(`Added labels: ${labels.join(', ')}`);
+              console.log(`Suggested missing labels: ${missingLabels.join(', ')}`);
             }
 
       - name: Add needs-triage label
