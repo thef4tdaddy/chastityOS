@@ -58,11 +58,11 @@ export const AchievementPage: React.FC = () => {
 
   return (
     <div className="text-nightly-spring-green">
-      <div className="p-4 max-w-6xl mx-auto">
+      <div className="p-3 sm:p-4 md:p-6 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center space-x-3 mb-6">
-          <FaTrophy className="text-3xl text-nightly-lavender-floral" />
-          <h1 className="text-3xl font-bold text-nightly-honeydew">
+        <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
+          <FaTrophy className="text-2xl sm:text-3xl text-nightly-lavender-floral" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-nightly-honeydew">
             Achievements
           </h1>
         </div>

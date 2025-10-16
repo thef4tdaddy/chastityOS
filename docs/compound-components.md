@@ -23,9 +23,9 @@ The Tracker compound component manages chastity tracking session state and contr
 #### Basic Usage
 
 ```tsx
-import { Tracker } from '@/components/tracker/compound';
-import { useTrackerData } from '@/hooks/tracker/useTrackerData';
-import { useTrackerSession } from '@/hooks/tracker/useTrackerSession';
+import { Tracker } from "@/components/tracker/compound";
+import { useTrackerData } from "@/hooks/tracker/useTrackerData";
+import { useTrackerSession } from "@/hooks/tracker/useTrackerSession";
 
 const TrackerPage = () => {
   // Get tracker data from hooks
@@ -90,7 +90,7 @@ const TrackerPage = () => {
 All sub-components have access to the tracker context via `useTrackerContext()`:
 
 ```tsx
-import { useTrackerContext } from '@/components/tracker/compound';
+import { useTrackerContext } from "@/components/tracker/compound";
 
 const CustomComponent = () => {
   const {
@@ -112,27 +112,32 @@ The Keyholder compound component manages keyholder dashboard state and controls.
 #### Basic Usage
 
 ```tsx
-import { Keyholder } from '@/components/keyholder/compound';
-import { useAccountLinking } from '@/hooks/account-linking/useAccountLinking';
-import { useKeyholderStore } from '@/stores/keyholderStore';
+import { Keyholder } from "@/components/keyholder/compound";
+import { useAccountLinking } from "@/hooks/account-linking/useAccountLinking";
+import { useKeyholderStore } from "@/stores/keyholderStore";
 
 const KeyholderPage = () => {
   const { user } = useAuthState();
   const isKeyholderModeUnlocked = useKeyholderStore(
-    (state) => state.isKeyholderModeUnlocked
+    (state) => state.isKeyholderModeUnlocked,
   );
   const lockKeyholderControls = useKeyholderStore(
-    (state) => state.lockKeyholderControls
+    (state) => state.lockKeyholderControls,
   );
 
-  const { relationships, keyholderRelationships, selectedWearerId, setSelectedWearer } =
-    useAccountLinking();
+  const {
+    relationships,
+    keyholderRelationships,
+    selectedWearerId,
+    setSelectedWearer,
+  } = useAccountLinking();
 
   const selectedRelationship = selectedWearerId
     ? relationships.find((r) => r.wearerId === selectedWearerId)
     : keyholderRelationships[0];
 
-  const { submissiveSession, loading } = useSubmissiveData(selectedRelationship);
+  const { submissiveSession, loading } =
+    useSubmissiveData(selectedRelationship);
 
   const keyholderContextValue = {
     keyholderUserId: user?.uid,
@@ -172,7 +177,7 @@ const KeyholderPage = () => {
 All sub-components have access to the keyholder context via `useKeyholderContext()`:
 
 ```tsx
-import { useKeyholderContext } from '@/components/keyholder/compound';
+import { useKeyholderContext } from "@/components/keyholder/compound";
 
 const CustomComponent = () => {
   const {
@@ -212,18 +217,18 @@ const GoodComponent = () => {
 Both compound components have comprehensive test coverage:
 
 ```tsx
-import { render, screen } from '@testing-library/react';
-import { Tracker } from '@/components/tracker/compound';
+import { render, screen } from "@testing-library/react";
+import { Tracker } from "@/components/tracker/compound";
 
-test('provides context to children', () => {
+test("provides context to children", () => {
   const mockValue = createMockContextValue();
-  
+
   render(
     <Tracker value={mockValue}>
       <Tracker.Header />
-    </Tracker>
+    </Tracker>,
   );
-  
+
   // Test that sub-components render and have access to context
 });
 ```

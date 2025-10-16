@@ -1,6 +1,7 @@
 # Events UI Accessibility Improvements
 
 ## Overview
+
 This document outlines the WCAG 2.1 AA accessibility improvements made to the Events/Logging feature to ensure all users, including those using assistive technologies, can effectively log and view events.
 
 ## Completed Improvements
@@ -8,11 +9,13 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ### 1. ARIA Labels and Roles ✅
 
 #### Event Form Structure
+
 - **Form Region**: Added `role="region"` with descriptive `aria-labelledby` pointing to form heading
 - **Form Element**: Added `aria-label="Log new event form"` for clear form identification
 - **Form Heading**: Added `id="log-event-heading"` for proper heading association
 
 #### Event Type Selector
+
 - **Group Role**: `role="group"` with `aria-labelledby="event-type-label"` for grouped controls
 - **Button States**: Each event type button includes:
   - `aria-label`: Full description including event type and purpose
@@ -20,34 +23,31 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
   - Descriptive labels like "Orgasm: Self or partner induced orgasm"
 
 #### Form Input Fields
+
 - **Date & Time Input**:
   - `id="event-timestamp"` with associated `<label htmlFor>`
   - `aria-label="Event date and time"`
   - `required` attribute for form validation
-  
 - **Notes Textarea**:
   - `id="event-notes"` with associated `<label htmlFor>`
   - `aria-label="Event notes and description"`
-  
 - **Mood Input**:
   - `id="event-mood"` with associated `<label htmlFor>`
   - `aria-label="Event mood or emotional state"`
-  
 - **Intensity Slider**:
   - `id="event-intensity"` with associated `<label htmlFor>`
   - `aria-valuenow`, `aria-valuemin`, `aria-valuemax` for current value
   - `aria-valuetext` for descriptive value (e.g., "7 out of 10")
   - `aria-labelledby="intensity-label"` for label association
-  
 - **Tags Input**:
   - `id="event-tags"` with associated `<label htmlFor>`
   - `aria-label="Event tags, comma separated for categorization"`
-  
 - **Privacy Switch**:
   - `aria-labelledby="privacy-label"`
   - `aria-label` with current state information
 
 #### Submit Button
+
 - **Button Attributes**:
   - `type="submit"` for proper form submission
   - `aria-label` with clear action description
@@ -57,6 +57,7 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ### 2. Event List Accessibility ✅
 
 #### List Structure
+
 - **Feed Role**: `role="feed"` with `aria-label="Event list"` for event feed
 - **Article Elements**: Each event item uses semantic `<article>` element
 - **Descriptive Labels**: Each article has comprehensive `aria-label` including:
@@ -66,15 +67,18 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
   - Privacy status
 
 #### Event Item Components
+
 - **Time Element**: Semantic `<time>` with `dateTime` attribute for proper date representation
 - **Status Badges**: `role="note"` with descriptive `aria-label` for owner and privacy indicators
 - **Tag Lists**: `role="list"` with `aria-label="Event tags"` for tag collections
 
 #### Empty State
+
 - **Status Role**: `role="status"` for empty event list messaging
 - Clear messaging: "No events logged yet"
 
 #### Pagination Controls
+
 - **Navigation Role**: `role="navigation"` with `aria-label="Event list pagination"`
 - **Button Labels**: Descriptive labels including current page context
   - "Go to previous page, currently on page X of Y"
@@ -84,6 +88,7 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ### 3. User Selector (Keyholder Feature) ✅
 
 #### Selector Structure
+
 - **Region Role**: `role="region"` with `aria-labelledby="user-selector-label"`
 - **Group Role**: `role="group"` for button group
 - **Button States**:
@@ -93,6 +98,7 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ### 4. Keyboard Navigation ✅
 
 #### Focus Indicators
+
 ```css
 .event-button:focus-visible,
 .event-form-field:focus-visible {
@@ -110,11 +116,13 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ```
 
 #### Skip Links
+
 - **Skip to Content**: Added skip link to jump directly to event list
 - Appears on keyboard focus with proper styling
 - Uses `sr-only` class for visual hiding while maintaining accessibility
 
 #### Touch Targets
+
 - All interactive elements have minimum 44px height (WCAG 2.5.5)
 - Proper spacing between controls to prevent accidental activation
 - Mobile-optimized with `min-h-[44px]` Tailwind class
@@ -122,11 +130,13 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ### 5. Screen Reader Support ✅
 
 #### Live Regions
+
 - **Intensity Slider Value**: `aria-live="polite"` with `aria-atomic="true"` for complete value announcements
 - **Pagination Status**: `aria-live="polite"` for page navigation updates
 - **Error Messages**: `aria-live="assertive"` for critical error notifications
 
 #### Icon Accessibility
+
 ```tsx
 // Decorative icons
 <FaPlus aria-hidden="true" />
@@ -139,7 +149,9 @@ This document outlines the WCAG 2.1 AA accessibility improvements made to the Ev
 ```
 
 #### Form Labels
+
 All form inputs have properly associated labels using `htmlFor` and `id` attributes:
+
 ```tsx
 <label htmlFor="event-mood">Mood</label>
 <Input id="event-mood" aria-label="Event mood or emotional state" />
@@ -148,12 +160,15 @@ All form inputs have properly associated labels using `htmlFor` and `id` attribu
 ### 6. Visual Accessibility ✅
 
 #### Color Contrast
+
 All text meets WCAG AA requirements (4.5:1 minimum):
+
 - Form labels: High contrast celadon/aquamarine on dark backgrounds
 - Event text: White (#ffffff) on dark backgrounds
 - Status badges: Sufficient contrast for all states
 
 #### High Contrast Mode Support
+
 ```css
 @media (prefers-contrast: high) {
   .event-button,
@@ -161,7 +176,7 @@ All text meets WCAG AA requirements (4.5:1 minimum):
   .event-item {
     border: 2px solid currentColor;
   }
-  
+
   .event-button:focus-visible,
   .event-form-field:focus-visible {
     outline: 4px solid var(--color-focus-ring);
@@ -173,6 +188,7 @@ All text meets WCAG AA requirements (4.5:1 minimum):
 ### 7. Motion and Animation ✅
 
 #### Reduced Motion Support
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .event-button,
@@ -184,7 +200,7 @@ All text meets WCAG AA requirements (4.5:1 minimum):
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .confetti-particle {
     display: none;
   }
@@ -196,9 +212,11 @@ Users with motion sensitivity can disable animations through their system prefer
 ## Testing
 
 ### Automated Tests ✅
+
 Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 
 **Test Coverage:**
+
 - ✅ ARIA labels for form region and heading
 - ✅ Form role and label attributes
 - ✅ Event type selector group with proper button states
@@ -214,6 +232,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 ### Manual Testing Checklist
 
 #### Keyboard Navigation
+
 - [ ] Tab through all form elements in logical order
 - [ ] Verify focus indicators are clearly visible
 - [ ] Test skip link to event list
@@ -221,6 +240,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 - [ ] Test form submission with Enter key
 
 #### Screen Reader Testing
+
 - [ ] Test with NVDA (Windows)
 - [ ] Test with JAWS (Windows)
 - [ ] Test with VoiceOver (macOS/iOS)
@@ -231,6 +251,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 - [ ] Test pagination announcements
 
 #### Visual Testing
+
 - [ ] Verify color contrast with WebAIM Contrast Checker
 - [ ] Test with high contrast mode enabled
 - [ ] Test with reduced motion enabled
@@ -238,6 +259,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 - [ ] Check focus indicators visibility
 
 #### Accessibility Auditing Tools
+
 - [ ] Run axe DevTools
 - [ ] Run WAVE browser extension
 - [ ] Run Lighthouse accessibility audit
@@ -246,6 +268,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 ## WCAG 2.1 Compliance
 
 ### Level A (Required) ✅
+
 - ✅ 1.1.1 Non-text Content - All icons have text alternatives via aria-label
 - ✅ 2.1.1 Keyboard - All functionality available via keyboard
 - ✅ 2.4.1 Bypass Blocks - Skip link implemented
@@ -253,6 +276,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 - ✅ 4.1.2 Name, Role, Value - All form elements have proper ARIA
 
 ### Level AA (Target) ✅
+
 - ✅ 1.4.3 Contrast (Minimum) - Text contrast meets 4.5:1
 - ✅ 1.4.5 Images of Text - No images of text used
 - ✅ 2.4.3 Focus Order - Logical tab order maintained
@@ -264,6 +288,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 ## Files Modified
 
 ### Component Files (3 files)
+
 1. `src/components/log_event/LogEventForm.tsx`
    - Added ARIA labels and roles to form structure
    - Enhanced event type selector with button states
@@ -283,6 +308,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
    - Added region roles to sections
 
 ### Style Files (1 file)
+
 1. `src/index.css`
    - Added enhanced focus indicators
    - Implemented high contrast mode support
@@ -291,9 +317,11 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
    - Added skip link styling
 
 ### Test Files (1 new file)
+
 1. `src/components/log_event/__tests__/EventsAccessibility.test.tsx` (8 tests)
 
 ### Documentation (1 new file)
+
 1. `docs/ACCESSIBILITY_EVENTS.md` (this file)
 
 ## Best Practices Implemented
@@ -308,17 +336,20 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 ## Impact Assessment
 
 ### User Experience
+
 - **Keyboard Users**: Can navigate all event features efficiently with clear focus indicators
 - **Screen Reader Users**: Receive comprehensive announcements of form structure and event information
 - **Low Vision Users**: High contrast mode support, enhanced focus indicators, scalable text
 - **Motion Sensitive Users**: Reduced motion support disables animations and confetti
 
 ### Performance
+
 - No significant performance impact
 - ARIA attributes add minimal overhead
 - CSS media queries are performant
 
 ### Maintenance
+
 - Well-documented changes
 - Comprehensive test coverage
 - Follows existing code patterns
@@ -327,6 +358,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 ## Recommendations
 
 ### Immediate Actions
+
 1. ✅ Merge accessibility improvements
 2. [ ] Deploy to staging environment
 3. [ ] Perform manual testing with screen readers
@@ -334,6 +366,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 5. [ ] Address any issues found
 
 ### Future Enhancements
+
 1. Add keyboard shortcuts (e.g., Ctrl+E to focus event form)
 2. Implement ARIA live announcements when events are successfully logged
 3. Add customizable text size controls
@@ -341,6 +374,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 5. Add form field validation error announcements
 
 ### Ongoing
+
 1. Regular accessibility audits
 2. Test with new screen reader versions
 3. Monitor WCAG updates
@@ -349,11 +383,13 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 ## Resources
 
 ### Documentation
+
 - This document: `docs/ACCESSIBILITY_EVENTS.md`
 - Test suite: `src/components/log_event/__tests__/EventsAccessibility.test.tsx`
 - Related: `docs/ACCESSIBILITY_TRACKER.md` (Tracker area improvements)
 
 ### External Resources
+
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 - [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
 - [axe DevTools](https://www.deque.com/axe/devtools/)
@@ -365,6 +401,7 @@ Created comprehensive test suite in `EventsAccessibility.test.tsx`:
 The Events UI now fully complies with WCAG 2.1 AA standards. All form controls are properly labeled for screen readers, keyboard navigation is fully supported with enhanced focus indicators, and visual accessibility is ensured with sufficient color contrast and high contrast mode support. The implementation includes comprehensive test coverage and follows the same patterns established in the Tracker accessibility improvements.
 
 **Status: COMPLETE ✅**
+
 - All requirements from the issue have been addressed
 - Tests passing (8/8)
 - No new linting errors

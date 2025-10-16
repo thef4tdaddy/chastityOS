@@ -7,6 +7,7 @@ This implementation adds real-time notification triggers for all task workflow a
 ## ✅ Completed Requirements
 
 ### User Stories (All Implemented)
+
 - ✅ As a **submissive**, I receive notifications when tasks are assigned to me
 - ✅ As a **keyholder**, I receive notifications when submissives submit tasks
 - ✅ As a **submissive**, I receive notifications when tasks are approved/rejected
@@ -14,6 +15,7 @@ This implementation adds real-time notification triggers for all task workflow a
 - ✅ Infrastructure ready for push notifications (future)
 
 ### Notification Types (All Functional)
+
 1. ✅ **Task Assigned** → Submissive gets notified with keyholder name and due date
 2. ✅ **Task Submitted** → Keyholder gets notified with evidence indicator
 3. ✅ **Task Approved** → Submissive gets notified with points and feedback
@@ -24,6 +26,7 @@ This implementation adds real-time notification triggers for all task workflow a
 ## 📁 Files Created
 
 ### Core Service
+
 ```
 src/services/notifications/
 ├── TaskNotificationService.ts     # Main service (340 lines)
@@ -35,12 +38,14 @@ src/services/notifications/
 ```
 
 ### Documentation
+
 ```
 docs/
 └── task-notifications-guide.md    # User/developer guide (370 lines)
 ```
 
 ### Modified Files
+
 - `src/hooks/api/useTaskMutations.ts` - Added notification triggers
 - `src/types/database.ts` - Added notification preferences to DBSettings
 
@@ -65,7 +70,7 @@ TaskNotificationService (Static Class)
 
 ```typescript
 // Task Assignment Flow
-useAssignTask() 
+useAssignTask()
   → taskDBService.createTask()
   → onSuccess()
     → TaskNotificationService.notifyTaskAssigned()
@@ -79,7 +84,7 @@ useAssignTask()
 ### Data Flow
 
 ```
-[User Action] 
+[User Action]
     ↓
 [Task Mutation Hook]
     ↓
@@ -170,6 +175,7 @@ interface Notification {
 ```
 
 ### Test Coverage
+
 - Message content verification
 - Priority level checking
 - Duration validation
@@ -308,13 +314,13 @@ export class TaskDeadlineScheduler {
   static async checkDeadlines(userId: string): Promise<void> {
     const tasks = await taskDBService.findByUserId(userId);
     const now = new Date();
-    
+
     for (const task of tasks) {
       if (!task.dueDate || task.status !== "pending") continue;
-      
-      const hoursUntilDue = 
+
+      const hoursUntilDue =
         (task.dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-      
+
       // 24 hours before
       if (hoursUntilDue > 0 && hoursUntilDue <= 24) {
         await TaskNotificationService.notifyDeadlineApproaching({
@@ -324,7 +330,7 @@ export class TaskDeadlineScheduler {
           hoursRemaining: Math.round(hoursUntilDue),
         });
       }
-      
+
       // Overdue
       if (hoursUntilDue < 0) {
         await TaskNotificationService.notifyTaskOverdue({
@@ -354,12 +360,14 @@ action: {
 ## 📈 Benefits
 
 ### For Users
+
 - ✅ Instant feedback on task actions
 - ✅ Never miss important task updates
 - ✅ Quick navigation to relevant tasks
 - ✅ Clear, actionable messages
 
 ### For Developers
+
 - ✅ Centralized notification logic
 - ✅ Type-safe implementation
 - ✅ Easy to extend and maintain
@@ -367,6 +375,7 @@ action: {
 - ✅ Well-documented
 
 ### For the Project
+
 - ✅ Better user engagement
 - ✅ Improved task workflow
 - ✅ Foundation for push notifications
@@ -383,6 +392,7 @@ action: {
 ## 🔒 Error Handling
 
 All notification methods:
+
 - Return `string | null` (notification ID or null on error)
 - Log errors but don't throw
 - Never prevent task operations from completing
@@ -391,6 +401,7 @@ All notification methods:
 ## 📝 Documentation
 
 ### Provided Documentation
+
 1. **README.md** (270 lines) - API reference and architecture
 2. **examples.ts** (210 lines) - 10 usage examples
 3. **task-notifications-guide.md** (370 lines) - User/dev guide
@@ -398,6 +409,7 @@ All notification methods:
 5. **Inline comments** - Explaining design decisions
 
 ### Quick Links
+
 - [Service README](src/services/notifications/README.md)
 - [Usage Examples](src/services/notifications/examples.ts)
 - [User Guide](docs/task-notifications-guide.md)
@@ -457,6 +469,7 @@ To complete the feature:
 ## 📞 Support
 
 For questions or issues:
+
 - Review the [README](src/services/notifications/README.md)
 - Check [examples](src/services/notifications/examples.ts)
 - Read the [user guide](docs/task-notifications-guide.md)

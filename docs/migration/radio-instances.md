@@ -18,6 +18,7 @@ This document tracks all radio button implementations in the codebase and their 
 **Migration Status**: ✅ Migrated
 
 **Current Implementation**:
+
 ```tsx
 <label className="flex items-center">
   <input
@@ -42,12 +43,14 @@ This document tracks all radio button implementations in the codebase and their 
 ```
 
 **Migration Plan**:
+
 - Convert to RadioGroup with 2 options
 - Map onChange from event to value callback
 - Preserve color styling for labels (green for reward, red for punishment)
 - Use horizontal orientation
 
 **RadioGroup Configuration**:
+
 ```tsx
 const typeOptions: RadioOption[] = [
   { value: "reward", label: "Reward" },
@@ -61,10 +64,11 @@ const typeOptions: RadioOption[] = [
   options={typeOptions}
   orientation="horizontal"
   size="md"
-/>
+/>;
 ```
 
 **Custom Styling Needed**:
+
 - Labels need color override: Reward (green), Punishment (red)
 
 ---
@@ -77,6 +81,7 @@ const typeOptions: RadioOption[] = [
 **Migration Status**: ✅ Migrated
 
 **Current Implementation**:
+
 ```tsx
 <input
   type="radio"
@@ -89,37 +94,42 @@ const typeOptions: RadioOption[] = [
 ```
 
 **Migration Plan**:
+
 - Already using custom radio styling with sr-only input
 - Convert to RadioGroup with 2 options per conflict (local/remote)
 - Preserve custom border and background styling for selected state
 - Map onChange to handle selection
 
 **RadioGroup Configuration**:
+
 ```tsx
 const versionOptions: RadioOption[] = [
-  { 
-    value: "local", 
+  {
+    value: "local",
     label: "This Device",
-    description: formatValue(conflict.localData)
+    description: formatValue(conflict.localData),
   },
-  { 
-    value: "remote", 
+  {
+    value: "remote",
     label: "Other Device",
-    description: formatValue(conflict.remoteData)
+    description: formatValue(conflict.remoteData),
   },
 ];
 
 <RadioGroup
   name={conflictId}
   value={resolution || ""}
-  onChange={(value) => onResolutionChange(conflictId, value as "local" | "remote")}
+  onChange={(value) =>
+    onResolutionChange(conflictId, value as "local" | "remote")
+  }
   options={versionOptions}
   orientation="horizontal"
   size="md"
-/>
+/>;
 ```
 
 **Notes**:
+
 - Already has custom card styling for each version
 - Need to integrate Radio component with existing card design
 
@@ -133,6 +143,7 @@ const versionOptions: RadioOption[] = [
 **Migration Status**: ✅ Migrated
 
 **Current Implementation**:
+
 ```tsx
 <input
   type="radio"
@@ -145,14 +156,16 @@ const versionOptions: RadioOption[] = [
 ```
 
 **Migration Plan**:
+
 - Convert to RadioGroup with EMERGENCY_UNLOCK_REASONS options
 - Already has custom styling with border and background for each option
 - Map descriptions to RadioOption description field
 - Preserve red theme for emergency context
 
 **RadioGroup Configuration**:
+
 ```tsx
-const reasonOptions: RadioOption[] = EMERGENCY_UNLOCK_REASONS.map(reason => ({
+const reasonOptions: RadioOption[] = EMERGENCY_UNLOCK_REASONS.map((reason) => ({
   value: reason,
   label: reason,
   description: getReasonDescription(reason),
@@ -164,10 +177,11 @@ const reasonOptions: RadioOption[] = EMERGENCY_UNLOCK_REASONS.map(reason => ({
   onChange={(value) => setReason(value as EmergencyUnlockReason)}
   options={reasonOptions}
   size="md"
-/>
+/>;
 ```
 
 **Notes**:
+
 - Already has custom card styling for each reason
 - Need to preserve red border styling for selected state
 
@@ -181,6 +195,7 @@ const reasonOptions: RadioOption[] = EMERGENCY_UNLOCK_REASONS.map(reason => ({
 **Migration Status**: ✅ Migrated
 
 **Current Implementation**:
+
 ```tsx
 <input
   type="radio"
@@ -193,12 +208,14 @@ const reasonOptions: RadioOption[] = EMERGENCY_UNLOCK_REASONS.map(reason => ({
 ```
 
 **Migration Plan**:
+
 - Convert RadioOption component to use RadioGroup
 - Three options: anonymous, username, real
 - Each has title and description already defined
 - Preserve nightly theme colors
 
 **RadioGroup Configuration**:
+
 ```tsx
 const displayNameOptions: RadioOption[] = [
   {
@@ -225,10 +242,11 @@ const displayNameOptions: RadioOption[] = [
   onChange={(value) => onSettingChange("displayName", value)}
   options={displayNameOptions}
   size="md"
-/>
+/>;
 ```
 
 **Notes**:
+
 - Currently wrapped in bg-white/5 rounded-lg cards
 - Need to adapt RadioGroup to match existing card styling
 
@@ -237,20 +255,24 @@ const displayNameOptions: RadioOption[] = [
 ## Migration Strategy
 
 ### Phase 1: Component Creation ✅
+
 - [x] Create Radio component
 - [x] Create RadioGroup component
 - [x] Add CSS animations
 - [x] Export from ui/index.ts
 
 ### Phase 2: Simple Migrations ✅
+
 - [x] Migrate ManualEntryForm.tsx
 - [x] Migrate AchievementPrivacySettings.tsx
 
 ### Phase 3: Complex Migrations ✅
+
 - [x] Migrate ReasonStage.tsx
 - [x] Migrate ConflictResolutionModal.tsx
 
 ### Phase 4: Testing & Validation (Manual Testing Required)
+
 - [ ] Test keyboard navigation in browser
 - [ ] Test focus states in browser
 - [ ] Test disabled states (if applicable)
@@ -260,6 +282,7 @@ const displayNameOptions: RadioOption[] = [
 ## Testing Checklist
 
 For each migrated component:
+
 - [ ] Radio button selects on click
 - [ ] Only one radio in group can be selected
 - [ ] Selected state displays correctly
@@ -276,7 +299,9 @@ For each migrated component:
 ## Migration Implementation Details
 
 ### ManualEntryForm.tsx
+
 **Changes Made:**
+
 - Replaced TypeSelection component's manual radio buttons with RadioGroup
 - Created typeOptions array with 2 options (reward/punishment)
 - Horizontal orientation maintained
@@ -285,7 +310,9 @@ For each migrated component:
 **Code Reduction:** ~22 lines of radio button code replaced with ~5 lines using RadioGroup
 
 ### AchievementPrivacySettings.tsx
+
 **Changes Made:**
+
 - Removed custom RadioOption component entirely
 - Created displayNameOptions array with 3 options
 - Used RadioGroup's built-in support for label and description
@@ -294,7 +321,9 @@ For each migrated component:
 **Code Reduction:** ~28 lines of custom radio component replaced with RadioGroup
 
 ### ReasonStage.tsx
+
 **Changes Made:**
+
 - Replaced ReasonSelectionList's manual radio buttons with RadioGroup
 - Mapped EMERGENCY_UNLOCK_REASONS to RadioOption array
 - Removed manual border and hover styling
@@ -303,7 +332,9 @@ For each migrated component:
 **Code Reduction:** ~30 lines of custom radio implementation replaced with RadioGroup
 
 ### ConflictResolutionModal.tsx
+
 **Changes Made:**
+
 - Removed custom VersionOption component
 - Created inline versionOptions array per conflict
 - Combined device label and timestamp in label prop

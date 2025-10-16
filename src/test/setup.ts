@@ -12,8 +12,22 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock Firebase
-vi.mock("../firebase", () => ({
+// Mock environment variables FIRST (before Firebase imports)
+Object.defineProperty(import.meta, "env", {
+  value: {
+    VITE_FIREBASE_API_KEY: "test-api-key",
+    VITE_FIREBASE_AUTH_DOMAIN: "test-auth-domain",
+    VITE_FIREBASE_PROJECT_ID: "test-project-id",
+    VITE_FIREBASE_STORAGE_BUCKET: "test-storage-bucket",
+    VITE_FIREBASE_MESSAGING_SENDER_ID: "test-sender-id",
+    VITE_FIREBASE_APP_ID: "test-app-id",
+    MODE: "test",
+  },
+  writable: true,
+  configurable: true,
+});
+
+const firebaseMock = {
   db: {
     collection: vi.fn(),
     doc: vi.fn(),
@@ -35,19 +49,22 @@ vi.mock("../firebase", () => ({
     uploadBytes: vi.fn(),
     getDownloadURL: vi.fn(),
   },
-}));
+  getFirebaseApp: vi.fn().mockResolvedValue({}),
+  getFirebaseAuth: vi.fn().mockResolvedValue({ currentUser: null }),
+  getFirestore: vi.fn().mockResolvedValue({}),
+  getFirebaseStorage: vi.fn().mockResolvedValue({}),
+  preloadCriticalServices: vi.fn().mockResolvedValue(undefined),
+  conditionalPreloadAll: vi.fn().mockResolvedValue(undefined),
+  getFirebaseConfig: vi.fn().mockReturnValue({
+    projectId: "test-project-id",
+    authDomain: "test-auth-domain",
+    isDevelopment: true,
+  }),
+};
 
-// Mock environment variables
-Object.defineProperty(import.meta, "env", {
-  value: {
-    VITE_FIREBASE_API_KEY: "test-api-key",
-    VITE_FIREBASE_AUTH_DOMAIN: "test-auth-domain",
-    VITE_FIREBASE_PROJECT_ID: "test-project-id",
-    VITE_FIREBASE_STORAGE_BUCKET: "test-storage-bucket",
-    VITE_FIREBASE_MESSAGING_SENDER_ID: "test-sender-id",
-    VITE_FIREBASE_APP_ID: "test-app-id",
-  },
-});
+// Mock Firebase (both locations)
+vi.mock("../firebase", () => firebaseMock);
+vi.mock("../services/firebase", () => firebaseMock);
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
