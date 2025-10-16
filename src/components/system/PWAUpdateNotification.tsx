@@ -2,13 +2,13 @@
  * PWA Update Notification
  * Shows a notification when a PWA update is available
  */
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { FaSync, FaTimes } from "@/utils/iconImport";
 
 export const PWAUpdateNotification: React.FC = () => {
-  const [showUpdate, setShowUpdate] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const {
@@ -23,11 +23,7 @@ export const PWAUpdateNotification: React.FC = () => {
     },
   });
 
-  useEffect(() => {
-    if (needRefresh) {
-      setShowUpdate(true);
-    }
-  }, [needRefresh]);
+  const showUpdate = needRefresh && !isDismissed;
 
   const handleUpdate = async () => {
     setIsUpdating(true);
@@ -41,7 +37,7 @@ export const PWAUpdateNotification: React.FC = () => {
   };
 
   const handleDismiss = () => {
-    setShowUpdate(false);
+    setIsDismissed(true);
   };
 
   if (!showUpdate) return null;

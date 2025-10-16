@@ -12,24 +12,25 @@ This document summarizes the Progressive Web App (PWA) implementation for Chasti
 
 - **Manifest Configuration**: Full PWA manifest with app metadata, icons, shortcuts, and screenshots
 - **Service Worker Strategy**: Changed from `autoUpdate` to `prompt` for better user control
-- **Workbox Caching**: 
+- **Workbox Caching**:
   - Documents: NetworkFirst strategy (30-day cache)
   - Static resources: StaleWhileRevalidate
   - Images: CacheFirst (30-day cache)
 - **Background Sync**: Enabled service worker background sync support
 
 **Key Changes**:
+
 ```javascript
 VitePWA({
-  registerType: "prompt",  // Changed from autoUpdate
+  registerType: "prompt", // Changed from autoUpdate
   manifest: {
     name: "ChastityOS",
     // ... full manifest configuration
   },
   workbox: {
     // ... caching strategies
-  }
-})
+  },
+});
 ```
 
 ### 2. PWA Install Manager ✅
@@ -44,6 +45,7 @@ A service that manages the PWA installation lifecycle:
 - **Subscription Model**: Observable pattern for install availability
 
 **Features**:
+
 - `canInstall()`: Check if app can be installed
 - `promptInstall()`: Show install prompt to user
 - `onInstallAvailable()`: Subscribe to install availability changes
@@ -61,6 +63,7 @@ A service that manages service worker updates:
 - **User Notifications**: Notifies when updates are available
 
 **Features**:
+
 - `checkForUpdates()`: Manually check for updates
 - `applyUpdate()`: Apply pending service worker update
 - `onUpdateAvailable()`: Subscribe to update events
@@ -78,6 +81,7 @@ A beautiful, non-intrusive UI component that prompts users to install the app:
 - **Purple Gradient**: Matches app theme
 
 **User Experience**:
+
 - Appears at bottom-right on desktop, bottom on mobile
 - Clear call-to-action: "Install App"
 - Explains benefits: offline support, faster loading, native feel
@@ -95,6 +99,7 @@ A notification that alerts users when updates are available:
 - **Loading State**: Shows "Updating..." during update
 
 **Integration**:
+
 - Uses `useRegisterSW` hook from vite-plugin-pwa
 - Automatically reloads app after update
 
@@ -110,6 +115,7 @@ A React hook that manages background synchronization:
 - **Message Handling**: Communicates with service worker
 
 **Features**:
+
 - Automatically triggers sync when going online
 - Processes queued operations from IndexedDB
 - Handles service worker messages
@@ -126,16 +132,19 @@ A custom service worker that extends Workbox functionality:
 - **Client Communication**: Sends sync status to app
 
 **Events Handled**:
+
 - `sync`: Process offline queue when connection restored
 - `message`: Handle skip waiting and other commands
 
 ### 8. App Integration ✅
 
-**Files**: 
+**Files**:
+
 - `src/App.tsx`: Initializes background sync on app start
 - `src/Root.tsx`: Renders PWA components
 
 **Changes**:
+
 - Added `useBackgroundSync` hook to App component
 - Registers background sync on app initialization
 - Renders `PWAInstallPrompt` and `PWAUpdateNotification` in Root
@@ -158,10 +167,12 @@ Comprehensive documentation covering:
 ### 10. Tests ✅
 
 **Files**:
+
 - `src/services/pwa/__tests__/PWAInstallManager.test.ts`
 - `src/services/pwa/__tests__/PWAUpdateManager.test.ts`
 
 **Coverage**:
+
 - Service initialization
 - Method availability
 - Subscription patterns
@@ -229,30 +240,36 @@ Update Applied → Reload
 ### Browser Support
 
 ✅ **Full Support** (Install + Offline):
+
 - Chrome 67+ (Desktop & Android)
 - Edge 79+
 - Opera 54+
 - Samsung Internet 8.2+
 
 ⚠️ **Partial Support** (Offline Only):
+
 - Safari 11.1+ (iOS & macOS)
 - Firefox 44+
 
 ❌ **No Support**:
+
 - Internet Explorer
 
 ### Caching Strategy
 
 **Documents** (HTML):
+
 - Strategy: NetworkFirst
 - Cache: 30 days
 - Max entries: 10
 
 **Static Resources** (JS, CSS):
+
 - Strategy: StaleWhileRevalidate
 - No expiration
 
 **Images**:
+
 - Strategy: CacheFirst
 - Cache: 30 days
 - Max entries: 60

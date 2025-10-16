@@ -5,15 +5,21 @@ This directory contains services for managing user data import and export operat
 ## Services
 
 ### DataExportService.ts
+
 Handles exporting user data to JSON format.
 
 **Key Functions:**
+
 - `exportUserData(userId, userEmail?)` - Exports all user data from the database
 - `downloadDataAsJSON(jsonData, userId)` - Triggers browser download of JSON data
 
 **Usage:**
+
 ```typescript
-import { exportUserData, downloadDataAsJSON } from '@/services/data/DataExportService';
+import {
+  exportUserData,
+  downloadDataAsJSON,
+} from "@/services/data/DataExportService";
 
 // Export user data
 const jsonData = await exportUserData(userId, userEmail);
@@ -23,15 +29,21 @@ downloadDataAsJSON(jsonData, userId);
 ```
 
 ### DataImportService.ts
+
 Handles importing user data from JSON files.
 
 **Key Functions:**
+
 - `importUserData(file, userId)` - Imports user data from a JSON file
 - `validateImportData(data)` - Validates the structure of import data
 
 **Usage:**
+
 ```typescript
-import { importUserData, validateImportData } from '@/services/data/DataImportService';
+import {
+  importUserData,
+  validateImportData,
+} from "@/services/data/DataImportService";
 
 // Import data from file
 await importUserData(file, userId);
@@ -54,10 +66,12 @@ The original `dataManagement.ts` file now acts as a facade, re-exporting from th
 ## Testing
 
 Tests are located in `__tests__/`:
+
 - `DataExportService.test.ts` - Tests for export functionality
 - `DataImportService.test.ts` - Tests for import functionality
 
 Run tests:
+
 ```bash
 npm run test -- src/services/data/__tests__
 ```
@@ -75,10 +89,11 @@ npm run test -- src/services/data/__tests__
 The refactoring maintains full backward compatibility. Existing code can continue to import from `@/services/dataManagement` without changes.
 
 For new code, prefer importing directly from the specific service:
+
 ```typescript
 // Prefer this
-import { exportUserData } from '@/services/data/DataExportService';
+import { exportUserData } from "@/services/data/DataExportService";
 
 // Over this (deprecated but still works)
-import { exportUserData } from '@/services/dataManagement';
+import { exportUserData } from "@/services/dataManagement";
 ```

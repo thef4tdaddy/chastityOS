@@ -47,7 +47,7 @@ export const EventErrorDisplay: React.FC<EventErrorDisplayProps> = ({
   if (!error) return null;
 
   const color = getErrorColor(error.type);
-  const Icon = getErrorIcon(error.type);
+  const IconComponent = getErrorIcon(error.type);
 
   return (
     <div
@@ -56,7 +56,7 @@ export const EventErrorDisplay: React.FC<EventErrorDisplayProps> = ({
       aria-live="polite"
     >
       <div className="flex items-start gap-3">
-        <Icon
+        <IconComponent
           className={`text-${color}-400 text-lg sm:text-xl flex-shrink-0 mt-0.5`}
           aria-hidden="true"
         />

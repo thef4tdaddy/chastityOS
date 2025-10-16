@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui";
 import {
   FaPlay,
@@ -32,6 +32,7 @@ export const SessionPersistenceDemo: React.FC = () => {
   const [heartbeatCount, setHeartbeatCount] = useState(0);
   const [isHeartbeatActive, setIsHeartbeatActive] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Load backup state on mount
   useEffect(() => {
@@ -50,6 +51,23 @@ export const SessionPersistenceDemo: React.FC = () => {
       }
     };
     simulateBackupLoad();
+    // addLog is a stable useCallback function, not a zustand store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [addLog]);
+
+  // Update current time for duration display
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000); // Update every second for demo
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Define addLog before it's used in effects - wrapped in useCallback for stable reference
+  const addLog = useCallback((message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
   }, []);
 
   // Heartbeat simulation
@@ -78,12 +96,9 @@ export const SessionPersistenceDemo: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isHeartbeatActive, demoSession, heartbeatCount]);
-
-  const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
-  };
+    // addLog is a stable useCallback function, not a zustand store action
+    // eslint-disable-next-line zustand-safe-patterns/zustand-no-store-actions-in-deps
+  }, [isHeartbeatActive, demoSession, heartbeatCount, addLog]);
 
   const startDemoSession = () => {
     const session = {
@@ -251,7 +266,7 @@ export const SessionPersistenceDemo: React.FC = () => {
                   <span className="text-gray-300">Duration:</span>
                   <span className="text-gray-100">
                     {formatDuration(
-                      Date.now() - new Date(demoSession.startTime).getTime(),
+                      currentTime - new Date(demoSession.startTime).getTime(),
                     )}
                   </span>
                 </div>
