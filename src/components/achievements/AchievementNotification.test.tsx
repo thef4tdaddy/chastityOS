@@ -55,6 +55,8 @@ describe("AchievementNotification", () => {
     userId: "test-user",
     achievementId,
     type: "earned",
+    title: "Achievement Earned",
+    message: "You have earned a new achievement!",
     isRead,
     createdAt: new Date(),
     syncStatus: "synced",
@@ -302,7 +304,8 @@ describe("AchievementNotification", () => {
       );
 
       await waitFor(() => {
-        const call = mockShowSuccess.mock.calls[0];
+        expect(mockShowSuccess).toHaveBeenCalledTimes(1);
+        const call = mockShowSuccess.mock.calls[0]!;
         expect(call[1]).toHaveProperty("action");
         expect(call[1].action).toHaveProperty("label", "Mark Read");
         expect(call[1].action).toHaveProperty("onClick");

@@ -76,41 +76,56 @@ export const usePinValidation = ({
     return false;
   };
 
-  const handlePinSubmit = async () => {
-    if (!userId || !pin) return;
+  const handlePinSubmit = async (): Promise<void> => {
+    if (!userId || !pin) {
+      setIsValidatingPin(false);
+      return;
+    }
 
     setPinError("");
     setIsValidatingPin(true);
 
-    const isValid = await validateEmergencyPinAttempt({
-      userId,
-      pin,
-      attemptCount,
-      validatePin: validatePin.mutateAsync,
-      onSuccess: async () => {
-        setPinStage("pin_validated");
-        setAttemptCount(0);
-
-        const hasCombination = await handleCombinationRetrieval();
-        if (!hasCombination) {
-          await handleUnlockAfterPinValidation();
-        }
-      },
-      onFailure: (error, attempts) => {
-        setPinError(error);
-        setAttemptCount(attempts);
-        setPin("");
-      },
-      onMaxAttempts: () => {
-        setPinError("Too many failed attempts. Modal will close in 5 seconds.");
-        setTimeout(() => {
+    try {
+      await validateEmergencyPinAttempt({
+        userId,
+        pin,
+        attemptCount,
+        validatePin: validatePin.mutateAsync,
+        onSuccess: async () => {
+          setPinStage("pin_validated");
           setAttemptCount(0);
-          onClose();
-        }, 5000);
-      },
-    });
+          setPin("");
 
-    setIsValidatingPin(!isValid ? false : false);
+          try {
+            const hasCombination = await handleCombinationRetrieval();
+            if (!hasCombination) {
+              await handleUnlockAfterPinValidation();
+            }
+          } catch (error) {
+            setPinError("Failed to process unlock after PIN validation");
+          }
+        },
+        onFailure: (error, attempts) => {
+          setPinError(error);
+          setAttemptCount(attempts);
+          setPin("");
+        },
+        onMaxAttempts: () => {
+          setPinError(
+            "Too many failed attempts. Modal will close in 5 seconds.",
+          );
+          setTimeout(() => {
+            setAttemptCount(0);
+            onClose();
+          }, 5000);
+        },
+      });
+    } catch (error) {
+      setPinError("An error occurred during PIN validation");
+      setPin("");
+    } finally {
+      setIsValidatingPin(false);
+    }
   };
 
   // Reset PIN state when modal closes
@@ -132,6 +147,7 @@ export const usePinValidation = ({
     }
 
     prevOpenRef.current = isOpen;
+    return undefined; // Explicit return for consistency
   }, [isOpen, requirePin]);
 
   return {

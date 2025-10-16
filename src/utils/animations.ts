@@ -20,7 +20,7 @@ export const ANIMATION_EASING = {
   easeInOut: [0.4, 0, 0.2, 1],
   easeOut: [0, 0, 0.2, 1],
   easeIn: [0.4, 0, 1, 1],
-  spring: { type: "spring", stiffness: 300, damping: 30 },
+  spring: [0.4, 0, 0.2, 1],
 } as const;
 
 /**
@@ -376,8 +376,9 @@ export const achievementNotificationVariants: Variants = {
     opacity: 1,
     scale: 1,
     transition: {
-      duration: ANIMATION_DURATION.slow,
-      ease: ANIMATION_EASING.spring,
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
     },
   },
   exit: {

@@ -108,7 +108,7 @@ export const EmergencyUnlockModal: React.FC<EmergencyUnlockModalProps> = ({
               attemptCount={attemptCount}
               isValidating={isValidatingPin}
               handlePinSubmit={handlePinSubmit}
-              setStage={() => setPinStage("normal")}
+              setStage={() => setPinStage("pin_validated")}
             />
           ) : pinStage === "show_combination" && lockCombination ? (
             <LockCombinationDisplay
