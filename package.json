@@ -60,7 +60,7 @@
     "dayjs": "^1.11.18",
     "dexie": "^4.2.0",
     "dexie-react-hooks": "^4.2.0",
-    "firebase": "^12.3.0",
+    "firebase": "^12.4.0",
     "framer-motion": "^12.23.22",
     "fs-extra": "^11.3.2",
     "marked": "^16.3.0",
