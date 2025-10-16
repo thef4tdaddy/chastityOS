@@ -15,9 +15,10 @@ describe("SessionControls", () => {
     startTime: new Date("2024-01-01T10:00:00Z"),
     isPaused: false,
     accumulatedPauseTime: 7200, // 2 hours
-    isActive: true,
-    events: [],
-    metadata: {},
+    isHardcoreMode: false,
+    keyholderApprovalRequired: false,
+    syncStatus: "synced",
+    lastModified: new Date("2024-01-01T10:00:00Z"),
   };
 
   beforeEach(() => {
@@ -261,9 +262,10 @@ describe("SessionControls", () => {
         startTime: new Date(),
         isPaused: false,
         accumulatedPauseTime: 0,
-        isActive: true,
-        events: [],
-        metadata: {},
+        isHardcoreMode: false,
+        keyholderApprovalRequired: false,
+        syncStatus: "synced",
+        lastModified: new Date(),
       };
 
       render(<SessionControls session={minimalSession} />);

@@ -59,7 +59,9 @@ describe("KeyholderRelationshipDBService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock crypto.randomUUID using spyOn
-    vi.spyOn(global.crypto, "randomUUID").mockReturnValue("mock-uuid-123");
+    vi.spyOn(global.crypto, "randomUUID").mockReturnValue(
+      "12345678-1234-1234-1234-123456789012",
+    );
   });
 
   afterEach(() => {
