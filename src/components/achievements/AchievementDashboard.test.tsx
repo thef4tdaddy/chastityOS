@@ -77,6 +77,8 @@ describe("AchievementDashboard", () => {
     userId: "test-user",
     achievementId,
     type: "earned",
+    title: "Achievement Earned",
+    message: "You have earned a new achievement!",
     isRead: false,
     createdAt: new Date(),
     syncStatus: "synced",
