@@ -101,25 +101,36 @@ jobs:
           PREVIOUS=${{ steps.previous_metrics.outputs.previous_problems }}
           MAX_INCREASE=${{ env.MAX_INCREASE_PERCENT }}
 
-          if [ "$PREVIOUS" -eq 0 ]; then
-            PREVIOUS=1  # Avoid division by zero
+          CHANGE=$((CURRENT - PREVIOUS))
+
+          # Special handling for zero problems
+          if [ "$PREVIOUS" -eq 0 ] && [ "$CURRENT" -eq 0 ]; then
+            # Both zero - maintaining zero problems
+            PERCENT_CHANGE="0"
+            echo "change=0" >> $GITHUB_OUTPUT
+            echo "percent_change=0" >> $GITHUB_OUTPUT
+            echo "🎉 Zero problems maintained!"
+          elif [ "$PREVIOUS" -eq 0 ]; then
+            # Previous was zero, now have problems - this is a regression
+            PERCENT_CHANGE="∞"
+            echo "change=$CHANGE" >> $GITHUB_OUTPUT
+            echo "percent_change=999" >> $GITHUB_OUTPUT
+            echo "❌ Regression: $CURRENT new problems introduced!"
+          else
+            # Normal calculation
+            PERCENT_CHANGE=$(echo "scale=2; ($CHANGE / $PREVIOUS) * 100" | bc)
+            echo "change=$CHANGE" >> $GITHUB_OUTPUT
+            echo "percent_change=$PERCENT_CHANGE" >> $GITHUB_OUTPUT
+            echo "📈 Change: $CHANGE problems ($PERCENT_CHANGE%)"
           fi
 
-          CHANGE=$((CURRENT - PREVIOUS))
-          PERCENT_CHANGE=$(echo "scale=2; ($CHANGE / $PREVIOUS) * 100" | bc)
-
-          echo "change=$CHANGE" >> $GITHUB_OUTPUT
-          echo "percent_change=$PERCENT_CHANGE" >> $GITHUB_OUTPUT
-
-          echo "📈 Change: $CHANGE problems ($PERCENT_CHANGE%)"
-
           # Check if increase exceeds threshold
-          if (( $(echo "$PERCENT_CHANGE > $MAX_INCREASE" | bc -l) )); then
+          if [ "$CURRENT" -gt "$PREVIOUS" ] && (( $(echo "$PERCENT_CHANGE > $MAX_INCREASE" | bc -l) )); then
             echo "threshold_exceeded=true" >> $GITHUB_OUTPUT
             echo "❌ THRESHOLD EXCEEDED! Increase of $PERCENT_CHANGE% is above $MAX_INCREASE% limit"
           else
             echo "threshold_exceeded=false" >> $GITHUB_OUTPUT
-            echo "✅ Within threshold: $PERCENT_CHANGE% increase (limit: $MAX_INCREASE%)"
+            echo "✅ Within threshold"
           fi
 
       - name: Generate detailed breakdown
@@ -160,8 +171,13 @@ jobs:
             const percentPrefix = percentChange > 0 ? '+' : '';
             const statusText = percentChange > 20 ? '🚨 THRESHOLD EXCEEDED' : '✅ Within limits';
 
+            // Special status message for zero problems
+            const statusMessage = current === 0
+              ? "**Current Status:** " + statusEmoji + " 0 problems (0 errors, 0 warnings) ✅ 🎉\n\n## 🎉 ZERO PROBLEMS MAINTAINED! 🎉\n\n"
+              : "**Current Status:** " + statusEmoji + " " + current + " problems (" + currentErrors + " errors, " + currentWarnings + " warnings)\n\n";
+
             const body = "## Master Tracking Issue - ALL ESLint Problems\n\n" +
-              "**Current Status:** " + statusEmoji + " " + current + " problems (" + currentErrors + " errors, " + currentWarnings + " warnings)\n\n" +
+              statusMessage +
               "## Progress\n" +
               "- **Started:** 483 problems (199 errors, 284 warnings)\n" +
               "- **After initial cleanup:** 276 problems (65 errors, 211 warnings)\n" +
