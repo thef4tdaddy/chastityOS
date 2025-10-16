@@ -123,10 +123,8 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
           {/* Account Type */}
           <div className="flex items-center justify-between py-3 border-b border-white/10">
             <div>
-              <div className="text-sm font-medium text-nightly-celadon">
-                Account Type
-              </div>
-              <div className="text-xs text-nightly-celadon/70 mt-1">
+              <div className="text-sm font-medium text-white">Account Type</div>
+              <div className="text-xs text-gray-300 mt-1">
                 {isAnonymous ? "Temporary (Anonymous)" : "Permanent (Google)"}
               </div>
             </div>
@@ -147,10 +145,8 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
           {/* Email */}
           {user?.email && (
             <div className="py-3 border-b border-white/10">
-              <div className="text-sm font-medium text-nightly-celadon mb-2">
-                Email
-              </div>
-              <div className="text-nightly-honeydew">{user.email}</div>
+              <div className="text-sm font-medium text-white mb-2">Email</div>
+              <div className="text-white">{user.email}</div>
             </div>
           )}
 
@@ -229,13 +225,11 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
         <div className="space-y-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <label className="block text-sm font-medium text-nightly-celadon">
+              <label className="block text-sm font-medium text-white">
                 Submissive's Name
               </label>
               <Tooltip content="This name will be displayed throughout the app and shared with your keyholder">
-                <span className="text-nightly-aquamarine/60 cursor-help text-xs">
-                  ⓘ
-                </span>
+                <span className="text-gray-400 cursor-help text-xs">ⓘ</span>
               </Tooltip>
             </div>
             <Input
@@ -245,7 +239,7 @@ const AccountSection: React.FC<{ settings: DBSettings | null }> = ({
                 setSubmissiveName(e.target.value);
                 setValidationError(null);
               }}
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
+              className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400"
               placeholder="Enter submissive's name"
             />
             {validationError && (
@@ -368,13 +362,11 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
         <div className="space-y-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <label className="block text-sm font-medium text-nightly-celadon">
+              <label className="block text-sm font-medium text-white">
                 Timezone
               </label>
               <Tooltip content="Set your timezone for accurate time tracking and reports">
-                <span className="text-nightly-lavender-floral/60 cursor-help text-xs">
-                  ⓘ
-                </span>
+                <span className="text-gray-400 cursor-help text-xs">ⓘ</span>
               </Tooltip>
             </div>
             <Select
@@ -392,17 +384,15 @@ const DisplaySection: React.FC<{ settings: DBSettings | null }> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div>
-                <div className="text-sm font-medium text-nightly-celadon">
+                <div className="text-sm font-medium text-white">
                   Notifications
                 </div>
-                <div className="text-xs text-nightly-celadon/70">
+                <div className="text-xs text-gray-300">
                   Receive app notifications
                 </div>
               </div>
               <Tooltip content="Enable browser notifications for task updates and reminders">
-                <span className="text-nightly-lavender-floral/60 cursor-help text-xs">
-                  ⓘ
-                </span>
+                <span className="text-gray-400 cursor-help text-xs">ⓘ</span>
               </Tooltip>
             </div>
             <Switch
@@ -501,10 +491,10 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium text-nightly-celadon">
+              <div className="text-sm font-medium text-white">
                 Public Profile
               </div>
-              <div className="text-xs text-nightly-celadon/70">
+              <div className="text-xs text-gray-300">
                 Make your profile visible to others
               </div>
             </div>
@@ -517,17 +507,15 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div>
-                <div className="text-sm font-medium text-nightly-celadon">
+                <div className="text-sm font-medium text-white">
                   Share Statistics
                 </div>
-                <div className="text-xs text-nightly-celadon/70">
+                <div className="text-xs text-gray-300">
                   Allow others to see your progress stats
                 </div>
               </div>
               <Tooltip content="When enabled, your chastity stats will be visible on your public profile">
-                <span className="text-nightly-spring-green/60 cursor-help text-xs">
-                  ⓘ
-                </span>
+                <span className="text-gray-400 cursor-help text-xs">ⓘ</span>
               </Tooltip>
             </div>
             <Switch
@@ -537,7 +525,7 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Bio
             </label>
             <Textarea
@@ -546,34 +534,34 @@ const ProfileSection: React.FC<{ settings: DBSettings | null }> = ({
                 setBio(e.target.value);
                 setValidationError(null);
               }}
-              className="w-full bg-white/5 border border-white/10 rounded p-3 text-nightly-honeydew placeholder-nightly-celadon/50 resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded p-3 text-white placeholder-gray-400 resize-none"
               rows={3}
               placeholder="Tell others about yourself..."
             />
             {validationError && (
               <p className="text-red-400 text-xs mt-1">{validationError}</p>
             )}
-            <p className="text-nightly-celadon/70 text-xs mt-1">
+            <p className="text-gray-400 text-xs mt-1">
               {bio.length}/500 characters
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-nightly-celadon mb-2">
+            <label className="block text-sm font-medium text-white mb-2">
               Profile URL
             </label>
             <div className="flex">
-              <span className="bg-white/5 border border-white/10 border-r-0 rounded-l px-3 py-3 text-nightly-celadon text-sm">
+              <span className="bg-white/5 border border-white/10 border-r-0 rounded-l px-3 py-3 text-gray-400 text-sm">
                 chastityOS.io/profile/
               </span>
               <Input
                 type="text"
-                className="flex-1 bg-white/5 border border-white/10 rounded-r p-3 text-nightly-honeydew placeholder-nightly-celadon/50"
+                className="flex-1 bg-white/5 border border-white/10 rounded-r p-3 text-white placeholder-gray-400"
                 placeholder="your-username"
                 disabled
               />
             </div>
-            <p className="text-nightly-celadon/70 text-xs mt-1">
+            <p className="text-gray-400 text-xs mt-1">
               Profile URL customization coming soon
             </p>
           </div>
@@ -759,7 +747,7 @@ const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="text-nightly-spring-green">
+    <div className="w-full h-full text-white">
       {loading ? (
         <LoadingState message="Loading settings..." size="lg" />
       ) : (
@@ -768,46 +756,46 @@ const SettingsPage: React.FC = () => {
           onValueChange={(value) => setActiveTab(value as SettingsTab)}
           tabs={tabs}
           orientation="vertical"
-          className="lg:w-64 p-4"
+          className="w-full h-full lg:flex lg:flex-row p-4"
         >
           <TabsContent value="account">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <AccountSection settings={settings} />
             </div>
           </TabsContent>
 
           <TabsContent value="display">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <DisplaySection settings={settings} />
             </div>
           </TabsContent>
 
           <TabsContent value="profile">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <ProfileSection settings={settings} />
             </div>
           </TabsContent>
 
           <TabsContent value="privacy">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <PrivacySection settings={settings} />
             </div>
           </TabsContent>
 
           <TabsContent value="goals">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <GoalsSection settings={settings} />
             </div>
           </TabsContent>
 
           <TabsContent value="sync">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <SyncSection />
             </div>
           </TabsContent>
 
           <TabsContent value="data">
-            <div className="max-w-4xl">
+            <div className="w-full">
               <DataSection settings={settings} />
             </div>
           </TabsContent>
