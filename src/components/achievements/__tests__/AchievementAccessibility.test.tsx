@@ -4,7 +4,7 @@
  * Issue: Achievements UI accessibility improvements
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import { AchievementGallery } from "../AchievementGallery";
 import { AchievementPagination } from "../AchievementPagination";
