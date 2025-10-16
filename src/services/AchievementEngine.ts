@@ -27,6 +27,13 @@ type AchievementInit = Omit<
 
 export class AchievementEngine {
   private initialized = false;
+  private checkQueue: Array<{
+    userId: string;
+    eventType: string;
+    timestamp: number;
+  }> = [];
+  private checkTimeout: NodeJS.Timeout | null = null;
+  private readonly BATCH_DELAY = 1000; // 1 second batching delay
 
   /**
    * Initialize the achievement engine with predefined achievements
@@ -79,6 +86,78 @@ export class AchievementEngine {
   }
 
   /**
+   * Queue achievement check to be processed in batch
+   */
+  private queueAchievementCheck(userId: string, eventType: string): void {
+    this.checkQueue.push({
+      userId,
+      eventType,
+      timestamp: Date.now(),
+    });
+
+    // Clear existing timeout
+    if (this.checkTimeout) {
+      clearTimeout(this.checkTimeout);
+    }
+
+    // Set new timeout to process batch
+    this.checkTimeout = setTimeout(() => {
+      this.processBatchedChecks();
+    }, this.BATCH_DELAY);
+  }
+
+  /**
+   * Process batched achievement checks
+   */
+  private async processBatchedChecks(): Promise<void> {
+    if (this.checkQueue.length === 0) return;
+
+    // Get unique userIds from queue
+    const userIds = [...new Set(this.checkQueue.map((item) => item.userId))];
+    const queue = [...this.checkQueue];
+    this.checkQueue = []; // Clear queue
+
+    logger.debug(
+      `Processing batched checks for ${userIds.length} users (${queue.length} events)`,
+      "AchievementEngine",
+    );
+
+    // Process checks for each unique user
+    for (const userId of userIds) {
+      try {
+        const userEvents = queue.filter((item) => item.userId === userId);
+        const eventTypes = new Set(userEvents.map((item) => item.eventType));
+
+        // Run all applicable checks once per user
+        if (eventTypes.has("session_end")) {
+          await Promise.all([
+            this.checkSessionMilestones(userId),
+            this.checkConsistencyBadges(userId),
+            this.checkStreakAchievements(userId),
+          ]);
+        }
+
+        if (
+          eventTypes.has("task_completed") ||
+          eventTypes.has("task_approved")
+        ) {
+          await this.checkTaskAchievements(userId);
+        }
+
+        if (eventTypes.has("goal_completed")) {
+          await this.checkGoalAchievements(userId);
+        }
+      } catch (error) {
+        logger.error(
+          `Failed to process batched checks for user ${userId}`,
+          error,
+          "AchievementEngine",
+        );
+      }
+    }
+  }
+
+  /**
    * Process session events to check for achievement eligibility
    */
   async processSessionEvent(
@@ -91,12 +170,12 @@ export class AchievementEngine {
 
       switch (eventType) {
         case "session_start":
+          // Process immediately for session start
           await this.checkSpecialStartConditions(userId, sessionData);
           break;
         case "session_end":
-          await this.checkSessionMilestones(userId);
-          await this.checkConsistencyBadges(userId);
-          await this.checkStreakAchievements(userId);
+          // Queue for batched processing
+          this.queueAchievementCheck(userId, eventType);
           break;
       }
     } catch (error) {
@@ -119,7 +198,8 @@ export class AchievementEngine {
       if (!this.initialized) await this.initialize();
 
       if (eventType === "task_completed" || eventType === "task_approved") {
-        await this.checkTaskAchievements(userId);
+        // Queue for batched processing
+        this.queueAchievementCheck(userId, eventType);
       }
     } catch (error) {
       logger.error("Failed to process task event", error, "AchievementEngine");
@@ -138,7 +218,8 @@ export class AchievementEngine {
       if (!this.initialized) await this.initialize();
 
       if (eventType === "goal_completed") {
-        await this.checkGoalAchievements(userId, goalData);
+        // Queue for batched processing
+        this.queueAchievementCheck(userId, eventType);
       }
     } catch (error) {
       logger.error("Failed to process goal event", error, "AchievementEngine");
