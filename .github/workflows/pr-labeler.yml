@@ -7,9 +7,64 @@ on:
 jobs:
   label:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Label PR
         uses: actions/labeler@v6
+        continue-on-error: true
+        id: labeler
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
+
+      - name: Check for missing labels and suggest
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Labels defined in labeler.yml that might be applied
+            const configuredLabels = [
+              'feature',
+              'bug',
+              'chore',
+              'docs',
+              'refactor',
+              'testing',
+              'workflows'
+            ];
+
+            // Get existing labels in the repo
+            const { data: repoLabels } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const existingLabelNames = repoLabels.map(l => l.name);
+
+            // Find which configured labels don't exist
+            const missingLabels = configuredLabels.filter(
+              label => !existingLabelNames.includes(label)
+            );
+
+            // If there are missing labels, comment on the PR
+            if (missingLabels.length > 0) {
+              const labelList = missingLabels.map(l => `- \`${l}\``).join('\n');
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `🏷️ **PR Labeler:** Some labels from the configuration don't exist yet:\n\n${labelList}\n\n*A maintainer can create these labels in [repository settings](/${context.repo.owner}/${context.repo.repo}/labels) to enable automatic PR labeling.*`
+              });
+
+              console.log(`Missing labels: ${missingLabels.join(', ')}`);
+            } else {
+              console.log('All configured labels exist');
+            }

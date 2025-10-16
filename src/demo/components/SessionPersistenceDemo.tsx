@@ -34,6 +34,12 @@ export const SessionPersistenceDemo: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [currentTime, setCurrentTime] = useState(Date.now());
 
+  // Define addLog before it's used in effects - wrapped in useCallback for stable reference
+  const addLog = useCallback((message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
+  }, []);
+
   // Load backup state on mount
   useEffect(() => {
     // Demo component: simulate localStorage behavior without direct access
@@ -62,12 +68,6 @@ export const SessionPersistenceDemo: React.FC = () => {
     }, 1000); // Update every second for demo
 
     return () => clearInterval(interval);
-  }, []);
-
-  // Define addLog before it's used in effects - wrapped in useCallback for stable reference
-  const addLog = useCallback((message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 9)]);
   }, []);
 
   // Heartbeat simulation
