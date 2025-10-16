@@ -12,23 +12,26 @@ import {
 
 describe("AchievementPageStates", () => {
   describe("AchievementLoadingState", () => {
-    it("should render loading state", () => {
-      render(<AchievementLoadingState />);
-      expect(screen.getByText("Loading achievements...")).toBeInTheDocument();
+    it("should render loading skeleton", () => {
+      const { container } = render(<AchievementLoadingState />);
+      // Should have multiple skeleton elements
+      const skeletons = container.querySelectorAll(".bg-white\\/20");
+      expect(skeletons.length).toBeGreaterThan(0);
     });
 
-    it("should display spinner animation", () => {
+    it("should display skeleton cards", () => {
       const { container } = render(<AchievementLoadingState />);
-      const spinner = container.querySelector(".animate-spin");
-      expect(spinner).toBeInTheDocument();
+      // Should have grid layout with skeleton cards
+      const grid = container.querySelector(".grid");
+      expect(grid).toBeInTheDocument();
     });
 
-    it("should have proper styling classes", () => {
+    it("should have proper container classes", () => {
       const { container } = render(<AchievementLoadingState />);
-      const spinner = container.querySelector(".animate-spin");
-      expect(spinner).toHaveClass("border-2");
-      expect(spinner).toHaveClass("border-nightly-aquamarine");
-      expect(spinner).toHaveClass("rounded-full");
+      const mainContainer = container.querySelector(
+        ".text-nightly-spring-green",
+      );
+      expect(mainContainer).toBeInTheDocument();
     });
   });
 
