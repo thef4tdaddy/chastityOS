@@ -274,7 +274,7 @@ jobs:
 
       - name: Create performance regression issue
         if: env.PERFORMANCE_REGRESSION == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `Performance Regression Detected - ${new Date().toISOString().split('T')[0]}`;
