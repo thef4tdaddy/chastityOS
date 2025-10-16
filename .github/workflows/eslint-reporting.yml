@@ -199,7 +199,7 @@ jobs:
 
       - name: Create GitHub issue for Code Quality Regression
         if: steps.quality_check.outputs.regression_detected == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const qualityScore = parseFloat('${{ steps.eslint_analysis.outputs.quality_score }}');
@@ -321,7 +321,7 @@ jobs:
 
       - name: Create Weekly GitHub Report Issue
         if: steps.trend_report.outputs.report_generated == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const trendData = JSON.parse('${{ steps.trend_report.outputs.trend_data }}');

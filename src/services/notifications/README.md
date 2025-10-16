@@ -5,13 +5,17 @@ Centralized notification services for ChastityOS, handling all notification type
 ## Services Overview
 
 ### NotificationService
+
 Main notification service handling:
+
 - **Session notifications**: ending soon, completed, pause cooldown
 - **Keyholder notifications**: session events, emergency unlock, requests, goals
 - **System notifications**: sync status, updates, achievements
 
 ### TaskNotificationService
+
 Specialized service for task workflow notifications:
+
 - Task assignments, submissions, approvals, rejections
 - Deadline warnings and overdue reminders
 
@@ -24,121 +28,143 @@ Both services use the notification store for in-app toast notifications and are 
 ### Session Notifications
 
 #### Session Ending Soon
+
 Warns user 5 minutes before session ends.
+
 ```typescript
 await NotificationService.notifySessionEndingSoon({
-  sessionId: 'session-123',
-  userId: 'user-123',
+  sessionId: "session-123",
+  userId: "user-123",
   minutesRemaining: 5,
 });
 ```
 
 #### Session Completed
+
 Celebrates session completion.
+
 ```typescript
 await NotificationService.notifySessionCompleted({
-  sessionId: 'session-123',
-  userId: 'user-123',
+  sessionId: "session-123",
+  userId: "user-123",
   duration: 72, // hours
 });
 ```
 
 #### Pause Cooldown Expired
+
 Notifies when ready to resume.
+
 ```typescript
 await NotificationService.notifyPauseCooldownExpired({
-  sessionId: 'session-123',
-  userId: 'user-123',
+  sessionId: "session-123",
+  userId: "user-123",
 });
 ```
 
 #### Emergency Unlock
+
 Urgent notification to keyholder.
+
 ```typescript
 await NotificationService.notifyEmergencyUnlock({
-  sessionId: 'session-123',
-  userId: 'user-123',
-  keyholderUserId: 'keyholder-456',
-  submissiveName: 'Pet',
-  reason: 'Medical emergency',
+  sessionId: "session-123",
+  userId: "user-123",
+  keyholderUserId: "keyholder-456",
+  submissiveName: "Pet",
+  reason: "Medical emergency",
 });
 ```
 
 ### Keyholder Notifications
 
 #### Session Events
+
 Notifies keyholder of session start/pause/resume.
+
 ```typescript
 await NotificationService.notifySessionStarted({
-  sessionId: 'session-123',
-  userId: 'user-123',
-  keyholderUserId: 'keyholder-456',
-  submissiveName: 'Pet',
+  sessionId: "session-123",
+  userId: "user-123",
+  keyholderUserId: "keyholder-456",
+  submissiveName: "Pet",
 });
 ```
 
 #### Keyholder Request
+
 Notifies about new relationship requests.
+
 ```typescript
 await NotificationService.notifyKeyholderRequest({
-  userId: 'user-123',
-  keyholderUserId: 'keyholder-456',
-  submissiveName: 'Pet',
-  requestType: 'invite', // or 'permission', 'general'
+  userId: "user-123",
+  keyholderUserId: "keyholder-456",
+  submissiveName: "Pet",
+  requestType: "invite", // or 'permission', 'general'
 });
 ```
 
 #### Goal Completed
+
 Notifies keyholder when submissive completes a goal.
+
 ```typescript
 await NotificationService.notifyGoalCompleted({
-  userId: 'user-123',
-  goalId: 'goal-789',
-  goalTitle: '30-day streak',
-  keyholderUserId: 'keyholder-456',
-  submissiveName: 'Pet',
+  userId: "user-123",
+  goalId: "goal-789",
+  goalTitle: "30-day streak",
+  keyholderUserId: "keyholder-456",
+  submissiveName: "Pet",
 });
 ```
 
 ### System Notifications
 
 #### Sync Completed
+
 Confirms successful data sync (manual only).
+
 ```typescript
 await NotificationService.notifySyncCompleted({
-  userId: 'user-123',
+  userId: "user-123",
   operationsCount: 15,
   wasManualSync: true,
 });
 ```
 
 #### Sync Failed
+
 Alerts about sync failures with retry option.
+
 ```typescript
 await NotificationService.notifySyncFailed({
-  userId: 'user-123',
-  errorMessage: 'Network error',
+  userId: "user-123",
+  errorMessage: "Network error",
   retryable: true,
 });
 ```
 
 #### App Update Available
+
 Notifies about new app versions.
+
 ```typescript
 await NotificationService.notifyAppUpdateAvailable({
-  version: '4.0.1',
-  releaseNotes: 'Bug fixes and improvements',
+  version: "4.0.1",
+  releaseNotes: "Bug fixes and improvements",
 });
 ```
 
 #### Achievement Unlocked
+
 Celebrates unlocked achievements.
+
 ```typescript
 await NotificationService.notifyAchievementUnlocked({
-  userId: 'user-123',
-  achievementId: 'ach-001',
-  achievementTitle: 'First Week',
-  achievementDescription: 'Complete your first week in chastity',
+  userId: "user-123",
+  achievementId: "ach-001",
+  achievementTitle: "First Week",
+  achievementDescription: "Complete your first week in chastity",
   points: 100,
 });
 ```
@@ -146,6 +172,7 @@ await NotificationService.notifyAchievementUnlocked({
 ### Integration Points
 
 NotificationService is integrated at key event points:
+
 - `src/hooks/session/useSession.ts` - Session start/end
 - `src/hooks/session/usePauseSessionActions.ts` - Pause/resume
 - `src/services/database/EmergencyService.ts` - Emergency unlock
@@ -178,15 +205,15 @@ The `TaskNotificationService` provides a unified interface for sending task work
 ### Assigning a Task
 
 ```typescript
-import { TaskNotificationService } from '@/services/notifications/TaskNotificationService';
+import { TaskNotificationService } from "@/services/notifications/TaskNotificationService";
 
 // When a keyholder assigns a task to a submissive
 await TaskNotificationService.notifyTaskAssigned({
-  taskId: 'task-123',
-  taskTitle: 'Clean the room',
-  userId: 'submissive-user-id',
-  keyholderName: 'Master John', // Optional
-  dueDate: new Date('2024-12-31'), // Optional
+  taskId: "task-123",
+  taskTitle: "Clean the room",
+  userId: "submissive-user-id",
+  keyholderName: "Master John", // Optional
+  dueDate: new Date("2024-12-31"), // Optional
 });
 ```
 
@@ -195,11 +222,11 @@ await TaskNotificationService.notifyTaskAssigned({
 ```typescript
 // When a submissive submits a task for review
 await TaskNotificationService.notifyTaskSubmitted({
-  taskId: 'task-123',
-  taskTitle: 'Clean the room',
-  userId: 'submissive-user-id',
-  keyholderUserId: 'keyholder-user-id',
-  submissiveName: 'Pet', // Optional
+  taskId: "task-123",
+  taskTitle: "Clean the room",
+  userId: "submissive-user-id",
+  keyholderUserId: "keyholder-user-id",
+  submissiveName: "Pet", // Optional
   hasEvidence: true, // Whether attachments were included
 });
 ```
@@ -209,11 +236,11 @@ await TaskNotificationService.notifyTaskSubmitted({
 ```typescript
 // When a keyholder approves a task
 await TaskNotificationService.notifyTaskApproved({
-  taskId: 'task-123',
-  taskTitle: 'Clean the room',
-  userId: 'submissive-user-id',
+  taskId: "task-123",
+  taskTitle: "Clean the room",
+  userId: "submissive-user-id",
   points: 10, // Optional
-  reviewNotes: 'Great job!', // Optional
+  reviewNotes: "Great job!", // Optional
 });
 ```
 
@@ -222,10 +249,10 @@ await TaskNotificationService.notifyTaskApproved({
 ```typescript
 // When a keyholder rejects a task
 await TaskNotificationService.notifyTaskRejected({
-  taskId: 'task-123',
-  taskTitle: 'Clean the room',
-  userId: 'submissive-user-id',
-  reason: 'Not thorough enough', // Optional
+  taskId: "task-123",
+  taskTitle: "Clean the room",
+  userId: "submissive-user-id",
+  reason: "Not thorough enough", // Optional
 });
 ```
 
@@ -234,9 +261,9 @@ await TaskNotificationService.notifyTaskRejected({
 ```typescript
 // When a deadline is approaching (24h before)
 await TaskNotificationService.notifyDeadlineApproaching({
-  taskId: 'task-123',
-  taskTitle: 'Clean the room',
-  userId: 'submissive-user-id',
+  taskId: "task-123",
+  taskTitle: "Clean the room",
+  userId: "submissive-user-id",
   hoursRemaining: 12,
 });
 ```
@@ -246,10 +273,10 @@ await TaskNotificationService.notifyDeadlineApproaching({
 ```typescript
 // When a task becomes overdue
 await TaskNotificationService.notifyTaskOverdue({
-  taskId: 'task-123',
-  taskTitle: 'Clean the room',
-  userId: 'submissive-user-id',
-  keyholderUserId: 'keyholder-user-id',
+  taskId: "task-123",
+  taskTitle: "Clean the room",
+  userId: "submissive-user-id",
+  keyholderUserId: "keyholder-user-id",
 });
 ```
 
@@ -265,12 +292,14 @@ The service is automatically integrated with task mutations in `useTaskMutations
 ## Notification Metadata
 
 All notifications include metadata that can be used for:
+
 - Navigation to task details
 - Task context information
 - Analytics and logging
 - Future features
 
 Example metadata:
+
 ```typescript
 {
   taskId: 'task-123',
@@ -304,6 +333,7 @@ The service is designed to support push notifications in the future. To add push
 4. Check user preferences with `shouldNotifyUser` before sending
 
 Example structure:
+
 ```typescript
 // In each notification method, add:
 await this.sendPushNotification({
@@ -339,6 +369,7 @@ Currently, all notifications are enabled by default. Future implementation will 
 ## Testing
 
 Unit tests are located in `__tests__/TaskNotificationService.test.ts` and cover:
+
 - All notification types
 - Parameter variations
 - Priority levels
@@ -346,6 +377,7 @@ Unit tests are located in `__tests__/TaskNotificationService.test.ts` and cover:
 - Error handling
 
 Run tests:
+
 ```bash
 npm run test src/services/notifications/__tests__/TaskNotificationService.test.ts
 ```
@@ -361,6 +393,7 @@ Toast UI Component
 ```
 
 Future:
+
 ```
 TaskNotificationService (Static)
     ├→ useNotificationStore (Zustand) → Toast UI
@@ -382,6 +415,7 @@ All notification methods return `string | null` (notification ID or null on erro
 ## Contributing
 
 When adding new notification types:
+
 1. Add interface for parameters
 2. Create static method following existing patterns
 3. Add comprehensive tests

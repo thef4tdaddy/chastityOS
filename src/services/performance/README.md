@@ -9,23 +9,28 @@ This directory contains advanced performance optimization services implemented a
 Manages progressive loading of application features based on priority levels.
 
 **Features:**
+
 - 4 priority levels: CRITICAL, HIGH, MEDIUM, LOW
 - Dependency management between features
 - Automatic loading on idle for low-priority features
 - Core loading state tracking
 
 **Usage:**
+
 ```typescript
-import { loadingPriorityService, LoadingPriority } from '@/services/performance';
+import {
+  loadingPriorityService,
+  LoadingPriority,
+} from "@/services/performance";
 
 // Register a feature
 loadingPriorityService.registerFeature({
-  name: 'charts',
+  name: "charts",
   priority: LoadingPriority.MEDIUM,
   loader: async () => {
-    await import('./charts');
+    await import("./charts");
   },
-  dependencies: ['dashboard']
+  dependencies: ["dashboard"],
 });
 
 // Load by priority
@@ -40,6 +45,7 @@ loadingPriorityService.loadOnIdle(LoadingPriority.LOW);
 Provides TTL-based caching for database queries with pattern invalidation.
 
 **Features:**
+
 - TTL-based expiration (default: 5 minutes)
 - Pattern-based invalidation
 - LRU eviction (max 100 entries)
@@ -47,28 +53,29 @@ Provides TTL-based caching for database queries with pattern invalidation.
 - `getOrSet` and `withCache` helpers
 
 **Usage:**
+
 ```typescript
-import { queryCacheService } from '@/services/performance';
+import { queryCacheService } from "@/services/performance";
 
 // Simple caching
-queryCacheService.set('user:123', userData, { ttl: 60000 });
-const user = queryCacheService.get('user:123');
+queryCacheService.set("user:123", userData, { ttl: 60000 });
+const user = queryCacheService.get("user:123");
 
 // Get or set with loader
 const data = await queryCacheService.getOrSet(
-  'tasks:active',
+  "tasks:active",
   async () => await fetchActiveTasks(),
-  { ttl: 300000 }
+  { ttl: 300000 },
 );
 
 // Wrap a function with caching
 const getCachedUser = queryCacheService.withCache(
-  'user',
-  async (id: string) => await fetchUser(id)
+  "user",
+  async (id: string) => await fetchUser(id),
 );
 
 // Invalidate by pattern
-queryCacheService.invalidatePattern('user:');
+queryCacheService.invalidatePattern("user:");
 ```
 
 ### 3. RequestBatchingService
@@ -76,20 +83,21 @@ queryCacheService.invalidatePattern('user:');
 Batches multiple API calls and deduplicates identical requests.
 
 **Features:**
+
 - Automatic request batching (50ms window)
 - Request deduplication (1s window)
 - Configurable batch size (default: 10)
 - Per-endpoint batching
 
 **Usage:**
+
 ```typescript
-import { requestBatchingService } from '@/services/performance';
+import { requestBatchingService } from "@/services/performance";
 
 // Queue a request (will be automatically batched)
-const result = await requestBatchingService.batchRequest(
-  '/api/user',
-  { id: '123' }
-);
+const result = await requestBatchingService.batchRequest("/api/user", {
+  id: "123",
+});
 
 // Duplicate requests in the deduplication window will share the same promise
 ```
@@ -99,6 +107,7 @@ const result = await requestBatchingService.batchRequest(
 Prefetches routes and data based on user behavior and predictions.
 
 **Features:**
+
 - Route prefetching
 - Data prefetching
 - Viewport-based prefetching (Intersection Observer)
@@ -106,30 +115,31 @@ Prefetches routes and data based on user behavior and predictions.
 - Predictive prefetching based on current route
 
 **Usage:**
+
 ```typescript
-import { prefetchService } from '@/services/performance';
+import { prefetchService } from "@/services/performance";
 
 // Prefetch a route
-await prefetchService.prefetchRoute('/dashboard', {
-  priority: 'high',
-  when: 'idle'
+await prefetchService.prefetchRoute("/dashboard", {
+  priority: "high",
+  when: "idle",
 });
 
 // Prefetch data
 await prefetchService.prefetchData(
-  'user-profile',
+  "user-profile",
   async () => await fetchUserProfile(),
-  { when: 'idle' }
+  { when: "idle" },
 );
 
 // Setup viewport prefetching
-prefetchService.setupViewportPrefetch(element, '/tasks');
+prefetchService.setupViewportPrefetch(element, "/tasks");
 
 // Setup hover prefetching
-prefetchService.setupHoverPrefetch(linkElement, '/keyholder');
+prefetchService.setupHoverPrefetch(linkElement, "/keyholder");
 
 // Predictive prefetching
-prefetchService.predictivePrefetch('/dashboard');
+prefetchService.predictivePrefetch("/dashboard");
 ```
 
 ### 5. FirebaseQueryOptimizer
@@ -137,6 +147,7 @@ prefetchService.predictivePrefetch('/dashboard');
 Optimizes Firestore queries with caching and performance best practices.
 
 **Features:**
+
 - Pagination helpers (forward/backward)
 - Query result caching
 - Batch query execution
@@ -144,40 +155,41 @@ Optimizes Firestore queries with caching and performance best practices.
 - Real-time listener optimization
 
 **Usage:**
+
 ```typescript
-import { firebaseQueryOptimizer } from '@/services/performance';
-import { collection, where, orderBy } from 'firebase/firestore';
+import { firebaseQueryOptimizer } from "@/services/performance";
+import { collection, where, orderBy } from "firebase/firestore";
 
 // Create a paginated query
-const baseQuery = collection(db, 'tasks');
-const constraints = [where('userId', '==', userId), orderBy('createdAt')];
+const baseQuery = collection(db, "tasks");
+const constraints = [where("userId", "==", userId), orderBy("createdAt")];
 const paginatedQuery = firebaseQueryOptimizer.createPaginatedQuery(
   baseQuery,
   constraints,
   {
-    pagination: { pageSize: 20, direction: 'forward' },
-    cache: true
-  }
+    pagination: { pageSize: 20, direction: "forward" },
+    cache: true,
+  },
 );
 
 // Execute with caching
 const result = await firebaseQueryOptimizer.executeWithCache(
-  'tasks:active',
+  "tasks:active",
   async () => await getDocs(paginatedQuery),
-  { cacheTTL: 300000 }
+  { cacheTTL: 300000 },
 );
 
 // Monitor query performance
 const data = await firebaseQueryOptimizer.monitorQuery(
-  'fetch-user-tasks',
-  async () => await getDocs(query)
+  "fetch-user-tasks",
+  async () => await getDocs(query),
 );
 
 // Optimize real-time listeners
 const { update, cleanup } = firebaseQueryOptimizer.optimizeRealtimeListener(
-  'tasks-listener',
+  "tasks-listener",
   (data) => setTasks(data),
-  (error) => console.error(error)
+  (error) => console.error(error),
 );
 ```
 
@@ -186,6 +198,7 @@ const { update, cleanup } = firebaseQueryOptimizer.optimizeRealtimeListener(
 Breaks up long tasks and schedules work efficiently using `requestIdleCallback`.
 
 **Features:**
+
 - Idle task scheduling
 - Priority-based queue (high/normal/low)
 - Task chunking
@@ -193,8 +206,9 @@ Breaks up long tasks and schedules work efficiently using `requestIdleCallback`.
 - Long task detection and warnings
 
 **Usage:**
+
 ```typescript
-import { taskScheduler } from '@/services/performance';
+import { taskScheduler } from "@/services/performance";
 
 // Schedule an idle task
 const taskId = taskScheduler.scheduleIdleTask(
@@ -202,7 +216,7 @@ const taskId = taskScheduler.scheduleIdleTask(
     // Heavy computation
     await processData();
   },
-  { priority: 'low', timeout: 5000 }
+  { priority: "low", timeout: 5000 },
 );
 
 // Break up a long task
@@ -213,8 +227,8 @@ await taskScheduler.breakUpTask(
   },
   {
     chunkSize: 10,
-    onProgress: (progress) => console.log(`${progress}% complete`)
-  }
+    onProgress: (progress) => console.log(`${progress}% complete`),
+  },
 );
 
 // Run with automatic yielding
@@ -223,7 +237,7 @@ await taskScheduler.runWithYield(
   async (item) => {
     await processItem(item);
   },
-  50 // Yield every 50ms
+  50, // Yield every 50ms
 );
 
 // Cancel a task
@@ -307,6 +321,7 @@ npm run test:unit -- src/services/performance/__tests__
 ## Performance Metrics
 
 All services log performance metrics using the logging system:
+
 - Query durations
 - Cache hit/miss rates
 - Task execution times

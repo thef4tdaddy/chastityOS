@@ -270,6 +270,184 @@ export const celebrationVariants: Variants = {
 };
 
 /**
+ * Achievement unlock celebration animation
+ */
+export const achievementUnlockVariants: Variants = {
+  initial: { scale: 0, opacity: 0, rotate: -180 },
+  animate: {
+    scale: [0, 1.2, 1],
+    opacity: 1,
+    rotate: 0,
+    transition: {
+      duration: ANIMATION_DURATION.slow * 1.2,
+      times: [0, 0.6, 1],
+      ease: ANIMATION_EASING.easeOut,
+    },
+  },
+  exit: {
+    scale: 0,
+    opacity: 0,
+    transition: { duration: ANIMATION_DURATION.fast },
+  },
+};
+
+/**
+ * Achievement card hover and focus animations
+ */
+export const achievementCardVariants: Variants = {
+  initial: { opacity: 0, y: 20, scale: 0.95 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: ANIMATION_DURATION.normal,
+      ease: ANIMATION_EASING.easeOut,
+    },
+  },
+  hover: {
+    y: -8,
+    scale: 1.02,
+    transition: {
+      duration: ANIMATION_DURATION.fast,
+      ease: ANIMATION_EASING.easeOut,
+    },
+  },
+  tap: {
+    scale: 0.98,
+    transition: { duration: 0.1 },
+  },
+};
+
+/**
+ * Progress bar fill animation
+ */
+export const progressBarVariants: Variants = {
+  initial: { scaleX: 0, originX: 0 },
+  animate: (percentage: number) => ({
+    scaleX: percentage / 100,
+    transition: {
+      duration: ANIMATION_DURATION.slow,
+      ease: ANIMATION_EASING.easeOut,
+    },
+  }),
+};
+
+/**
+ * Shine/glow effect for newly unlocked achievements
+ * Use repeat: 1 for one-time shine on card, or Infinity for continuous shine on notifications
+ */
+export const shineVariants: Variants = {
+  initial: { x: "-100%" },
+  animate: {
+    x: "200%",
+    transition: {
+      duration: 1.5,
+      ease: "easeInOut",
+      repeat: 1,
+      repeatDelay: 0,
+    },
+  },
+};
+
+/**
+ * Continuous shine effect for notifications
+ */
+export const shineContinuousVariants: Variants = {
+  initial: { x: "-100%" },
+  animate: {
+    x: "200%",
+    transition: {
+      duration: 1.5,
+      ease: "easeInOut",
+      repeat: Infinity,
+      repeatDelay: 3,
+    },
+  },
+};
+
+/**
+ * Achievement notification slide in
+ */
+export const achievementNotificationVariants: Variants = {
+  initial: { x: 400, opacity: 0, scale: 0.8 },
+  animate: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: ANIMATION_DURATION.slow,
+      ease: ANIMATION_EASING.spring,
+    },
+  },
+  exit: {
+    x: 400,
+    opacity: 0,
+    scale: 0.8,
+    transition: { duration: ANIMATION_DURATION.normal },
+  },
+};
+
+/**
+ * Trophy bounce animation for achievement unlocks
+ */
+export const trophyBounceVariants: Variants = {
+  initial: { scale: 1, rotate: 0 },
+  animate: {
+    scale: [1, 1.3, 0.9, 1.1, 1],
+    rotate: [0, -10, 10, -5, 0],
+    transition: {
+      duration: ANIMATION_DURATION.slow * 1.5,
+      times: [0, 0.25, 0.5, 0.75, 1],
+      ease: ANIMATION_EASING.easeOut,
+    },
+  },
+};
+
+/**
+ * Stagger animation for achievement gallery
+ */
+export const achievementStaggerVariants: Variants = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+/**
+ * Loading skeleton pulse animation
+ */
+export const skeletonPulseVariants: Variants = {
+  animate: {
+    opacity: [0.4, 0.6, 0.4],
+    transition: {
+      duration: 1.5,
+      repeat: Infinity,
+      ease: "easeInOut",
+    },
+  },
+};
+
+/**
+ * Badge appear animation
+ */
+export const badgeAppearVariants: Variants = {
+  initial: { scale: 0, rotate: -180, opacity: 0 },
+  animate: {
+    scale: 1,
+    rotate: 0,
+    opacity: 1,
+    transition: {
+      duration: ANIMATION_DURATION.normal,
+      ease: ANIMATION_EASING.easeOut,
+    },
+  },
+};
+
+/**
  * Check if we're in a test environment
  * Vitest sets import.meta.env.MODE to 'test'
  */
