@@ -149,7 +149,7 @@ jobs:
 
       - name: Comment PR with bundle analysis
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prTotal = parseFloat('${{ steps.pr_bundle.outputs.total_size }}');

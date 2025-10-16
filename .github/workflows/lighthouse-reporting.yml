@@ -184,7 +184,7 @@ jobs:
 
       - name: Create GitHub issue for Performance Regression
         if: steps.regression_check.outputs.regression_detected == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const overallScore = ${{ steps.lighthouse_results.outputs.overall_score }};
