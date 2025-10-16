@@ -200,8 +200,10 @@ export class EventDataSync extends FirebaseSyncCore {
         // Build a payload typed as Partial<DBEvent> so we don't need all required DBEvent fields
         const payload = {
           ...docData,
-          lastModified: new Date(),
-        } as Partial<DBEvent> & { lastModified: Date };
+          lastModified: this.toFirestoreTimestamp(new Date()),
+        } as Partial<DBEvent> & {
+          lastModified: ReturnType<typeof this.toFirestoreTimestamp>;
+        };
 
         batch.set(docRef, payload, { merge: true });
         syncedIds.push(docData.id);
@@ -277,7 +279,11 @@ export class EventDataSync extends FirebaseSyncCore {
       this.collectionName,
       data.id,
     );
-    batch.set(docRef, data, { merge: true });
+    batch.set(
+      docRef,
+      this.sanitizeForFirestore(data as Record<string, unknown>),
+      { merge: true },
+    );
     await batch.commit();
   }
 }

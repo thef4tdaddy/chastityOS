@@ -191,8 +191,9 @@ function buildReportFromQueries(
       userId,
       errorCount: errors.length,
       errors: errors.map((e) => ({
-        message: e.message,
-        name: e.name,
+        message: e?.message || String(e),
+        name: e?.name || "Unknown",
+        stack: e?.stack,
       })),
     });
   }

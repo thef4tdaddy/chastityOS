@@ -202,6 +202,34 @@ export abstract class FirebaseSyncCore {
   }
 
   /**
+   * Sanitize document for Firestore by converting Date objects to Timestamps
+   */
+  protected sanitizeForFirestore(
+    doc: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const sanitized: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(doc)) {
+      if (value instanceof Date) {
+        sanitized[key] = this.toFirestoreTimestamp(value);
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        // Recursively sanitize nested objects
+        sanitized[key] = this.sanitizeForFirestore(
+          value as Record<string, unknown>,
+        );
+      } else {
+        sanitized[key] = value;
+      }
+    }
+
+    return sanitized;
+  }
+
+  /**
    * Abstract methods to be implemented by specific sync services
    */
   abstract syncCollection(

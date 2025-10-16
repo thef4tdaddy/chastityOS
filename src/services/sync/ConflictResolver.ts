@@ -55,7 +55,7 @@ class ConflictResolver {
       ...remote, // remote wins for most fields
       ...local, // but local wins for some fields if newer
       status: resolvedStatus,
-      lastModified: new Date(), // new timestamp
+      lastModified: new Date(), // will be converted to Timestamp when saved
       syncStatus: "synced", // mark as synced
     };
   }

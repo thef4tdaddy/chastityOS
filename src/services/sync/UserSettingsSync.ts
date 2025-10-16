@@ -189,7 +189,7 @@ export class UserSettingsSync extends FirebaseSyncCore {
         );
         batch.set(
           docRef,
-          { ...docData, lastModified: new Date() },
+          { ...docData, lastModified: this.toFirestoreTimestamp(new Date()) },
           { merge: true },
         );
         syncedIds.push(docData.id);
@@ -306,7 +306,11 @@ export class UserSettingsSync extends FirebaseSyncCore {
       this.collectionName,
       data.id,
     );
-    batch.set(docRef, data, { merge: true });
+    batch.set(
+      docRef,
+      this.sanitizeForFirestore(data as Record<string, unknown>),
+      { merge: true },
+    );
     await batch.commit();
   }
 }
