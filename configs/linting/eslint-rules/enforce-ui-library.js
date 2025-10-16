@@ -101,10 +101,10 @@ export default {
         // Forbid <input type="checkbox"> and <input type="radio">
         if (elementName === 'input') {
           const typeAttr = node.openingElement.attributes.find(
-            (attr) =>
+            attr =>
               attr.type === 'JSXAttribute' &&
               attr.name.name === 'type' &&
-              attr.value?.type === 'Literal',
+              attr.value?.type === 'Literal'
           );
 
           if (typeAttr) {
@@ -137,7 +137,7 @@ export default {
           // Handle template literals and expressions
           const expression = node.value.expression;
           if (expression.type === 'TemplateLiteral') {
-            classValue = expression.quasis.map((q) => q.value.raw).join('');
+            classValue = expression.quasis.map(q => q.value.raw).join('');
           } else if (expression.type === 'Literal') {
             classValue = expression.value || '';
           }
@@ -163,7 +163,7 @@ export default {
 
         // Check for glass-button-*
         const buttonVariantMatch = classValue.match(
-          /glass-button-(primary|secondary|danger|ghost)/,
+          /glass-button-(primary|secondary|danger|ghost)/
         );
         if (buttonVariantMatch) {
           context.report({

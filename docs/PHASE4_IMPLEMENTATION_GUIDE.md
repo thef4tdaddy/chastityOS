@@ -154,69 +154,70 @@ function UserAvatar({ user }) {
 ### 1. Wrap Dexie Queries with Caching
 
 ```typescript
-import { db } from '@/services/storage/dexie';
-import { queryCacheService } from '@/services/performance';
+import { db } from "@/services/storage/dexie";
+import { queryCacheService } from "@/services/performance";
 
 // Before:
 async function getTasks(userId: string) {
   return await db.tasks
-    .where('[userId+status]')
-    .equals([userId, 'active'])
+    .where("[userId+status]")
+    .equals([userId, "active"])
     .toArray();
 }
 
 // After:
 async function getTasks(userId: string) {
-  const cacheKey = queryCacheService.generateCacheKey(
-    'tasks',
-    { userId, status: 'active' }
-  );
+  const cacheKey = queryCacheService.generateCacheKey("tasks", {
+    userId,
+    status: "active",
+  });
 
   return await queryCacheService.getOrSet(
     cacheKey,
     async () => {
       return await db.tasks
-        .where('[userId+status]')
-        .equals([userId, 'active'])
+        .where("[userId+status]")
+        .equals([userId, "active"])
         .toArray();
     },
-    { ttl: 300000 } // 5 minutes
+    { ttl: 300000 }, // 5 minutes
   );
 }
 
 // Invalidate cache on updates
 async function updateTask(taskId: string, updates: Partial<Task>) {
   await db.tasks.update(taskId, updates);
-  queryCacheService.invalidatePattern('tasks:');
+  queryCacheService.invalidatePattern("tasks:");
 }
 ```
 
 ### 2. Implement Pagination
 
 ```typescript
-import { db } from '@/services/storage/dexie';
+import { db } from "@/services/storage/dexie";
 
-async function getTasksPaginated(userId: string, page: number, pageSize: number = 20) {
+async function getTasksPaginated(
+  userId: string,
+  page: number,
+  pageSize: number = 20,
+) {
   const offset = page * pageSize;
 
   const tasks = await db.tasks
-    .where('[userId+createdAt]')
+    .where("[userId+createdAt]")
     .between([userId, Dexie.minKey], [userId, Dexie.maxKey])
     .offset(offset)
     .limit(pageSize)
     .toArray();
 
-  const total = await db.tasks
-    .where('userId')
-    .equals(userId)
-    .count();
+  const total = await db.tasks.where("userId").equals(userId).count();
 
   return {
     tasks,
     total,
     page,
     pageSize,
-    hasMore: (offset + tasks.length) < total,
+    hasMore: offset + tasks.length < total,
   };
 }
 ```
@@ -226,46 +227,46 @@ async function getTasksPaginated(userId: string, page: number, pageSize: number 
 ### 1. Use FirebaseQueryOptimizer for Queries
 
 ```typescript
-import { collection, where, orderBy } from 'firebase/firestore';
-import { db } from '@/firebase';
-import { firebaseQueryOptimizer } from '@/services/performance';
+import { collection, where, orderBy } from "firebase/firestore";
+import { db } from "@/firebase";
+import { firebaseQueryOptimizer } from "@/services/performance";
 
 // Before:
 async function getUserTasks(userId: string) {
   const q = query(
-    collection(db, 'tasks'),
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    collection(db, "tasks"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc"),
   );
   return await getDocs(q);
 }
 
 // After:
 async function getUserTasks(userId: string, page: number = 0) {
-  const baseQuery = collection(db, 'tasks');
+  const baseQuery = collection(db, "tasks");
   const constraints = [
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc"),
   ];
 
-  const cacheKey = firebaseQueryOptimizer.generateCacheKey(
-    'tasks',
-    { userId, page }
-  );
+  const cacheKey = firebaseQueryOptimizer.generateCacheKey("tasks", {
+    userId,
+    page,
+  });
 
   const paginatedQuery = firebaseQueryOptimizer.createPaginatedQuery(
     baseQuery,
     constraints,
     {
-      pagination: { pageSize: 20, direction: 'forward' },
-      cache: true
-    }
+      pagination: { pageSize: 20, direction: "forward" },
+      cache: true,
+    },
   );
 
   return await firebaseQueryOptimizer.executeWithCache(
     cacheKey,
     async () => await getDocs(paginatedQuery),
-    { cacheTTL: 300000 }
+    { cacheTTL: 300000 },
   );
 }
 ```
@@ -273,13 +274,13 @@ async function getUserTasks(userId: string, page: number = 0) {
 ### 2. Optimize Real-time Listeners
 
 ```typescript
-import { onSnapshot } from 'firebase/firestore';
-import { firebaseQueryOptimizer } from '@/services/performance';
+import { onSnapshot } from "firebase/firestore";
+import { firebaseQueryOptimizer } from "@/services/performance";
 
 // Before:
 useEffect(() => {
   const unsubscribe = onSnapshot(query, (snapshot) => {
-    setTasks(snapshot.docs.map(doc => doc.data()));
+    setTasks(snapshot.docs.map((doc) => doc.data()));
   });
 
   return unsubscribe;
@@ -288,13 +289,13 @@ useEffect(() => {
 // After:
 useEffect(() => {
   const { update, cleanup } = firebaseQueryOptimizer.optimizeRealtimeListener(
-    'tasks-listener',
+    "tasks-listener",
     (data) => setTasks(data),
-    (error) => console.error(error)
+    (error) => console.error(error),
   );
 
   const unsubscribe = onSnapshot(query, (snapshot) => {
-    update(snapshot.docs.map(doc => doc.data()));
+    update(snapshot.docs.map((doc) => doc.data()));
   });
 
   return () => {
@@ -309,14 +310,14 @@ useEffect(() => {
 ### 1. Use Request Batching
 
 ```typescript
-import { requestBatchingService } from '@/services/performance';
+import { requestBatchingService } from "@/services/performance";
 
 // Instead of making multiple individual API calls:
 async function loadUserData(userId: string) {
   const [profile, settings, tasks] = await Promise.all([
-    requestBatchingService.batchRequest('/api/user/profile', { userId }),
-    requestBatchingService.batchRequest('/api/user/settings', { userId }),
-    requestBatchingService.batchRequest('/api/tasks', { userId }),
+    requestBatchingService.batchRequest("/api/user/profile", { userId }),
+    requestBatchingService.batchRequest("/api/user/settings", { userId }),
+    requestBatchingService.batchRequest("/api/tasks", { userId }),
   ]);
 
   return { profile, settings, tasks };
@@ -326,6 +327,7 @@ async function loadUserData(userId: string) {
 ### 2. Add Resource Hints
 
 Already added to `index.html`:
+
 ```html
 <!-- Resource Hints for Performance Optimization (Phase 4) -->
 <link rel="preconnect" href="https://firestore.googleapis.com" />
@@ -405,11 +407,11 @@ function TaskCard({ taskId }) {
 ### 1. Break Up Long Tasks
 
 ```typescript
-import { taskScheduler } from '@/services/performance';
+import { taskScheduler } from "@/services/performance";
 
 // Before:
 function processAllTasks(tasks: Task[]) {
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     // Heavy processing
     processTask(task);
   });
@@ -426,8 +428,8 @@ async function processAllTasks(tasks: Task[]) {
       chunkSize: 10,
       onProgress: (progress) => {
         console.log(`Processing: ${progress}%`);
-      }
-    }
+      },
+    },
   );
 }
 ```
@@ -435,7 +437,7 @@ async function processAllTasks(tasks: Task[]) {
 ### 2. Use Idle Task Scheduling
 
 ```typescript
-import { taskScheduler } from '@/services/performance';
+import { taskScheduler } from "@/services/performance";
 
 // Schedule non-critical work on idle
 function scheduleAnalytics() {
@@ -443,7 +445,7 @@ function scheduleAnalytics() {
     async () => {
       await sendAnalyticsData();
     },
-    { priority: 'low', timeout: 5000 }
+    { priority: "low", timeout: 5000 },
   );
 }
 ```
@@ -451,7 +453,7 @@ function scheduleAnalytics() {
 ### 3. Use Automatic Yielding
 
 ```typescript
-import { taskScheduler } from '@/services/performance';
+import { taskScheduler } from "@/services/performance";
 
 async function processLargeDataset(items: Item[]) {
   await taskScheduler.runWithYield(
@@ -459,7 +461,7 @@ async function processLargeDataset(items: Item[]) {
     async (item) => {
       await processItem(item);
     },
-    50 // Yield every 50ms
+    50, // Yield every 50ms
   );
 }
 ```

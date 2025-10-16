@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FaTrophy, FaMedal, FaStar } from "../../utils/iconImport";
 import { Card } from "@/components/ui";
 
@@ -25,11 +25,10 @@ export const MilestoneCelebration: React.FC<MilestoneCelebrationProps> = ({
   onComplete,
   duration = 3000,
 }) => {
-  const [confetti, setConfetti] = useState<ConfettiParticle[]>([]);
   const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    // Generate confetti particles
+  // Generate confetti particles once using useMemo
+  const confetti = useMemo(() => {
     const particles: ConfettiParticle[] = [];
     const colors = ["#22c55e", "#eab308", "#3b82f6", "#ec4899", "#f97316"];
 
@@ -42,8 +41,10 @@ export const MilestoneCelebration: React.FC<MilestoneCelebrationProps> = ({
         color: colors[colorIndex] || "#22c55e",
       });
     }
-    setConfetti(particles);
+    return particles;
+  }, []); // Empty deps array means this only runs once
 
+  useEffect(() => {
     // Auto-dismiss after duration
     const timer = setTimeout(() => {
       setIsVisible(false);
