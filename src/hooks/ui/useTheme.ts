@@ -1,0 +1,502 @@
+/**
+ * useTheme Hook - Enhanced Theme Management
+ *
+ * Advanced theme management beyond basic store functionality, with dynamic themes,
+ * user customization, and accessibility features.
+ */
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseMutationResult,
+} from "@tanstack/react-query";
+import {
+  Theme,
+  CustomTheme,
+  CustomThemeDefinition,
+  ThemePreferences,
+  AccessibilitySettings,
+  EnhancedThemeState,
+  ThemeCategory,
+  FontScale,
+  ColorPalette,
+} from "../../types/theme";
+import { logger } from "../../utils/logging";
+import { ThemeStorageService } from "../../services/themeStorage";
+
+// Default themes
+const DEFAULT_LIGHT_THEME: Theme = {
+  id: "default-light",
+  name: "Light",
+  category: ThemeCategory.LIGHT,
+  colors: {
+    primary: "#6366f1",
+    secondary: "#8b5cf6",
+    accent: "#06b6d4",
+    background: "#ffffff",
+    surface: "#f8fafc",
+    text: "#1e293b",
+    textSecondary: "#64748b",
+    border: "#e2e8f0",
+    success: "#10b981",
+    warning: "#f59e0b",
+    error: "#ef4444",
+    info: "#3b82f6",
+  },
+  typography: {
+    fontFamily: "Inter, system-ui, sans-serif",
+    baseSize: 16,
+    lineHeight: 1.5,
+    letterSpacing: 0,
+  },
+  spacing: {
+    xs: "0.25rem",
+    sm: "0.5rem",
+    md: "1rem",
+    lg: "1.5rem",
+    xl: "2rem",
+    xxl: "3rem",
+  },
+  animations: {
+    duration: 200,
+    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+    enabled: true,
+  },
+  accessibility: {
+    highContrast: false,
+    reducedMotion: false,
+    focusVisible: true,
+    screenReader: false,
+  },
+};
+
+const DEFAULT_DARK_THEME: Theme = {
+  ...DEFAULT_LIGHT_THEME,
+  id: "default-dark",
+  name: "Dark",
+  category: ThemeCategory.DARK,
+  colors: {
+    primary: "#818cf8",
+    secondary: "#a78bfa",
+    accent: "#22d3ee",
+    background: "#0f172a",
+    surface: "#1e293b",
+    text: "#f1f5f9",
+    textSecondary: "#94a3b8",
+    border: "#334155",
+    success: "#34d399",
+    warning: "#fbbf24",
+    error: "#f87171",
+    info: "#60a5fa",
+  },
+};
+
+const DEFAULT_THEMES = [DEFAULT_LIGHT_THEME, DEFAULT_DARK_THEME];
+
+// Default preferences
+const DEFAULT_PREFERENCES: ThemePreferences = {
+  autoSwitch: false,
+  lightThemeId: "default-light",
+  darkThemeId: "default-dark",
+  scheduleEnabled: false,
+  lightModeStart: "06:00",
+  darkModeStart: "20:00",
+  systemSyncEnabled: true,
+};
+
+// Default accessibility settings
+const DEFAULT_ACCESSIBILITY: AccessibilitySettings = {
+  highContrast: false,
+  reducedMotion: false,
+  fontSize: FontScale.MEDIUM,
+  focusOutlines: true,
+  screenReaderMode: false,
+  keyboardNavigation: true,
+};
+
+// Custom hook for theme queries
+const useThemeQueries = (customThemes: CustomTheme[]) => {
+  const customThemesQuery = useQuery<CustomTheme[]>({
+    queryKey: ["themes", "custom"],
+    queryFn: () => {
+      return ThemeStorageService.getCustomThemes<CustomTheme>();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const preferencesQuery = useQuery<ThemePreferences>({
+    queryKey: ["themes", "preferences"],
+    queryFn: () => {
+      const stored = ThemeStorageService.getPreferences<ThemePreferences>();
+      return stored
+        ? { ...DEFAULT_PREFERENCES, ...stored }
+        : DEFAULT_PREFERENCES;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const accessibilityQuery = useQuery<AccessibilitySettings>({
+    queryKey: ["themes", "accessibility"],
+    queryFn: () => {
+      const stored =
+        ThemeStorageService.getAccessibilitySettings<AccessibilitySettings>();
+      return stored
+        ? { ...DEFAULT_ACCESSIBILITY, ...stored }
+        : DEFAULT_ACCESSIBILITY;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const currentThemeQuery = useQuery<Theme>({
+    queryKey: ["themes", "current"],
+    queryFn: () => {
+      const stored = ThemeStorageService.getCurrentTheme();
+      if (stored) {
+        const allThemes = [...DEFAULT_THEMES, ...customThemes];
+        return allThemes.find((t) => t.id === stored) || DEFAULT_LIGHT_THEME;
+      }
+      return DEFAULT_LIGHT_THEME;
+    },
+    staleTime: 1000,
+  });
+
+  return {
+    customThemes: customThemesQuery.data || [],
+    preferences: preferencesQuery.data || DEFAULT_PREFERENCES,
+    accessibilitySettings: accessibilityQuery.data || DEFAULT_ACCESSIBILITY,
+    currentTheme: currentThemeQuery.data || DEFAULT_LIGHT_THEME,
+  };
+};
+
+// Custom hook for theme mutations
+const useThemeMutations = (
+  availableThemes: Theme[],
+  customThemes: CustomTheme[],
+) => {
+  const queryClient = useQueryClient();
+
+  const setThemeMutation = useMutation({
+    mutationFn: async (themeId: string) => {
+      const theme = availableThemes.find((t) => t.id === themeId);
+      if (!theme) throw new Error("Theme not found");
+
+      ThemeStorageService.setCurrentTheme(themeId);
+      return theme;
+    },
+    onSuccess: (theme) => {
+      queryClient.setQueryData(["themes", "current"], theme);
+      applyThemeToDocument(theme);
+      logger.info("Theme changed", {
+        themeId: theme.id,
+        themeName: theme.name,
+      });
+    },
+  });
+
+  const createCustomThemeMutation = useMutation({
+    mutationFn: async (definition: CustomThemeDefinition) => {
+      const baseTheme = availableThemes.find(
+        (t) => t.id === definition.baseTheme,
+      );
+      if (!baseTheme) throw new Error("Base theme not found");
+
+      const newTheme: CustomTheme = {
+        ...baseTheme,
+        ...definition.overrides,
+        id: `custom-${Date.now()}`,
+        name: definition.name,
+        category: ThemeCategory.CUSTOM,
+        baseTheme: definition.baseTheme,
+        isUserCreated: true,
+        createdAt: new Date(),
+      };
+
+      const updatedCustomThemes = [...customThemes, newTheme];
+      ThemeStorageService.setCustomThemes(updatedCustomThemes);
+
+      return newTheme;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes", "custom"] });
+      logger.info("Custom theme created");
+    },
+  });
+
+  return { setThemeMutation, createCustomThemeMutation };
+};
+
+// Custom hook for preference mutations
+const usePreferenceMutations = (
+  preferences: ThemePreferences,
+  accessibilitySettings: AccessibilitySettings,
+) => {
+  const queryClient = useQueryClient();
+
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (updates: Partial<ThemePreferences>) => {
+      const newPreferences = { ...preferences, ...updates };
+      ThemeStorageService.setPreferences(newPreferences);
+      return newPreferences;
+    },
+    onSuccess: (newPreferences) => {
+      queryClient.setQueryData(["themes", "preferences"], newPreferences);
+      logger.info("Theme preferences updated");
+    },
+  });
+
+  const updateAccessibilityMutation = useMutation({
+    mutationFn: async (updates: Partial<AccessibilitySettings>) => {
+      const newSettings = { ...accessibilitySettings, ...updates };
+      ThemeStorageService.setAccessibilitySettings(newSettings);
+      return newSettings;
+    },
+    onSuccess: (newSettings) => {
+      queryClient.setQueryData(["themes", "accessibility"], newSettings);
+      applyAccessibilitySettings(newSettings);
+      logger.info("Accessibility settings updated");
+    },
+  });
+
+  return { updatePreferencesMutation, updateAccessibilityMutation };
+};
+
+// Apply theme to document
+function applyThemeToDocument(theme: Theme) {
+  const root = document.documentElement;
+
+  // Apply CSS custom properties
+  Object.entries(theme.colors).forEach(([key, value]) => {
+    root.style.setProperty(`--color-${key}`, value);
+  });
+
+  // Apply typography
+  root.style.setProperty("--font-family", theme.typography.fontFamily);
+  root.style.setProperty("--font-size-base", `${theme.typography.baseSize}px`);
+  root.style.setProperty(
+    "--line-height",
+    theme.typography.lineHeight.toString(),
+  );
+  root.style.setProperty(
+    "--letter-spacing",
+    `${theme.typography.letterSpacing}px`,
+  );
+
+  // Apply spacing
+  Object.entries(theme.spacing).forEach(([key, value]) => {
+    root.style.setProperty(`--spacing-${key}`, value);
+  });
+
+  // Apply animations
+  root.style.setProperty(
+    "--animation-duration",
+    `${theme.animations.duration}ms`,
+  );
+  root.style.setProperty("--animation-easing", theme.animations.easing);
+
+  // Set theme class
+  root.className = root.className.replace(/theme-\w+/g, "");
+  root.classList.add(`theme-${theme.category}`);
+}
+
+// Apply accessibility settings
+function applyAccessibilitySettings(settings: AccessibilitySettings) {
+  const root = document.documentElement;
+
+  // High contrast
+  if (settings.highContrast) {
+    root.classList.add("high-contrast");
+  } else {
+    root.classList.remove("high-contrast");
+  }
+
+  // Reduced motion
+  if (settings.reducedMotion) {
+    root.classList.add("reduced-motion");
+  } else {
+    root.classList.remove("reduced-motion");
+  }
+
+  // Font size
+  root.classList.remove(
+    "font-small",
+    "font-medium",
+    "font-large",
+    "font-extra-large",
+  );
+  root.classList.add(`font-${settings.fontSize}`);
+
+  // Focus outlines
+  if (!settings.focusOutlines) {
+    root.classList.add("no-focus-outlines");
+  } else {
+    root.classList.remove("no-focus-outlines");
+  }
+}
+
+// Auto theme switching effect
+const useAutoThemeSwitch = (
+  preferences: ThemePreferences,
+  currentTheme: Theme,
+  setThemeMutation: UseMutationResult<Theme, Error, string, unknown>,
+) => {
+  useEffect(() => {
+    if (!preferences.scheduleEnabled) return;
+
+    const checkSchedule = () => {
+      const now = new Date();
+      const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+
+      const isLightTime =
+        currentTime >= preferences.lightModeStart &&
+        currentTime < preferences.darkModeStart;
+      const targetThemeId = isLightTime
+        ? preferences.lightThemeId
+        : preferences.darkThemeId;
+
+      if (currentTheme.id !== targetThemeId) {
+        setThemeMutation.mutate(targetThemeId);
+      }
+    };
+
+    checkSchedule();
+    const interval = setInterval(checkSchedule, 60000);
+
+    return () => clearInterval(interval);
+    // Mutation objects are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, currentTheme.id]);
+};
+
+// System theme sync effect
+const useSystemThemeSync = (
+  preferences: ThemePreferences,
+  currentTheme: Theme,
+  setThemeMutation: UseMutationResult<Theme, Error, string, unknown>,
+) => {
+  useEffect(() => {
+    if (!preferences.systemSyncEnabled) return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      const targetThemeId = e.matches
+        ? preferences.darkThemeId
+        : preferences.lightThemeId;
+      if (currentTheme.id !== targetThemeId) {
+        setThemeMutation.mutate(targetThemeId);
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+    // Mutation objects are stable and should not be in dependency arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences, currentTheme.id]);
+};
+
+/**
+ * Enhanced Theme Hook
+ */
+export const useTheme = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Get theme data
+  const { customThemes, preferences, accessibilitySettings, currentTheme } =
+    useThemeQueries([]);
+
+  // Combined available themes
+  const availableThemes = useMemo(
+    () => [...DEFAULT_THEMES, ...customThemes],
+    [customThemes],
+  );
+
+  // Check if dark mode
+  const isDarkMode = useMemo(
+    () => currentTheme.category === ThemeCategory.DARK,
+    [currentTheme],
+  );
+
+  // Get mutations
+  const { setThemeMutation, createCustomThemeMutation } = useThemeMutations(
+    availableThemes,
+    customThemes,
+  );
+  const { updatePreferencesMutation, updateAccessibilityMutation } =
+    usePreferenceMutations(preferences, accessibilitySettings);
+
+  // Auto switching effects
+  useAutoThemeSwitch(preferences, currentTheme, setThemeMutation);
+  useSystemThemeSync(preferences, currentTheme, setThemeMutation);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    applyThemeToDocument(currentTheme);
+    applyAccessibilitySettings(accessibilitySettings);
+    setIsLoading(false);
+  }, [currentTheme, accessibilitySettings]);
+
+  // Hook return value
+  const state: EnhancedThemeState = {
+    currentTheme,
+    availableThemes,
+    customThemes,
+    preferences,
+    accessibilitySettings,
+    isLoading,
+    isDarkMode,
+  };
+
+  return {
+    // State
+    ...state,
+
+    // Theme management
+    setTheme: setThemeMutation.mutate,
+    createCustomTheme: createCustomThemeMutation.mutate,
+    updateThemePreferences: updatePreferencesMutation.mutate,
+
+    // Dynamic theming
+    setDynamicColors: useCallback((colors: Partial<ColorPalette>) => {
+      const root = document.documentElement;
+      Object.entries(colors).forEach(([key, value]) => {
+        root.style.setProperty(`--color-${key}`, value);
+      });
+    }, []),
+
+    enableAutoTheme: useCallback(
+      (enabled: boolean) => {
+        updatePreferencesMutation.mutate({ systemSyncEnabled: enabled });
+      },
+      [updatePreferencesMutation],
+    ),
+
+    // Accessibility
+    updateAccessibilitySettings: updateAccessibilityMutation.mutate,
+    enableHighContrast: useCallback(
+      (enabled: boolean) => {
+        updateAccessibilityMutation.mutate({ highContrast: enabled });
+      },
+      [updateAccessibilityMutation],
+    ),
+
+    setFontSize: useCallback(
+      (scale: FontScale) => {
+        updateAccessibilityMutation.mutate({ fontSize: scale });
+      },
+      [updateAccessibilityMutation],
+    ),
+
+    // Computed properties
+    hasCustomThemes: customThemes.length > 0,
+    isHighContrast: accessibilitySettings.highContrast,
+    currentFontScale: accessibilitySettings.fontSize,
+
+    // Loading states
+    isSettingTheme: setThemeMutation.isPending,
+    isCreatingTheme: createCustomThemeMutation.isPending,
+    isUpdatingPreferences: updatePreferencesMutation.isPending,
+    isUpdatingAccessibility: updateAccessibilityMutation.isPending,
+  };
+};

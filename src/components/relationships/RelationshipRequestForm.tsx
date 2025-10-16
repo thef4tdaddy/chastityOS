@@ -1,0 +1,172 @@
+import React, { useState } from "react";
+import { FaSpinner } from "../../utils/iconImport";
+import { Input, Textarea, Select, SelectOption, Button } from "@/components/ui";
+
+interface RelationshipRequestFormProps {
+  isVisible: boolean;
+  isLoading: boolean;
+  onSubmit: (data: {
+    email: string;
+    role: "submissive" | "keyholder";
+    message: string;
+  }) => void;
+  onCancel: () => void;
+}
+
+// Form Fields Components
+interface EmailFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const EmailField: React.FC<EmailFieldProps> = ({ value, onChange }) => (
+  <div>
+    <label
+      htmlFor="email"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Email Address
+    </label>
+    <Input
+      type="email"
+      id="email"
+      name="email"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+      placeholder="person@example.com"
+      required
+      aria-required="true"
+      autoComplete="email"
+    />
+  </div>
+);
+
+interface RoleFieldProps {
+  value: "submissive" | "keyholder";
+  onChange: (value: "submissive" | "keyholder") => void;
+}
+
+const roleOptions: SelectOption[] = [
+  { value: "submissive", label: "Submissive" },
+  { value: "keyholder", label: "Keyholder" },
+];
+
+const RoleField: React.FC<RoleFieldProps> = ({ value, onChange }) => (
+  <div>
+    <Select
+      label="Your Role in this Relationship"
+      id="role"
+      value={value}
+      onChange={(val) => onChange(val as "submissive" | "keyholder")}
+      options={roleOptions}
+    />
+  </div>
+);
+
+interface MessageFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const MessageField: React.FC<MessageFieldProps> = ({ value, onChange }) => (
+  <div>
+    <label
+      htmlFor="message"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Message (Optional)
+    </label>
+    <Textarea
+      id="message"
+      name="message"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={3}
+      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+      placeholder="Add a personal message..."
+      aria-describedby="message-help"
+    />
+    <span id="message-help" className="sr-only">
+      Optional personal message to include with your relationship request
+    </span>
+  </div>
+);
+
+export const RelationshipRequestForm: React.FC<
+  RelationshipRequestFormProps
+> = ({ isVisible, isLoading, onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState({
+    email: "",
+    role: "submissive" as "submissive" | "keyholder",
+    message: "",
+  });
+
+  if (!isVisible) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <section
+      className="bg-white border border-gray-300 rounded-lg p-4 mb-6 invitation-form-expand"
+      role="region"
+      aria-labelledby="relationship-request-heading"
+    >
+      <h3
+        id="relationship-request-heading"
+        className="text-lg font-semibold text-gray-900 mb-4"
+      >
+        Send Relationship Request
+      </h3>
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        aria-label="Relationship request form"
+      >
+        <EmailField
+          value={formData.email}
+          onChange={(email) => setFormData({ ...formData, email })}
+        />
+        <RoleField
+          value={formData.role}
+          onChange={(role) => setFormData({ ...formData, role })}
+        />
+        <MessageField
+          value={formData.message}
+          onChange={(message) => setFormData({ ...formData, message })}
+        />
+
+        <div className="flex gap-3" role="group" aria-label="Form actions">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            aria-label={
+              isLoading ? "Sending request" : "Send relationship request"
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 inline-flex items-center relationship-transition-fast"
+          >
+            {isLoading ? (
+              <>
+                <FaSpinner className="animate-spin mr-2" aria-hidden="true" />
+                Sending...
+              </>
+            ) : (
+              "Send Request"
+            )}
+          </Button>
+          <Button
+            type="button"
+            onClick={onCancel}
+            aria-label="Cancel and close form"
+            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 relationship-transition-fast"
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </section>
+  );
+};

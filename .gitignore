@@ -14,9 +14,15 @@ node_modules
 dist
 dist-ssr
 
+# Build artifacts and temporary files
+.trigger
+.last-nightly-version
+.eslintcache
+
 # Environment variable files
 .env
 .env.*
+!.env.example
 
 # Editor settings and system files
 .vscode/*
@@ -28,3 +34,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+coverage/

@@ -1,0 +1,343 @@
+import { useState, useCallback } from "react";
+import { serverTimestamp } from "firebase/firestore";
+import { KeyholderReward, KeyholderPunishment, TaskData } from "../../types";
+
+interface UseKeyholderRewardsProps {
+  userId: string;
+  addTask: (taskData: TaskData) => Promise<void>;
+  saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
+  requiredKeyholderDurationSeconds: number;
+}
+
+interface UseKeyholderRewardsReturn {
+  isLoading: boolean;
+  error: string | null;
+  addReward: (reward: KeyholderReward) => Promise<void>;
+  addPunishment: (punishment: KeyholderPunishment) => Promise<void>;
+  updateDuration: (newDurationSeconds: number) => Promise<void>;
+  adjustTimeFromReward: (timeSeconds: number) => Promise<void>;
+  adjustTimeFromPunishment: (timeSeconds: number) => Promise<void>;
+}
+
+export function useKeyholderRewards({
+  userId,
+  addTask,
+  saveDataToFirestore,
+  requiredKeyholderDurationSeconds,
+}: UseKeyholderRewardsProps): UseKeyholderRewardsReturn {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateDuration = useCallback(
+    async (newDurationSeconds: number) => {
+      await handleUpdateDuration({
+        newDurationSeconds,
+        saveDataToFirestore,
+        setIsLoading,
+        setError,
+      });
+    },
+    [saveDataToFirestore],
+  );
+
+  const { addReward, addPunishment } = useRewardPunishmentActions({
+    userId,
+    addTask,
+    saveDataToFirestore,
+    requiredKeyholderDurationSeconds,
+    setIsLoading,
+    setError,
+  });
+
+  const { adjustTimeFromReward, adjustTimeFromPunishment } = useTimeAdjustments(
+    {
+      requiredKeyholderDurationSeconds,
+      updateDuration,
+      setIsLoading,
+      setError,
+    },
+  );
+
+  return {
+    isLoading,
+    error,
+    addReward,
+    addPunishment,
+    updateDuration,
+    adjustTimeFromReward,
+    adjustTimeFromPunishment,
+  };
+}
+
+// Hook to encapsulate reward and punishment actions
+function useRewardPunishmentActions(params: {
+  userId: string;
+  addTask: (taskData: TaskData) => Promise<void>;
+  saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
+  requiredKeyholderDurationSeconds: number;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}) {
+  const addReward = useCallback(
+    async (reward: KeyholderReward) => {
+      await handleAddReward({ reward, ...params });
+    },
+    [params],
+  );
+
+  const addPunishment = useCallback(
+    async (punishment: KeyholderPunishment) => {
+      await handleAddPunishment({ punishment, ...params });
+    },
+    [params],
+  );
+
+  return { addReward, addPunishment };
+}
+
+// Hook to encapsulate time adjustment actions
+function useTimeAdjustments(params: {
+  requiredKeyholderDurationSeconds: number;
+  updateDuration: (newDurationSeconds: number) => Promise<void>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}) {
+  const adjustTimeFromReward = useCallback(
+    async (timeSeconds: number) => {
+      await handleAdjustTimeFromReward({ timeSeconds, ...params });
+    },
+    [params],
+  );
+
+  const adjustTimeFromPunishment = useCallback(
+    async (timeSeconds: number) => {
+      await handleAdjustTimeFromPunishment({ timeSeconds, ...params });
+    },
+    [params],
+  );
+
+  return { adjustTimeFromReward, adjustTimeFromPunishment };
+}
+
+// Helper functions for useKeyholderRewards
+async function handleAddReward(params: {
+  reward: KeyholderReward;
+  userId: string;
+  addTask: (taskData: TaskData) => Promise<void>;
+  saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
+  requiredKeyholderDurationSeconds: number;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}): Promise<void> {
+  const {
+    reward,
+    userId,
+    addTask,
+    saveDataToFirestore,
+    requiredKeyholderDurationSeconds,
+    setIsLoading,
+    setError,
+  } = params;
+
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    if (!userId || !addTask || !saveDataToFirestore) {
+      throw new Error("Missing required dependencies for adding reward");
+    }
+
+    const timeToRemoveInSeconds = reward.timeSeconds || 0;
+
+    // Update duration if time reward is given
+    if (timeToRemoveInSeconds > 0) {
+      const currentDuration = requiredKeyholderDurationSeconds || 0;
+      const newDuration = Math.max(0, currentDuration - timeToRemoveInSeconds);
+      await saveDataToFirestore({
+        requiredKeyholderDurationSeconds: newDuration,
+      });
+    }
+
+    // Create the standardized log entry
+    const taskData: TaskData = {
+      text: "Keyholder Reward",
+      logType: "reward",
+      sourceText: "Manually added by Keyholder",
+      note: reward.note || reward.other || "",
+      timeChangeSeconds: timeToRemoveInSeconds > 0 ? -timeToRemoveInSeconds : 0,
+      createdAt: serverTimestamp(),
+    };
+
+    await addTask(taskData);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to add reward");
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+async function handleAddPunishment(params: {
+  punishment: KeyholderPunishment;
+  userId: string;
+  addTask: (taskData: TaskData) => Promise<void>;
+  saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
+  requiredKeyholderDurationSeconds: number;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}): Promise<void> {
+  const {
+    punishment,
+    userId,
+    addTask,
+    saveDataToFirestore,
+    requiredKeyholderDurationSeconds,
+    setIsLoading,
+    setError,
+  } = params;
+
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    if (!userId || !addTask || !saveDataToFirestore) {
+      throw new Error("Missing required dependencies for adding punishment");
+    }
+
+    const timeToAddInSeconds = punishment.timeSeconds || 0;
+
+    // Update duration if time punishment is given
+    if (timeToAddInSeconds > 0) {
+      const currentDuration = requiredKeyholderDurationSeconds || 0;
+      const newDuration = currentDuration + timeToAddInSeconds;
+      await saveDataToFirestore({
+        requiredKeyholderDurationSeconds: newDuration,
+      });
+    }
+
+    // Create the standardized log entry
+    const taskData: TaskData = {
+      text: "Keyholder Punishment",
+      logType: "punishment",
+      sourceText: "Manually added by Keyholder",
+      note: punishment.note || punishment.other || "",
+      timeChangeSeconds: timeToAddInSeconds > 0 ? timeToAddInSeconds : 0,
+      createdAt: serverTimestamp(),
+    };
+
+    await addTask(taskData);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to add punishment");
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+async function handleUpdateDuration(params: {
+  newDurationSeconds: number;
+  saveDataToFirestore: (data: Record<string, unknown>) => Promise<void>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}): Promise<void> {
+  const { newDurationSeconds, saveDataToFirestore, setIsLoading, setError } =
+    params;
+
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    if (!saveDataToFirestore) {
+      throw new Error("Missing saveDataToFirestore function");
+    }
+
+    if (newDurationSeconds < 0) {
+      throw new Error("Duration cannot be negative");
+    }
+
+    await saveDataToFirestore({
+      requiredKeyholderDurationSeconds: newDurationSeconds,
+    });
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to update duration");
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+async function handleAdjustTimeFromReward(params: {
+  timeSeconds: number;
+  requiredKeyholderDurationSeconds: number;
+  updateDuration: (newDurationSeconds: number) => Promise<void>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}): Promise<void> {
+  const {
+    timeSeconds,
+    requiredKeyholderDurationSeconds,
+    updateDuration,
+    setIsLoading,
+    setError,
+  } = params;
+
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    if (timeSeconds <= 0) {
+      throw new Error("Reward time must be positive");
+    }
+
+    const currentDuration = requiredKeyholderDurationSeconds || 0;
+    const newDuration = Math.max(0, currentDuration - timeSeconds);
+
+    await updateDuration(newDuration);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Failed to adjust time from reward",
+    );
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+}
+
+async function handleAdjustTimeFromPunishment(params: {
+  timeSeconds: number;
+  requiredKeyholderDurationSeconds: number;
+  updateDuration: (newDurationSeconds: number) => Promise<void>;
+  setIsLoading: (value: boolean) => void;
+  setError: (value: string | null) => void;
+}): Promise<void> {
+  const {
+    timeSeconds,
+    requiredKeyholderDurationSeconds,
+    updateDuration,
+    setIsLoading,
+    setError,
+  } = params;
+
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    if (timeSeconds <= 0) {
+      throw new Error("Punishment time must be positive");
+    }
+
+    const currentDuration = requiredKeyholderDurationSeconds || 0;
+    const newDuration = currentDuration + timeSeconds;
+
+    await updateDuration(newDuration);
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Failed to adjust time from punishment",
+    );
+    throw err;
+  } finally {
+    setIsLoading(false);
+  }
+}

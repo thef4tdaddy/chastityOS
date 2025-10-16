@@ -1,0 +1,344 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==================== AUTHENTICATION HELPER FUNCTIONS ====================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserId() {
+      return request.auth.uid;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts == request.time;
+    }
+
+    // ==================== RELATIONSHIP HELPER FUNCTIONS ====================
+
+    function relationshipExists(relationshipId) {
+      return exists(/databases/$(database)/documents/relationships/$(relationshipId));
+    }
+
+    function getRelationship(relationshipId) {
+      return get(/databases/$(database)/documents/relationships/$(relationshipId)).data;
+    }
+
+    function hasRelationshipAccess(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.submissiveId == getUserId() || relationship.keyholderId == getUserId();
+    }
+
+    function isRelationshipActive(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.status == 'active';
+    }
+
+    function isSubmissiveInRelationship(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.submissiveId == getUserId();
+    }
+
+    function isKeyholderInRelationship(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return relationship.keyholderId == getUserId();
+    }
+
+    function hasKeyholderPermission(relationshipId, permission) {
+      let relationship = getRelationship(relationshipId);
+      return isKeyholderInRelationship(relationshipId) &&
+             relationship.permissions.keyholderCanEdit[permission] == true;
+    }
+
+    function canSubmissivePause(relationshipId) {
+      let relationship = getRelationship(relationshipId);
+      return isSubmissiveInRelationship(relationshipId) &&
+             relationship.permissions.submissiveCanPause == true;
+    }
+
+    // ==================== ADMIN ACCESS HELPER FUNCTIONS ====================
+
+    function hasAdminAccess(userId) {
+      return exists(/databases/$(database)/documents/adminRelationships/$(getAdminRelationshipId(request.auth.uid, userId))) &&
+        get(/databases/$(database)/documents/adminRelationships/$(getAdminRelationshipId(request.auth.uid, userId))).data.status == 'active' &&
+        get(/databases/$(database)/documents/adminRelationships/$(getAdminRelationshipId(request.auth.uid, userId))).data.keyholderId == request.auth.uid;
+    }
+
+    function getAdminRelationshipId(keyholderId, wearerId) {
+      return keyholderId + '_' + wearerId;
+    }
+
+    // ==================== ACCOUNT LINKING RULES ====================
+
+    // Link codes - temporary codes for account linking
+    match /linkCodes/{codeId} {
+      allow read: if isAuthenticated() &&
+        request.auth.uid == resource.data.wearerId;
+
+      allow create: if isAuthenticated() &&
+        request.resource.data.wearerId == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.usedBy == null &&
+        request.resource.data.createdAt == request.time;
+
+      allow update: if isAuthenticated() &&
+        resource.data.status == 'pending' &&
+        request.resource.data.status == 'used' &&
+        request.resource.data.usedBy == request.auth.uid &&
+        request.resource.data.usedAt == request.time;
+    }
+
+    // Admin relationships between keyholders and wearers
+    match /adminRelationships/{relationshipId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.keyholderId ||
+        request.auth.uid == resource.data.wearerId
+      );
+
+      allow create: if isAuthenticated() &&
+        request.resource.data.keyholderId == request.auth.uid &&
+        request.resource.data.status == 'active' &&
+        request.resource.data.establishedAt == request.time;
+
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.keyholderId ||
+        request.auth.uid == resource.data.wearerId
+      );
+    }
+
+    // ==================== USER COLLECTION ====================
+
+    match /users/{userId} {
+      // Allow user to create their own profile (for anonymous and regular users)
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      // Allow read/update/delete if owner or has admin access
+      allow read, update, delete: if isOwner(userId) || hasAdminAccess(userId);
+
+      allow read: if isAuthenticated() &&
+                     resource.data.profile.preferences.publicProfile == true &&
+                     resource.data.profile.preferences.allowLinking == true;
+
+      // User data subcollections
+      match /{collection}/{docId} {
+        allow read, write: if isOwner(userId) || hasAdminAccess(userId);
+      }
+    }
+
+    // ==================== RELATIONSHIP REQUESTS ====================
+
+    match /relationshipRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        resource.data.fromUserId == getUserId() ||
+        resource.data.toUserId == getUserId()
+      );
+
+      allow create: if isAuthenticated() &&
+                       request.resource.data.fromUserId == getUserId();
+
+      allow update: if isAuthenticated() &&
+                       resource.data.toUserId == getUserId() &&
+                       resource.data.status == 'pending';
+
+      allow delete: if isAuthenticated() &&
+                       resource.data.fromUserId == getUserId() &&
+                       resource.data.status == 'pending';
+    }
+
+    // ==================== RELATIONSHIPS ====================
+
+    match /relationships/{relationshipId} {
+      allow read: if isAuthenticated() && (
+        resource.data.submissiveId == getUserId() ||
+        resource.data.keyholderId == getUserId()
+      );
+
+      allow create: if isAuthenticated() && (
+        request.resource.data.submissiveId == getUserId() ||
+        request.resource.data.keyholderId == getUserId()
+      );
+
+      allow update: if isAuthenticated() && (
+        resource.data.submissiveId == getUserId() ||
+        resource.data.keyholderId == getUserId()
+      );
+
+      allow delete: if isAuthenticated() && (
+        resource.data.submissiveId == getUserId() ||
+        resource.data.keyholderId == getUserId()
+      );
+    }
+
+    // ==================== CHASTITY DATA ====================
+
+    match /chastityData/{relationshipId} {
+      allow read: if isAuthenticated() &&
+                     relationshipExists(relationshipId) &&
+                     hasRelationshipAccess(relationshipId) &&
+                     isRelationshipActive(relationshipId);
+
+      allow write: if isAuthenticated() &&
+                      relationshipExists(relationshipId) &&
+                      hasRelationshipAccess(relationshipId) &&
+                      isRelationshipActive(relationshipId) && (
+                        isSubmissiveInRelationship(relationshipId) ||
+                        (isKeyholderInRelationship(relationshipId) &&
+                         hasKeyholderPermission(relationshipId, 'sessions'))
+                      );
+
+      // ==================== SESSION DATA ====================
+
+      match /sessions/{sessionId} {
+        allow read: if isAuthenticated() &&
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId);
+
+        allow create, update: if isAuthenticated() &&
+                                 relationshipExists(relationshipId) &&
+                                 hasRelationshipAccess(relationshipId) &&
+                                 isRelationshipActive(relationshipId) && (
+                                   isSubmissiveInRelationship(relationshipId) ||
+                                   hasKeyholderPermission(relationshipId, 'sessions')
+                                 );
+
+        allow delete: if isAuthenticated() &&
+                         relationshipExists(relationshipId) &&
+                         hasKeyholderPermission(relationshipId, 'sessions');
+      }
+
+      // ==================== TASKS ====================
+
+      match /tasks/{taskId} {
+        allow read: if isAuthenticated() &&
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId);
+
+        allow create: if isAuthenticated() &&
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) &&
+                         isRelationshipActive(relationshipId);
+
+        allow update: if isAuthenticated() &&
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) &&
+                         isRelationshipActive(relationshipId) && (
+                           (isSubmissiveInRelationship(relationshipId) &&
+                            request.resource.data.assignedTo == 'submissive') ||
+                           hasKeyholderPermission(relationshipId, 'tasks')
+                         );
+
+        allow delete: if isAuthenticated() &&
+                         relationshipExists(relationshipId) && (
+                           hasKeyholderPermission(relationshipId, 'tasks') ||
+                           (resource.data.assignedBy == 'submissive' &&
+                            isSubmissiveInRelationship(relationshipId))
+                         );
+      }
+
+      // ==================== EVENTS ====================
+
+      match /events/{eventId} {
+        allow read: if isAuthenticated() &&
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId) && (
+                         resource.data.isPrivate == false ||
+                         (resource.data.isPrivate == true &&
+                          ((resource.data.loggedBy == 'submissive' && isSubmissiveInRelationship(relationshipId)) ||
+                           (resource.data.loggedBy == 'keyholder' && isKeyholderInRelationship(relationshipId))))
+                       );
+
+        allow create: if isAuthenticated() &&
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) &&
+                         isRelationshipActive(relationshipId);
+
+        allow update: if isAuthenticated() &&
+                         relationshipExists(relationshipId) &&
+                         hasRelationshipAccess(relationshipId) && (
+                           (resource.data.loggedBy == 'submissive' && isSubmissiveInRelationship(relationshipId)) ||
+                           (resource.data.loggedBy == 'keyholder' && isKeyholderInRelationship(relationshipId))
+                         );
+
+        allow delete: if isAuthenticated() &&
+                         relationshipExists(relationshipId) && (
+                           (resource.data.loggedBy == 'submissive' && isSubmissiveInRelationship(relationshipId)) ||
+                           (resource.data.loggedBy == 'keyholder' && isKeyholderInRelationship(relationshipId)) ||
+                           hasKeyholderPermission(relationshipId, 'sessions')
+                         );
+      }
+
+      // ==================== GOALS ====================
+
+      match /goals/{goalId} {
+        allow read: if isAuthenticated() &&
+                       relationshipExists(relationshipId) &&
+                       hasRelationshipAccess(relationshipId);
+
+        allow create, update: if isAuthenticated() &&
+                                 relationshipExists(relationshipId) &&
+                                 hasRelationshipAccess(relationshipId) &&
+                                 isRelationshipActive(relationshipId) && (
+                                   isSubmissiveInRelationship(relationshipId) ||
+                                   hasKeyholderPermission(relationshipId, 'goals')
+                                 );
+
+        allow delete: if isAuthenticated() &&
+                         relationshipExists(relationshipId) && (
+                           hasKeyholderPermission(relationshipId, 'goals') ||
+                           (isSubmissiveInRelationship(relationshipId) &&
+                            resource.data.setBy == 'submissive')
+                         );
+      }
+    }
+
+    // ==================== LEGACY SINGLE-USER DATA ====================
+
+    match /users/{userId}/sessions/{sessionId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+
+    match /users/{userId}/events/{eventId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+
+    match /users/{userId}/goals/{goalId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+
+    match /users/{userId}/eventLog/{eventId} {
+      allow read, write: if isAuthenticated() && getUserId() == userId;
+    }
+
+    // ==================== OTHER COLLECTIONS ====================
+
+    match /feedback/{docId} {
+      allow create: if isAuthenticated() &&
+        request.resource.data.submittedBy == request.auth.uid &&
+        request.resource.data.submittedAt == request.time;
+    }
+
+    match /system/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /admin/{document=**} {
+      allow read, write: if isAuthenticated() &&
+                            request.auth.token.admin == true;
+    }
+
+    // Default rule for other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

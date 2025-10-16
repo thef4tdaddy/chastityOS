@@ -1,0 +1,96 @@
+version: 2
+
+updates:
+  # NPM dependency updates
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    target-branch: "nightly"
+    reviewers:
+      - "thef4tdaddy"
+    assignees:
+      - "thef4tdaddy"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "automated"
+    open-pull-requests-limit: 5
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # Ignore major version updates for critical dependencies during development
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group React ecosystem updates
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      # Group testing dependencies
+      testing:
+        patterns:
+          - "vitest*"
+          - "playwright*"
+          - "@testing-library/*"
+          - "jest*"
+      # Group build tools
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "rollup*"
+          - "esbuild*"
+      # Group linting tools
+      linting:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "prettier*"
+          - "@typescript-eslint/*"
+      # Group Firebase SDK
+      firebase:
+        patterns:
+          - "firebase*"
+          - "@firebase/*"
+      # Group UI/Styling
+      ui-styling:
+        patterns:
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+          - "postcss*"
+          - "autoprefixer*"
+
+  # GitHub Actions updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    target-branch: "nightly"
+    reviewers:
+      - "thef4tdaddy"
+    assignees:
+      - "thef4tdaddy"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "ci"
+      - "dependencies"
+      - "automated"
+    open-pull-requests-limit: 3
