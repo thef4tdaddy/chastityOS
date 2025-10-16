@@ -1,0 +1,141 @@
+name: Label Issues Automatically
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+jobs:
+  label-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Auto-label by title/body keywords
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = issue.title.toLowerCase();
+            const body = (issue.body || '').toLowerCase();
+            const labels = [];
+
+            // Type labels based on keywords
+            if (title.includes('bug') || body.includes('error') || body.includes('crash') || body.includes('broken')) {
+              labels.push('bug');
+            }
+            if (title.includes('feat') || title.includes('feature') || body.includes('new feature')) {
+              labels.push('enhancement');
+            }
+            if (title.includes('docs') || title.includes('documentation')) {
+              labels.push('documentation');
+            }
+            if (title.includes('test') || body.includes('testing')) {
+              labels.push('testing');
+            }
+            if (title.includes('perf') || body.includes('performance') || body.includes('slow')) {
+              labels.push('performance');
+            }
+            if (title.includes('security') || body.includes('vulnerability')) {
+              labels.push('security');
+            }
+            if (title.includes('a11y') || title.includes('accessibility') || body.includes('accessibility')) {
+              labels.push('accessibility');
+            }
+
+            // Component/area labels
+            if (title.includes('tracker') || body.includes('session') || body.includes('chastity tracking')) {
+              labels.push('area: tracker');
+            }
+            if (title.includes('keyholder') || body.includes('keyholder')) {
+              labels.push('area: keyholder');
+            }
+            if (title.includes('task') || body.includes('task')) {
+              labels.push('area: tasks');
+            }
+            if (title.includes('notification') || body.includes('notification')) {
+              labels.push('area: notifications');
+            }
+            if (title.includes('auth') || body.includes('authentication') || body.includes('login')) {
+              labels.push('area: auth');
+            }
+            if (title.includes('ui') || title.includes('ux') || body.includes('design')) {
+              labels.push('ui/ux');
+            }
+            if (title.includes('db') || title.includes('database') || body.includes('dexie') || body.includes('firestore')) {
+              labels.push('area: database');
+            }
+            if (title.includes('pwa') || body.includes('offline') || body.includes('service worker')) {
+              labels.push('pwa');
+            }
+
+            // Priority indicators
+            if (title.includes('critical') || title.includes('urgent') || body.includes('production down')) {
+              labels.push('priority: critical');
+            } else if (title.includes('high priority') || body.includes('blocking')) {
+              labels.push('priority: high');
+            }
+
+            // Good first issue indicators
+            if (body.includes('good first issue') || body.includes('beginner friendly')) {
+              labels.push('good first issue');
+            }
+
+            // Question/help indicators
+            if (title.startsWith('how') || title.includes('?') || body.includes('help needed')) {
+              labels.push('question');
+            }
+
+            // Add labels if any were found
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labels
+              });
+
+              console.log(`Added labels: ${labels.join(', ')}`);
+            }
+
+      - name: Add needs-triage label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+
+            // Add needs-triage to all new issues
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ['needs-triage']
+            });
+
+      - name: Check for missing info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+
+            // Check if issue body is too short or missing key info
+            if (body.length < 50) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['needs-more-info']
+              });
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `👋 Thanks for opening this issue!\n\nIt looks like this issue might need more details. Could you please provide:\n\n- Steps to reproduce (if it's a bug)\n- Expected vs actual behavior\n- Environment details (browser, OS, etc.)\n- Screenshots or error messages if applicable\n\nThis will help us address your issue faster! 🚀`
+              });
+            }
