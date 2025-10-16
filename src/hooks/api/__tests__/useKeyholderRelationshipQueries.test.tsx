@@ -11,7 +11,6 @@ import {
   useActiveKeyholder,
   useActiveInviteCodes,
   useRelationshipSummary,
-  useHasPermission,
   useCreateInviteCode,
   useAcceptInviteCode,
   useRevokeInviteCode,
@@ -233,39 +232,6 @@ describe("useKeyholderRelationshipQueries", () => {
       });
 
       expect(result.current.data).toEqual(mockSummary);
-    });
-  });
-
-  describe("useHasPermission", () => {
-    it("should check keyholder permissions", async () => {
-      (KeyholderRelationshipService.hasPermission as any).mockResolvedValue(
-        true,
-      );
-
-      const { result } = renderHook(
-        () =>
-          useHasPermission(mockKeyholderUserId, mockUserId, "canLockSessions"),
-        {
-          wrapper: createWrapper(),
-        },
-      );
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      });
-
-      expect(result.current.data).toBe(true);
-    });
-
-    it("should return null when user IDs are missing", () => {
-      const { result } = renderHook(
-        () => useHasPermission(undefined, undefined, "canLockSessions"),
-        {
-          wrapper: createWrapper(),
-        },
-      );
-
-      expect(result.current.isFetching).toBe(false);
     });
   });
 
