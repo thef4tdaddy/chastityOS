@@ -78,7 +78,7 @@ export const AchievementLoadingState: React.FC = () => (
                 className="bg-white/10 p-3 sm:p-4 rounded-lg border-2 border-gray-600"
                 variants={getAccessibleVariants(skeletonPulseVariants)}
                 animate="animate"
-                transition={{ delay: i * 0.1 }}
+                style={{ animationDelay: `${i * 0.1}s` }}
               >
                 <div className="flex items-start space-x-2 sm:space-x-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded flex-shrink-0" />

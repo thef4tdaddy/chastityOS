@@ -12,6 +12,7 @@ import { DBAchievement, DBAchievementNotification } from "@/types";
 import {
   achievementUnlockVariants,
   trophyBounceVariants,
+  shineContinuousVariants,
   getAccessibleVariants,
 } from "@/utils/animations";
 
@@ -34,14 +35,9 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
     {/* Shine effect */}
     <motion.div
       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
-      initial={{ x: "-100%" }}
-      animate={{ x: "200%" }}
-      transition={{
-        duration: 1.5,
-        ease: "easeInOut",
-        repeat: Infinity,
-        repeatDelay: 3,
-      }}
+      variants={getAccessibleVariants(shineContinuousVariants)}
+      initial="initial"
+      animate="animate"
     />
 
     <motion.div

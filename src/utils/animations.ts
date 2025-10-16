@@ -335,8 +335,25 @@ export const progressBarVariants: Variants = {
 
 /**
  * Shine/glow effect for newly unlocked achievements
+ * Use repeat: 1 for one-time shine on card, or Infinity for continuous shine on notifications
  */
 export const shineVariants: Variants = {
+  initial: { x: "-100%" },
+  animate: {
+    x: "200%",
+    transition: {
+      duration: 1.5,
+      ease: "easeInOut",
+      repeat: 1,
+      repeatDelay: 0,
+    },
+  },
+};
+
+/**
+ * Continuous shine effect for notifications
+ */
+export const shineContinuousVariants: Variants = {
   initial: { x: "-100%" },
   animate: {
     x: "200%",

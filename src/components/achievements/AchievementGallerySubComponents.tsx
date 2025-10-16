@@ -23,6 +23,7 @@ import {
   achievementCardVariants,
   trophyBounceVariants,
   badgeAppearVariants,
+  shineVariants,
   getAccessibleVariants,
 } from "../../utils/animations";
 
@@ -227,14 +228,9 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
       {isEarned && (
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"
-          initial={{ x: "-100%" }}
-          animate={{ x: "200%" }}
-          transition={{
-            duration: 1.5,
-            ease: "easeInOut",
-            repeat: 1,
-            repeatDelay: 0,
-          }}
+          variants={getAccessibleVariants(shineVariants)}
+          initial="initial"
+          animate="animate"
         />
       )}
 
