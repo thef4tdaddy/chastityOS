@@ -1,11 +1,12 @@
 /**
  * SubmissiveRelationshipsDisplay Component Tests
- * Tests for displaying submissive relationships
+ *  for displaying submissive relationships
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { SubmissiveRelationshipsDisplay } from "../SubmissiveRelationshipsDisplay";
+import { Timestamp } from "firebase/firestore";
 
 describe("SubmissiveRelationshipsDisplay", () => {
   const mockOnEndRelationship = vi.fn();
@@ -26,6 +27,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
       permissions: {
         canManageTasks: true,
         canControlSession: true,
+        canViewHistory: false,
       },
     },
   ];
@@ -103,8 +105,8 @@ describe("SubmissiveRelationshipsDisplay", () => {
         />,
       );
 
-      expect(screen.getByText(/2 of 3 granted/i)).toBeInTheDocument();
-      expect(screen.getByText(/2 of 2 granted/i)).toBeInTheDocument();
+      const permissionCounts = screen.getAllByText(/2 of 3 granted/i);
+      expect(permissionCounts).toHaveLength(2);
     });
 
     it("should display end button for each relationship", () => {
@@ -136,7 +138,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should use acceptedAt when available", () => {
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[0]]}
+          relationships={[mockRelationships[0]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -148,7 +150,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should use createdAt when acceptedAt not available", () => {
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[1]]}
+          relationships={[mockRelationships[1]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -162,7 +164,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should call onEndRelationship when button clicked", () => {
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[0]]}
+          relationships={[mockRelationships[0]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -183,10 +185,10 @@ describe("SubmissiveRelationshipsDisplay", () => {
 
       const endButtons = screen.getAllByRole("button", { name: /End/i });
 
-      fireEvent.click(endButtons[0]);
+      fireEvent.click(endButtons[0]!);
       expect(mockOnEndRelationship).toHaveBeenCalledWith("rel-1");
 
-      fireEvent.click(endButtons[1]);
+      fireEvent.click(endButtons[1]!);
       expect(mockOnEndRelationship).toHaveBeenCalledWith("rel-2");
     });
 
@@ -197,7 +199,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
 
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[0]]}
+          relationships={[mockRelationships[0]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -219,7 +221,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
 
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[0]]}
+          relationships={[mockRelationships[0]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -246,7 +248,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should calculate correct permission count", () => {
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[0]]}
+          relationships={[mockRelationships[0]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -257,6 +259,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should handle all permissions granted", () => {
       const allGranted = {
         id: "rel-all",
+        acceptedAt: new Date(),
         createdAt: new Date(),
         permissions: {
           canManageTasks: true,
@@ -278,10 +281,12 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should handle no permissions granted", () => {
       const noneGranted = {
         id: "rel-none",
+        acceptedAt: new Date(),
         createdAt: new Date(),
         permissions: {
           canManageTasks: false,
           canControlSession: false,
+          canViewHistory: false,
         },
       };
 
@@ -292,7 +297,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
         />,
       );
 
-      expect(screen.getByText(/0 of 2 granted/i)).toBeInTheDocument();
+      expect(screen.getByText(/0 of 3 granted/i)).toBeInTheDocument();
     });
   });
 
@@ -345,7 +350,7 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should handle single relationship", () => {
       render(
         <SubmissiveRelationshipsDisplay
-          relationships={[mockRelationships[0]]}
+          relationships={[mockRelationships[0]!]}
           onEndRelationship={mockOnEndRelationship}
         />,
       );
@@ -356,8 +361,13 @@ describe("SubmissiveRelationshipsDisplay", () => {
     it("should handle empty permissions", () => {
       const emptyPermissions = {
         id: "rel-empty",
+        acceptedAt: new Date(),
         createdAt: new Date(),
-        permissions: {},
+        permissions: {
+          canManageTasks: false,
+          canControlSession: false,
+          canViewHistory: false,
+        },
       };
 
       render(
@@ -367,14 +377,19 @@ describe("SubmissiveRelationshipsDisplay", () => {
         />,
       );
 
-      expect(screen.getByText(/0 of 0 granted/i)).toBeInTheDocument();
+      expect(screen.getByText(/0 of 3 granted/i)).toBeInTheDocument();
     });
 
     it("should handle many relationships", () => {
       const manyRels = Array.from({ length: 5 }, (_, i) => ({
         id: `rel-${i}`,
+        acceptedAt: new Date(),
         createdAt: new Date(),
-        permissions: { canManageTasks: true },
+        permissions: {
+          canManageTasks: true,
+          canControlSession: true,
+          canViewHistory: false,
+        },
       }));
 
       render(
