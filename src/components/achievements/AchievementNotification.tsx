@@ -18,17 +18,23 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
   achievement,
   onClose,
 }) => (
-  <div className="flex items-center space-x-3 p-2">
-    <div className="text-2xl">{achievement.icon}</div>
-    <div className="flex-1">
-      <div className="flex items-center space-x-2">
-        <FaTrophy className="text-yellow-500" />
-        <span className="font-semibold text-white">Achievement Unlocked!</span>
+  <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 p-2 sm:p-3 max-w-full">
+    <div className="text-xl sm:text-2xl flex-shrink-0">{achievement.icon}</div>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center space-x-1 sm:space-x-2">
+        <FaTrophy className="text-yellow-500 text-sm sm:text-base flex-shrink-0" />
+        <span className="font-semibold text-white text-xs sm:text-sm">
+          Achievement Unlocked!
+        </span>
       </div>
-      <h3 className="font-bold text-yellow-300">{achievement.name}</h3>
-      <p className="text-sm text-gray-300">{achievement.description}</p>
-      <div className="flex items-center space-x-2 mt-1">
-        <span className="text-xs bg-blue-600 px-2 py-1 rounded">
+      <h3 className="font-bold text-yellow-300 text-sm sm:text-base truncate">
+        {achievement.name}
+      </h3>
+      <p className="text-xs sm:text-sm text-gray-300 line-clamp-2">
+        {achievement.description}
+      </p>
+      <div className="flex items-center gap-2 mt-1 flex-wrap">
+        <span className="text-xs bg-blue-600 px-2 py-1 rounded whitespace-nowrap">
           +{achievement.points} points
         </span>
         <span className="text-xs text-gray-400 capitalize">
@@ -38,7 +44,7 @@ export const AchievementToast: React.FC<AchievementToastProps> = ({
     </div>
     <Button
       onClick={onClose}
-      className="text-gray-400 hover:text-white transition-colors"
+      className="text-gray-400 hover:text-white transition-colors touch-manipulation p-2 flex-shrink-0"
     >
       <FaTimes />
     </Button>
