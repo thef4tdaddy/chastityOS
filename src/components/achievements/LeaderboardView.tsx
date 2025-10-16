@@ -93,19 +93,21 @@ interface OptInPromptProps {
 }
 
 const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 text-center">
-    <div className="text-6xl mb-6">🏆</div>
-    <h2 className="text-2xl font-bold text-nightly-honeydew mb-4">
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 md:p-8 text-center">
+    <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6">🏆</div>
+    <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew mb-3 sm:mb-4">
       Join the Leaderboards!
     </h2>
-    <p className="text-nightly-celadon mb-6 max-w-md mx-auto">
+    <p className="text-sm sm:text-base text-nightly-celadon mb-4 sm:mb-6 max-w-md mx-auto">
       Compete with other users and see how your achievement progress stacks up.
       Your participation is completely optional and anonymous.
     </p>
 
-    <div className="bg-blue-900/30 p-4 rounded-lg mb-6 text-left max-w-md mx-auto">
-      <h3 className="font-semibold text-blue-300 mb-2">🔒 Privacy Features:</h3>
-      <ul className="text-sm text-blue-200 space-y-1">
+    <div className="bg-blue-900/30 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-left max-w-md mx-auto">
+      <h3 className="font-semibold text-blue-300 mb-2 text-sm sm:text-base">
+        🔒 Privacy Features:
+      </h3>
+      <ul className="text-xs sm:text-sm text-blue-200 space-y-1">
         <li>• Use anonymous display names</li>
         <li>• Choose which stats to share</li>
         <li>• Opt out anytime</li>
@@ -113,16 +115,16 @@ const OptInPrompt: React.FC<OptInPromptProps> = ({ onOptIn, onSkip }) => (
       </ul>
     </div>
 
-    <div className="flex gap-4 justify-center">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
       <Button
         onClick={onOptIn}
-        className="px-6 py-3 bg-nightly-aquamarine text-black font-semibold rounded-lg hover:bg-nightly-aquamarine/80 transition-colors"
+        className="px-6 py-3 bg-nightly-aquamarine text-black font-semibold rounded-lg hover:bg-nightly-aquamarine/80 transition-colors touch-manipulation"
       >
         Join Leaderboards
       </Button>
       <Button
         onClick={onSkip}
-        className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+        className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors touch-manipulation"
       >
         Maybe Later
       </Button>
@@ -187,9 +189,9 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
   onCategoryChange,
   onPeriodChange,
 }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-    <div className="flex flex-wrap gap-4 items-center">
-      <div>
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+    <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
+      <div className="flex-1 min-w-full sm:min-w-[200px]">
         <Select
           label="Category"
           value={selectedCategory}
@@ -200,7 +202,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
         />
       </div>
 
-      <div>
+      <div className="flex-1 min-w-full sm:min-w-[200px]">
         <Select
           label="Period"
           value={selectedPeriod}
@@ -225,19 +227,21 @@ interface UserRankProps {
 }
 
 const UserRank: React.FC<UserRankProps> = ({ userRank, selectedCategory }) => (
-  <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-4 border border-blue-500/30">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-3">
-        <div className="text-2xl">{getRankIcon(userRank.rank)}</div>
+  <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg p-3 sm:p-4 border border-blue-500/30">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="text-xl sm:text-2xl">{getRankIcon(userRank.rank)}</div>
         <div>
-          <div className="font-semibold text-nightly-honeydew">Your Rank</div>
-          <div className="text-sm text-nightly-celadon">
+          <div className="font-semibold text-nightly-honeydew text-sm sm:text-base">
+            Your Rank
+          </div>
+          <div className="text-xs sm:text-sm text-nightly-celadon">
             #{userRank.rank} of {userRank.totalParticipants}
           </div>
         </div>
       </div>
-      <div className="text-right">
-        <div className="font-bold text-xl text-nightly-aquamarine">
+      <div className="text-left sm:text-right">
+        <div className="font-bold text-lg sm:text-xl text-nightly-aquamarine">
           {formatValue(userRank.value, selectedCategory)}
         </div>
         <div className="text-xs text-nightly-celadon">
@@ -265,9 +269,9 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   selectedCategory,
   selectedPeriod,
 }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg">
-    <div className="p-4 border-b border-white/20">
-      <h3 className="font-semibold text-nightly-honeydew">
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden">
+    <div className="p-3 sm:p-4 border-b border-white/20">
+      <h3 className="font-semibold text-nightly-honeydew text-sm sm:text-base truncate">
         {getCategoryLabel(selectedCategory)} - {getPeriodLabel(selectedPeriod)}
       </h3>
     </div>
@@ -276,31 +280,31 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
       {leaderboardData.map((entry, index) => (
         <div
           key={entry.id}
-          className={`p-4 flex items-center justify-between hover:bg-white/5 transition-colors ${
+          className={`p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 hover:bg-white/5 transition-colors ${
             entry.isCurrentUser
               ? "bg-blue-900/20 border-l-4 border-blue-400"
               : ""
           }`}
         >
-          <div className="flex items-center space-x-4">
-            <div className="text-2xl min-w-[40px] text-center">
+          <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
+            <div className="text-xl sm:text-2xl min-w-[32px] sm:min-w-[40px] text-center flex-shrink-0">
               {getRankIcon(index + 1)}
             </div>
-            <div>
-              <div className="font-semibold text-nightly-honeydew">
+            <div className="min-w-0">
+              <div className="font-semibold text-nightly-honeydew text-sm sm:text-base truncate">
                 {entry.displayName}
               </div>
-              <div className="text-sm text-nightly-celadon">
+              <div className="text-xs sm:text-sm text-nightly-celadon">
                 Rank #{index + 1}
               </div>
             </div>
           </div>
 
-          <div className="text-right">
-            <div className="font-bold text-lg text-nightly-aquamarine">
+          <div className="text-left sm:text-right pl-10 sm:pl-0">
+            <div className="font-bold text-base sm:text-lg text-nightly-aquamarine">
               {formatValue(entry.value, selectedCategory)}
             </div>
-            <div className="text-xs text-nightly-celadon">
+            <div className="text-xs text-nightly-celadon hidden sm:block">
               {getCategoryLabel(selectedCategory)}
             </div>
           </div>
@@ -309,10 +313,12 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     </div>
 
     {leaderboardData.length === 0 && (
-      <div className="p-8 text-center text-nightly-celadon">
-        <FaUsers className="text-4xl mx-auto mb-4 opacity-50" />
-        <p>No participants in this leaderboard yet.</p>
-        <p className="text-sm mt-2">Be the first to join!</p>
+      <div className="p-6 sm:p-8 text-center text-nightly-celadon">
+        <FaUsers className="text-3xl sm:text-4xl mx-auto mb-3 sm:mb-4 opacity-50" />
+        <p className="text-sm sm:text-base">
+          No participants in this leaderboard yet.
+        </p>
+        <p className="text-xs sm:text-sm mt-2">Be the first to join!</p>
       </div>
     )}
   </div>
@@ -330,27 +336,29 @@ const LeaderboardHeader: React.FC<LeaderboardHeaderProps> = ({
   onOptIn,
   onOptOut,
 }) => (
-  <div className="flex items-center justify-between">
-    <div className="flex items-center space-x-3">
-      <FaTrophy className="text-2xl text-nightly-lavender-floral" />
-      <h2 className="text-2xl font-bold text-nightly-honeydew">Leaderboards</h2>
+  <div className="flex items-center justify-between gap-2">
+    <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+      <FaTrophy className="text-xl sm:text-2xl text-nightly-lavender-floral flex-shrink-0" />
+      <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew truncate">
+        Leaderboards
+      </h2>
     </div>
-    <div className="flex items-center space-x-2 text-sm">
+    <div className="flex items-center space-x-2 text-xs sm:text-sm flex-shrink-0">
       {isOptedIn ? (
         <Button
           onClick={onOptOut}
-          className="flex items-center space-x-1 text-red-400 hover:text-red-300"
+          className="flex items-center space-x-1 text-red-400 hover:text-red-300 touch-manipulation whitespace-nowrap"
         >
           <FaEyeSlash />
-          <span>Opt Out</span>
+          <span className="hidden sm:inline">Opt Out</span>
         </Button>
       ) : (
         <Button
           onClick={onOptIn}
-          className="flex items-center space-x-1 text-green-400 hover:text-green-300"
+          className="flex items-center space-x-1 text-green-400 hover:text-green-300 touch-manipulation whitespace-nowrap"
         >
           <FaEye />
-          <span>Join</span>
+          <span className="hidden sm:inline">Join</span>
         </Button>
       )}
     </div>
@@ -393,7 +401,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <LeaderboardHeader
         isOptedIn={isOptedIn}
         onOptIn={handleOptIn}

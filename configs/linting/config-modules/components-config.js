@@ -11,11 +11,7 @@ export default {
       {
         patterns: [
           {
-            group: [
-              '../services/*',
-              '../../services/*',
-              '../../../services/*',
-            ],
+            group: ['../services/*', '../../services/*', '../../../services/*'],
             message:
               'Components should not directly import services. Use hooks in src/hooks/ to encapsulate service calls. Utils and hooks are allowed.',
           },

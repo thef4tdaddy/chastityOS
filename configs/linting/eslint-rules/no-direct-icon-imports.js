@@ -31,10 +31,8 @@ export default {
         const source = node.source.value;
 
         // Check if importing from react-icons/* or lucide-react/*
-        const isReactIconsImport =
-          source === 'react-icons' || source.startsWith('react-icons/');
-        const isLucideImport =
-          source === 'lucide-react' || source.startsWith('lucide-react/');
+        const isReactIconsImport = source === 'react-icons' || source.startsWith('react-icons/');
+        const isLucideImport = source === 'lucide-react' || source.startsWith('lucide-react/');
 
         if (isReactIconsImport || isLucideImport) {
           context.report({

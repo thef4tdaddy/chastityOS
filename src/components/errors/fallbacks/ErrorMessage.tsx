@@ -47,7 +47,9 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
     <div
       className={`${styles.bg} border ${styles.border} rounded-lg p-3 flex items-start gap-2 ${className}`}
     >
-      <FaExclamationCircle className={`w-4 h-4 ${styles.icon} flex-shrink-0 mt-0.5`} />
+      <FaExclamationCircle
+        className={`w-4 h-4 ${styles.icon} flex-shrink-0 mt-0.5`}
+      />
       <p className={`flex-1 text-sm ${styles.text}`}>{message}</p>
       {onDismiss && (
         <Button

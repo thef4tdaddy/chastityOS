@@ -42,19 +42,19 @@ interface StatsHeaderProps {
 }
 
 export const StatsHeader: React.FC<StatsHeaderProps> = ({ stats }) => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-2xl font-bold text-nightly-honeydew">
+  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-3">
+      <h2 className="text-xl sm:text-2xl font-bold text-nightly-honeydew">
         Achievement Gallery
       </h2>
-      <div className="flex items-center space-x-4 text-sm">
-        <span className="text-nightly-celadon">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+        <span className="text-nightly-celadon whitespace-nowrap">
           {stats.totalEarned} / {stats.totalVisible} Earned
         </span>
-        <span className="text-nightly-aquamarine font-semibold">
+        <span className="text-nightly-aquamarine font-semibold whitespace-nowrap">
           {stats.totalPoints} Points
         </span>
-        <span className="text-nightly-lavender-floral">
+        <span className="text-nightly-lavender-floral whitespace-nowrap">
           {stats.completionPercentage.toFixed(1)}% Complete
         </span>
       </div>
@@ -113,9 +113,9 @@ export const Filters: React.FC<FiltersProps> = ({
   ];
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="relative flex-1 min-w-[200px]">
+    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
+        <div className="relative flex-1 min-w-full sm:min-w-[200px]">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
@@ -126,31 +126,33 @@ export const Filters: React.FC<FiltersProps> = ({
           />
         </div>
 
-        <Select
-          value={selectedCategory}
-          onChange={(value) =>
-            onCategoryChange(value as AchievementCategory | "all")
-          }
-          options={categoryOptions}
-          size="sm"
-          fullWidth={false}
-        />
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <Select
+            value={selectedCategory}
+            onChange={(value) =>
+              onCategoryChange(value as AchievementCategory | "all")
+            }
+            options={categoryOptions}
+            size="sm"
+            fullWidth={false}
+          />
 
-        <Select
-          value={selectedDifficulty}
-          onChange={(value) =>
-            onDifficultyChange(value as AchievementDifficulty | "all")
-          }
-          options={difficultyOptions}
-          size="sm"
-          fullWidth={false}
-        />
+          <Select
+            value={selectedDifficulty}
+            onChange={(value) =>
+              onDifficultyChange(value as AchievementDifficulty | "all")
+            }
+            options={difficultyOptions}
+            size="sm"
+            fullWidth={false}
+          />
 
-        <Checkbox
-          checked={showOnlyEarned}
-          onChange={onEarnedFilterChange}
-          label="Earned Only"
-        />
+          <Checkbox
+            checked={showOnlyEarned}
+            onChange={onEarnedFilterChange}
+            label="Earned Only"
+          />
+        </div>
       </div>
     </div>
   );
@@ -186,7 +188,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
 
   const getCardClasses = (): string => {
     const baseClasses =
-      "relative p-4 rounded-lg border-2 transition-all duration-200";
+      "relative p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 touch-manipulation";
 
     // Map string difficulty to enum for getDifficultyColor
     const difficultyMap: Record<string, AchievementDifficulty> = {
@@ -214,9 +216,11 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
         onToggleVisibility={onToggleVisibility}
       />
 
-      <div className="flex items-start space-x-3">
-        <div className="text-3xl">{achievement.icon}</div>
-        <div className="flex-1">
+      <div className="flex items-start space-x-2 sm:space-x-3">
+        <div className="text-2xl sm:text-3xl flex-shrink-0">
+          {achievement.icon}
+        </div>
+        <div className="flex-1 min-w-0">
           <AchievementInfo achievement={achievement} isEarned={isEarned} />
           <ProgressBar progress={progress} isEarned={isEarned} />
           <HiddenIndicator achievement={achievement} isEarned={isEarned} />
@@ -248,7 +252,7 @@ const VisibilityToggle: React.FC<VisibilityToggleProps> = ({
   return (
     <Button
       onClick={() => onToggleVisibility(achievement.id)}
-      className="absolute top-2 right-2 p-1 rounded text-gray-400 hover:text-white transition-colors"
+      className="absolute top-2 right-2 p-2 sm:p-1 rounded text-gray-400 hover:text-white transition-colors touch-manipulation min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center"
     >
       {isVisible ? <FaEye /> : <FaEyeSlash />}
     </Button>
@@ -265,13 +269,14 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({
   isEarned,
 }) => {
   const getTitleClasses = () =>
-    `font-bold ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`;
+    `text-sm sm:text-base font-bold truncate ${isEarned ? "text-gray-800" : "text-nightly-honeydew"}`;
 
   const getDescriptionClasses = () =>
-    `text-sm mt-1 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`;
+    `text-xs sm:text-sm mt-1 line-clamp-2 ${isEarned ? "text-gray-600" : "text-nightly-celadon"}`;
 
   const getBadgeClasses = (type: "points" | "difficulty") => {
-    const baseClasses = "text-xs px-2 py-1 rounded font-semibold";
+    const baseClasses =
+      "text-xs px-2 py-1 rounded font-semibold whitespace-nowrap";
     const colorClasses = isEarned
       ? type === "points"
         ? "bg-yellow-200 text-yellow-800"
@@ -286,8 +291,8 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({
       <h4 className={getTitleClasses()}>{achievement.name}</h4>
       <p className={getDescriptionClasses()}>{achievement.description}</p>
 
-      <div className="flex items-center justify-between mt-3">
-        <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between mt-2 sm:mt-3 gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <span className={getBadgeClasses("points")}>
             {achievement.points} pts
           </span>
@@ -297,7 +302,10 @@ const AchievementInfo: React.FC<AchievementInfoProps> = ({
         </div>
 
         {isEarned && (
-          <FaTrophy className="text-yellow-600" title="Achievement Earned!" />
+          <FaTrophy
+            className="text-yellow-600 flex-shrink-0 text-sm sm:text-base"
+            title="Achievement Earned!"
+          />
         )}
       </div>
     </>
