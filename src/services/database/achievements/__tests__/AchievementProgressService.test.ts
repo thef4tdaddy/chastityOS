@@ -7,22 +7,35 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { AchievementProgressService } from "../AchievementProgressService";
 import { DBAchievementProgress } from "../../../../types";
 
+// Create mock functions for the table methods
+const mockWhere = vi.fn();
+const mockAdd = vi.fn();
+const mockPut = vi.fn();
+const mockToArray = vi.fn();
+const mockFirst = vi.fn();
+
 // Mock database structure
 vi.mock("../../../storage/ChastityDB", () => ({
   db: {
     achievementProgress: {
-      where: vi.fn(),
-      add: vi.fn(),
-      put: vi.fn(),
-      toArray: vi.fn(),
-      first: vi.fn(),
+      where: mockWhere,
+      add: mockAdd,
+      put: mockPut,
+      toArray: mockToArray,
+      first: mockFirst,
     },
   },
 }));
 
 // Import the mocked db after mocking
 import { db } from "../../../storage/ChastityDB";
-const mockProgressTable = db.achievementProgress;
+const mockProgressTable = {
+  where: mockWhere,
+  add: mockAdd,
+  put: mockPut,
+  toArray: mockToArray,
+  first: mockFirst,
+};
 
 // Mock badge service for achievement awarding
 const mockBadgeService = {
