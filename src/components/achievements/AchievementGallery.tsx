@@ -70,15 +70,15 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
         onEarnedFilterChange={setShowOnlyEarned}
         getCategoryName={getCategoryName}
       />
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {Object.entries(groupedAchievements).map(
           ([categoryName, achievements]) => (
-            <div key={categoryName} className="space-y-4">
-              <h3 className="text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
+            <div key={categoryName} className="space-y-3 sm:space-y-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
                 {categoryName} ({achievements.length})
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {achievements.map((item) => (
                   <AchievementCard
                     key={item.achievement.id}
