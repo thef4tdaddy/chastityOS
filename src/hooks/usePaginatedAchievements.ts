@@ -41,12 +41,12 @@ export function usePaginatedAchievements<T>(
     }
   };
 
-  // Reset to page 1 when achievements list changes significantly
+  // Reset to page 1 when total pages changes and current page exceeds it
   useMemo(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(1);
     }
-  }, [achievements.length, totalPages]);
+  }, [totalPages, currentPage]);
 
   return {
     paginatedAchievements,

@@ -3133,7 +3133,7 @@ nav[aria-label*="pagination"] button:focus-visible {
     outline: 4px solid var(--color-focus-ring);
     outline-offset: 3px;
   }
-  
+
   /* Ensure progress bars have high contrast */
   [role="progressbar"] {
     border: 2px solid currentColor;
@@ -3147,7 +3147,7 @@ nav[aria-label*="pagination"] button:focus-visible {
   nav[aria-label*="pagination"] button {
     transition-duration: 0.01ms !important;
   }
-  
+
   /* Keep progress bar animations minimal but functional */
   [role="progressbar"] > div {
     transition-duration: 0.2s !important;
@@ -3183,4 +3183,3 @@ nav[aria-label*="pagination"] button:focus-visible {
   left: 1rem;
   top: 1rem;
 }
-

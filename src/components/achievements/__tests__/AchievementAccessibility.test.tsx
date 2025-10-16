@@ -110,15 +110,13 @@ describe("Achievement Accessibility", () => {
     description: "Test description",
     icon: "🏆",
     category: AchievementCategory.SESSION_MILESTONES,
-    difficulty: "common",
+    difficulty: AchievementDifficulty.COMMON,
     points: 100,
     isHidden: false,
-    requirements: {
-      type: "session_count",
-      target: 10,
-    },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    isActive: true,
+    requirements: [{ type: "session_count", value: 10, unit: "count" }],
+    syncStatus: "synced",
+    lastModified: new Date(),
   };
 
   const mockAchievementWithProgress: AchievementWithProgress = {
