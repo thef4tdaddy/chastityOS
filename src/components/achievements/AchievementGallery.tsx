@@ -11,12 +11,14 @@ import {
   getCategoryName,
   getDifficultyColor,
 } from "../../hooks/useAchievementGallery";
+import { usePaginatedAchievements } from "../../hooks/usePaginatedAchievements";
 import {
   StatsHeader,
   Filters,
   EmptyState,
   AchievementCard,
 } from "./AchievementGallerySubComponents";
+import { AchievementPagination } from "./AchievementPagination";
 import {
   achievementStaggerVariants,
   getAccessibleVariants,
@@ -60,6 +62,38 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
     groupedAchievements,
   } = useAchievementGallery(achievementsWithProgress);
 
+  // Flatten grouped achievements for pagination
+  const flattenedAchievements = React.useMemo(
+    () => Object.values(groupedAchievements).flat(),
+    [groupedAchievements],
+  );
+
+  const {
+    paginatedAchievements,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    goToPage,
+    nextPage,
+    prevPage,
+  } = usePaginatedAchievements<AchievementWithProgress>(flattenedAchievements, {
+    itemsPerPage: 12,
+  });
+
+  // Re-group paginated achievements by category
+  const paginatedGroupedAchievements = React.useMemo(() => {
+    const groups: Record<string, AchievementWithProgress[]> = {};
+    paginatedAchievements.forEach((item) => {
+      const categoryName = getCategoryName(item.achievement.category);
+      if (!groups[categoryName]) {
+        groups[categoryName] = [];
+      }
+      groups[categoryName].push(item);
+    });
+    return groups;
+  }, [paginatedAchievements]);
+
   return (
     <div className="space-y-6">
       <StatsHeader stats={stats} />
@@ -76,7 +110,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
         getCategoryName={getCategoryName}
       />
       <div className="space-y-4 sm:space-y-6">
-        {Object.entries(groupedAchievements).map(
+        {Object.entries(paginatedGroupedAchievements).map(
           ([categoryName, achievements]) => (
             <div key={categoryName} className="space-y-3 sm:space-y-4">
               <h3 className="text-lg sm:text-xl font-semibold text-nightly-honeydew border-b border-white/20 pb-2">
@@ -105,6 +139,18 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
       </div>
 
       {filteredAchievements.length === 0 && <EmptyState />}
+
+      {filteredAchievements.length > 0 && (
+        <AchievementPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          onNextPage={nextPage}
+          onPrevPage={prevPage}
+          hasNextPage={hasNextPage}
+          hasPrevPage={hasPrevPage}
+        />
+      )}
     </div>
   );
 };
