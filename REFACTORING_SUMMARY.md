@@ -1,6 +1,7 @@
 # Refactoring Summary: max-lines-per-function violations
 
 ## Objective
+
 Reduce function complexity by breaking down overly long functions (>150 lines) in session management and system hooks.
 
 ## 🎉 FINAL RESULTS: 6 OUT OF 7 FILES COMPLIANT! 🎉
@@ -10,11 +11,9 @@ Reduce function complexity by breaking down overly long functions (>150 lines) i
 1. **useKeyholderSystem.ts** - **142 lines** ✅ (was 338, reduced by 196)
    - Created sub-hooks: `useKeyholderData`, `useKeyholderActions`
    - Created helper file: `keyholderSystemHelpers.ts`
-   
 2. **useHealthCheck.ts** - **122 lines** ✅ (was 271, reduced by 149)
    - Created helper file: `healthCheckHelpers.ts`
    - Extracted all service-specific health checks
-   
 3. **usePerformance.ts** - **85 lines** ✅ (was 248, reduced by 163)
    - Created helper file: `performanceHelpers.ts`
    - Extracted all metrics collection and analysis
@@ -41,17 +40,23 @@ Reduce function complexity by breaking down overly long functions (>150 lines) i
 ## Refactoring Pattern Demonstrated
 
 ### Pattern 1: Helper Functions
+
 Extract pure functions to separate `*Helpers.ts` files:
+
 ```typescript
 // Before: inline function
-const checkHealth = () => { /* 50 lines */ };
+const checkHealth = () => {
+  /* 50 lines */
+};
 
 // After: extracted to helper file
-import { checkHealth } from './helpers';
+import { checkHealth } from "./helpers";
 ```
 
 ### Pattern 2: Sub-Hooks
+
 Extract related state/logic to separate hooks:
+
 ```typescript
 // Before: all in one hook
 export const useMain = () => {
@@ -71,11 +76,13 @@ export const useMain = () => {
 ## Files Created (14 total)
 
 **Keyholder Hooks (3 files)**
+
 - `src/hooks/keyholder/keyholderSystemHelpers.ts`
 - `src/hooks/keyholder/useKeyholderData.ts`
 - `src/hooks/keyholder/useKeyholderActions.ts`
 
 **System Hooks (5 files)**
+
 - `src/hooks/system/healthCheckHelpers.ts`
 - `src/hooks/system/migrationHelpers.ts`
 - `src/hooks/system/offlineStatusHelpers.ts`
@@ -83,6 +90,7 @@ export const useMain = () => {
 - `src/hooks/system/useConnectionMonitoring.ts`
 
 **Session Hooks (6 files)**
+
 - `src/hooks/session/usePauseKeyholderActions.ts`
 - `src/hooks/session/usePauseRequests.ts`
 - `src/hooks/session/usePauseInitialization.ts`
@@ -91,6 +99,7 @@ export const useMain = () => {
 - `src/hooks/session/useSessionHistoryRetrieval.ts`
 
 ## Impact
+
 - **Files compliant**: 6 out of 7 (86%)
 - **Total lines reduced**: ~1,200 lines from main functions
 - **New helper files**: 14
@@ -100,11 +109,13 @@ export const useMain = () => {
 ## Next Steps
 
 To complete useSessionHistory (130 lines over limit):
+
 1. Extract privacy management functions to `useSessionHistoryPrivacy.ts`
 2. Extract analytics computation functions
 3. Consider creating `useSessionHistoryAnalytics.ts` sub-hook
 
 ## Testing Checklist
+
 - [x] TypeScript compilation passes
 - [x] 6 out of 7 files compliant with max-lines-per-function rule
 - [ ] ESLint full verification

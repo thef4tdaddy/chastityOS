@@ -1,7 +1,7 @@
 /**
  * Hook for managing PIN validation in emergency unlock modal
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { EmergencyUnlockReason } from "@/types/events";
 import { useValidateEmergencyPin } from "@/hooks/api/useEmergencyPin";
 import { useLockCombination } from "@/hooks/api/useLockCombination";
@@ -114,13 +114,24 @@ export const usePinValidation = ({
   };
 
   // Reset PIN state when modal closes
+  const prevOpenRef = useRef(isOpen);
+
   useEffect(() => {
-    if (!isOpen) {
-      setPin("");
-      setPinError("");
-      setAttemptCount(0);
-      setPinStage(requirePin ? "pin_required" : "normal");
+    // Only reset when transitioning from open to closed
+    if (prevOpenRef.current && !isOpen) {
+      // Use setTimeout to defer state updates and avoid synchronous setState in effect
+      const timerId = setTimeout(() => {
+        setPin("");
+        setPinError("");
+        setAttemptCount(0);
+        setPinStage(requirePin ? "pin_required" : "normal");
+      }, 0);
+
+      prevOpenRef.current = isOpen;
+      return () => clearTimeout(timerId);
     }
+
+    prevOpenRef.current = isOpen;
   }, [isOpen, requirePin]);
 
   return {

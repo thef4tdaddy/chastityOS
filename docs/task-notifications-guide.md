@@ -13,12 +13,14 @@ Task notifications provide real-time feedback for task workflow actions. They ap
 **When**: A keyholder assigns a new task to a submissive
 
 **Example Notification**:
+
 ```
 ℹ️ New Task Assigned
 Master Alex assigned you: "Complete daily exercises" (due 12/31/2024)
 ```
 
 **Details**:
+
 - **Type**: Info
 - **Priority**: High (if due date set), Medium (otherwise)
 - **Duration**: 6 seconds
@@ -31,12 +33,14 @@ Master Alex assigned you: "Complete daily exercises" (due 12/31/2024)
 **When**: A submissive submits a task for review
 
 **Example Notification**:
+
 ```
 ℹ️ Task Submitted for Review
 Pet submitted: "Complete daily exercises" with evidence
 ```
 
 **Details**:
+
 - **Type**: Info
 - **Priority**: High
 - **Duration**: 7 seconds
@@ -49,12 +53,14 @@ Pet submitted: "Complete daily exercises" with evidence
 **When**: A keyholder approves a submitted task
 
 **Example Notification**:
+
 ```
 ✅ Task Approved! ✅
 "Complete daily exercises" was approved +15 points!
 ```
 
 **Details**:
+
 - **Type**: Success (green)
 - **Priority**: Medium
 - **Duration**: 6 seconds
@@ -67,12 +73,14 @@ Pet submitted: "Complete daily exercises" with evidence
 **When**: A keyholder rejects a submitted task
 
 **Example Notification**:
+
 ```
 ⚠️ Task Needs Revision
 "Complete daily exercises" was rejected: Evidence photos are not clear enough
 ```
 
 **Details**:
+
 - **Type**: Warning (yellow/orange)
 - **Priority**: High
 - **Duration**: Persistent (must be dismissed)
@@ -85,12 +93,14 @@ Pet submitted: "Complete daily exercises" with evidence
 **When**: A task deadline is within 24 hours
 
 **Example Notification**:
+
 ```
 ⚠️ Task Deadline Approaching
 "Complete daily exercises" is due in 12 hours
 ```
 
 **Details**:
+
 - **Type**: Warning
 - **Priority**: High
 - **Duration**: 8 seconds
@@ -103,18 +113,21 @@ Pet submitted: "Complete daily exercises" with evidence
 **When**: A task passes its deadline
 
 **For Submissive**:
+
 ```
 ❌ Task Overdue
 "Complete daily exercises" is past its deadline
 ```
 
 **For Keyholder**:
+
 ```
 ⚠️ Task Overdue
 Assigned task "Complete daily exercises" is overdue
 ```
 
 **Details**:
+
 - **Type**: Error (red) for submissive, Warning for keyholder
 - **Priority**: High for submissive, Medium for keyholder
 - **Duration**: Persistent for submissive, 7 seconds for keyholder
@@ -164,21 +177,27 @@ By default, all task notifications are enabled.
 ## Notification Behavior
 
 ### Auto-Dismissal
+
 Most notifications automatically disappear after their duration expires:
+
 - Info notifications: 6-7 seconds
 - Warning notifications: 8 seconds
 - Success notifications: 6 seconds
 
 ### Persistent Notifications
+
 Some notifications require manual dismissal:
+
 - Task rejections (submissive needs to take action)
 - Task overdue (submissive needs to address)
 - Critical errors
 
 ### Multiple Notifications
+
 Multiple notifications stack vertically, with the most recent appearing on top. Priority determines the order within the stack.
 
 ### Offline Behavior
+
 Notifications are generated when mutations succeed locally. Even offline, users will see notifications for their own actions. Notifications for other users' actions will appear when back online and data syncs.
 
 ---
@@ -205,12 +224,12 @@ assignTask({
 For custom scenarios, use the service directly:
 
 ```typescript
-import { TaskNotificationService } from '@/services/notifications';
+import { TaskNotificationService } from "@/services/notifications";
 
 await TaskNotificationService.notifyTaskAssigned({
-  taskId: 'task-123',
-  taskTitle: 'Custom task',
-  userId: 'user-456',
+  taskId: "task-123",
+  taskTitle: "Custom task",
+  userId: "user-456",
 });
 ```
 
@@ -228,6 +247,7 @@ await TaskNotificationService.notifyTaskAssigned({
 ### Duplicate Notifications
 
 If seeing duplicate notifications, check:
+
 1. Multiple components calling the same mutation
 2. StrictMode in development (causes double renders)
 3. Mutation being called multiple times
@@ -235,6 +255,7 @@ If seeing duplicate notifications, check:
 ### Notification Not Dismissed
 
 For persistent notifications:
+
 1. Click the X button to dismiss
 2. Or click the notification body to navigate and it will auto-dismiss
 
@@ -245,6 +266,7 @@ For persistent notifications:
 ### Push Notifications
 
 Coming soon: Native push notifications for mobile/desktop:
+
 - Receive notifications even when app is closed
 - Configurable per notification type
 - Sound and vibration options
@@ -253,6 +275,7 @@ Coming soon: Native push notifications for mobile/desktop:
 ### Smart Notifications
 
 Planned features:
+
 - Notification grouping (e.g., "3 tasks due today")
 - Snooze functionality
 - Notification history
@@ -262,6 +285,7 @@ Planned features:
 ### Analytics
 
 Track notification engagement:
+
 - Click-through rates
 - Dismiss rates
 - Most effective notification times
@@ -291,6 +315,7 @@ Track notification engagement:
 ## Support
 
 For issues or questions about task notifications:
+
 1. Check the [Task Notification README](../src/services/notifications/README.md)
 2. Review [usage examples](../src/services/notifications/examples.ts)
 3. Check [unit tests](../src/services/notifications/__tests__/TaskNotificationService.test.ts)

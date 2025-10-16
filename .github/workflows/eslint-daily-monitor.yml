@@ -63,7 +63,7 @@ jobs:
 
       - name: Get previous metrics from issue
         id: previous_metrics
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const issue = await github.rest.issues.get({
@@ -148,7 +148,7 @@ jobs:
           echo "other=$OTHER" >> $GITHUB_OUTPUT
 
       - name: Update tracking issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const current = parseInt('${{ steps.eslint_run.outputs.current_problems }}');
@@ -244,7 +244,7 @@ jobs:
           failure() &&
           github.event_name == 'pull_request' &&
           steps.check_threshold.outputs.threshold_exceeded == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const current = '${{ steps.eslint_run.outputs.current_problems }}';

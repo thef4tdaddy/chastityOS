@@ -7,10 +7,7 @@ import js from '@eslint/js';
 
 export const baseRules = {
   ...js.configs.recommended.rules,
-  'no-unused-vars': [
-    'warn',
-    { argsIgnorePattern: '^_', varsIgnorePattern: '^(_|[A-Z_]+)' },
-  ],
+  'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^(_|[A-Z_]+)' }],
   'no-undef': 'warn',
   'no-case-declarations': 'warn',
   'no-useless-escape': 'warn',
@@ -30,8 +27,7 @@ export const baseRules = {
     },
     {
       name: 'prompt',
-      message:
-        'Use PromptModal instead of prompt(). Create a modal component for user input.',
+      message: 'Use PromptModal instead of prompt(). Create a modal component for user input.',
     },
   ],
 
@@ -111,20 +107,17 @@ export const baseRules = {
   'no-restricted-syntax': [
     'error',
     {
-      selector:
-        "CallExpression[callee.object.name='window'][callee.property.name='confirm']",
+      selector: "CallExpression[callee.object.name='window'][callee.property.name='confirm']",
       message:
         'Use ConfirmModal instead of window.confirm(). Create a modal component for confirmations.',
     },
     {
-      selector:
-        "CallExpression[callee.object.name='window'][callee.property.name='alert']",
+      selector: "CallExpression[callee.object.name='window'][callee.property.name='alert']",
       message:
         "Use new toast system instead of window.alert(). Import { useToast } from '@/contexts' and use showError(), showSuccess(), etc.",
     },
     {
-      selector:
-        "CallExpression[callee.object.name='window'][callee.property.name='prompt']",
+      selector: "CallExpression[callee.object.name='window'][callee.property.name='prompt']",
       message:
         'Use PromptModal instead of window.prompt(). Create a modal component for user input.',
     },
