@@ -7,6 +7,7 @@ The Task Evidence Upload System allows submissives to upload photo evidence when
 ## Features
 
 ### For Submissives
+
 - **Photo Upload**: Upload 1-5 photos as evidence when submitting a task
 - **Drag & Drop**: Drag files directly onto the upload zone
 - **File Browser**: Click to browse and select files
@@ -16,6 +17,7 @@ The Task Evidence Upload System allows submissives to upload photo evidence when
 - **Error Handling**: Clear error messages for failed uploads
 
 ### For Keyholders
+
 - **Evidence Display**: View submitted photos in a thumbnail grid
 - **Lightbox**: Click to view photos full-size
 - **Navigation**: Navigate through multiple photos with arrow keys or buttons
@@ -61,17 +63,20 @@ VITE_CLOUDINARY_API_KEY=your-api-key (optional)
 ### Components
 
 #### `TaskEvidenceUpload`
+
 - Main upload component
 - Handles file selection, validation, and upload
 - Shows previews and upload progress
 - Location: `src/components/tasks/TaskEvidenceUpload.tsx`
 
 #### `TaskEvidenceDisplay`
+
 - Display component for viewing submitted evidence
 - Shows thumbnail grid and lightbox
 - Location: `src/components/tasks/TaskEvidenceDisplay.tsx`
 
 #### `useEvidenceUpload`
+
 - Custom hook containing upload logic
 - Separates business logic from UI
 - Location: `src/components/tasks/useEvidenceUpload.ts`
@@ -79,23 +84,27 @@ VITE_CLOUDINARY_API_KEY=your-api-key (optional)
 ### Services
 
 #### `TaskStorageService`
+
 - Core service for Cloudinary integration
 - Handles file upload, validation, and URL transformations
 - Location: `src/services/storage/TaskStorageService.ts`
 
 Methods:
+
 - `validateFile(file)` - Validates file type and size
 - `uploadEvidence(taskId, userId, file)` - Uploads file to Cloudinary
 - `getThumbnailUrl(url, width, height)` - Generates thumbnail URL
 - `getOptimizedUrl(url, maxWidth)` - Generates optimized display URL
 
 #### `cloudinaryConfig`
+
 - Configuration management for Cloudinary
 - Location: `src/services/storage/cloudinaryConfig.ts`
 
 ### Hooks
 
 #### `useTaskEvidence`
+
 - React hook wrapping TaskStorageService
 - Provides component-friendly API
 - Location: `src/hooks/api/useTaskEvidence.ts`
@@ -136,12 +145,14 @@ interface DBTask {
 The system uses Cloudinary's transformation features for optimal performance:
 
 ### Thumbnails
+
 - Crop to 300x300px
 - Fill mode maintains aspect ratio
 - Auto quality and format optimization
 - Used in: Grid views, previews
 
 ### Full-size Display
+
 - Max width 1600px (preserves aspect ratio)
 - Limit mode prevents upscaling
 - Auto quality and format optimization
@@ -162,11 +173,13 @@ The system provides user-friendly error messages for:
 Tests are located in `src/services/storage/__tests__/TaskStorageService.test.ts`
 
 Run tests:
+
 ```bash
 npm run test:unit -- TaskStorageService.test.ts
 ```
 
 Coverage includes:
+
 - File validation (type, size)
 - URL transformation (thumbnails, optimization)
 - Cloudinary vs non-Cloudinary URL handling

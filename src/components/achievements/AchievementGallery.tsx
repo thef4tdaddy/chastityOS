@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { motion } from "framer-motion";
 import { DBAchievement, DBUserAchievement } from "../../types";
 import {
   useAchievementGallery,
@@ -16,6 +17,10 @@ import {
   EmptyState,
   AchievementCard,
 } from "./AchievementGallerySubComponents";
+import {
+  achievementStaggerVariants,
+  getAccessibleVariants,
+} from "../../utils/animations";
 
 interface AchievementWithProgress {
   achievement: DBAchievement;
@@ -78,7 +83,12 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
                 {categoryName} ({achievements.length})
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+                variants={getAccessibleVariants(achievementStaggerVariants)}
+                initial="initial"
+                animate="animate"
+              >
                 {achievements.map((item) => (
                   <AchievementCard
                     key={item.achievement.id}
@@ -88,7 +98,7 @@ export const AchievementGallery: React.FC<AchievementGalleryProps> = ({
                     getDifficultyColor={getDifficultyColor}
                   />
                 ))}
-              </div>
+              </motion.div>
             </div>
           ),
         )}

@@ -30,7 +30,10 @@ export const StatusSkeleton: React.FC = () => (
       </div>
       <div className="space-y-2 sm:space-y-3">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-7 sm:h-8 bg-white/10 rounded animate-pulse" />
+          <div
+            key={i}
+            className="h-7 sm:h-8 bg-white/10 rounded animate-pulse"
+          />
         ))}
       </div>
     </div>

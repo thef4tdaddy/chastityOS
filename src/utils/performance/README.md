@@ -5,22 +5,19 @@ This directory contains utilities for monitoring and tracking application perfor
 ## Web Vitals Tracking
 
 ### Overview
+
 The `webVitals.ts` module provides comprehensive tracking of Core Web Vitals metrics and integrates with Google Analytics for performance monitoring.
 
 ### Core Web Vitals Tracked
 
 1. **FCP (First Contentful Paint)** - Target: < 1.5s
    - Time until the first text or image is painted
-   
 2. **LCP (Largest Contentful Paint)** - Target: < 2.5s
    - Time until the largest content element is visible
-   
 3. **INP (Interaction to Next Paint)** - Target: < 200ms
    - Measures responsiveness to user interactions (replaces FID)
-   
 4. **CLS (Cumulative Layout Shift)** - Target: < 0.1
    - Measures visual stability during page load
-   
 5. **TTFB (Time to First Byte)** - Target: < 600ms
    - Time until the browser receives the first byte of response
 
@@ -31,7 +28,7 @@ The `webVitals.ts` module provides comprehensive tracking of Core Web Vitals met
 The web vitals tracking is automatically initialized in `src/main.tsx`:
 
 ```typescript
-import { initWebVitals } from './utils/performance/webVitals';
+import { initWebVitals } from "./utils/performance/webVitals";
 
 // Initialize when app loads
 initWebVitals();
@@ -40,20 +37,20 @@ initWebVitals();
 #### Get Current Performance Metrics
 
 ```typescript
-import { getCurrentMetrics } from './utils/performance/webVitals';
+import { getCurrentMetrics } from "./utils/performance/webVitals";
 
 const metrics = await getCurrentMetrics();
-console.log('Current metrics:', metrics);
+console.log("Current metrics:", metrics);
 // Output: { ttfb: 120, fcp: 850, domContentLoaded: 100, ... }
 ```
 
 #### Report Custom Performance Marks
 
 ```typescript
-import { reportPerformanceMark } from './utils/performance/webVitals';
+import { reportPerformanceMark } from "./utils/performance/webVitals";
 
 // Mark when a critical feature loads
-reportPerformanceMark('critical-feature-loaded', 'navigationStart');
+reportPerformanceMark("critical-feature-loaded", "navigationStart");
 ```
 
 ### Integration with Analytics
@@ -61,11 +58,11 @@ reportPerformanceMark('critical-feature-loaded', 'navigationStart');
 All metrics are automatically sent to Google Analytics (if configured) with the following structure:
 
 ```javascript
-gtag('event', metricName, {
-  event_category: 'Web Vitals',
+gtag("event", metricName, {
+  event_category: "Web Vitals",
   event_label: metricId,
   value: metricValue,
-  metric_rating: 'good' | 'needs-improvement' | 'poor',
+  metric_rating: "good" | "needs-improvement" | "poor",
   non_interaction: true,
 });
 ```
@@ -90,6 +87,7 @@ In development mode (DEV=true), metrics are logged to the console:
 ### Testing
 
 Tests are located in `__tests__/webVitals.test.ts` and cover:
+
 - Initialization
 - Metric collection
 - Analytics integration
@@ -97,6 +95,7 @@ Tests are located in `__tests__/webVitals.test.ts` and cover:
 - Performance marks
 
 Run tests with:
+
 ```bash
 npm test -- src/utils/performance/__tests__/webVitals.test.ts
 ```

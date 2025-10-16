@@ -334,11 +334,13 @@ const useAuthActionsInternal = (
 
   const signOut = async () => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
-    
+
     // Delete FCM token before signing out
     if (state.user?.uid) {
       try {
-        const { FCMService } = await import("@/services/notifications/FCMService");
+        const { FCMService } = await import(
+          "@/services/notifications/FCMService"
+        );
         await FCMService.deleteToken(state.user.uid);
         logger.debug("FCM token deleted on logout");
       } catch (error) {
@@ -346,7 +348,7 @@ const useAuthActionsInternal = (
         // Continue with logout even if token deletion fails
       }
     }
-    
+
     const result = await AuthService.signOut();
 
     if (result.success) {

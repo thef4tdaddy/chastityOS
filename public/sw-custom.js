@@ -31,8 +31,10 @@ self.addEventListener("push", (event) => {
 
       // FCM sends data in notification or data field
       if (payload.notification) {
-        notificationData.title = payload.notification.title || notificationData.title;
-        notificationData.body = payload.notification.body || notificationData.body;
+        notificationData.title =
+          payload.notification.title || notificationData.title;
+        notificationData.body =
+          payload.notification.body || notificationData.body;
         if (payload.notification.icon) {
           notificationData.icon = payload.notification.icon;
         }
@@ -57,7 +59,7 @@ self.addEventListener("push", (event) => {
       data: notificationData.data,
       requireInteraction: false,
       vibrate: [200, 100, 200],
-    })
+    }),
   );
 });
 
@@ -104,7 +106,7 @@ self.addEventListener("notificationclick", (event) => {
         if (clients.openWindow) {
           return clients.openWindow(targetUrl);
         }
-      })
+      }),
   );
 });
 
@@ -154,7 +156,7 @@ self.addEventListener("notificationclick", (event) => {
         if (clients.openWindow) {
           return clients.openWindow(actionUrl);
         }
-      })
+      }),
   );
 });
 

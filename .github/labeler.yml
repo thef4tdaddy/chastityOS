@@ -2,47 +2,47 @@
 feature:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/components/**'
-          - 'src/pages/**'
-          - 'src/hooks/**'
+          - "src/components/**"
+          - "src/pages/**"
+          - "src/hooks/**"
 
 bug:
   - changed-files:
       - any-glob-to-any-file:
-          - '**/*.test.*'
-          - '**/*.spec.*'
+          - "**/*.test.*"
+          - "**/*.spec.*"
 
 chore:
   - changed-files:
       - any-glob-to-any-file:
-          - '.github/**'
-          - 'scripts/**'
-          - 'configs/**'
-          - 'package.json'
-          - '.husky/**'
+          - ".github/**"
+          - "scripts/**"
+          - "configs/**"
+          - "package.json"
+          - ".husky/**"
 
 docs:
   - changed-files:
       - any-glob-to-any-file:
-          - 'docs/**'
-          - '**.md'
-          - 'README.md'
+          - "docs/**"
+          - "**.md"
+          - "README.md"
 
 refactor:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/services/**'
-          - 'src/utils/**'
+          - "src/services/**"
+          - "src/utils/**"
 
 testing:
   - changed-files:
       - any-glob-to-any-file:
-          - '**/*.test.*'
-          - '**/*.spec.*'
-          - 'e2e/**'
-          - 'tests/**'
+          - "**/*.test.*"
+          - "**/*.spec.*"
+          - "e2e/**"
+          - "tests/**"
 
 workflows:
   - changed-files:
       - any-glob-to-any-file:
-          - '.github/workflows/**'
+          - ".github/workflows/**"
