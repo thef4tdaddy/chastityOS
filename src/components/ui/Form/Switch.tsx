@@ -2,7 +2,7 @@
  * Switch Component
  * Toggle switch for boolean values
  */
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 
 export interface SwitchProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
@@ -86,8 +86,9 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
     },
     ref,
   ) => {
-    // Generate unique ID if not provided
-    const switchId = id || `switch-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique ID if not provided using React's useId hook
+    const generatedId = useId();
+    const switchId = id || generatedId;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange?.(e);

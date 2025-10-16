@@ -55,10 +55,10 @@
   --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Responsive Breakpoints (for reference) */
-  --breakpoint-sm: 640px;   /* Mobile Large */
-  --breakpoint-md: 768px;   /* Tablet */
-  --breakpoint-lg: 1024px;  /* Desktop Small */
-  --breakpoint-xl: 1280px;  /* Desktop Large */
+  --breakpoint-sm: 640px; /* Mobile Large */
+  --breakpoint-md: 768px; /* Tablet */
+  --breakpoint-lg: 1024px; /* Desktop Small */
+  --breakpoint-xl: 1280px; /* Desktop Large */
 }
 
 .theme-nightly {
@@ -240,7 +240,8 @@ html {
   padding-right: env(safe-area-inset-right);
 }
 .safe-area-inset-all {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* Mobile-first responsive containers */
@@ -459,7 +460,8 @@ html {
 
 /* Celebration animations */
 @keyframes bounce-celebration {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
   }
   25% {
@@ -474,7 +476,8 @@ html {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
   }
   50% {
@@ -530,14 +533,30 @@ html {
 }
 
 /* Stagger animation delays for sequential items */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
-.stagger-7 { animation-delay: 0.35s; }
-.stagger-8 { animation-delay: 0.4s; }
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+.stagger-5 {
+  animation-delay: 0.25s;
+}
+.stagger-6 {
+  animation-delay: 0.3s;
+}
+.stagger-7 {
+  animation-delay: 0.35s;
+}
+.stagger-8 {
+  animation-delay: 0.4s;
+}
 
 /* =============================================
    === EVENT LOGGING ANIMATIONS              ===
@@ -567,7 +586,8 @@ html {
 }
 
 @keyframes success-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   25% {
@@ -617,7 +637,8 @@ html {
 }
 
 @keyframes milestone-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
   }
   50% {
@@ -641,7 +662,8 @@ html {
 
 /* Event loading skeletons */
 @keyframes event-skeleton-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
   }
   50% {
@@ -729,7 +751,7 @@ html {
 }
 
 .event-milestone::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1735,7 +1757,8 @@ td {
 
 /* Timer pulse animation for active sessions */
 @keyframes timer-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -1805,11 +1828,16 @@ td {
 
 /* Glow effect for active states */
 @keyframes tracker-glow {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3), 0 0 20px rgba(34, 197, 94, 0.2);
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px rgba(34, 197, 94, 0.3),
+      0 0 20px rgba(34, 197, 94, 0.2);
   }
   50% {
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5), 0 0 30px rgba(34, 197, 94, 0.3);
+    box-shadow:
+      0 0 20px rgba(34, 197, 94, 0.5),
+      0 0 30px rgba(34, 197, 94, 0.3);
   }
 }
 
@@ -1818,11 +1846,16 @@ td {
 }
 
 @keyframes tracker-glow-yellow {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(234, 179, 8, 0.3), 0 0 20px rgba(234, 179, 8, 0.2);
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px rgba(234, 179, 8, 0.3),
+      0 0 20px rgba(234, 179, 8, 0.2);
   }
   50% {
-    box-shadow: 0 0 20px rgba(234, 179, 8, 0.5), 0 0 30px rgba(234, 179, 8, 0.3);
+    box-shadow:
+      0 0 20px rgba(234, 179, 8, 0.5),
+      0 0 30px rgba(234, 179, 8, 0.3);
   }
 }
 
@@ -1881,7 +1914,8 @@ td {
 
 /* Focus ring animation */
 @keyframes focus-ring-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 2px var(--color-focus-ring);
   }
   50% {
@@ -1978,7 +2012,7 @@ textarea:focus-visible,
   .card {
     border: 2px solid currentColor;
   }
-  
+
   button:focus-visible,
   input:focus-visible,
   select:focus-visible,
@@ -1998,7 +2032,7 @@ textarea:focus-visible,
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .focus-ring-animated:focus-visible {
     animation: none;
   }
@@ -2128,10 +2162,14 @@ textarea:focus-visible,
 /* Task Card Animations */
 @keyframes task-card-hover-shadow {
   from {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
   to {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -2141,7 +2179,8 @@ textarea:focus-visible,
 
 .task-card-hover:hover {
   transform: translateY(-4px);
-  animation: task-card-hover-shadow var(--animation-duration-normal) var(--animation-easing) forwards;
+  animation: task-card-hover-shadow var(--animation-duration-normal)
+    var(--animation-easing) forwards;
 }
 
 /* Button Animations */
@@ -2194,13 +2233,21 @@ textarea:focus-visible,
 }
 
 @keyframes task-rejection-shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-4px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(4px);
   }
 }
@@ -2226,7 +2273,8 @@ textarea:focus-visible,
 }
 
 @keyframes drop-zone-pulse {
-  0%, 100% {
+  0%,
+  100% {
     border-color: rgba(147, 51, 234, 0.5);
     background-color: rgba(147, 51, 234, 0.05);
   }
@@ -2270,7 +2318,8 @@ textarea:focus-visible,
 }
 
 @keyframes trophy-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   25% {
@@ -2290,7 +2339,8 @@ textarea:focus-visible,
 
 /* Empty State Animations */
 @keyframes empty-state-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -2303,7 +2353,8 @@ textarea:focus-visible,
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     box-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
   }
@@ -2362,7 +2413,8 @@ textarea:focus-visible,
 }
 
 .notification-slide-in {
-  animation: slide-in-right var(--animation-duration-normal) var(--animation-easing);
+  animation: slide-in-right var(--animation-duration-normal)
+    var(--animation-easing);
 }
 
 /* =============================================
@@ -2394,30 +2446,47 @@ textarea:focus-visible,
 }
 
 @keyframes relationship-card-hover-lift {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
   }
   50% {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.16),
+      0 3px 6px rgba(0, 0, 0, 0.23);
   }
 }
 
 /* Staggered animation for list items */
 .relationship-card-enter {
-  animation: relationship-card-enter var(--animation-duration-normal) var(--animation-easing);
+  animation: relationship-card-enter var(--animation-duration-normal)
+    var(--animation-easing);
   animation-fill-mode: backwards;
 }
 
-.relationship-card-enter:nth-child(1) { animation-delay: 0ms; }
-.relationship-card-enter:nth-child(2) { animation-delay: 50ms; }
-.relationship-card-enter:nth-child(3) { animation-delay: 100ms; }
-.relationship-card-enter:nth-child(4) { animation-delay: 150ms; }
-.relationship-card-enter:nth-child(5) { animation-delay: 200ms; }
+.relationship-card-enter:nth-child(1) {
+  animation-delay: 0ms;
+}
+.relationship-card-enter:nth-child(2) {
+  animation-delay: 50ms;
+}
+.relationship-card-enter:nth-child(3) {
+  animation-delay: 100ms;
+}
+.relationship-card-enter:nth-child(4) {
+  animation-delay: 150ms;
+}
+.relationship-card-enter:nth-child(5) {
+  animation-delay: 200ms;
+}
 
 .relationship-card-exit {
-  animation: relationship-card-exit var(--animation-duration-fast) var(--animation-easing);
+  animation: relationship-card-exit var(--animation-duration-fast)
+    var(--animation-easing);
 }
 
 /* Invitation Form Animations */
@@ -2450,12 +2519,14 @@ textarea:focus-visible,
 }
 
 .invitation-form-expand {
-  animation: invitation-expand var(--animation-duration-normal) var(--animation-easing);
+  animation: invitation-expand var(--animation-duration-normal)
+    var(--animation-easing);
   overflow: hidden;
 }
 
 .invitation-form-collapse {
-  animation: invitation-collapse var(--animation-duration-normal) var(--animation-easing);
+  animation: invitation-collapse var(--animation-duration-normal)
+    var(--animation-easing);
   overflow: hidden;
 }
 
@@ -2473,13 +2544,28 @@ textarea:focus-visible,
 }
 
 @keyframes error-shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
 }
 
 .success-flash {
-  animation: success-flash var(--animation-duration-slow) var(--animation-easing);
+  animation: success-flash var(--animation-duration-slow)
+    var(--animation-easing);
 }
 
 .error-shake {
@@ -2488,7 +2574,8 @@ textarea:focus-visible,
 
 /* Loading Skeleton for Relationships */
 @keyframes skeleton-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -2541,7 +2628,8 @@ textarea:focus-visible,
 }
 
 .toggle-switch-on {
-  animation: toggle-switch var(--animation-duration-fast) var(--animation-easing);
+  animation: toggle-switch var(--animation-duration-fast)
+    var(--animation-easing);
 }
 
 /* Button Press Animation */
@@ -2563,7 +2651,8 @@ textarea:focus-visible,
 
 /* Pending Request Badge Pulse */
 @keyframes badge-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -2590,7 +2679,8 @@ textarea:focus-visible,
 }
 
 .invite-code-appear {
-  animation: invite-code-appear var(--animation-duration-normal) var(--animation-easing);
+  animation: invite-code-appear var(--animation-duration-normal)
+    var(--animation-easing);
   transform-style: preserve-3d;
 }
 
@@ -2611,7 +2701,8 @@ textarea:focus-visible,
 }
 
 .status-badge-change {
-  animation: status-change var(--animation-duration-normal) var(--animation-easing);
+  animation: status-change var(--animation-duration-normal)
+    var(--animation-easing);
 }
 
 /* Micro-interactions */
@@ -2646,7 +2737,8 @@ textarea:focus-visible,
 
 /* Relationship Active Indicator */
 @keyframes active-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
   }
   50% {
@@ -2703,7 +2795,7 @@ textarea:focus-visible,
     animation: none !important;
     transition: opacity var(--animation-duration-fast) ease !important;
   }
-  
+
   .tracker-state-transition,
   .timer-pulse,
   .number-update,
@@ -2718,16 +2810,16 @@ textarea:focus-visible,
     transition: opacity 0.2s !important;
     transform: none !important;
   }
-  
+
   .loading-spinner {
     animation: spinner-rotate 1s linear infinite;
   }
-  
+
   /* Keep shimmer for loading states as it's functional */
   .relationship-skeleton {
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
   }
-  
+
   .skeleton-shimmer {
     animation: none !important;
     background: rgba(215, 210, 234, 0.15);
@@ -2806,7 +2898,7 @@ input[type="range"]::-moz-range-thumb:active {
   .event-button {
     font-size: 0.875rem;
   }
-  
+
   .event-form-field {
     font-size: 16px; /* Prevents iOS zoom */
   }
@@ -2836,7 +2928,8 @@ input[type="range"]::-moz-range-thumb:active {
 
 /* Milestone event glow animation */
 @keyframes milestone-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
   }
   50% {
@@ -2891,7 +2984,8 @@ input[type="range"]::-moz-range-thumb:active {
 }
 
 @keyframes focus-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 6px rgba(88, 28, 135, 0.2);
   }
   50% {
@@ -2906,13 +3000,13 @@ input[type="range"]::-moz-range-thumb:active {
   .event-item {
     border: 2px solid currentColor;
   }
-  
+
   .event-button:focus-visible,
   .event-form-field:focus-visible {
     outline: 4px solid var(--color-focus-ring);
     outline-offset: 2px;
   }
-  
+
   .event-item {
     border: 2px solid var(--color-border-accent);
   }
@@ -2929,7 +3023,7 @@ input[type="range"]::-moz-range-thumb:active {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .confetti-particle {
     display: none;
   }
