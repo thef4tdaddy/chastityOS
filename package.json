@@ -28,7 +28,7 @@
     "dayjs": "^1.11.13",
     "firebase": "^11.8.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react-dom": "^19.2.3",
     "react-helmet-async": "^2.0.5",
     "react-icons": "^5.5.0"
   },
