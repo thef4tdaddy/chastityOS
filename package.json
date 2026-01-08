@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sentry/react": "^8.17.0",
+    "@sentry/react": "^10.31.0",
     "@tailwindcss/cli": "^4.1.8",
     "@tailwindcss/vite": "^4.1.8",
     "axios": "^1.9.0",
